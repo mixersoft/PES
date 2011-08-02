@@ -1,0 +1,43 @@
+
+
+.rater {
+    float: left;
+    cursor: pointer;
+    width: 96px;
+    z-index: 6;
+}
+
+span.rating_MouseOn {
+    display: block;
+    float: left;
+    background-image: url('smiley.gif');
+    width: 15px;
+    height: 15px;
+}
+
+span.rating_MouseOff {
+    display: block;
+    float: left;
+    background-image: url('frownie-gray.gif');
+    width: 15px;
+    height: 15px;
+}
+
+span.rating_Blank {
+    display: block;
+    float: left;
+    background-image: url('css/blank.gif');
+    width: 16px;
+    height: 15px;
+}
+
+div.ratingGroup {
+    margin: 0 auto;
+    width: 71px; /* width of 5 stars */
+	height: 15px;
+}
+
+
+div.clear {
+    clear: both;
+}

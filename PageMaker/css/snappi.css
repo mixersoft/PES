@@ -1,0 +1,112 @@
+
+div#content-tabview {
+    height: 100%;
+    overflow-y: hidden;
+}
+
+/*
+ * stack thumbPanelEl
+ */
+div.photoSet-header {
+    background-color: lightgray;
+    padding: 0 8px 0 8px;
+	margin: 0;
+    height: 82px;
+    font-weight: bold;
+	font-size: 0.9em;
+    overflow: auto;
+}
+
+div.photoSet-header h1 {
+    padding: 0px 0 2px 0;
+    font-size: 1.6em;
+	margin: 0;
+}
+
+div.photoSet-header > ul {
+    display: inline;
+    white-space: nowrap;
+}
+
+div.photoSet-header > ul > li {
+    display: inline;
+    list-style-type: none;
+    margin-left: 8px;
+    padding: 3px 10px;
+    color: #fff;
+    background-color: #2647A0;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+div.photoSet-header > ul > li:hover {
+    background-color: #be2a3a;
+}
+
+div.photoSet-settings {
+    width: 150px;
+	font-size:10px;
+    float: right;
+}
+
+div.photoSet-settings > div {
+    list-style-type: none;
+    margin-left: 8px;
+    padding: 3px 10px 0 0;
+    text-decoration: none;
+    cursor: pointer;
+    color: black;
+    width: 100px;
+    display: block;
+}
+
+div.photoSet-header a {
+    padding: 3px 10px;
+    margin-left: 20px;
+}
+
+div.photoSet-header a:link, div.photoSet-header a:visited {
+    color: #fff;
+    background-color: #2647A0;
+    text-decoration: none;
+}
+
+div.photoSet-header a:hover {
+    background-color: #be2a3a;
+}
+
+
+
+div#tab_create-contentEl {
+    background-color: lightgray;
+    height: 100%;
+}
+
+
+div#pg-getting-started {
+    margin: 10% auto;
+    text-align: center;
+    width: 60%;
+}
+
+div#pg-getting-started > div {
+    color: white;
+    border: 3px solid lightgray;
+    text-align: left;
+}
+
+div#pg-getting-started > div > h1 {
+    background-color: #2647A0;
+    font-size: 140%;
+    font-weight: bold;
+    padding: 10px;
+}
+
+div#pg-getting-started > div > p {
+    padding: 16px 10px 0 10px;
+}
+
+div#pagemaker div.photoSet-header h1 {
+	background: none;
+	background-color: none;
+}

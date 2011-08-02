@@ -1,0 +1,612 @@
+/*
+ * Copyright (c) 2009, Snaphappi.com. All rights reserved.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the Affero GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * Affero GNU General Public License for more details.
+ *
+ * You should have received a copy of the Affero GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+/*
+ * snaphappi colors
+ * blue-border: #538fb3
+ * pink: #d04098
+ * blue: #43adeb
+ * green: #8cbe4b
+ * red: #be2a3a
+ * yellow: #e5c122;
+ * yui blue: #2647A0
+ */
+div#curtain {
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    background-color: white;
+    background-image: url('/img/snaphappi.blue.gif');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: 50% 30%;
+    font-family: arial, helvetica, clean, sans-serif;
+    font-size: 13px;
+    font-size-adjust: none;
+    font-style: normal;
+    font-variant: normal;
+    font-weight: normal;
+    line-height: 1.231;
+}
+
+div#curtain > div {
+    text-align: center;
+    padding: 20px 20% 0 20%;
+}
+
+div#quit {
+    position: absolute;
+    right: 1px;
+    top: 1px;
+    cursor: pointer;
+}
+
+div#quit img {
+    height: 22px;
+    width: 86px;
+    border: 2px solid #538fb3;
+}
+
+div#quit img:hover {
+    border: 2px solid #2647A0;
+}
+
+/* deprecate */
+span.rating-stars {
+    position: relative;
+    top: -20px;
+}
+
+ul.photoSet {
+    list-style-image: none;
+    list-style-type: none;
+    line-height: 135px; /* for img vertical-align:middle */
+    overflow: auto;
+    width: 100%
+}
+
+ul.photoSet li {
+    float: left;
+    display: block;
+    padding: 4px;
+    margin: 0px;
+    background-color: #FFF;
+    width: 146px;
+    text-align: center; /* for centering ratingGroup */
+}
+
+ul.photoSet li.selected {
+    border: 3px solid #be2a3a;
+    padding: 1px;
+}
+
+ul.photoSet li:hover {
+    background-color: #bef;
+}
+
+ul.photoSet li img {
+    border: 0px;
+    margin: 0px;
+    vertical-align: middle;
+    /* padding:0px; */
+}
+
+ul.photoSet li img.blur {
+    padding: 4px;
+    border: 1px dotted blue;
+    background-color: white;
+    margin: 0px;
+    height: 90px;
+}
+
+ul.photoSet li img.rating1 {
+    margin: 16px;
+    height: 58px;
+}
+
+ul.photoSet li img.rating2 {
+    margin: 12px;
+    height: 66px;
+}
+
+ul.photoSet li img.rating3 {
+    margin: 8px;
+    height: 74px;
+}
+
+ul.photoSet li img.rating4 {
+    margin: 4px;
+    height: 82px;
+}
+
+ul.photoSet li img.rating5 {
+    margin: 0px;
+    height: 90px;
+}
+
+ul.photoSet li img:hover {
+    margin: 0px;
+    height: 90px;
+}
+
+ul.photoSet li img.portrait:hover {
+    height: 120px;
+}
+
+ul.photoSet li img.focus {
+    border: 1px solid black;
+    padding: 4px;
+    margin: 0;
+    height: 90px;
+    background-color: yellow;
+}
+
+ul.photoSet li img.portrait.focus {
+    height: 120px;
+}
+
+/*
+ * header, right justified spans
+ */
+h1 > span {
+    position: absolute;
+    right: 16px;
+    font-size: 0.9em;
+    font-weight: normal
+}
+
+div#hints {
+    margin-top: 20px;
+}
+
+div#hints h1 {
+    padding-top: 20px;
+    cursor: pointer;
+}
+
+div#hints li {
+    list-style-type: circle;
+    list-style-position: outside;
+    padding-left: 2px;
+    margin-left: 16px;
+}
+
+div#hints ul {
+    display: block;
+}
+
+
+/*
+ * left menu, #left1
+ */
+
+
+div#left1 {
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: 100%;
+}
+
+div#left1 h1 {
+    font-weight: bold;
+    margin-top: 4px;
+}
+
+div#left1 > ul.closed {
+	display: none;
+} 
+
+ul.branch {
+    list-style: none;
+    padding: 0px;
+    width: 100%;
+}
+
+ul.branch li {
+    display: block;
+    background-color: #FFF;
+    text-align: center; /* for centering ratingGroup */
+    border: 1px dotted blue;
+    margin: 4px;
+    padding: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    xline-height: 28px;
+    xfont-size: 20px;
+}
+
+ul.branch li.selected {
+    padding: 3px;
+    border: 2px solid blue;
+    font-weight: bold;
+}
+
+ul.branch li:hover {
+    background-color: #bef;
+    border: 2px solid blue;
+    padding: 3px;
+}
+
+ul.branch li.yui-dd-drop-active-valid {
+    background-color: white;
+    border: 2px solid #be2a3a;
+    padding: 3px;
+}
+
+ul.branch li.yui-dd-drop-over {
+    background-color: #be2a3a;
+}
+
+ul#branch-albums > li {
+    font-size: 1em;
+    line-height: 1.1em;
+}
+
+/*
+ * tabBody Element, for scrolling body only, not tab header
+ */
+div.yui-content > div {
+    overflow-y: auto;
+    height: 100%;
+}
+
+div#content-tabview {
+    height: 100%;
+    overflow-y: hidden;
+}
+
+/*
+ * stack thumbPanelEl
+ */
+div.photoSet-header {
+    background-color: lightgray;
+    padding: 0 8px 0 8px;
+    height: 82px;
+    font-weight: bold;
+    overflow: auto;
+}
+
+div.photoSet-header h1 {
+    padding: 20px 0 8px 0;
+    font-size: 1.4em;
+}
+
+div.photoSet-header > ul {
+    display: inline;
+    white-space: nowrap;
+}
+
+div.photoSet-header > ul > li {
+    display: inline;
+    list-style-type: none;
+    margin-left: 8px;
+    padding: 3px 10px;
+    color: #fff;
+    background-color: #2647A0;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+div.photoSet-header > ul > li:hover {
+    background-color: #be2a3a;
+}
+
+div.photoSet-settings {
+    width: 150px;
+    float: right;
+}
+
+div.photoSet-settings > div {
+    list-style-type: none;
+    margin-left: 8px;
+    padding: 3px 10px;
+    text-decoration: none;
+    cursor: pointer;
+    color: black;
+    width: 100px;
+    display: block;
+}
+
+div.photoSet-header a {
+    padding: 3px 10px;
+    margin-left: 20px;
+}
+
+div.photoSet-header a:link, div.photoSet-header a:visited {
+    color: #fff;
+    background-color: #2647A0;
+    text-decoration: none;
+}
+
+div.photoSet-header a:hover {
+    background-color: #be2a3a;
+}
+
+/*
+ * preview.js
+ */
+div#imgLoading {
+    width: 32px;
+    height: 32px;
+    background: url('ajax-loader.gif') no-repeat center;
+    z-index: 99;
+    display: none;
+}
+
+/*
+ * preview img, linked to focus
+ */
+div#preview {
+    float: left;
+}
+
+/*
+ * tabView overrides
+ */
+.yui-skin-sam .yui-navset .yui-content, .yui-skin-sam .yui-navset .yui-navset-top .yui-content {
+    padding: 0; /* content padding */
+}
+
+/* Style the body */
+.yui-layout .yui-layout-unit div.yui-layout-bd {
+    overflow-y: hidden;
+}
+
+/*
+ * imageLoader deferred loading scroll group#alert
+ * NOTE: not sure we use this because of limitations on background-src
+ *
+ */
+.yui-imageload-scrollgroup {
+    background: none;
+}
+
+div#preview img {
+    float: left;
+    border: 1px solid white;
+    margin-right: 10px;
+}
+
+.yui-dd-proxy {
+    background-image: url( countBadge.png );
+    background-repeat: no-repeat;
+    color: white;
+    font-weight: bold;
+}
+
+.yui-dd-proxy span {
+    display: block;
+    margin-top: 4px;
+}
+
+span.cb-label-rt {
+    padding-left: 24px;
+    font-weight: bold;
+}
+
+div#tab_create-contentEl {
+    background-color: lightgray;
+    height: 100%;
+}
+
+.yui-skin-sam .yui-layout .yui-layout-unit .yui-layout-unit-center div.yui-layout-bd .yui-content {
+    background-color: white;
+    padding: 0;
+}
+
+#filmstrip {
+    background-color: white;
+}
+
+/*
+ * substitutes
+ */
+ul.photoSet > li.substitute-show > img {
+    border-color: red;
+    border-width: 3px;
+    border-style: dotted double double dotted;
+}
+
+ul.photoSet > li.substitute-hide > img {
+    border: 1px solid red;
+}
+
+ul.photoSet > li.substitute-hide {
+    display: none;
+}
+
+ul.substitutionGroup li {
+    background-color: #eee;
+}
+
+ul.substitutionGroup.even li {
+    background-color: #ddd;
+}
+
+/*
+ * ratingGroup
+ */
+div.ratingGroup {
+    margin: 0 auto;
+    background: url('smileyGrp.png') no-repeat;
+    background-position-x: 70px; /* init to 0 stars */
+    width: 71px; /* width of 5 stars */
+    height: 15px;
+}
+
+div.ratingGroup.r0 {
+    background-position-x: -70px;
+}
+
+div.ratingGroup.r1 {
+    background-position: -56px 0;
+}
+
+div.ratingGroup.r2 {
+    background-position: -42px 0;
+}
+
+div.ratingGroup.r3 {
+    background-position: -28px 0;
+}
+
+div.ratingGroup.r4 {
+    background-position: -14px 0;
+}
+
+div.ratingGroup.r5 {
+    background-position: 0 0;
+}
+
+/*
+ * substitutionGroup drop
+ */
+ul.photoSet.yui-dd-drop-over > li {
+    background-color: #be2a3a;
+}
+
+ul.substitutionGroup.yui-dd-drop-over > li {
+    background-color: #be2a3a;
+}
+
+/*
+ * properties page
+ */
+div#photo-properties {
+    display: none;
+}
+
+div#photo-properties h1 {
+    padding: 2px;
+    background-color: #2647A0;
+    color: white;
+    font-weight: bold;
+    border-top: 1px solid white;
+}
+
+ul.properties {
+    list-style: none;
+}
+
+ul.properties span.name {
+    display: block;
+    float: left;
+    text-align: right;
+    margin: 0 8px 0 8px;
+    font-weight: bold;
+    width: 10em;
+}
+
+ul.properties > li {
+    overflow-x: auto;
+}
+
+ul.properties > li > span.value.rating div.ratingGroup {
+    margin-left: 11em;
+}
+
+/*
+ * filmstrip is 1 row of photos, horizontal scroll
+ */
+div.scroll-h {
+    overflow-x: scroll;
+    overflow-y: hidden;
+}
+
+div.scroll-v {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+div#pg-getting-started {
+    margin: 10% auto;
+    text-align: center;
+    width: 60%;
+}
+
+div#pg-getting-started > div {
+    color: white;
+    border: 3px solid lightgray;
+    text-align: left;
+}
+
+div#pg-getting-started > div > h1 {
+    background-color: #2647A0;
+    font-size: 140%;
+    font-weight: bold;
+    padding: 10px;
+}
+
+div#pg-getting-started > div > p {
+    padding: 16px 10px 0 10px;
+}
+
+div#timeline {
+    height: 150px;
+    margin: 20px;
+    border: 1px solid black;
+    border-top: none;
+}
+
+div.plot-point {
+    background-color: red;
+	border: none;
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    text-align: center;
+    z-index: 1;
+	cursor: pointer;
+}
+
+div.plot-point.r5 {
+    background-color: #FF9900;
+	top: 100px;
+}
+div.plot-point.r4 {
+    background-color: #FF0000;
+	top: 120px;
+}
+div.plot-point.r3 {
+    background-color: #33FF66;
+	top: 140px;
+}
+div.plot-point.r2 {
+    background-color: #6600CC;
+	color: white;
+	top: 160px;
+}
+div.plot-point.r1 {
+    background-color: #0000FF;
+	color: white;
+	top: 180px;
+}
+
+div.plot-point:hover {
+    z-index: 2;
+    background-color: yellow;
+	color: black;
+	border: 1px solid red;
+}
+
+div.plot-skipped {
+    background-color: lightgray;
+    position: absolute;
+    width: 14px;
+}

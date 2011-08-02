@@ -1,0 +1,352 @@
+/**
+ * 
+ * Copyright (c) 2009-2011, Snaphappi.com. All rights reserved.
+ * 
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the Affero GNU General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option) any
+ * later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the Affero GNU General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the Affero GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * 
+ * @author Michael Lin, info@snaphappi.com
+ * 
+ * Thumbnail - factory class makes a LI element which wraps an IMG and
+ * additional behaviors and includes many static functions
+ * 
+ */
+(function() {
+	if (!SNAPPI.Thumbnail) {
+
+		var Y = SNAPPI.Y;
+
+		/*
+		 * protected
+		 */
+		var _showSubstitutesCSS; // stylesheet for hiding substitutes
+		var _htmlTemplate = '<li><div class="thumb"><img></li>';
+		var _defaultCfg = {
+			className : 'thumbnail',
+			size : 'sq',
+			addClass : 'grid_2',
+			ID_PREFIX : '',
+			type : 'photo',
+			showLabel : false,
+			draggable : true,
+			queue : false, // ImageLoader queue
+			start : null,
+			end : null,
+			hideSubstituteCSS : false,
+			zoomBoxOverlay : null,
+
+			// old cfg props
+			deferLoad : false,
+			droppable : false,
+			hideRepeats : false,
+			hideSubstitutes : true, // same as hideRepeats?????
+			showSizeByRating : false
+		};
+
+		/*
+		 * Constructor
+		 */
+		var Thumbnail = function(audition, cfg) {
+			this.init(cfg);
+			if (audition)
+				this.create(audition);
+		};
+		
+		/*
+		 * static methods
+		 */
+		Thumbnail.hideSubstitutes = true;
+		Thumbnail.toggleHideSubstitutes = function(value) {
+			if (_showSubstitutesCSS === undefined) {
+				_showSubstitutesCSS = new Y.StyleSheet('hideSubstitutes');
+				_showSubstitutesCSS.disable();
+				_showSubstitutesCSS.set(
+						'ul.photo-roll > li.substitute-hide', {
+							display : 'block'
+						});
+				_showSubstitutesCSS.set(
+						'ul.photo-roll > li.substitute-show > img', {
+							border : '1px solid red'
+						});
+			}
+			Thumbnail.hideSubstitutes = value;
+			if (value) {
+				_showSubstitutesCSS.disable();
+			} else {
+				_showSubstitutesCSS.enable();
+
+			}
+			// make shots droppable when visible
+//			Thumbnail.makeSubstitutionGroupsDroppable(!value);
+		}
+		
+		/*
+		 * prototype
+		 */
+		Thumbnail.prototype = {
+			init : function(cfg) {
+				this._cfg = Y.merge(_defaultCfg, cfg);
+			},
+			create : function(audition) {
+				var node = Y.Node.create(_htmlTemplate);
+				node.addClass(this._cfg.className).addClass(
+						this._cfg.addClass).addClass(this._cfg.size);
+
+				// set id
+				var id = audition.id;
+				if (this._cfg.ID_PREFIX)
+					id = this._cfg.ID_PREFIX + id;
+				node.set('id', id);
+
+				var src, linkTo, title;
+				switch (this._cfg.type) {
+				case 'photo':
+					SNAPPI.Auditions.bind(node, audition);
+					src = audition.getImgSrcBySize(audition.urlbase
+							+ audition.src, this._cfg.size);
+					linkTo = '/photos/home/' + audition.id;
+					// add ?ccid&shotType in photoroll.listenClick()
+					title = audition.label;
+					break;
+				case 'person':
+				case 'group':
+					break;
+				}
+
+				var img = node.one('img');
+				if (this._cfg.queue && SNAPPI.imageloader.QUEUE_IMAGES) {
+					img.qSrc = src;
+					// SNAPPI.util3.ImageLoader.queueOneImg(img); // defer,
+					// queue by selector
+				} else {
+					img.set('src', src);
+				}
+				img.setAttribute('linkTo', linkTo).set('title', title).set(
+						'alt', title);
+				if (this._cfg.draggable)
+					img.addClass('drag');
+
+				if (this._cfg.showLabel) {
+					var n = node.create('<div class="thumb-label">' + this
+							.trimLabel(title) + '</div>');
+					node.append(n);
+				}
+				this.node = node;
+				this.img = img;
+				node.Thumbnail = this;
+				return node;
+			},
+			/**
+			 * reuse Thumbnail DOM, reset to new audition TODO: XHR paging is
+			 * NOT reusing Thumbnails
+			 * 
+			 * @param audition
+			 * @param node
+			 * @return
+			 */
+			reuse : function(audition, node) {
+				node = node || this.node;
+				node.set('className', '').addClass(this._cfg.className)
+						.addClass(this._cfg.addClass || this._cfg.size);
+
+				// set id
+				var id = audition.id;
+				if (this._cfg.ID_PREFIX)
+					id = this._cfg.ID_PREFIX + id;
+				node.set('id', id);
+
+				var src, linkTo, title;
+				switch (this._cfg.type) {
+				case 'photo':
+					SNAPPI.Auditions.bind(node, audition);
+					src = audition.getImgSrcBySize(audition.urlbase
+							+ audition.src, this._cfg.size);
+					linkTo = '/photos/home/' + audition.id;
+					// add ?ccid&shotType in photoroll.listenClick()
+					title = audition.label;
+					break;
+				case 'person':
+				case 'group':
+					break;
+				}
+
+				var img = this.img;
+				img.set('src', src).setAttribute('linkTo', linkTo).set('title',
+						title).set('alt', title);
+				if (this._cfg.draggable)
+					img.addClass('drag');
+
+				if (this._cfg.showLabel) {
+					var n = node.create('<div class="thumb-label">' + this
+							.trimLabel(title) + '</div>');
+					node.append(n);
+				}
+
+				if (node.Rating) {
+					node.Rating.id = audition.id;
+					node.Rating.node.setAttribute('uuid', audition.id).set(
+							'id', audition.id + '_ratingGrp');
+					node.Rating.render(audition.rating);
+				}
+				return node;
+			},
+			setData : function(dataElement) {
+				// replace dataElement for existing Thumbnail
+				// not yet implemented
+			},
+
+			/*******************************************************************
+			 * additional Thumbnail behaviors
+			 */
+			getFocus : function() {
+				this.img.replaceClass('blur', 'focus');
+			},
+			loseFocus : function() {
+				this.img.replaceClass('focus', 'blur');
+			},
+			/**
+			 * setRating()
+			 * @param v	int value
+			 * @param silent if TRUE, just render value, do not update the DB or bindTo
+			 */
+			setRating : function(v, silent) {
+				if (silent) {
+					if (this._cfg.showSizeByRating) {
+						var oldvalue = this.Rating.value;
+						this.img.replaceClass('rating' + oldvalue, 'rating' + v);
+					}
+					this.Rating.render(v);
+				} else
+					this.Rating.onClick(v);
+			},	
+			setSubGroupHide: function (hide) {
+				if (hide === false || hide=='show') {
+					this.node.replaceClass('substitute-hide', 'substitute-show');
+				} else {
+					this.node.replaceClass('substitute-show', 'substitute-hide');
+				}
+			},
+			/*******************************************************************
+			 * legacy methods
+			 */
+			makeSubstitutionGroupsDroppable : function(value) {
+				Y.all('#content  > ul.photo-roll').each(function(ul) {
+					if (value) {
+						SNAPPI.DragDrop.pluginDrop(ul);
+					} else {
+						/*
+						 * this is a bug. ul is a node, but it isn't the node
+						 * with the dd property until after this forced
+						 * conversion
+						 */
+						ul.dom().node.unplug('drop'); // have to
+						// lookup the
+						// _plugin
+						// property
+					}
+				});
+			},
+			// TODO: addToSubGroup needs to be updated to use latest SNAPPI.SubstitutionGroup
+			addToSubGroup : function(subGroup, nodeList) {
+				subGroup.dom().subGr.move(nodeList);
+				return;
+			},
+			// TODO: removeFromSubGroup needs to be updated to use latest SNAPPI.SubstitutionGroup			
+			removeFromSubGroup : function(dropTarget, nodeList) {
+				nodeList.each(function(n) {
+					var subGroup = n.ancestor('ul.substitutionGroup');
+					subGroup.dom().subGr.remove(nodeList);
+				});
+				return;
+			},
+			setRating : function(i, silent) {
+				silent = silent || false;
+				if (silent) {
+					if (Thumbnail.showSizeByRating) {
+						var oldvalue = this.Rating.value;
+						this.img
+								.replaceClass('rating' + oldvalue, 'rating' + i);
+					}
+					this.node.Rating.render(i);
+				} else
+					this.node.Rating.onClick(i, silent);
+			},
+			setRatingDbValue : function(value) {
+				var t = Y.one(this).ancestor('.thumb-wrapper');
+				t.dom().data.set( {
+					rating : value
+				});
+			},
+			setTagDbValue : function(value) {
+				var LI;
+				if (this.data && this.data.tags !== undefined) {
+					LI = this;
+				} else {
+					LI = Y.one(this).ancestor('.thumb-wrapper');
+				}
+				if (LI) {
+					var aTags, curTags = LI.data.tags;
+					if (curTags) {
+						aTags = curTags.split(';');
+						for ( var i = 0; i < aTags.length; i++) {
+							if (aTags[i] == value) {
+								return;
+							}
+
+							if (aTags[i] == '') {
+								aTags.splice(i, 1);
+							}
+						}
+					} else {
+						aTags = [];
+					}
+					aTags.push(value.trim());
+					var strTags = aTags.join(';');
+					LI.data.set( {
+						tags : strTags + ';'
+					});
+				}
+			},
+			_styleSubstituteGroup : function() {
+				if (this.data.substitutes) {
+					var subGr = this.parentNode.subGr;
+					if (subGr) {
+						subGr.findBest();
+						SNAPPI.SubstitutionGroup.styleElements(subGr);
+					} else {
+						var subGrData = this.data.substitutes;
+						subGrData.findBest();
+						SNAPPI.SubstitutionGroup.styleElements(subGrData);
+					}
+
+				}
+			},
+			syncChanges : function(bindTo, change) {
+				if (change.rating !== undefined) {
+					this.setRating(bindTo.rating, 'silent');
+					var s = SNAPPI.Stack.getStackFromChild(this.dom());
+					if (s._dataElementSH.defaultSortCfg[0].property == 'rating') {
+						// if sort by Rating, do we resort??
+					}
+					this._styleSubstituteGroup(); // mark best after rating
+				}
+				if (change.substitutes !== undefined) {
+					this.data.substitutes = change.substitutes;
+				}
+			}
+
+		};
+	}
+	SNAPPI.Thumbnail = Thumbnail;
+})();

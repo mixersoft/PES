@@ -1,0 +1,82 @@
+﻿-- test: if group is private, can we still see the shared photo?
+	SELECT SQL_CALC_FOUND_ROWS `Asset`.*, `AssetPermission`.*
+  FROM `assets` AS `Asset`
+  INNER JOIN assets_groups AS `HABTM` ON (`HABTM`.`asset_id` = `Asset`.`id` AND `HABTM`.`group_id`='member---0123-4567-89ab-000000000003')
+  INNER JOIN permissions AS `AssetPermission` ON (`AssetPermission`.`model` = 'Asset' AND `AssetPermission`.`foreignId` = `Asset`.`id` AND ((`AssetPermission`.`perms` & 512 <> 0) OR (((`AssetPermission`.`perms` & 64 <> 0) AND (`AssetPermission`.`foreignId` IN (SELECT DISTINCT `_ag`.`asset_id` FROM `assets_groups` AS `_ag` WHERE `_ag`.`group_id` IN ('member---0123-4567-89ab-000000000002','member---0123-4567-89ab-000000000003','member---0123-4567-89ab-000000000004'))))) OR (((`AssetPermission`.`perms` & 8 <> 0) AND (`AssetPermission`.`gid` IN ('member---0123-4567-89ab-000000000002', 'member---0123-4567-89ab-000000000003', 'member---0123-4567-89ab-000000000004')))) OR (((`AssetPermission`.`perms` & 1 <> 0) AND (`AssetPermission`.`oid` = '12345678-1111-0000-0000-sardinia----')))))
+  WHERE `Asset`.`owner_id`='12345678-1111-0000-0000-venice------' ORDER BY `Asset`.`dateTaken` ASC LIMIT 16;
+
+-- Europe Group permissions
+SELECT p.perms, p.* FROM permissions p where foreignid like 'member%';
+SELECT p.perms, p.* FROM permissions p where model='Asset' and perms > 223 limit 50;
+update permissions set perms = 79 where model='Asset';
+
+
+-- public listing of group, but members only listing of Assets, '12345678-1111-0000-0000-newyork-----' <> member
+@testuser='12345678-1111-0000-0000-venice------';
+@testgids='member---0123-4567-89ab-000000000003';
+@testuser='12345678-1111-0000-0000-newyork-----';
+SELECT SQL_CALC_FOUND_ROWS `Asset`.*, `AssetPermission`.* FROM `assets` AS `Asset`
+INNER JOIN permissions AS `AssetPermission` ON (`AssetPermission`.`model` = 'Asset' AND `AssetPermission`.`foreignId` = `Asset`.`id` AND ((`AssetPermission`.`perms` & 512 <> 0)
+OR (((`AssetPermission`.`perms` & 64 <> 0) AND (`AssetPermission`.`foreignId` IN (SELECT DISTINCT `_ag`.`asset_id` FROM `assets_groups` AS `_ag` WHERE `_ag`.`group_id` IN ('member---0123-4567-89ab-000000000003')))))
+-- OR (((`AssetPermission`.`perms` & 8 <> 0) AND (`AssetPermission`.`gid` = ('member---0123-4567-89ab-000000000003')))) -- for assets, gid==role User
+OR (((`AssetPermission`.`perms` & 1 <> 0) AND (`AssetPermission`.`oid` = '12345678-1111-0000-0000-newyork-----')))))
+  WHERE `Asset`.`owner_id`='12345678-1111-0000-0000-sardinia----'
+  ORDER BY `Asset`.`dateTaken` ASC LIMIT 160;
+
+-- asset visibility with groupIds NOT A MEMBER
+SELECT SQL_CALC_FOUND_ROWS `Asset`.*, `AssetPermission`.* FROM `assets` AS `Asset`
+INNER JOIN assets_groups AS `HABTM` ON (`HABTM`.`asset_id` = `Asset`.`id`) INNER JOIN permissions AS `AssetPermission` ON (`AssetPermission`.`model` = 'Asset' AND `AssetPermission`.`foreignId` = `Asset`.`id` AND (
+0
+OR (`AssetPermission`.`perms` & 512 <> 0)
+ OR (((`AssetPermission`.`perms` & 64 <> 0) AND (`AssetPermission`.`foreignId` IN (SELECT DISTINCT `_ag`.`asset_id` FROM `assets_groups` AS `_ag` WHERE `_ag`.`group_id` IN ('none')))))
+-- OR (((`AssetPermission`.`perms` & 8 <> 0) AND (`AssetPermission`.`gid` = ('none'))))
+ OR (((`AssetPermission`.`perms` & 1 <> 0) AND (`AssetPermission`.`oid` = '12345678-1111-0000-0000-newyork-----')))
+))
+WHERE `HABTM`.`group_id`='member---0123-4567-89ab-000000000003'
+ORDER BY `Asset`.`dateTaken` ASC LIMIT 160;
+
+
+
+-- group visibility,
+-- Group is public (519),
+-- but NY is not a member, cannot see Assets. enforce by lving GroupId OUT OF P::groupIds
+SELECT `Group`.*, `GroupPermission`.*, `Owner`.*, `Group`.`id`
+FROM `groups` AS `Group`
+INNER JOIN permissions AS `GroupPermission` ON (`GroupPermission`.`model` = 'Group' AND `GroupPermission`.`foreignId` = `Group`.`id` AND (
+(`GroupPermission`.`perms` & 512 <> 0) -- group is public
+OR (((`GroupPermission`.`perms` & 64 <> 0) AND (`GroupPermission`.`foreignId` = ('member---0123-4567-89ab-000000000003')))) -- use for members access to Assets, include in P::groupIds
+OR (((`GroupPermission`.`perms` & 8 <> 0) AND (`GroupPermission`.`gid` = ('admin_member---0123-4567-89ab-000000000003')))) -- use for admin? these are identitcal, unless we set gid=admin gid
+OR (((`GroupPermission`.`perms` & 1 <> 0) AND (`GroupPermission`.`oid` = '12345678-1111-0000-0000-newyork-----'))))) -- group is owners
+LEFT JOIN `users` AS `Owner` ON (`Group`.`owner_id` = `Owner`.`id`)
+WHERE `Group`.`id` = 'member---0123-4567-89ab-000000000003' LIMIT 1;
+
+-- set groupIds with perms = 583, public listing, include groupIds for members content, NY is NOT a member, by groupIds, cannot see photos
+SELECT `Membership`.`id`, `GroupsUser`.`user_id`, `GroupsUser`.`role`, `GroupsUser`.`isActive` FROM `groups` AS `Membership`
+JOIN `groups_users` AS `GroupsUser` ON (`GroupsUser`.`group_id` = `Membership`.`id` AND `GroupsUser`.`user_id` = '12345678-1111-0000-0000-newyork-----' AND `GroupsUser`.`isActive`=1 )
+INNER JOIN permissions AS `GroupPermission` ON (`GroupPermission`.`model` = 'Group' AND `GroupPermission`.`foreignId` = `Membership`.`id` AND ( 1=0
+/* OR (`GroupPermission`.`perms` & 512 <> 0) -- NOTE: only include in groupIds if user is a member or owner */
+OR (((`GroupPermission`.`perms` & 64 <> 0) AND (`GroupPermission`.`foreignId` = `GroupsUser`.`group_id` )))
+OR (((`GroupPermission`.`perms` & 8 <> 0) AND (`GroupPermission`.`gid` IN ('12345678-1111-0000-0000-newyork-----'))))
+OR (((`GroupPermission`.`perms` & 1 <> 0) AND (`GroupPermission`.`oid` = '12345678-1111-0000-0000-newyork-----'))) ) )
+WHERE `Membership`.`isSystem` = 0;
+
+-- set groupIds with perms = 583, public listing, include groupIds for members content, venice is a member by groupIds, can see photos
+-- set groupIds with perms = 519, public listing, exclude groupIds, NY is NOT a member, cannot see photos, unless asset perms = +world read
+-- set groupIds with perms = 519, public listing, exclude groupIds, Venice is NOT a member, cannot see photos, unless  owner, or asset perms = +world read
+SELECT SQL_CALC_FOUND_ROWS `Asset`.*, `AssetPermission`.*
+FROM `assets` AS `Asset`
+INNER JOIN assets_groups AS `HABTM` ON (`HABTM`.`asset_id` = `Asset`.`id`)
+INNER JOIN permissions AS `AssetPermission` ON (`AssetPermission`.`model` = 'Asset' AND `AssetPermission`.`foreignId` = `Asset`.`id` AND (
+1=0
+-- OR (`AssetPermission`.`perms` & 512 <> 0)
+-- OR (((`AssetPermission`.`perms` & 64 <> 0) AND (`AssetPermission`.`foreignId` IN (SELECT DISTINCT `_ag`.`asset_id` FROM `assets_groups` AS `_ag` WHERE `_ag`.`group_id` IN ('none')))))
+ OR (((`AssetPermission`.`perms` & 8 <> 0) AND (`AssetPermission`.`gid` = ('none'))))
+ OR (((`AssetPermission`.`perms` & 1 <> 0) AND (`AssetPermission`.`oid` = '12345678-1111-0000-0000-venice------')))
+))
+WHERE `HABTM`.`group_id`='member---0123-4567-89ab-000000000003'
+ORDER BY `Asset`.`dateTaken` ASC LIMIT 64;
+
+
+
+SELECT * FROM groups_users g;
+
