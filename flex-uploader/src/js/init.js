@@ -62,8 +62,8 @@ _domready1 = function(Y) {
     
 	// add all photos to uploadQueue
 //	Helpers.addToUploader(uploader, '');
-	var host = SNAPPI.AIR.host=='dev2.snaphappi.com' ? 'remote' : 'local' ;
-	Helpers.DEV_setRuntimeHost(uploader, host);		// local or remote
+	// var host = SNAPPI.AIR.host=='dev2.snaphappi.com' ? 'remote' : 'local' ;
+	Helpers.DEV_setRuntimeHost(uploader);		// local or remote
 	
 	
 	// show upload queue
@@ -91,7 +91,7 @@ _domready2 = function(Y) {
 			var n = SNAPPI.Y.one(el);
 			var state = n.get('innerHTML');
 			if (state == 'Pause') {
-				n.set('innerHTML', 'Start');
+				n.set('innerHTML', 'Resume Upload');
 				SNAPPI.AIR.uploadQueue.action_pause();
 			} else {
 				n.set('innerHTML', 'Pause');

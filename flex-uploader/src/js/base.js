@@ -36,7 +36,7 @@
 		}
 		return o;
 	};
-	namespace('SNAPPI');
+	namespace('SNAPPI.AIR');
 	SNAPPI.namespace = namespace;
 	
 	/*
@@ -57,24 +57,20 @@
 			},			
 			end: null
 		}	
-	
-	
-	SNAPPI.namespace('SNAPPI.AIR');
-	SNAPPI.id = "SNAPPI Desktop Uploader",
-	SNAPPI.AIR = SNAPPI.AIR || {};
-	SNAPPI.isAIR = true;
-	// set baseurl immediately
+
 	try {
-		var href = document.getElementsByTagName('base')[0].getAttribute('href');
-		SNAPPI.AIR.host =  href.split('/')[2];
-//		console.log("SNAPPI.AIR.host=="+SNAPPI.AIR.host);
+		SNAPPI.id = "SNAPPI Desktop Uploader";
+		// host attribute set in flex on init
+		var base = document.getElementsByTagName('base')[0];
+		SNAPPI.AIR.host = base.getAttribute('host');
+		SNAPPI.AIR.debug = base.getAttribute('debug')=='true';
+		SNAPPI.isAIR = true;	// deprecate
 	} catch (e) {
 		alert("baseurl is not set");
-		SNAPPI.AIR.host = 'git:88';
-//		SNAPPI.AIR.host = 'dev2.snaphappi.com';		
-	}
+		SNAPPI.AIR.host = 'git3:88';
+	}	
 	
-
+	
 	/*
 	 * helper functions, debug for firebug lite
 	 */
@@ -433,8 +429,8 @@
     			
     			
     			SNAPPI.Y = Y;
-    			LOG(" ***********   SNAPPI.Y = " + SNAPPI.Y.version);
-    			LOG(SNAPPI);
+    			LOG(" *********** base.js:  SNAPPI.Y = " + SNAPPI.Y.version);
+    			LOG(SNAPPI.AIR);
     			try {
     				SNAPPI.AIR.Helpers.add_snappiHoverEvent(Y);
     			} catch (e) {}
@@ -460,16 +456,12 @@
     			Y.on('domready', function(){
     				flex_onYuiDomReady();
     				LOG(">>>>>>>>>>>>>>>>>>>>>>>>  YUI/domready BEGIN <<<<<<<<<<<<<");
-    				
-    				
     				_domready1(Y);
     				_domready2(Y);
     				LOG(">>>>>>>>>>>>>>>>>>>>>>>>  YUI/domready COMPLETE <<<<<<<<<<<<<");
     			});
     		}
     );
-    
-    
 	LOG("load complete: base.js");	
 })();
 

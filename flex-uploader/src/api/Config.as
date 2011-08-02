@@ -12,6 +12,8 @@ package api
 		public static var Uploader:Object = FlexGlobals.topLevelApplication;
 		public static var sql:SqlHandler;
 		public static var logger:Logger = null;
+		public static var DEBUG:Boolean = false;
+		public static var HOST:String;
 		
 		// flex API, exposed to javascript
 		public static var UI:UploaderUI;

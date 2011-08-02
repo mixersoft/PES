@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<flexProperties enableServiceManager="false" flexServerFeatures="0" flexServerType="16" serverContextRoot="" serverRoot="W:/www-git/flex-uploader" serverRootURL="http://git:88/air/flex-uploader/" toolCompile="true" useServerFlexSDK="false" version="2"/>
+<flexProperties enableServiceManager="false" flexServerFeatures="0" flexServerType="16" serverContextRoot="" serverRoot="W:/www-git.3/flex-uploader" serverRootURL="http://git3:88/air/flex-uploader" toolCompile="true" useServerFlexSDK="false" version="2"/>

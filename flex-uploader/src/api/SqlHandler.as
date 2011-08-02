@@ -18,12 +18,14 @@ package api
 			}
 		}
 		public function cloneDb(sourceDb:File, replace:Boolean = false):Boolean {
+			if (this.db.exists && replace == false) return true;
 			try{
 				sourceDb.copyTo(this.db, replace);
 				// copyTo creates any required parent directories
 				return true;
 			}catch(e:Error){
-				Config.logger.writeLog("Error",e.message + '-' + e.errorID + '-SqlHandler::cloneDb'); 
+				if (replace === false) return true;
+				else Config.logger.writeLog("Error",e.message + '-' + e.errorID + '-SqlHandler::cloneDb'); 
 			}
 			return false;
 		}

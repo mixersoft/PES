@@ -283,8 +283,8 @@ class UsersPluginController extends AppController {
 			if ($user !== false) {
 				$this->set('user', $user);
 				$this->_sendVerificationEmail($user[$this->modelClass]['email'], $user);
-				$this->Session->setFlash(__d('users', 'Your account has been created. You should receive an e-mail shortly to authenticate your account. Once validated you will be able to login.', true));
-				$this->redirect(array('action'=> 'login'));
+				$this->Session->setFlash(__d('users', 'Your account has been created. You should receive an e-mail shortly to activate your account. <BR />In the meantime, why not get a jump on things by downloading the Snaphappi Desktop Uploader? ', true));
+				$this->redirect(array('controller'=>'pages','action'=> 'download'));
 			} else {
 				unset($this->data[$this->modelClass]['password']);
 				unset($this->data[$this->modelClass]['temppassword']);

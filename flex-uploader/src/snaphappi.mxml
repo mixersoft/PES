@@ -46,6 +46,9 @@
 			public var Datasource:UploaderDatasource;
 			
 			private function init():void{
+				var MODE:String = 'prod';	// dev2.snaphappi.com
+//				MODE = 'dev';				// git.3:88
+				
 				/*
 				* 	Set Config globals
 				*/
@@ -62,11 +65,6 @@
 				* end Config constants
 				*/
 
-//				Config.sql = Config.sql;	// deprecate
-//
-////				Config.sql = new SqlHandler('app:/db/','snaphappi.db3');
-//				Config.Datasource.loadConfig(); //set init configs
-				
 				// init API bridge, expose javascript to flex
 				Config.jsGlobal = domParent.domWindow;
 				domParent.domWindow.htmlctrl = this;	// deprecate
@@ -74,33 +72,95 @@
 				domParent.domWindow.flexAPI_UI = Config.UI;
 				domParent.domWindow.flexAPI_Datasource = Config.Datasource;	
 				domParent.domWindow.flex_onYuiDomReady = onYuiDomReady;
+				// create javascript namespace as early as possible
 				
 				domParent.addEventListener("complete", onYuiDomReadyComplete);
 				
 				// bootstrap html and logs
 				var domBootstrap:File, logFolder:File, DEBUG:Boolean;
-				try {
-					// Debug mode
-					var devSrc:File = new File('W:\\www-git');
-					if (devSrc.exists && devSrc.isDirectory) {
-						DEBUG = true;
+				// Debug mode
+				var devSrc:File = new File('W:\\www-git');
+				logFolder = File.applicationStorageDirectory.resolvePath("logs");
+				if (devSrc.exists && devSrc.isDirectory) {
+					Config.DEBUG = true;
+					if (File.applicationDirectory.nativePath.search('Program Files') == -1 ) {
 						// use code from flex-uploader/src, NOT flex-uploader/bin-debug
-						domBootstrap = new File(File.applicationDirectory.nativePath.slice(0,-9) + "src\\m.htm");
 						logFolder = new File(File.applicationDirectory.nativePath.slice(0,-9) + "src\\logs");
-					} else throw new Error();
-				} catch(e:Error) {
-					domBootstrap = File.applicationDirectory.resolvePath("m.htm");
-					logFolder = File.applicationStorageDirectory.resolvePath("logs");
+					}
 				}
-				domParent.location = Misc.normalizeFilePath(domBootstrap.nativePath);
+				bootstrap_html(domParent, MODE);
+
 				Config.logger = new api.Logger(logFolder);
-				Config.sql = this.checkDbAndCopy(DEBUG);
+				Config.sql = this.checkDbAndCopy();
 				Config.Datasource.loadConfig(); //set init configs
 				nativeWindow.addEventListener(NativeWindowBoundsEvent.MOVE, Config.UI.onMove);
 				
 				// MagickUtils.testConvert();
 			}	
 			
+			private function bootstrap_html(domParent:HTML, location:String = 'prod'):void {
+				switch (location) {
+					case 'prod':
+						Config.HOST = "dev2.snaphappi.com";
+						break;
+					case 'dev':
+					default:						
+						var devSrc:File = new File('W:\\www-git.3');
+						if (devSrc.exists && devSrc.isDirectory) {
+							Config.HOST = "git3:88";
+						} else Config.HOST = "git:88";
+						break;
+				}
+				var request:URLRequest = new URLRequest("http://"+Config.HOST+"/app/air/js/bootstrap.html");
+				var loader:URLLoader = new URLLoader();
+				var onload:Function = function(event:Event):void{
+					// save to File.applicationStorageDirectory.
+					var loader2:URLLoader = URLLoader(event.target);
+					var html:String = loader2.data;
+					// <base href='' host='' debug='' />
+					html = html.replace(':BASE-ATTRIBUTES:', " href='http://"+Config.HOST+"/' host='"+Config.HOST+"' debug='"+Config.DEBUG+"' ");
+					var boostrap:File = File.applicationStorageDirectory.resolvePath('boostrap.html');
+					var fileStream:FileStream = new FileStream();
+					fileStream.open(boostrap, FileMode.WRITE);
+					fileStream.writeUTFBytes(html);
+					fileStream.close();
+					// load as window.location
+					domParent.location = Misc.normalizeFilePath(boostrap.nativePath);
+				}				
+				loader.addEventListener(Event.COMPLETE, onload);
+				try
+				{
+					loader.load(request);
+				} 
+				catch (error:Error)
+				{
+					trace("Unable to load URL: " + error);
+				}
+			}
+			
+			private function checkDbAndCopy():SqlHandler{
+				var blankDb:File = File.applicationDirectory.resolvePath('db/snaphappi-install.db3');
+				var sql:SqlHandler, debugRoot:File, replace:Boolean = false;
+				if(blankDb.exists){
+					if (Config.DEBUG){
+						debugRoot = null;
+						if (File.applicationDirectory.nativePath.search('Program Files') == -1 
+								&& File.applicationDirectory.nativePath.search('bin-debug')>0 ) {
+							// we do have privileges for app:, use applicationDirectory
+							debugRoot = new File(File.applicationDirectory.nativePath.slice(0,-9) + 'src\\db');
+						}
+						sql = new SqlHandler('snaphappi-DEBUG.db3', debugRoot);
+					}
+					else {
+						sql = new SqlHandler();
+					}
+					sql.cloneDb(blankDb, replace);
+					return sql;
+				}else{
+					Alert.show("Error: missing db configuration file. Please re-install the application");
+				}		
+				return null;
+			}			
 			/**
 			 * seems to fire AFTER YUI/domready complete
 			 */
@@ -114,9 +174,9 @@
 			
 			// called from javascript
 			public function onYuiDomReady():void{
+				Config.jsGlobal.firebugLog("***********      onYuiDomReady      ******************");
 				Config.jsUploadQueue = Config.jsGlobal.SNAPPI.AIR.UploadQueue;
 				Config.SNAPPI = Config.jsGlobal.SNAPPI;	// deprecate
-				
 				// set dropTarget to proxy
 				try {
 					var selector:String = Config.jsUploadQueue.getDropTargetId();
@@ -126,7 +186,8 @@
 				Config.UI.setDropTarget(selector);
 				// start dragdrop listener
 				Config.UI.nativeDDAllowed(true);
-
+				
+		Config.jsGlobal.firebugLog("Before getDbFile()");
 				// DEV show db file
 				var dbFile:File = File.applicationDirectory.resolvePath(Config.sql.getDbFile());
 				Config.jsGlobal.firebugLog('>>>>>>>>>> using DB File=' + dbFile.nativePath );
@@ -136,36 +197,10 @@
 				var ns:Namespace = appXml.namespace();
 				Config.jsGlobal.firebugLog("Version: " + appXml.ns::versionNumber);
 				Config.jsGlobal.firebugLog(NativeApplication.nativeApplication.publisherID);
-				Config.jsGlobal.firebugLog(appXml);
+//				Config.jsGlobal.firebugLog(appXml);
 			}
 			
 
-			private function checkDbAndCopy(DEBUG:Boolean = false):SqlHandler{
-				var blankDb:File = File.applicationDirectory.resolvePath('db/snaphappi-install.db3');
-				var sql:SqlHandler, debugRoot:File;
-				if(blankDb.exists){
-					if (DEBUG){
-						if (File.applicationDirectory.nativePath.search('bin-debug')>0 ) {
-//							debugRoot = new File(domBootstrap.nativePath.slice(0,-10) + '\\src\\db');	
-							debugRoot = new File(File.applicationDirectory.nativePath.slice(0,-9) + 'src\\db');
-						} else if (File.applicationDirectory.nativePath.search('Program Files')>0 ) {
-							// do not have administrator privileges, use applicationStorageDirectory
-							debugRoot = File.applicationStorageDirectory.resolvePath('db');
-						} else {
-							debugRoot = File.applicationDirectory.resolvePath('db');
-						}
-						sql = new SqlHandler('snaphappi-DEBUG.db3', debugRoot);
-					}
-					else {
-						sql = new SqlHandler();
-					}
-					sql.cloneDb(blankDb);
-					return sql;
-				}else{
-					Alert.show("Error: missing db configuration file. Please re-install the application");
-				}		
-				return null;
-			}
 			
 			
 			

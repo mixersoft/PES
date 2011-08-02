@@ -5,7 +5,7 @@
         <link href="/img/favicon.ico" type="image/x-icon" rel="icon">
 		<link href="/img/favicon.ico" type="image/x-icon" rel="shortcut icon">
         <title>Snaphappi Gallery - Desktop Edition</title>
-		<base href="http://dev2.snaphappi.com/" />
+		<base :BASE-ATTRIBUTES: />
 		<!-- Combo-handled YUI 3 CORE + Loader JS files: -->
 		<script type="text/javascript" src="https://getfirebug.com/firebug-lite.js#startOpened=false"></script>
 		<script type="text/javascript" src="http://yui.yahooapis.com/combo?3.3.0/build/yui/yui-min.js"></script>
@@ -19,7 +19,7 @@
 		
 	<div id="container">
 		<div id="header">
-			<div id="logo" title="snaphappi" onclick='window.location.href="/photos/all";'></div>
+			<div id="logo" title="snaphappi"></div>
 		</div>
 		<div id="content">
 			<div id="top">
@@ -27,13 +27,13 @@
 					<ul class='inline'>
 						<li><b>Welcome </b><a id='displayName' href="#"></a></li>
 						<li><a href="#" onclick="return false;">Help</a></li>
-						<li><a href="#" onclick="SNAPPI.Y.all('#login').removeClass('hide');return false;">Sign in</a></li>
+						<li><a href="#" onclick="SNAPPI.AIR.Helpers.show_login(); return false;">Sign in</a></li>
 					</ul>
 				</div>
 			</div>
 			<div class="one-col">
 				<div id='login' class='hide'>
-				<h2 onclick="SNAPPI.Y.all('#login').toggleClass('hide');return false;">Sign-in to Snaphappi</h2>
+				<h2>Sign-in to Snaphappi</h2>
 				<div class="block">
 					<form id="UserLoginForm" method="post" action="" onsubmit="return false;" accept-charset="utf-8">
 						<div style="display: none;"><input name="_method" value="POST" type="hidden"></div><div class="input text required"><label for="UserUsername">Username</label>
@@ -41,7 +41,7 @@
 						<div class="input password"><label for="UserPassword">Password</label>
 						<input class='postData' name="data[User][password]" id="UserPassword" type="password"></div><div class="submit">
 						<input value="Login" type="submit" onclick="SNAPPI.AIR.XhrHelper.login();return false;"></div>
-						<select class='postData' name="data[User][magic]" id="UserMagic">
+						<select class='postData hide' name="data[User][magic]" id="UserMagic">
 							<option value="" selected="selected">select test accounts</option>
 							<option class='hr' value=""></option>
 							<option value="4c5f9050-d8bc-4baa-ad2d-03b0f67883f5">2010</option>
@@ -55,8 +55,7 @@
 						</select>
 					</form>
 				</div>
-				<div class="block right">
-				</div>
+				<div class="block right"></div>
 				</div>
 			</div>
 			<div class="one-col">
@@ -90,7 +89,7 @@
     		</div>
     		<div id="toolbar">
     			<div class="btns">
-	    			<a id='start-btn' href="#" onclick="PAGE.toggle_upload(this);return false;">Start</a>
+	    			<a id='start-btn' href="#" onclick="PAGE.toggle_upload(this);return false;">Start Upload</a>
 	    			<a href="#" onclick="SNAPPI.AIR.uploadQueue.action_retry();return false;">Retry</a>
     				<a href="#" id="btnCancel" onclick="SNAPPI.AIR.uploadQueue.action_clear();return false;">Clear</a>
     			</div>
@@ -105,7 +104,7 @@
 	</div>
 		</div>					
 		<div id="footer">
-			<span style="font-size: 0.8em; vertical-align: text-top;">© 2008-2010 Snaphappi</span>
+			<span style="font-size: 0.8em; vertical-align: text-top;">© 2008-2011 Snaphappi</span>
 			<a href="http://www.cakephp.org/" target="_blank"><img src="/img/cake.power.gif" alt="CakePHP: the rapid development php framework" border="0"></a>		
 			</div>
 </div>	

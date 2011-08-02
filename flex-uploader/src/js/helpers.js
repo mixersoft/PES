@@ -110,26 +110,28 @@ console.log("load BEGIN: helpers.js");
 	}
 	
 	Helpers.DEV_setRuntimeHost = function(uploader, host) {
-		host = host || 'local';
-		
-	    /*
-	     * set upload server
-	     */
-		switch (host) {
-		case 'remote':
-			// upload REMOTE
-			SNAPPI.AIR.host = "dev2.snaphappi.com";
-	        // firefox dev2.snaphappi.com uuid
-			break;
-		case 'local':
-		default:
-			var Y = SNAPPI.Y;
-			var baseurl = Y.one('base').getAttribute('href');
-			baseurl = baseurl.split('/');
-			SNAPPI.AIR.host = baseurl[2];
-			// git:88 firefox
-			break;
+		if (!SNAPPI.AIR.host) {
+			alert("helpers.js: SNAPPI.AIR.host is not set");
+			// should already be set in flex & base.js
+			// // deprecate
+			// host = host || 'local';
+		    // /*
+		     // * set upload server
+		     // */
+			// switch (host) {
+			// case 'remote':
+				// // upload REMOTE
+				// SNAPPI.AIR.host = "dev2.snaphappi.com";
+		        // // firefox dev2.snaphappi.com uuid
+				// break;
+			// case 'local':
+			// default:
+				// var Y = SNAPPI.Y;
+				// SNAPPI.AIR.host =  Y.one('base').getAttribute('host');
+				// break;
+			// }			
 		}
+
 	    var uploadHost = {
 	    		local: "http://"+SNAPPI.AIR.host+"/my/upload",
 	    		remote: "http://dev2.snaphappi.com/my/upload",
@@ -259,6 +261,13 @@ console.log("load BEGIN: helpers.js");
             uploader.show("reload");
         }, datasource, false);
         return added;
+    }
+    Helpers.show_login = function() {
+    	var Y = SNAPPI.Y;
+    	Y.one('#login').removeClass('hide');
+    	if (SNAPPI.AIR.debug && Y.one('#login select.postData')) {
+    		Y.one('#login select.postData').removeClass('hide');
+    	}
     }
 	
 	SNAPPI.AIR.Helpers = Helpers;
