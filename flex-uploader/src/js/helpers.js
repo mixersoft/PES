@@ -112,10 +112,6 @@ console.log("load BEGIN: helpers.js");
 	Helpers.DEV_setRuntimeHost = function(uploader, host) {
 		host = host || 'local';
 		
-	    var uploadHost = {
-	    		local: "http://"+SNAPPI.AIR.host+"/my/upload",
-	    		remote: "http://dev2.snaphappi.com/my/upload",
-	    };		
 	    /*
 	     * set upload server
 	     */
@@ -127,11 +123,17 @@ console.log("load BEGIN: helpers.js");
 			break;
 		case 'local':
 		default:
-			SNAPPI.AIR.host = "git:88";
+			var Y = SNAPPI.Y;
+			var baseurl = Y.one('base').getAttribute('href');
+			baseurl = baseurl.split('/');
+			SNAPPI.AIR.host = baseurl[2];
 			// git:88 firefox
 			break;
 		}
-		
+	    var uploadHost = {
+	    		local: "http://"+SNAPPI.AIR.host+"/my/upload",
+	    		remote: "http://dev2.snaphappi.com/my/upload",
+	    };		
 		// login
 		var login_Url = "http://" + SNAPPI.AIR.host + "/users/login/.json?optional=1";
 		SNAPPI.AIR.XhrHelper.login_Url = login_Url;

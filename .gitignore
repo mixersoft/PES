@@ -1,9 +1,11 @@
 
 */uploads/*
 */bin-debug/*
+*/src/db/*
 *.swf
 /runtimes*
 .tmp*
+snaphappi-DEBUG.db3
 */src/logs/*
 #ignore flashbuilder tmp files
 
@@ -53,3 +55,5 @@ obj/
 [Rr]elease*/
 _ReSharper*/
 [Tt]est[Rr]esult*
+
+

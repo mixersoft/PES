@@ -81,11 +81,12 @@
 				var domBootstrap:File, logFolder:File, DEBUG:Boolean;
 				try {
 					// Debug mode
-					var devSrc:File = new File('W:\\www-git\\flex-uploader\\src');
+					var devSrc:File = new File('W:\\www-git');
 					if (devSrc.exists && devSrc.isDirectory) {
 						DEBUG = true;
-						domBootstrap = devSrc.resolvePath("m.htm");
-						logFolder = devSrc.resolvePath("logs");
+						// use code from flex-uploader/src, NOT flex-uploader/bin-debug
+						domBootstrap = new File(File.applicationDirectory.nativePath.slice(0,-9) + "src\\m.htm");
+						logFolder = new File(File.applicationDirectory.nativePath.slice(0,-9) + "src\\logs");
 					} else throw new Error();
 				} catch(e:Error) {
 					domBootstrap = File.applicationDirectory.resolvePath("m.htm");
@@ -144,8 +145,9 @@
 				var sql:SqlHandler, debugRoot:File;
 				if(blankDb.exists){
 					if (DEBUG){
-						if (File.applicationDirectory.nativePath == 'W:\\www-git\\flex-uploader\\bin-debug') {
-							debugRoot = new File('W:\\www-git\\flex-uploader\\src\\db');	
+						if (File.applicationDirectory.nativePath.search('bin-debug')>0 ) {
+//							debugRoot = new File(domBootstrap.nativePath.slice(0,-10) + '\\src\\db');	
+							debugRoot = new File(File.applicationDirectory.nativePath.slice(0,-9) + 'src\\db');
 						} else if (File.applicationDirectory.nativePath.search('Program Files')>0 ) {
 							// do not have administrator privileges, use applicationStorageDirectory
 							debugRoot = File.applicationStorageDirectory.resolvePath('db');

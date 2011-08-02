@@ -1,0 +1,30 @@
+[submodule "jmcneese/permissionable"]
+	path = _git_modules/jmcneese/permissionable
+	url = https://github.com/jmcneese/permissionable.git
+[submodule "cakeDC/plugins/users"]
+	path = _git_modules/cakeDC/plugins/users
+	url = git://github.com/CakeDC/users.git
+[submodule "cakeDC/plugins/utils"]
+	path = _git_modules/cakeDC/plugins/utils
+	url = git://github.com/CakeDC/utils.git
+[submodule "cakeDC/plugins/comments"]
+	path = _git_modules/cakeDC/plugins/comments
+	url = git://github.com/CakeDC/comments.git
+[submodule "cakeDC/plugins/tags"]
+	path = _git_modules/cakeDC/plugins/tags
+	url = git://github.com/CakeDC/tags.git
+[submodule "cakeDC/plugins/search"]
+	path = _git_modules/cakeDC/plugins/search
+	url = git://github.com/CakeDC/search.git
+[submodule "cakeDC/plugins/ratings"]
+	path = _git_modules/cakeDC/plugins/ratings
+	url = git://github.com/CakeDC/ratings.git
+[submodule "cakeDC/plugins/problems"]
+	path = _git_modules/cakeDC/plugins/problems
+	url = git://github.com/CakeDC/problems.git
+[submodule "cakeDC/plugins/migrations"]
+	path = _git_modules/cakeDC/plugins/migrations
+	url = git://github.com/CakeDC/migrations.git
+[submodule "960-Grid-System"]
+	path = _git_modules/960-Grid-System
+	url = https://github.com/nathansmith/960-Grid-System.git
