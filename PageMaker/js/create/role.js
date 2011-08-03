@@ -114,6 +114,7 @@
         R.isCast = (cfg.isCast == 1); // boolean
         R.id = R.makeId();
         R.index = cfg.Index || null;
+        R.suggestedPhotoId = cfg.photo_id;
         R.sizeNormalized = {
             w: cfg.W,
             h: cfg.H

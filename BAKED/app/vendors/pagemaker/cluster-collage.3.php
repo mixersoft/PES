@@ -46,7 +46,7 @@ class ClusterCollage {
     protected $allowResize = true;
     
     /**
-     * Ratios limits for the final arrangement
+     * Ratios limits for the final arrangement in the form of "height:width"
      * @var array h - horizontal, v - vertical
      */
     protected $allowedRatios = array('h' => '9:16', 'v' => '3:2'); 
@@ -260,10 +260,10 @@ class ClusterCollage {
     }
     
     /**
-     * Get ration coefficient by ratio string 
+     * Get ratio coefficient by ratio string 
      * 
-     * @param type $ratio
-     * @return type 
+     * @param string $ratio, "height:width"
+     * @return float 
      */
     protected function getRatioByString($ratio) {
         if (! preg_match("/^(\d+)\:(\d+)$/", $ratio, $matches) || 0 == $matches[2])

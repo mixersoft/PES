@@ -157,6 +157,7 @@
             }
             
             var c = new Casting();
+            if (R.suggestedPhotoId) Aud = auditionSH.get(R.suggestedPhotoId);
             c.audition = Aud;
             c.role = R;
             c.setMinSize();
@@ -167,6 +168,10 @@
 				|| (crop = c.setCropSize(cfg)) == false) 	// crop won't fit role
             	
 			{
+				if (R.suggestedPhotoId) {
+					noMoreRoles = true;	// using suggested photos, don't iterate
+					break; 				// done when we are done
+				}
                 c.audition = auditionSH.next();
                 if (c.audition == null || c.audition == false ) {
                     break; // no more auditions                        
@@ -188,7 +193,7 @@
             Aud = auditionSH.setFocus(0);
         }
         
-        var done = noMoreRoles;
+        var done = noMoreRoles ;
         if (!done) {
             noMoreAuditions = true;
             Aud = auditionSH.setFocus(0);
