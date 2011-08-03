@@ -14,12 +14,6 @@ class ClusterCollage {
     protected $photos;
 	
     /**
-     * $photos indexed by photo_id (UUID)
-     * @var array
-     */
-	protected $lookupPhotoById = array();
-    
-    /**
      * Original photos set
      * @var array
      */
@@ -178,7 +172,8 @@ class ClusterCollage {
 	        foreach ($photos as $i => $photo) {
 	            $dimensions = $this->resizePhoto($photo['height'], $photo['width'], $photo['rating'], $ratingsSum);
 	            $this->photos[] = array(
-	                'pid' => $photo['id'],
+	                'pid' => $i,
+	                'id' => $photo['id'],
 	                'h' => $dimensions['h'],
 	                'w' => $dimensions['w'],
 	                'rating' => $photo['rating'],
@@ -891,11 +886,17 @@ class ClusterCollage {
      * @return int needle photo's id
      */
     protected function findPhotoByPid($pid, $photos = null) {
-        if (! is_array($photos))
+        if (! is_array($photos)) {
             $photos = $this->photos;
-        foreach ($photos as $key => &$photo) {
-            if ($photo['pid'] == $pid)
-                return $key;
+		}
+		if (isset($photos[$pid]['pid']) && $photos[$pid]['pid'] == $pid) {
+			// this seems to always be true. faster
+			return $pid;
+		}
+		foreach ($photos as $key => &$photo) {
+            if ($photo['pid'] == $pid){
+				return $key;
+            }
         }
         return -1;
     }
