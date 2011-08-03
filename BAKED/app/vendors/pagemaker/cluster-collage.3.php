@@ -12,6 +12,12 @@ class ClusterCollage {
      * @var array
      */
     protected $photos;
+	
+    /**
+     * $photos indexed by photo_id (UUID)
+     * @var array
+     */
+	protected $lookupPhotoById = array();
     
     /**
      * Original photos set
@@ -19,7 +25,7 @@ class ClusterCollage {
      */
     protected $originalPhotos;
     /**
-     * Max crop
+     * Max crop, abs(width_1/height_1-width_0/height_0)
      * @var float
      */
     protected $cropVarianceMax  = 0.2;
@@ -46,13 +52,13 @@ class ClusterCollage {
     protected $allowResize = true;
     
     /**
-     * Ratios restrictions
+     * Ratios limits for the final arrangement
      * @var array h - horizontal, v - vertical
      */
-    protected $allowedRatios = array('h' => '9:16', 'v' => '16:9'); 
+    protected $allowedRatios = array('h' => '9:16', 'v' => '3:2'); 
     
     /**
-     * Costs of the expensive photos. Being fille in separateExpensive(...) func
+     * Costs of the expensive photos. Being file in separateExpensive(...) func
      * @var array
      */
     protected $expensiveCosts = array();
@@ -157,21 +163,85 @@ class ClusterCollage {
         foreach ($photos as $photo) {
             $ratingsSum += $photo['rating'];
         }
-
-        foreach ($photos as $pid => $photo) {
-            $dimensions = $this->resizePhoto($photo['height'], $photo['width'], $photo['rating'], $ratingsSum);
-            $this->photos[] = array(
-                'pid' => $pid,
-                'h' => $dimensions['h'],
-                'w' => $dimensions['w'],
+		if (true) {
+			/*
+			 * adjust resized photo to obey $minArea
+			 * */
+			$minArea = min(1/count($photos), 0.125);
+			$this->photos = $this->resizePhotosWithMinArea($photos, $ratingsSum, $minArea);
+			$this->separateExpensive($this->photos, $expensive, $cheap, 2, true);
+			return true;
+		} else {
+			/*
+			 * ignore $minArea limitations
+			 * */			
+	        foreach ($photos as $i => $photo) {
+	            $dimensions = $this->resizePhoto($photo['height'], $photo['width'], $photo['rating'], $ratingsSum);
+	            $this->photos[] = array(
+	                'pid' => $photo['id'],
+	                'h' => $dimensions['h'],
+	                'w' => $dimensions['w'],
+	                'rating' => $photo['rating'],
+	                'cost' => 0,
+	                'top' => false
+	            );
+	        }
+			$this->separateExpensive($this->photos, $expensive, $cheap, 2, true);
+			return true;
+		}
+    }
+	
+	/**
+	 * 
+	 * @param float $minArea minimum area of photo, regardless of rating
+	 */
+	protected function resizePhotosWithMinArea($photos, $ratingsSum, $minArea ) {
+		$delta = $sum_min = 0; 
+		$resized = $too_small = array();
+		foreach ($photos as $i => & $photo) {
+			$h = $photo['height'];
+			$w = $photo['width'];
+			$rating = $photo['rating'];
+			if ($h <= 0 || $w <= 0 || $rating < 0 || $rating > $ratingsSum)
+	            throw new Exception('Bad parameters for ' . __CLASS__ . '::' . __FUNCTION__);
+	        $newAreaPhoto = $rating / $ratingsSum;
+			$areaPhoto = $h * $w;
+			$photo['newAreaPhoto'] = $newAreaPhoto;
+			$photo['areaPhoto'] = $areaPhoto;
+			
+			if ($newAreaPhoto < $minArea ) {
+				$delta += ($minArea - $newAreaPhoto);
+				$sum_min += $minArea;
+				$too_small[] = $i;	// index to too small item
+				$coef = sqrt($areaPhoto / $minArea);
+			} else {
+				$coef = sqrt($areaPhoto / $newAreaPhoto);	
+			}
+			$resized[] = array(
+                'pid' => $i,
+                'id' => $photo['id'],
+                'h' => $h / $coef,
+                'w' => $w / $coef,
                 'rating' => $photo['rating'],
                 'cost' => 0,
                 'top' => false
             );
-        }
-       $this->separateExpensive($this->photos, $expensive, $cheap, 2, true);
-        return true;
-    }
+		};
+		if (count($too_small)) {
+			// calculate adjustment to keep total area = 1.00
+			$adjustment = ($ratingsSum - $sum_min)/($ratingsSum - $delta);
+			foreach ($resized as $i => $photo) {
+				if (in_array($i, $too_small)) continue; 	// these are too small and have already been adjusted
+				$ph = & $photos[$i];
+				$adjustedArea = ($ph['newAreaPhoto'] * $adjustment);
+				$ph['newAreaPhoto'] = $adjustedArea;
+				$coef = sqrt($ph['areaPhoto'] / $adjustedArea);	
+				$resized[$i]['h'] = $ph['height']/$coef;
+				$resized[$i]['w'] = $ph['width']/$coef;
+			}
+		}
+		return $resized;
+	}
 
     /**
      * Resizes the photo proportionally to the arrangement area = 1 considering the photo's rating
@@ -264,13 +334,13 @@ class ClusterCollage {
      * Move photo to role
      * 
      * @param array $role
-     * @param int $pid
+     * @param int $index of $this->photos, same as $pid
      * @return bool false if not satisfies the cropVariance restriction
      */
-    protected function movePhotoToRole(&$role, $pid) {
-        if (! isset($this->photos[$pid]))
+    protected function movePhotoToRole(&$role, $index) {
+        if (! isset($this->photos[$index]))
             return false;
-        $photo = $this->photos[$pid];
+        $photo = $this->photos[$index];
         
         // Calculate crop and resize coefficients:
         
@@ -289,12 +359,12 @@ class ClusterCollage {
         
         // Move photo:
         
-        $role['pid'] = $pid;
+        $role['pid'] = $index;
+		$role['photo_id'] = $photo['id'];
         $role['coefs'] = array(
             'resize' => $cR,
             'crop' => $cropVariance,
         );
-        
         // TODO: Crop photo
         // TODO: Resize photo
         return true;
@@ -476,6 +546,7 @@ class ClusterCollage {
                 'W' => ($role['x1'] - $role['x0']) * $coef,
                 'X' => $role['x0'] * $coef,
                 'Y' => ( $arrangement['h'] - $role['y1'] ) * $coef,
+                'photo_id' => $role['photo_id'],
             );
         }
         return $newArrangement;
@@ -516,6 +587,7 @@ class ClusterCollage {
                         'x1' => $photo['w'],
                         'y1' => $photo['h'],
                         'pid' => $photo['pid'],
+                        'photo_id' => $photo['id'],
                         'coefs' => array('resize' => 1, 'crop' => 0),
                         'orientation' => $photoOrientation,
                     )
@@ -793,6 +865,24 @@ class ClusterCollage {
         }
     }
     
+
+    /**
+     * Find the photo by pid
+     * 
+     * @param string $photo_id, UUID
+     * @param array $photos If not given then $this->photos being used
+     * @return array $photo
+     */
+     protected function getPhotoByPhotoId($photo_id, $photos = null) {
+		if (empty($this->lookupPhotoById)) {
+			if ($photos === null) $photos = $this->photos;
+			foreach ($photos as & $photo) {
+				$this->lookupPhotoById[$photo['id']] = $photo;
+			}
+		}
+		return $this->lookupPhotoById[$photo_id];
+	}	
+	
     /**
      * Find the photo by pid
      * 

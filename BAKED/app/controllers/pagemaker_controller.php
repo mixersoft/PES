@@ -140,10 +140,10 @@ class PagemakerController extends AppController {
 	function arrangement($count = 16) {
 		$forceXHR = setXHRDebug($this, 0);
 		if ($forceXHR) {
-			if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
-			$cc = $this->CastingCall->cache_MostRecent();
-			$this->data['CastingCall'] = json_encode($cc);  // [Auditions]
-			debug($this->data);
+			// if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
+			// $cc = $this->CastingCall->cache_MostRecent();
+			// $this->data['CastingCall'] = json_encode($cc);  // [Auditions]
+			// debug($this->data);
 			$this->autoLayout = false;
 		}
 		if (empty($this->data)) {
@@ -160,7 +160,7 @@ class PagemakerController extends AppController {
 		$Auditions = json_decode($rawJson, true);
 		$photos = $Auditions['Audition'];
 		$baseurl = "http://{$appHost}".$Auditions['Baseurl'];
-
+// debug($photos);
 		$sortedPhotos = $this->__sortPhotos($this->__getPhotos($photos, $baseurl), null);
 		$layoutPhotos = count($sortedPhotos) > $count ? array_slice($sortedPhotos, 0, $count) : $sortedPhotos;
 		
@@ -181,7 +181,7 @@ class PagemakerController extends AppController {
 			$collage->setPhotos($layoutPhotos, $layoutPhotos);
 			$arrangement = $collage->getArrangement();
 			$this->__normalize($arrangement);
-			if ($forceXHR) debug($arrangement);
+			// if ($forceXHR) debug($arrangement);
 							
 			// format jsonData response
 			$success = true;
