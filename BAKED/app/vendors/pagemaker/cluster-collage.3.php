@@ -52,7 +52,7 @@ class ClusterCollage {
     protected $allowedRatios = array('h' => '9:16', 'v' => '3:2'); 
     
     /**
-     * Costs of the expensive photos. Being file in separateExpensive(...) func
+     * Costs of the expensive photos. Being file in partitionByTopRatedCutoff(...) func
      * @var array
      */
     protected $expensiveCosts = array();
@@ -141,12 +141,14 @@ class ClusterCollage {
     }
     
     /**
-     * Set photos
+     * Set photos to be used for arrangement, 
+	 * 	this is the top-level recursion
      * 
      * @param array $photos Array of array('rating' => int = 0..5, 'width' => int > 0, 'height' => int > 0) Input photos should be arranged descending by ratings!
+	 * @param $shuffledPhotos
      * @return bool
      */
-    public function setPhotos(array $photos, &$shuffledPhotos) {
+    public function setPhotos(array $photos,  $method='topRatedCutoff' ) {
         $this->photos = array();
         $this->shuffleDIffRatingPhotos($photos);
         $shuffledPhotos = $photos;
@@ -163,8 +165,7 @@ class ClusterCollage {
 			 * */
 			$minArea = min(1/count($photos), 0.125);
 			$this->photos = $this->resizePhotosWithMinArea($photos, $ratingsSum, $minArea);
-			$this->separateExpensive($this->photos, $expensive, $cheap, 2, true);
-			return true;
+			// $this->partitionByTopRatedCutoff($this->photos, $topRated, $lowRated, 2, true);
 		} else {
 			/*
 			 * ignore $minArea limitations
@@ -176,14 +177,24 @@ class ClusterCollage {
 	                'id' => $photo['id'],
 	                'h' => $dimensions['h'],
 	                'w' => $dimensions['w'],
-	                'rating' => $photo['rating'],
+	                'rating' => $photo['rating'] ? $photo['rating'] : 0.2,
 	                'cost' => 0,
 	                'top' => false
 	            );
 	        }
-			$this->separateExpensive($this->photos, $expensive, $cheap, 2, true);
-			return true;
+			// $this->partitionByTopRatedCutoff($this->photos, $topRated, $lowRated, 2, true);
 		}
+        switch ($method) {
+            case 'topRatedCutoff': // use topRatedCutoff
+            	// Divide photos to 'expensive' and 'cheap' using topRatedCutoff, 
+            	// i.e. all photo['rating'] >= the topRatedCutoff are in the topRated group            
+            	$this->partitionByTopRatedCutoff($this->photos, $topRated, $lowRated, 2, true);
+				break;
+            default:
+            	$this->partitionBySortOrder($this->photos, $topRated, $lowRated, 2, true);
+				break;
+        }		
+		return true;
     }
 	
 	/**
@@ -217,7 +228,7 @@ class ClusterCollage {
                 'id' => $photo['id'],
                 'h' => $h / $coef,
                 'w' => $w / $coef,
-                'rating' => $photo['rating'],
+                'rating' => $photo['rating'] ? $photo['rating'] : 0.2,
                 'cost' => 0,
                 'top' => false
             );
@@ -493,7 +504,7 @@ class ClusterCollage {
     }
 
      /**
-     * Get arrangement
+     * create arrangement for photos given in $this->photos
      * 
      * @return array Array of roles
      */
@@ -662,7 +673,7 @@ class ClusterCollage {
             $c = $cluster[$i];
             if ('h' == $c || 'v' == $c) {
                 if (0 == $i) {
-                    if (false === $this->dividePhotos($photos, $division, 'equable', 2))
+                    if (false === $this->dividePhotos($photos, $division, 'sortOrder', 2))
                         return false;
                     if (empty($division[0]['photos']) || empty($division[1]['photos']))
                         return false;
@@ -902,14 +913,112 @@ class ClusterCollage {
     }
     
     /**
-     * Divide photos to 'expensive' and 'cheap'
+     * partition photos into TopRated and LowRated arrays based on topRatedCutoff value, cluster cell count
      * 
      * @param array $photos
-     * @param array $expensive Resulting array
-     * @param array $cheap Resulting array
-     * @param int $parts
-     * @param array $setPhotosCost If true set the "cost" for each expensive photo. Used to arrange the top rated photos into the best cells
+     * @param array $topRated OUTPUT array , 
+	 * 			array of photos with ratings >= the lowest DISTINCT rating value of the top N rated photos, where N=$parts
+	 * 			example: [5,5,4,4,4,3,2,1], 
+	 * 				for $parts=2 => topRated=[5,5], 
+	 * 				for $parts=3 => topRated=[5,5,4,4,4]
+     * @param array $lowRated OUTPUT array, array of photos not in $topRated
+     * @param int $parts, number of cells in current cluster, 2 or 3
+     * @param array $setPhotosCost If true set the "cost" for each expensive photo. 
+	 * 		Used to arrange the top rated photos into the best cells
      */
+    protected function partitionByTopRatedCutoff(&$photos, &$topRated, &$lowRated, $parts, $setPhotosCost = false) {
+    	if ($setPhotosCost)
+            $this->expensiveCosts = array();
+        if (count($photos) < 2) {
+            if (! $setPhotosCost)
+                throw new Exception('Given bad parameters at ' . __CLASS__ . '::' . __FUNCTION__);
+            else
+                return;
+        } else if ($setPhotosCost) {
+            $parts = count($photos) == 2 ? 2 : 3;
+        }
+		if ($parts > count($photos))
+			throw new Exception('Given bad parts value at ' . __CLASS__ . '::' . __FUNCTION__);
+				
+    	$topRated = $lowRated = $ratingValues = array();
+		$currentCost = $currentTopRatedValue = 0;
+				
+		// SKIP partitionByTopRatedCutoff processing in recursive levels
+		if (true && count($photos) < count($this->photos)) {
+			$topRated = array_slice($photos, 0, $parts);
+			$lowRated = array_slice($photos, $parts);
+			if ($setPhotosCost) {
+				foreach ($topRated as $i => $photo) {
+					if ($photo['rating'] != $currentTopRatedValue) $currentCost++;	// incr currentCost when ratingValue changes
+					$currentTopRatedValue = $photo['rating'];
+		            if (($id = $this->findPhotoByPid($photo['pid'])) >= 0) {
+		            	// NOTE: $photos not necessarily the same as $this->photos, update source
+		                $this->photos[$id]['cost'] = $currentCost;	// cost is higher when rating is lower
+		                $this->expensiveCosts[] = $currentCost;
+		            }
+		        }				
+			}			
+			return;
+		}
+
+		
+		// get cutoff value for topRated/lowRated partitioning
+		foreach ($photos as $photo) {
+			$ratingValues[]=$photo['rating'];
+		}
+		arsort($ratingValues); 	// sort DESC
+		$topRatedCutoff = $ratingValues[$parts-1]; 
+		
+		// partition photos based on $topRatedCutoff
+		// WARNING: assumes $photos is sorted by $photos['rating'] DESC
+		foreach ($photos as $i => $photo) {
+			if ($photo['rating'] < $topRatedCutoff) {
+				$lowRated[] = $photo;
+			} else {
+				if ($photo['rating'] != $currentTopRatedValue) $currentCost++;	// incr currentCost when ratingValue changes
+				$topRated[] = $photo;	
+				$currentTopRatedValue = $photo['rating'];
+		        if ($setPhotosCost) {
+		            if (($id = $this->findPhotoByPid($photo['pid'])) >= 0) {
+		            	// NOTE: $photos not necessarily the same as $this->photos, update source
+		                $this->photos[$id]['cost'] = $currentCost;	// cost is higher when rating is lower
+		                $this->expensiveCosts[] = $currentCost;
+		            }
+		        }				
+			};
+		}
+	}
+    /**
+     * partition photos into TopRated and LowRated arrays based on sort order
+	 * 	assumes $photos is sorted $photo[rating] DESC
+     * 
+     * @param array $photos
+     * @param array $topRated OUTPUT array, N top rated photos, where N = $parts 
+     * @param array $lowRated OUTPUT array, array of photos not in $topRated
+     * @param int $parts, number of cells in current cluster, 2 or 3
+     * @param array $setPhotosCost If true set the "cost" for each expensive photo. 
+	 * 		Used to arrange the top rated photos into the best cells
+     */
+    protected function partitionBySortOrder(&$photos, &$topRated, &$lowRated, $parts, $setPhotosCost = false) {
+			$topRated = array_slice($photos, 0, $parts);
+			$lowRated = array_slice($photos, $parts);
+			if ($setPhotosCost) {
+				foreach ($topRated as $i => $photo) {
+					if ($photo['rating'] != $currentTopRatedValue) $currentCost++;	// incr currentCost when ratingValue changes
+					$currentTopRatedValue = $photo['rating'];
+		            if (($id = $this->findPhotoByPid($photo['pid'])) >= 0) {
+		            	// NOTE: $photos not necessarily the same as $this->photos, update source
+		                $this->photos[$id]['cost'] = $currentCost;	// cost is higher when rating is lower
+		                $this->expensiveCosts[] = $currentCost;
+		            }
+		        }				
+			}			
+			return;    	
+	}
+	
+	/**
+	 * @deprecated use partitionByTopRatedCutoff instead
+	 */
     protected function separateExpensive(&$photos, &$expensive, &$cheap, $parts, $setPhotosCost = false) {
         if ($setPhotosCost)
             $this->expensiveCosts = array();
@@ -966,15 +1075,16 @@ class ClusterCollage {
     }
     
     /**
-     * Get parts sizes to divide photos set (2 or 3 only)
+     * partition photos into N parts, where N=$parts using requested partition algorithm, 
+	 * return partition in $division
      * 
      * @param array $photos
      * @param array $division Resulting division
-     * @param string $method Division method
-     * @param int $parts Number of desired parts
+     * @param string $method partition algorithm 
+     * @param int $parts Number of desired partitions, aka cluster cells. 2 or 3
      * @return bool
      */
-    protected function dividePhotos(&$photos, &$division, $method = 'equable', $parts = 2) {
+    protected function dividePhotos(&$photos, &$division, $method = 'topRatedCutoff', $parts = 2) {
         if ($parts < 2 || $parts > 3)
             throw new Exception('Given bad parameters at ' . __CLASS__ . '::' . __FUNCTION__);
         if (count($photos) < $parts)
@@ -982,64 +1092,60 @@ class ClusterCollage {
         $division = array();
         for ($i = 0; $i < $parts; $i++) {
             $division[] = array(
-                'weight' => 0,
+                'weight' => 0,			// cumulative rating of photos in this partition
                 'photos' => array(),
             );
         }
         
-        /**
-         * Divide photos:
-         */
-       
-        // Creat empty array:
-
         switch ($method) {
-            case 'equable': // Equable method
+            case 'topRatedCutoff': // use topRatedCutoff
+            	// Divide photos to 'expensive' and 'cheap' using topRatedCutoff, 
+            	// i.e. all photo['rating'] >= the topRatedCutoff are in the topRated group            
+            	$this->partitionByTopRatedCutoff($photos, $topRated, $lowRated, $parts);
+				break;
             default:
-                // Divide photos to 'expensive' and 'cheap':
-                $this->separateExpensive($photos, $expensive, $cheap, $parts);
+            	$this->partitionBySortOrder($photos, $topRated, $lowRated, $parts);
+				break;
+        }
+        // Divide all photos:
 
-                // Divide all photos:
-
-                $i = 0;
-                $rest = false;
-                
-                 // Define parts weights:
-                $this->definePartsWeights($photos, $parts, &$partsWeights, 'golden');
-                $rand = mt_rand(0, 1);
+        $i = 0;
+        $rest = false;
+        
+         // Define parts weights:
+        $this->definePartsWeights($photos, $parts, &$partsWeights, 'golden');
+        $rand = mt_rand(0, 1);
 //                $rand = 0;
-                   
-                $steps = 3; $step = 0;
-                $this->defineDistanceToEqualWeights($partsWeights, $steps, $partsDistances);
-                while (count($expensive) > 0 || count($cheap) > 0) {
-                    $i %= $parts;
+           
+        $steps = 3; $step = 0;
+        $this->defineDistanceToEqualWeights($partsWeights, $steps, $partsDistances);
+        while (count($topRated) > 0 || count($lowRated) > 0) {
+            $i %= $parts;
 //                    if ($rest) {
-//                        if (count($expensive) > 0) {
-//                            $division[$i]['weight'] += $expensive[0]['rating'];
-//                            $division[$i]['photos'][] = array_shift($expensive);
-//                        } else if (count($cheap) > 0) {
-//                            $division[$i]['weight'] += $cheap[0]['rating'];
-//                            $division[$i]['photos'][] = array_shift($cheap);
+//                        if (count($topRated) > 0) {
+//                            $division[$i]['weight'] += $topRated[0]['rating'];
+//                            $division[$i]['photos'][] = array_shift($topRated);
+//                        } else if (count($lowRated) > 0) {
+//                            $division[$i]['weight'] += $lowRated[0]['rating'];
+//                            $division[$i]['photos'][] = array_shift($lowRated);
 //                        }
 //                    } else {
-                        if (count($expensive) > 0 && $division[$i]['weight'] +
-                        $expensive[0]['rating'] <= $partsWeights[$i] + abs($partsDistances[$i])) {
-                            $division[$i]['weight'] += $expensive[0]['rating'];
-                            $division[$i]['photos'][] = array_shift($expensive);
-                        } else if (count($cheap) > 0 && $division[$i]['weight'] +
-                        $cheap[0]['rating'] <= $partsWeights[$i]) {
-                            $division[$i]['weight'] += $cheap[0]['rating'];
-                            $division[$i]['photos'][] = array_shift($cheap);
-                        } else if ($i == $parts - 1){
-                            foreach($partsWeights as $idx => &$weight) {
-                                $weight = $rand ? $weight - $partsDistances[$idx] : $weight + $partsDistances[$idx];
-                            }
-                            $rest = true;
-                        }
-//                    }
-                    $i++;
+                if (count($topRated) > 0 && $division[$i]['weight'] +
+                $topRated[0]['rating'] <= $partsWeights[$i] + abs($partsDistances[$i])) {
+                    $division[$i]['weight'] += $topRated[0]['rating'];
+                    $division[$i]['photos'][] = array_shift($topRated);
+                } else if (count($lowRated) > 0 && $division[$i]['weight'] +
+                $lowRated[0]['rating'] <= $partsWeights[$i]) {
+                    $division[$i]['weight'] += $lowRated[0]['rating'];
+                    $division[$i]['photos'][] = array_shift($lowRated);
+                } else if ($i == $parts - 1){
+                    foreach($partsWeights as $idx => &$weight) {
+                        $weight = $rand ? $weight - $partsDistances[$idx] : $weight + $partsDistances[$idx];
+                    }
+                    $rest = true;
                 }
-                break;
+//                    }
+            $i++;
         }
         return true;
     }

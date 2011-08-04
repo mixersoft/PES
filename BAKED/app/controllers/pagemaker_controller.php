@@ -178,7 +178,7 @@ class PagemakerController extends AppController {
 		$maxWidth = 1600;
 		$collage = new ClusterCollage($cropVarianceMax, $maxHeight, $maxWidth);
 		try {
-			$collage->setPhotos($layoutPhotos, $layoutPhotos);
+			$collage->setPhotos($layoutPhotos, 'topRatedCutoff');
 			$arrangement = $collage->getArrangement();
 			$this->__normalize($arrangement);
 			// if ($forceXHR) debug($arrangement);
