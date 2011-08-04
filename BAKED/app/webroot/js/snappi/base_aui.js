@@ -206,7 +206,7 @@
                 'snappi-photoroll': {
                     path: 'photo-roll.js',
                     requires: ['node', 'event', 'event-key', 'snappi-event-hover', 'snappi-utils', 'snappi-rating', 
-                               'snappi-dialog-aui', 'snappi-menu-aui', 'snappi-paginator'] // snappi-util -> SNAPPI.shotController(move)
+                               'snappi-dialog-aui', 'snappi-menu-aui', 'snappi-paginator', 'snappi-thumbnail-helpers'] // snappi-util -> SNAPPI.shotController(move)
                 },
                 'snappi-domJsBinder': {
                     path: 'domJsBinder.js',
@@ -570,7 +570,10 @@
     var pageInit = function(){        // execute embedded PAGE.init scripts
 	    while (PAGE.init.length) {
 	        var init = PAGE.init.shift();
-	        init();
+	        try {
+	        	init();	
+	        } catch (e) {}
+	        
 	    }   
 	};
     

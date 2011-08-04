@@ -126,9 +126,8 @@ class CastingCallComponent extends Object {
 		}
 		$FocusCenter = array('Scale'=>$scale, 'X'=>$x, 'Y'=>$y);
 		$FocusVector = array('Direction'=>0, 'Magnitude'=>0);
-		$Rating = @ifed($row['rating'], null);		// owner rating
-		$Votes = @ifed($row['votes'], null);
-		$LayoutHint = compact('FocusCenter', 'FocusVector', 'Rating', 'Votes');
+		// $Rating = @ifed($row['rating'], null);		// owner rating
+		$LayoutHint = compact('FocusCenter', 'FocusVector');
 
 		// Src Root
 		$W = $exif['imageWidth'];
@@ -164,9 +163,11 @@ class CastingCallComponent extends Object {
 		$H = !empty($exif['ExifImageLength']) ? $exif['ExifImageLength'] : null;
 		$Crops = (!empty($row['crops'])) ? $this->formatCrops($row['crops']) : '';
 		$Rating = (!empty($row['rating'])) ? $row['rating'] : null;
+		$Score = number_format(round($row['score'] , 1),1);
+		$Votes = @ifed($row['votes'], null);
 		$Rotate = (!empty($row['rotate'])) ? $row['rotate'] : 1;
 		$Scrub = (!empty($row['scrub'])) ? $this->formatScrub($row['scrub'])  : '';
-		$Fix = compact('Crops', 'Rating', 'Rotate', 'Scrub');
+		$Fix = compact('Crops', 'Rating', 'Rotate', 'Scrub', 'Score', 'Votes');
 		$AutoRender = ($row['provider_name']=='snappi');
 		$Caption = (!empty($row['caption'])) ? $row['caption'] : '';
 		

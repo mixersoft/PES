@@ -297,7 +297,7 @@
 				}	
 				// nodeList of img from drag-drop
 				nodeList.each(function(n, i, l) {
-					var audition = n.ancestor('li.thumbnail').dom().audition;
+					var audition = n.ancestor('section.thumbnail').dom().audition;
 					this.PhotoRoll.auditionSH.add(audition);
 				}, this);
 				
@@ -312,7 +312,7 @@
 		},
 		getSelected : function() {
 			var auditionSH,			// return sortedHash, allows auditionSH.each() maintains consistency
-			batch = this.node.all('ul.photo-roll > li.selected');
+			batch = this.node.all('ul.photo-roll > section.selected');
 		
 			if (batch.size() == 0){ 
 				// get all assetIds in lightbox, this is the most common use case 
@@ -340,7 +340,7 @@
             	// then we will check if there's any selected items in the photo-roll in paging-photos
             	batch = Y.one('#paging-photos').all('ul.photo-roll > li.focus');
             	if (batch.size() == 0){
-            		batch = this.node.all('ul.photo-roll > li.thumbnail');
+            		batch = this.node.all('ul.photo-roll > section.thumbnail');
             	}
             };
 
@@ -406,17 +406,23 @@
 		},
 		setThumbsize : function (size) {
 			var oldsize = null;
-			this.node.all('ul.photo-roll > li.thumbnail'). each(
+			this.node.all('ul.photo-roll > section.thumbnail'). each(
 				function(n, i, l) {
 					if (oldsize == null) {
 						var haystack = n.getAttribute('class');
-						haystack = haystack.replace('thumbnail', '');
-						oldsize = haystack.trim().split(' ').shift(); // size should be whatever is left after removing "thumbnail"
+						haystack = haystack.split(' ');
+						for (var i in haystack) {
+							// search for a 2 char classname
+							if (haystack[i].length == 2) {
+								oldsize = haystack[i];
+								break;
+							}
+						}
 					}
 					// remove old class
 					n.replaceClass(oldsize, size);
-					var img = n.one('div.thumb > img');
-					var _getImgSrcBySize = n.dom().audition.getImgSrcBySize;
+					var img = n.one('figure > img');
+					var _getImgSrcBySize = n.audition.getImgSrcBySize;
 					img.set('src', _getImgSrcBySize(img.get('src'), size));
 				}
 				, this
@@ -456,7 +462,7 @@
 						}, this
 				);
 				
-				this.PhotoRoll.container.all('li.thumbnail.selected').each(
+				this.PhotoRoll.container.all('section.thumbnail.selected').each(
 						function(n,i,l){
 								selectedIds.push(this.stripIdPrefix(n.get('id')));
 						}, this
@@ -658,14 +664,14 @@
                         
 		clear : function() {
         	// NOTE: in this method, we do NOT want to use getSelected();
-			var set = this.node.all('ul.photo-roll > li.selected');
+			var set = this.node.all('ul.photo-roll > section.selected');
 			if (set.size() == 0) {
 				var ret = confirm('Are you sure you want to clear all?');
 				if (!ret) {
 					return; // cancel clear All
 				}
 				this.PhotoRoll.auditionSH.clear();	// remove all audition from lightbox.PhotoRoll
-				set = this.node.all('ul.photo-roll > li.thumbnail');  // remove all visible thumbnails from lightbox
+				set = this.node.all('ul.photo-roll > section.thumbnail');  // remove all visible thumbnails from lightbox
 			}
 
 			set.each(function(n, i, l) {
@@ -1449,11 +1455,11 @@
 		},
         showThumbnailRatings : function(node){
 			var pr = node || this.PhotoRoll;
-            var thumbs = pr.container.all('li.thumbnail');
+            var thumbs = pr.container.all('section.thumbnail');
             thumbs.each(function(n){
             	if (n.hasClass('hide')) return;
                 if (n.Rating == undefined) {
-                	SNAPPI.Rating.pluginRating.call(this, n.Thumbnail, n.dom().audition.rating);
+                	SNAPPI.Rating.pluginRating(this, n.Thumbnail, n.dom().audition.rating);
                 } else {
                 	// rating already exists
                 	n.one('div.ratingGroup').removeClass('hide');
@@ -1466,7 +1472,7 @@
         },
         hideThumbnailRatings : function(node){
         	var pr = node || this.PhotoRoll;
-            var thumbs = pr.container.all('li.thumbnail');
+            var thumbs = pr.container.all('section.thumbnail');
             pr.container.all('div.ratingGroup').addClass('hide');
             pr.container.all('div.thumb-label').removeClass('hide');
             SNAPPI.STATE.showRatings = 'hide';	

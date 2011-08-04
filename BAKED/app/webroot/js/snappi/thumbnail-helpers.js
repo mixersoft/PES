@@ -33,7 +33,7 @@
 	// find multiSelect boundary element for shift-click
 	var _boundary = function(n) {
 		var found = n.hasClass('selected');
-		found = found && (n.get('nodeName') == 'LI');
+		found = found && (n.get('nodeName') == 'SECTION');
 		found = found && _isDOMVisible(n);
 		return found;
 	};
@@ -43,7 +43,7 @@
 			if (!e.ctrlKey && !e.shiftKey) {
 				// No shift key - remove all selected images,
 				var found = false;
-				target.ancestor('ul').all('li.selected').each(function(node) {
+				target.ancestor('ul').all('section.selected').each(function(node) {
 					node.removeClass('selected');
 					found = true;
 				});
@@ -52,10 +52,10 @@
 			} else
 				e.halt(); // if shift or control down, halt
 			if (e.shiftKey) {
-				this.selectContiguousHandler(target.ancestor('li'));
+				this.selectContiguousHandler(target.ancestor('section'));
 			} else if (e.ctrlKey) {
 				// Check if the target is an image and select it.
-				var target = target.ancestor('li');
+				var target = target.ancestor('section');
 				target.toggleClass('selected');
 				
 				// save selction to Session for lightbox
@@ -80,19 +80,19 @@
 				var node = start;
 				do {
 					node = node.next(_isDOMVisible);
-					if (node && node.get('nodeName') == 'LI')
+					if (node && node.get('nodeName') == 'SECTION')
 						node.addClass('selected');
 				} while (node && node != end);
 			}
 		},
 		selectAll : function(nodeUL) {
-			nodeUL.all('> LI').each(function(n, i, l) {
+			nodeUL.all('> section').each(function(n, i, l) {
 				// select
 					n.addClass('selected');
 				});
 		},
 		clearAll : function(nodeUL) {
-			nodeUL.all('> LI').each(function(n, i, l) {
+			nodeUL.all('> section').each(function(n, i, l) {
 				// select
 					n.removeClass('selected');
 				});
@@ -106,7 +106,7 @@
 				Y.all(container).each( function(n) {
 						if (!n.listener_multiSelect) {
 							n.listener_multiSelect = n.delegate('click',
-								this.selectHandler, 'li',
+								this.selectHandler, 'section',
 								this
 							);
 						}
@@ -130,5 +130,6 @@
 	 * make global
 	 */
 	SNAPPI.MultiSelect2 = MultiSelect2;
+	SNAPPI.multiSelect = new MultiSelect2();
 
 })();

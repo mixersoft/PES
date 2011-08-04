@@ -91,7 +91,7 @@
 		_ratingCSS.enable();
 	};
 
-	Rating.pluginRating = function(mixed, v) {
+	Rating.pluginRating = function(container, mixed, v) {
 		var thumbnail, uuid;
 		if (mixed instanceof SNAPPI.Thumbnail) {
 			parent = mixed.node;
@@ -109,7 +109,7 @@
 			} catch(e) {
 				// legacy, uuid embedded in id
 				uuid = mixed.get('id') ? mixed.get('id') : mixed._yuid;
-				if (this._cfg && this._cfg.ID_PREFIX) uuid = uuid.replace(this._cfg.ID_PREFIX, '');
+				if (container._cfg && container._cfg.ID_PREFIX) uuid = uuid.replace(container._cfg.ID_PREFIX, '');
 			}
 		}
 		
@@ -195,7 +195,11 @@
 			// CREATE new ratingGroup
 			var ratingGroup = parent.create(Y.substitute(
 					"<div id='{id}' class='{className}'></div>", _cfg));
-			parent.append(ratingGroup);
+			try {
+				parent.one('ul > li.stars').append(ratingGroup);	
+			}	catch (e) {
+				parent.append(ratingGroup);
+			}	
 			_cfg.node = ratingGroup;
 			if (_cfg.uuid) {
 				ratingGroup.setAttribute('uuid', _cfg.uuid);
@@ -289,7 +293,7 @@
 			this.rerate = _cfg.rerate;
 			this.setRatingSprite();
 			this.node.Rating = this; // add backreference, also add reference
-										// to li.thumbnail
+										// to section.thumbnail
 		},
 
 		mouseOver : function(rating) {
@@ -469,7 +473,7 @@
 						try {
 							var audition, shotPhotoRoll;
 							try {
-								audition = closure.node.ancestor('li.thumbnail').audition;
+								audition = closure.node.ancestor('section.thumbnail').audition;
 								shotPhotoRoll = closure.node.ancestor('ul.substitutes').PhotoRoll;
 							} catch (e) {
 								audition = options.thumbnail.audition;
@@ -587,7 +591,7 @@
 				}
 				Y.fire('snappi:ratingChanged', r);
 				break;
-			case 'menuItem-contextRatingGrp': // right-click over li.thumbnail
+			case 'menuItem-contextRatingGrp': // right-click over section.thumbnail
 				var audition = SNAPPI.Auditions._auditionSH.get(r.getAttribute('uuid'));
 				v = v || r.Rating.value;
 				_updateRatingChange(audition, v);
@@ -596,9 +600,9 @@
 				// use aui-delayed-task and/or aui-debounce
 				Y.later(2000, null, function(){tn.dom().Menu.getNode().addClass('hide');});
 				break;
-			default: // photoRoll li.thumbnail ratingGroup
+			default: // photoRoll section.thumbnail ratingGroup
 				try {
-					var tn = r.ancestor('li.thumbnail').dom();
+					var tn = r.ancestor('section.thumbnail').dom();
 					var audition = tn.dom().audition;
 					v = v || r.Rating.value;
 					_updateRatingChange(audition, v);

@@ -291,7 +291,7 @@
         /*
          * bindAuditions2Photoroll 
          * - scan for a photoRoll, if found, bind JS audition object to photoRoll
-         * - NOTE: DO WE REALLY NEED TO BIND audition TO li.thumbnail?  perhaps
+         * - NOTE: DO WE REALLY NEED TO BIND audition TO section.thumbnail?  perhaps
          * 		it is enough to do a uuid lookup, 
          * 				var audition = SNAPPI.auditions.auditionSH.get(id);
          * - NOTE: this method ASSUMES only 1 photoRoll per page. is this valid??
@@ -361,7 +361,7 @@
                 this.fetchCastingCall(_cfg, callback);
             }
             
-            if (SNAPPI.DEBUG_MODE) SNAPPI.debug.showNodes('#content div, li.thumbnail');
+            if (SNAPPI.DEBUG_MODE) SNAPPI.debug.showNodes('#content div, section.thumbnail');
         };
     };
     

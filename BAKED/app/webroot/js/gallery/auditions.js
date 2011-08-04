@@ -193,7 +193,7 @@
     	if (oldShot && oldShot.id !== shotId) {				
     		// if the audition belonged to another Shot, move all Shot auditions to new shot
     		s.stale = s.stale || oldShot.stale;
-    		s.import(oldShot);			// TODO: this should include current audition, but check
+    		s.importGroup(oldShot);			// TODO: this should include current audition, but check
     	} else s.add(audition);			// just add audition to Shot
     	s.stale = s.stale || (s._sh.count() != hiddenShot_count);
         audition.Audition.Substitutions = s;	// back reference, add shot to audition

@@ -70,7 +70,7 @@
 	                	return;
 	                default: // thumbnail
 	                	try {
-			                target.ancestor('li').addClass('selected');
+			                target.ancestor('section').addClass('selected');
 			                
 			                //How many items are selected
 			                var count;
@@ -80,15 +80,15 @@
 			                    		var pr=target.ancestor('ul.photo-roll').dom().PhotoRoll;
 			                    		count = pr.castingCall.CastingCall.Auditions.Total;
 			                    	} catch (e) {
-			                    		count = target.ancestor('ul').all('li.selected').size();
+			                    		count = target.ancestor('ul').all('section.selected').size();
 			                    	}
 			                    }
 			                    else {
-			                        count = target.ancestor('ul').all('li.selected').size();
+			                        count = target.ancestor('ul').all('section.selected').size();
 			                    }
 			                } 
 			                catch (e) {
-			                    count = target.ancestor('ul').all('li.selected').size();
+			                    count = target.ancestor('ul').all('section.selected').size();
 			                }
 			                
 			                //Set the style on the proxy node, the count badge
@@ -115,7 +115,7 @@
             	var toXY;
             	var parent = e.target.get('node').ancestor('ul');
                 //get the imgs of the selected LIs.
-                var imgs = parent.all('li.selected img');
+                var imgs = parent.all('section.selected img');
                 var dropTarget = e.drop.get('node');
                 
                 /*
@@ -150,7 +150,7 @@
                 	// add to Lightbox
                 	var lightbox = dropTarget.dom().Lightbox;
                 	try {
-                		dropTarget = lightbox.PhotoRoll.container.all('li.thumbnail').pop();
+                		dropTarget = lightbox.PhotoRoll.container.all('section.thumbnail').pop();
                 	}catch(e){
                 	}
                 	done = lightbox.processDrop(nodeList, _clearSelected);

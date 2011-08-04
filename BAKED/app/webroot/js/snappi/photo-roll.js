@@ -273,6 +273,9 @@
 	        case 'lightbox-':
 	        	// render manually to enforce LIMIT
 	        	this._cfg.showLabel = false;
+	        	if (this._cfg.addClass == 'lbx-tiny' ) {
+	        		this._cfg.showExtras = false;	        		
+	        	}
 	        	break;
 	        case 'uuid-':
 	        	this.render(_cfg); 
@@ -294,6 +297,7 @@
 //	            }, this);
 	        	SNAPPI.DragDrop.pluginDelegatedDrag(this.container, 'img.drag');        	
 	        }
+	        SNAPPI.Rating.startListeners(this.container);
 	        SNAPPI.DragDrop.startListeners();
 	        Y.fire('snappi:afterPhotoRollInit', this.auditionSH); 
     	},
@@ -326,7 +330,7 @@
             if (!this.container) 
                 return;
             var offset, page, perpage, 
-            	nlist = this.container.all('li.thumbnail');
+            	nlist = this.container.all('section.thumbnail');
             switch(this._cfg.ID_PREFIX) {
 	            case 'filmstrip-':
 	            case 'substitute-':
@@ -334,7 +338,7 @@
 	            	perpage = this._cfg.end - this._cfg.start;            	
 	            	break;
 	            case 'lightbox-':
-            		// use the existing number of li.thumbnails
+            		// use the existing number of section.thumbnails
 	                perpage =  this._cfg.perpage || this.auditionSH.size();
 	                page = page ||  1;
 	                offset = (page - 1) * perpage;
@@ -376,7 +380,7 @@
             		} else {
             			// on first bind with cakephp render, 
             			// we match li.id with audition.id and add li.audition
-            			// TODO: deprecate when we move to JSON/JS li.thumbnail rendering
+            			// TODO: deprecate when we move to JSON/JS section.thumbnail rendering
 //	                	var id = li.get('id');	
 //	                	if (this._cfg.ID_PREFIX) id = id.replace(this._cfg.ID_PREFIX, '');
 //	                    var audition = this.auditionSH.get(id);
@@ -443,11 +447,12 @@
         	} else return label;
         }, 
         reuseLI: function(li, audition){
-        	li.Thumbnail.reuse(audition);
+        	section.thumbnail.reuse(audition);
         	return;
         },
         createLI: function(ul, audition, cfg){
         	cfg = cfg || this._cfg;
+        	cfg.photoroll = cfg.photoroll || this;
         	var t = new SNAPPI.Thumbnail(audition, cfg);
         	ul.append(t.node);
         	return t.node;
@@ -477,7 +482,7 @@
             }
         },
         /**
-         * listen for click on arrow and li.thumbnails
+         * listen for click on arrow and section.thumbnails
          * 	- NOTE: must be started manually, as this method requires a closure
          * 	- not compatible with 'listenClick'
          * @param closure
@@ -582,7 +587,7 @@
                     if (this.castingCall.CastingCall) {
                     	next += '?ccid=' + this.castingCall.CastingCall.ID;
 						try {
-							var shotType = e.currentTarget.ancestor('li.thumbnail').audition.Audition.Substitutions.shotType;
+							var shotType = e.currentTarget.ancestor('section.thumbnail').audition.Audition.Substitutions.shotType;
 							if (shotType == 'Groupshot'){
 								next += '&shotType=Groupshot';
 							}
@@ -655,7 +660,7 @@
                 			this.stopClickListener();
                 		}
                 	}
-        		}, 'li.thumbnail', this);
+        		}, 'section.thumbnail', this);
 			}        	
         	return;
         },
@@ -771,7 +776,7 @@
         /**
          * set focus in DOM object
          * - NOT the same as auditionSH.getFocus()
-         * @param i, index or li.thumbnail
+         * @param i, index or section.thumbnail
          * @return
          */
         setFocus: function(i){
@@ -779,7 +784,7 @@
         	if(!Y.Lang.isNumber(i)){
         		next = i;
         	}else {
-        		next = this.container.all('li.thumbnail').item(i);
+        		next = this.container.all('section.thumbnail').item(i);
         	}
             
             if (next) {
@@ -814,7 +819,7 @@
 	    		prev.removeClass('focus');
 	    		
 	    		// get the amount of each line
-	    		var first = this.container.one(' > li.thumbnail');
+	    		var first = this.container.one(' > section.thumbnail');
 	    		while(first.get('offsetTop') == first.next(SNAPPI.util.isDOMVisible).get('offsetTop')){
 	    			first = first.next(SNAPPI.util.isDOMVisible);
 	    			lineCount++; 
@@ -854,7 +859,7 @@
         		prev.removeClass('focus');
         		
         		// get the amount of each line
-        		var first = this.container.one(' > li.thumbnail');
+        		var first = this.container.one(' > section.thumbnail');
         		while(first.get('offsetTop') == first.next(SNAPPI.util.isDOMVisible).get('offsetTop')){
         			first = first.next(SNAPPI.util.isDOMVisible);
         			lineCount++; 
@@ -1084,7 +1089,7 @@
 //				// complete				
 //				var check;
 			}else { // this uses visible selected only
-				batch = this.container.all('li.selected');
+				batch = this.container.all('section.selected');
 				auditionSH = new SNAPPI.SortedHash();
 				batch.each(function(node){
 					auditionSH.add(node.dom().audition);
@@ -1246,11 +1251,11 @@
         showThumbnailRatings : function(node){
 	        // private method
 			var pr = node ? SNAPPI.PhotoRoll.getFromDom(node) : this;
-            var thumbs = pr.container.all('li.thumbnail');
+            var thumbs = pr.container.all('section.thumbnail');
             thumbs.each(function(n){
             	if (n.hasClass('hide')) return;
                 if (n.Rating == undefined) {
-                	SNAPPI.Rating.pluginRating.call(this, n.Thumbnail, n.dom().audition.rating);
+                	SNAPPI.Rating.pluginRating(this, n.Thumbnail, n.dom().audition.rating);
                 } else {
                 	// rating already exists
                 	n.one('div.ratingGroup').removeClass('hide');
@@ -1263,7 +1268,7 @@
         },
         hideThumbnailRatings : function(node){
         	var pr = node ? SNAPPI.PhotoRoll.getFromDom(node) : this;
-            var thumbs = pr.container.all('li.thumbnail');
+            var thumbs = pr.container.all('section.thumbnail');
             pr.container.all('div.ratingGroup').addClass('hide');
             pr.container.all('div.thumb-label').removeClass('hide');
             SNAPPI.STATE.showRatings = 'hide';	
@@ -1637,7 +1642,7 @@
 		},
 		/**
 		 * 
-		 * @param selected  li.thumbnail of selected shot
+		 * @param selected  section.thumbnail of selected shot
 		 * @param cfg
 		 * @return
 		 */

@@ -184,7 +184,7 @@
             }
             return null;
         },
-        import : function(srcGroup){
+        importGroup : function(srcGroup){
         	var destGroup = this;
         	var d1 = destGroup.count();
         	var s1 = srcGroup.count();

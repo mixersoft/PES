@@ -877,14 +877,14 @@ div.section-header div.primary-actions a:hover {
 /*
  * context/filter block
  */
-span.context > span.filter {
+span.context > span.filter-bar {
     background-color: #538fb3;
     color: white;
     padding: 1px 8px 1px 0;
 	cursor:default;
 }
 
-span.context > span.filter > a {
+span.context > span.filter-bar > a {
     background-color: #538fb3;
     color: white;
 }
@@ -894,7 +894,7 @@ span.context a:hover {
     text-decoration: underline;
 }
 
-span.context > span.filter > span.remove > a {
+span.context > span.filter-bar > span.remove > a {
     vertical-align: top;
     text-decoration: none;
     color: #be2a3a;
@@ -903,17 +903,17 @@ span.context > span.filter > span.remove > a {
     padding: 0 4px 0px 4px;
 }
 
-span.context > span.filter:hover {
+span.context > span.filter-bar:hover {
 	color: #be2a3a;
 }
 
-span.context > span.filter > span.remove > a:hover {
+span.context > span.filter-bar > span.remove > a:hover {
 	text-decoration:none;
 	color: white;
 	background-color: #be2a3a;
 } 
 
-span.context > span.filter > span.remove {
+span.context > span.filter-bar > span.remove {
     padding-right: 4px;
 }
 

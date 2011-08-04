@@ -80,7 +80,7 @@
 			if (!e.ctrlKey && !e.shiftKey) {
 				// No shift key - remove all selected images,
 				var found = false;
-				target.ancestor('ul').all('li.selected').each(function(node) {
+				target.ancestor('ul').all('section.selected').each(function(node) {
 					node.removeClass('selected');
 					found = true;
 				});
@@ -123,7 +123,7 @@
 				});
 		},
 		clearAll : function(nodeUL) {
-			nodeUL.all('> LI.selected').each(function(n, i, l) {
+			nodeUL.all('> section.selected').each(function(n, i, l) {
 				// select
 					n.removeClass('selected');
 				});
@@ -133,7 +133,8 @@
 	/*
 	 * make global
 	 */
-	SNAPPI.multiSelect = new MultiSelect();
+	// deprecated , use SNAPPI.MultiSelect2()
+	// SNAPPI.multiSelect = new MultiSelect();
 
 })();
 

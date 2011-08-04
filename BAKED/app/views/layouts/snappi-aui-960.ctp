@@ -24,9 +24,9 @@
 	<title>
 		<?php echo $title_for_layout; ?>
 	</title>
-	<link rel="stylesheet" type="text/css" media="all" href="/css/960css/reset.css" />
-	<link rel="stylesheet" type="text/css" media="all" href="/css/960css/text.css" />
-	<link rel="stylesheet" type="text/css" media="all" href="/css/960css/960.css" />	
+	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/reset.css" />
+	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/style.css" />
+	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/960.css" />	
 	<script id='css-start' type='text/javascript'> PAGE = {jsonData:{STATE:{}, menu:{}}, init:[]}; 	ALLOY_VERSION='alloy-1.0.2';</script>
 	<script src="/svc/lib/alloy-1.0.2/build/aui/aui.js" type="text/javascript"></script>
 	<?php

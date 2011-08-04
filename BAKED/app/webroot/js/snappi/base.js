@@ -38,7 +38,7 @@
      */
     SNAPPI.debug_showNodes = function() {
         if (SNAPPI.DEBUG) {
-	        SNAPPI.Y.all('#content div, li.thumbnail').each(function (n,i,l) {
+	        SNAPPI.Y.all('#content div, section.thumbnail').each(function (n,i,l) {
 	        	if (n.Rating || n.audition || n.PhotoRoll || n.Lightbox || n.Thumbnail) {
 	        		n.dom().yNode = n.ynode();
 	        	}

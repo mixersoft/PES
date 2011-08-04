@@ -21,7 +21,7 @@ $isPreview = (!empty($this->params['url']['preview']));
 			<li><?php echo $this->element('context'); ?></li>
 			<li>
 				<span class='context'>
-					<span id='filter-rating-parent' class='filter'>
+					<span id='filter-rating-parent' class='filter-bar'>
 						<span class='remove'>
 							<a title='click here to REMOVE this filter' href='' onclick='window.location.reload();' >x</a>
 						</span>

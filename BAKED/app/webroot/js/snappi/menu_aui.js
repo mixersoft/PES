@@ -236,7 +236,7 @@ var DEFAULT_CFG_contextmenu = 	{
 			// add new rating group as LI > DIV
 //			menuItem.audition = thumbnail.audition;
 			menuItem.setAttribute('uuid', thumbnail.audition.id);
-			SNAPPI.Rating.pluginRating.call(menuItem, menuItem, thumbnail.audition.rating);
+			SNAPPI.Rating.pluginRating(menuItem, menuItem, thumbnail.audition.rating);
 			SNAPPI.Rating.startListeners(menuItem);
 			menuItem.one('.ratingGroup').setAttribute('id', 'menuItem-contextRatingGrp');
 		} else {
@@ -492,7 +492,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	CFG_Context_Photoroll.load = function(cfg){
 		var Y = SNAPPI.Y;
 		var CSS_ID = 'contextmenu-photoroll-markup';
-		var TRIGGER = 'ul.photo-roll > li.thumbnail';
+		var TRIGGER = 'ul.photo-roll > section.thumbnail';
 		var MARKUP = {
 				id: CSS_ID,
 				selector: '#'+CSS_ID,
@@ -525,7 +525,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	CFG_Context_HiddenShot.load = function(cfg){
 		var Y = SNAPPI.Y;
 		var CSS_ID = 'contextmenu-hiddenshot-markup';
-		var TRIGGER = 'ul.substitutes > li.thumbnail';
+		var TRIGGER = 'ul.substitutes > section.thumbnail';
 		var MARKUP = {
 				id: CSS_ID,
 				selector: '#'+CSS_ID,

@@ -62,7 +62,7 @@
     			return;
     		}
     		
-    		var markup = '<li><span class="context"><span class="filter"><span class="remove"> <a href="{removeHref}" title="click here to REMOVE this filter.">x</a></span> {labelClass} {labelLabel}</span></span></li>';
+    		var markup = '<li><span class="context"><span class="filter-bar"><span class="remove"> <a href="{removeHref}" title="click here to REMOVE this filter.">x</a></span> {labelClass} {labelLabel}</span></span></li>';
     		var markup_A = '<a href="{labelHref}">{labelLabel}</a>';
     		var markup_B = '<b>{labelLabel}</b>';
     		var output = [];

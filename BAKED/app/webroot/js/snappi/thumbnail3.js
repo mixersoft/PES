@@ -31,11 +31,20 @@
 		 * protected
 		 */
 		var _showSubstitutesCSS; // stylesheet for hiding substitutes
-		var _htmlTemplate = '<li><div class="thumb"><img></li>';
+		var _htmlTemplate = // '<li><div class="thumb"><img></li>';
+					'<section class="FigureBox">'+
+                    '	<figure><img alt="" src=""></figure>'+
+                    '    <ul>'+
+                    '    	 <li class="stars"></li>'+
+                    '        <li class="value">0.00</li>'+
+                    '        <li class="icon"><img width="16" height="17" alt="" src="/css/images/icon1.png"></li>'+
+                    '        <li class="icon"><img width="15" height="16" alt="" src="/css/images/icon2.png"></li>'+
+					'	</ul>'+
+					'</section>';		
 		var _defaultCfg = {
 			className : 'thumbnail',
 			size : 'sq',
-			addClass : 'grid_2',
+			// addClass : null,
 			ID_PREFIX : '',
 			type : 'photo',
 			showLabel : false,
@@ -60,7 +69,7 @@
 		var Thumbnail = function(audition, cfg) {
 			this.init(cfg);
 			if (audition)
-				this.create(audition);
+				this.create(audition, cfg.photoroll);
 		};
 		
 		/*
@@ -98,7 +107,7 @@
 			init : function(cfg) {
 				this._cfg = Y.merge(_defaultCfg, cfg);
 			},
-			create : function(audition) {
+			create : function(audition, photoroll) {
 				var node = Y.Node.create(_htmlTemplate);
 				node.addClass(this._cfg.className).addClass(
 						this._cfg.addClass).addClass(this._cfg.size);
@@ -109,7 +118,7 @@
 					id = this._cfg.ID_PREFIX + id;
 				node.set('id', id);
 
-				var src, linkTo, title;
+				var src, linkTo, title, score, votes;
 				switch (this._cfg.type) {
 				case 'photo':
 					SNAPPI.Auditions.bind(node, audition);
@@ -118,6 +127,8 @@
 					linkTo = '/photos/home/' + audition.id;
 					// add ?ccid&shotType in photoroll.listenClick()
 					title = audition.label;
+					score = audition.Audition.Photo.Fix.Score;
+					votes = audition.Audition.Photo.Fix.Votes;
 					break;
 				case 'person':
 				case 'group':
@@ -142,9 +153,24 @@
 							.trimLabel(title) + '</div>');
 					node.append(n);
 				}
+
 				this.node = node;
 				this.img = img;
 				node.Thumbnail = this;
+				
+				if (this._cfg.showExtras === false) {
+					node.one('ul').remove();
+				} else {
+					// attach Rating
+	            	photoroll = photoroll || SNAPPI.PhotoRoll.getFromDom(node);
+	            	SNAPPI.Rating.pluginRating(photoroll, node.Thumbnail, node.audition.rating);
+	            	// attach Score
+	            	if (score !== undefined) {
+	            		var title = score + ' out of '+ votes +' vote';
+	            		title += votes == '1' ? '.' : 's.';		// add plural as appropriate
+	            		node.one('li.value').set('innerHTML', score).setAttribute('title', title);
+	            	}	            	
+	            }
 				return node;
 			},
 			/**
@@ -166,7 +192,7 @@
 					id = this._cfg.ID_PREFIX + id;
 				node.set('id', id);
 
-				var src, linkTo, title;
+				var src, linkTo, title, score, votes;
 				switch (this._cfg.type) {
 				case 'photo':
 					SNAPPI.Auditions.bind(node, audition);
@@ -175,6 +201,8 @@
 					linkTo = '/photos/home/' + audition.id;
 					// add ?ccid&shotType in photoroll.listenClick()
 					title = audition.label;
+					score = audition.Audition.Photo.Fix.Score;
+					votes = audition.Audition.Photo.Fix.Votes;					
 					break;
 				case 'person':
 				case 'group':
@@ -193,12 +221,19 @@
 					node.append(n);
 				}
 
+				// update Rating
 				if (node.Rating) {
 					node.Rating.id = audition.id;
 					node.Rating.node.setAttribute('uuid', audition.id).set(
 							'id', audition.id + '_ratingGrp');
 					node.Rating.render(audition.rating);
 				}
+				// update Score
+            	if (score !== undefined) {
+            		var title = score + ' out of '+ votes +' vote';
+            		title += votes == '1' ? '.' : 's.';		// add plural as appropriate
+            		node.one('li.value').set('innerHTML', score).setAttribute('title', title);
+            	}				
 				return node;
 			},
 			setData : function(dataElement) {

@@ -196,7 +196,7 @@
 		renderPhotoContextMenu : function(target){
 			var t = target.get('offsetTop'),
 				class_ratingGrp = '.ratingGroup',
-				class_LI_thumbnail = 'li.thumbnail',
+				class_LI_thumbnail = 'section.thumbnail',
 				id_contextMenuRatingGrp = 'menuItem-contextRatingGrp', 
 				id_contextMenuInfo = 'menu-photoRollContext';
 			
@@ -245,7 +245,7 @@
 	        		// rating item
 	        		label : '',
 	        		afterAttach : {
-	        			fn :// the first time context menu is attached to one li.thumbnail
+	        			fn :// the first time context menu is attached to one section.thumbnail
 	        				// happens before the menu's afterAttach. 
 	        				// will not be called after this time.
 	        				function(target){
@@ -255,7 +255,7 @@
 	        					var audition = contextMenu_target.dom().audition;
 	        					var photoRoll = _getPhotoRoll(contextMenu_target);
 		            			// add new rating group as LI > DIV
-	        					SNAPPI.Rating.pluginRating.call(menuItem, menuItem, target.audition.rating);
+	        					SNAPPI.Rating.pluginRating(menuItem, menuItem, target.audition.rating);
 		            			SNAPPI.Rating.startListeners(menuNode);
 		                    	menuNode.one('.ratingGroup').setAttribute('id', 'menuItem-contextRatingGrp');
 		        			}
@@ -413,7 +413,7 @@
 					    			}
 					           }
 						},
-			           selector : 'li.thumbnail',
+			           selector : 'section.thumbnail',
 			           args : photoRollNode.dom().PhotoRoll
 					},
 					*/
@@ -432,7 +432,7 @@
 							// add parent and dom property
 							photoRoll.contextMenu = this;	// add this property for contextMenu only
 
-	            			SNAPPI.Menu.plugInBlur(photoRoll.container, menuNode, "> li.thumbnail");
+	            			SNAPPI.Menu.plugInBlur(photoRoll.container, menuNode, "> section.thumbnail");
 	            			// simulate mousedown on target activate plugInBlur the first time
 	            			contextMenu_target.simulate('mousedown');	            			
 
@@ -483,7 +483,7 @@
 		renderSubstituteContextMenu : function(target){
 			var t = target.get('offsetTop'),
 				class_ratingGrp = '.ratingGroup',
-				class_LI_thumbnail = 'li.thumbnail',
+				class_LI_thumbnail = 'section.thumbnail',
 				id_contextMenuRatingGrp = 'menuItem-contextRatingGrp', 
 				id_contextMenuInfo = 'menu-photoRollContext';
 			
@@ -607,7 +607,7 @@
 							// add parent and dom property
 							photoRoll.contextMenu = this;	// add this property for contextMenu only
 
-	            			SNAPPI.Menu.plugInBlur(photoRoll.container, menuNode, "> li.thumbnail");
+	            			SNAPPI.Menu.plugInBlur(photoRoll.container, menuNode, "> section.thumbnail");
 	            			// simulate mousedown on target activate plugInBlur the first time
 	            			contextMenu_target.simulate('mousedown');	            			
 
