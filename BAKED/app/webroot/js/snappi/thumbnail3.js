@@ -183,7 +183,7 @@
 			 */
 			reuse : function(audition, node) {
 				node = node || this.node;
-				node.set('className', '').addClass(this._cfg.className)
+				node.set('className', 'FigureBox '+this._cfg.className)
 						.addClass(this._cfg.addClass || this._cfg.size);
 
 				// set id

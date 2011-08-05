@@ -165,7 +165,9 @@
 		 * load
 		 */
 		init : function() {
-			this.initPaging();
+			this.initPaging();		
+			// deprecate, use paginator_aui.js instead
+			if (console) console.warn("utils.js: deprecate Ajax.initPaging, use paginator_aui.js: SNAPPI.Paginator instead") 
 			this.fetchXhr();
 		},
 		/*
@@ -248,7 +250,7 @@
 		 */
 		initPaging : function() {
 			var Y = SNAPPI.Y;
-			var paging = Y.all('div.paging-contentXXX');
+			var paging = Y.all('div.paging-contentXXX');	// deprecate. using SNAPPI.Paginator
 			if (paging) {
 				paging.each(function(n) {
 					// add event delegate listeners

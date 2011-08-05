@@ -29,7 +29,7 @@
     var defaultCfg = {
 		ID_PREFIX: 'uuid-',
 		hideSubstituteCSS: false,
-		size: 'sq',
+		size: 'lm',
 		start: null,
 		end: null
     };
@@ -446,8 +446,8 @@
         		} else return label.substr(0,length-3)+'...';
         	} else return label;
         }, 
-        reuseLI: function(li, audition){
-        	section.thumbnail.reuse(audition);
+        reuseLI: function(section, audition){
+        	section.Thumbnail.reuse(audition);
         	return;
         },
         createLI: function(ul, audition, cfg){
@@ -594,7 +594,7 @@
 						} catch (e) {}
                     }
                     window.location.href = next;
-                }, 'div.thumb > img', this);
+                }, 'section.FigureBox > figure > img', this);
             } 
         },
         listenMultiSelect : function () {
