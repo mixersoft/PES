@@ -752,7 +752,7 @@ VALUES :chunk: ";
 
 		// paginate 
 		$paginateModel = 'ProviderAccount';
-		$Model = $this->User->{$paginateModel};
+		$Model = $this->Group->Member->{$paginateModel};
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $Model->getPaginateProviderAccountsByGroupId($id, $this->paginate[$paginateModel]);
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs'), $paginateArray['conditions']);

@@ -77,7 +77,7 @@ class PersonController extends UsersController {
 			/*
 			 * experimental
 			 */
-			'addACLs', 'remove_photos', 'odesk_photos'
+			'addACLs', 'remove_photos', 'odesk_photos', 'photostreams'
 		);
 		$this->Auth->allow( array_merge($this->Auth->allowedActions , $myAllowedActions));
 		// TODO: edit allowed for  'role-----0123-4567-89ab---------user'
