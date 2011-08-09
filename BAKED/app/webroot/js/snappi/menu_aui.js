@@ -9,7 +9,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		showDelay: 0,
 		on: {
 			show: function(e) {
-				 console.warn('contextmenu: on show', e);
+				 // console.warn('contextmenu: on show', e);
 				 var menuTarget = e.target;
 				 Menu.menuItem_beforeShow(menuTarget);
 			},
@@ -19,7 +19,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		},
 		after: {
 			show: function(e) {
-				 console.warn('contextmenu: after show', e);
+				 // console.warn('contextmenu: after show', e);
 				 var menuTarget = e.target;
 				 var contextTarget = menuTarget.get('currentNode');
 				 var check;				 
@@ -143,7 +143,8 @@ var DEFAULT_CFG_contextmenu = 	{
 		var menu = Menu.find[menu_ID];
 		if (menu.get('disabled')) {
 			menu.enable();
-			menu.set('trigger', e.currentTarget);			// 'startup/disabled' trigger
+			var trigger = e.currentTarget.hasClass('thumbnail') ? e.currentTarget : e.currentTarget.ancestor('.thumbnail');
+			menu.set('trigger', trigger);			// 'startup/disabled' trigger
 			menu.show();
 			menu.set('trigger', menu._stashTrigger); 		// 'enabled' trigger
 		} else {

@@ -636,33 +636,41 @@
         listenRightClick : function (){
         	if (this.container.listen['RightClick'] == undefined){
         		this.container.listen['RightClick'] = this.container.delegate('contextmenu', function(e){
-                	e.preventDefault();
-                	
-                	var CSS_ID;
-                	if (this.container.hasClass('photo-roll')) {
-                		CSS_ID = 'contextmenu-photoroll-markup';
-                	} else if (this.container.hasClass('substitutes') || this.container.hasClass('hidden-shot')) {
-                		CSS_ID = 'contextmenu-hiddenshot-markup';
-                	} else if (this.container.hasClass('filmstrip')) {
-                		// TODO: not yet done
-                		console.warn("PhotoRoll.listenRightClick: not done for filmstrip");
-                	}
-                	
-                	// load/toggle contextmenu
-                	if (!SNAPPI.MenuAUI.find[CSS_ID]) {
-                		SNAPPI.MenuAUI.CFG[CSS_ID].load({currentTarget:e.currentTarget});
-                		this.stopClickListener();
-                	} else {
-                		var menu = SNAPPI.MenuAUI.toggleEnabled(CSS_ID, e);
-                		if (menu.get('disabled')) {
-                			this.listenClick();
-                		} else {
-                			this.stopClickListener();
-                		}
-                	}
+					this.toggle_ContextMenu(e);
         		}, 'section.thumbnail', this);
+        		
+        		// .FigureBox li.context-menu.icon
+     		this.container.listen['ContextMenu'] = this.container.delegate('click', function(e){
+					this.toggle_ContextMenu(e);
+        		}, 'section.thumbnail > ul > li.context-menu', this);        		
 			}        	
         	return;
+        },
+        toggle_ContextMenu : function(e) {
+	        e.preventDefault();
+        	
+        	var CSS_ID;
+        	if (this.container.hasClass('photo-roll')) {
+        		CSS_ID = 'contextmenu-photoroll-markup';
+        	} else if (this.container.hasClass('substitutes') || this.container.hasClass('hidden-shot')) {
+        		CSS_ID = 'contextmenu-hiddenshot-markup';
+        	} else if (this.container.hasClass('filmstrip')) {
+        		// TODO: not yet done
+        		console.warn("PhotoRoll.listenRightClick: not done for filmstrip");
+        	}
+        	
+        	// load/toggle contextmenu
+        	if (!SNAPPI.MenuAUI.find[CSS_ID]) {
+        		SNAPPI.MenuAUI.CFG[CSS_ID].load({currentTarget:e.currentTarget});
+        		this.stopClickListener();
+        	} else {
+        		var menu = SNAPPI.MenuAUI.toggleEnabled(CSS_ID, e);
+        		if (menu.get('disabled')) {
+        			this.listenClick();
+        		} else {
+        			this.stopClickListener();
+        		}
+        	}
         },
         stopClickListener : function(){
         	if(this.container.listen.click != undefined){

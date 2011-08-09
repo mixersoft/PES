@@ -37,8 +37,8 @@
                     '    <ul>'+
                     '    	 <li class="stars"></li>'+
                     '        <li class="value">0.00</li>'+
-                    '        <li class="icon"><img width="16" height="17" alt="" src="/css/images/icon1.png"></li>'+
-                    '        <li class="icon"><img width="15" height="16" alt="" src="/css/images/icon2.png"></li>'+
+                    '        <li class="icon info"><img width="16" height="17" alt="" src="/css/images/icon1.png"></li>'+
+                    '        <li class="icon context-menu"><img width="15" height="16" alt="" src="/css/images/icon2.png"></li>'+
 					'	</ul>'+
 					'</section>';		
 		var _defaultCfg = {
