@@ -34,6 +34,7 @@ class MyController extends PersonController {
 			/*
 			 * main
 			 */
+			// add to ACLs
 			'upload', 'lightbox', 
 			/*
 			 * experimental
@@ -79,7 +80,7 @@ class MyController extends PersonController {
 		/*
 		 * create ProviderAccount, if missing
 		 */
-		$conditions = array('provider_name'=>$data['ProviderAccount']['provider_name'], 'user_id'=>AppController::$userid);
+		$conditions = array('id'=>$data['ProviderAccount']['id'],'provider_name'=>$data['ProviderAccount']['provider_name'], 'user_id'=>AppController::$userid);
 		$paData = $this->ProviderAccount->addIfNew($data['ProviderAccount'], $conditions,  $response);
 
 		/****************************************************
