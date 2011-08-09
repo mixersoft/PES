@@ -373,6 +373,11 @@ section.subnav ul li.preference a {
  right:0px;
  width:auto;	
 }
+/*temp CSS for selected*/
+.FigureBox.selected {
+	border: 1px solid red;
+}
+
 .FigureBox:hover{
 	background:#fff88a;
 }
