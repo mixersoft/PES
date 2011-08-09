@@ -138,7 +138,7 @@
 			oneShotCfg[shot.id] = shot;		// format for PhotoRoll constructor
 			var showHiddenShotsCfg = {
 				ID_PREFIX : 'substitute-',
-				size : 'tn',
+				size : 'lm',
 				selected : 1,
 				start : 0,
 				end : Math.min(HIDDENSHOT_PREVIEW_LIMIT, total),
@@ -1481,7 +1481,7 @@
 				});
 				// close hiddenShot afterwards
 				try {
-					SNAPPI.MenuAUI.find['contextmenu-hiddenshot'].hide();
+					SNAPPI.MenuAUI.find['contextmenu-hiddenshot-markup'].hide();
 					SNAPPI.Dialog.find['photo-roll-hidden-shots'].hide();
 				} catch (e) {}
 				// cancel multiSelect
@@ -1633,7 +1633,7 @@
 				photoroll.render();
 				
 				try {
-					SNAPPI.MenuAUI.find['contextmenu-hiddenshot'].hide();
+					SNAPPI.MenuAUI.find['contextmenu-hiddenshot-markup'].hide();
 				} catch (e) {}
 				// cancel multiSelect
 				SNAPPI.multiSelect.clearAll(this.container);
@@ -1851,11 +1851,11 @@
     		/*
     		 * create or reuse Dialog
     		 */
-    		var dialog = SNAPPI.Dialog.find['photo-roll-hidden-shots'];
+    		var dialog_ID = 'dialog-photo-roll-hidden-shots';
+    		var dialog = SNAPPI.Dialog.find[dialog_ID];
     		if (!dialog) {
-    			var dialog = SNAPPI.Dialog.get_PhotoRoll({
-    				title: 'Hidden Shots'
-    			});
+            	dialog = SNAPPI.Dialog.CFG[dialog_ID].load();
+            	closure.dialog = dialog;
     			var cfg = {
 //    					uri: subUri,
     					parseContent: false,
@@ -1876,6 +1876,14 @@
     			                    var shot = audition.Audition.Substitutions;
     			                    shot.stale = shot._sh.count() != audition.Audition.Shot.count ;
     			                    var content = SNAPPI.Y.Node.create('<ul />');
+    			                    // adjust dialog size to fit hiddenShots
+    			                    var cells = shot._sh.count() > 6 ? {w:4,h:3} : {w:3,h:2}; 
+    			                    var offsets = args.dialog.cellOffsets;
+    			                    if (cells.w > 3) offsets.boundingBoxOffset.w += 19; // scrollbar
+    			                    args.dialog.get('boundingBox').setStyles({
+    			                    	width: cells.w * offsets.cellSize.w + offsets.boundingBoxOffset.w,
+    			                    	height: cells.h * offsets.cellSize.h + offsets.boundingBoxOffset.h
+    			                    })
     			                    var shotPr = _showHiddenShots.call(this, content, shot, args.selected);
     			                    return content;
     							}
@@ -1883,7 +1891,8 @@
     					}
     			};
     			dialog.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(cfg));
-    			SNAPPI.Dialog.find['photo-roll-hidden-shots'] = dialog;
+    			// dialog_ID == dialog.get('boundingBox').get('id')
+    			SNAPPI.Dialog.find[dialog_ID] = dialog;
     		} else {
     			if (!dialog.get('visible')) {
     				dialog.setStdModContent('body','<ul />');

@@ -112,7 +112,8 @@
 	            	var bestshot = castingCall.CastingCall.Auditions.Bestshot;
 	            	for (var shotId in bestshot) {
 	            		var bestshot_audition = sh.get(bestshot[shotId]);
-	            		castingCall.shots[shotId].setBest(bestshot_audition);
+	            		if (castingCall.shots[shotId] && castingCall.shots[shotId].setBest)
+	            			castingCall.shots[shotId].setBest(bestshot_audition);
 	            	}
 	            }
 	            

@@ -26,12 +26,50 @@ var DEFAULT_CFG_dialog = {
 var DEFAULT_CFG_io = {
 	};
 	
-		
-	
+
 	var Dialog = function(){
 		if (Dialog.doClassInit) Dialog.classInit();
 	};
 	Dialog.prototype = {};
+	Dialog.CFG  = {};
+	
+		
+	/*
+	 * DialogCfgs
+	 */
+	
+	var CFG_Dialog_Hidden_Shots = function(){}; CFG_Dialog_Hidden_Shots.prototype = {};			
+	
+	/*
+	 * Photoroll Hidden Shots dialog
+	 */
+	CFG_Dialog_Hidden_Shots.load = function(cfg){
+		var Y = SNAPPI.Y;
+		var CSS_ID = 'dialog-photo-roll-hidden-shots';
+		var _cfg = {
+			title: 'Hidden Shots',
+			id: CSS_ID,
+			width: (3*145+64),	// 19 px for scrollbar
+			height: (2*97+146),
+			destroyOnClose: false,
+			modal: false			
+		}
+		cfg = cfg || {};
+		_cfg = Y.merge(DEFAULT_CFG_dialog, _cfg, cfg);
+		
+		var dialog = new Y.Dialog(_cfg);
+		dialog.cellOffsets = {
+			boundingBoxOffset: {w:64, h:146}, // +19 px for scrollbar
+			cellSize:{w:145, h:97}
+		}
+		if (cfg.autoLoad !== false) dialog.render();
+		// save reference
+		Dialog.find[CSS_ID] = dialog;
+		return dialog;		
+	}
+	// save CFG in static
+	Dialog.CFG['dialog-photo-roll-hidden-shots'] = CFG_Dialog_Hidden_Shots;
+		
 	
 	/*
 	 * static properties and methods
@@ -45,30 +83,7 @@ var DEFAULT_CFG_io = {
 		Dialog.doClassInit = false;
 	};
 	
-	Dialog.get_PhotoRoll = function(cfg){
-		var Y = SNAPPI.Y;
 
-		cfg = cfg || {};
-		var _cfg = {
-			title: "Photos",
-			destroyOnClose: false,
-			modal: false
-		};
-		_cfg = Y.merge(DEFAULT_CFG_dialog, _cfg, cfg);
-		
-		var dialog = new Y.Dialog(_cfg);
-		if (cfg.autoLoad !== false) dialog.render();
-		
-//		var _ioCfg = {
-//			uri: cfg.uri,
-//			method: 'GET',
-//			parseContent: true,
-//			autoLoad: (cfg.autoLoad !== false) ? true : false
-//		};
-//		_ioCfg = Y.merge(DEFAULT_CFG_io, _ioCfg);
-//		dialog.plug(Y.Plugin.IO, _ioCfg);
-		return dialog;
-	};
 	
 	SNAPPI.Dialog = Dialog;
 })();

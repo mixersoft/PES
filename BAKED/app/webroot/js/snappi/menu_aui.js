@@ -131,6 +131,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		Menu.startListener(menu);
 		
 		// lookup reference
+		
 		Menu.find[MARKUP.id] = menu;
 		return menu;
 	};
@@ -138,8 +139,8 @@ var DEFAULT_CFG_contextmenu = 	{
 	/*
 	 * toggle menu enable/disable by changing trigger
 	 */
-	Menu.toggleEnabled = function(menuName, e) {
-		var menu = Menu.find[menuName];
+	Menu.toggleEnabled = function(menu_ID, e) {
+		var menu = Menu.find[menu_ID];
 		if (menu.get('disabled')) {
 			menu.enable();
 			menu.set('trigger', e.currentTarget);			// 'startup/disabled' trigger
@@ -187,6 +188,10 @@ var DEFAULT_CFG_contextmenu = 	{
 	
 	
 	Menu.log_methods = function(menu){
+		
+		return;		// disable
+		
+		
 		var Y = SNAPPI.Y;
 		var peek = ['refreshAlign', 'toggle', 'show', 'hide', 'updateCurrentNode', 'focus', 'render', 'enable' , 'disable' ];
 		Y.before(function(){

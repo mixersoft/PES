@@ -760,6 +760,7 @@ ul.photo-roll > li.substitute-hide {
     display: none;
 }
 
+
 div#substitutes.filmstrip > ul.filmstrip > li.substitute-show > div.thumb > img {
     border-color: red;
     border-width: 3px;
@@ -1733,7 +1734,7 @@ div#download-uploader {
 }
 div#download-uploader div{
 	color:white;
-	background-color:#538FB3;
+	background-color:green;
 	padding:10px;
 	margin:10px;
 	border: 1px solid black;
@@ -1813,3 +1814,30 @@ div#download-uploader div a{
 	opacity: 0.5;
 	color: #333;
 }	
+
+
+
+/*
+ * AUI /manoj overrides
+ * 
+ * 
+ */
+
+#dialog-photo-roll-hidden-shots .aui-panel-bd > ul {
+	margin: 7px 0 0 0;
+}
+
+ul.photo-roll .FigureBox.substitute-hide {
+    display: none;
+}
+.FigureBox.substitute-show > figure> img {
+    border-color: red;
+    border-width: 3px;
+    border-style: dotted double double dotted;
+}
+
+.FigureBox.substitute-show > figure > img {
+    border-color: red;
+    border-width: 3px;
+    border-style: dotted double double dotted;
+}
