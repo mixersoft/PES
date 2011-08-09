@@ -196,7 +196,7 @@
 			var ratingGroup = parent.create(Y.substitute(
 					"<div id='{id}' class='{className}'></div>", _cfg));
 			try {
-				parent.one('ul > li.stars').append(ratingGroup);	
+				parent.one('ul > li.rating').append(ratingGroup);	
 			}	catch (e) {
 				parent.append(ratingGroup);
 			}	

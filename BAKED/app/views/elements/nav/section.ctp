@@ -217,6 +217,6 @@ switch ($classLabel) {
 			}
 		?>
 	</script>
-	<div id='filter' class='placeholder'><ul class='inline'></ul></div>
+	<div id='page-filters' class='placeholder'><ul class='inline'></ul></div>
 	</div>
 </div>

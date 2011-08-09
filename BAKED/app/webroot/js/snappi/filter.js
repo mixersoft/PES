@@ -55,7 +55,7 @@
     	},
     	renderBar : function(filters){
     		if (!this.container) {
-    			this.container = Y.one('#filter');
+    			this.container = Y.one('#page-filters');
     		}    		
     		if (!filters) {
     			this.container.one('ul').set('innerHTML','');

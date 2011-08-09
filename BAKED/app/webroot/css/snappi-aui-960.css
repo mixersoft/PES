@@ -919,7 +919,7 @@ span.context > span.filter-bar > span.remove {
 }
 
 
-#filter div.ratingGroup  {
+#page-filters div.ratingGroup  {
 	display: inline-block;
 	vertical-align: middle;
 	padding-bottom: 2px;
