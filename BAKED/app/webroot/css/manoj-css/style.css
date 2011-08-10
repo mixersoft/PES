@@ -193,11 +193,29 @@ section.subnav ul li.preference a {
 	float:left;
 	padding:0 0px 0 2px;
 	position:relative;
+	cursor:default;
 }
 .search img {
 	float:left;
 }
-
+/*rename gallerypic to ???*/
+a.gallerypic{
+ text-decoration:none;
+ position:relative;
+ display:block;
+}
+a.gallerypic span.zoom-icon{
+ visibility:hidden;
+ position:absolute;
+ left:66%;
+ top:-3%;
+}
+a.gallerypic:hover span.zoom-icon{
+ visibility:visible;
+}
+a.gallerypic span.zoom-icon selected {
+	visibility:visible;
+}
 
 #display-option {
 	padding:5px 0 5px 0;
@@ -330,6 +348,10 @@ section.subnav ul li.preference a {
 	right:2px; 
 	top:8px;
 	}
+#filter ul li img{ 
+	width:1px;
+	height:19px;
+	}	
 #filter .grid_5 {
 	float:right;
 }
@@ -352,6 +374,7 @@ section.subnav ul li.preference a {
 	padding:3px 30px 3px 3px;
 	margin:0 2px 0 0;
 	position:relative;
+	cursor:default;
 }
 #filter ul.short-display li span img{
 	position:absolute; 
@@ -398,12 +421,12 @@ section.subnav ul li.preference a {
 	background:#fff88a;
 }
 .FigureBox > figure {
-	width:145px;
-	height:97px;
+	width:144px;
+	height:96px;
 }
 .FigureBox > figure[0] > img {
-	width:145px;
-	height:97px;
+	width:144px;
+	height:96px;
 }
 .FigureBox ul {
 	list-style:none;
@@ -414,11 +437,9 @@ section.subnav ul li.preference a {
 	float:left;
 	margin:5px 4px 0 0;
 }
-
 .FigureBox ul li img {
 	float:left;
 }
-
 .FigureBox ul li.rating {
 	padding:2px 0 0 0;
 }
@@ -430,10 +451,9 @@ section.subnav ul li.preference a {
 	/*
 	 * without background url
 	 */
-    background: -moz-linear-gradient(center bottom , #EEEEEE, #FFFFFF) repeat scroll 0 0 transparent;
-    border-radius: 3px 3px 3px 3px;
 	font-size:11px;
 	/*background:url(../images/valueBox.png) no-repeat;*/
+	background: -moz-linear-gradient(bottom, #eeeeee, #fff);
 	background: -webkit-gradient(linear, center bottom, center top, from(#eeeeee), to(#fff));
 	border:1px solid #e2e2e2;
 	-moz-border-radius:3px;
@@ -444,7 +464,6 @@ section.subnav ul li.preference a {
 	text-align:center;
 	font-family:Arial, Helvetica, sans-serif;	
 	cursor: default;
-	
 }
 .FigureBox ul li.info > img {
 	width: 16px;
@@ -738,6 +757,7 @@ ul.snap-thumb li{
 	vertical-align:middle;
 	margin-top:10px;
 	font-size:13px;	
+	cursor:default;
 	}
 .btn-plus a{
 	text-decoration:none;
@@ -747,6 +767,7 @@ ul.snap-thumb li{
 	display:block;
 	line-height:20px;
 	font-size:13px;
+	cursor:default;
 }
 
 ul.circle-thumb{
@@ -813,7 +834,7 @@ ul.circle-thumb li a.earth1{
 .footer{padding:10px 0 0 0;}
 .footer ul{
 	list-style-type:none; clear:both; padding:5px 0;}
-.footer ul li{float:left; font-size:12px; color:#909090; background:url(../images/seprator.gif) no-repeat right ; padding:5px 10px;}
+.footer ul li{float:left; font-size:12px; color:#909090; background:url(../images/seprator.gif) no-repeat right ; padding:5px 10px; line-height:14px;}
 .footer ul li.none{background:none;}
 .footer ul li a{color:#909090;}
 .footer ul li.heading{font-size:14px; color:#7fd0e3;  text-transform:uppercase; width:100px; text-align:right; background:none;}
