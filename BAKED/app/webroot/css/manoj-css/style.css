@@ -198,39 +198,40 @@ section.subnav ul li.preference a {
 	float:left;
 }
 
-#display_option {
+
+#display-option {
 	padding:5px 0 5px 0;
 	float:left;
 }
-#display_option .counts {
+#display-option .counts {
 	width:600px;
 	line-height:22px;
 	float:left;
 }
-#display_option .counts h2 {
+#display-option .counts h2 {
 	font-size:15px;
 	float:left;
 	padding:0 20px 0 0;
 }
-#display_option .counts h3 {
+#display-option .counts h3 {
 	font-size:13px;
 	color:#585858;
 	float:left;
 }
-#display_option .thumb_size {
-	float:right;
+#display-option .thumb-size {
+	float:left;
 	line-height:22px;
 }
-#display_option .thumb_size span {
+#display-option .thumb-size span {
 	color:#cccccc;
 	font-size:13px;
 	padding:0 8px 0 0;
 }
-#display_option .thumb_size ul {
+#display-option .thumb-size ul {
 	list-style-type:none;
 	float:right;
 }
-#display_option .thumb_size ul li {
+#display-option .thumb-size ul li {
 	display:inline;
 	border:1px solid #fff;
 	width:28px;
@@ -238,35 +239,44 @@ section.subnav ul li.preference a {
 	margin:0 4px 0 0;
 	text-align:center;
 }
-#display_option .thumb_size ul li:hover {
+#display-option .thumb-size ul li:hover {
 	border:1px solid #eeeeee;
 	-moz-border-radius:3px;
 	-webkit-border-radius:3px;
 }
-#display_option .thumb_size ul li.focus {
+#display-option .thumb-size ul li.focus {
 	border:1px solid #eeeeee;
 	-moz-border-radius:3px;
 	-webkit-border-radius:3px;
 }
-#display_option .thumb_size ul li.small img {
+#display-option .thumb-size ul li.small img {
 	padding:8px 0 0 0;
 }
-#display_option .thumb_size ul li.med img {
+#display-option .thumb-size ul li.med img {
 	padding:5px 0 0 0;
 }
-#display_option .thumb_size ul li.large img {
+#display-option .thumb-size ul li.large img {
 	padding:3px 0 0 0;
 }
-#display_option .thumb_size li.display {
+#display-option .thumb-size li.display {
 	background: -moz-linear-gradient(bottom, #f5f5f5, #ffffff);
 	background: -webkit-gradient(linear, center bottom, center top, from(#f5f5f5), to(#ffffff));
 	border: 1px solid #e2e2e2;
 	-webkit-border-radius:4px 0px 0px 0px;
 	-moz-border-radius:4px 4px 0px 0px;
 	border-bottom: 0px solid #e1f3fc;
-	margin:0 0 0 4px;
-	padding:5px 8px 9px 16px;
+	margin:0 0 0 15px;
+	padding:5px 0 0 0;
+	height:25px;
 	font-size:13px;
+	position:absolute;
+	right:0px;
+	bottom:-7px;
+	width:135px;
+}
+#display-option .thumb-size li.display img {
+	width:10px;
+	height:10px;
 }
 
 #filter {
