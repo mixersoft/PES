@@ -5,7 +5,7 @@ a {
 	text-decoration:none;
 	outline:none;
 }
-.txt_black {
+.txt-black {
 	color:#000 !important;
 }
  @font-face {
@@ -87,7 +87,7 @@ ul.rightlink li img.add {
 ul.rightlink li span {
 	padding:0 10px;
 }
-ul.rightlink li.bg_grey {
+ul.rightlink li.bg-grey {
 	background:#474b4d;
 }
 ul.rightlink li span.grey {
@@ -95,11 +95,11 @@ ul.rightlink li span.grey {
 	float:left;
 	padding:0 4px 0 0;
 }
-ul.rightlink li img.arrow_right {
+ul.rightlink li img.arrow-right {
 	float:right;
 	padding:5px 0 0 30px;
 }
-#body_container {
+#body-container {
 	width:960px;
 	-moz-box-shadow: 0 0 5px #888;
 	-webkit-box-shadow: 0 0 5px #888;
@@ -241,8 +241,10 @@ section.subnav ul li.preference a {
 }
 #display-option .thumb-size ul li:hover {
 	border:1px solid #eeeeee;
-	-moz-border-radius:3px;
-	-webkit-border-radius:3px;
+	-moz-border-radius:3px 0px 3px 3px;
+	-webkit-border-radius:3px 0px 3px 3px;
+	top:-1px;
+	border-bottom: 0px solid #e1f3fc;
 }
 #display-option .thumb-size ul li.focus {
 	border:1px solid #eeeeee;
@@ -273,12 +275,12 @@ section.subnav ul li.preference a {
 	right:0px;
 	bottom:-7px;
 	width:135px;
+	cursor:default;
 }
 #display-option .thumb-size li.display img {
 	width:10px;
 	height:10px;
 }
-
 #filter {
 	-webkit-border-radius:5px;
 	border: 1px solid #e2e2e2;
@@ -331,18 +333,18 @@ section.subnav ul li.preference a {
 #filter .grid_5 {
 	float:right;
 }
-#filter ul.short_display {
+#filter ul.short-display {
 	float:right;
 	padding:5px 0 0 0;
 	
 }
-#filter ul.short_display li em {
+#filter ul.short-display li em {
 	float:left;
 	font-style:normal;
 	padding-top:5px;
 	padding-right:10px;
 }
-#filter ul.short_display li span {
+#filter ul.short-display li span {
 	background:#f3f3f3 url(../images/arrow_1.png) no-repeat right;
 	border:1px solid #eaeaea;
 	-moz-border-radius:5px;
@@ -351,7 +353,7 @@ section.subnav ul li.preference a {
 	margin:0 2px 0 0;
 	position:relative;
 }
-#filter ul.short_display li span img{
+#filter ul.short-display li span img{
 	position:absolute; 
 	right:3px; 
 	top:8px;
@@ -593,11 +595,6 @@ section.subnav ul li.preference a {
 #related-content .left article header ul{
 	float:right;	
 }
-bottom_blue_section .left article header ul li{
-	float:left;
-	list-style:none;
-	
-}
 #related-content .left article header ul li a{
 	border:1px solid #8bc3e4;	
 	color:#356aa0;
@@ -700,12 +697,12 @@ bottom_blue_section .left article header ul li{
 	color:#000;
 }
 
-ul.snap_thumb{
+ul.snap-thumb{
 	margin-bottom:10px;
 	clear:both;
 	float:left;
 }
-ul.snap_thumb li{
+ul.snap-thumb li{
 	list-style:none;
 	width:114px;
 	height:76px;
@@ -719,7 +716,7 @@ ul.snap_thumb li{
 	-moz-box-shadow:0px 0px 20px #afb4b6;
 }
 		
-.btn_plus{
+.btn-plus{
 	background-image: -webkit-gradient(
     	linear,
 		left bottom,
@@ -742,7 +739,7 @@ ul.snap_thumb li{
 	margin-top:10px;
 	font-size:13px;	
 	}
-.btn_plus a{
+.btn-plus a{
 	text-decoration:none;
 	background:url(../images/plus.png) left no-repeat;
 	color:#000;
@@ -752,13 +749,13 @@ ul.snap_thumb li{
 	font-size:13px;
 }
 
-ul.cricle_thumb{
+ul.circle-thumb{
 	margin-bottom:10px;
 	clear:both;
 	overflow:hidden;
 	
 }
-ul.cricle_thumb li{
+ul.circle-thumb li{
 	width:300px;
 	list-style:none;
 	overflow:hidden;
@@ -768,7 +765,7 @@ ul.cricle_thumb li{
 	margin-bottom:12px;
 	
 }
-ul.cricle_thumb li img{
+ul.circle-thumb li img{
 	border:4px solid #fff;
 	float:left;
 	-webkit-border-radius:4px ; 
@@ -778,26 +775,26 @@ ul.cricle_thumb li img{
 	margin:0px 4px 4px 0px;
 	clear:left;
 }
-ul.cricle_thumb li p{
+ul.circle-thumb li p{
 	margin-top:5px;
 }
 
 
-ul.cricle_thumb li a{
+ul.circle-thumb li a{
 	color:#404040;
 	font-size:11px;
 	text-decoration:none;
 	float:left;
 	line-height:18px;
 }
-ul.cricle_thumb li a.lock{
+ul.circle-thumb li a.lock{
 	background:url(../images/lock.png) no-repeat left;
 	padding-left:15px;
 	border-right:1px solid #404040;
 	padding-right:5px;
 	margin-right:5px;
 }
-ul.cricle_thumb li a.earth{
+ul.circle-thumb li a.earth{
 	background:url(../images/earth.png) no-repeat left;
 	padding-left:19px;
 	border-right:1px solid #404040;
@@ -805,7 +802,7 @@ ul.cricle_thumb li a.earth{
 	margin-right:5px;
 	line-height:18px;
 }
-ul.cricle_thumb li a.earth1{
+ul.circle-thumb li a.earth1{
 	background:url(../images/earth.png) no-repeat left;
 	padding-left:19px;
 	border-right:1px solid #404040;
@@ -821,10 +818,10 @@ ul.cricle_thumb li a.earth1{
 .footer ul li a{color:#909090;}
 .footer ul li.heading{font-size:14px; color:#7fd0e3;  text-transform:uppercase; width:100px; text-align:right; background:none;}
 
-ul.term_condition{list-style-type:none; border-top:18px solid #e3f6c8; padding:10px 0 50px;}
-ul.term_condition li{font-size:11px;}
-ul.term_condition li a{ color:#000;}
-ul.term_condition h1{float:left; width:380px; padding:0 0 0 10px;}
+ul.term-condition{list-style-type:none; border-top:18px solid #e3f6c8; padding:10px 0 50px;}
+ul.term-condition li{font-size:11px;}
+ul.term-condition li a{ color:#000;}
+ul.term-condition h1{float:left; width:380px; padding:0 0 0 10px;}
 
 
 
