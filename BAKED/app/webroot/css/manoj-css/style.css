@@ -413,8 +413,7 @@ a.gallerypic span.zoom-icon selected {
 	width: 144px;
 	height: 96px;
 }
-.FigureBox > figure[0] >
-img {
+.FigureBox > figure > img {
 	width: 144px;
 	height: 96px;
 }
