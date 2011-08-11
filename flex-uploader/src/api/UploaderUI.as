@@ -391,7 +391,8 @@ package api
 			try{
 				var batch_id:String = this.datasource.cfg.batch_id || '';
 				var perpage:int = this.getUploadQueuePerpage();
-				var xpage:int = page-1;
+				// page should be 1-based, but somewhere there is a 0 bug
+				var xpage:int = Math.max(page-1, 0);	
 				xpage = perpage * xpage;
 				var query:String = "SELECT uq.id,uq.photo_id,uq.batch_id,uq.status,p.rel_path,p.rating,p.tags" +
 					" FROM uploadQueues as uq ,photos as p " + 

@@ -6,6 +6,7 @@
 package api
 {
 	import api.ConvertOptions;
+	
 	import flash.desktop.NativeProcess;
 	import flash.desktop.NativeProcessStartupInfo;
 	import flash.display.Bitmap;
@@ -24,15 +25,34 @@ package api
 		
 		public function MagickUtils()
 		{
+			// static Class library
 		}
 		
-		private static var convertExe:File = File.applicationDirectory.resolvePath("ImageMagick/convert.exe");
-		private static var workingDir:File = File.applicationDirectory.resolvePath("ImageMagick");
+		private static var convertExe:File;
+		private static var workingDir:File;
 		
 		public static var MAX_CONCURRENT_PROCESSES:int = 4;
 		
 		private static var activeQueue:Vector.<ConvertOptions> = new Vector.<ConvertOptions>();
 		private static var readyQueue:Vector.<ConvertOptions> = new Vector.<ConvertOptions>();
+		
+		/**
+		 * set path and workingDir for imagemagick by platform
+		 * */
+		public static var init:Function = function():void {
+			switch (Config.OS) {
+				case 'Mac': 
+					convertExe = File.applicationDirectory.resolvePath("ImageMagick/mac/bin/convert");
+					workingDir = File.applicationDirectory.resolvePath("ImageMagick/mac");
+					break;
+				case 'Win':
+				default: 
+					convertExe = File.applicationDirectory.resolvePath("ImageMagick/win/convert.exe");
+					workingDir = File.applicationDirectory.resolvePath("ImageMagick/win");
+				break;
+			}
+		}
+		
 		private static var deQueue:Function = function(o:ConvertOptions):void {
 			var i:int = activeQueue.indexOf(o);
 			if (i !== -1) {
@@ -184,19 +204,24 @@ package api
 				destWidth = Math.min(destSize, srcDim.W);
 				destHeight = Math.round(destWidth * format);
 			}
-			var width2x:int = destWidth*2;
-			var width4x:int = destWidth*4;
-			var height2x:int = destHeight*2;
+			var width2x:int, width4x:int, height2x:int;
 			if (size.toLowerCase()=='sq') {
+				destWidth = Math.max(destHeight, destWidth);
+				width4x = destWidth*4;
 				// SQUARE thumbnails
-				convertOptions = '-define,jpeg:size='+width4x+'x'+width4x+',:srcFilename,'+auto_orient+'-thumbnail,x'+width2x+',-resize,'+width2x+'x<,-resize,50%,-gravity,center,-crop,'+destWidth+'x'+destWidth+'+0+0,+repage,:destFilename';
-			} else if (Math.max(destWidth, destHeight) < 360) {
-				// make it a "thumbnail", proportional resize, remove exif data, etc.
-				convertOptions = '-define,jpeg:size='+width2x+'x'+height2x+',:srcFilename,-thumbnail,'+destWidth+'x'+destHeight+','+auto_orient+':destFilename';
+				convertOptions = '-define,jpeg:size='+width4x+'x'+width4x+',:srcFilename,'+auto_orient+'-thumbnail,'+destWidth+'x'+destWidth+'^,-gravity,center,-crop,'+destWidth+'x'+destWidth+'+0+0,:destFilename';
 			} else {
-				// just crop and/or resize, but preserve exif, default is Lanczos filter
-				//			$resize_command = "$path_to_convert -scale {$width}x{$height}! -filter QUADRATIC "   ;
-				convertOptions = ':srcFilename,-resize,'+destWidth+'x'+destHeight+','+auto_orient+'-quality,'+quality+',:destFilename'; // convert help
+				width2x = destWidth*2;
+				width4x = destWidth*4;
+				height2x = destHeight*2;
+				if (Math.max(destWidth, destHeight) < 360) {
+					// make it a "thumbnail", proportional resize, remove exif data, etc.
+					convertOptions = '-define,jpeg:size='+width2x+'x'+height2x+',:srcFilename,-thumbnail,'+destWidth+'x'+destHeight+','+auto_orient+':destFilename';
+				} else {
+					// just crop and/or resize, but preserve exif, default is Lanczos filter
+					//			$resize_command = "$path_to_convert -scale {$width}x{$height}! -filter QUADRATIC "   ;
+					convertOptions = ':srcFilename,-resize,'+destWidth+'x'+destHeight+','+auto_orient+'-quality,'+quality+',:destFilename'; // convert help
+				}
 			}
 			return convertOptions;
 		}

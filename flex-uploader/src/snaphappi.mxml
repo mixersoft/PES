@@ -45,9 +45,45 @@
 			public var UI:UploaderUI;
 			public var Datasource:UploaderDatasource;
 			
+			/**
+			 *	set appRoot folder inside project folder if DEBUG=true 
+			 * */
+			private function checkDebug():Boolean {
+				try {
+					var devSrc:File = new File('W:\\www-git');	// assume this folder only exists on dev desktops
+					if (devSrc.exists && devSrc.isDirectory) {
+						Config.DEBUG = true;
+						// on dev desktops, use app:src as root folder, unless app: is a privileged directory
+						Config.appRoot = File.applicationDirectory;
+						if (File.applicationDirectory.nativePath.search('bin-debug') != -1 ) {
+							// flex-uploader debug and runtime modes will read from {project folder}/src
+							// slice 'bin-debug'
+							Config.appRoot = new File(File.applicationDirectory.nativePath.slice(0,-9)).resolvePath('src');
+						}
+						try {
+							// check if we have write privilege in app:
+							var testSrc:File = File.applicationDirectory.resolvePath('images/snappi.32.png');
+							var testDest:File = Config.appRoot.resolvePath('db/test.png');							
+							testSrc.copyTo(testDest, true);
+							testDest.deleteFile();
+						} catch (e:Error){
+							// app: is a privileged folder, use applicationStorage 
+							Config.appRoot = File.applicationStorageDirectory;	
+						}
+					}					
+				} catch (e:Error){
+					Config.appRoot = File.applicationStorageDirectory;
+				}
+				return Config.DEBUG;
+			}
+			
 			private function init():void{
+				Config.init();
+				MagickUtils.init();
 				var MODE:String = 'prod';	// dev2.snaphappi.com
 //				MODE = 'dev';				// git.3:88
+				
+				this.checkDebug();			// set app root folder inside project folder if DEBUG
 				
 				/*
 				* 	Set Config globals
@@ -77,20 +113,8 @@
 				domParent.addEventListener("complete", onYuiDomReadyComplete);
 				
 				// bootstrap html and logs
-				var domBootstrap:File, logFolder:File, DEBUG:Boolean;
-				// Debug mode
-				var devSrc:File = new File('W:\\www-git');
-				logFolder = File.applicationStorageDirectory.resolvePath("logs");
-				if (devSrc.exists && devSrc.isDirectory) {
-					Config.DEBUG = true;
-					if (File.applicationDirectory.nativePath.search('Program Files') == -1 ) {
-						// use code from flex-uploader/src, NOT flex-uploader/bin-debug
-						logFolder = new File(File.applicationDirectory.nativePath.slice(0,-9) + "src\\logs");
-					}
-				}
 				bootstrap_html(domParent, MODE);
-
-				Config.logger = new api.Logger(logFolder);
+				Config.logger = new api.Logger(Config.appRoot.resolvePath("logs"));
 				Config.sql = this.checkDbAndCopy();
 				Config.Datasource.loadConfig(); //set init configs
 				nativeWindow.addEventListener(NativeWindowBoundsEvent.MOVE, Config.UI.onMove);
@@ -104,11 +128,9 @@
 						Config.HOST = "dev2.snaphappi.com";
 						break;
 					case 'dev':
-					default:						
-						var devSrc:File = new File('W:\\www-git.3');
-						if (devSrc.exists && devSrc.isDirectory) {
-							Config.HOST = "git3:88";
-						} else Config.HOST = "git:88";
+					default:				
+						if (Config.DEBUG) Config.HOST = "git3:88"
+						else Config.HOST = "10.1.2.207";
 						break;
 				}
 				var request:URLRequest = new URLRequest("http://"+Config.HOST+"/app/air/js/bootstrap.html");
@@ -140,16 +162,11 @@
 			
 			private function checkDbAndCopy():SqlHandler{
 				var blankDb:File = File.applicationDirectory.resolvePath('db/snaphappi-install.db3');
-				var sql:SqlHandler, debugRoot:File, replace:Boolean = false;
+				var sql:SqlHandler, dbRoot:File, replace:Boolean = false;
 				if(blankDb.exists){
+					dbRoot = Config.appRoot.resolvePath('db');
 					if (Config.DEBUG){
-						debugRoot = null;
-						if (File.applicationDirectory.nativePath.search('Program Files') == -1 
-								&& File.applicationDirectory.nativePath.search('bin-debug')>0 ) {
-							// we do have privileges for app:, use applicationDirectory
-							debugRoot = new File(File.applicationDirectory.nativePath.slice(0,-9) + 'src\\db');
-						}
-						sql = new SqlHandler('snaphappi-DEBUG.db3', debugRoot);
+						sql = new SqlHandler('snaphappi-DEBUG.db3', dbRoot);
 					}
 					else {
 						sql = new SqlHandler();

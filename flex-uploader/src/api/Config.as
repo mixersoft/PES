@@ -1,5 +1,7 @@
 package api
 {
+	import flash.filesystem.File;
+	import flash.system.Capabilities;
 	import mx.core.FlexGlobals;
 
 	public class Config
@@ -8,11 +10,29 @@ package api
 		public function Config()
 		{
 		}
+		/**
+		 * set Config static vars
+		 * */		
+		public static var init:Function = function():void {
+			var os:String = flash.system.Capabilities.os.substr(0, 3);
+			switch (os) {
+				case 'Win':
+				case 'Mac':
+					Config.OS = os;
+					break;
+				default:
+					Config.OS = 'unix';
+					break;
+			}
+		}
+		
 		// static reference to Uploader application, snaphappi.mxml
 		public static var Uploader:Object = FlexGlobals.topLevelApplication;
 		public static var sql:SqlHandler;
 		public static var logger:Logger = null;
 		public static var DEBUG:Boolean = false;
+		public static var appRoot:File;			// applicationStorage directory, adjusted for DEBUG 
+		public static var OS:String; 
 		public static var HOST:String;
 		
 		// flex API, exposed to javascript
