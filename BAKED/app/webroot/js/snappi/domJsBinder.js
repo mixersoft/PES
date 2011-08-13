@@ -303,7 +303,7 @@
              */
             var _cfg = Y.merge(defaultCfg, cfg);
             _cfg.ul = _cfg.ul 
-				|| Y.one('div.element-roll.photo > ul.photo-roll');
+				|| Y.one('div.element-roll.photo section.gallery ul.photo-roll');
             if (!_cfg.ul) {
                 var parent = Y.one('div.element-roll.photo');
                 if (!parent) return; // no photos on this page

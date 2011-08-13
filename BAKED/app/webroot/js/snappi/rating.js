@@ -91,29 +91,7 @@
 		_ratingCSS.enable();
 	};
 
-	Rating.pluginRating = function(container, mixed, v) {
-		var thumbnail, uuid;
-		if (mixed instanceof SNAPPI.Thumbnail) {
-			parent = mixed.node;
-			uuid = parent.audition.id;
-		} else if (mixed.audition) {
-			parent = mixed;
-			uuid = mixed.audition.id;
-		} else if (mixed.getAttribute('uuid')) {
-			parent = mixed;
-			uuid = mixed.getAttribute('uuid');
-		} else {
-			try {
-				parent = mixed;
-				uuid = mixed.dom().audition.id;
-			} catch(e) {
-				// legacy, uuid embedded in id
-				uuid = mixed.get('id') ? mixed.get('id') : mixed._yuid;
-				if (container._cfg && container._cfg.ID_PREFIX) uuid = uuid.replace(container._cfg.ID_PREFIX, '');
-			}
-		}
-		
-		var postRatingChangeAndCleanup = function(v, uuid) {
+	Rating.postRatingChangeAndCleanup = function(v, uuid) {
 			// plugin loading mask then call XHR POST
 			if (!this.loadingmask) {
 				this.plug(Y.LoadingMask, {
@@ -139,12 +117,33 @@
 			}
 			SNAPPI.AssetRatingController.postRating.call(this.Rating, v, uuid, options);
 			return;
-		};
-
+		};	
+	Rating.pluginRating = function(container, mixed, v) {
+		var thumbnail, uuid;
+		if (mixed instanceof SNAPPI.Thumbnail) {
+			parent = mixed.node;
+			uuid = parent.audition.id;
+		} else if (mixed.audition) {
+			parent = mixed;
+			uuid = mixed.audition.id;
+		} else if (mixed.getAttribute('uuid')) {
+			parent = mixed;
+			uuid = mixed.getAttribute('uuid');
+		} else {
+			try {
+				parent = mixed;
+				uuid = mixed.dom().audition.id;
+			} catch(e) {
+				// legacy, uuid embedded in id
+				uuid = mixed.get('id') ? mixed.get('id') : mixed._yuid;
+				if (container._cfg && container._cfg.ID_PREFIX) uuid = uuid.replace(container._cfg.ID_PREFIX, '');
+			}
+		}
+		
 		var ratingCfg = {
 			v : v,
 			uuid : uuid,
-			setDbValueFn : postRatingChangeAndCleanup,
+			setDbValueFn : Rating.postRatingChangeAndCleanup,
 			listen : false
 		};
 		Rating.attach(parent, ratingCfg);
@@ -194,7 +193,7 @@
 		} else {
 			// CREATE new ratingGroup
 			var ratingGroup = parent.create(Y.substitute(
-					"<div id='{id}' class='{className}'></div>", _cfg));
+					"<div class='{className}'></div>", _cfg));
 			try {
 				parent.one('ul > li.rating').append(ratingGroup);	
 			}	catch (e) {

@@ -16,6 +16,7 @@ a {
 	font-style: normal;
 }
 body {
+	font: 1em 'HelveticaNeueRoman',Arial,Helvetica,Verdana,sans-serif;
 	background: url(../images/body_bg.jpg) no-repeat center top;
 	font-family: 'HelveticaNeueRoman';
 }
@@ -38,7 +39,8 @@ article, aside, figure, footer, header, nav, section {
 	padding: 5px 0 0 0;
 }
 ul.nav {
-	width: 475px;
+/*	width: 475px;*/
+	line-height:15px;
 	float: left;
 	list-style-type: none;
 }
@@ -60,44 +62,14 @@ ul.nav li a:hover {
 	padding: 0 0 4px;
 	font-weight: normal;
 }
-ul.nav li a.focus {
+/*ul.nav li a.focus {*/
+ul.nav li.focus a {
 	color: #fff;
 	background: url(../images/arrow.png) no-repeat bottom center;
 	padding: 0 0 4px;
 	font-weight: normal;
 }
-ul.rightlink {
-	width: 290px;
-	float: left;
-}
-ul.rightlink li {
-	float: left;
-	display: inline-block;
-	color: #fff;
-	font-size: 13px;
-	padding: 15px 5px 0 0;
-	height: 26px;
-	margin: 0 10px 0 0;
-}
-ul.rightlink li img.add {
-	padding: 0px 5px 0 10px;
-	float: left;
-}
-ul.rightlink li span {
-	padding: 0 10px;
-}
-ul.rightlink li.bg-grey {
-	background: #474b4d;
-}
-ul.rightlink li span.grey {
-	color: #aeaeae;
-	float: left;
-	padding: 0 4px 0 0;
-}
-ul.rightlink li img.arrow-right {
-	float: right;
-	padding: 5px 0 0 30px;
-}
+
 #body-container {
 	width: 960px;
 	-moz-box-shadow: 0 0 5px #888;
@@ -115,39 +87,40 @@ section.subnav {
 	background: #f2f6fb;
 	height: 35px;
 	padding: 10px 0 7px 0;
-	width: 960px;
+/*	width: 960px;*/
 }
 section.subnav .sublink {
-	padding: 5px 0 0 0;
-	float: left;
+	
+/*	float: left;*/
 }
 section.subnav h1 {
-	float: left;
+/*	float: left;*/
 	font-size: 13pt;
+	padding: 8px 0 0 0;
 	font-weight: normal;
 }
 section.subnav ul {
 	list-style-type: none;
-	padding: 0 0 0 50px;
-	float: left;
+	padding: 8px 0 0 50px;
+	line-height:15px;
+/*	float: left;*/
 }
 section.subnav ul li {
-	float: left;
+/*	float: left;*/
+	display: inline;
 	font-size: 13px;
 	border: 1px solid #f2f6fb;
-	padding: 3px;
+	padding: 4px 6px 2px 6px;
 	margin: 0 2px;
+	cursor: pointer;
 }
 section.subnav ul li a {
-	color: #666666;
-	padding: 2px 3px;
+	color: #000;
 }
 section.subnav ul li a:hover {
 	color: #fff;
-	padding: 2px 3px;
 }
 section.subnav ul li:hover {
-	float: left;
 	font-size: 13px;
 	background: -moz-linear-gradient(bottom, #fca22f, #ffc374);	 
 	background: -webkit-gradient(linear, center bottom, center top, from(#fca22f), to(#ffc374));	border: 1px solid #cd7708;
@@ -156,8 +129,6 @@ section.subnav ul li:hover {
 	color: #fff;
 }
 section.subnav ul li.focus {
-	float: left;
-	font-size: 13px;
 	background: -moz-linear-gradient(bottom, #fca22f, #ffc374);
 	background: -webkit-gradient(linear, center bottom, center top, from(#fca22f), to(#ffc374));	border: 1px solid #cd7708;
 	-moz-border-radius: 4px;
@@ -168,8 +139,6 @@ section.subnav ul li.focus a {
 	font-weight: normal;
 }
 section.subnav ul li.preference {
-	float: left;
-	font-size: 12px;
 	background: #8cd1ed;
 	border: 1px solid #006e9a;
 	-moz-border-radius: 4px;
@@ -179,21 +148,21 @@ section.subnav ul li.preference {
 section.subnav ul li.preference a {
 	color: #fff;
 }
-.search {
-	float: left;
+#search {
+	line-height:15px;
+	float: right;
 }
-.search input[type="text"] {
+#search input[type="text"] {
 	background: url(../images/bg_search.png) no-repeat;
 	width: 130px;
 	height: 31px;
 	border: none;
+	color: #494949;
 	float: left;
-	padding: 0 0px 0 2px;
-	position: relative;
-	cursor: default;
+	padding: 0 4px 0 2px;
 }
-.search img {
-	float: left;
+#search img {
+	cursor: pointer;
 }
 
 /*rename gallerypic to ???*/
@@ -216,168 +185,82 @@ a.gallerypic span.zoom-icon selected {
 }
 
 #display-option {
-	padding: 5px 0 5px 0;
-	float: left;
+	padding: 5px 0;
+	line-height: 24px;
+	overflow: hidden;
 }
 #display-option .counts {
-	width: 600px;
-	line-height: 22px;
-	float: left;
+	padding-left: 20px;
 }
 #display-option .counts h2 {
-	font-size: 15px;
-	float: left;
-	padding: 0 20px 0 0;
 }
 #display-option .counts h3 {
 	font-size: 13px;
 	color: #585858;
-	float: left;
 }
-#display-option .thumb-size {
-	float: left;
-	line-height: 22px;
-}
-#display-option .thumb-size span {
-	color: #cccccc;
+#display-option div.display {
+	background: -moz-linear-gradient(bottom, #f5f5f5, #ffffff);
+	background: -webkit-gradient(linear, center bottom, center top, from(#f5f5f5), to(#ffffff));
+	border: 1px solid #e2e2e2;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	padding: 5px 15px;
+	margin-left: 8px;
 	font-size: 13px;
-	padding: 0 8px 0 0;
+	cursor: default;
+	position: absolute;
+	height: 24px;
+	right: 0px;
+	bottom: -5px;
 }
-#display-option .thumb-size ul {
+#display-option div.display.open {
+	-webkit-border-radius: 4px 4px 0px 0px;
+	-moz-border-radius: 4px 4px 0px 0px;
+	border-bottom: 0px solid #e1f3fc;
+}
+#display-option .thumb-size li.display img {
+	width: 7px;
+	height: 4px;
+}
+#display-option ul.thumb-size  {
 	list-style-type: none;
 	float: right;
 }
-#display-option .thumb-size ul li {
+
+#display-option ul.thumb-size span {
+	color: #494949;
+	font-size: 13px;
+	padding: 0 8px 0 0;
+}
+
+#display-option ul.thumb-size li {
 	display: inline;
 	border: 1px solid #fff;
-	width: 28px;
-	height: 25px;
-	margin: 0 4px 0 0;
-	text-align: center;
+	margin-left: 4px;
 }
-#display-option .thumb-size ul li:hover {
+#display-option ul.thumb-size li:hover {
 	border: 1px solid #eeeeee;
 	-moz-border-radius: 3px 0px 3px 3px;
 	-webkit-border-radius: 3px 0px 3px 3px;
 	top: -1px;
 	border-bottom: 0px solid #e1f3fc;
 }
-#display-option .thumb-size ul li.focus {
+#display-option ul.thumb-size  li.focus {
 	border: 1px solid #eeeeee;
 	-moz-border-radius: 3px;
 	-webkit-border-radius: 3px;
 }
-#display-option .thumb-size ul li.small img {
-	padding: 8px 0 0 0;
+#display-option ul.thumb-size  li.small img {
+	padding: 9px 0 0 0;
 }
-#display-option .thumb-size ul li.med img {
-	padding: 5px 0 0 0;
+#display-option ul.thumb-size  li.med img {
+	padding: 6px 0 0 0;
 }
-#display-option .thumb-size ul li.large img {
+#display-option ul.thumb-size  li.large img {
 	padding: 3px 0 0 0;
+	margin-right: 143px;
 }
-#display-option .thumb-size li.display {
-	background: -moz-linear-gradient(bottom, #f5f5f5, #ffffff);
-	background: -webkit-gradient(linear, center bottom, center top, from(#f5f5f5), to(#ffffff));
-	border: 1px solid #e2e2e2;
-	-webkit-border-radius: 4px 0px 0px 0px;
-	-moz-border-radius: 4px 4px 0px 0px;
-	border-bottom: 0px solid #e1f3fc;
-	margin: 0 0 0 15px;
-	padding: 5px 0 0 0;
-	height: 25px;
-	font-size: 13px;
-	position: absolute;
-	right: 0px;
-	bottom: -7px;
-	width: 135px;
-	cursor: default;
-}
-#display-option .thumb-size li.display img {
-	width: 10px;
-	height: 10px;
-}
-#filter {
-	-webkit-border-radius: 5px;
-	border: 1px solid #e2e2e2;
-	-moz-border-radius: 5px 0px 5px 5px;
-	-webkit-border-radius: 5px 0px 5px 5px;
-	background: -moz-linear-gradient(bottom, #ededed, #f5f5f5);
-	background: -webkit-gradient(linear, center bottom, center top, from(#ededed), to(#f5f5f5));
-	float: left;
-	clear: both;
-	height: 30px;
-	padding: 0 0 0 0px;
-	margin: 0px 10px 0px 10px;
-	width: 938px;
-}
-#filter em img {
-	float: left;
-	padding: 4px 5px 0 0;
-}
-#filter span {
-	float: left;
-	padding: 6px 10px 0 0;
-}
-#filter ul {
-	list-style-type: none;
-	float: left;
-	padding: 5px 0 7px 0;
-}
-#filter ul li {
-	border-left: 1px solid #d8d5d5;
-	float: left;
-	font-size: 12px;
-	padding: 0 4px 4px 4px;
-	color: #494949;
-	display: inline-block;
-}
-#filter ul li span {
-	background: #f3f3f3;
-	border: 1px solid #eaeaea;
-	-moz-border-radius: 5px;
-	-webkit-border-radius: 5px;
-	padding: 3px 20px 3px 3px;
-	margin: 0 2px 0 0;
-	position: relative;
-}
-#filter ul li span img {
-	position: absolute;
-	right: 2px;
-	top: 8px;
-}
-#filter ul li img {
-	width: 1px;
-	height: 19px;
-}
-#filter .grid_5 {
-	float: right;
-}
-#filter ul.short-display {
-	float: right;
-	padding: 5px 0 0 0;
-}
-#filter ul.short-display li em {
-	float: left;
-	font-style: normal;
-	padding-top: 5px;
-	padding-right: 10px;
-}
-#filter ul.short-display li span {
-	background: #f3f3f3 url(../images/arrow_1.png) no-repeat right;
-	border: 1px solid #eaeaea;
-	-moz-border-radius: 5px;
-	-webkit-border-radius: 5px;
-	padding: 3px 30px 3px 3px;
-	margin: 0 2px 0 0;
-	position: relative;
-	cursor: default;
-}
-#filter ul.short-display li span img {
-	position: absolute;
-	right: 3px;
-	top: 8px;
-}
+
 .gallery {
 	width: 940px;
 	padding: 10px;
@@ -1039,9 +922,18 @@ ul.term-condition h1 {
 	padding: 3px 2px 0 0;
 }
 
+
+
+
+
+
 /*
  * temporary changes added by michael lin
  */
+section li a {
+	cursor:pointer;
+}
+
 .FigureBox.lbx-tiny {
 	width:33px;
 	height:33px;
@@ -1071,4 +963,199 @@ ul.term-condition h1 {
 	border: 1px solid red;
 }
 
+.hide {
+	display: none;
+}
+.hidden {
+	visibility: hidden;
+}
+header.head {
+	line-height:15px;
+}
+ /*mlin edits*/
+ul.rightlink {
+	float: right;
+}
 
+ul.rightlink li {
+	display: inline-block;
+	color: #fff;
+	font-size: 13px;
+	padding: 15px 5px 0 0;
+	height: 26px;
+	margin: 0 10px 0 0;
+}
+ul.rightlink li img.add {
+	padding: 0px 5px 0 10px;
+}
+ul.rightlink li span {
+	padding: 0 10px;
+}
+ul.rightlink li.bg-grey {
+	background: #474b4d;
+}
+ul.rightlink li span.grey {
+	color: #aeaeae;
+	padding: 0 4px 0 0;
+}
+ul.rightlink > li > a {
+	color: #FFFFFF;
+	padding-right: 5px;
+	cursor: pointer;
+}
+
+
+
+
+/*
+ * Ratings
+ */
+/*
+ * previous version is div.ratingGroup. this div.rating holds a higher priority in css
+ * if i add .loading, all properties in .loading will be overrided by this div.ratingGroup
+ */
+div.ratingGroup {
+    margin: 0 auto;
+    background: url('../../img/css/smileyGrp.png') no-repeat;
+    background-position: -70px 0; /* init to 0 stars */
+    width: 71px; /* width of 5 stars */
+    height: 15px;
+	cursor:pointer;
+	z-index:-1;
+
+}
+
+div.ratingGroup.r0 {
+    background-position-x: -70px;
+}
+
+div.ratingGroup.r1 {
+    background-position: -56px 0;
+}
+
+div.ratingGroup.r2 {
+    background-position: -42px 0;
+}
+
+div.ratingGroup.r3 {
+    background-position: -28px 0;
+}
+
+div.ratingGroup.r4 {
+    background-position: -14px 0;
+}
+
+div.ratingGroup.r5 {
+    background-position: 0 0;
+}
+
+section {
+	overflow-x: hidden;
+}
+
+
+
+
+
+
+#display-option-subxx ul {
+	list-style-type: none;
+	padding: 5px 0 7px 0;
+}
+#display-option-subxxx ul li {
+	border-left: 1px solid #d8d5d5;
+/*	float: left;*/
+	font-size: 12px;
+	padding: 0 4px 4px 4px;
+	color: #494949;
+/*	display: inline-block;*/
+	display: inline
+}
+
+#display-option-subxxx ul li a {
+	background: #f3f3f3;
+	border: 1px solid #eaeaea;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	padding: 3px 20px 3px 3px;
+	margin: 0 2px 0 0;
+	position: relative;
+}
+
+
+/*
+ * good
+ */
+#display-option-sub {
+	line-height: 20px;
+	-webkit-border-radius: 5px;
+	border: 1px solid #e2e2e2;
+	-moz-border-radius: 5px 0px 5px 5px;
+	-webkit-border-radius: 5px 0px 5px 5px;
+	background: -moz-linear-gradient(bottom, #ededed, #f5f5f5);
+	background: -webkit-gradient(linear, center bottom, center top, from(#ededed), to(#f5f5f5));
+}
+#display-option-sub li, #display-option-sub ul.filter ul{
+	float:left;
+}
+#display-option-sub ul {
+	list-style:none;
+	padding: 0px;
+	overflow: auto;
+}
+#display-option-sub > ul{
+	width:auto;
+	margin: 0 10px;
+}
+#display-option-sub > ul li.option {
+	margin: 2px 4px 1px;
+	padding: 0 4px;
+	font-size:12px;
+	background: #f3f3f3;
+	border: 1px solid red;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;	
+	color: #494949;
+}
+#display-option-sub ul.filter li.option a {
+	color: #494949;
+}
+#display-option-sub li.rating.option li.remove {
+	padding: 0 4px;
+	font-size: 12px;
+	font-weight: bold;
+}
+#display-option-sub li.rating.option li.remove a {
+	color:red;
+}
+#display-option-sub ul li div.ratingGroup {
+	margin: 2px 5px 2px
+}
+
+#display-option-sub li.label {
+	padding: 4px 10px 0 0;
+	font-size:16px !important;
+	color: black;
+}
+
+#display-option-sub ul.sort {
+	border-left: 1px solid #d8d5d5;
+	padding-left: 10px;
+	float: right;
+}
+#display-option-sub ul.sort li select {
+	font-size: 12px;
+	height: 18px;
+	font-style: normal;
+	color: #494949;
+}
+
+div.ratingGroup{
+	z-index:auto;
+}
+
+
+ul.photo-roll {
+	overflow-x: hidden;
+	margin: 0 auto;
+}

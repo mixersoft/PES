@@ -5,7 +5,7 @@
 	<p>Show as <?php echo $this->Html->link('Photostream', $this->passedArgs + array('action'=>'photostreams'))?>
 	</p>
 	<div id='paging-photos' class='paging-content' xhrTarget='paging-photos-inner'>
-		<?php echo $this->element('/photo/paging-photos');?>
+		<?php echo $this->element('/photo/roll');?>
 	</div>
 </div>
 <?php	// tagCloud

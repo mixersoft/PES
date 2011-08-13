@@ -95,7 +95,10 @@
     		} catch (e) {
     			value = 0;
     		}
-    		parent = parent || Y.one('span#filter-rating-parent');
+    		parent = parent ;
+    		if (!parent) {
+    			parent = Y.one('#filter-rating-parent');
+    		}
     		var cfg = {
 				el : parent.dom(),
 				id : "filter-ratingGroup",

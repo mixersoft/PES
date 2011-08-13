@@ -3,5 +3,5 @@
 	PAGE.jsonData.STATE.showSubstitutes = 'show';
 </script>
 <?php debug("hidden shots VIEW");
-echo $this->element('/photo/paging-photos');
+echo $this->element('/photo/roll');
 ?>

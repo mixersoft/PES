@@ -43,8 +43,8 @@
 	<div id="container" >
 		<div id="header" class="container_16">
 			<div id='logo' class='grid_4' title='snaphappi' onclick='window.location.href="/photos/all";'></div>
-			<?php echo $this->element('/nav/header')?>
-			<?php echo $this->element('nav/search')?>
+			<?php echo $this->element('/nav/header.0')?>
+			<?php echo $this->element('nav/search.0')?>
 			<!-- 
 			<div id="search"><input type='text' value=' search' title='not ready yet' > </input><a href='#'>Search</a> | <a href='#'>Discover</a></div>
 			 -->

@@ -219,7 +219,7 @@
                                 * experimental
                                 */
 //	                               'yui2-resize'
-                               'resize' // yui3 resize
+                               // 'resize' // yui3 resize
                                ]
                     // snappi-util -> SNAPPI.shotController, SNAPPI.ratingManager, SNAPPI.io (move)
                 },
@@ -463,7 +463,8 @@
         		 * aui modules
         		 */
         		'aui-skin-classic-all', 'aui-delayed-task',
-        	    'aui-io', 'aui-resize', 'aui-loading-mask',        		
+        	    'aui-io', 'aui-loading-mask',   
+        	    // 'aui-resize',      		
 
         		     		
 		/*

@@ -1,5 +1,4 @@
-<div id="search" class='grid_8'>
-<div>
+<div id="search" >
 <script type="text/javascript">
 PAGE.goSearch = function(o) {
 	
@@ -14,8 +13,6 @@ PAGE.goSearch = function(o) {
 	}  
 	return false;
 };
-
-
 </script>
 <?php				
 								
@@ -69,18 +66,13 @@ PAGE.goSearch = function(o) {
 							'href' => '/tags/all',
 								
 						);
-	
-?>
-
-<script>
-<?php 
-
+	// save in viewVars for later output in PAGE.jsonData						
 	$this->viewVars['jsonData']['menu']['discover'] = $items_discover;
 	$this->viewVars['jsonData']['menu']['search'] = $items_search;
-	
 ?>
-</script>
-<?php $controller = Configure::read('controller.alias');
+<?php 
+
+	$controller = Configure::read('controller.alias');
 
 	$passedArgs = $this->passedArgs;
 	$next = array('plugin'=>'', 'action'=>'search');
@@ -88,7 +80,7 @@ PAGE.goSearch = function(o) {
 	// add context
 	$context = Session::read('lookup.context');
 //	if ($context) $next[Inflector::singularize($context['class'])] = $context['uuid'];
-		
+	$titleName = $controllerAttrs['titleName']; // i.e. Me, Event, Wedding, Group, Person, etc.	
 	if (empty($this->params['named']['q'])) {
 		switch ($this->action) {
 			case 'all': $defaultString = "search {$controllerAttrs['alias']}"; 
@@ -135,18 +127,6 @@ PAGE.goSearch = function(o) {
 ?>
 	<form id='search-form' accept-charset="utf-8" method="get" action="<?php echo Router::url($passedArgs + $next); ?>" onsubmit="if (this.value=='') return false;" >
 		<input type='text' name='q' value='<?php echo $defaultString; ?>' maxlength='45' title='' onclick='if(this.style.color!="black"){this.value="";}this.style.color="black";' ></input>
+		<img src="/img/snappi/search.gif">
 	</form>
-	</div>
-<div id='menu-search' class="yui3-menu yui3-menu-horizontal">
-	<div class="yui3-menu-content">
-	<ul>
-		<li>
- 		<a id='searchBtn' >Search ▼</a>
-		</li>
-		<li><a id='discoverBtn' >Discover ▼</a>
-
-		</li> 
-	</ul>
-	</div>
-</div>
 </div>

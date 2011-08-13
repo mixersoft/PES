@@ -1,27 +1,77 @@
-<div id='topxx' class='grid_5 push_7' >
-	<div id='menu-header' class="yui3-menu yui3-menu-horizontal">
-	<div class="yui3-menu-content">
-	<ul>
-		<li>Welcome	<a id="userAccountBtn" ><?php 
+<?php 
 		
-		// TODO: not sure if here is the best place to check if user logins. but it works now. just for testing.
-		// by this way, if user doesn't login, there will be no "▼" on the header.
-		if((Session::read('Auth.User.displayname')) == ''){
-			// when user doesn't login, there's no ▼ and anything else.
-		}else {
-			echo ucwords(Session::read('Auth.User.displayname')) . " ▼"; 
-		}
-		?></a>
-		</li>
-		<li><a href="#">Help</a></li>
-		<?php 
-			if (AppController::$userid) { ?>
-		<li><a href="/users/logout">Sign Out</a></li>
-		<?php  } else { ?>
-		<li><a href="/users/login">Sign in</a></li>
-		<li><a href="/users/register">Sign up</a></li>
-		<?php  } ?>
-	</ul>
-	</div>
-	</div>
-</div>
+	// TODO: not sure if here is the best place to check if user logins. but it works now. just for testing.
+	// by this way, if user doesn't login, there will be no "?" on the header.
+	if((Session::read('Auth.User.displayname')) == ''){
+		$displayName = null;
+		// when user doesn't login, there's no ? and anything else.
+	}else {
+		$displayName = ucwords(Session::read('Auth.User.displayname')); 
+	}
+	$passed = array_diff_key($this->passedArgs, array('sort'=>1, 'direction'=>1, 'page'=>1, 'perpage'=>1));	// copy of array
+	$controllerAttr = Configure::read('controller');
+	$sections = array();
+	$sections['Home']=array('label'=>'Home','href'=>'/my/home');
+	$sections['Circles']=array('label'=>'Circles','href'=>'/my/groups');
+	$sections['Snaps']=array('label'=>'Snaps','href'=>'/my/photos');
+	$sections['People']=array('label'=>'People','href'=>'#');
+	$sections['Explore']=array('label'=>'Explore','href'=>"/{$controllerAttr['alias']}/all");
+	$titleName = ($controllerAttr['action'] != 'all') ? $controllerAttr['titleName'] : 'Explore';
+	switch ($titleName) {
+		case 'Me':
+			$focus = 'Home'; break;
+		case 'Group':
+		case 'Event':
+		case 'Wedding':
+		case 'Circle':	
+			$focus = 'Circles'; break;
+		case 'Photo':
+			$focus = 'Snaps'; break;
+		case 'Person':
+			$focus = 'People'; break;
+		case 'Explore':
+			$focus = 'Explore'; break;
+	}
+	$sections[$focus]['href'] = "javascript:;"; // unset href for section with focus
+	$sections[$focus]['class'] = 'class="focus"';
+?>
+<!--top header start-->
+<header class="head container_16">
+		<div class="grid_3">
+			<h1 class="logo"><a href="/photos/all">
+				<img src="/img/snappi/snappi-top.png" alt=""></a>
+				</h1>
+		</div>
+		<div class="grid_6">
+			<nav>
+				<ul class="nav">
+					<?php
+						$markup = "<li :class:><a href=':href:'>:label:</a></li>\n"; 
+						$needle = array(':label:', ':href:' , ':class:');
+						foreach ($sections as $label => $section) {
+							echo str_replace($needle, $section, $markup);
+						}
+					?>
+				</ul>
+			</nav>
+		</div>
+		<div class="grid_7">
+			<nav>
+				<ul class="rightlink">
+				<?php if ( AppController::$userid) { ?>
+					<li class="bg-grey"><img src="/img/snappi/plus-grey.png" alt="" align="absmiddle" class="add">
+						<a>Create&nbsp<img src="/img/snappi/arrow-down.png"  alt=""></a>
+					</li>
+					<li>
+						<span class="grey">Welcome,</span>
+						<a id='userAccountBtn'><?php echo $displayName ?>&nbsp<img src="/img/snappi/arrow-down.png" alt="" class="arrow-right"></a>
+					</li>	
+					<li class="last"><a href="/users/logout">Sign out</a></li>				
+				<?php  } else { ?>
+					<li><a href="/users/login">Sign in</a></li>
+					<li class="last"><a href="/users/register">Sign up</a></li>
+				<?php  } ?>					
+			</ul>
+			</nav>
+		</div>
+</header> <!--top header end-->		

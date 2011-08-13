@@ -16,27 +16,26 @@ $isPreview = (!empty($this->params['url']['preview']));
 ?>
 <div id='paging-photos-inner'>
 	<div class='element-roll photo placeholder' >
-		<ul class='inline photo-roll-header'>
-			<li>Total of <?php echo $total; ?> photos</li>
-			<li><?php echo $this->element('context'); ?></li>
-			<li>
-				<span class='context'>
-					<span id='filter-rating-parent' class='filter-bar'>
-						<span class='remove'>
-							<a title='click here to REMOVE this filter' href='' onclick='window.location.reload();' >x</a>
-						</span>
-						at least 
-					</span>
-				</span>
-			</li>
-			<li class="button" onclick="var pr = SNAPPI.PhotoRoll.getFromDom(this); if (pr) pr.selectAll(); this.ynode().next().removeClass('hide');" >select all</li>
-			<li id='select-all-pages' class="button hide" onclick="var pr = SNAPPI.PhotoRoll.getFromDom(this); if (pr) pr.selectAllPages();">select all pages</li>
-			<li class="button" onclick="var pr = SNAPPI.PhotoRoll.getFromDom(this); if (pr) pr.clearAll(); this.ynode().previous().addClass('hide');">clear</li>
-			<li id='show-ratings' class="button" onclick="var pr = SNAPPI.PhotoRoll.getFromDom(this); if (pr) pr.toggleRatings(this);">show Ratings</li>
-			<li id='create-pagegallery' class="button" onclick="var pr = SNAPPI.PhotoRoll.getFromDom(this); if (pr) pr.launchPagemaker(this);">Create</li>
-			<li id='element-roll_zoom_btn' class="button" onclick="var pr = SNAPPI.PhotoRoll.getFromDom(this); if (pr) pr.toggleZoomMode();">Zoom Mode</li>
-		</ul>
-		<ul class='photo-roll'></ul>
+		<section id="display-option" class="container_16">
+		    <div class="grid_9">
+		      <div class="counts">
+		          <h2><?php echo $total; ?>  Snaps</h2>
+		      </div>
+		    </div>
+		    <div class="grid_7" style="border:0px solid #00CC66">
+				<ul class="thumb-size">
+					<li class="label">Thumbnail</li>
+					<li class="small"><img src="/img/snappi/img_1.gif" alt=""></li>
+					<li class="med  focus"><img src="/img/snappi/img_2.gif" alt=""></li>
+					<li class="large"><img src="/img/snappi/img_3.gif" alt=""></li>
+				</ul>
+		    	<div class="display open"><a>Display Options <img src="/img/snappi/arrow-down.png"></a></div>
+			</div>      
+		</section> 
+		<?php  echo $this->element('/photo/display-options');  ?>
+		<section class="gallery container_16">
+			<ul class='photo-roll grid_16'></ul>
+		</section>
 	</div>
 </div>
 <script type="text/javascript">
