@@ -1016,7 +1016,7 @@ ul.rightlink > li > a {
  */
 div.ratingGroup {
     margin: 0 auto;
-    background: url('../../img/css/smileyGrp.png') no-repeat;
+    background: url('/img/css/smileyGrp.png') no-repeat;
     background-position: -70px 0; /* init to 0 stars */
     width: 71px; /* width of 5 stars */
     height: 15px;
