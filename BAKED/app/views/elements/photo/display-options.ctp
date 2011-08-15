@@ -33,7 +33,16 @@
 	$replace = array('<option', 'value', 'option>');
 	
 	$ratingGroup_class = "ratingGroup";
-	if (!empty($passed['rating'])) $ratingGroup_class.= " r{$passed['rating']}";
+	$ratingRemoved_class = 'remove';
+	if (!empty($passed['rating'])) {
+		$ratingGroup_class.= " r{$passed['rating']}";	// move to JS
+		$ratingRemoved_href = $passed;
+		unset($ratingRemoved_href['rating']);
+		unset($ratingRemoved_href['page']);
+		$ratingRemoved_href = Router::url($ratingRemoved_href);
+	} else {
+		$ratingRemoved_class .= ' hide'; 				// move to JS
+	}
 	
 	
 ?>
@@ -43,8 +52,8 @@
     		<li class='label'>Filter</li>
 			<li class='rating option'>
 				<ul>
-					<li class='remove'>
-						<a title='click here to REMOVE this filter' href='' onclick='window.location.reload();' >x</a>
+					<li class='<?php echo $ratingRemoved_class;  ?>'>
+						<a title='click here to REMOVE this filter' href='<?php echo $ratingRemoved_href ?>' >x</a>
 					</li>	
 					<li>My Rating</li>
 					<li id="filter-rating-parent">

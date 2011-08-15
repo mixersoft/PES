@@ -32,7 +32,9 @@ $isPreview = (!empty($this->params['url']['preview']));
 					<li class="med  focus"><img src="/img/snappi/img_2.gif" alt=""></li>
 					<li class="large"><img src="/img/snappi/img_3.gif" alt=""></li>
 				</ul>
-		    	<div class="display"><a>Display Options <img src="/img/snappi/arrow-down.png"></a></div>
+		    	<div class="display" onclick='PAGE.toggleDisplayOptions();'>
+		    		<a>Display Options <img src="/img/snappi/arrow-down.png"></a>
+		    		</div>
 			</div>      
 		</section> 
 		<?php  echo $this->element('/photo/display-options');  ?>
@@ -45,17 +47,30 @@ $isPreview = (!empty($this->params['url']['preview']));
 PAGE.orderBy = function (o) {
 	window.location.href = o.options[o.selectedIndex].value;
 } 
+PAGE.toggleDisplayOptions  = function(o){
+	var Y = SNAPPI.Y;
+	try {
+		SNAPPI.STATE.showDisplayOptions = SNAPPI.STATE.showDisplayOptions ? 0 : 1;
+		PAGE.setDisplayOptions();
+	} catch (e) {}
+};
+PAGE.setDisplayOptions = function(){
+	var Y = SNAPPI.Y;
+	try {
+		if (SNAPPI.STATE.showDisplayOptions) {
+			Y.one('#display-option div.display').addClass('open');
+			Y.one('#display-option-sub').removeClass('hide');
+		} else {
+			Y.one('#display-option div.display').removeClass('open');
+			Y.one('#display-option-sub').addClass('hide');
+		}	
+	} catch (e) {}
+};
 var initOnce = function() {
 	try {
 		SNAPPI.mergeSessionData();
-		if (SNAPPI.STATE.showDisplayOptions) {
-			var Y = SNAPPI.Y;
-			Y.one('#display-option div.display').addClass('open');
-			Y.one('#display-option-sub').removeClass('hide');
-		} 	
+		PAGE.setDisplayOptions();
 	} catch (e) {}
-	
-	
 	
 	
 	SNAPPI.domJsBinder.bindAuditions2Photoroll();
