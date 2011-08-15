@@ -71,7 +71,11 @@
             var rating = Y.one('div#photos-home-rating');
             if (rating) {
             	// update rating component
-            	SNAPPI.Rating.attach(rating, {id: uuid, v: selected.rating});
+            	SNAPPI.Rating.attach(rating, {
+            		id:'photos-home-ratingGroup', 
+            		uuid: uuid, 
+            		v: selected.rating
+            		});
             	// update selected.bindTo
             	if (rating.audition) {
             		// unbind old audition

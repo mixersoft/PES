@@ -10,7 +10,10 @@ $displayPage = array_filter_keys($this->params['paging']['Asset'], array('page',
 $displayPage['perpage'] = $this->params['paging'][$paginateModel]['options']['limit'] ;  
 $total = $displayPage['count'];
 $state = array();
-if (isset($this->passedArgs['rating'])) $state['showRatings']='show';
+if (isset($this->passedArgs['rating'])) {
+	$state['showRatings']='show';
+	$state['showDisplayOptions'] = 1;
+}
 if ($state) $this->viewVars['jsonData']['STATE'] = $state;
 $isPreview = (!empty($this->params['url']['preview']));
 ?>
@@ -29,7 +32,7 @@ $isPreview = (!empty($this->params['url']['preview']));
 					<li class="med  focus"><img src="/img/snappi/img_2.gif" alt=""></li>
 					<li class="large"><img src="/img/snappi/img_3.gif" alt=""></li>
 				</ul>
-		    	<div class="display open"><a>Display Options <img src="/img/snappi/arrow-down.png"></a></div>
+		    	<div class="display"><a>Display Options <img src="/img/snappi/arrow-down.png"></a></div>
 			</div>      
 		</section> 
 		<?php  echo $this->element('/photo/display-options');  ?>
@@ -39,8 +42,22 @@ $isPreview = (!empty($this->params['url']['preview']));
 	</div>
 </div>
 <script type="text/javascript">
+PAGE.orderBy = function (o) {
+	window.location.href = o.options[o.selectedIndex].value;
+} 
 var initOnce = function() {
-	SNAPPI.mergeSessionData();
+	try {
+		SNAPPI.mergeSessionData();
+		if (SNAPPI.STATE.showDisplayOptions) {
+			var Y = SNAPPI.Y;
+			Y.one('#display-option div.display').addClass('open');
+			Y.one('#display-option-sub').removeClass('hide');
+		} 	
+	} catch (e) {}
+	
+	
+	
+	
 	SNAPPI.domJsBinder.bindAuditions2Photoroll();
 	// TODO: SNAPPI.filter.initRating() should be moved into photoRoll.restoreState() (?)
 	// 	make sure restoreState works for both HTTP GET and XHR page loads

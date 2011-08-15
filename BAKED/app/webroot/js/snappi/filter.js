@@ -55,10 +55,12 @@
     	},
     	renderBar : function(filters){
     		if (!this.container) {
-    			this.container = Y.one('#page-filters');
+    			// this.container = Y.one('#page-filters');	
+    			this.container = Y.one('#display-option-sub');
     		}    		
     		if (!filters) {
-    			this.container.one('ul').set('innerHTML','');
+    			// disable for manoj HTML
+    			// this.container.one('ul').set('innerHTML','');	
     			return;
     		}
     		
@@ -66,7 +68,9 @@
     		var markup_A = '<a href="{labelHref}">{labelLabel}</a>';
     		var markup_B = '<b>{labelLabel}</b>';
     		var output = [];
-    		if (filters.length) this.container.one('ul').set('innerHTML','').append(this.container.create('<li>Filters: </li>'));
+    		// if (filters.length) {
+    			// this.container.one('ul').set('innerHTML','').append(this.container.create('<li>Filters: </li>'));
+    		// }
     		for (var i in filters) {
     			var filter = filters[i];
     			if (!filter.label && filter.label !==0 ) continue;
@@ -77,12 +81,14 @@
 					removeHref: filter.removeHref || '#'
     			};
     			if (filter['class'] == 'Rating') {
-    				var wrapper = this.renderRating(filter.value);
-    				tokens.labelLabel = wrapper.get('innerHTML');
-    				SNAPPI.filter.active.Rating = filter.value;
+    				continue;
+    				// var wrapper = this.renderRating(filter.value);
+    				// tokens.labelLabel = wrapper.get('innerHTML');
+    				// SNAPPI.filter.active.Rating = filter.value;
     			} else {
 	    			if (filter.labelHref) tokens.labelLabel = Y.substitute(markup_A, tokens);
 	    			else tokens.labelLabel = Y.substitute(markup_B, tokens);
+	    			if (console) console.warn("deprecate SNAPPI.filter, use SNAPPI.STATE.filter instead");
 	    			SNAPPI.filter.active[filter['class']] = filter;
     			}
     			var filterNode = this.container.create(Y.substitute(markup, tokens));
@@ -91,16 +97,24 @@
     	},
     	initRating: function(parent, value) {
     		try {
-    			value = value || SNAPPI.filter.active.Rating || 0;
+//     			value = value || SNAPPI.filter.active.Rating || 0;
+    			if (!value) {
+    				value = 0;
+    				var filters = SNAPPI.STATE.filters;
+    				for (var i in filters) {
+    					if (filters[i]['class'] == 'Rating') {
+    						value = parseInt(filters[i].value) || 0;
+    					}
+    				}
+    			}
     		} catch (e) {
     			value = 0;
     		}
-    		parent = parent ;
     		if (!parent) {
     			parent = Y.one('#filter-rating-parent');
     		}
     		var cfg = {
-				el : parent.dom(),
+				// el : parent.dom(),
 				id : "filter-ratingGroup",
 				v : value,
 				'setDbValueFn': SNAPPI.filter.byRating

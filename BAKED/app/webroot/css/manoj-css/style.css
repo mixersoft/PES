@@ -218,6 +218,7 @@ a.gallerypic span.zoom-icon selected {
 	-moz-border-radius: 4px 4px 0px 0px;
 	border-bottom: 0px solid #e1f3fc;
 }
+
 #display-option .thumb-size li.display img {
 	width: 7px;
 	height: 4px;
@@ -964,10 +965,10 @@ section li a {
 }
 
 .hide {
-	display: none;
+	display: none !important;
 }
 .hidden {
-	visibility: hidden;
+	visibility: hidden !important;
 }
 header.head {
 	line-height:15px;
@@ -1120,6 +1121,9 @@ section {
 #display-option-sub ul.filter li.option a {
 	color: #494949;
 }
+#display-option-sub li.rating.option {
+	width: 150px;
+}
 #display-option-sub li.rating.option li.remove {
 	padding: 0 4px;
 	font-size: 12px;
@@ -1146,6 +1150,8 @@ section {
 #display-option-sub ul.sort li select {
 	font-size: 12px;
 	height: 18px;
+	padding: 0;
+	margin-top:2px;
 	font-style: normal;
 	color: #494949;
 }

@@ -1,5 +1,5 @@
 <?php  
-	$passed = array_diff_key(Configure::read('passedArgs'), array('sort'=>1, 'direction'=>1, 'page'=>1, 'perpage'=>1));	// copy of array
+	$passed = Configure::read('passedArgs');
 	/*
 	 * Generate Paginator->sort() urls when sortin on field in associated models
 	 */
@@ -24,18 +24,21 @@
 	$orderBy_options['provider_account_id'] = array('A_markup'=>$this->Paginator->sort('Provider', 'provider_account_id'));
 	$orderBy_options['caption'] = array('A_markup'=>$this->Paginator->sort('caption'));
 	$orderBy_options['keyword'] = array('A_markup'=>$this->Paginator->sort('keyword'));
-	$orderBy_selected= !empty($passed['sort']) ? $passed['sort'] : 'dateTaken'; 
-	$orderBy_options[$orderBy_selected]['selected'] = 'selected="selected"';
+	$orderBy_selected = !empty($passed['sort']) ? $passed['sort'] : 'dateTaken';
+	
+	$orderBy_options[$orderBy_selected]['selected'] = ' selected ';
 	// reformat as select option elements
 	// $needle = array('a', 'href'); $replace = array('option', 'value');
 	$needle = array('<a', 'href', 'a>'); 
 	$replace = array('<option', 'value', 'option>');
 	
-
+	$ratingGroup_class = "ratingGroup";
+	if (!empty($passed['rating'])) $ratingGroup_class.= " r{$passed['rating']}";
+	
 	
 ?>
 <div class="container_16">
-	<section id='display-option-sub' class="grid_16">
+	<section id='display-option-sub' class="grid_16 hide">
     	<ul class="filter grid_11 alpha">
     		<li class='label'>Filter</li>
 			<li class='rating option'>
@@ -44,7 +47,10 @@
 						<a title='click here to REMOVE this filter' href='' onclick='window.location.reload();' >x</a>
 					</li>	
 					<li>My Rating</li>
-					<li id='filter-rating-parent'></li>
+					<li id="filter-rating-parent">
+						<div class="<?php echo $ratingGroup_class;  ?>">
+						</div>
+						</li>
 				</ul>
 			</li>
 			<li class="option"><a>Date Taken <img src="/img/snappi/arrow-down.png" alt=""></a></li>
@@ -53,7 +59,7 @@
         	<li class='label'>Show</li>
             <li class='option'>
             	Sort
-             	<select>
+             	<select onchange="PAGE.orderBy(this);">
              		<?php 
 						foreach ($orderBy_options as $id => $option) {
 							$html = str_replace($needle, $replace, $option['A_markup']);

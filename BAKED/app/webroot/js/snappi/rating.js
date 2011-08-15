@@ -171,9 +171,9 @@
 		_cfg = Y.merge(_cfg, cfg);
 
 		var ratingGroup;
-		if (mixed.Rating) {	
+		if (parent.Rating) {	
 			// REUSE this ratingGroup
-			var r = mixed.Rating;
+			var r = parent.Rating;
 			ratingGroup = r.node;
 			if (_cfg.uuid) {
 				ratingGroup.setAttribute('uuid', _cfg.uuid);
@@ -192,7 +192,8 @@
 			r.render(_cfg.v);
 		} else {
 			// CREATE new ratingGroup
-			var ratingGroup = parent.create(Y.substitute(
+			var ratingGroup = parent.one('.'+_cfg.className);
+			if (!ratingGroup) ratingGroup = parent.create(Y.substitute(
 					"<div class='{className}'></div>", _cfg));
 			try {
 				parent.one('ul > li.rating').append(ratingGroup);	
@@ -209,7 +210,7 @@
 				r.applyToBatch = _cfg.applyToBatch;
 			if (_cfg.setDbValueFn)
 				r.setDbValueFn = _cfg.setDbValueFn;
-			mixed.Rating = r;
+			parent.Rating = r;
 			if (_cfg.listen) Rating.startListeners(parent);
 		}
 		return mixed.Rating;
@@ -276,7 +277,8 @@
 		init : function(cfg) {
 			var Y = SNAPPI.Y;
 			var _cfg = {
-				el : null,
+				// el : null,
+				id: null,
 				v : 0,
 				uuid : null,
 				max : 5,
@@ -284,8 +286,9 @@
 			// change an existing rating
 			};
 			_cfg = Y.merge(_cfg, cfg);
-			this.id = (_cfg.uuid || (_cfg.uuid === false)) ? _cfg.uuid
-					: _cfg.node.get('id');
+			this.id = _cfg.id || _cfg.uuid || _cfg.node.get('id');
+			// this.id = (_cfg.uuid || (_cfg.uuid === false)) ? _cfg.uuid
+					// : _cfg.node.get('id');
 			this.node = _cfg.node;
 			this.stars = _cfg.max;
 			this.setValue(_cfg.v);
