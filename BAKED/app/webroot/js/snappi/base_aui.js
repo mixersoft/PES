@@ -521,36 +521,16 @@
         	SNAPPI.STATE = Y.merge(PAGE.jsonData.STATE, SNAPPI.STATE);
         	PAGE.jsonData.STATE = {};
     		// merge PAGE into SNAPPI.STATE
-    		var ccPage = PAGE.jsonData.castingCall.CastingCall.Auditions;
-    		SNAPPI.STATE.displayPage = {
-    				page: ccPage.Page,
-    				perpage: ccPage.Perpage,    				
-    				pageCount: ccPage.Pages,
-    				total: ccPage.Total
-    		};
-        } catch (e) { 
-            /*
-             * DEPRECATE
-             * get current Paging details for photo-roll
-             */
-            var page, perpage;
-            try {
-                page = parseInt(window.location.href.match(/\/page:(\d*)/i).pop());
-            } 
-            catch (e) {
-                page = page == undefined ? 1 : page;
-            }
-            try {
-                perpage = parseInt(window.location.href.match(/\/perpage:(\d*)/i).pop());
-            } 
-            catch (e) {
-                perpage = perpage == undefined ? 48 : perpage;
-            }        
-            SNAPPI.STATE.displayPage = {
-                page: page,
-                perpage: perpage
-            };        	
-        }
+    		try {
+	    		var ccPage = PAGE.jsonData.castingCall.CastingCall.Auditions;
+	    		SNAPPI.STATE.displayPage = {
+	    				page: ccPage.Page,
+	    				perpage: ccPage.Perpage,    				
+	    				pageCount: ccPage.Pages,
+	    				total: ccPage.Total
+	    		};
+    		} catch (e) {}
+        } catch (e) { }
         try {
         	SNAPPI.STATE.filters = SNAPPI.STATE.filters || [];
         	SNAPPI.STATE.filters = PAGE.jsonData.filter; // this is an array
@@ -630,6 +610,7 @@
          * embedded PAGE.init scripts
          */ 
         pageInit(); 
+        SNAPPI.ajax.fetchXhr();
 
         
         /*

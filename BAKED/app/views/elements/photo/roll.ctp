@@ -17,7 +17,6 @@ if (isset($this->passedArgs['rating'])) {
 if ($state) $this->viewVars['jsonData']['STATE'] = $state;
 $isPreview = (!empty($this->params['url']['preview']));
 ?>
-<div id='paging-photos-inner'>
 	<div class='element-roll photo placeholder' >
 		<section id="display-option" class="container_16">
 		    <div class="grid_9">
@@ -42,7 +41,6 @@ $isPreview = (!empty($this->params['url']['preview']));
 			<ul class='photo-roll grid_16'></ul>
 		</section>
 	</div>
-</div>
 <script type="text/javascript">
 PAGE.orderBy = function (o) {
 	window.location.href = o.options[o.selectedIndex].value;
@@ -66,6 +64,9 @@ PAGE.setDisplayOptions = function(){
 		}	
 	} catch (e) {}
 };
+/**
+ * run after EACH XHR request
+ */
 var initOnce = function() {
 	try {
 		SNAPPI.mergeSessionData();
@@ -78,7 +79,6 @@ var initOnce = function() {
 	// 	make sure restoreState works for both HTTP GET and XHR page loads
 	// or use 'snappi:ajaxLoad' custom event
 	SNAPPI.filter.initRating();
-	SNAPPI.cfg.MenuCfg.renderPerpageMenu();
 };
 try {SNAPPI.ajax; initOnce(); }			// run now for XHR request, or
 catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request

@@ -8,8 +8,8 @@ PAGE.init.push(initOnce);
 	echo $this->element('nav/section', array('icon_src'=>$data['User']['src_thumbnail']));
 ?>
 <div class="users groups">
-	<div id='paging-groups' class='paging-content'  xhrTarget='paging-groups-inner'>
-	<?php echo $this->element('/group/paging-groups');?>
+	<div id='paging-groups'>
+	<?php echo $this->element('/group/roll');?>
 	</div>
 </div>
 <?php	// tagCloud

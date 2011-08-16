@@ -165,10 +165,10 @@
 		 * load
 		 */
 		init : function() {
+			this.fetchXhr();
 			this.initPaging();		
 			// deprecate, use paginator_aui.js instead
 			if (console) console.warn("utils.js: deprecate Ajax.initPaging, use paginator_aui.js: SNAPPI.Paginator instead") 
-			this.fetchXhr();
 		},
 		/*
 		 * search for page fragments to fetch via ajax request

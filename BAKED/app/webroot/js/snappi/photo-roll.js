@@ -1172,10 +1172,12 @@
 			return false;	// this is a preview, do NOT auto-create paging DIV
 		},
 		/**
+		 * @deprecated using Paginator.paginate_Photoroll instead???
 		 * add aui Paginator to photoroll
 		 * @return
 		 */
 		add_Paginator: function(){
+			if (console) console.warn("WARNING: photo-roll.add_Paginator() is deprecated? using Paginator.paginate_Photoroll");
 			var self = this;	// photoRoll
 			var target = self.container;
 			var paginateContainer = target.ancestor('div#paging-photos-inner').one('div.paging-numbers');

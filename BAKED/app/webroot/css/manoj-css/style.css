@@ -207,7 +207,7 @@ a.gallerypic span.zoom-icon selected {
 	padding: 5px 15px;
 	margin-left: 8px;
 	font-size: 13px;
-	cursor: default;
+	cursor: pointer;
 	position: absolute;
 	height: 24px;
 	right: 0px;
