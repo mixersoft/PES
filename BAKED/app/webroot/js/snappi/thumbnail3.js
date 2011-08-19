@@ -37,9 +37,9 @@
                     '    <ul>'+
                     '    	 <li class="rating"></li>'+
                     '        <li class="score">0.0</li>'+
-                    '        <li class="icon info"><img alt="more info" src="/css/images/icon1.png"></li>'+
                     '        <li class="icon context-menu"><img alt="" title="actions" src="/css/images/icon2.png"></li>'+
-					'	</ul>'+
+                    '        <li class="icon info"><img alt="more info" src="/css/images/icon1.png"></li>'+
+ 					'	</ul>'+
 					'</section>';		
 		var _defaultCfg = {
 			className : 'thumbnail',

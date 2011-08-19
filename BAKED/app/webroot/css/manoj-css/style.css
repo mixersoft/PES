@@ -314,6 +314,7 @@ a.gallerypic span.zoom-icon selected {
 .FigureBox ul li img {
 	float: left;
 }
+
 .FigureBox ul li.rating {
 	padding: 2px 0 0 0;
 }
@@ -322,11 +323,7 @@ a.gallerypic span.zoom-icon selected {
 	height: 12px;
 }
 .FigureBox ul li.score {
-	/*
-	 * without background url
-	 */
 	font-size: 11px;
-	/*background:url(../images/valueBox.png) no-repeat;*/
 	background: -moz-linear-gradient(bottom, #eeeeee, #fff);
 	background: -webkit-gradient(linear, center bottom, center top, from(#eeeeee), to(#fff));
 	border: 1px solid #e2e2e2;
@@ -338,6 +335,9 @@ a.gallerypic span.zoom-icon selected {
 	text-align: center;
 	font-family: Arial, Helvetica, sans-serif;
 	cursor: default;
+}
+.FigureBox ul li.icon {
+	float:right;
 }
 .FigureBox ul li.info > img {
 	width: 16px;
@@ -363,9 +363,7 @@ a.gallerypic span.zoom-icon selected {
 /*
  * .ll (landscape/large) == .large 
  */
-.FigureBox.ll ul li.icon {
-	float:right;
-}
+
 .FigureBox.ll > figure > img {
 	width: 222px;
 	height: 148px;
