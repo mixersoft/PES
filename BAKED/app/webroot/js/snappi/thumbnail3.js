@@ -43,7 +43,7 @@
 					'</section>';		
 		var _defaultCfg = {
 			className : 'thumbnail',
-			size : 'sq',
+			size : 'lm',
 			// addClass : null,
 			ID_PREFIX : '',
 			type : 'photo',
@@ -160,6 +160,8 @@
 				
 				if (this._cfg.showExtras === false) {
 					node.one('ul').remove();
+				} else if (this._cfg.size === 'sq') {
+					// don't attach Rating for sq~ (small) thumbnails
 				} else {
 					// attach Rating
 	            	photoroll = photoroll || SNAPPI.PhotoRoll.getFromDom(node);

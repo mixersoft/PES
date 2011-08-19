@@ -302,24 +302,24 @@
          */
     	this.bindAuditions2Photoroll = function(cfg){
             var Y = SNAPPI.Y;
+            cfg = cfg || {};
             /*
              * check for photo-roll
              */
+            if (SNAPPI.STATE.thumbSize) cfg.size = SNAPPI.STATE.thumbSize;
             var _cfg = Y.merge(defaultCfg, cfg);
-            _cfg.ul = _cfg.ul 
-				|| Y.one('div.element-roll.photo section.gallery ul.photo-roll');
-            if (!_cfg.ul) {
+			_cfg.container = _cfg.container	|| Y.one('div.element-roll.photo section.gallery ul.photo-roll');
+            if (!_cfg.container) {
                 var parent = Y.one('div.element-roll.photo');
                 if (!parent) return; // no photos on this page
                 else {
                     var ul = parent.create('<ul class="photo-roll">');
                     parent.append(ul);
-                    _cfg.ul = ul;
+                    _cfg.container = ul;
                 }
             }
-            if (!_cfg.ul.test('.photo-roll')) return;
+            if (!_cfg.container.test('.photo-roll')) return;
  
-            var castingCall = PAGE.jsonData.castingCall;
             /*
              * check for photo-roll.json
              *   switch to choose:
@@ -327,44 +327,10 @@
              *   	- this method is PREFERRED because it eliminates an asynch request and allows immediate page rendering
              *   - json fetched async using Y.io AFTER html rendering
              */
-            
-            if (castingCall) {
-                /**
-                 * NEW codepath to create PhotoRoll from castingCall
-                 */
-                cfg = {
-                	container: _cfg.ul,
-                	castingCall: castingCall,
-    	            end: null                		
-                };
-                cfg = Y.merge(SNAPPI.STATE.displayPage, cfg);	// only if photoRoll/castingCall is paged
-                var pr = new SNAPPI.PhotoRoll(cfg);
-//                pr.renderContextMenu = SNAPPI.cfg.MenuCfg.renderPhotoContextMenu;	
-                pr.listen(true, ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'RightClick']);
-            }
-            else {
-                /*
-                 * or, fetch photo-roll.json with Y.io
-                 * this branch is useful for debugging JSON/XML reponse
-                 *	 ASYNC REQUEST
-                 */
-            	var callback = {
-            		complete: function(id, o, args){
-		                if (o.responseJson) {
-		                    var providerName = 'snappi';
-		                    var castingCall = o.responseJson.castingCall;
-		                    SNAPPI.Auditions.parseCastingCall(castingCall, providerName, null);
-		                    pr = this.bind(_cfg.ul, castingCall);
-		                    pr.listenClick();
-		                    pr.listenRightClick();
-		                    pr.listenKeypress();
-		                    pr.listenMouseover();
-		            	}
-            		}
-            	};
-                this.fetchCastingCall(_cfg, callback);
-            }
-            
+           	_cfg.castingCall = PAGE.jsonData.castingCall;
+            _cfg = Y.merge(SNAPPI.STATE.displayPage, _cfg);	// only if photoRoll/castingCall is paged
+            var pr = new SNAPPI.PhotoRoll(_cfg);
+            pr.listen(true, ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'RightClick']);
             if (SNAPPI.DEBUG_MODE) SNAPPI.debug.showNodes('#content div, section.thumbnail');
         };
     };
