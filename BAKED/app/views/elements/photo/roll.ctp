@@ -14,6 +14,9 @@ if (isset($this->passedArgs['rating'])) {
 	$state['showRatings']='show';
 	$state['showDisplayOptions'] = 1;
 }
+if (isset($this->passedArgs['thumbSize'])) {
+	$state['thumbSize']=$this->passedArgs['thumbSize'];
+}
 if ($state) $this->viewVars['jsonData']['STATE'] = $state;
 $isPreview = (!empty($this->params['url']['preview']));
 ?>
@@ -27,9 +30,9 @@ $isPreview = (!empty($this->params['url']['preview']));
 		    <div class="grid_7" style="border:0px solid #00CC66">
 				<ul class="thumb-size">
 					<li class="label">Thumbnail</li>
-					<li class="small"><img src="/img/snappi/img_1.gif" alt=""></li>
-					<li class="med  focus"><img src="/img/snappi/img_2.gif" alt=""></li>
-					<li class="large"><img src="/img/snappi/img_3.gif" alt=""></li>
+					<li class="small" thumb-size='sq'><img src="/img/snappi/img_1.gif" alt=""></li>
+					<li class="med  focus" thumb-size='lm'><img src="/img/snappi/img_2.gif" alt=""></li>
+					<li class="large" thumb-size='ll'><img src="/img/snappi/img_3.gif" alt=""></li>
 				</ul>
 		    	<div class="display" onclick='PAGE.toggleDisplayOptions();'>
 		    		<a>Display Options <img src="/img/snappi/arrow-down.png"></a>

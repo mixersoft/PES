@@ -595,6 +595,12 @@
                     }
                     window.location.href = next;
                 }, 'section.FigureBox > figure > img', this);
+                // listen thumbnail size
+                this.container.listen['thumSize_Click'] = Y.one('#display-option ul.thumb-size').delegate('click', function(e){
+                	var thumbSize = e.currentTarget.getAttribute('thumb-size');
+                	window.location.href = SNAPPI.IO.setNamedParams(window.location.href, {'thumbSize':thumbSize});
+                }, 'li', this);
+                
             } 
         },
         listenMultiSelect : function () {
