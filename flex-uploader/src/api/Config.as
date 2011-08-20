@@ -3,6 +3,7 @@ package api
 	import flash.filesystem.File;
 	import flash.system.Capabilities;
 	import mx.core.FlexGlobals;
+	import api.SqlHandler;
 
 	public class Config
 	{

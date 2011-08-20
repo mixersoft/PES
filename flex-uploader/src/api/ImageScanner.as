@@ -1,6 +1,7 @@
 package api
 {
 	import api.Config;
+	import api.SqlHandler;
 	
 	import com.adobe.crypto.MD5;
 	import com.adobe.serialization.json.JSON;
@@ -90,7 +91,7 @@ package api
 			this.queuedFolders = new Array();	// array of Files, represents top level import Folders
 			this.queuedFolderIndex = -1;
 			this.curr_baseurl = ''; 
-			this.sql = Config.sql//;new SqlHandler('app:/db/','snaphappi.db3');
+			this.sql = Config.sql;//;new SqlHandler('app:/db/','snaphappi.db3');
 		}
 		
 		/**

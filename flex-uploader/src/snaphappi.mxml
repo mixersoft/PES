@@ -68,9 +68,11 @@
 							testDest.deleteFile();
 						} catch (e:Error){
 							// app: is a privileged folder, use applicationStorage 
-							Config.appRoot = File.applicationStorageDirectory;	
+							throw new Error(">>> App: is a privileged folder. using AppStorage:");
 						}
-					}					
+					} else {
+						throw new Error(">>> FORCE DEBUG = false");
+					}
 				} catch (e:Error){
 					Config.appRoot = File.applicationStorageDirectory;
 				}
@@ -192,6 +194,7 @@
 			// called from javascript
 			public function onYuiDomReady():void{
 				Config.jsGlobal.firebugLog("***********      onYuiDomReady      ******************");
+				Config.jsGlobal.firebugLog('>>>>>>>>>> using appRoot=' + Config.appRoot.nativePath);
 				Config.jsUploadQueue = Config.jsGlobal.SNAPPI.AIR.UploadQueue;
 				Config.SNAPPI = Config.jsGlobal.SNAPPI;	// deprecate
 				// set dropTarget to proxy
