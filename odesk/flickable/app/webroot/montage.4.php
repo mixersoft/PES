@@ -2,42 +2,10 @@
 	  echo header('Cache-control: no-cache');
 	  echo header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); 
       
-	  require_once 'cluster-collage.3.php';	 
+	  require_once 'cluster-collage.4.php';	 
 	  $appHost = 'git3:88'; 
 	  $appHost = 'aws.snaphappi.com';
 	  ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
-<head>
-<!--[if IE]><style> img {behavior: url(/app/pagemaker/js/fixnaturalwh.htc)}</style><![endif]-->
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link href="http://snaphappi.com/img/favicon.ico" type="image/x-icon"
-	rel="icon" />
-<title>Snaphappi Page Layout Maker</title>
-<link media="screen" type="text/css"
-	href="http://<?php echo $appHost ?>/app/pagemaker/css/pageGallery.css"
-	rel="stylesheet">
-<script type="text/javascript"
-	src="http://yui.yahooapis.com/combo?3.3.0/build/yui/yui-min.js"> 
-        </script>
-<script type="text/javascript"
-	src="http://<?php echo $appHost ?>/app/pagemaker/js/play/pageGallery.js"> 
-        </script>
-</head>
-<body>
-<div id="glass">
-<div id="centerbox" class="hide">
-<div id="closeBox" class="hidden"></div>
-<span id="prevPhoto"></span> <span id="nextPhoto"></span> <img
-	id="lightBoxPhoto" /></div>
-<div class='loading'></div>
-<div id='bottom'></div>
-</div>
-<div id="paging" class="">
-<div id="prevPage"><&lt Prev</div>
-<span id="pagenum"></span>
-<div id="nextPage">Next &gt</div>
-</div>
 <?php
 /*****************************************************************
  * Get input photos from JSON request
@@ -56,7 +24,7 @@ $COUNT 		= $perpage;		// count of photos to use in the arrangement, taken from t
 /*
  * get JSON from url
  */
-$controller = strpos($appHost, 'snaphappi.com') ? 'users' : 'person';
+$controller = 'person';
 $url = "http://{$appHost}/{$controller}/odesk_photos/{$userid}/rating:{$rating}/page:{$page}/perpage:{$perpage}/.json?debug=0";
 $rawJson = file_get_contents($url);
 $json = json_decode($rawJson, true);
@@ -83,6 +51,14 @@ function getPhotos($photos, $baseurl){
 	return $output;
 }
 
+function getPhotosById($id, $photos){
+	foreach ($photos as $key => $photo) {
+		if ($photo['id'] == $id){
+			return $photo;
+        }
+    }
+	return false;
+}
 /*
  * sort by Rating DESC, then unixtime ASC
  */
@@ -148,12 +124,12 @@ $sortedPhotos = sortPhotos(getPhotos($photos, $baseurl), null);
 	 	$outputHTML = sprintf($arrangementTemplate, $arrangement['H'], $arrangement['W']);
 	 	for	($i = 0; $i < $role_count ; $i++) {
 	 		$r = $arrangement['Roles'][$i];
-	 		if (!isset($sortedPhotos[$i])) break;
-			$p = $sortedPhotos[$i];
-                        $ratio = $p['width'] / $p['height'];
-                        $sub = 3;
-                        $subW = $ratio > 0 ? $sub * $ratio : $sub;
-                        $subH = $ratio > 0 ? $sub : $sub * $ratio; 
+			$p = getPhotosById($r['photo_id'], $sortedPhotos);
+			if ($p === false) break;
+            $ratio = $p['width'] / $p['height'];
+            $sub = 3;
+            $subW = $ratio > 0 ? $sub * $ratio : $sub;
+            $subH = $ratio > 0 ? $sub : $sub * $ratio; 
 	 		$outputHTML .= sprintf($photoTemplate, $i, $p['rating'], 
                                 $p['dateTaken'], $p['caption'], $p['src'], 
                                 $r['H'], $r['W'], $r['X'], $r['Y'] );
@@ -191,7 +167,59 @@ $sortedPhotos = sortPhotos(getPhotos($photos, $baseurl), null);
                 $montage[] = exportMontage($arrangement, $tempPhotos);
         } while (!empty($layoutPhotos));
         unset($collage);
-?>
+?>	  
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+<!--[if IE]><style> img {behavior: url(/app/pagemaker/js/fixnaturalwh.htc)}</style><![endif]-->
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link href="http://snaphappi.com/img/favicon.ico" type="image/x-icon"
+	rel="icon" />
+<title>Snaphappi Page Layout Maker</title>
+<link media="screen" type="text/css"
+	href="http://<?php echo $appHost ?>/app/pagemaker/css/pageGallery.css"
+	rel="stylesheet">
+<script type="text/javascript"
+	src="http://yui.yahooapis.com/combo?3.3.0/build/yui/yui-min.js"> 
+        </script>
+<script type="text/javascript"
+	src="http://<?php echo $appHost ?>/app/pagemaker/js/play/pageGallery.js"> 
+        </script>
+</head>
+<?php  
+/*
+ * json reponse
+ */
+if (strpos($_SERVER['REQUEST_URI'], '.json') || strpos($_SERVER['REQUEST_URI'], 'json=1')) {
+	echo "<body style='color:white'>";
+	/*
+	 * json POST
+	 * */
+	echo "<P>JSON POST string can be seen at:  </P>";
+	$debug_url = str_replace('debug=0', 'debug=1', $url);
+	echo "<blockquote><a href='{$debug_url}'>{$debug_url}<a></blockquote>";
+	/*
+	 * json response
+	 * */
+	echo "<P>JSON response string:  </P>";
+	echo "<blockquote>".json_encode($arrangement)."</blockquote>"; 
+	echo "</body>";  
+	exit;
+} ?>
+<body>
+<div id="glass">
+<div id="centerbox" class="hide">
+<div id="closeBox" class="hidden"></div>
+<span id="prevPhoto"></span> <span id="nextPhoto"></span> <img
+	id="lightBoxPhoto" /></div>
+<div class='loading'></div>
+<div id='bottom'></div>
+</div>
+<div id="paging" class="">
+<div id="prevPage"><&lt Prev</div>
+<span id="pagenum"></span>
+<div id="nextPage">Next &gt</div>
+</div>
 
 <input id='url' type="text" size="120" value="<?php echo $url ?>"></input>
 <div id='check-data' class='hide' > 
