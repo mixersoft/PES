@@ -367,6 +367,7 @@
      * adds cakephp named params to uri
      * @param uri	string base uri
      * @param namedData {} key-value pairs
+     * 		value === null removes namedParam from string
      * @return string uri
      */
     IO.setNamedParams = function(uri, namedData) {
@@ -379,9 +380,14 @@
 			var regex = new RegExp(regexS);
 			var match = regex.exec(uri);
 			if (match) {
-				// update nameData param
-				uri = uri.replace(match[0], match[1]+namedData[i]);
-			} else {
+				if (namedData[i] === null) {
+					// remove named param
+					uri = uri.replace(match[0], '');
+				} else {
+					// update nameData param
+					uri = uri.replace(match[0], match[1]+namedData[i]);
+				}
+			} else if (namedData[i] !== null) {
 				// append nameData param
             	name.push(i + ':' + namedData[i]);
 			}
