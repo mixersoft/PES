@@ -416,7 +416,9 @@ class AppController extends Controller {
 		} 
 		return $slug;
 	}
-	
+	/**
+	 * any breadcrumb related values
+	 */
 	function __cacheClickStream() {
 		if (!AppController::$uuid) return;  // all page, no clickstream update
 		$controllerAttr = Configure::read('controller');
@@ -428,7 +430,28 @@ class AppController extends Controller {
 				$newCrumb = array('uuid'=>AppController::$uuid, 'classLabel'=>$this->displayName);
 				Session::write("lookup.trail.{$controllerAttr['keyName']}", $newCrumb);
 			}
-		}		
+		}
+		// cache nav location in session
+		$titleName = ($controllerAttr['action'] != 'all') ? $controllerAttr['titleName'] : 'Explore';
+		switch ($titleName) {
+			case 'Me':
+				$focus = 'Home'; break;
+			case 'Group':
+			case 'Event':
+			case 'Wedding':
+			case 'Circle':	
+				$focus = 'Circles'; break;
+			case 'Photo':
+				$focus = 'Snaps'; break;
+			case 'Person':
+				$focus = 'People'; break;
+			case 'Explore':
+				$focus = 'Explore'; break;
+			default: 
+				$focus = null;
+		}
+		Session::write("nav.primary", $focus);
+				
 	}
 	
 	/*

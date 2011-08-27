@@ -12,6 +12,7 @@ class PersonController extends UsersController {
 		'Tags.TagCloud',
 		'Time','Text',
 		'CastingCallJson',
+		'Layout',
 //		'Js' => array('Jquery'),
 	);
 

@@ -42,43 +42,44 @@
 		$ratingRemoved_href = Router::url($ratingRemoved_href);
 	} else {
 		$ratingRemoved_class .= ' hide'; 				// move to JS
+		$ratingRemoved_href = $this->here;
 	}
 	
 	
 ?>
-<div class="container_16">
-	<section id='display-option-sub' class="grid_16 hide">
-    	<ul class="filter grid_11 alpha">
-    		<li class='label'>Filter</li>
-			<li class='rating option'>
-				<ul>
-					<li class='<?php echo $ratingRemoved_class;  ?>'>
-						<a title='click here to REMOVE this filter' href='<?php echo $ratingRemoved_href ?>' >x</a>
-					</li>	
-					<li>My Rating</li>
-					<li id="filter-rating-parent">
-						<div class="<?php echo $ratingGroup_class;  ?>">
-						</div>
-						</li>
-				</ul>
-			</li>
-			<li class="option"><a>Date Taken <img src="/img/snappi/arrow-down.png" alt=""></a></li>
-		</ul>
-        <ul class="grid_5 omega sort">
-        	<li class='label'>Show</li>
-            <li class='option'>
-            	Sort
-             	<select onchange="PAGE.orderBy(this);">
-             		<?php 
-						foreach ($orderBy_options as $id => $option) {
-							$html = str_replace($needle, $replace, $option['A_markup']);
-							if (!empty($option['selected'])) $html = str_replace('value', " {$option['selected']} value", $html);
-							echo $html;
-						}                     		
-             		?>
-             	</select>
-            </li>
-            <li class='option'>Fullscreen</li>
-      </ul>
-	</section>
-</div>
+<section class="gallery-display-options container_16 hide">
+	<nav class="settings grid_16 wrapped">
+	    	<ul class="filter inline">
+	    		<li class='label'>Filter</li>
+				<li class='rating option'>
+					<ul>
+						<li class='<?php echo $ratingRemoved_class;  ?>'>
+							<a title='click here to REMOVE this filter' href='<?php echo $ratingRemoved_href ?>' >x</a>
+						</li>	
+						<li>My Rating</li>
+						<li id="filter-rating-parent">
+							<div class="<?php echo $ratingGroup_class;  ?>">
+							</div>
+							</li>
+					</ul>
+				</li>
+				<li class="option">Date Taken <a><img src="/img/snappi/arrow-down.png" alt=""></a></li>
+			</ul>
+	        <ul class="sort inline right">
+	        	<li class='label'>Show</li>
+	            <li class='option'>
+	            	Sort
+	             	<select onchange="PAGE.orderBy(this);">
+	             		<?php 
+							foreach ($orderBy_options as $id => $option) {
+								$html = str_replace($needle, $replace, $option['A_markup']);
+								if (!empty($option['selected'])) $html = str_replace('value', " {$option['selected']} value", $html);
+								echo $html;
+							}                     		
+	             		?>
+	             	</select>
+	            </li>
+	            <li class='option'>Fullscreen</li>
+	      	</ul>			
+	</nav>
+</section>

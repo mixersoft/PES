@@ -21,25 +21,7 @@ if ($state) $this->viewVars['jsonData']['STATE'] = $state;
 $isPreview = (!empty($this->params['url']['preview']));
 ?>
 	<div class='element-roll photo placeholder' >
-		<section id="display-option" class="container_16">
-		    <div class="grid_9">
-		      <div class="counts">
-		          <h2><?php echo $total; ?>  Snaps</h2>
-		      </div>
-		    </div>
-		    <div class="grid_7" style="border:0px solid #00CC66">
-				<ul class="thumb-size">
-					<li class="label">Thumbnail</li>
-					<li class="small" thumb-size='sq'><img src="/img/snappi/img_1.gif" alt=""></li>
-					<li class="med  focus" thumb-size='lm'><img src="/img/snappi/img_2.gif" alt=""></li>
-					<li class="large" thumb-size='ll'><img src="/img/snappi/img_3.gif" alt=""></li>
-				</ul>
-		    	<div class="display" onclick='PAGE.toggleDisplayOptions();'>
-		    		<a>Display Options <img src="/img/snappi/arrow-down.png"></a>
-		    		</div>
-			</div>      
-		</section> 
-		<?php  echo $this->element('/photo/display-options');  ?>
+		<?php echo $this->element('/photo/header', array('total'=>$total));?>
 		<section class="gallery container_16">
 			<ul class='photo-roll grid_16'></ul>
 		</section>
@@ -59,11 +41,11 @@ PAGE.setDisplayOptions = function(){
 	var Y = SNAPPI.Y;
 	try {
 		if (SNAPPI.STATE.showDisplayOptions) {
-			Y.one('#display-option div.display').addClass('open');
-			Y.one('#display-option-sub').removeClass('hide');
+			Y.one('section.gallery-header li.display-option').addClass('open');
+			Y.one('section.gallery-display-options').removeClass('hide');
 		} else {
-			Y.one('#display-option div.display').removeClass('open');
-			Y.one('#display-option-sub').addClass('hide');
+			Y.one('section.gallery-header li.display-option').removeClass('open');
+			Y.one('section.gallery-display-options').addClass('hide');
 		}	
 	} catch (e) {}
 };
@@ -83,7 +65,11 @@ var initOnce = function() {
 	// or use 'snappi:ajaxLoad' custom event
 	SNAPPI.filter.initRating();
 };
-try {SNAPPI.ajax; initOnce(); }			// run now for XHR request, or
-catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request
+try {
+	SNAPPI.ajax; 
+	initOnce(); 
+} catch (e) {
+	PAGE.init.push(initOnce); 
+}	// run from Y.on('domready') for HTTP request
 </script>
 <?php Configure::write('js.render_lightbox', true); ?>

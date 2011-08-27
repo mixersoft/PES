@@ -775,7 +775,7 @@
 		renderRating : function(node) {
 			// TODO: for now, just replace the button. later, render in subMenu
 			var cfg = {
-				el : node.dom(),
+				// el : node.dom(),
 				id : "lbx_ratingGrp",
 				uuid : false,
 				'applyToBatch' : this.applyRatingInBatch
@@ -1402,19 +1402,21 @@
 	            var postData = {'lightbox.regionAsJSON': region};
 	            SNAPPI.io.writeProfile(postData, callback, '');
 			}, this);
-			
-			var resize = new Y.Resize({
-				node : '#lightbox'
-			});
-			resize.plug(Y.Plugin.ResizeConstrained, {
-				minHeight : _LIGHTBOX_MIN_HEIGHT,
-				minWidth  : _LIGHTBOX_MIN_WIDTH 
-			});
-		    resize.on('endResize', function(){
-		    	var region = node.get('region');
-	            var postData = {'lightbox.regionAsJSON': region};
-	            SNAPPI.io.writeProfile(postData, callback, '');
-		    });
+			/*
+			 * disable AUI-resize
+			 */
+			// var resize = new Y.Resize({
+				// node : '#lightbox'
+			// });
+			// resize.plug(Y.Plugin.ResizeConstrained, {
+				// minHeight : _LIGHTBOX_MIN_HEIGHT,
+				// minWidth  : _LIGHTBOX_MIN_WIDTH 
+			// });
+		    // resize.on('endResize', function(){
+		    	// var region = node.get('region');
+	            // var postData = {'lightbox.regionAsJSON': region};
+	            // SNAPPI.io.writeProfile(postData, callback, '');
+		    // });
 		},
 		yui2_plugResizeAndDrag : function (node) {
 			var Y = SNAPPI.Y;

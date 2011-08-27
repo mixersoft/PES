@@ -32,7 +32,7 @@
 		 */
 		var _showSubstitutesCSS; // stylesheet for hiding substitutes
 		var _htmlTemplate = // '<li><div class="thumb"><img></li>';
-					'<section class="FigureBox">'+
+					'<article class="FigureBox">'+
                     '	<figure><img alt="" src=""></figure>'+
                     '    <ul>'+
                     '    	 <li class="rating"></li>'+
@@ -40,7 +40,7 @@
                     '        <li class="icon context-menu"><img alt="" title="actions" src="/css/images/icon2.png"></li>'+
                     '        <li class="icon info"><img alt="more info" src="/css/images/icon1.png"></li>'+
  					'	</ul>'+
-					'</section>';		
+					'</article>';		
 		var _defaultCfg = {
 			className : 'thumbnail',
 			size : 'lm',

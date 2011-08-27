@@ -38,8 +38,9 @@
 	</script>
 	<script src="/svc/lib/alloy-1.0.2/build/aui/aui.js" type="text/javascript"></script>
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/reset.css" />
-	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/style.css" />
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/960.css" />	
+	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/style.css" />
+	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/style.1.css" />
 	<?php
 		echo $this->Html->meta('favicon.ico', '/img/favicon.ico', array('type' => 'icon') );
 		// echo $this->Html->css('cake.generic', null);
@@ -49,90 +50,87 @@
 </head>
 <body>
 	<section id="container"><!-- main container-->
-		<?php echo $this->element('/nav/header')?>
+		<?php echo $this->element('/nav/primary'); ?>
 		
+<section id="body-container" class='container_16 wrapped'><!--body container start-->
+	<?php echo $this->element('/nav/secondary'); ?>
+	<div id="content" class="container_16">
+		<?php // echo $this->element('/nav/tabs')?>
+		<?php echo $this->Session->flash(); ?>
+		<?php echo $this->Session->flash('email'); ?>
+		<?php echo $content_for_layout; ?>
+		<?php if (Configure::read('js.render_lightbox')) {echo $this->element('/lightbox'); }?>
+	</div>
+</section><!--body container ends-->
 		
-		
-<section id="body-container" class='container_16'><!--body container start-->
-	<section class="subnav container_16">
-        <div class="grid_2">
-            <nav class="sublink"><h1>What's New</h1></nav>
-        </div>
-        <div class="grid_10">
-	        <nav class="sublink">
-                <ul>
-					<li><a>Montage</a></li>                    
-					<li class="focus"><a>Gallery</a></li>
-					<li><a>Timeline</a></li>
-					<li><a>Invites</a></li>
-					<li><a>Activity Feed</a></li>
-					<li class="preference"><a href="javascript:;">Preferences</a></li>
-            	</ul>
-         	</nav>
-        </div>
-        <div class="grid_4">
-          	<?php echo $this->element('nav/search')?>
-        </div>
-	</section> 	
-		
-		<div id="content" class="container_16">
-			<?php // echo $this->element('/nav/tabs')?>
-			<?php echo $this->Session->flash(); ?>
-			<?php echo $this->Session->flash('email'); ?>
-			<?php echo $content_for_layout; ?>
-			<?php if (Configure::read('js.render_lightbox')) {echo $this->element('/lightbox'); }?>
+	
+<?php $this->Layout->output($relatedContent_for_layout); ?>
+
 <script type="text/javascript">
 <?php 	
-		$this->viewVars['jsonData']['controller'] = Configure::read('controller');
-		foreach ($this->viewVars['jsonData'] as $key=>$value) {
-			echo "PAGE.jsonData.{$key}=".json_encode($value).";\n"; 
-		} 
-		?>
-</script>
-		</div>
-		</section><!--body container ends-->
-		
-		
-		<div id='markup' >
-			<div id="menu-header-markup" class="menu yui3-aui-overlaycontext-hidden hide">
-				<ul>
-					<li action='home' >
-						<a href="/my/home">My Home</a>
-					</li>
-					<li action='photos' >
-						<a href="/my/photos">My Photos</a>
-					</li>
-					<li action='photostreams' >
-						<a href="/my/photostreams">My Photostreams</a>
-					</li>		
-					<li action='groups' >
-						<a href="/my/groups">My Groups</a>
-					</li>			
-					<li action='trends' >
-						<a href="/my/home#trends">My Trends</a>
-					</li>
-					<li action='upload' >
-						<a href="/my/upload">Upload Photos</a>
-					</li>
-					<li action='settings' >
-						<a href="/my/settings">My Settings</a>
-					</li>
-					<li action='lightbox' class='before-show'>
-						<a href="javascript:;">Hide Lightbox</a>
-					</li>
-				</ul>
-			</div>		
-		</div>		
-		<div id="footer" class="container_16">
-			<span style="font-size:0.8em;vertical-align:text-top;">&copy; 2008-2010 Snaphappi</span>
-			<?php echo $this->Html->link(
-					$this->Html->image('cake.power.gif', array('alt'=> __('CakePHP: the rapid development php framework', true), 'border' => '0')),
-					'http://www.cakephp.org/',
-					array('target' => '_blank', 'escape' => false)
-				);
-			?>
-		</div>
-	<section id="container"><!-- main container-->
+	$this->viewVars['jsonData']['controller'] = Configure::read('controller');
+	foreach ($this->viewVars['jsonData'] as $key=>$value) {
+		echo "PAGE.jsonData.{$key}=".json_encode($value).";\n"; 
+	} 
+?>
+ PAGE.goSearch = function() {
+	var value = SNAPPI.Y.one('#search input').get('value');
+	if (value) {
+		if (value.length>2) {
+			var here = window.location.href;
+			var namedData = {q:value, page: null};
+			window.location.href = SNAPPI.IO.setNamedParams(here, namedData);
+			return true;
+		} else {
+			alert('please enter at least 3 chars in your search');
+		}
+	}  
+	return false;
+}; 
+</script>	
+	
+<div id='markup' >
+	<div id="menu-header-markup" class="menu yui3-aui-overlaycontext-hidden hide">
+		<ul>
+			<li action='home' >
+				<a href="/my/home">My Home</a>
+			</li>
+			<li action='photos' >
+				<a href="/my/photos">My Photos</a>
+			</li>
+			<li action='photostreams' >
+				<a href="/my/photostreams">My Photostreams</a>
+			</li>		
+			<li action='groups' >
+				<a href="/my/groups">My Groups</a>
+			</li>			
+			<li action='trends' >
+				<a href="/my/home#trends">My Trends</a>
+			</li>
+			<li action='upload' >
+				<a href="/my/upload">Upload Photos</a>
+			</li>
+			<li action='settings' >
+				<a href="/my/settings">My Settings</a>
+			</li>
+			<li action='lightbox' class='before-show'>
+				<a href="javascript:;">Hide Lightbox</a>
+			</li>
+		</ul>
+	</div>		
+</div>		
+
+<div id="footer" class="container_16">
+	<span style="font-size:0.8em;vertical-align:text-top;">&copy; 2008-2011 Snaphappi</span>
+	<?php echo $this->Html->link(
+			$this->Html->image('cake.power.gif', array('alt'=> __('CakePHP: the rapid development php framework', true), 'border' => '0')),
+			'http://www.cakephp.org/',
+			array('target' => '_blank', 'escape' => false)
+		);
+	?>
+</div>
+
+	</section><!-- main container-->
 	<?php echo $this->element('sql_dump'); ?>
 	<?php
 		if (Configure::read('js.bootstrap_snappi')) echo $this->Html->script('/js/snappi/base_aui.js');		

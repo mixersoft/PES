@@ -1,19 +1,4 @@
-<div id="search" >
-<script type="text/javascript">
-PAGE.goSearch = function(o) {
-	
-	var value = SNAPPI.Y.one('#search input').get('value');
-	if (value) {
-		if (value.length>2) {
-			o.href = SNAPPI.IO.setNamedParams(o.href, {q:value});
-			return true;
-		} else {
-			alert('please enter at least 3 chars in your search');
-		}
-	}  
-	return false;
-};
-</script>
+<div id="search" class="right">
 <?php				
 								
 	/*
@@ -124,9 +109,11 @@ PAGE.goSearch = function(o) {
 	}
 //	debug($next);
 	unset($passedArgs['q']);
+	unset($passedArgs['perpage']);
 ?>
-	<form id='search-form' accept-charset="utf-8" method="get" action="<?php echo Router::url($passedArgs + $next); ?>" onsubmit="if (this.value=='') return false;" >
-		<input type='text' name='q' value='<?php echo $defaultString; ?>' maxlength='45' title='' onclick='if(this.style.color!="black"){this.value="";}this.style.color="black";' ></input>
-		<img src="/img/snappi/search.gif">
+	<form id='search-form' accept-charset="utf-8" method="get" action="<?php echo Router::url($passedArgs + $next); ?>" onsubmit="PAGE.goSearch(); return false; if (this.value=='') return false;" >
+		<ul class='inline right'>
+			<li><input type='text' name='q' value='<?php echo $defaultString; ?>' maxlength='45' title='' onclick='if(this.style.color!="black"){this.value="";}this.style.color="black";' ></input></li><li><div class="go" onclick="return PAGE.goSearch();"></div></li>
+		</ul>
 	</form>
 </div>

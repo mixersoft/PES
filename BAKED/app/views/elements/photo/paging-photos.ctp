@@ -4,6 +4,10 @@
 	<li><?php // echo $this->Html->link('Photostream', array('action'=>'photostreams', $this->passedArgs + array('action'=>'photostreams')  ))?></li>
 	<li><?php
 	/*
+	 * deprecate
+	 * */
+	debug("WARNING: paging-control deprecated, use aui-paginate instead");
+	/*
 	 * Generate Paginator->sort() urls when sortin on field in associated models
 	 */
 		$orderBy= '0.rating'; $default = 'desc';

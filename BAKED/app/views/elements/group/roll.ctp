@@ -17,9 +17,7 @@ if (Configure::read('controller.isXhr')) {
 		<li>Total of <?php echo $total; ?> Groups</li>
 		<li><?php echo $this->element('context'); ?></li>
 	</ul>
-	<ul class='group-roll'>
-		<?php echo $this->element('/group/paging-inner'); ?>
-	</ul>
+	<?php echo $this->element('/group/paging-inner'); ?>
 </div>
 <script type="text/javascript">
 var initOnce = function() {
