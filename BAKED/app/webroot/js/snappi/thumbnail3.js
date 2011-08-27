@@ -81,11 +81,11 @@
 				_showSubstitutesCSS = new Y.StyleSheet('hideSubstitutes');
 				_showSubstitutesCSS.disable();
 				_showSubstitutesCSS.set(
-						'ul.photo-roll > li.substitute-hide', {
+						'ul.photo-roll > .Figurebox.hiddenshot-hide', {
 							display : 'block'
 						});
 				_showSubstitutesCSS.set(
-						'ul.photo-roll > li.substitute-show > img', {
+						'ul.photo-roll > .Figurebox.hiddenshot-show > img', {
 							border : '1px solid red'
 						});
 			}
@@ -148,16 +148,34 @@
 				if (this._cfg.draggable)
 					img.addClass('drag');
 
-				if (this._cfg.showLabel) {
-					var n = node.create('<div class="thumb-label">' + this
-							.trimLabel(title) + '</div>');
-					node.append(n);
-				}
 
 				this.node = node;
 				this.img = img;
 				node.Thumbnail = this;
 				
+				// show caption, 
+				// TODO: update for .FigureBox
+				if (this._cfg.showLabel) {
+					var n = node.create('<div class="thumb-label">' + this
+							.trimLabel(title) + '</div>');
+					node.append(n);
+				}
+				
+				// show hidden shot icons
+				try {
+					if (/hiddenshot-/.test(node.get('id'))) throw("Skip hidden-shot in Hidden Shot view");
+					var icon, tooltip, shot_count = parseInt(audition.Audition.Shot.count);
+					tooltip = shot_count + " Snaps in this Shot.";
+					if (shot_count > 6) {
+						icon = '<div class="hidden-shot" title="'+tooltip+'"></div>';
+						node.one('figure').append(icon);						
+					} else if (shot_count > 1) {
+						icon = '<div class="hidden-shot c'+shot_count+'" title="'+tooltip+'"></div>';
+						node.one('figure').append(icon);
+					}
+				} catch (e) { }
+				
+				// show extras, i.e. rating, score, info, menu
 				if (this._cfg.showExtras === false) {
 					node.one('ul').remove();
 				} else if (this._cfg.size === 'sq') {
@@ -217,12 +235,38 @@
 				if (this._cfg.draggable)
 					img.addClass('drag');
 
+				// show caption
 				if (this._cfg.showLabel) {
 					var n = node.create('<div class="thumb-label">' + this
 							.trimLabel(title) + '</div>');
 					node.append(n);
 				}
 
+				// show hidden shot icons
+				try {
+					var icon, tooltip, shot_count = parseInt(audition.Audition.Shot.count);
+					var icon = node.one(".hidden-shot");
+					tooltip = shot_count + " Snaps in this Shot.";
+					if (icon) {
+						// reuse
+						if (shot_count > 6) {
+							icon.set('className','hidden-shot').setAttribute('title', tooltip);
+						} else if (shot_count > 1) {
+							icon.set('className','hidden-shot').addClass('c'+shot_count).setAttribute('title', tooltip);
+						} else {
+							icon.remove();
+						}
+					} else {
+						if (shot_count > 6) {
+							icon = '<div class="hidden-shot" title="'+tooltip+'"></div>';
+							node.one('figure').append(icon);						
+						} else if (shot_count > 1) {
+							icon = '<div class="hidden-shot c'+shot_count+'" title="'+tooltip+'"></div>';
+							node.one('figure').append(icon);
+						}
+					}
+				} catch (e) { }
+				
 				// update Rating
 				if (node.Rating) {
 					node.Rating.id = audition.id;
@@ -253,6 +297,13 @@
 				this.img.replaceClass('focus', 'blur');
 			},
 			/**
+			 * select/un-select Thumbnail, adds DOM elements for showing selection
+			 * @param value, toggle if null
+			 */
+			select: function(value) {
+				return;
+			},
+			/**
 			 * setRating()
 			 * @param v	int value
 			 * @param silent if TRUE, just render value, do not update the DB or bindTo
@@ -269,9 +320,9 @@
 			},	
 			setSubGroupHide: function (hide) {
 				if (hide === false || hide=='show') {
-					this.node.replaceClass('substitute-hide', 'substitute-show');
+					this.node.replaceClass('hiddenshot-hide', 'hiddenshot-show');
 				} else {
-					this.node.replaceClass('substitute-show', 'substitute-hide');
+					this.node.replaceClass('hiddenshot-show', 'hiddenshot-hide');
 				}
 			},
 			/*******************************************************************

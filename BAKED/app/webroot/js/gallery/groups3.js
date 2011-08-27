@@ -458,8 +458,8 @@
                 var ret = subGrData.isBest(t);
                 if (ret === null) 
                     return;
-                n.addClass(ret ? 'substitute-show' : 'substitute-hide');
-                n.removeClass(!ret ? 'substitute-show' : 'substitute-hide');
+                n.addClass(ret ? 'hiddenshot-show' : 'hiddenshot-hide');
+                n.removeClass(!ret ? 'hiddenshot-show' : 'hiddenshot-hide');
             });
             return;
         }
@@ -477,16 +477,16 @@
                 o = o.ancestor('li.thumb-wrapper');
             if (o) {
                 var ret = o.dom().data.substitutes.isBest(o);
-                o.ynode().addClass(ret ? 'substitute-show' : 'substitute-hide');
-                o.ynode().removeClass(!ret ? 'substitute-show' : 'substitute-hide');
+                o.ynode().addClass(ret ? 'hiddenshot-show' : 'hiddenshot-hide');
+                o.ynode().removeClass(!ret ? 'hiddenshot-show' : 'hiddenshot-hide');
             }
         });
     };
     SubstitutionGroup.removeStyle = function(n){
         if (!n.hasClass('thumb-wrapper')) 
             n = n.ancestor('li.thumb-wrapper');
-        n.removeClass('substitute-hide');
-        n.removeClass('substitute-show');
+        n.removeClass('hiddenshot-hide');
+        n.removeClass('hiddenshot-show');
     };
     
     SNAPPI.Group = Group;

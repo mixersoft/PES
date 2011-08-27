@@ -124,11 +124,11 @@
             if (!ul && /photos\/home/.test(window.location.href)) {
             	// filmstrip not found,  build filmstrip
             	// TODO: move to a better place. we cannot assume we are on the /photos/home page here
-            	var parent = SNAPPI.Y.one('div#substitutes');
+            	var parent = SNAPPI.Y.one('div#hiddenshots');
             	ul = parent.create('<ul></ul>'); // class='filmstrip' or 'photo-roll'??
                 parent.append(ul);
             }                
-            ul.addClass('substitutes');
+            ul.addClass('hiddenshots');
             ul.addClass('filmstrip');
             // TODO: should add a more... link to see paging view of shot
             
@@ -137,7 +137,7 @@
 			var oneShotCfg = {};
 			oneShotCfg[shot.id] = shot;		// format for PhotoRoll constructor
 			var showHiddenShotsCfg = {
-				ID_PREFIX : 'substitute-',
+				ID_PREFIX : 'hiddenshot-',
 				size : 'lm',
 				selected : 1,
 				start : 0,
@@ -174,8 +174,8 @@
         } else {	// no shots returned
         	// hide/unbind everything
 	        try {
-	        	// no shots, just hide div#substitutes and unbind nodes
-	        	if (ul.ancestor('div#substitutes')) { 
+	        	// no shots, just hide div#hiddenshots and unbind nodes
+	        	if (ul.ancestor('div#hiddenshots')) { 
 	        		// hide substitute group, if we are on the /photos/home page
 	        		ul.all('li').addClass('hide').each(function(n,i,l){
 		        		SNAPPI.Auditions.unbind(n);
@@ -290,7 +290,7 @@
 //	            }, this);
 	            SNAPPI.DragDrop.pluginDelegatedDrag(this.container, 'img.drag');
 	        	break;
-	        case 'substitute-':
+	        case 'hiddenshot-':
 	        	this.render(_cfg);
 //	        	this.container.all('img.drag').each(function(n, i, l){
 //	                SNAPPI.DragDrop.pluginDrag(n);
@@ -330,15 +330,15 @@
             if (!this.container) 
                 return;
             var offset, page, perpage, 
-            	nlist = this.container.all('section.thumbnail');
+            	nlist = this.container.all('.FigureBox');
             switch(this._cfg.ID_PREFIX) {
 	            case 'filmstrip-':
-	            case 'substitute-':
+	            case 'hiddenshot-':
 	            	offset = this._cfg.start;
 	            	perpage = this._cfg.end - this._cfg.start;            	
 	            	break;
 	            case 'lightbox-':
-            		// use the existing number of section.thumbnails
+            		// use the existing number of .FigureBoxs
 	                perpage =  this._cfg.perpage || this.auditionSH.size();
 	                page = page ||  1;
 	                offset = (page - 1) * perpage;
@@ -380,7 +380,7 @@
             		} else {
             			// on first bind with cakephp render, 
             			// we match li.id with audition.id and add li.audition
-            			// TODO: deprecate when we move to JSON/JS section.thumbnail rendering
+            			// TODO: deprecate when we move to JSON/JS .FigureBox rendering
 //	                	var id = li.get('id');	
 //	                	if (this._cfg.ID_PREFIX) id = id.replace(this._cfg.ID_PREFIX, '');
 //	                    var audition = this.auditionSH.get(id);
@@ -446,8 +446,8 @@
         		} else return label.substr(0,length-3)+'...';
         	} else return label;
         }, 
-        reuseLI: function(section, audition){
-        	section.Thumbnail.reuse(audition);
+        reuseLI: function(article, audition){
+        	article.Thumbnail.reuse(audition);
         	return;
         },
         createLI: function(ul, audition, cfg){
@@ -482,7 +482,7 @@
             }
         },
         /**
-         * listen for click on arrow and section.thumbnails
+         * listen for click on arrow and .FigureBoxs
          * 	- NOTE: must be started manually, as this method requires a closure
          * 	- not compatible with 'listenClick'
          * @param closure
@@ -559,6 +559,10 @@
 	                }, 'img'); 
 	            } 
         },
+        /*
+         * what is this? not a click on the hiddenshot-icon.
+         * @deprecated???
+         */
         listenHiddenShotClick: function(){
         	if (this.container.listen['HiddenShotClick'] == undefined) {
         		this.container.listen['HiddenShotClick'] = this.container.delegate('click', 
@@ -566,8 +570,8 @@
 	                 * update all components on /photos/home page to match 'selected'
 	                 */		
 	                function(e){
-        				e.container.all('li').removeClass('focus');
-	                	var selected = e.target.ancestor('li').audition;
+        				e.container.all('.FigureBox').removeClass('focus');
+	                	var selected = e.target.ancestor('.FigureBox').audition;
 	                	var pr = e.container.PhotoRoll;
 	                	var oldUuid = pr.auditionSH.getFocus().id;
 	                	pr.filmstrip_SetFocus(selected);
@@ -587,21 +591,36 @@
                     if (this.castingCall.CastingCall) {
                     	next += '?ccid=' + this.castingCall.CastingCall.ID;
 						try {
-							var shotType = e.currentTarget.ancestor('section.thumbnail').audition.Audition.Substitutions.shotType;
+							var shotType = e.currentTarget.ancestor('.FigureBox').audition.Audition.Substitutions.shotType;
 							if (shotType == 'Groupshot'){
 								next += '&shotType=Groupshot';
 							}
 						} catch (e) {}
                     }
                     window.location.href = next;
-                }, 'article.FigureBox > figure > img', this);
-                // listen thumbnail size
-                this.container.listen['thumbSize_Click'] = Y.one('section.gallery-header ul.thumb-size').delegate('click', function(e){
-                	var thumbSize = e.currentTarget.getAttribute('thumb-size');
-                	window.location.href = SNAPPI.IO.setNamedParams(window.location.href, {'thumbSize':thumbSize});
-                }, 'li', this);
-                
-            } 
+                }, '.FigureBox > figure > img', this);
+                try {
+	                // listen thumbnail size
+	                this.container.listen['thumbSize_Click'] = Y.one('section.gallery-header ul.thumb-size').delegate('click', function(e){
+	                	var thumbSize = e.currentTarget.getAttribute('thumb-size');
+	                	window.location.href = SNAPPI.IO.setNamedParams(window.location.href, {'thumbSize':thumbSize});
+	                }, 'li', this);
+				} catch (e) {}	                
+				try {
+	                // listen hiddenshot-icon
+	                this.container.listen['hiddenShot_Click'] = Y.one('div.photo').delegate('click', function(e){
+	                	var thumbnail = e.currentTarget.ancestor('.FigureBox');
+						try {
+							var audition = thumbnail.audition;
+							var photoRoll = this;
+							var shotType = audition.Audition.Substitutions.shotType;
+							if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
+							photoRoll.showHiddenShotsInDialog(audition, shotType);
+						} catch (e) {
+						}                	
+	                }, 'div.hidden-shot', this);
+	          	} catch (e) {}
+			}
         },
         listenMultiSelect : function () {
         	SNAPPI.multiSelect.listen(this.container, true);
@@ -643,12 +662,12 @@
         	if (this.container.listen['RightClick'] == undefined){
         		this.container.listen['RightClick'] = this.container.delegate('contextmenu', function(e){
 					this.toggle_ContextMenu(e);
-        		}, 'section.thumbnail', this);
+        		}, '.FigureBox', this);
         		
         		// .FigureBox li.context-menu.icon
      		this.container.listen['ContextMenu'] = this.container.delegate('click', function(e){
 					this.toggle_ContextMenu(e);
-        		}, 'section.thumbnail > ul > li.context-menu', this);        		
+        		}, '.FigureBox > ul > li.context-menu', this);        		
 			}        	
         	return;
         },
@@ -658,7 +677,7 @@
         	var CSS_ID;
         	if (this.container.hasClass('photo-roll')) {
         		CSS_ID = 'contextmenu-photoroll-markup';
-        	} else if (this.container.hasClass('substitutes') || this.container.hasClass('hidden-shot')) {
+        	} else if (this.container.hasClass('hiddenshots') || this.container.hasClass('hidden-shot')) {
         		CSS_ID = 'contextmenu-hiddenshot-markup';
         	} else if (this.container.hasClass('filmstrip')) {
         		// TODO: not yet done
@@ -790,7 +809,7 @@
         /**
          * set focus in DOM object
          * - NOT the same as auditionSH.getFocus()
-         * @param i, index or section.thumbnail
+         * @param i, index or .FigureBox
          * @return
          */
         setFocus: function(i){
@@ -798,7 +817,7 @@
         	if(!Y.Lang.isNumber(i)){
         		next = i;
         	}else {
-        		next = this.container.all('section.thumbnail').item(i);
+        		next = this.container.all('.FigureBox').item(i);
         	}
             
             if (next) {
@@ -833,7 +852,7 @@
 	    		prev.removeClass('focus');
 	    		
 	    		// get the amount of each line
-	    		var first = this.container.one(' > section.thumbnail');
+	    		var first = this.container.one(' > .FigureBox');
 	    		while(first.get('offsetTop') == first.next(SNAPPI.util.isDOMVisible).get('offsetTop')){
 	    			first = first.next(SNAPPI.util.isDOMVisible);
 	    			lineCount++; 
@@ -873,7 +892,7 @@
         		prev.removeClass('focus');
         		
         		// get the amount of each line
-        		var first = this.container.one(' > section.thumbnail');
+        		var first = this.container.one(' > .FigureBox');
         		while(first.get('offsetTop') == first.next(SNAPPI.util.isDOMVisible).get('offsetTop')){
         			first = first.next(SNAPPI.util.isDOMVisible);
         			lineCount++; 
@@ -1103,7 +1122,7 @@
 //				// complete				
 //				var check;
 			}else { // this uses visible selected only
-				batch = this.container.all('section.selected');
+				batch = this.container.all('.FigureBox.selected');
 				auditionSH = new SNAPPI.SortedHash();
 				batch.each(function(node){
 					auditionSH.add(node.dom().audition);
@@ -1267,7 +1286,7 @@
         showThumbnailRatings : function(node){
 	        // private method
 			var pr = node ? SNAPPI.PhotoRoll.getFromDom(node) : this;
-            var thumbs = pr.container.all('section.thumbnail');
+            var thumbs = pr.container.all('.FigureBox');
             thumbs.each(function(n){
             	if (n.hasClass('hide')) return;
                 if (n.Rating == undefined) {
@@ -1284,7 +1303,7 @@
         },
         hideThumbnailRatings : function(node){
         	var pr = node ? SNAPPI.PhotoRoll.getFromDom(node) : this;
-            var thumbs = pr.container.all('section.thumbnail');
+            var thumbs = pr.container.all('.FigureBox');
             pr.container.all('div.ratingGroup').addClass('hide');
             pr.container.all('div.thumb-label').removeClass('hide');
             SNAPPI.STATE.showRatings = 'hide';	
@@ -1392,7 +1411,17 @@
 			newHiddenShot.id = shot.id;
 			args.auditions.each(function(audition){
 				audition.Audition.Shot = newHiddenShot;
+				// update .FigureBox to show hiddenshot-icon
+				for (var i in audition.bindTo) {
+					var o = audition.bindTo[i];
+					if (o.hasClass('FigureBox') && o.hasClass('hiddenshot-show')) {
+						o.Thumbnail.reuse(audition, o);
+					}
+				}
 			});			
+			
+			
+			
 			// cancel multiSelect
 			SNAPPI.multiSelect.clearAll(this.container);
 			return false;
@@ -1468,7 +1497,7 @@
 			/*
 			 * for hiddenShots
 			 */
-			if (photoroll.container.hasClass('substitutes')) {
+			if (photoroll.container.hasClass('hiddenshots')) {
 				// TODO: CHANGE TO ul.hidden-shots
 				hiddenShots_pr = photoroll;
 				photoroll = null;
@@ -1579,7 +1608,7 @@
 			 * for hiddenShots, usually we remove from hiddenShots
 			 */
 			// TODO: CHANGE TO ul.hidden-shots
-			if (hiddenShots_pr.container.hasClass('substitutes')) {
+			if (hiddenShots_pr.container.hasClass('hiddenshots')) {
 				var audition, 
 					removed = response['removeFromShot']['assetIds'];
 //				var bestShotSystem_changed = response['updateBestShotSystem']['changed'],
@@ -1643,6 +1672,8 @@
 				if (!photoroll.auditionSH.get(bestShot)) {
 					photoroll.auditionSH.add(bestShot);
 				}
+				// update Shot.count for div.hiddenshot
+				bestShot.Audition.Shot.count = bestShot.Audition.Substitutions.count();
 				
 				// render photoroll
 				photoroll.auditionSH.sort(args.sort);
@@ -1658,7 +1689,7 @@
 		},
 		/**
 		 * 
-		 * @param selected  section.thumbnail of selected shot
+		 * @param selected  .FigureBox of selected shot
 		 * @param cfg
 		 * @return
 		 */
@@ -1707,7 +1738,7 @@
 			try {
 				var selected, shotPhotoRoll;
 				selected = args.thumbnail.audition;
-				shotPhotoRoll = args.thumbnail.ancestor('ul.substitutes').PhotoRoll;
+				shotPhotoRoll = args.thumbnail.ancestor('ul.hiddenshots').PhotoRoll;
 				var bestShot = selected.Audition.Substitutions.best;
 				// confirm showHidden bestShot is in main photoroll
 				if (bestShot !== selected) {
@@ -1766,14 +1797,14 @@
         	selected = selected || this.auditionSH.getFocus();
         	var ul, parent, shots, Y = SNAPPI.Y;
         	try {
-        		ul = ul || Y.one('div#substitutes > ul');
+        		ul = ul || Y.one('div#hiddenshots > ul');
         		// ERROR:  selected.Audition.Shot.id != selected.Audition.Substitutions.id
         		shots = selected.Audition.Substitutions;
         		shotType = shots.shotType;
         	} catch (e) {
         		// no hidden shots
-        		// /photos/home page: no shots, just hide div#substitutes on and unbind nodes
-            	if (ul && ul.ancestor('div#substitutes')) { 
+        		// /photos/home page: no shots, just hide div#hiddenshots on and unbind nodes
+            	if (ul && ul.ancestor('div#hiddenshots')) { 
             		// hide substitute group, if we are on the /photos/home page
             		ul.all('li').addClass('hide').each(function(n,i,l){
     	        		SNAPPI.Auditions.unbind(n);

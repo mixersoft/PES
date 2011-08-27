@@ -498,7 +498,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	CFG_Context_Photoroll.load = function(cfg){
 		var Y = SNAPPI.Y;
 		var CSS_ID = 'contextmenu-photoroll-markup';
-		var TRIGGER = 'ul.photo-roll > section.thumbnail';
+		var TRIGGER = 'ul.photo-roll > .FigureBox';
 		var MARKUP = {
 				id: CSS_ID,
 				selector: '#'+CSS_ID,
@@ -531,7 +531,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	CFG_Context_HiddenShot.load = function(cfg){
 		var Y = SNAPPI.Y;
 		var CSS_ID = 'contextmenu-hiddenshot-markup';
-		var TRIGGER = 'ul.substitutes > section.thumbnail';
+		var TRIGGER = 'ul.hiddenshots > .FigureBox';
 		var MARKUP = {
 				id: CSS_ID,
 				selector: '#'+CSS_ID,

@@ -12,7 +12,7 @@
 	     */			
 		showNodes: function(selectors) {
 			var Y = SNAPPI.Y;
-			var selectors = selectors || ['#content div, section.thumbnail'];
+			var selectors = selectors || ['#content div, .FigureBox'];
 			if (Y.Lang.isString(selectors)) selectors = [selectors];
 	        
 			if (SNAPPI.DEBUG_MODE == 0) return;

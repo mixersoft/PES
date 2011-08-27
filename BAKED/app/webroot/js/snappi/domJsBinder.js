@@ -249,7 +249,7 @@
     		var newUuid = selected.id;
     		// this instanceof PhotoRoll
         	/*
-        	 * update div#substitutes, from filmstrip
+        	 * update div#hiddenshots, from filmstrip
         	 */
     		this.showHiddenShotsAsPreview(selected); 
 //        	SNAPPI.domJsBinder.bindSelectedToSubstitutes.call(this, selected);
@@ -295,7 +295,7 @@
         /*
          * bindAuditions2Photoroll 
          * - scan for a photoRoll, if found, bind JS audition object to photoRoll
-         * - NOTE: DO WE REALLY NEED TO BIND audition TO section.thumbnail?  perhaps
+         * - NOTE: DO WE REALLY NEED TO BIND audition TO .FigureBox?  perhaps
          * 		it is enough to do a uuid lookup, 
          * 				var audition = SNAPPI.auditions.auditionSH.get(id);
          * - NOTE: this method ASSUMES only 1 photoRoll per page. is this valid??
@@ -331,7 +331,7 @@
             _cfg = Y.merge(SNAPPI.STATE.displayPage, _cfg);	// only if photoRoll/castingCall is paged
             var pr = new SNAPPI.PhotoRoll(_cfg);
             pr.listen(true, ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'RightClick']);
-            if (SNAPPI.DEBUG_MODE) SNAPPI.debug.showNodes('#content div, section.thumbnail');
+            if (SNAPPI.DEBUG_MODE) SNAPPI.debug.showNodes('#content div, .FigureBox');
         };
     };
     

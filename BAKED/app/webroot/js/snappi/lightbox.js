@@ -297,7 +297,7 @@
 				}	
 				// nodeList of img from drag-drop
 				nodeList.each(function(n, i, l) {
-					var audition = n.ancestor('section.thumbnail').dom().audition;
+					var audition = n.ancestor('.FigureBox').dom().audition;
 					this.PhotoRoll.auditionSH.add(audition);
 				}, this);
 				
@@ -312,7 +312,7 @@
 		},
 		getSelected : function() {
 			var auditionSH,			// return sortedHash, allows auditionSH.each() maintains consistency
-			batch = this.node.all('ul.photo-roll > section.selected');
+			batch = this.node.all('ul.photo-roll > .FigureBox.selected');
 		
 			if (batch.size() == 0){ 
 				// get all assetIds in lightbox, this is the most common use case 
@@ -340,7 +340,7 @@
             	// then we will check if there's any selected items in the photo-roll in paging-photos
             	batch = Y.one('#paging-photos').all('ul.photo-roll > li.focus');
             	if (batch.size() == 0){
-            		batch = this.node.all('ul.photo-roll > section.thumbnail');
+            		batch = this.node.all('ul.photo-roll > .FigureBox');
             	}
             };
 
@@ -406,7 +406,7 @@
 		},
 		setThumbsize : function (size) {
 			var oldsize = null;
-			this.node.all('ul.photo-roll > section.thumbnail'). each(
+			this.node.all('ul.photo-roll > .FigureBox'). each(
 				function(n, i, l) {
 					if (oldsize == null) {
 						var haystack = n.getAttribute('class');
@@ -462,7 +462,7 @@
 						}, this
 				);
 				
-				this.PhotoRoll.container.all('section.thumbnail.selected').each(
+				this.PhotoRoll.container.all('.FigureBox.selected').each(
 						function(n,i,l){
 								selectedIds.push(this.stripIdPrefix(n.get('id')));
 						}, this
@@ -664,14 +664,14 @@
                         
 		clear : function() {
         	// NOTE: in this method, we do NOT want to use getSelected();
-			var set = this.node.all('ul.photo-roll > section.selected');
+			var set = this.node.all('ul.photo-roll > .FigureBox.selected');
 			if (set.size() == 0) {
 				var ret = confirm('Are you sure you want to clear all?');
 				if (!ret) {
 					return; // cancel clear All
 				}
 				this.PhotoRoll.auditionSH.clear();	// remove all audition from lightbox.PhotoRoll
-				set = this.node.all('ul.photo-roll > section.thumbnail');  // remove all visible thumbnails from lightbox
+				set = this.node.all('ul.photo-roll > .FigureBox');  // remove all visible thumbnails from lightbox
 			}
 
 			set.each(function(n, i, l) {
@@ -720,7 +720,7 @@
 					try {
 						this.PhotoRoll.applyShotCSS(shot);	// do we want to see CSS in lightbox?
 						// remove hidden subs from lightbox
-						this.node.all('li.substitute-hide').each(function(n,i,l){
+						this.node.all('li.hiddenshot-hide').each(function(n,i,l){
 							this.remove(n);
 						}, this);
 						this.save();
@@ -1457,7 +1457,7 @@
 		},
         showThumbnailRatings : function(node){
 			var pr = node || this.PhotoRoll;
-            var thumbs = pr.container.all('section.thumbnail');
+            var thumbs = pr.container.all('.FigureBox');
             thumbs.each(function(n){
             	if (n.hasClass('hide')) return;
                 if (n.Rating == undefined) {
@@ -1474,7 +1474,7 @@
         },
         hideThumbnailRatings : function(node){
         	var pr = node || this.PhotoRoll;
-            var thumbs = pr.container.all('section.thumbnail');
+            var thumbs = pr.container.all('.FigureBox');
             pr.container.all('div.ratingGroup').addClass('hide');
             pr.container.all('div.thumb-label').removeClass('hide');
             SNAPPI.STATE.showRatings = 'hide';	

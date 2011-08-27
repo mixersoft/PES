@@ -107,7 +107,7 @@
 			// check if we are in the HiddenShots dialog
 			// if so, updateBestshot
 			var options = {};
-			if (this.ancestor('ul.substitutes')) {
+			if (this.ancestor('ul.hiddenshots')) {
 				options.updateBestshot = 1;
 			} else if (this.get('id')=='menuItem-contextRatingGrp') {
 				options = {
@@ -295,7 +295,7 @@
 			this.rerate = _cfg.rerate;
 			this.setRatingSprite();
 			this.node.Rating = this; // add backreference, also add reference
-										// to section.thumbnail
+										// to .FigureBox
 		},
 
 		mouseOver : function(rating) {
@@ -475,11 +475,11 @@
 						try {
 							var audition, shotPhotoRoll;
 							try {
-								audition = closure.node.ancestor('section.thumbnail').audition;
-								shotPhotoRoll = closure.node.ancestor('ul.substitutes').PhotoRoll;
+								audition = closure.node.ancestor('.FigureBox').audition;
+								shotPhotoRoll = closure.node.ancestor('ul.hiddenshots').PhotoRoll;
 							} catch (e) {
 								audition = options.thumbnail.audition;
-								shotPhotoRoll = options.thumbnail.ancestor('ul.substitutes').PhotoRoll;
+								shotPhotoRoll = options.thumbnail.ancestor('ul.hiddenshots').PhotoRoll;
 							}
 							var bestShot = audition.Audition.Substitutions.best;
 							var selected = shotPhotoRoll.selected;
@@ -593,7 +593,7 @@
 				}
 				Y.fire('snappi:ratingChanged', r);
 				break;
-			case 'menuItem-contextRatingGrp': // right-click over section.thumbnail
+			case 'menuItem-contextRatingGrp': // right-click over .FigureBox
 				var audition = SNAPPI.Auditions._auditionSH.get(r.getAttribute('uuid'));
 				v = v || r.Rating.value;
 				_updateRatingChange(audition, v);
@@ -602,9 +602,9 @@
 				// use aui-delayed-task and/or aui-debounce
 				Y.later(2000, null, function(){tn.dom().Menu.getNode().addClass('hide');});
 				break;
-			default: // photoRoll section.thumbnail ratingGroup
+			default: // photoRoll .FigureBox ratingGroup
 				try {
-					var tn = r.ancestor('section.thumbnail').dom();
+					var tn = r.ancestor('.FigureBox').dom();
 					var audition = tn.dom().audition;
 					v = v || r.Rating.value;
 					_updateRatingChange(audition, v);

@@ -16,7 +16,7 @@
 			
 			// should i call it action or submit
 			action = function(){
-				var id = SNAPPI.dialogbox.node.one('section.selected').get('id');
+				var id = SNAPPI.dialogbox.node.one('.FigureBox.selected').get('id');
 				SNAPPI.lightbox.applyPrivacyInBatch(id);
 			};
 			
@@ -104,12 +104,12 @@
 			};
 			
 			action_share = function(){
-				var id = SNAPPI.dialogbox.node.one('section.selected').get('id');
+				var id = SNAPPI.dialogbox.node.one('.FigureBox.selected').get('id');
 				SNAPPI.lightbox.applyShareInBatch(id);
 			};
 			
 			action_unShare = function(){
-				var id = SNAPPI.dialogbox.node.one('section.selected').get('id');
+				var id = SNAPPI.dialogbox.node.one('.FigureBox.selected').get('id');
 				SNAPPI.lightbox.applyUnShareInBatch(id);
 			};
 			
