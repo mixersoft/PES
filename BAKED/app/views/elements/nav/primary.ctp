@@ -41,12 +41,12 @@
 		<nav class='user grid_7'>
 			<ul class="right rightlink">
 			<?php if ( AppController::$userid) { ?>
-				<li class="bg-grey"><img src="/img/snappi/plus-grey.png" alt="" align="absmiddle" class="add">
-					<a>Create&nbsp<img src="/img/snappi/arrow-down.png"  alt=""></a>
+				<li class="bg-grey"><img src="/css/images/plus-grey.png" alt="" align="absmiddle" class="add">
+					<a>Create&nbsp<img src="/css/images/arrow-down.png"  alt=""></a>
 				</li>
 				<li>
 					<span class="grey">Welcome,</span>
-					<a id='userAccountBtn'><?php echo $displayName ?>&nbsp<img src="/img/snappi/arrow-down.png" alt="" class="arrow-right"></a>
+					<a id='userAccountBtn'><?php echo $displayName ?>&nbsp<img src="/css/images/arrow-down.png" alt="" class="arrow-right"></a>
 				</li>	
 				<li><a href="/users/logout">Sign out</a></li>				
 			<?php  } else { ?>

@@ -63,7 +63,7 @@
 							</li>
 					</ul>
 				</li>
-				<li class="option">Date Taken <a><img src="/img/snappi/arrow-down.png" alt=""></a></li>
+				<li class="option">Date Taken <a><img src="/css/images/arrow-down.png" alt=""></a></li>
 			</ul>
 	        <ul class="sort inline right">
 	        	<li class='label'>Show</li>
