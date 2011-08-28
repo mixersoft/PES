@@ -55,7 +55,7 @@ class LayoutHelper extends AppHelper {
         if(empty($name)) 
             trigger_error('LayoutHelper::blockStart - name is a required parameter'); 
              
-        if(!is_null($this->__blockName)) 
+        if(!is_null($this->__blockName) && $this->__blockName !== $name) 
             trigger_error('LayoutHelper::blockStart - Blocks cannot overlap'); 
 
         $this->__blockName = $name; 
@@ -73,7 +73,10 @@ class LayoutHelper extends AppHelper {
         $out = $buffer;  
              
         $view =& ClassRegistry::getObject('view'); 
-        $view->viewVars[$this->__blockName.'_for_layout'] = $out; 
+		if (isset($view->viewVars[$this->__blockName.'_for_layout'])) {
+			$view->viewVars[$this->__blockName.'_for_layout'] .= $out;
+		} else 
+        	$view->viewVars[$this->__blockName.'_for_layout'] = $out; 
          
         $this->__blockName = null; 
     } 

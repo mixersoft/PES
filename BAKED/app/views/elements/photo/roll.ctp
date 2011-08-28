@@ -26,50 +26,52 @@ $isPreview = (!empty($this->params['url']['preview']));
 			<ul class='photo-roll grid_16'></ul>
 		</section>
 	</div>
-<script type="text/javascript">
-PAGE.orderBy = function (o) {
-	window.location.href = o.options[o.selectedIndex].value;
-} 
-PAGE.toggleDisplayOptions  = function(o){
-	var Y = SNAPPI.Y;
-	try {
-		SNAPPI.STATE.showDisplayOptions = SNAPPI.STATE.showDisplayOptions ? 0 : 1;
-		PAGE.setDisplayOptions();
-	} catch (e) {}
-};
-PAGE.setDisplayOptions = function(){
-	var Y = SNAPPI.Y;
-	try {
-		if (SNAPPI.STATE.showDisplayOptions) {
-			Y.one('section.gallery-header li.display-option').addClass('open');
-			Y.one('section.gallery-display-options').removeClass('hide');
-		} else {
-			Y.one('section.gallery-header li.display-option').removeClass('open');
-			Y.one('section.gallery-display-options').addClass('hide');
-		}	
-	} catch (e) {}
-};
-/**
- * run after EACH XHR request
- */
-var initOnce = function() {
-	try {
-		SNAPPI.mergeSessionData();
-		PAGE.setDisplayOptions();
-	} catch (e) {}
-	
-	
-	SNAPPI.domJsBinder.bindAuditions2Photoroll();
-	// TODO: SNAPPI.filter.initRating() should be moved into photoRoll.restoreState() (?)
-	// 	make sure restoreState works for both HTTP GET and XHR page loads
-	// or use 'snappi:ajaxLoad' custom event
-	SNAPPI.filter.initRating();
-};
-try {
-	SNAPPI.ajax; 
-	initOnce(); 
-} catch (e) {
-	PAGE.init.push(initOnce); 
-}	// run from Y.on('domready') for HTTP request
-</script>
+<?php $this->Layout->blockStart('javascript');?> 	
+	<script type="text/javascript">
+		PAGE.orderBy = function (o) {
+			window.location.href = o.options[o.selectedIndex].value;
+		} 
+		PAGE.toggleDisplayOptions  = function(o){
+			var Y = SNAPPI.Y;
+			try {
+				SNAPPI.STATE.showDisplayOptions = SNAPPI.STATE.showDisplayOptions ? 0 : 1;
+				PAGE.setDisplayOptions();
+			} catch (e) {}
+		};
+		PAGE.setDisplayOptions = function(){
+			var Y = SNAPPI.Y;
+			try {
+				if (SNAPPI.STATE.showDisplayOptions) {
+					Y.one('section.gallery-header li.display-option').addClass('open');
+					Y.one('section.gallery-display-options').removeClass('hide');
+				} else {
+					Y.one('section.gallery-header li.display-option').removeClass('open');
+					Y.one('section.gallery-display-options').addClass('hide');
+				}	
+			} catch (e) {}
+		};
+		/**
+		 * run after EACH XHR request
+		 */
+		var initOnce = function() {
+			try {
+				SNAPPI.mergeSessionData();
+				PAGE.setDisplayOptions();
+			} catch (e) {}
+			
+			
+			SNAPPI.domJsBinder.bindAuditions2Photoroll();
+			// TODO: SNAPPI.filter.initRating() should be moved into photoRoll.restoreState() (?)
+			// 	make sure restoreState works for both HTTP GET and XHR page loads
+			// or use 'snappi:ajaxLoad' custom event
+			SNAPPI.filter.initRating();
+		};
+		try {
+			SNAPPI.ajax; 
+			initOnce(); 
+		} catch (e) {
+			PAGE.init.push(initOnce); 
+		}	// run from Y.on('domready') for HTTP request
+	</script>
+<?php $this->Layout->blockEnd();?> 
 <?php Configure::write('js.render_lightbox', true); ?>

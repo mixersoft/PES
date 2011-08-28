@@ -49,46 +49,47 @@
 	?>
 </head>
 <body>
-	<section id="container"><!-- main container-->
-		<?php echo $this->element('/nav/primary'); ?>
+	<?php echo $this->element('/nav/primary'); ?>
 		
-<section id="body-container" class='container_16 wrapped'><!--body container start-->
+<section id="body-container" class='container_16'><!--body container start-->
 	<?php echo $this->element('/nav/secondary'); ?>
-	<div id="content" class="container_16">
-		<?php // echo $this->element('/nav/tabs')?>
-		<?php echo $this->Session->flash(); ?>
-		<?php echo $this->Session->flash('email'); ?>
+	<div id="content">
+		<div id="messages" class="container_16">
+			<?php echo $this->Session->flash(); ?>
+			<?php echo $this->Session->flash('email'); ?>
+		</div>
 		<?php echo $content_for_layout; ?>
 		<?php if (Configure::read('js.render_lightbox')) {echo $this->element('/lightbox'); }?>
 	</div>
 </section><!--body container ends-->
-		
-	
 <?php $this->Layout->output($relatedContent_for_layout); ?>
+<?php $this->Layout->output($lightbox_for_layout); ?>	
 
-<script type="text/javascript">
-<?php 	
-	$this->viewVars['jsonData']['controller'] = Configure::read('controller');
-	foreach ($this->viewVars['jsonData'] as $key=>$value) {
-		echo "PAGE.jsonData.{$key}=".json_encode($value).";\n"; 
-	} 
-?>
- PAGE.goSearch = function() {
-	var value = SNAPPI.Y.one('#search input').get('value');
-	if (value) {
-		if (value.length>2) {
-			var here = window.location.href;
-			var namedData = {q:value, page: null};
-			window.location.href = SNAPPI.IO.setNamedParams(here, namedData);
-			return true;
-		} else {
-			alert('please enter at least 3 chars in your search');
-		}
-	}  
-	return false;
-}; 
-</script>	
-	
+<?php $this->Layout->blockStart('javascript');?> 
+	<script type="text/javascript">
+		<?php 	
+			$this->viewVars['jsonData']['controller'] = Configure::read('controller');
+			foreach ($this->viewVars['jsonData'] as $key=>$value) {
+				echo "PAGE.jsonData.{$key}=".json_encode($value).";\n"; 
+			} 
+		?>
+		PAGE.goSearch = function() {
+			var value = SNAPPI.Y.one('#search input').get('value');
+			if (value) {
+				if (value.length>2) {
+					var here = window.location.href;
+					var namedData = {q:value, page: null};
+					window.location.href = SNAPPI.IO.setNamedParams(here, namedData);
+					return true;
+				} else {
+					alert('please enter at least 3 chars in your search');
+				}
+			}  
+			return false;
+		}; 
+	</script>	
+<?php $this->Layout->blockEnd();?>	
+
 <div id='markup' >
 	<div id="menu-header-markup" class="menu yui3-aui-overlaycontext-hidden hide">
 		<ul>
@@ -130,11 +131,11 @@
 	?>
 </div>
 
-	</section><!-- main container-->
 	<?php echo $this->element('sql_dump'); ?>
 	<?php
 		if (Configure::read('js.bootstrap_snappi')) echo $this->Html->script('/js/snappi/base_aui.js');		
 		echo $scripts_for_layout;
+		$this->Layout->output($this->viewVars['javascript_for_layout']);
 	?>
 </body>
 </html>
