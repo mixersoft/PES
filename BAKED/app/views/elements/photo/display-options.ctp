@@ -44,14 +44,18 @@
 		$ratingRemoved_class .= ' hide'; 				// move to JS
 		$ratingRemoved_href = $this->here;
 	}
-	
+	$isWide = !empty($this->params['named']['wide']);		// fluid layout
 	
 ?>
-<section class="gallery-display-options container_16 hide">
-	<nav class="settings grid_16 wrapped">
+
+<?php	
+	/*
+	 * inner block
+	 */ 
+	$this->Layout->blockStart('inner_DisplayOptions'); ?> 
 	    	<ul class="filter inline">
 	    		<li class='label'>Filter</li>
-				<li class='rating option'>
+				<li class='rating btn'>
 					<ul>
 						<li class='<?php echo $ratingRemoved_class;  ?>'>
 							<a title='click here to REMOVE this filter' href='<?php echo $ratingRemoved_href ?>' >x</a>
@@ -63,11 +67,11 @@
 							</li>
 					</ul>
 				</li>
-				<li class="option">Date Taken <a><img src="/css/images/arrow-down.png" alt=""></a></li>
+				<li class="btn">Date Taken <a><img src="/css/images/arrow-down.png" alt=""></a></li>
 			</ul>
 	        <ul class="sort inline right">
 	        	<li class='label'>Show</li>
-	            <li class='option'>
+	            <li class='btn'>
 	            	Sort
 	             	<select onchange="PAGE.orderBy(this);">
 	             		<?php 
@@ -79,7 +83,17 @@
 	             		?>
 	             	</select>
 	            </li>
-	            <li class='option'>Fullscreen</li>
-	      	</ul>			
+	      	</ul>	
+<?php $this->Layout->blockEnd();?>
+
+		
+<?php 	//debug($this->viewVars['inner_DisplayOptions_for_layout']);
+	if ($isWide) { 
+		$this->Layout->output($this->viewVars['inner_DisplayOptions_for_layout']);
+	} else {  ?>      	
+<section class="gallery-display-options container_16 hide">
+	<nav class="settings grid_16 wrapped">
+		<?php $this->Layout->output($this->viewVars['inner_DisplayOptions_for_layout']); ?>
 	</nav>
 </section>
+<?php } ?>

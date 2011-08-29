@@ -38,7 +38,7 @@
 	</script>
 	<script src="/svc/lib/alloy-1.0.2/build/aui/aui.js" type="text/javascript"></script>
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/reset.css" />
-	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/960.css" />	
+	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/960-fluid.css" />	
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/style.css" />
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/style.1.css" />
 	<?php
@@ -49,10 +49,10 @@
 	?>
 </head>
 <body>
-	<?php echo $this->element('/nav/primary'); ?>
+	<?php echo $this->element('/nav/primary-wide'); ?>
 		
 <section id="body-container" class='container_16'><!--body container start-->
-	<?php echo $this->element('/nav/secondary'); ?>
+	<?php // echo $this->element('/nav/secondary'); ?>
 	<div id="content">
 		<div id="messages" class="container_16">
 			<?php echo $this->Session->flash(); ?>
@@ -62,6 +62,8 @@
 		<?php if (Configure::read('js.render_lightbox')) {echo $this->element('/lightbox'); }?>
 	</div>
 </section><!--body container ends-->
+		
+	
 <?php $this->Layout->output($relatedContent_for_layout); ?>
 <?php $this->Layout->output($lightbox_for_layout); ?>	
 
@@ -92,7 +94,7 @@
 			value = value ? 1 : null;
 			var here = SNAPPI.IO.setNamedParams(SNAPPI.STATE.controller.here, {wide: value});
 			window.location.href = here;
-		}		
+		}
 	</script>	
 <?php $this->Layout->blockEnd();?>	
 

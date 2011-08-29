@@ -399,6 +399,7 @@ class AppController extends Controller {
 			$extras = array( 
 				'class'=>Inflector::singularize($this->name),		// ?? is this still used? replaced by keyName? 
 				'label'=>isset($this->displayName) ? $this->displayName : '', 
+				'isWide'=>!empty($this->params['named']['wide']),
 			);
 			$controllerAttr = array_merge($controllerAttr, $extras);
 			

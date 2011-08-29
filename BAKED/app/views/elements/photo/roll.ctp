@@ -19,10 +19,17 @@ if (isset($this->passedArgs['thumbSize'])) {
 }
 if ($state) $this->viewVars['jsonData']['STATE'] = $state;
 $isPreview = (!empty($this->params['url']['preview']));
+
+$isWide = !empty($this->params['named']['wide']);		// fluid layout
+$isXhr = Configure::read('controller.isXhr');
 ?>
 	<div class='element-roll photo placeholder' >
-		<?php echo $this->element('/photo/header', array('total'=>$total));?>
-		<section class="gallery container_16">
+		<?php 
+			if ($isWide) {
+				echo $this->element('/photo/header-wide', array('total'=>$total));
+			} else echo $this->element('/photo/header', array('total'=>$total));
+		?>
+		<section class="<?php if ($isWide) echo "wide "; ?>gallery container_16">
 			<ul class='photo-roll grid_16'></ul>
 		</section>
 	</div>

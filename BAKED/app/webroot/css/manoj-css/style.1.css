@@ -38,16 +38,12 @@ a {
 .right {
 	float: right;
 }
-.container_16.wrapped {
-/*	allows for container_16 with 1px border*/
-	width: 958px !important;
-}
+
 .grid_16.wrapped {
-/*	allows for grid_16 with 1px border*/
 	width: 938px !important;
 	border: 1px solid transparent;
+	xmargin: 0 9px;
 }
-
 
 ul.inline.center {
 	text-align: center;
@@ -67,7 +63,9 @@ nav > ul > li, nav > ul > li > a {
 
 /* header */
 header {
-	overflow: hidden;
+	xoverflow: hidden;
+	background: #000;
+	height: 40px;
 }
 header li {
 	line-height: 40px !important;
@@ -109,12 +107,16 @@ header nav.user li.bg-grey {
 	display: inline-block !important;
 }
 
-
-#container {
-	width: 960px;
-	margin: 0 auto;
+.menu-open {
+	background: url(../images/arrow.png) no-repeat right center;
+	padding-right: 15px;
 }
-#body-container {
+.menu-close {
+	background: url(../images/arrow-up.png) no-repeat right center;
+	padding-right: 15px;
+}
+
+section#body-container {
 	-moz-box-shadow: 0 0 5px #888;
 	-webkit-box-shadow: 0 0 5px #888;
 	box-shadow: 0 0 5px #888;
@@ -123,7 +125,32 @@ header nav.user li.bg-grey {
 	-moz-border-radius-bottomleft: 10px;
 	-webkit-border-bottom-right-radius: 10px;
 	-webkit-border-bottom-left-radius: 10px;
+	margin-top: 7px;
+	overflow: hidden;
 }
+#content {
+	overflow:hidden;
+}
+
+
+
+/* ****************************************************
+ * 
+ * just adding .wide takes .gallery out of vertical flow. 
+ * cannot show .related-content without js
+ * 
+ * *****************************************************/
+/*.container_16.wide {
+	width: 100%;
+	background:#444;
+	position:absolute;
+	left: 0;
+}
+.container_16.wide > .grid_16 {
+	width: 100%;
+}*/
+
+
 
 /* secondary nav */
 nav.secondary {
@@ -199,7 +226,11 @@ nav.secondary > ul li.preference {
 }
 
 
-
+.gallery {
+	xwidth: 940px;
+	padding: 0 10px;
+	xclear: both;
+}
 /* gallery toolbars */
 section.gallery-header {
 	line-height: 32px;
@@ -219,16 +250,15 @@ section.gallery-header li.display-option {
 	background: -webkit-gradient(linear, center bottom, center top, from(#E2E6EB), to(#ffffff));*/
 	-webkit-border-radius: 4px;
 	-moz-border-radius: 4px;
-	padding: 0 17px 0 4px;
-	margin: 5px 0 0 8px;
-	background: url(../images/arrow.png) no-repeat scroll 104px 8px #E2E6EB;
+	margin: 3px 0 0 8px;
+	padding: 2px 4px;
+	background-color: #E2E6EB;
 	border: 1px solid #D2D2D2;
 }
 section.gallery-header li.display-option.closed {
-	background: url(../images/arrow.png) no-repeat scroll 104px 8px #E2E6EB;
+	background-color: #E2E6EB;
 }
 section.gallery-header li.display-option.open {
-	background: url(../images/arrow.png) no-repeat scroll 104px 8px #E2E6EB;
 	-webkit-border-radius: 4px 4px 0px 0px;
 	-moz-border-radius: 4px 4px 0px 0px;
 	border: 1px solid #D2D2D2;
@@ -239,6 +269,9 @@ section.gallery-header li.display-option.open {
 
 section.gallery-header ul.thumb-size li {
 	border: 1px solid #fff;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	margin-top: 2px;
 	margin-left: 4px;
 	padding: 2px;
 }
@@ -255,13 +288,15 @@ section.gallery-header ul.thumb-size li.btn.focus {
 	cursor: default !important;
 }
 
-
+section.gallery-header ul.thumb-size li.btn {
+	border-color: #D8D5D5;
+}
 
 
 /*
  * good
  */
-section.gallery-display-options nav.settings{
+section.gallery-display-options nav.settings {
 	-webkit-border-radius: 5px;
 	border: 1px solid #D2D2D2;
 	-moz-border-radius: 5px 0px 5px 5px;
@@ -279,7 +314,7 @@ section.gallery-display-options ul li {
 	list-style-type: none;
 	font-size: 10pt;
 }
-section.gallery-display-options ul li.option {
+section.gallery-display-options ul li.btn {
 	height: 21px;
 	margin: 1px 4px;
 	padding: 1px 4px 0;
@@ -289,28 +324,22 @@ section.gallery-display-options ul li.option {
 	-webkit-border-radius: 5px;	
 	color: #494949;
 }
-section.gallery-display-options ul.filter li.option a {
+section.gallery-display-options ul.filter li.btn a {
 	color: #494949;
 }
-section.gallery-display-options li.rating.option {
+section.gallery-display-options li.rating.btn {
 	width: 150px;
 }
-section.gallery-display-options li.rating.option li.remove {
+section.gallery-display-options li.rating.btn li.remove {
 	padding: 0 4px;
 	font-size: 0.9em;
 	font-weight: bold;
 }
-section.gallery-display-options li.rating.option li.remove a {
+section.gallery-display-options li.rating.btn li.remove a {
 	color:red;
 }
 section.gallery-display-options ul li div.ratingGroup {
 	margin: 2px 5px 2px
-}
-
-section.gallery-display-options li.label {
-	padding: 4px 10px 0 4px;
-	font-size: 1.1em;
-	color: black;
 }
 
 section.gallery-display-options ul.sort {
@@ -324,7 +353,7 @@ section.gallery-display-options ul.sort li select {
 	color: #494949;
 }
 
-section.gallery-display-options ul li.option:hover, section.gallery-display-options ul li.option.selected {
+section.gallery-display-options ul li.btn:hover, section.gallery-display-options ul li.btn.selected {
 	background: -moz-linear-gradient(bottom, #fca22f, #ffc374);	 
 	background: -webkit-gradient(linear, center bottom, center top, from(#fca22f), to(#ffc374));	border: 1px solid #cd7708;
 	-moz-border-radius: 4px;
@@ -332,8 +361,33 @@ section.gallery-display-options ul li.option:hover, section.gallery-display-opti
 	color: #fff;
 	border: 1px solid #CD7708;
 }
-
-
+section.gallery-display-options.wide nav.settings {
+	-webkit-border-radius: 5px;
+	border: 1px solid #D2D2D2;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	background: -moz-linear-gradient(bottom, #E2E6EB, #f5f5f5);
+	background: -webkit-gradient(linear, center bottom, center top, from(#E2E6EB), to(#f5f5f5));
+	line-height: 20px !important;
+	font-size: 10pt;
+	overflow: hidden;	
+}
+section.gallery-display-options ul > li.label {
+	padding: 4px 10px 0 4px;
+	font-size: 1.0em;
+	color: black;
+	cursor: default;
+}
+section.gallery-display-options.wide ul.wide-display-options li {
+	display: inline-block;
+}
+section.gallery-display-options.wide ul > li.label {
+	border: none;
+}
+section.gallery.wide {
+	background: #5D5D5D;
+	padding-top: 10px;
+}
 
 /* thumbnails */
 .FigureBox {
@@ -346,6 +400,7 @@ section.gallery-display-options ul li.option:hover, section.gallery-display-opti
 	float: left;
 	margin: 0 4px 10px 0;
 	position: relative;
+	background-color: #FFF;
 }
 
 .FigureBox .selected {
@@ -565,10 +620,21 @@ ul.photo-roll {
 }
 
 
+#related-content {
+	background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0, rgb(197,232,250)),color-stop(1, rgb(232,246,253))	);
+	background-image: -moz-linear-gradient(center bottom,rgb(197,232,250) 0%,rgb(232,246,253) 100%);
+	border: 1px solid #8fb9d0;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-box-shadow: 0px 0px 7px #fff inset;
+	-moz-box-shadow: 0px 0px 7px #fff inset;
+	padding: 10px 0 10px 0;	
+	margin: 20px auto;
+	overflow: hidden;
+}
+
 #related-content .left {
-	xwidth: 640px;
 	width: 100%;
-	xfloat: left;
 	position: relative;
 	margin: auto;
 	padding: 0 0 0 0;

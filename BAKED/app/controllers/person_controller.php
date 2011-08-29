@@ -224,6 +224,7 @@ class PersonController extends UsersController {
 
 	function photos($id = null){
 		$this->layout = 'snappi';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';
 		if (!$id) {
 			$this->Session->setFlash("ERROR: invalid Photo id.");
 			$this->redirect(array('action' => 'all'));

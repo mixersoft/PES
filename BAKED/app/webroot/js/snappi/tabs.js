@@ -56,7 +56,7 @@
             if (page.section) {
                 var section = Y.one(defaultCfg.section + " li > a." + page.section);
                 if (section) {
-					Y.all(defaultCfg.section + " section.selected").removeClass('selected');
+					Y.all(defaultCfg.section + " .FigureBox.selected").removeClass('selected');
 					var tab = section.get('parentNode');
                     tab.addClass('selected');
                     this.selected.section.id = page.section;
@@ -68,7 +68,7 @@
                 var parts = page.menu.split(':');
                 var tab = Y.one(defaultCfg.menu + " li > a." + parts[0]);
                 if (tab) {
-					Y.all(defaultCfg.menu + " section.selected").removeClass('selected');
+					Y.all(defaultCfg.menu + " .FigureBox.selected").removeClass('selected');
                     tab.get('parentNode').addClass('selected');
                     this.selected.menu.id = parts[0];
                     this.selected.menu.name = tab.get('innerHTML');

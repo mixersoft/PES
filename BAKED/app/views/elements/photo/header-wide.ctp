@@ -9,22 +9,24 @@
 		'll'=>'/css/images/img_3.gif',
 	);
 ?>
-<section class="gallery-header container_16">
+<section class="wide gallery-header gallery-display-options container_16">
 	<h1 class="grid_2"><?php echo $total; ?>  Snaps</h1>
-    <nav class="settings push_7 grid_7">
-		<ul class="inline right">
-			<li class="display-option" onclick='PAGE.toggleDisplayOptions();'>
-    			<a class='menu-open'>Display Options</a>
-    		</li>
-    	</ul><ul class="thumb-size inline right">
+	<nav class="settings grid_4">
+		<ul class="wide-display-options inline">
+			<li class="btn option">Delete</li>
+			<li class="btn option">Group as Shot</li>
+			<li class="btn option">Add to Lightbox</li>
+		</ul>
+	</nav>	
+    <nav class="settings grid_9">
+		<ul class="thumb-size inline right">
 			<li class="label">Size</li>
 			<?php 
 				foreach ($sizes as $size => $src ) {
 					echo "<li class='btn ".($focus==$size ? 'focus' : '')."' thumb-size='{$size}'><img src='{$src}' alt=''></li>";
 				}
 			?>
-			<li class='btn' onclick="PAGE.toggle_fullscreen(true);">Fullscreen</li>
 		</ul>
+		<?php echo $this->element('/photo/display-options');  ?>
 	</nav>      
 </section> 
-<?php echo $this->element('/photo/display-options');  ?>

@@ -199,7 +199,7 @@
         this.setNamedParams = function(uri, namedData) {
         	// deprecate
         	console.warn("DEPRECATE. use static method, SNAPPI.IO.setNamedParams");
-        	return IO.setNameParams(uri, namedData);
+        	return IO.setNamedParams(uri, namedData);
 
         };
         this.get = function(uri, callback, qsData, namedData, args, sync){

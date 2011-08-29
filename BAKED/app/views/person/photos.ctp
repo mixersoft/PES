@@ -5,7 +5,7 @@
 </div>
 
 <?php $this->Layout->blockStart('relatedContent');?>
-<div id="related-content" class="container_16">		    	
+<aside id="related-content" class="container_16">		    	
         <div class="grid_11">
            	<section class="left">
 				<article>
@@ -48,6 +48,7 @@
             		<h3 class="people">People</h3>
 				</section>
 			</aside>
-		</div>		
-	</div>
+		</div>	
+		
+</aside>
 <?php $this->Layout->blockEnd();?>	

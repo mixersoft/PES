@@ -40,9 +40,12 @@
 		</nav>
 		<nav class='user grid_7'>
 			<ul class="right rightlink">
+				<li class="bg-grey">
+					<a onclick="PAGE.toggle_fullscreen();">Normal View</a>
+				</li>
 			<?php if ( AppController::$userid) { ?>
 				<li class="bg-grey"><img src="/css/images/plus-grey.png" alt="" align="absmiddle" class="add">
-					<a>Create&nbsp<img src="/css/images/arrow-down.png"  alt=""></a>
+					<a class='menu-open'>Create</a>
 				</li>
 				<li>
 					<span class="grey">Welcome,</span>
@@ -56,3 +59,4 @@
 		</ul>
 		</nav>
 </header> <!--top header end-->		
+		
