@@ -233,7 +233,7 @@ nav.secondary > ul li.preference {
 }
 /* gallery toolbars */
 section.gallery-header {
-	line-height: 32px;
+	line-height: 28px;
 	font-size: 10pt;
 	overflow: hidden;	
 }
@@ -250,13 +250,21 @@ section.gallery-header li.display-option {
 	background: -webkit-gradient(linear, center bottom, center top, from(#E2E6EB), to(#ffffff));*/
 	-webkit-border-radius: 4px;
 	-moz-border-radius: 4px;
-	margin: 3px 0 0 8px;
+	margin: 1px 0 0 8px;
 	padding: 2px 4px;
 	background-color: #E2E6EB;
 	border: 1px solid #D2D2D2;
 }
-section.gallery-header li.display-option.closed {
-	background-color: #E2E6EB;
+section.gallery-header li.display-option a {
+	color: #000;
+}
+section.gallery-header li.display-option:hover {
+	background: -moz-linear-gradient(bottom, #fca22f, #ffc374);	 
+	background: -webkit-gradient(linear, center bottom, center top, from(#fca22f), to(#ffc374));	border: 1px solid #cd7708;
+	border: 1px solid #CD7708;
+}
+section.gallery-header li.display-option:hover a {
+	color: #FFF;
 }
 section.gallery-header li.display-option.open {
 	-webkit-border-radius: 4px 4px 0px 0px;
@@ -271,7 +279,7 @@ section.gallery-header ul.thumb-size li {
 	border: 1px solid #fff;
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
-	margin-top: 2px;
+	xmargin-top: 2px;
 	margin-left: 4px;
 	padding: 2px;
 }
@@ -377,6 +385,15 @@ section.gallery-display-options ul > li.label {
 	font-size: 1.0em;
 	color: black;
 	cursor: default;
+}
+
+
+/*
+ * adjustments for fluid layout
+ */
+.container_16 .container_16 {
+	margin: 0;
+	width: 100%;
 }
 section.gallery-display-options.wide ul.wide-display-options li {
 	display: inline-block;

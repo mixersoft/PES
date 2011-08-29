@@ -202,7 +202,12 @@
                 'snappi-thumbnail-helpers': {
                     path: 'thumbnail-helpers.js',
                     requires: []
-                },                       
+                },
+                'snappi-gallery': {
+                    path: 'gallery.js',
+                    requires: ['node', 'event', 'event-key', 'snappi-event-hover', 'snappi-utils', 'snappi-rating', 
+                               'snappi-dialog-aui', 'snappi-menu-aui', 'snappi-paginator', 'snappi-thumbnail-helpers'] // snappi-util -> SNAPPI.shotController(move)
+                },                                       
                 'snappi-photoroll': {
                     path: 'photo-roll.js',
                     requires: ['node', 'event', 'event-key', 'snappi-event-hover', 'snappi-utils', 'snappi-rating', 
@@ -210,11 +215,11 @@
                 },
                 'snappi-domJsBinder': {
                     path: 'domJsBinder.js',
-                    requires: ['node', 'event-custom', 'io', 'gallery-datasource', 'gallery-auditions', 'snappi-sort', 'snappi-photoroll']
+                    requires: ['node', 'event-custom', 'io', 'gallery-datasource', 'gallery-auditions', 'snappi-sort', 'snappi-gallery', 'snappi-photoroll']
                 },
                 'snappi-lightbox': {
                     path: 'lightbox.js',
-                    requires: ['node', 'substitute', 'event', 'io', 'dd', 'dd-plugin', 'snappi-utils', 'snappi-sortedhash', 'snappi-photoroll', 'snappi-dragdrop', 'snappi-domJsBinder', 'snappi-rating', 'pagemaker-base',
+                    requires: ['node', 'substitute', 'event', 'io', 'dd', 'dd-plugin', 'snappi-utils', 'snappi-sortedhash', 'snappi-gallery', 'snappi-photoroll', 'snappi-dragdrop', 'snappi-domJsBinder', 'snappi-rating', 'pagemaker-base',
                                /*
                                 * experimental
                                 */
@@ -227,7 +232,7 @@
                     path: 'utils.js',
                     requires: ['node', 'event-custom', 'io', 'substitute',
                                'aui-io',
-                               'snappi-rating', 'snappi-photoroll', 'snappi-lightbox']
+                               'snappi-rating', 'snappi-gallery', 'snappi-photoroll', 'snappi-lightbox']
                 },
                 'snappi-io': {
                     path: 'io.js',
@@ -446,7 +451,7 @@
         		 */
         		'snappi-event-hover',
         		'snappi-dragdrop', 'snappi-tabs', 'snappi-domJsBinder', 
-        		'snappi-lightbox', 'snappi-photoroll', 'snappi-thumbnail',  
+        		'snappi-lightbox', 'snappi-gallery','snappi-photoroll', 'snappi-thumbnail',  
         		'snappi-filter', 
         		/*
         		 * pagemaker
