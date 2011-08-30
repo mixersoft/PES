@@ -208,18 +208,18 @@
                     requires: ['node', 'event', 'event-key', 'snappi-event-hover', 'snappi-utils', 'snappi-rating', 
                                'snappi-dialog-aui', 'snappi-menu-aui', 'snappi-paginator', 'snappi-thumbnail-helpers'] // snappi-util -> SNAPPI.shotController(move)
                 },                                       
-                'snappi-photoroll': {
-                    path: 'photo-roll.js',
-                    requires: ['node', 'event', 'event-key', 'snappi-event-hover', 'snappi-utils', 'snappi-rating', 
-                               'snappi-dialog-aui', 'snappi-menu-aui', 'snappi-paginator', 'snappi-thumbnail-helpers'] // snappi-util -> SNAPPI.shotController(move)
-                },
+                // 'snappi-photoroll': {
+                    // path: 'photo-roll.js',
+                    // requires: ['node', 'event', 'event-key', 'snappi-event-hover', 'snappi-utils', 'snappi-rating', 
+                               // 'snappi-dialog-aui', 'snappi-menu-aui', 'snappi-paginator', 'snappi-thumbnail-helpers'] // snappi-util -> SNAPPI.shotController(move)
+                // },
                 'snappi-domJsBinder': {
                     path: 'domJsBinder.js',
-                    requires: ['node', 'event-custom', 'io', 'gallery-datasource', 'gallery-auditions', 'snappi-sort', 'snappi-gallery', 'snappi-photoroll']
+                    requires: ['node', 'event-custom', 'io', 'gallery-datasource', 'gallery-auditions', 'snappi-sort', 'snappi-gallery']
                 },
                 'snappi-lightbox': {
                     path: 'lightbox.js',
-                    requires: ['node', 'substitute', 'event', 'io', 'dd', 'dd-plugin', 'snappi-utils', 'snappi-sortedhash', 'snappi-gallery', 'snappi-photoroll', 'snappi-dragdrop', 'snappi-domJsBinder', 'snappi-rating', 'pagemaker-base',
+                    requires: ['node', 'substitute', 'event', 'io', 'dd', 'dd-plugin', 'snappi-utils', 'snappi-sortedhash', 'snappi-gallery', 'snappi-dragdrop', 'snappi-domJsBinder', 'snappi-rating', 'pagemaker-base',
                                /*
                                 * experimental
                                 */
@@ -232,7 +232,7 @@
                     path: 'utils.js',
                     requires: ['node', 'event-custom', 'io', 'substitute',
                                'aui-io',
-                               'snappi-rating', 'snappi-gallery', 'snappi-photoroll', 'snappi-lightbox']
+                               'snappi-rating', 'snappi-gallery', 'snappi-lightbox']
                 },
                 'snappi-io': {
                     path: 'io.js',
@@ -451,7 +451,7 @@
         		 */
         		'snappi-event-hover',
         		'snappi-dragdrop', 'snappi-tabs', 'snappi-domJsBinder', 
-        		'snappi-lightbox', 'snappi-gallery','snappi-photoroll', 'snappi-thumbnail',  
+        		'snappi-lightbox', 'snappi-gallery', 'snappi-thumbnail',  
         		'snappi-filter', 
         		/*
         		 * pagemaker
@@ -603,7 +603,7 @@
         var event;
         if (PAGE.jsonData.castingCall) event = 'snappi:afterPhotoRollInit';
         else if (PAGE.jsonData.lightbox) event = 'snappi:afterMain';
-        SNAPPI.Lightbox.loadonce(null, event);
+        // SNAPPI.Lightbox.loadonce(null, event);
         
         /*
          * filter bar

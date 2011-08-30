@@ -356,8 +356,8 @@
 		// TODO: leave the restarting method here temporarily. need to reorganize this code.
 		if(!menuNode.hasClass('hide')){
 			try {
-				// restart normal PhotoRoll click listener
-				menuNode.ancestor('ul.photo-roll').dom().PhotoRoll.listenClick(true); 
+				// restart normal Gallery click listener
+				menuNode.ancestor('section.gallery.photo').Gallery.listenClick(true); 
 			} catch(e) {}
 			// TODO: what if this is a GroupRoll or MemberRoll?
 		}

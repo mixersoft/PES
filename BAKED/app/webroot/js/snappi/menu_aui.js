@@ -231,7 +231,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		var hasPhotoroll = false, 
 			found = target.ancestor(
 				function(n){
-					hasPhotoroll = n.Photoroll || n.dom().PhotoRoll ||  (n.dom().Lightbox && n.dom().Lightbox.PhotoRoll) || null; 
+					hasPhotoroll = n.Gallery || n.dom().Gallery ||  (n.dom().Lightbox && n.dom().Lightbox.Gallery) || null; 
 					return hasPhotoroll;
 				}, true );
 		return hasPhotoroll;
@@ -498,7 +498,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	CFG_Context_Photoroll.load = function(cfg){
 		var Y = SNAPPI.Y;
 		var CSS_ID = 'contextmenu-photoroll-markup';
-		var TRIGGER = 'ul.photo-roll > .FigureBox';
+		var TRIGGER = 'section.gallery.photo .FigureBox';
 		var MARKUP = {
 				id: CSS_ID,
 				selector: '#'+CSS_ID,
@@ -524,7 +524,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	
 	var CFG_Context_HiddenShot = function(){}; CFG_Context_HiddenShot.prototype = {};	
 	/**
-	 * load PhotoRoll contextmenu for HiddenShots .thumbnail
+	 * load Gallery contextmenu for HiddenShots .thumbnail
 	 * @param cfg
 	 * @return
 	 */

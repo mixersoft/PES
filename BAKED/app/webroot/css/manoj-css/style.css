@@ -32,11 +32,10 @@ body {
 article, aside, figure, footer, header, nav, section {
 	display: block;
 }
-/* ???: why not container_16?*/
-#container {
+/*#container {
 	width: 960px;
 	margin: 0 auto;
-}
+}*/
 
 
 
@@ -151,12 +150,11 @@ a.gallerypic span.zoom-icon selected {
 	margin-right: 143px;
 }
 
-.gallery {
+/*.gallery {
 	width: 940px;
 	padding: 10px;
 	clear: both;
-}
-
+}*/
 
 .pagination {
 	background: -moz-linear-gradient(bottom, #eeeeee, #fff);
@@ -230,7 +228,7 @@ a.gallerypic span.zoom-icon selected {
 	border: none;
 	padding: 2px 4px;
 }
-#related-content {
+/*#related-content {
 	xmargin: 20px 10px 25px 10px;
 	margin: 20px 0;
 	padding: 10px 0 0 0;
@@ -252,16 +250,16 @@ a.gallerypic span.zoom-icon selected {
 	-webkit-box-shadow: 0px 0px 7px #fff inset;
 	-moz-box-shadow: 0px 0px 7px #fff inset;
 	overflow: hidden;
-}
+}*/
 
-#related-content .left {
+/*#related-content .left {
 	xwidth: 640px;
 	width: 100%;
 	xfloat: left;
 	position: relative;
 	margin: auto;
 	padding: 0 0 0 0;
-}
+}*/
 #related-content aside {
 	xfloat: left;
 	xwidth: 282px;

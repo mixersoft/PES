@@ -27,7 +27,8 @@
      * protected
      */
     var defaultCfg = {
-        lookAhead: 1 // don't lookahead for now
+        lookAhead: 1, // don't lookahead for now
+        container: 'div.gallery-container > section.gallery.photo'
     };
     // find only visible elements
     var isVisible = function(n){
@@ -43,8 +44,8 @@
     	this.bindSelected2Preview = function(selected) {
     		var Y = SNAPPI.Y;
     		var filmstrip;
-    		if (this instanceof SNAPPI.PhotoRoll) filmstrip = this;
-    		else filmstrip = Y.one('div#neighbors > ul.filmstrip').dom().PhotoRoll;
+    		if (this instanceof SNAPPI.Gallery) filmstrip = this;
+    		else filmstrip = Y.one('div#neighbors > ul.filmstrip').dom().Gallery;
 //    		var castingCall = PAGE.jsonData.castingCall;
     		var castingCall = filmstrip.castingCall;
     		var parent = Y.one('#preview');
@@ -182,27 +183,27 @@
             
             // scan for existing ul.filmstrip on this page
             var _cfg = Y.merge(defaultCfg, cfg);
-            _cfg.ul = _cfg.ul || parent.one('ul.filmstrip');
-            if (_cfg.ul) {
+            _cfg.node = _cfg.node || _cfg.ul;		// LEGACY
+            _cfg.node = _cfg.node || parent.one('section.gallery.photo');
+            if (_cfg.node) {
             	// existing filmstrip found
             	// TODO: this code path incomplete
             } else {
-            	// filmstrip not found, build filmstrip
-            	var ul = parent.create('<ul class="filmstrip">');
-            	_cfg.ul = ul;
-                parent.append(ul);
+            	// filmstrip not found, build filmstrip NOW, because we need to know width
+            	var MARKUP = '<section class="gallery photo "><div class="filmstrip " /></section>';
+            	_cfg.node = parent.prepend(MARKUP).one('section.gallery.photo');
             }
             
             // get RAW audition from json
             var selectedId = castingCall.CastingCall.Auditions.Audition[init.selected].id;
             
             // calculate thumbnail size and center thumbnails in filmstrip
-            var container_w = _cfg.ul.get('parentNode').getComputedStyle('width').replace('px','');
+            var container_w = _cfg.node.get('parentNode').getComputedStyle('width').replace('px','');
             var MIN_WIDTH_FOR_TN = 900; var FILMSTRIP_PADDING_W = 90;
             var thumbSize =  (container_w < MIN_WIDTH_FOR_TN) ? 'sq' : 'tn';
             var thumb_w = (thumbSize == 'sq') ? 83 : 128;	// sq=83px wide, tn=128px
             var filmstrip_w = init.length * thumb_w + FILMSTRIP_PADDING_W;
-            ul.setStyle('width', filmstrip_w+'px');
+            _cfg.node.one('.filmstrip').setStyle('width', filmstrip_w+'px');
             try {
             	var shotType = castingCall.CastingCall.Auditions.ShotType;
             } catch (e) { shotType = 'Usershot'; }
@@ -221,10 +222,10 @@
             	}
             };
             /**
-             * NEW codepath to create PhotoRoll from castingCall
+             * NEW codepath to create Gallery from castingCall
              */
            var filmstripCfg = {
-            	container: _cfg.ul,
+            	container: _cfg.node,
             	castingCall: castingCall,
         		flimstripHalfsize: (init.length-1)/2,
 				ID_PREFIX: 'filmstrip-',
@@ -236,7 +237,7 @@
         		total: init.Total,
         		uri: castingCall.CastingCall.Request            	
             };
-            var fs = new SNAPPI.PhotoRoll(filmstripCfg);
+            var fs = new SNAPPI.Gallery(filmstripCfg);
     		fs.container.prepend('<li class="prev-next" title="previous photo">◄</li>');
     		fs.container.append('<li class="prev-next" title="next photo">►</li>'); 
     		fs.listenFsClick(closure);
@@ -247,7 +248,7 @@
     	
     	this.bindSelectedToPage = function(selected, oldUuid) {
     		var newUuid = selected.id;
-    		// this instanceof PhotoRoll
+    		// this instanceof Gallery
         	/*
         	 * update div#hiddenshots, from filmstrip
         	 */
@@ -308,18 +309,6 @@
              */
             if (SNAPPI.STATE.thumbSize) cfg.size = SNAPPI.STATE.thumbSize;
             var _cfg = Y.merge(defaultCfg, cfg);
-			_cfg.container = _cfg.container	|| Y.one('div.element-roll.photo section.gallery ul.photo-roll');
-            if (!_cfg.container) {
-                var parent = Y.one('div.element-roll.photo');
-                if (!parent) return; // no photos on this page
-                else {
-                    var ul = parent.create('<ul class="photo-roll">');
-                    parent.append(ul);
-                    _cfg.container = ul;
-                }
-            }
-            if (!_cfg.container.test('.photo-roll')) return;
- 
             /*
              * check for photo-roll.json
              *   switch to choose:
@@ -329,7 +318,7 @@
              */
            	_cfg.castingCall = PAGE.jsonData.castingCall;
             _cfg = Y.merge(SNAPPI.STATE.displayPage, _cfg);	// only if photoRoll/castingCall is paged
-            var pr = new SNAPPI.PhotoRoll(_cfg);
+            var pr = new SNAPPI.Gallery(_cfg);
             pr.listen(true, ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'RightClick']);
             if (SNAPPI.DEBUG_MODE) SNAPPI.debug.showNodes('#content div, .FigureBox');
         };
@@ -408,13 +397,14 @@
         },
         
         /**
+         * TODO: not sure this method is actually used, I think I use new Gallery() instead
          * bind auditionSH to rendered DOM LI thumbnail on page
-         * @param ul - container for roll
+         * @param node - should be section.gallery.photo
          * @param castingCall - contains output from SNAPPI.Auditions.parseCastingCall()
          * @param cfg - 
          * 
          */ 
-        bind: function(ul, castingCall, cfg){
+        bind: function(node, castingCall, cfg){
         	var _cfg = {
         			ID_PREFIX: null,
         			size: 'sq',
@@ -429,19 +419,13 @@
             	castingCall.auditionSH.sort(SNAPPI.sortConfig.byTime);        	
             }
             
-            try {
-            	var oldPhotoRoll = ul.dom().PhotoRoll;
-                // TODO: reuse existing photoRoll??? or do we need to destroy?
-            } catch(e) {}
-            
-            
-            var photoRoll = new SNAPPI.PhotoRoll({
+            var photoRoll = new SNAPPI.Gallery({
                 sh: castingCall.auditionSH,
                 shots:  castingCall.shots,
-                container: ul
+                container: node
             });
             photoRoll.render(_cfg);
-            if (ul.hasClass('photo-roll')) {
+            if (!node.hasClass('filmstrip')) {
             	photoRoll.restoreState();	// photoRolls have state, but filmstrips do not?
             }
             

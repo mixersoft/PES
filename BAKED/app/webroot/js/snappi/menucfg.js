@@ -204,17 +204,17 @@
 				id_contextMenuInfo = 'menuItem-contextInfo', 
 				id_photoRollContext = 'menu-photoRollContext';	
 		
-			var photoRollNode = Y.one('#paging-photos-inner .photo-roll');
+			var photoRollNode = Y.one('section.gallery.photo');
 			
 			/*
 			 * private helper methods
 			 */
 			var _getPhotoRoll = function(contextMenu_target){
 				try {
-					var photoRoll = contextMenu_target.ancestor('ul.photo-roll').dom().PhotoRoll; 
+					var photoRoll = contextMenu_target.ancestor('section.gallery.photo').Gallery; 
 				} catch (e) {
 					// for ul.filmstrip and ul.hiddenshots
-					photoRoll = contextMenu_target.ancestor('ul').dom().PhotoRoll; 
+					photoRoll = contextMenu_target.ancestor('ul').dom().Gallery; 
 				}	
 				return photoRoll;
 			};
@@ -309,7 +309,7 @@
 	    						var audition = contextMenu_target.dom().audition;
 	    						var photoRoll = _getPhotoRoll(contextMenu_target);
 	    						var shotType = /^circle|^group|^wedding|^event/.test(SNAPPI.STATE.controller.alias) ? 'Groupshot' : 'Usershot';
-	    						SNAPPI.PhotoRoll.showHiddenShotsAsPreview.call(photoRoll, audition, shotType , SNAPPI.dialogbox.node.one('.body > ul'));
+	    						SNAPPI.Gallery.showHiddenShotsAsPreview.call(photoRoll, audition, shotType , SNAPPI.dialogbox.node.one('.body > ul'));
 	        				} catch (e) {
 	        				}
 	        			},
@@ -414,7 +414,7 @@
 					           }
 						},
 			           selector : '.FigureBox',
-			           args : photoRollNode.dom().PhotoRoll
+			           args : photoRollNode.dom().Gallery
 					},
 					*/
 					afterAttach : {
@@ -491,17 +491,17 @@
 				id_contextMenuInfo = 'menuItem-contextInfo', 
 				id_photoRollContext = 'menu-photoRollContext';	
 		
-			var photoRollNode = Y.one('#paging-photos-inner .photo-roll');
+			var photoRollNode = Y.one('section.gallery.photo');
 			
 			/*
 			 * private helper methods
 			 */
 			var _getPhotoRoll = function(contextMenu_target){
 				try {
-					var photoRoll = contextMenu_target.ancestor('ul.photo-roll').dom().PhotoRoll; 
+					var photoRoll = contextMenu_target.ancestor('section.gallery.photo').Gallery; 
 				} catch (e) {
 					// for ul.filmstrip and ul.hiddenshots
-					photoRoll = contextMenu_target.ancestor('ul').dom().PhotoRoll; 
+					photoRoll = contextMenu_target.ancestor('ul').dom().Gallery; 
 				}	
 				return photoRoll;
 			};

@@ -25,12 +25,12 @@
 	Paginator.paginate_Photoroll = function(photoroll){
 			var self = photoroll;	// photoRoll
 			var target = self.container;
-			var NAME = 'div.element-roll.photo';
+			var NAME = 'section.gallery.photo';
 			var DELAY = 1000;	// delay_task
 
 			var paginateContainer = target.ancestor(NAME).one('div.paging-numbers');
 			if (!paginateContainer) {
-				if (target.ancestor('#paging-photos')) {
+				if (target.ancestor('section.gallery')) {
 					// auto-create paging DIV
 					paginateContainer = target.create("<div class='paging-control paging-numbers' />");
 					target.get('parentNode').insert(paginateContainer,'after');

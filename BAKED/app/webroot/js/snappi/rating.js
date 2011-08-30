@@ -476,16 +476,16 @@
 							var audition, shotPhotoRoll;
 							try {
 								audition = closure.node.ancestor('.FigureBox').audition;
-								shotPhotoRoll = closure.node.ancestor('ul.hiddenshots').PhotoRoll;
+								shotPhotoRoll = closure.node.ancestor('ul.hiddenshots').Gallery;
 							} catch (e) {
 								audition = options.thumbnail.audition;
-								shotPhotoRoll = options.thumbnail.ancestor('ul.hiddenshots').PhotoRoll;
+								shotPhotoRoll = options.thumbnail.ancestor('ul.hiddenshots').Gallery;
 							}
 							var bestShot = audition.Audition.Substitutions.best;
 							var selected = shotPhotoRoll.selected;
 							// confirm showHidden bestShot is in main photoroll
 							if (bestShot !== selected) {
-								var photoroll = SNAPPI.Y.one('ul.photo-roll').PhotoRoll;
+								var photoroll = SNAPPI.Y.one('section.gallery.photo').Gallery;
 								// splice into original location
 								var result = photoroll.auditionSH.replace(selected, bestShot);
 								if (result) {
@@ -545,8 +545,8 @@
 							// TODO: push nodes into audition.bindTo
 							n2.Rating.render(v);
 						}
-						ul = n2.ancestor('ul.photo-roll');
-						photoRolls[ul.get('id')] = ul.dom().PhotoRoll;
+						var pr = n2.ancestor('section.gallery.photo').Gallery;
+						photoRolls[pr.get('id')] = pr.Gallery;
 					} catch (e) {
 					}
 				}
@@ -578,7 +578,7 @@
 				try {
 					v = v || r.Rating.value;
 					var auditionSH = Y.one('div#neighbors > ul.filmstrip')
-							.dom().PhotoRoll.auditionSH;
+							.dom().Gallery.auditionSH;
 					var audition = auditionSH.get(r.Rating.id);
 					_updateRatingChange(audition, v);
 				} catch (e) {

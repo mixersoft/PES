@@ -19,7 +19,7 @@
 	        
 	        for (var selector in selectors) {
 		        Y.all(selector).each(function (n,i,l) {
-		        	if (n.Rating || n.audition || n.PhotoRoll || n.Lightbox || n.Thumbnail) {
+		        	if (n.Rating || n.audition || n.Gallery || n.Lightbox || n.Thumbnail) {
 		        		n.dom().yNode = n.ynode();
 		        	}
 		        });

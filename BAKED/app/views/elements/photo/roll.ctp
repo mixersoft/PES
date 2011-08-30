@@ -23,14 +23,14 @@ $isPreview = (!empty($this->params['url']['preview']));
 $isWide = !empty($this->params['named']['wide']);		// fluid layout
 $isXhr = Configure::read('controller.isXhr');
 ?>
-	<div class='element-roll photo placeholder' >
+	<div class='gallery-container' >
 		<?php 
 			if ($isWide) {
 				echo $this->element('/photo/header-wide', array('total'=>$total));
 			} else echo $this->element('/photo/header', array('total'=>$total));
 		?>
-		<section class="<?php if ($isWide) echo "wide "; ?>gallery container_16">
-			<ul class='photo-roll grid_16'></ul>
+		<section class="<?php if ($isWide) echo "wide "; ?>gallery photo container_16">
+			<div class='grid_16'></div>
 		</section>
 	</div>
 <?php $this->Layout->blockStart('javascript');?> 	

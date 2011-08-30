@@ -75,9 +75,9 @@
 			                //How many items are selected
 			                var count;
 			                try {
-			                    if (SNAPPI.STATE.selectAllPages && target.ancestor('div.photo ul.photo-roll')) {
+			                    if (SNAPPI.STATE.selectAllPages && target.ancestor('section.gallery.photo')) {
 			                    	try {
-			                    		var pr=target.ancestor('ul.photo-roll').dom().PhotoRoll;
+			                    		var pr=target.ancestor('section.gallery.photo').Gallery;
 			                    		count = pr.castingCall.CastingCall.Auditions.Total;
 			                    	} catch (e) {
 			                    		count = target.ancestor('ul').all('.FigureBox.selected').size();
@@ -150,7 +150,7 @@
                 	// add to Lightbox
                 	var lightbox = dropTarget.dom().Lightbox;
                 	try {
-                		dropTarget = lightbox.PhotoRoll.container.all('.FigureBox').pop();
+                		dropTarget = lightbox.Gallery.container.all('.FigureBox').pop();
                 	}catch(e){
                 	}
                 	done = lightbox.processDrop(nodeList, _clearSelected);
@@ -213,14 +213,14 @@
                 //                    // tags
                 //                    SNAPPI.Tags.addList(nodeList, dropTarget);
                 //                }
-                //                if (dropTarget.test('ul.photo-roll.substitutionGroup')) {
+                //                if (dropTarget.test('section.gallery.photo > div.substitutionGroup')) {
                 //                    // shots
                 //                    nodeList.get('parentNode').removeClass('selected');
                 //                    SNAPPI.Thumbnail.addToSubGroup(dropTarget, nodeList);
                 //                }
                 //                else 
                 //                    // NOT .substitutionGroup!
-                //                    if (dropTarget.test('ul.photo-roll')) {
+                //                    if (dropTarget.test('section.gallery.photo > div')) {
                 //                        nodeList.get('parentNode').removeClass('selected');
                 //                        SNAPPI.Thumbnail.removeFromSubGroup(dropTarget, nodeList);
                 //                        

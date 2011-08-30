@@ -227,9 +227,8 @@ nav.secondary > ul li.preference {
 
 
 .gallery {
-	xwidth: 940px;
-	padding: 0 10px;
-	xclear: both;
+	padding: 4px 10px 0 10px;
+	
 }
 /* gallery toolbars */
 section.gallery-header {
@@ -567,8 +566,10 @@ section.gallery.wide {
 .FigureBox.hiddenshot-hide {
     display: none;
 }
-
-ul.hiddenshots .FigureBox.hiddenshot-hide {
+section.gallery.hiddenshots {
+	padding: 4px 0;
+}
+section.gallery.hiddenshots .FigureBox.hiddenshot-hide {
 	display: block;
 }
 /* ok to here ^^^ */

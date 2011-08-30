@@ -18,7 +18,7 @@
  *
  * @author Michael Lin, info@snaphappi.com
  *
- * PhotoRoll - render/reuse thumbnails from JSON
+ * Gallery - render/reuse thumbnails from JSON
  *
  */
 (function(){
@@ -60,40 +60,39 @@
 //    };
     var Y = SNAPPI.Y;
     
-    var PhotoRoll = function(cfg){
+    var Gallery = function(cfg){
         /*
          * protected methods
          */
         this.container = null;
         this.auditionSH = null;
         this.shots = null; 	
-//        
-        this.init(cfg);
+        this.node = this.init(cfg);
     };
     
-    PhotoRoll.getFromDom = function(dom) {
+    Gallery.getFromDom = function(dom) {
     	try {
-    		return dom.ynode().ancestor('div.element-roll.photo').one('ul.photo-roll').dom().PhotoRoll;
+    		return dom.ynode().ancestor('section.gallery.photo').Gallery;
     	} catch(e) {
     	}
     	try {
-    		return dom.dom().PhotoRoll;
+    		return dom.Gallery;
     	} catch(e) {
     	}    	
     };
     
-    PhotoRoll.filmstrip_getFromDom = function(dom) {
+    Gallery.filmstrip_getFromDom = function(dom) {
     	try {
-    		return dom.ynode().ancestor('div.filmstrip').one('ul.filmstrip').dom().PhotoRoll;
+    		return dom.ynode().ancestor('div.filmstrip').one('ul.filmstrip').dom().Gallery;
     	} catch(e) {
     		return null;
     	}
     };    
-    PhotoRoll.getFromChild = function(target){
+    Gallery.getFromChild = function(target){
 		var hasPhotoroll = false, 
 			found = target.ancestor(
 				function(n){
-					hasPhotoroll = n.Photoroll || n.dom().PhotoRoll || null; 
+					hasPhotoroll = n.Photoroll || n.dom().Gallery || null; 
 					return hasPhotoroll;
 				}, true );
 		return hasPhotoroll;
@@ -105,7 +104,7 @@
      * @param shotType - [Usershot | Groupshot]
      * @return
      */
-    PhotoRoll.renderSubstituteAsPreview = function(selected, shotType, ul) {
+    Gallery.renderSubstituteAsPreview = function(selected, shotType, ul) {
     	this.showHiddenShotsAsPreview(selected, shotType, ul);
     };
     
@@ -125,17 +124,16 @@
             	// filmstrip not found,  build filmstrip
             	// TODO: move to a better place. we cannot assume we are on the /photos/home page here
             	var parent = SNAPPI.Y.one('div#hiddenshots');
-            	ul = parent.create('<ul></ul>'); // class='filmstrip' or 'photo-roll'??
-                parent.append(ul);
+            	// ul = parent.create('<ul></ul>'); // class='filmstrip' or 'photo-roll'??
+                // parent.append(ul);
             }                
-            ul.addClass('hiddenshots');
-            ul.addClass('filmstrip');
+
             // TODO: should add a more... link to see paging view of shot
             
             var total = shot.count();
             
 			var oneShotCfg = {};
-			oneShotCfg[shot.id] = shot;		// format for PhotoRoll constructor
+			oneShotCfg[shot.id] = shot;		// format for Gallery constructor
 			var showHiddenShotsCfg = {
 				ID_PREFIX : 'hiddenshot-',
 				size : 'lm',
@@ -154,9 +152,11 @@
 			};            
             
             /**
-             * NEW codepath to create PhotoRoll from castingCall
+             * NEW codepath to create Gallery from castingCall
              */
-           var shotPhotoRoll = new SNAPPI.PhotoRoll(showHiddenShotsCfg);	
+           var shotPhotoRoll = new SNAPPI.Gallery(showHiddenShotsCfg);	
+           shotPhotoRoll.node.addClass('hiddenshots').addClass('filmstrip').removeClass('container_16');
+           shotPhotoRoll.container.removeClass('grid_16');
            shotPhotoRoll.renderContextMenu = SNAPPI.cfg.MenuCfg.renderSubstituteContextMenu;
            shotPhotoRoll.listen(true, ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'RightClick']);
 			
@@ -192,7 +192,7 @@
 	
 	
 	
-    PhotoRoll.prototype = {
+    Gallery.prototype = {
     	init: function(cfg) {
     		var Y = SNAPPI.Y;
 	    	var _cfg = {
@@ -200,20 +200,34 @@
 	    	};
 	    	_cfg = Y.merge(defaultCfg, _cfg, cfg);
 
-	        if (cfg.container) {
-	            this.container = cfg.container.ynode ? cfg.container.ynode() : Y.one('#' + cfg.container);
-		        if (!this.container) {
-		        	this.container = Y.Node.create("<ul></ul>").addClass("container_16 alpha omega");
-		        } else if (this.container && this.container.dom().PhotoRoll) {
-	        		var oldPhotoRoll = this.container.dom().PhotoRoll;
-		            // TODO: what do we do here???
-	        		// reuse existing photoRoll??? or do we need to destroy?
-		        }
-		        this.container.PhotoRoll = this;  // back reference
-	            this.container.dom().PhotoRoll = this;  // DEPRECATE, legacy back reference
-	            if (this.container.listen == undefined) this.container.listen = {};
-	            delete cfg.container;
+			// container should be section.gallery.photo
+			var node;
+	        if (_cfg.container) {
+	        	try {
+	        		node = _cfg.container instanceof Y.Node ? _cfg.container : Y.one(_cfg.container);	
+	        		if (node.Gallery) {
+	        			this.container = node.Gallery.container;
+		        		var oldPhotoRoll = parent.Gallery;
+			            // TODO: what do we do here???
+		        		// reuse existing photoRoll??? or do we need to destroy?	        			
+	        		} else {
+	        			if (node.hasClass('gallery') && !node.one('div')) {
+	        				node.prepend('<div class="grid_16" />');
+	        			}
+	        			this.container = node.one('div');
+	        		}
+	        	} catch (e) {}
+	        }    
+	        if (!this.container) {
+	        	var MARKUP = '<section class="gallery photo container_16"><div class="grid_16" /></section>';
+	        	node  = Y.Node.create(MARKUP);
+	        	if (cfg.isWide) node.addClass('wide');
+	        	this.container = node.one('div');
 	        }
+	        node.Gallery = this;
+	        node.Gallery.container.Gallery = this;	// is this necessary?
+	        delete _cfg.container;	// use this.container from this point forward
+	        
 	        this.providerName = _cfg.PROVIDER_NAME;
 	        if (_cfg.sh) {
 	        	// resuse SH, if provided
@@ -257,10 +271,10 @@
 
 	        try {
 		        // add reference to global
-//	        	PhotoRoll[parent.get('id')] = this;
+//	        	Gallery[parent.get('id')] = this;
 		        // search for photo-roll header	        	
-	        	var parent = this.container.ancestor('div.element-roll.photo');
-				this.header = parent.one("ul.photo-roll-header");
+	        	var parent = this.container.ancestor('.gallery-container');
+				this.header = parent.one(".gallery-header");
 	        } catch (e) {
 	        	this.header = null;
 	        }; 
@@ -300,17 +314,13 @@
 	        SNAPPI.Rating.startListeners(this.container);
 	        SNAPPI.DragDrop.startListeners();
 	        Y.fire('snappi:afterPhotoRollInit', this.auditionSH); 
+	        return node;
     	},
         setAudition: function(sh){
             this.auditionSH = sh;
         },
         render: function(cfg, shotsSH){
         	cfg = cfg || {};
-        	if (cfg.container) {
-        		// deprecate: we should not be passing container this way
-        		this.container = cfg.container;
-        		delete cfg.container;
-        	}
         	if (cfg.ID_PREFIX !== undefined && !cfg.ID_PREFIX) {
         		delete (cfg.ID_PREFIX);
         	}
@@ -345,7 +355,7 @@
 	            	break;
 	            case 'uuid-':
             	default:
-                	// calculate offset of requested page from PhotoRoll.castingCall.Auditions.Page
+                	// calculate offset of requested page from Gallery.castingCall.Auditions.Page
                 	// cfg.page = SNAPPI.STATE.displayPage.page, or $this->passedArgs['page']
                 	// ccOffset = (ccPage-1)*ccPerpage            		
                 	var ccPage = this.castingCall.CastingCall.Auditions.Page;
@@ -458,7 +468,7 @@
         	return t.node;
         },
         listen: function(status, cfg){
-        	if (this.container.listen == undefined) this.container.listen = {};
+        	if (this.node.listen == undefined) this.node.listen = {};
             status = (status == undefined) ? true : status;
             var k,v;
             if (status) {
@@ -469,14 +479,14 @@
             	}
             }
             else {
-            	cfg = cfg || this.container.listen;
+            	cfg = cfg || this.node.listen;
                 for (k in cfg) {
                 	v = cfg[k];
                 	if (v == 'MultiSelect') {
                 		SNAPPI.multiSelect.listen(this.container, false);
                 	} else {
-	                    this.container.listen[v].detach();
-	                    delete (this.container.listen[v]);
+	                    this.node.listen[v].detach();
+	                    delete (this.node.listen[v]);
                 	}
                 }
             }
@@ -489,13 +499,13 @@
          * @return
          */
         listenFsClick: function(closure) {
-            if (this.container.listen['FsClick'] == undefined) {
-            	this.container.listen['FsPrevNextClick'] = this.container.delegate('click', 
+            if (this.node.listen['FsClick'] == undefined) {
+            	this.node.listen['FsPrevNextClick'] = this.container.delegate('click', 
             			/*
             			 * 
             			 */
             			function(e) {
-            				var pr = e.container.PhotoRoll;
+            				var pr = e.container.Gallery;
             				var selected, target = e.currentTarget;
             				switch(e.currentTarget.get('innerHTML')) {
             				case '◄':
@@ -541,12 +551,12 @@
             				}  
             			}, 'li.prev-next'
             	);	
-                this.container.listen['FsClick'] = this.container.delegate('click', 
+                this.node.listen['FsClick'] = this.container.delegate('click', 
 	                /*
 	                 * update all components on /photos/home page to match 'selected'
 	                 */		
 	                function(e){
-                		var pr = e.container.PhotoRoll;
+                		var pr = e.container.Gallery;
 	                	e.target.ancestor('li').removeClass('focus');
 	                	var selected = e.target.ancestor('li').audition;
 	                	var oldUuid = pr.auditionSH.get(pr._cfg.selected).id;
@@ -564,15 +574,15 @@
          * @deprecated???
          */
         listenHiddenShotClick: function(){
-        	if (this.container.listen['HiddenShotClick'] == undefined) {
-        		this.container.listen['HiddenShotClick'] = this.container.delegate('click', 
+        	if (this.node.listen['HiddenShotClick'] == undefined) {
+        		this.node.listen['HiddenShotClick'] = this.container.delegate('click', 
 	                /*
 	                 * update all components on /photos/home page to match 'selected'
 	                 */		
 	                function(e){
         				e.container.all('.FigureBox').removeClass('focus');
 	                	var selected = e.target.ancestor('.FigureBox').audition;
-	                	var pr = e.container.PhotoRoll;
+	                	var pr = e.container.Gallery;
 	                	var oldUuid = pr.auditionSH.getFocus().id;
 	                	pr.filmstrip_SetFocus(selected);
 	                	if (selected.id != oldUuid) {
@@ -580,13 +590,13 @@
 		                }
 	                }, 'img'); 
 	          }
-        	var detach = this.container.listen['Click'];
+        	var detach = this.node.listen['Click'];
         	if (detach) detach.detach();
 	    },
         listenClick: function(forceStart) {
-            if (this.container.listen['Click'] == undefined || forceStart ) {
-            	// div.element-roll.photo or div.filmstrip.photo
-                this.container.listen['Click'] = Y.one('div.photo').delegate('click', function(e){
+            if (this.node.listen['Click'] == undefined || forceStart ) {
+            	// section.gallery.photo or div.filmstrip.photo
+                this.node.listen['Click'] = this.node.delegate('click', function(e){
                     var next = e.target.getAttribute('linkTo');
                     if (this.castingCall.CastingCall) {
                     	next += '?ccid=' + this.castingCall.CastingCall.ID;
@@ -601,14 +611,14 @@
                 }, '.FigureBox > figure > img', this);
                 try {
 	                // listen thumbnail size
-	                this.container.listen['thumbSize_Click'] = Y.one('section.gallery-header ul.thumb-size').delegate('click', function(e){
+	                this.node.listen['thumbSize_Click'] = this.node.get('parentNode').one('section.gallery-header ul.thumb-size').delegate('click', function(e){
 	                	var thumbSize = e.currentTarget.getAttribute('thumb-size');
 	                	window.location.href = SNAPPI.IO.setNamedParams(window.location.href, {'thumbSize':thumbSize});
 	                }, 'li', this);
 				} catch (e) {}	                
 				try {
 	                // listen hiddenshot-icon
-	                this.container.listen['hiddenShot_Click'] = Y.one('div.photo').delegate('click', function(e){
+	                this.node.listen['hiddenShot_Click'] = this.node.delegate('click', function(e){
 	                	var thumbnail = e.currentTarget.ancestor('.FigureBox');
 						try {
 							var audition = thumbnail.audition;
@@ -628,8 +638,8 @@
         },
         listenMouseover : function(){
         	
-        	if(this.container.listen['Mouseover'] == undefined){
-        		this.container.listen['Mouseover'] = this.container.delegate('mouseover', function(e){
+        	if(this.node.listen['Mouseover'] == undefined){
+        		this.node.listen['Mouseover'] = this.container.delegate('mouseover', function(e){
         			
         			var target = e.currentTarget;
             		
@@ -652,20 +662,20 @@
         	
         },
         stopMouseoverListener : function(){
-        	if(this.container.listen.mouseover != undefined){
-        		this.container.listen.mouseover.detach();
-        		delete this.container.listen.mouseover;
+        	if(this.node.listen.mouseover != undefined){
+        		this.node.listen.mouseover.detach();
+        		delete this.node.listen.mouseover;
         	}
         },
 		
         listenRightClick : function (){
-        	if (this.container.listen['RightClick'] == undefined){
-        		this.container.listen['RightClick'] = this.container.delegate('contextmenu', function(e){
+        	if (this.node.listen['RightClick'] == undefined){
+        		this.node.listen['RightClick'] = this.container.delegate('contextmenu', function(e){
 					this.toggle_ContextMenu(e);
         		}, '.FigureBox', this);
         		
         		// .FigureBox li.context-menu.icon
-     		this.container.listen['ContextMenu'] = this.container.delegate('click', function(e){
+     		this.node.listen['ContextMenu'] = this.container.delegate('click', function(e){
 					this.toggle_ContextMenu(e);
         		}, '.FigureBox > ul > li.context-menu', this);        		
 			}        	
@@ -675,14 +685,14 @@
 	        e.preventDefault();
         	
         	var CSS_ID;
-        	if (this.container.hasClass('photo-roll')) {
-        		CSS_ID = 'contextmenu-photoroll-markup';
-        	} else if (this.container.hasClass('hiddenshots') || this.container.hasClass('hidden-shot')) {
+        	if (this.node.hasClass('hiddenshots') || this.node.hasClass('hidden-shot')) {
         		CSS_ID = 'contextmenu-hiddenshot-markup';
-        	} else if (this.container.hasClass('filmstrip')) {
+        	} else if (this.node.hasClass('filmstrip')) {
         		// TODO: not yet done
-        		console.warn("PhotoRoll.listenRightClick: not done for filmstrip");
-        	}
+        		console.warn("Gallery.listenRightClick: not done for filmstrip");
+        	} else {
+        		CSS_ID = 'contextmenu-photoroll-markup';
+        	}  
         	
         	// load/toggle contextmenu
         	if (!SNAPPI.MenuAUI.find[CSS_ID]) {
@@ -698,22 +708,22 @@
         	}
         },
         stopClickListener : function(){
-        	if(this.container.listen.click != undefined){
-        		this.container.listen.click.detach();
+        	if(this.node.listen.click != undefined){
+        		this.node.listen.click.detach();
         	}
         },
         listenKeypress: function(){
-            if (this.container.listen['Keypress'] == undefined) {
+            if (this.node.listen['Keypress'] == undefined) {
             	var startListening = function() {
-            		if (!this.container.listen['Keypress']) {
-            			this.container.listen['Keypress'] = Y.on('keypress', this.handleKeypress, document, this);
-//            			this.container.listen.keypress = Y.on('key', this.handleKeypress, document, this);
+            		if (!this.node.listen['Keypress']) {
+            			this.node.listen['Keypress'] = Y.on('keypress', this.handleKeypress, document, this);
+//            			this.node.listen.keypress = Y.on('key', this.handleKeypress, document, this);
             		}
             	};
             	var stopListening = function() {
-            		if (this.container.listen['Keypress']) { 
-            			this.container.listen['Keypress'].detach();
-            			delete this.container.listen['Keypress'];
+            		if (this.node.listen['Keypress']) { 
+            			this.node.listen['Keypress'].detach();
+            			delete this.node.listen['Keypress'];
             			// hide focus
             			this.container.all('li.focus').removeClass('focus');
             		}
@@ -1091,13 +1101,7 @@
         },
         selectAllPages: function(){
             SNAPPI.multiSelect.selectAll(this.container);
-            var ajaxParent = this.container.ancestor('div#paging-photos') || this.container.ancestor('div.photo');
-            if (ajaxParent) {
-				// TODO: we may need to store all-pages-selected in Session or Cookie, because 
-				// we lose this attribute value on a page reload, i.e. from /home to /photos
-//				ajaxParent.setAttribute('all-pages-selected', 1);
-				SNAPPI.STATE.selectAllPages = true;
-			}
+            SNAPPI.STATE.selectAllPages = true;
         },
 		getSelected : function() {
 			var auditionSH; 	// return sortedHash, allows auditionSH.each() maintains consistency
@@ -1135,11 +1139,7 @@
         },
         clearAll: function(){
             SNAPPI.multiSelect.clearAll(this.container);
-            var ajaxParent = this.container.ancestor('div#paging-photos');
-            if (ajaxParent) {
-//				ajaxParent.setAttribute('all-pages-selected', 0);	// deprecate, use SNAPPI.STATE.selectAllPages
-				SNAPPI.STATE.selectAllPages = false;
-			}
+            SNAPPI.STATE.selectAllPages = false;
         },
         // toggle button state and UI
 		toggleRatings: function(n, force){
@@ -1203,89 +1203,91 @@
 		 */
 		add_Paginator: function(){
 			if (console) console.warn("WARNING: photo-roll.add_Paginator() is deprecated? using Paginator.paginate_Photoroll");
-			var self = this;	// photoRoll
-			var target = self.container;
-			var paginateContainer = target.ancestor('div#paging-photos-inner').one('div.paging-numbers');
-			if (!paginateContainer) {
-				if (target.ancestor('#paging-photos')) {
-					// auto-create paging DIV
-					paginateContainer = target.create("<div class='paging-control paging-numbers' />");
-					target.get('parentNode').insert(paginateContainer,'after');
-				} else return false;	// this is a preview, do NOT auto-create paging DIV
-			}
-			if (paginateContainer.Paginator) {
-				// already created, just reuse
-				return paginateContainer.Paginator;
-			}
-			var controller = SNAPPI.STATE.controller;
-			var displayPage = SNAPPI.STATE.displayPage;
+			return;
 			
-			/**
-			 * private/closure method
-			 * @param pageNumber
-			 * @return
-			 */
-			var _getPage = function(pageNumber){
-				if (pageNumber == SNAPPI.STATE.displayPage.page) return;
-				var uri = controller.here + "/.json";				
-				var nameData = {page: pageNumber};
-				if (target.io) {
-					// already plugged, just reuse
-					uri = SNAPPI.IO.setNamedParams(uri, nameData);
-					target.io.set('uri', uri).start();
-					return;
-				}
-				// uses SNAPPI.IO.pluginIO_RespondAsJson() with Plugin.IO
-				target.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson({
-					uri: uri ,
-					parseContent:true,
-					nameData: nameData,
-					dataType: 'json',					
-					context: self,					
-					on: {
-						success: function(e, id, o, args) {
-								if (o.responseJson) {
-									PAGE.jsonData = o.responseJson;
-									SNAPPI.mergeSessionData();
-									SNAPPI.domJsBinder.bindAuditions2Photoroll();
-									// TODO: update paginateContainer.Paginator.set('total'), etc									
-									return false;	// plugin.IO already rendered
-								}
-							}
-					}
-				}));
-				return;
-			};
-			
-			
-			var pageCfg = {
-					page: displayPage.page,
-					total: displayPage.total,  
-					maxPageLinks: 10,
-					rowsPerPage: displayPage.perpage,
-					rowsPerPageOptions: [displayPage.perpage, 12,24,48,96],
-					alwaysVisible: false,
-					containers: paginateContainer,
-					on: {
-						changeRequest: function(e) {
-							var self = this;
-							var newState = e.state;
-							var userClicked = newState.before !== undefined;
-							if (userClicked) {
-								console.warn('Page.changeRequest: page='+newState.page);
-								_getPage(newState.page);
-							} 
-							self.setState(newState);
-						}
-					}
-			};
-			paginateContainer.Paginator = new Y.Paginator(pageCfg).render();
-			return paginateContainer.Paginator;
+			// var self = this;	// photoRoll
+			// var target = self.container;
+			// var paginateContainer = target.ancestor('div#paging-photos-inner').one('div.paging-numbers');
+			// if (!paginateContainer) {
+				// if (target.ancestor('#paging-photos')) {
+					// // auto-create paging DIV
+					// paginateContainer = target.create("<div class='paging-control paging-numbers' />");
+					// target.get('parentNode').insert(paginateContainer,'after');
+				// } else return false;	// this is a preview, do NOT auto-create paging DIV
+			// }
+			// if (paginateContainer.Paginator) {
+				// // already created, just reuse
+				// return paginateContainer.Paginator;
+			// }
+			// var controller = SNAPPI.STATE.controller;
+			// var displayPage = SNAPPI.STATE.displayPage;
+// 			
+			// /**
+			 // * private/closure method
+			 // * @param pageNumber
+			 // * @return
+			 // */
+			// var _getPage = function(pageNumber){
+				// if (pageNumber == SNAPPI.STATE.displayPage.page) return;
+				// var uri = controller.here + "/.json";				
+				// var nameData = {page: pageNumber};
+				// if (target.io) {
+					// // already plugged, just reuse
+					// uri = SNAPPI.IO.setNamedParams(uri, nameData);
+					// target.io.set('uri', uri).start();
+					// return;
+				// }
+				// // uses SNAPPI.IO.pluginIO_RespondAsJson() with Plugin.IO
+				// target.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson({
+					// uri: uri ,
+					// parseContent:true,
+					// nameData: nameData,
+					// dataType: 'json',					
+					// context: self,					
+					// on: {
+						// success: function(e, id, o, args) {
+								// if (o.responseJson) {
+									// PAGE.jsonData = o.responseJson;
+									// SNAPPI.mergeSessionData();
+									// SNAPPI.domJsBinder.bindAuditions2Photoroll();
+									// // TODO: update paginateContainer.Paginator.set('total'), etc									
+									// return false;	// plugin.IO already rendered
+								// }
+							// }
+					// }
+				// }));
+				// return;
+			// };
+// 			
+// 			
+			// var pageCfg = {
+					// page: displayPage.page,
+					// total: displayPage.total,  
+					// maxPageLinks: 10,
+					// rowsPerPage: displayPage.perpage,
+					// rowsPerPageOptions: [displayPage.perpage, 12,24,48,96],
+					// alwaysVisible: false,
+					// containers: paginateContainer,
+					// on: {
+						// changeRequest: function(e) {
+							// var self = this;
+							// var newState = e.state;
+							// var userClicked = newState.before !== undefined;
+							// if (userClicked) {
+								// console.warn('Page.changeRequest: page='+newState.page);
+								// _getPage(newState.page);
+							// } 
+							// self.setState(newState);
+						// }
+					// }
+			// };
+			// paginateContainer.Paginator = new Y.Paginator(pageCfg).render();
+			// return paginateContainer.Paginator;
 		},
 		// TODO: move these methods to SNAPPI.Thumbnail
         showThumbnailRatings : function(node){
 	        // private method
-			var pr = node ? SNAPPI.PhotoRoll.getFromDom(node) : this;
+			var pr = node ? SNAPPI.Gallery.getFromDom(node) : this;
             var thumbs = pr.container.all('.FigureBox');
             thumbs.each(function(n){
             	if (n.hasClass('hide')) return;
@@ -1302,7 +1304,7 @@
             SNAPPI.debug.showNodes();
         },
         hideThumbnailRatings : function(node){
-        	var pr = node ? SNAPPI.PhotoRoll.getFromDom(node) : this;
+        	var pr = node ? SNAPPI.Gallery.getFromDom(node) : this;
             var thumbs = pr.container.all('.FigureBox');
             pr.container.all('div.ratingGroup').addClass('hide');
             pr.container.all('div.thumb-label').removeClass('hide');
@@ -1508,7 +1510,7 @@
 						var node = audition.bindTo[i];
 						if (!photoroll && /^uuid-/.test(node.get('id'))){
 							// find parent photoroll
-							photoroll = PhotoRoll.getFromChild(node);
+							photoroll = Gallery.getFromChild(node);
 						};
 						if (node.ancestor('ul') == hiddenShots_pr.container){
 							// unbind hiddenShots
@@ -1625,7 +1627,7 @@
 						var node = audition.bindTo[j];
 						if (!photoroll && /^uuid-/.test(node.get('id'))){
 							// find (parent) photoroll
-							photoroll = PhotoRoll.getFromChild(node);
+							photoroll = Gallery.getFromChild(node);
 						};
 						if (node.ancestor('ul') == hiddenShots_pr.container){
 							unbindNodes.push(node);
@@ -1648,15 +1650,15 @@
 						for (var k in audition.bindTo) {
 							var node = audition.bindTo[k];
 							if (/^uuid-/.test(node.get('id'))){
-								photoroll = PhotoRoll.getFromChild(node);
+								photoroll = Gallery.getFromChild(node);
 								return true;
 							};
 						}
 					});
 				}
 //				if (!photoroll) {
-//					photoroll = Y.one('div.element-roll.photo >ul.photo-roll');
-//					if (photoroll.PhotoRoll) photoroll = photoroll.PhotoRoll; 
+//					photoroll = Y.one('section.gallery.photo');
+//					if (photoroll.Gallery) photoroll = photoroll.Gallery; 
 //				}
 				
 				
@@ -1738,11 +1740,11 @@
 			try {
 				var selected, shotPhotoRoll;
 				selected = args.thumbnail.audition;
-				shotPhotoRoll = args.thumbnail.ancestor('ul.hiddenshots').PhotoRoll;
+				shotPhotoRoll = args.thumbnail.ancestor('ul.hiddenshots').Gallery;
 				var bestShot = selected.Audition.Substitutions.best;
 				// confirm showHidden bestShot is in main photoroll
 				if (bestShot !== selected) {
-					var photoroll = SNAPPI.Y.one('ul.photo-roll').PhotoRoll;
+					var photoroll = SNAPPI.Y.one('section.gallery.photo').Gallery;
 					// splice into original location
 					var result = photoroll.auditionSH.replace(bestShot, selected);
 					if (result) {
@@ -1922,7 +1924,6 @@
     			                    var audition = subAuditionSH.first();
     			                    var shot = audition.Audition.Substitutions;
     			                    shot.stale = shot._sh.count() != audition.Audition.Shot.count ;
-    			                    var content = SNAPPI.Y.Node.create('<ul />');
     			                    // adjust dialog size to fit hiddenShots
     			                    var cells = shot._sh.count() > 6 ? {w:4,h:3} : {w:3,h:2}; 
     			                    var offsets = args.dialog.cellOffsets;
@@ -1931,8 +1932,8 @@
     			                    	width: cells.w * offsets.cellSize.w + offsets.boundingBoxOffset.w,
     			                    	height: cells.h * offsets.cellSize.h + offsets.boundingBoxOffset.h
     			                    })
-    			                    var shotPr = _showHiddenShots.call(this, content, shot, args.selected);
-    			                    return content;
+    			                    var shotPr = _showHiddenShots.call(this, null, shot, args.selected);
+    			                    return shotPr.node;
     							}
     						}					
     					}
@@ -2020,5 +2021,5 @@
     /*
      * make global
      */
-    SNAPPI.PhotoRoll = PhotoRoll;
+    SNAPPI.Gallery = Gallery;
 })();

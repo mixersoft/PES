@@ -1,8 +1,4 @@
-<div class="users photos">
-	<div id='paging-photos'>
-		<?php echo $this->element('/photo/roll');?>
-	</div>
-</div>
+<?php echo $this->element('/photo/roll');?>
 
 <?php $this->Layout->blockStart('relatedContent');?>
 <aside id="related-content" class="container_16">		    	

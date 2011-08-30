@@ -71,14 +71,14 @@ var initOnce = function() {
 	detach = SNAPPI.Y.on('snappi:lightbox-afterLoad',
 			function(){
 				detach.detach();
-				var count = this.PhotoRoll.auditionSH.size();
-				SNAPPI.Y.one('#lightbox ul.photo-roll').setStyles(
+				var count = this.Gallery.auditionSH.size();
+				this.Gallery.container.setStyles(
 						{
 							'overflow-x':'scroll',
 							'height':'132px',
 							'width': count * 132 + 'px'
 						});
-				SNAPPI.Y.one('#lightbox ul.photo-roll div.thumb > img').addClass('drag');
+				SNAPPI.Y.one('#lightbox .FigureBox figure > img').addClass('drag');
 	            SNAPPI.Y.all('img.drag').each(function(n, i, l){
 					SNAPPI.DragDrop.pluginDrag(n);
 				}, this);

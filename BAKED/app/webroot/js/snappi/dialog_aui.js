@@ -1,3 +1,10 @@
+
+try {
+/*
+ * safari seems to crash when initializing this block, 
+ * try-catch seems to stop crash
+ */
+
 (function(){
 var BUTTONS_OK_CANCEL = [{
 			text: 'OK',
@@ -87,3 +94,8 @@ var DEFAULT_CFG_io = {
 	
 	SNAPPI.Dialog = Dialog;
 })();
+
+
+} catch (e) {
+	var check;
+}

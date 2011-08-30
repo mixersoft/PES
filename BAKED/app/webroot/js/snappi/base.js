@@ -39,7 +39,7 @@
     SNAPPI.debug_showNodes = function() {
         if (SNAPPI.DEBUG) {
 	        SNAPPI.Y.all('#content div, .FigureBox').each(function (n,i,l) {
-	        	if (n.Rating || n.audition || n.PhotoRoll || n.Lightbox || n.Thumbnail) {
+	        	if (n.Rating || n.audition || n.Gallery || n.Lightbox || n.Thumbnail) {
 	        		n.dom().yNode = n.ynode();
 	        	}
 	        });

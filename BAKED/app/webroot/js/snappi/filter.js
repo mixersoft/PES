@@ -18,7 +18,7 @@
  *
  * @author Michael Lin, info@snaphappi.com
  *
- * Filter: filter component for filtering PhotoRoll results
+ * Filter: filter component for filtering Gallery results
  *
  */
 (function(){
@@ -138,16 +138,20 @@
     	
     	/*
     	 * XHR load into #paging-photos
+    	 * @deprecated
     	 */    	
     	byRatingXhr: function(v, target) {
-    		SNAPPI.filter.active.Rating = v;
-    		var parent = Y.one('#'+target).ancestor('div#paging-photos-inner').get('parentNode');
-    		SNAPPI.filter.container = parent;
-    		SNAPPI.filter.fetchFilteredXhr.call(SNAPPI.filter);	// set this context 
+    		if (console) console.warn("SNAPPI.filter.byRatingXhr should be deprecated");
+    		return;
     		
-    		// set state to ShowRatings
-    		var pr = parent.one('ul.photo-roll').dom().PhotoRoll;
-    		pr.toggleRatings(parent.one('li#show-ratings'), 'show');
+    		// SNAPPI.filter.active.Rating = v;
+    		// var parent = Y.one('#'+target).ancestor('div#paging-photos-inner').get('parentNode');
+    		// SNAPPI.filter.container = parent;
+    		// SNAPPI.filter.fetchFilteredXhr.call(SNAPPI.filter);	// set this context 
+//     		
+    		// // set state to ShowRatings
+    		// var pr = parent.one('section.gallery.photo').Gallery;
+    		// pr.toggleRatings(parent.one('li#show-ratings'), 'show');
     	},
     	fetchFilteredXhr: function(cfg, target){
     		cfg = cfg || this.active;

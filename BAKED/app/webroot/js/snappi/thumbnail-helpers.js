@@ -105,7 +105,7 @@
 		listen : function(container, status) {
 			var Y = SNAPPI.Y;
 			status = (status == undefined) ? true : status;
-			container = container || 'ul.photo-roll';
+			container = container || 'section.gallery.photo > div';
 			if (status) {
 				// listen
 				Y.all(container).each( function(n) {

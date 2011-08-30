@@ -81,12 +81,8 @@
 				_showSubstitutesCSS = new Y.StyleSheet('hideSubstitutes');
 				_showSubstitutesCSS.disable();
 				_showSubstitutesCSS.set(
-						'ul.photo-roll > .Figurebox.hiddenshot-hide', {
+						'section.gallery.photo > div > .Figurebox.hiddenshot-hide', {
 							display : 'block'
-						});
-				_showSubstitutesCSS.set(
-						'ul.photo-roll > .Figurebox.hiddenshot-show > img', {
-							border : '1px solid red'
 						});
 			}
 			Thumbnail.hideSubstitutes = value;
@@ -182,7 +178,7 @@
 					// don't attach Rating for sq~ (small) thumbnails
 				} else {
 					// attach Rating
-	            	photoroll = photoroll || SNAPPI.PhotoRoll.getFromDom(node);
+	            	photoroll = photoroll || SNAPPI.Gallery.getFromDom(node);
 	            	SNAPPI.Rating.pluginRating(photoroll, node.Thumbnail, node.audition.rating);
 	            	// attach Score
 	            	if (score !== undefined) {
@@ -329,7 +325,8 @@
 			 * legacy methods
 			 */
 			makeSubstitutionGroupsDroppable : function(value) {
-				Y.all('#content  > ul.photo-roll').each(function(ul) {
+				if (console) console.warn("deprecate: makeSubstitutionGroupsDroppable()")
+				Y.all('section.gallery.photo > div').each(function(ul) {
 					if (value) {
 						SNAPPI.DragDrop.pluginDrop(ul);
 					} else {
@@ -339,9 +336,7 @@
 						 * conversion
 						 */
 						ul.dom().node.unplug('drop'); // have to
-						// lookup the
-						// _plugin
-						// property
+						// TODO: has this bug been fixed in yui???? lookup the _plugin property
 					}
 				});
 			},

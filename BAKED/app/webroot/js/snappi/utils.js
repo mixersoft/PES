@@ -238,7 +238,7 @@
 			// switch (sectionId) {
 			// case "paging-photos":
 			// sh = SNAPPI.auditions.auditionSH;
-			// ul = Y.one('ul.photo-roll');
+			// ul = Y.one('section.gallery.photo > div');
 			// }
 			// /*
 			// * get display paging details, check if we can fill the request
@@ -350,9 +350,9 @@
 		var CCid, mainPR;
 		try {
 			if (o instanceof SNAPPI.Lightbox) {
-				mainPR = SNAPPI.Y.one('div.element-roll.photo ul.photo-roll').dom().PhotoRoll;
+				mainPR = SNAPPI.Y.one('section.gallery.photo').Gallery;
 			} else {
-				mainPR = (o instanceof SNAPPI.PhotoRoll) ? o :  o.dom().PhotoRoll;
+				mainPR = (o instanceof SNAPPI.Gallery) ? o :  o.dom().Gallery;
 			}
 			CCid = mainPr.castingCall.CastingCall.ID;
 		} catch (e) {
@@ -363,7 +363,7 @@
 	/**
 	 * Add auditions to Shot 
 	 * 	* keep Shot.count accurate
-	 * @param photoRoll instance of SNAPPI.PhotoRoll,  the photoRoll to update, 
+	 * @param photoRoll instance of SNAPPI.Gallery,  the photoRoll to update, 
 	 * 		- not sure if this is required. it might update master List  
 	 * @param shotCfg { shotId, bestshotId}  uuids
 	 * @param auditionREFs array - [auditionId,...] or [{idref: auditionId}, ...] 
@@ -447,7 +447,7 @@
 					var check;
 				}
 			};
-			var pr = (this instanceof SNAPPI.Lightbox) ? this.PhotoRoll : this;
+			var pr = (this instanceof SNAPPI.Lightbox) ? this.Gallery : this;
 			SNAPPI.io.post.call(this, uri, data, post_callback, {photoRoll:pr});
 			return;
 		},
@@ -470,7 +470,7 @@
 					var check;
 				}
 			};
-			var pr = (this instanceof SNAPPI.Lightbox) ? this.PhotoRoll : this;
+			var pr = (this instanceof SNAPPI.Lightbox) ? this.Gallery : this;
 			SNAPPI.io.post.call(this, uri, data, post_callback, {photoRoll:pr});		
 		},
 		postRemoveFromShot : function (aids, callback) {
@@ -512,7 +512,7 @@
 					var check;
 				}
 			};
-			var pr = (this instanceof SNAPPI.Lightbox) ? this.PhotoRoll : this;
+			var pr = (this instanceof SNAPPI.Lightbox) ? this.Gallery : this;
 			SNAPPI.io.post.call(this, uri, data, post_callback, {photoRoll:pr});		
 		}		
 	};

@@ -251,8 +251,6 @@
 		processDrop : function(nodeList, onComplete) {
 			var Y = SNAPPI.Y;
 			var saveToSession = true;
-			var n = nodeList.item(0).ancestor('div#paging-photos')
-					|| nodeList.item(0).ancestor('div.element-roll.photo');
 			
 			var LIMIT = _LIGHTBOX_LIMIT;
 			if (SNAPPI.STATE.selectAllPages) {
@@ -280,28 +278,28 @@
 				 * process dropped items only
 				 */
 				// current lightbox photoroll count
-				if (!this.PhotoRoll) {
+				if (!this.Gallery) {
 		            /**
-		             * NEW codepath to create PhotoRoll from castingCall
+		             * NEW codepath to create Gallery from castingCall
 		             */
 					// use castingCall from drop source
 		            var cfg = {
 		            	ID_PREFIX: this._cfg.ID_PREFIX,	
-		            	container:  this.node.one('ul.photo-roll'), 
+		            	container:  this.node.one('section.gallery.photo'), 
 		            	size : 'sq',
 		            	addClass : 'lbx-tiny',
 			            end: null                		
 		            };
-		            this.PhotoRoll = new SNAPPI.PhotoRoll(cfg);
-		            this.PhotoRoll.listen(true, ['MultiSelect']);
+		            this.Gallery = new SNAPPI.Gallery(cfg);
+		            this.Gallery.listen(true, ['MultiSelect']);
 				}	
 				// nodeList of img from drag-drop
 				nodeList.each(function(n, i, l) {
 					var audition = n.ancestor('.FigureBox').dom().audition;
-					this.PhotoRoll.auditionSH.add(audition);
+					this.Gallery.auditionSH.add(audition);
 				}, this);
 				
-	            var lastLI = this.PhotoRoll.render( {
+	            var lastLI = this.Gallery.render( {
 					page : 1,
 					perpage : LIMIT
 				});
@@ -312,14 +310,14 @@
 		},
 		getSelected : function() {
 			var auditionSH,			// return sortedHash, allows auditionSH.each() maintains consistency
-			batch = this.node.all('ul.photo-roll > .FigureBox.selected');
+			batch = this.node.all('.FigureBox.selected');
 		
 			if (batch.size() == 0){ 
 				// get all assetIds in lightbox, this is the most common use case 
-				if(this.PhotoRoll == undefined){ // just initialized, no photos have ever been dragged to lightbox
+				if(this.Gallery == undefined){ // just initialized, no photos have ever been dragged to lightbox
 					return false;
 				}
-				auditionSH = this.PhotoRoll.auditionSH;
+				auditionSH = this.Gallery.auditionSH;
 				if(auditionSH.size() == 0){ // no photos in lightbox
 					return false;
 				}
@@ -332,27 +330,26 @@
 			return auditionSH;
 		},
         getFocus: function() {
-        	
-        	var batch;
-        	// to see if there's any selected items in the photo-roll in lightbox
-            batch = this.node.all('ul.photo-roll > li.focus');
-            if (batch.size() == 0) {
-            	// then we will check if there's any selected items in the photo-roll in paging-photos
-            	batch = Y.one('#paging-photos').all('ul.photo-roll > li.focus');
-            	if (batch.size() == 0){
-            		batch = this.node.all('ul.photo-roll > .FigureBox');
-            	}
-            };
-
+        	// TODO: is this method supposed to be the same as getSelected, but returning a NodeList?
+        	// to see if there's any focus items in the photo-roll in lightbox
+            var batch = this.node.all('.FigureBox.focus');
+            // if (batch.size() == 0) {
+            	// // then we will check if there's any selected items in the photo gallery
+            	// batch = Y.all('section.gallery.photo .FigureBox.focus');
+            	// if (batch.size() == 0){
+            		// // if none, then select everything in lightbox
+            		// // batch = this.node.all('.FigureBox');
+            		// batch = null;
+            	// }
+            // };
 			return batch;
-        	
 		},		
 		add : function(n, limit) {
 			var LIMIT = limit || 999;
 			var Y = SNAPPI.Y,
 				overflow = false,
-				ul = this.node.one('ul.photo-roll'),
-				_auditionSH = this.PhotoRoll.auditionSH;
+				ul = this.Gallery.container,
+				_auditionSH = this.Gallery.auditionSH;
 			
 			if (n instanceof Y.NodeList) {
 				n.some(function(node,i,l){
@@ -373,7 +370,7 @@
 				}, this);
 			} else {
 				// from drag/drop, the original nodeList is IMG elements
-				// TODO: using temp lightbox.PhotoRoll.castingCall. deprecate when schemaParser is passed with audition
+				// TODO: using temp lightbox.Gallery.castingCall. deprecate when schemaParser is passed with audition
 				if (!Y.Lang.isArray(n)) {
 					n = [ n ];
 				}
@@ -399,14 +396,14 @@
 			try{
 				node.remove(); // remove DOM
 				this.removeNodeFromBindTo(node); // update bindTo
-				// remove from lightbox PhotoRoll
-				this.PhotoRoll.auditionSH.remove(node.dom().audition);
+				// remove from lightbox Gallery
+				this.Gallery.auditionSH.remove(node.dom().audition);
 			} catch (e) {
 			}
 		},
 		setThumbsize : function (size) {
 			var oldsize = null;
-			this.node.all('ul.photo-roll > .FigureBox'). each(
+			this.Gallery.container.all('.FigureBox'). each(
 				function(n, i, l) {
 					if (oldsize == null) {
 						var haystack = n.getAttribute('class');
@@ -454,15 +451,15 @@
 						var check;
 					}
 				};			
-			if (this.PhotoRoll.auditionSH.size()){
+			if (this.Gallery.auditionSH.size()){
 				var auditionIds = [], selectedIds = [];
-				this.PhotoRoll.auditionSH.each(
+				this.Gallery.auditionSH.each(
 						function(audition) {
 							auditionIds.push(audition.id);
 						}, this
 				);
 				
-				this.PhotoRoll.container.all('.FigureBox.selected').each(
+				this.Gallery.container.all('.FigureBox.selected').each(
 						function(n,i,l){
 								selectedIds.push(this.stripIdPrefix(n.get('id')));
 						}, this
@@ -502,7 +499,7 @@
 			SNAPPI.io.post.call(this, uri, postData, localCallback);
         },
         /*
-         * makes sure the auditions retrieved for lightbox are replaced by matching ones in PhotoRoll
+         * makes sure the auditions retrieved for lightbox are replaced by matching ones in Gallery
          * This should be automatic with parseCastingCall()
          */
         get_auditionSHfromCastingCall : function(castingCall, providerName) {
@@ -527,7 +524,7 @@
     		}catch(e){}
     		
     		try{	// restore lightbox innerHTML from JSON
-    			this.node.one('ul.photo-roll').addClass('hide');
+    			this.Gallery.container.addClass('hide');
     			if (PAGE.jsonData.lightbox.castingCall){
 					var castingCall = PAGE.jsonData.lightbox.castingCall;
 					// render castingCall in Lightbox
@@ -545,12 +542,12 @@
 					this.node.setAttribute('style','');
 					this.node.addClass('full-page');
     			}     
-    			this.node.one('ul.photo-roll').removeClass('hide');
+    			this.Gallery.container.removeClass('hide');
     		}catch(e){
-    			this.node.one('ul.photo-roll').removeClass('hide');
+    			this.Gallery.container.removeClass('hide');
     		}
     		
-//    		if (!waitForCallback) this.node.one('ul.photo-roll').removeClass('hide');
+//    		if (!waitForCallback) this.Gallery.container.removeClass('hide');
     		
     		
     		// restore lightbox visible from JSON
@@ -592,15 +589,15 @@
 			// get auditions from castingCall
 			var parsedCastingCall_AuditionSH = this.get_auditionSHfromCastingCall(castingCall);
 			
-			if (!this.PhotoRoll) {
+			if (!this.Gallery) {
 	            /**
-	             * NEW codepath to create PhotoRoll from castingCall
+	             * NEW codepath to create Gallery from castingCall
 	             */
 				// use castingCall from drop source
-//						var pr = nodeList.item(0).ancestor('ul.photo-roll').dom().PhotoRoll;
+//						var pr = nodeList.item(0).ancestor('section.gallery.photo').Gallery;
 	            var cfg = {
 	            	ID_PREFIX: this._cfg.ID_PREFIX,	
-	            	container:  this.node.one('ul.photo-roll'), 
+	            	container:  this.node.one('section.gallery.photo'), 
 	            	shots: castingCall.shots,
 		            end: null                		
 	            };
@@ -617,16 +614,16 @@
 	            		cfg.hideSubstituteCSS = true;
 		            	break;
 	            };
-	            this.PhotoRoll = new SNAPPI.PhotoRoll(cfg);			// does NOT render here
-	            this.PhotoRoll.listen(true, ['MultiSelect']);	
+	            this.Gallery = new SNAPPI.Gallery(cfg);			// does NOT render here
+	            this.Gallery.listen(true, ['MultiSelect']);	
 			}
 			
-			// add new auditions to existing PhotoRoll.auditionSH
+			// add new auditions to existing Gallery.auditionSH
 			parsedCastingCall_AuditionSH.each(function(audition){
-				this.PhotoRoll.auditionSH.add(audition);
+				this.Gallery.auditionSH.add(audition);
 			}, this);
 			
-            this.PhotoRoll.render( {
+            this.Gallery.render( {
 				page : 1,
 				perpage : LIMIT
 			});        	
@@ -664,14 +661,14 @@
                         
 		clear : function() {
         	// NOTE: in this method, we do NOT want to use getSelected();
-			var set = this.node.all('ul.photo-roll > .FigureBox.selected');
+			var set = this.Gallery.container.all('.FigureBox.selected');
 			if (set.size() == 0) {
 				var ret = confirm('Are you sure you want to clear all?');
 				if (!ret) {
 					return; // cancel clear All
 				}
-				this.PhotoRoll.auditionSH.clear();	// remove all audition from lightbox.PhotoRoll
-				set = this.node.all('ul.photo-roll > .FigureBox');  // remove all visible thumbnails from lightbox
+				this.Gallery.auditionSH.clear();	// remove all audition from lightbox.Gallery
+				set = this.Gallery.container.all('.FigureBox');  // remove all visible thumbnails from lightbox
 			}
 
 			set.each(function(n, i, l) {
@@ -679,7 +676,7 @@
 			}, this);
 			this.save();
 			
-            this.PhotoRoll.render();  
+            this.Gallery.render();  
 
 			/*
 			 * fire custom event
@@ -706,7 +703,7 @@
 			} catch (e) {}
 		},
 		selectAll : function() {
-			SNAPPI.multiSelect.selectAll(this.node.one('ul.photo-roll'));
+			SNAPPI.multiSelect.selectAll(this.Gallery.container);
 		},
 		groupAsShot : function() {
 			var post_aids = [],
@@ -718,7 +715,7 @@
 			var callback = {
 				complete : function(shot, resp) {
 					try {
-						this.PhotoRoll.applyShotCSS(shot);	// do we want to see CSS in lightbox?
+						this.Gallery.applyShotCSS(shot);	// do we want to see CSS in lightbox?
 						// remove hidden subs from lightbox
 						this.node.all('li.hiddenshot-hide').each(function(n,i,l){
 							this.remove(n);
@@ -813,8 +810,8 @@
 		},
 		applyRatingInBatch : function(v) {
 			// toggle show Ratings on existing photoRoll
-			var pr = Y.one('div.element-roll.photo > ul.photo-roll');
-			if (pr && pr.dom().PhotoRoll) pr.dom().PhotoRoll.toggleRatings(null, 'show');
+			var pr = Y.one('section.gallery.photo > div');
+			if (pr && pr.Gallery) pr.Gallery.toggleRatings(null, 'show');
 			
 			var self;
 			if (this && this.applyRatingInBatch)
@@ -1329,7 +1326,7 @@
 			var uri = defaultCfg.GET_CASTINGCALL_URI;
 	
 			var aid, assetIds = new Array();
-			this.node.all('ul.photo-roll > li').each(function(n, i, l) {
+			this.Gallery.container.all('.FigureBox').each(function(n, i, l) {
 				aid = n.get('id').replace(this._cfg.ID_PREFIX, '');
 				assetIds.push(aid);
 			}, this);
@@ -1456,7 +1453,7 @@
 		    });
 		},
         showThumbnailRatings : function(node){
-			var pr = node || this.PhotoRoll;
+			var pr = node || this.Gallery;
             var thumbs = pr.container.all('.FigureBox');
             thumbs.each(function(n){
             	if (n.hasClass('hide')) return;
@@ -1473,7 +1470,7 @@
             SNAPPI.debug_showNodes();
         },
         hideThumbnailRatings : function(node){
-        	var pr = node || this.PhotoRoll;
+        	var pr = node || this.Gallery;
             var thumbs = pr.container.all('.FigureBox');
             pr.container.all('div.ratingGroup').addClass('hide');
             pr.container.all('div.thumb-label').removeClass('hide');
