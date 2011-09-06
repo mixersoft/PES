@@ -275,7 +275,7 @@
 			var msgNode = Y.one('#content > div.message');
 			if (!msgNode) {
 				var tokens = {
-					class : 'message',
+					'class' : 'message',
 					id : 'flashMessage'
 				};
 				var flashMsg = msgNode.create(

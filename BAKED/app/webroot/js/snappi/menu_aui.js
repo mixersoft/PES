@@ -94,11 +94,12 @@ var DEFAULT_CFG_contextmenu = 	{
 				'menu-header-markup': SNAPPI.STATE.controller.userid,	// authenticated
 				end: 0
 		};
-		menus = SNAPPI.Y.merge(defaultMenus, menus);
+		menus = Y.merge(defaultMenus, menus);
 		for (var i in menus) {
 			var CSS_ID = menus[i] ? i : null; 
+			var cfg = Y.Lang.isObject(menus[i]) ? menus[i] : null;
 	    	if (CSS_ID && !SNAPPI.MenuAUI.find[CSS_ID]) {
-	    		SNAPPI.MenuAUI.CFG[CSS_ID].load();
+	    		SNAPPI.MenuAUI.CFG[CSS_ID].load(cfg);
 	    	}			
 		}
 	};	
@@ -231,7 +232,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		var hasPhotoroll = false, 
 			found = target.ancestor(
 				function(n){
-					hasPhotoroll = n.Gallery || n.dom().Gallery ||  (n.dom().Lightbox && n.dom().Lightbox.Gallery) || null; 
+					hasPhotoroll = n.Gallery || n.Gallery ||  (n.Lightbox && n.Lightbox.Gallery) || null; 
 					return hasPhotoroll;
 				}, true );
 		return hasPhotoroll;
@@ -255,6 +256,23 @@ var DEFAULT_CFG_contextmenu = 	{
 			r.thumbnail = thumbnail;
 		}
 	};
+
+	MenuItems.batch_rating_beforeShow = function(menuItem, menu){
+		if (!menuItem.Rating) {
+			// add new rating group as LI > DIV
+			var cfg = {
+				v : 0,
+				uuid : false,
+				'applyToBatch' : SNAPPI.lightbox.applyRatingInBatch
+			};
+			SNAPPI.Rating.attach(menuItem, cfg);			
+			menuItem.Rating.node.set('id', 'lbx-rating-group');
+			SNAPPI.Rating.startListeners(menuItem);
+		} else {
+			menuItem.Rating.render(0);
+		}
+	};
+		
 	
 	MenuItems.showHiddenShot_beforeShow = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
@@ -421,7 +439,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	 * MenuCfgs
 	 */
 	
-	var CFG_Menu_Header = function(){}; CFG_Menu_Header.prototype = {};	
+	var CFG_Menu_Header = function(){}; 
 	/**
 	 * load user shortcuts menu
 	 * @param cfg
@@ -455,7 +473,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		return Menu.getMarkup(MARKUP , callback);
 	};	
 	
-	var CFG_Menu_Pagemaker_Create = function(){}; CFG_Menu_Pagemaker_Create.prototype = {};	
+	var CFG_Menu_Pagemaker_Create = function(){}; 
 	/**
 	 * load Create menu for making PageGalleries from Selected
 	 * @param cfg
@@ -470,7 +488,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		};
 		cfg = Y.merge(defaultCfg, cfg);
 		var CSS_ID = 'menu-pagemaker-selected-create-markup';
-		var TRIGGER = '#createBtn';
+		var TRIGGER = cfg.trigger || '#createBtn';
 		var MARKUP = {
 			id: CSS_ID,
 			selector: '#'+CSS_ID,
@@ -489,7 +507,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		return Menu.getMarkup(MARKUP , callback);
 	};	
 	
-	var CFG_Context_Photoroll = function(){}; CFG_Context_Photoroll.prototype = {};	
+	var CFG_Context_Photoroll = function(){}; 
 	/**
 	 * load Header menu 
 	 * @param cfg
@@ -522,7 +540,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	
 	
 	
-	var CFG_Context_HiddenShot = function(){}; CFG_Context_HiddenShot.prototype = {};	
+	var CFG_Context_HiddenShot = function(){}; 
 	/**
 	 * load Gallery contextmenu for HiddenShots .thumbnail
 	 * @param cfg
@@ -550,6 +568,39 @@ var DEFAULT_CFG_contextmenu = 	{
 	};
 	
 	
+	var CFG_Menu_Lightbox_Organize = function(){}; 
+	/**
+	 * load organize menu for lightbox
+	 * @param cfg
+	 * @return
+	 */
+	CFG_Menu_Lightbox_Organize.load = function(cfg){
+		var Y = SNAPPI.Y;
+		var defaultCfg = {
+			showOn: 'click',	
+			align: { points:['bl', 'tl'] },
+			init_hidden: true
+		};
+		cfg = Y.merge(defaultCfg, cfg);
+		var CSS_ID = 'menu-lightbox-organize-markup';
+		var TRIGGER = cfg.trigger || 'section#lightbox ul.menu-trigger li.organize';
+		var MARKUP = {
+			id: CSS_ID,
+			selector: '#'+CSS_ID,
+			container: Y.one('#markup'),
+			uri: '/combo/markup/lightboxOrganizeMenu',
+			end: null
+		};
+		
+		// reuse, if found
+		if (Menu.find[CSS_ID]) 
+			return Menu.find[CSS_ID];
+
+		var callback = function(){
+			Menu.initContextMenu(MARKUP, TRIGGER, cfg);
+		};
+		return Menu.getMarkup(MARKUP , callback);
+	};		
 	
 	// SNAPPI.MenuAUI
 	Menu.CFG = {
@@ -557,6 +608,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		'contextmenu-photoroll-markup': CFG_Context_Photoroll,
 		'contextmenu-hiddenshot-markup': CFG_Context_HiddenShot,
 		'menu-pagemaker-selected-create-markup': CFG_Menu_Pagemaker_Create, 
+		'menu-lightbox-organize-markup': CFG_Menu_Lightbox_Organize,
 		end: null
 	};
 	

@@ -72,7 +72,7 @@
 		var eventString = 'snappi:ratingChanged';
 		if (!Rating.listen[eventString]) {
 			Rating.listen[eventString] = Y.on(eventString, function(r){
-				r.loadingmask.hide();
+				r.node.loadingmask.hide();
 			});		
 		}		
 		Rating.doClassInit = false;
@@ -91,33 +91,21 @@
 		_ratingCSS.enable();
 	};
 
-	Rating.postRatingChangeAndCleanup = function(v, uuid) {
-			// plugin loading mask then call XHR POST
-			if (!this.loadingmask) {
-				this.plug(Y.LoadingMask, {
-					strings: {loading:''}, 	// BUG: A.LoadingMask
-//					target: this.get('parentNode'),
-					end: null
-				});
-				// BUG: A.LoadingMask does not set target properly
-				this.loadingmask._conf.data.value['target'] = this.get('parentNode');
-				this.loadingmask.overlayMask._conf.data.value['target'] = this.loadingmask._conf.data.value['target'];
-			}
-			this.loadingmask.show();
-			// check if we are in the HiddenShots dialog
-			// if so, updateBestshot
-			var options = {};
-			if (this.ancestor('ul.hiddenshots')) {
-				options.updateBestshot = 1;
-			} else if (this.get('id')=='menuItem-contextRatingGrp') {
-				options = {
-					thumbnail: this.Rating.thumbnail,
-					updateBestshot: 1
-				};
-			}
-			SNAPPI.AssetRatingController.postRating.call(this.Rating, v, uuid, options);
-			return;
-		};	
+	Rating.postRatingChangeAndCleanup = function(v, r) {
+		// check if we are in the HiddenShots dialog
+		// if so, updateBestshot
+		var options = {};
+		if (r.node.ancestor('section.gallery.hiddenshots')) {
+			options.updateBestshot = 1;
+		} else if (r.node.get('id')=='menuItem-contextRatingGrp') {
+			options = {
+				thumbnail: r.thumbnail,
+				updateBestshot: 1
+			};
+		}
+		SNAPPI.AssetRatingController.postRating(v, null, r, options);
+		return;
+	};	
 	Rating.pluginRating = function(container, mixed, v) {
 		var thumbnail, uuid;
 		if (mixed instanceof SNAPPI.Thumbnail) {
@@ -205,6 +193,7 @@
 				ratingGroup.setAttribute('uuid', _cfg.uuid);
 				SNAPPI.Auditions.bind(parent, _cfg.uuid); 
 			}
+			if (_cfg.id) ratingGroup.set('id', _cfg.id);
 			var r = new SNAPPI.Rating(_cfg);
 			if (_cfg.applyToBatch)
 				r.applyToBatch = _cfg.applyToBatch;
@@ -217,19 +206,31 @@
 	};
 	Rating.handleClick = function(e) {
 		var r = e.target.Rating;
-		// r.onClick(_getStarValueFromEvent(ev));
-		// return;
+		
+		// plugin loading mask then call XHR POST
+		if (!r.node.loadingmask) {
+			r.node.plug(Y.LoadingMask, {
+				strings: {loading:''}, 	// BUG: A.LoadingMask
+//					target: r.node,
+				end: null
+			});
+			// BUG: A.LoadingMask does not set target properly
+			r.node.loadingmask._conf.data.value['target'] = r.node;
+			r.node.loadingmask.overlayMask._conf.data.value['target'] = r.node.loadingmask._conf.data.value['target'];
+		}
+		r.node.loadingmask.show();
+					
+		// post rating value
 		if (r.getValue() == 0 || r.rerate) {
 			var v = _getStarValueFromEvent(e);
 			if (r.applyToBatch && Y.Lang.isFunction(r.applyToBatch)) {
-				r.applyToBatch(v);
+				r.applyToBatch(v, r.node);			
 			} else if (r.setDbValueFn && Y.Lang.isFunction(r.setDbValueFn)) {
 				// var silent = silent || false;
-				var uuid = r.node.getAttribute('uuid') || r.node.get('id');
 				/*
 				 * set by DataElement, fires onChange event
 				 */
-				r.setDbValueFn.call(r.node, v, uuid);
+				r.setDbValueFn(v, r);
 			} else {
 				r.render(v);
 			}
@@ -333,7 +334,7 @@
 		 * @param value
 		 * @param silent if TRUE, do not update DB, just render new value 
 		 */
-		onClick : function(value, silent) {
+		xxxonClick : function(value, silent) {
 			silent = silent || false;
 			if (!silent && this.setDbValueFn) {
 				var uuid = this.node.getAttribute('uuid')
@@ -439,44 +440,41 @@
 	AssetRatingController.prototype = {
 	};
 
-	AssetRatingController.postRating = function(value, id, options) {
-			var node = this;
-			if (this instanceof SNAPPI.Rating) {
-				node = this.node;
-			}
-			id = id || node.getAttribute('uuid');
+	AssetRatingController.postRating = function(value, ids, r, options) {
+		// r = SNAPPI.Rating, node = r.node. for cleanup of loadingMask?
+			var node = r.node;
+			ids = ids || r.id;
 			
 			var uri = "/photos/setprop/.json";
 			var data = {
-				'data[Asset][id]' : id,
+				'data[Asset][id]' : ids,
 				'data[Asset][rating]' : value
 			};
 			if (options && options.updateBestshot) {
 				data['data[updateBestshot]'] = 1;
 			}
 	
-			var closure = {
-				node : node,
-				rating : value
-			};
+			// var closure = {
+				// node : node,
+				// rating : value
+			// };
 	
 			var callback = {
 				complete : function(id, o, args) {
 	
 					if (o.responseJson && o.responseJson.success == 'true') {
 						var msg = o.responseJson.message;
-						if (SNAPPI.timeout && SNAPPI.timeout.flashMsg) {
-							SNAPPI.timeout.flashMsg.cancel();
-						}
+						// if (SNAPPI.timeout && SNAPPI.timeout.flashMsg) {
+							// SNAPPI.timeout.flashMsg.cancel();
+						// }
 						// SNAPPI.flash.flash(msg); // don't flashMsg on success.
-						SNAPPI.AssetRatingController.onRatingChanged(closure.node,
-								closure.rating);
+						SNAPPI.AssetRatingController.onRatingChanged(r,	value);
 						 
 						try {
 							var audition, shotPhotoRoll;
 							try {
-								audition = closure.node.ancestor('.FigureBox').audition;
-								shotPhotoRoll = closure.node.ancestor('ul.hiddenshots').Gallery;
+								audition = r.node.ancestor('.FigureBox').audition;
+								shotPhotoRoll = r.node.ancestor('ul.hiddenshots').Gallery;
 							} catch (e) {
 								audition = options.thumbnail.audition;
 								shotPhotoRoll = options.thumbnail.ancestor('ul.hiddenshots').Gallery;
@@ -521,7 +519,7 @@
 		/**
 		 * update rating component, called after successful POST
 		 * TODO: should be using custom and ATTR events here
-		 * @param r Y.Node with r.Rating  
+		 * @param r instance of SNAPPI.Rating  
 		 * @param v new rating value
 		 * @return
 		 */
@@ -562,40 +560,39 @@
 				}
 			};
 
-			// get audition from ratingGroup
-			switch (r.get('id')) {
-			case 'lbx-rating': // apply rating to lightbox.getSelected()
-				// event handler div#lightbox > ul.toolbar > li#lbx-rating
-				var batch = r.ancestor('#lightbox').dom().Lightbox.getSelected();
+			// get audition from parent of ratingGroup
+			switch (r.node.get('id')) {
+			case 'lbx-rating-group': // apply rating to lightbox.getSelected()
+				// r = #lbx-rating-group.ratingGroup
+				var batch = SNAPPI.lightbox.getSelected();
 				batch.each(function(audition) {
-					v = v || r.Rating.value;
+					v = v || r.value;
 					_updateRatingChange(audition, v);
-					r.Rating.render(v);	// r not listed in audition.bindTo
+					r.render(v);	// r not listed in audition.bindTo
 				}, this);
-				Y.fire('snappi:ratingChanged', r.one('#lbx_ratingGrp'));
+				Y.fire('snappi:ratingChanged', r);
 				break;
 			case "photos-home-rating": // rating for IMG.preview
 				try {
-					v = v || r.Rating.value;
-					var auditionSH = Y.one('div#neighbors > ul.filmstrip')
-							.dom().Gallery.auditionSH;
-					var audition = auditionSH.get(r.Rating.id);
+					v = v || r.value;
+					var auditionSH = Y.one('div#neighbors > ul.filmstrip').Gallery.auditionSH;
+					var audition = auditionSH.get(r.id);
 					_updateRatingChange(audition, v);
 				} catch (e) {
 				}
 				break;
 			case 'zoom_ratingGrp':
 				try {
-					var audition = r.ancestor('#snappi-zoomBox').dom().audition;
-					v = v || r.Rating.value;
+					var audition = r.node.ancestor('#snappi-zoomBox').dom().audition;
+					v = v || r.value;
 					_updateRatingChange(audition, v);
 				} catch (e) {
 				}
 				Y.fire('snappi:ratingChanged', r);
 				break;
 			case 'menuItem-contextRatingGrp': // right-click over .FigureBox
-				var audition = SNAPPI.Auditions._auditionSH.get(r.getAttribute('uuid'));
-				v = v || r.Rating.value;
+				var audition = SNAPPI.Auditions._auditionSH.get(r.id);
+				v = v || r.value;
 				_updateRatingChange(audition, v);
 				Y.fire('snappi:ratingChanged', r);
 				// hide contextMenu
@@ -604,9 +601,9 @@
 				break;
 			default: // photoRoll .FigureBox ratingGroup
 				try {
-					var tn = r.ancestor('.FigureBox').dom();
-					var audition = tn.dom().audition;
-					v = v || r.Rating.value;
+					var tn = r.node.ancestor('.FigureBox');
+					var audition = tn.audition;
+					v = v || r.value;
 					_updateRatingChange(audition, v);
 				} catch (e) {
 				}

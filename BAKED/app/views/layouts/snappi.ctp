@@ -59,7 +59,6 @@
 			<?php echo $this->Session->flash('email'); ?>
 		</div>
 		<?php echo $content_for_layout; ?>
-		<?php if (Configure::read('js.render_lightbox')) {echo $this->element('/lightbox'); }?>
 	</div>
 </section><!--body container ends-->
 <?php $this->Layout->output($relatedContent_for_layout); ?>
@@ -96,7 +95,7 @@
 	</script>	
 <?php $this->Layout->blockEnd();?>	
 
-<div id='markup' >
+<div id='markup'>
 	<div id="menu-header-markup" class="menu yui3-aui-overlaycontext-hidden hide">
 		<ul>
 			<li action='home' >
@@ -125,6 +124,14 @@
 			</li>
 		</ul>
 	</div>		
+	<div id="menu-lightbox-organize-markup" class="menu yui3-aui-overlaycontext-hidden hide">
+		<ul>
+			<li action='batch_rating' class='before-show'></li>
+			<li class='tag'>[tag]</li>
+			<li class='group-as-shot'>Group as Shot</li>
+		</ul>
+	</div>
+	<?php $this->Layout->output($this->viewVars['menuMarkup_for_layout']); ?>
 </div>		
 
 <div id="footer" class="container_16">

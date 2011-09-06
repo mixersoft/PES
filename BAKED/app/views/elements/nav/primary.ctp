@@ -42,7 +42,7 @@
 			<ul class="right rightlink">
 			<?php if ( AppController::$userid) { ?>
 				<li class="bg-grey"><img src="/css/images/plus-grey.png" alt="" align="absmiddle" class="add">
-					<a>Create&nbsp<img src="/css/images/arrow-down.png"  alt=""></a>
+					<a class='menu-open'>Create</a>
 				</li>
 				<li>
 					<span class="grey">Welcome,</span>

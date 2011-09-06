@@ -75,20 +75,20 @@
 			                //How many items are selected
 			                var count;
 			                try {
-			                    if (SNAPPI.STATE.selectAllPages && target.ancestor('section.gallery.photo')) {
+			                    if (SNAPPI.STATE.selectAllPages && target.ancestor('section.gallery')) {
 			                    	try {
 			                    		var pr=target.ancestor('section.gallery.photo').Gallery;
 			                    		count = pr.castingCall.CastingCall.Auditions.Total;
 			                    	} catch (e) {
-			                    		count = target.ancestor('ul').all('.FigureBox.selected').size();
+			                    		count = target.ancestor('section.gallery').all('.FigureBox.selected').size();
 			                    	}
 			                    }
 			                    else {
-			                        count = target.ancestor('ul').all('.FigureBox.selected').size();
+			                        count = target.ancestor('section.gallery').all('.FigureBox.selected').size();
 			                    }
 			                } 
 			                catch (e) {
-			                    count = target.ancestor('ul').all('.FigureBox.selected').size();
+			                    count = target.ancestor('section.gallery').all('.FigureBox.selected').size();
 			                }
 			                
 			                //Set the style on the proxy node, the count badge
@@ -113,9 +113,9 @@
              */
             handle = Y.DD.DDM.on('drag:drophit', function(e){
             	var toXY;
-            	var parent = e.target.get('node').ancestor('ul');
+            	var parent = e.target.get('node').ancestor('section.gallery');
                 //get the imgs of the selected LIs.
-                var imgs = parent.all('.FigureBox.selected img');
+                var imgs = parent.all('.FigureBox.selected > figure > img');
                 var dropTarget = e.drop.get('node');
                 
                 /*
@@ -142,13 +142,13 @@
                 	dragNode, lastLI;
                 var _clearSelected = function(nodeList){
                     nodeList.each(function(n, i, l){
-                        n.ancestor('li').removeClass('selected');
+                        n.ancestor('.FigureBox').removeClass('selected');
                     });
                 };
                 
-                if (dropTarget.dom && dropTarget.dom().Lightbox) {
+                if (dropTarget.Lightbox) {
                 	// add to Lightbox
-                	var lightbox = dropTarget.dom().Lightbox;
+                	var lightbox = dropTarget.Lightbox;
                 	try {
                 		dropTarget = lightbox.Gallery.container.all('.FigureBox').pop();
                 	}catch(e){

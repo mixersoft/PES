@@ -81,4 +81,7 @@ $isXhr = Configure::read('controller.isXhr');
 		}	// run from Y.on('domready') for HTTP request
 	</script>
 <?php $this->Layout->blockEnd();?> 
-<?php Configure::write('js.render_lightbox', true); ?>
+<?php $this->Layout->blockStart('lightbox'); 
+	echo $this->element('/lightbox'); 
+	$this->Layout->blockEnd();
+?> 

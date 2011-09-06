@@ -603,7 +603,7 @@
         var event;
         if (PAGE.jsonData.castingCall) event = 'snappi:afterPhotoRollInit';
         else if (PAGE.jsonData.lightbox) event = 'snappi:afterMain';
-        // SNAPPI.Lightbox.loadonce(null, event);
+        SNAPPI.Lightbox.loadonce(null, event);
         
         /*
          * filter bar

@@ -28,6 +28,7 @@
      */
     var defaultCfg = {
 		ID_PREFIX: 'uuid-',
+		node: 'div.gallery-container > section.gallery.photo',
 		hideSubstituteCSS: false,
 		size: 'lm',
 		start: null,
@@ -117,15 +118,15 @@
 	 * 	2) if shot.stale==true, use XHR to get substitutionGroup castingCall, then render (async)
 	 * 
 	 */ 
-	var _showHiddenShots = function(ul, shot, selected) {
+	var _showHiddenShots = function(node, shot, selected) {
 		var HIDDENSHOT_PREVIEW_LIMIT = 40;	// substitute roll preview LIMIT
 		if (shot) {
-            if (!ul && /photos\/home/.test(window.location.href)) {
+            if (!node && /photos\/home/.test(window.location.href)) {
             	// filmstrip not found,  build filmstrip
             	// TODO: move to a better place. we cannot assume we are on the /photos/home page here
             	var parent = SNAPPI.Y.one('div#hiddenshots');
-            	// ul = parent.create('<ul></ul>'); // class='filmstrip' or 'photo-roll'??
-                // parent.append(ul);
+            	// node = parent.create('<section.gallery.photo></section>'); // class='filmstrip' or 'photo-roll'??
+                // parent.append(node);
             }                
 
             // TODO: should add a more... link to see paging view of shot
@@ -142,7 +143,7 @@
 				end : Math.min(HIDDENSHOT_PREVIEW_LIMIT, total),
 				total : total,
 				uri : null,
-            	container: ul,
+            	node: node,
             	sh: shot._sh,
             	castingCall: {
 					providerName: this.castingCall.providerName,
@@ -175,18 +176,18 @@
         	// hide/unbind everything
 	        try {
 	        	// no shots, just hide div#hiddenshots and unbind nodes
-	        	if (ul.ancestor('div#hiddenshots')) { 
+	        	if (node.ancestor('div#hiddenshots')) { 
 	        		// hide substitute group, if we are on the /photos/home page
-	        		ul.all('li').addClass('hide').each(function(n,i,l){
+	        		node.all('li').addClass('hide').each(function(n,i,l){
 		        		SNAPPI.Auditions.unbind(n);
 	        		});
-	        	} else if (ul.ancestor('div#snappi-dialog')) { 
+	        	} else if (node.ancestor('div#snappi-dialog')) { 
 	        		// hide/unbind shots on selected blur?
 	        		// detach contextMenu listener
 	        	} 
 	        } catch (e) {}	        	
         }
-		SNAPPI.Y.fire('snappi:hideLoadingMask', ul);
+		SNAPPI.Y.fire('snappi:hideLoadingMask', node);
 		return shotPhotoRoll;
 	};	// end _showHiddenShots()    
 	
@@ -202,31 +203,33 @@
 
 			// container should be section.gallery.photo
 			var node;
-	        if (_cfg.container) {
+	        if (_cfg.node) {
 	        	try {
-	        		node = _cfg.container instanceof Y.Node ? _cfg.container : Y.one(_cfg.container);	
+	        		node = _cfg.node instanceof Y.Node ? _cfg.node : Y.one(_cfg.node);	
 	        		if (node.Gallery) {
 	        			this.container = node.Gallery.container;
 		        		var oldPhotoRoll = parent.Gallery;
 			            // TODO: what do we do here???
 		        		// reuse existing photoRoll??? or do we need to destroy?	        			
 	        		} else {
-	        			if (node.hasClass('gallery') && !node.one('div')) {
-	        				node.prepend('<div class="grid_16" />');
+	        			if (node.hasClass('gallery') && !node.one('div.container')) {
+	        				node.prepend('<div class="container grid_16" />');
 	        			}
-	        			this.container = node.one('div');
+	        			this.container = node.one('div.container');
 	        		}
 	        	} catch (e) {}
 	        }    
 	        if (!this.container) {
-	        	var MARKUP = '<section class="gallery photo container_16"><div class="grid_16" /></section>';
+	        	var MARKUP = '<section class="gallery photo container_16">'+
+	        					'<div class="container grid_16" />'+
+	        				'</section>';
 	        	node  = Y.Node.create(MARKUP);
 	        	if (cfg.isWide) node.addClass('wide');
 	        	this.container = node.one('div');
 	        }
 	        node.Gallery = this;
 	        node.Gallery.container.Gallery = this;	// is this necessary?
-	        delete _cfg.container;	// use this.container from this point forward
+	        delete _cfg.node;	// use this.container from this point forward
 	        
 	        this.providerName = _cfg.PROVIDER_NAME;
 	        if (_cfg.sh) {

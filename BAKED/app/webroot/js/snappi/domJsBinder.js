@@ -27,10 +27,10 @@
      * protected
      */
     var defaultCfg = {
-        lookAhead: 1, // don't lookahead for now
-        container: 'div.gallery-container > section.gallery.photo'
+        lookAhead: 1 // don't lookahead for now
     };
     // find only visible elements
+    // deprecate, moved to utils
     var isVisible = function(n){
         return !(n.hasClass('hidden') || n.hasClass('hide'));
     };
@@ -225,7 +225,7 @@
              * NEW codepath to create Gallery from castingCall
              */
            var filmstripCfg = {
-            	container: _cfg.node,
+            	node: _cfg.node,
             	castingCall: castingCall,
         		flimstripHalfsize: (init.length-1)/2,
 				ID_PREFIX: 'filmstrip-',
@@ -422,7 +422,7 @@
             var photoRoll = new SNAPPI.Gallery({
                 sh: castingCall.auditionSH,
                 shots:  castingCall.shots,
-                container: node
+                node: node
             });
             photoRoll.render(_cfg);
             if (!node.hasClass('filmstrip')) {
