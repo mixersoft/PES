@@ -447,13 +447,19 @@
 				switch (ioRequest.get('dataType')) {
 					case 'json':
 						o.responseJson = ioRequest.get('responseData');
-						if (typeof o.responseJson == "String") {
-							console.error('Plugin.IO.ParseContent() failed to parse json');
-						}
-						if (_callback.success){
-							var content = _callback.success.call(context, e, id, o, args);  
-            				if (content !== false ) ioRequest.setContent(content);
-            				e.stopImmediatePropagation();	// stopPropagation to prevent extra IORequest.setContent()
+						if (o.responseJson && o.responseJson.success == 'true') {
+							if (_callback.success){
+								var content = _callback.success.call(context, e, id, o, args);  
+	            				if (content !== false ) ioRequest.setContent(content);
+	            				e.stopImmediatePropagation();	// stopPropagation to prevent extra IORequest.setContent()
+							}
+						} else {
+							if (typeof o.responseJson == "String") {
+								console.error('Plugin.IO.ParseContent() failed to parse json');
+							}
+							if (_callback.failure){
+								_callback.failure.call(context, e, id, o, args);
+							} else SNAPPI.flash.flashJsonResponse(o);
 						}
 						break;
 					case 'xml':
@@ -467,7 +473,12 @@
 						}
 						break;
 					case 'html':	
-					case 'text':						
+					case 'text':	
+						if (_callback.success){
+							var content = _callback.success.call(context, e, id, o, args); 
+            				if (content !== false ) ioRequest.setContent(content);
+            				e.stopImmediatePropagation();	// stopPropagation to prevent extra IORequest.setContent()
+						}				
 					default:
 						console.error("Plugin.JsonIO: call to Plugin.JsonIO with no dataType set");
 						break;

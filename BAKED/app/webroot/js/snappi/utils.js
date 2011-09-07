@@ -366,14 +366,22 @@
 	 * @param photoRoll instance of SNAPPI.Gallery,  the photoRoll to update, 
 	 * 		- not sure if this is required. it might update master List  
 	 * @param shotCfg { shotId, bestshotId}  uuids
-	 * @param auditionREFs array - [auditionId,...] or [{idref: auditionId}, ...] 
+	 * @param options.aids = auditionREFs array - [auditionId,...] or [{idref: auditionId}, ...] 
+	 * 			options.shotType
 	 * @return shotId
 	 */	
-	ShotController.markSubstitutes_afterPostSuccess = function(photoRoll, shotCfg, auditionREFs) {
+	ShotController.markSubstitutes_afterPostSuccess = function(photoRoll, shotCfg, options) {
 		/*
 		 * local processing after successful POST add Substitution to CastingCall
 		 */
-		var shotType = photoRoll.castingCall.CastingCall.Auditions.ShotType;
+		var shotType, auditionREFs = options.aids;
+		try {
+			shotType = photoRoll.castingCall.CastingCall.Auditions.ShotType;
+		} catch (e) {
+			// for lightbox.Gallery,
+			// WARNING: not sure this is a valid way to identify shotType. can lighbox MIX shotTypes?
+			shotType = options.shotType;
+		}
 		var groupCfg = {
 			id : shotCfg.shotId,
 //			bestshotId: shotCfg.bestshotId		// not used here
@@ -410,7 +418,9 @@
 		return shot;
 	};		
 	ShotController.prototype = {
-		postGroupAsShot : function(aids, callback) {
+		// @deprecate (?), call lightbox.Gallery.groupAsShot() instead?
+		xxxpostGroupAsShot : function(aids, callback) {
+			// called from lightbox, 
 			// see Photoroll.groupAsShot() for pattern
 			var auditionREF = [];
 			// reformat for auditionREF

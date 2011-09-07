@@ -43,7 +43,7 @@ if (Configure::read('controller.action')=='lightbox') {
 						<ul class="inline menu-trigger">
 							<li><input name="" type="checkbox" value=""></li>
 							<li class="organize">Organize</li>
-							<li class="sharing">Sharing</li>
+							<li class="share">Share</li>
 							<li class="create">Create</li>
 						</ul>
 					</div>

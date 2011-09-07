@@ -453,15 +453,9 @@
 			if (options && options.updateBestshot) {
 				data['data[updateBestshot]'] = 1;
 			}
-	
-			// var closure = {
-				// node : node,
-				// rating : value
-			// };
-	
+			// TODO: change to SNAPPI.IO.pluginIO_RespondAsJson()
 			var callback = {
 				complete : function(id, o, args) {
-	
 					if (o.responseJson && o.responseJson.success == 'true') {
 						var msg = o.responseJson.message;
 						// if (SNAPPI.timeout && SNAPPI.timeout.flashMsg) {
@@ -498,18 +492,8 @@
 							}
 						} catch (e) {}
 					} else {
-						var msg;
-						try {
-							msg = o.responseJson.message;
-						} catch (e) {
-							msg = o.statusText;
-						}
-						if (SNAPPI.timeout && SNAPPI.timeout.flashMsg) {
-							SNAPPI.timeout.flashMsg.cancel();
-						}
-						SNAPPI.flash.flash(msg);
+						SNAPPI.flash.flashJsonResponse(o);
 					}
-					var check;
 				}
 			};
 	

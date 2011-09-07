@@ -419,43 +419,7 @@ class PersonController extends UsersController {
 		return $moderator;
 	}
 
-	function settings($id = null) {
-		if (!$id) {
-			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'user'));
-			if (!$this->RequestHandler->isAjax()) $this->redirectSafe();
-		}
-		if (!AppController::$writeOk) {
-			$this->Session->setFlash(__('You are not authorized to view this page'));
-			if (!$this->RequestHandler->isAjax()) $this->redirectSafe();
-		}
-		
-		if (!empty($this->data)) {
-			/*
-			 * redirect to edit with setting=[form id]
-			 */
-			$qs = @http_build_query(array('setting'=>$this->data['User']['setting']));
-			$redirect = Router::url(array('action'=>'edit', $id)). ($qs ? "?{$qs}" : '');
-			$this->redirect($redirect, null, true);
-		}
-		$privacy = $this->__getPrivacyConfig();
-		$moderator =  $this->__getModeratorConfig();
-		$this->set(compact('privacy', 'moderator'));
-		
-		
-		$this->User->contain();
-		$options = array('conditions'=>array('User.id'=>$id));
-		$data = $this->User->find('first', $options);
-		
-		$this->data = $data;
-		$this->set('data', $data);
-		
-		$xhrFrom = Configure::read('controller.xhrFrom');
-		if ($xhrFrom) {
-			$viewElement = '/elements/users/'.$xhrFrom['view'];
-		} else $viewElement = null;
-		$done = $this->renderXHRByRequest(null, $viewElement, 0);		
-		return;
-	}
+
 
 }
 ?>

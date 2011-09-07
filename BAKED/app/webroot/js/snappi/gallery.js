@@ -1129,10 +1129,10 @@
 //				// complete				
 //				var check;
 			}else { // this uses visible selected only
-				batch = this.container.all('.FigureBox.selected');
+				var batch = this.container.all('.FigureBox.selected');
 				auditionSH = new SNAPPI.SortedHash();
 				batch.each(function(node){
-					auditionSH.add(node.dom().audition);
+					auditionSH.add(node.audition);
 				});
 			}
 			return auditionSH;
@@ -1367,6 +1367,8 @@
 			var args = {
 					aids: aids,
 					auditions: batch,
+					shotType: cfg.shotType,
+					lightbox: cfg.lightbox,
 					success: this._groupAsShot_success	
 			};
 			var loadingNode = cfg.loadingNode;
@@ -1408,7 +1410,7 @@
 					alreadyCounted[audition.Audition.Shot.id] = true;
 				}
 			});
-			var shot = SNAPPI.ShotController.markSubstitutes_afterPostSuccess(this, shotCfg, args.aids);
+			var shot = SNAPPI.ShotController.markSubstitutes_afterPostSuccess(this, shotCfg, args);
 			if (shot){
 				this.applyShotCSS(shot);
 			}
@@ -1425,6 +1427,13 @@
 				}
 			});			
 			
+			// if lightbox, remove hiddenshot-hide
+			if (args.lightbox) {
+				var lightbox = args.lightbox;
+				lightbox.Gallery.container.all('.FigureBox.hiddenshot-hide').each(function(n,i,l){
+					lightbox.remove(n);	
+				})
+			}
 			
 			
 			// cancel multiSelect
@@ -1466,6 +1475,7 @@
 			}
 			var args = {
 				sort: sort,
+				aids: post_aids,
 				success: this._ungroupShot_success				
 			};
 			var loadingNode = cfg.loadingNode;
@@ -1537,11 +1547,15 @@
 				// cancel multiSelect
 				SNAPPI.multiSelect.clearAll(this.container);
 			}
+
 			/*
 			 *  add hiddenShots back to Photoroll 
 			 */
 			photoroll.addFromCastingCall(hiddenShots, true, args.sort);
 			photoroll.render();
+
+			// ALSO, search lightbox or bindTo[] for node in lightbox
+			var aids = args.aids;			
 			return false;
 		},
 		/**

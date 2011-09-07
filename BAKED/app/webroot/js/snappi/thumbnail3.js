@@ -271,7 +271,7 @@
 					node.Rating.render(audition.rating);
 				}
 				// update Score
-            	if (score !== undefined) {
+            	if (score !== undefined && node.one('li.score')) {
             		var title = score + ' out of '+ votes +' vote';
             		title += votes == '1' ? '.' : 's.';		// add plural as appropriate
             		node.one('li.score').set('innerHTML', score).setAttribute('title', title);

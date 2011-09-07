@@ -126,11 +126,18 @@
 	</div>		
 	<div id="menu-lightbox-organize-markup" class="menu yui3-aui-overlaycontext-hidden hide">
 		<ul>
-			<li action='batch_rating' class='before-show'></li>
-			<li class='tag'>[tag]</li>
-			<li class='group-as-shot'>Group as Shot</li>
+			<li action='batch_rating' class='before-show'>Apply rating:</li>
+			<li action='tag' class='before-show'></li>
+			<li action='lightbox_group_as_shot'>Group as Shot</li>
 		</ul>
 	</div>
+	<div id="menu-lightbox-share-markup" class="menu yui3-aui-overlaycontext-hidden hide">
+		<ul>
+			<li action='share_with_this_circle' class='before-show'>Share with this Circle</li>
+			<li action='share_with_circle'>Share with Circle...</li>
+			<li action='photo_privacy'>Privacy...</li>
+		</ul>
+	</div>	
 	<?php $this->Layout->output($this->viewVars['menuMarkup_for_layout']); ?>
 </div>		
 

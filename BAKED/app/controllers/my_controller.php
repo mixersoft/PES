@@ -35,7 +35,7 @@ class MyController extends PersonController {
 			 * main
 			 */
 			// add to ACLs
-			'upload', 'lightbox', 
+			'upload', 'lightbox', 'settings',
 			/*
 			 * experimental
 			 */
@@ -65,10 +65,38 @@ class MyController extends PersonController {
 		parent::search(MyController::$userid );
 	}					
 	function edit() {
-		parent::edit(MyController::$userid );
+		// parent::edit(MyController::$userid );
 	}	
+		
 	function settings() {
-		parent::settings(MyController::$userid );
+		$id = MyController::$userid;
+		if (!empty($this->data)) {
+			/*
+			 * redirect to edit with setting=[form id]
+			 */
+			$qs = @http_build_query(array('setting'=>$this->data['User']['setting']));
+			$redirect = Router::url(array('action'=>'edit', $id)). ($qs ? "?{$qs}" : '');
+			$this->redirect($redirect, null, true);
+		}
+		$privacy = $this->__getPrivacyConfig();
+		$moderator =  $this->__getModeratorConfig();
+		$this->set(compact('privacy', 'moderator'));
+		
+		
+		$this->User->contain();
+		$options = array('conditions'=>array('User.id'=>$id));
+		$data = $this->User->find('first', $options);
+		
+		$this->data = $data;
+		$this->set('data', $data);
+		
+		$xhrFrom = Configure::read('controller.xhrFrom');
+		if ($xhrFrom) {
+			$viewElement = '/elements/users/'.$xhrFrom['view'];
+		} else $viewElement = null;
+		$this->viewVars['jsonData']=$this->viewVars;
+		$done = $this->renderXHRByRequest('json', $viewElement, 0);		
+		return;
 	}
 
 	function __importPhoto($data, $baseurl, $photoPath){

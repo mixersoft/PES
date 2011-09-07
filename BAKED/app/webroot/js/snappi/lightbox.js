@@ -159,6 +159,7 @@
 			};
 			SNAPPI.MenuAUI.initMenus({
 				'menu-lightbox-organize-markup': 1,
+				'menu-lightbox-share-markup':1,
 				'menu-pagemaker-selected-create-markup': createCfg
 			});
 			
@@ -353,7 +354,7 @@
 				if(auditionSH.size() == 0){ // no photos in lightbox
 					return false;
 				}
-			}else { // this uses visible selected only, probably less common use case
+			} else { // this uses visible selected only, probably less common use case
 				auditionSH = new SNAPPI.SortedHash();
 				batch.each(function(node){
 					auditionSH.add(node.audition);
@@ -631,6 +632,7 @@
 	            	ID_PREFIX: this._cfg.ID_PREFIX,	
 	            	node:  this.node.one('section.gallery.photo'), 
 	            	shots: castingCall.shots,
+	            	// castingCall: castingCall,
 		            end: null                		
 	            };
 	            switch (SNAPPI.STATE.controller.action) {
@@ -758,7 +760,7 @@
 					// TODO: close organize menu, show flash msg
 				}
 			};
-            SNAPPI.shotController.postGroupAsShot.call(this, post_aids, callback);
+            SNAPPI.shotController.xxxpostGroupAsShot.call(this, post_aids, callback);
 		},
 		onGroupAsShotComplete : function (shot, resp){
 			SNAPPI.flash.flash(resp.message);
@@ -845,10 +847,8 @@
 		applyRatingInBatch : function(v, node) {
 
 			var self;
-			if (this && this.applyRatingInBatch)
-				self = this;
-			else
-				self = SNAPPI.lightbox;
+			if (this instanceof SNAPPI.Lightbox) self = this;
+			else self = SNAPPI.lightbox;
 
 			var batch = self.getSelected();
 
@@ -865,19 +865,18 @@
 		renderTagInput : function(node) {
 			// TODO: for now, just add to the button. later, render in subMenu
 			var nTagForm = Y.Node
-					.create("<span><form id='lbx-tag-form' onsubmit='return false;' /><input id='lbx-tag-field' type='text' size='20' maxlength='255' value='Enter tags' onclick='this.value=null; this.style.color=\"black\";'><input type='submit' value='Go' onclick='SNAPPI.lightbox.applyTagInBatch(this);return false;'/></form></span>");
+					.create("<span><form id='lbx-tag-form' onsubmit='return false;' /><input id='lbx-tag-field' class='help' type='text' size='20' maxlength='255' value='Enter tags' onclick='this.value=null; this.className=null;'><input type='submit' value='Go' onclick='SNAPPI.lightbox.applyTagInBatch(this);return false;'/></form></span>");
 			node.append(nTagForm);
 		},
 		applyTagInBatch : function(submit) {
-			var text = submit.ynode().previous('input');
+			var parent = submit.ynode().ancestor('form');
+			var text = parent.one('input#lbx-tag-field');
 			var tag = text.get('value');
 
 			// post Tags
 			var self;
-			if (this && this.applyTagInBatch)
-				self = this;
-			else
-				self = SNAPPI.lightbox;
+			if (this instanceof SNAPPI.Lightbox) self = this;
+			else self = SNAPPI.lightbox;
 
 			var batch = self.getSelected();
 
@@ -890,31 +889,52 @@
 				'data[Asset][id]' : asset_ids,
 				'data[Asset][tags]' : tag
 			};
-			var closure = {
-				node : this,
+			var args = {
+				node : parent,
 				tag : tag
 			};
-			var callback = {
-				complete : function(id, o, args) {
-					if (o.responseJson && o.responseJson.success=='true') {
-						// TODO: move to callback
-						SNAPPI.lightbox.onTagSaved(closure, o.responseJson.message);
+			// use Plugin to add io request and loadingmask
+			var loadingNode = parent;
+			if (loadingNode.io == undefined) {
+				var ioCfg = SNAPPI.IO.pluginIO_RespondAsJson({
+					uri: uri ,
+					parseContent:true,
+					method: 'POST',
+					qs: data,
+					dataType: 'json',
+					context: self,	
+					arguments: args, 
+					on: {
+						successJson:  function(e, id, o, args) {
+							var msg = o.responseJson.message;
+							this.onTagSaved(args, msg);
+							return false;
+							// return args.success.apply(this, arguments);
+						}
 					}
-				}
-			};
-			SNAPPI.io.post(uri, data, callback);
+				});
+	            loadingNode.plug(Y.Plugin.IO, ioCfg );
+			} else {
+				loadingNode.io.set('data', data);
+				loadingNode.io.set('context', self);
+				loadingNode.io.set('uri', uri);
+				loadingNode.io.set('arguments', args);
+				loadingNode.io.start();
+	        }			
+			
+			// SNAPPI.io.post(uri, data, callback);
 			return false;
 		},
 		onTagSaved : function(cfg, message) {
+			// use 'snappi:photo-propertyChanged'
 			var n = cfg.node;
 			var tag = cfg.tag;
-
+			if (n.loadingmask) n.loadingmask.hide();
 			/*
 			 * just reload for now - this will show the Session->flash from the
 			 * Tag save - reload tagCloud with updated tags - update auditions
 			 * with tags BUT: - this will reset paging
 			 */
-			SNAPPI.flash.flash(message);
 //			window.location.reload();
 		},
 		/*
@@ -1011,56 +1031,64 @@
 
             node.append(nShare);
         },
- 		applyShareInBatch : function(gid) {
-	    	if(!gid) {
-	    		if (SNAPPI.STATE.controller.keyName == "group") gid = SNAPPI.STATE.controller.xhrFrom.uuid;
-	        }
-	
-			// post Tags
-			var self;
-			if (this && this.applyShareInBatch)
-				self = this;
-			else
-				self = SNAPPI.lightbox;
-	
+        applyShareInBatch : function(gid, loading, options) {
+        	var self;
+			if (this instanceof SNAPPI.Lightbox) self = this;
+			else self = SNAPPI.lightbox;
+			
 			var batch = self.getSelected();
 	
 			var asset_ids = [];
 			batch.each(function(audition) {
 				asset_ids.push(audition.id);
 			});
-			/***********************************************************************
-			 * add assets to Group - cakePHP POST
-			 */
-			var _shareWithGroup = function(g, assets) {
-				var uri = "/groups/contributePhoto/.json";
-				var data = {
-					'data[Group][id]' : g,
-					'data[Asset][id]' : assets
-				};
-				var callback = {
-					complete: function(id, o, args){
-		                if (o.responseJson && o.responseJson.success == 'true') {
-		                	SNAPPI.lightbox.onShareGroupComplete(args.gid, o.responseJson.message);
-		                }
-		                var check;
-		            },
-					failure : function(id, o, args) {
-						var check;
-					}
-				};
-				var arguments = {
-					gid : g
-				};
-				SNAPPI.io.post(uri, data, callback, arguments);
+						
+			var uri = "/groups/contributePhoto/.json";
+			var data = {
+				'data[Group][id]' : gid,
+				'data[Asset][id]' : asset_ids
 			};
-			_shareWithGroup(gid, asset_ids);
-			var check;
-		},
+			
+			/*
+			 * adjustments for 'remove from group'
+			 */
+			if (options && options.uri) uri = options.uri;	// for unshare link
+			if (options && options.data) data = SNAPPI.Y.merge(data, options.data);
+			
+			var args = {
+				gid: gid
+			};
+			// use Plugin to add io request and loadingmask
+			var loadingNode = loading;
+			if (loadingNode.io == undefined) {
+				var ioCfg = SNAPPI.IO.pluginIO_RespondAsJson({
+					uri: uri ,
+					parseContent:true,
+					method: 'POST',
+					qs: data,
+					dataType: 'json',
+					context: self,	
+					arguments: args, 
+					on: {
+						successJson:  function(e, id, o, args) {
+							SNAPPI.Y.fire('snappi:share-complete', this, loadingNode);
+							this.onShareGroupComplete(args.gid, o.responseJson.message);
+						}
+					}
+				});
+	            loadingNode.plug(Y.Plugin.IO, ioCfg );
+			} else {
+				loadingNode.io.set('data', data);
+				loadingNode.io.set('context', self);
+				loadingNode.io.set('uri', uri);
+				loadingNode.io.set('arguments', args);
+				loadingNode.io.start();
+	        }			
+        },
 		onShareGroupComplete : function(gid, flash) {
 			// go to group
 			SNAPPI.flash.setFlashOnReload(flash);
-			window.location.href = '/groups/home/' + gid;
+			// window.location.href = '/groups/home/' + gid;
 		},
 	
 		/*
@@ -1298,22 +1326,11 @@
 	
 			node.append(nPrivacy);
 		},
-		applyPrivacyInBatch : function(submit) {
-			var select = submit.ynode().previous('select');
-			var v;
-			var option = select.all('option').some(function(n, i, l) {
-				var selected = n.get('selected');
-				if (selected)
-					v = n.get('value');
-				return selected;
-			}, this);
-	
-			// post Tags
-			var self;
-			if (this && this.applyPrivacyInBatch)
-				self = this;
-			else
-				self = SNAPPI.lightbox;
+		applyPrivacyInBatch : function(value, loading) {
+			// post 
+        	var self;
+			if (this instanceof SNAPPI.Lightbox) self = this;
+			else self = SNAPPI.lightbox;
 	
 			var batch = self.getSelected();
 	
@@ -1326,22 +1343,38 @@
 			 */
 			var uri = "/photos/setprop/.json";
 			var data = {
-				'data[Asset][privacy]' : v,
+				'data[Asset][privacy]' : value,
 				'data[Asset][id]' : asset_ids.join(',')
 			};
-			var callback = {
-				complete : function(id, o, args) {
-					var check;
-					if (o.responseJson && o.responseJson.success == 'true')  {
-						SNAPPI.lightbox.onPrivacyGroupComplete(args.privacy, o.responseJson);
+			var args = {
+				privacy : value
+			};
+			// use Plugin to add io request and loadingmask
+			var loadingNode = loading;
+			if (loadingNode.io == undefined) {
+				var ioCfg = SNAPPI.IO.pluginIO_RespondAsJson({
+					uri: uri ,
+					parseContent:true,
+					method: 'POST',
+					qs: data,
+					dataType: 'json',
+					context: self,	
+					arguments: args, 
+					on: {
+						successJson:  function(e, id, o, args) {
+							SNAPPI.Y.fire('snappi:privacy-complete', this, loadingNode);
+							SNAPPI.lightbox.onPrivacyGroupComplete(args.privacy, o.responseJson);
+						}
 					}
-				}
-			};
-			var arguments = {
-				privacy : v
-			};
-			SNAPPI.io.post(uri, data, callback, arguments);
-			var check;
+				});
+	            loadingNode.plug(Y.Plugin.IO, ioCfg );
+			} else {
+				loadingNode.io.set('data', data);
+				loadingNode.io.set('context', self);
+				loadingNode.io.set('uri', uri);
+				loadingNode.io.set('arguments', args);
+				loadingNode.io.start();
+	        }			
 		},
 		onPrivacyGroupComplete : function(privacy, resp) {
 			// go to group

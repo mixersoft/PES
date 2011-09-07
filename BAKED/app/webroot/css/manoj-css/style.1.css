@@ -62,6 +62,9 @@ nav > ul > li, nav > ul > li > a {
 nav ul.menu-trigger > li , nav  ul.menu-trigger > li > a {
 	cursor: pointer;
 }
+.menu > ul > li , .menu > ul > li > a {
+	cursor: pointer;
+}
 ul > li.label {
 	cursor: default !important;
 }
@@ -987,3 +990,58 @@ section#lightbox .gallery.lightbox nav.next  {
 }
 
 /*	hiddenShot-filmstrip:  */
+
+
+
+/*
+ * forms
+ */
+form input[type='text'].help {
+	color: gray;
+}
+
+
+/*
+ * menus
+ */
+.menu li.disabled {
+	cursor: default;
+	color: gray;
+	background-color: lightgray;
+}
+
+/*
+ * dialogs
+ */
+.aui-dialog-bd .selected {
+	border: 2px solid red !important; 
+}
+
+ul.circle-thumb li.selected {
+	margin-right:16px;
+	margin-bottom:8px;
+}
+
+.dialog-vert-select li {
+	border: 2px solid transparent;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;	
+	margin: 10px 10px 0 10px;
+	padding: 4px 4px 4px 24px;
+	list-style-type: none;
+	cursor: pointer;
+}
+.dialog-vert-select li > div {
+	display: inline-block;
+	font-size: 10pt;
+	vertical-align: text-top;
+	width: 285px;
+}
+.dialog-vert-select li > div.term {
+	width: 120px;
+}
+
+.dialog-vert-select li:hover {
+	border: 2px solid gray;
+} 
+

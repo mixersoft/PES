@@ -179,6 +179,7 @@ class AssetsController extends AppController {
 					// provider_account_id not found, so delete from GroupsProviderAccount
 					$ret = $ret && $this->deleteFromGroupsProviderAccount($providerAccountId, $gid);
 				}
+				// TODO: remove from groupShots
 			}
 		}
 		return $ret != false;
@@ -942,7 +943,7 @@ class AssetsController extends AppController {
 				$ret = true; 
 				//TODO: begin SQL transaction for batch commit
 				$updateBestShot_assetIds = array();
-				$activePerAssetFields = array_intersect(array('rating','tags','chunk','privacy'), $fields);
+				$activePerAssetFields = array_intersect(array('rating','tags','chunk','privacy','unshare'), $fields);
 				foreach ($aids as $aid) {
 					if (count($activePerAssetFields)==0) break;	// skip if ther eare not active PerAssset Fields
 					/*
@@ -1011,6 +1012,13 @@ class AssetsController extends AppController {
 					if (in_array('privacy', $fields) && !empty($this->data['Asset']['privacy'])) {
 						$ret =  $ret && $this->__setPrivacy($this->data['Asset']['privacy'], $aid);
 					}
+					// unshare Asset from Group(s)			
+					if (in_array('unshare', $fields) && !empty($this->data['Group']['id']) ) {
+						$ret = $ret && $this->__unshare($aid, $this->data['Group']['id'], true, false);
+						// update counterCache 
+						ClassRegistry::init('Group')->updateCounter($this->data['Group']['id']);
+					}
+					
 				}	// end foreach
 				
 				if (!empty($this->data['updateBestshot']) && count($updateBestShot_assetIds)) {
@@ -1028,12 +1036,8 @@ class AssetsController extends AppController {
 
 				// share Asset(s) with Group: /groups/contributephoto
 				
-				// unshare Asset(s) from Group			
-				if (in_array('unshare', $fields) && !empty($this->data['Group']['id']) ) {
-					$ret = $ret && $this->__unshare($aid, $this->data['Group']['id'], true, false);
-					// update counterCache 
-					ClassRegistry::init('Group')->updateCounter($this->data['Group']['id']);
-				}
+				// TODO: unshare Asset(s) with Group: /groups/removephoto
+				// using /photos/setprop with data[Assets][unshare] for now...
 				
 				if($ret == 0){
 					$success = 'false';
@@ -1072,11 +1076,22 @@ class AssetsController extends AppController {
 			 */
 			//					$this->data['Asset']['id']='4bbb3976-a080-44f5-84c8-11a0f67883f5';
 			//					$this->data['Asset']['rating']=4;
-
 			if ($this->data) {
 				// check write permission????
 				$fields = array_keys($this->data['Asset']);
 				$aids = (array)@explode(',', $this->data['Asset']['id']);
+				
+				if ($this->data['shotType'] == 'unknown') {
+					// assets from lightbox can be from group or user
+					/*
+					 * Do the right thing:
+					 * 	- for groupShot, we have to know which group is active
+					 *  - for userShot, we have to check permissions, 
+					 * 		photos should be from the same users
+					 * - disable 'group as Shot' if 'unknown'?
+					 * */
+					
+				}
 
 				/*
 				 * these action accept an array of asset_ids per DB call
@@ -1275,6 +1290,8 @@ class AssetsController extends AppController {
 		}
 		return empty($errors);
 	}
+	
+	
 	function get_asset_info(){
 		$forceXHR = false;
 		if ($forceXHR) {
@@ -1300,5 +1317,7 @@ class AssetsController extends AppController {
 		$done = $this->renderXHRByRequest('json');
 		return;
 	}
+	
+	
 }
 ?>
