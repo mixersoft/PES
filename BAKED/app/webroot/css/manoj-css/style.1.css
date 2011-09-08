@@ -829,13 +829,10 @@ section#lightbox .header .toolbar > div {
 }
 section#lightbox .header .toolbar ul {
 }
-section#lightbox h3 {
-	color:#747759;
-	padding: 4px 0;
-}
-section#lightbox h4 {
+section#lightbox .header .count {
+	display: inline-block;
 	font-size: 0.9em;
-	padding: 5px 0;
+	padding-left: 4px;
 }
 section#lightbox .toolbar ul li {
 	height: 32px;

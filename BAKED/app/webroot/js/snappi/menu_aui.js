@@ -234,14 +234,16 @@ var DEFAULT_CFG_contextmenu = 	{
 	MenuItems.select_all_pages_beforeShow = function(menuItem, menu){
 		var target = menu.get('currentNode');	// target
 		// gallery only, not lighbox
-		var isPaged = target.ancestor('.gallery-container').one('.aui-paginator-container');
-		if (!isPaged) {
-			menuItem.addClass('hide');
-		} else {
-			menuItem.removeClass('hide');
-			if (SNAPPI.STATE.selectAllPages == true) {
-				menuItem.addClass('selected');
+		try {
+			var isPaged = target.ancestor('.gallery-container').one('.aui-paginator-container');
+			if (!isPaged) {
+				if (SNAPPI.STATE.selectAllPages == true) {
+					menuItem.addClass('selected');
+				} else menuItem.removeClass('selected');
 			}
+			menuItem.removeClass('hide');
+		} catch(e) {
+			menuItem.addClass('hide');
 		}
 	};	
 	MenuItems.select_all_pages_click = function(menuItem, menu){
@@ -285,6 +287,7 @@ var DEFAULT_CFG_contextmenu = 	{
 			var isSelected = lightbox.Gallery.container.all('.selected');
 			var label = isSelected.size() ? 'Remove Selected Snaps': 'Remove All Snaps';
 			menuItem.set('innerHTML', label);
+			menuItem.removeClass('hide');
 		} catch (e) {
 			menuItem.addClass('hide');
 		}
@@ -296,6 +299,7 @@ var DEFAULT_CFG_contextmenu = 	{
 			var lightbox = target.ancestor('section#lightbox').Lightbox;
 			lightbox.clear();
 			lightbox.save();
+			lightbox.updateCount();
 		} catch (e) {}
 		menu.hide();
 	};	

@@ -37,7 +37,7 @@ if (Configure::read('controller.action')=='lightbox') {
 	<section class="header">
 		<ul class="inline">
 			<li class="grid_2"><h3>My Lightbox <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li>
-			<li class="grid_7">
+			<li class="grid_8">
 				<nav class="toolbar">
 					<div>
 						<ul class="inline menu-trigger">
@@ -47,9 +47,9 @@ if (Configure::read('controller.action')=='lightbox') {
 							<li class="create">Create</li>
 						</ul>
 					</div>
+					<h1 class="count"><?php echo $count ?> Snaps</h1>
 				</nav>
 			</li>			
-			<li class="grid_1"><h4><?php echo $count ?> Snaps</h4></li>
 			<li class="grid_6">
 				<nav class="window-options right">
 					<ul class="thumb-size inline">

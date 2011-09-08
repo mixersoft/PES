@@ -36,7 +36,7 @@
 		deletePatt : /(^46$)/
 	// del
 	};
-	var _LIGHTBOX_LIMIT = 50;
+	var _LIGHTBOX_LIMIT = 72;
 	var _LIGHTBOX_FULL_PAGE_LIMIT = 999;
 	var _LIGHTBOX_MIN_HEIGHT = 100;
 	var _LIGHTBOX_MIN_WIDTH = 400;
@@ -296,8 +296,14 @@
 						var castingCall = o.responseJson.castingCall;
 						this.renderLightboxFromCC.call(this, castingCall);
 						this.save();
+						this.updateCount();	
 						onComplete.call(this, nodeList); // clear selected items
 						SNAPPI.STATE.selectAllPages = false;
+						// reset .gallery-container li.select-all .checkbox
+						try {
+							var cb = SNAPPI.Y.one('.gallery-container li.select-all .checkbox');
+							cb.set('checked', false);
+						} catch (e) {}
 					}
 				};
 				SNAPPI.domJsBinder.fetchCastingCall.call(this, {
@@ -329,7 +335,7 @@
 				}	
 				// nodeList of img from drag-drop
 				nodeList.each(function(n, i, l) {
-					var audition = n.ancestor('.FigureBox').dom().audition;
+					var audition = n.ancestor('.FigureBox').audition;
 					this.Gallery.auditionSH.add(audition);
 				}, this);
 				
@@ -337,10 +343,22 @@
 					page : 1,
 					perpage : LIMIT
 				});
+
+				// reset .gallery-container li.select-all .checkbox
+				try {
+					var cb = SNAPPI.Y.one('.gallery-container li.select-all input[type="checkbox"]');
+					cb.set('checked', false);
+				} catch (e) {}
 	            
-				this.save();					
+				this.save();
+				this.updateCount();					
 				return lastLI;
 			}
+		},
+		updateCount: function() {
+			var count = this.Gallery.auditionSH.count();
+			var label = count==1 ? '1 Snap' : count+" Snaps"; 
+			this.node.one('.header .count').set('innerHTML', label);
 		},
 		getSelected : function() {
 			var auditionSH,			// return sortedHash, allows auditionSH.each() maintains consistency
@@ -1452,7 +1470,7 @@
 			// HScroll thumbnails, 1 row only
 			filmstrip: function(e){
 				// set width in pixels for 1 line
-				var count = this.Gallery.auditionSH.count();
+				var count = Math.min(this.Gallery.auditionSH.count(), _LIGHTBOX_LIMIT);
 				var width = this.Gallery.container.one('.FigureBox').get('offsetWidth');
 				this.Gallery.container.setStyle('width', (width*count)+'px');
 				this.Gallery.container.ancestor('.filmstrip-wrap').removeClass('hide');
@@ -1461,7 +1479,7 @@
 			// VScroll thumbnails
 			maximize: function(e) {
 				var MAX_HEIGHT = window.innerHeight - 120;
-				var count = this.Gallery.auditionSH.count();
+				var count = Math.min(this.Gallery.auditionSH.count(), _LIGHTBOX_LIMIT);
 				var width = this.Gallery.container.one('.FigureBox').get('offsetWidth');
 				var rows = Math.ceil(count*width/940);
 				var height = this.Gallery.container.one('.FigureBox').get('offsetHeight');
