@@ -185,7 +185,11 @@ var DEFAULT_CFG_contextmenu = 	{
 			// call beforeShow for each menuItem
 			if (n.hasClass('before-show')) {
 				var methodName = n.getAttribute('action')+'_beforeShow';
-				if (MenuItems[methodName]) MenuItems[methodName](n, menu);
+				if (MenuItems[methodName]) {
+					try {
+						MenuItems[methodName](n, menu);	
+					} catch (e) {}
+				}
 			}
 		}, menu);
 	};
@@ -226,8 +230,75 @@ var DEFAULT_CFG_contextmenu = 	{
 	SNAPPI.MenuAUI = Menu;
 	
 	
-	var MenuItems = function(){}; MenuItems.prototype = {};
-	
+	var MenuItems = function(){}; 
+	MenuItems.select_all_pages_beforeShow = function(menuItem, menu){
+		var target = menu.get('currentNode');	// target
+		// gallery only, not lighbox
+		var isPaged = target.ancestor('.gallery-container').one('.aui-paginator-container');
+		if (!isPaged) {
+			menuItem.addClass('hide');
+		} else {
+			menuItem.removeClass('hide');
+			if (SNAPPI.STATE.selectAllPages == true) {
+				menuItem.addClass('selected');
+			}
+		}
+	};	
+	MenuItems.select_all_pages_click = function(menuItem, menu){
+		MenuItems.select_all_click(menuItem, menu);
+		SNAPPI.STATE.selectAllPages = true;
+		menuItem.addClass('selected');
+		menu.hide();
+	};		
+	MenuItems.select_all_click = function(menuItem, menu){
+		var target = menu.get('currentNode');	// target
+		var cb = target.previous('input[type="checkbox"]');
+		if (cb) {
+			cb.set('checked', true);
+			var gallery = cb.ancestor('section').next('section.gallery');
+			gallery.Gallery.container.all('.FigureBox').addClass('selected');
+		}
+		try {
+			target.ancestor('section#lightbox').Lightbox.save();
+		} catch (e) {}
+		menu.hide();
+	};
+	MenuItems.clear_all_click = function(menuItem, menu){
+		var target = menu.get('currentNode');	// target
+		var cb = target.previous('input[type="checkbox"]');
+		if (cb) {
+			cb.set('checked', false);
+			var gallery = cb.ancestor('section').next('section.gallery');
+			gallery.Gallery.container.all('.FigureBox').removeClass('selected');
+		}		
+		SNAPPI.STATE.selectAllPages = false;
+		try {
+			menuItem.previous('.selected').removeClass('selected');
+			target.ancestor('section#lightbox').Lightbox.save();
+		} catch (e) {}
+		menu.hide();
+	};
+	MenuItems.remove_selected_beforeShow = function(menuItem, menu){
+		try {
+			var target = menu.get('currentNode');	// target
+			var lightbox = target.ancestor('section#lightbox').Lightbox;
+			var isSelected = lightbox.Gallery.container.all('.selected');
+			var label = isSelected.size() ? 'Remove Selected Snaps': 'Remove All Snaps';
+			menuItem.set('innerHTML', label);
+		} catch (e) {
+			menuItem.addClass('hide');
+		}
+	};	
+	MenuItems.remove_selected_click = function(menuItem, menu){
+		try {
+			// lightbox only
+			var target = menu.get('currentNode');	// target
+			var lightbox = target.ancestor('section#lightbox').Lightbox;
+			lightbox.clear();
+			lightbox.save();
+		} catch (e) {}
+		menu.hide();
+	};	
 	// formerly _getPhotoRoll(), currently unused
 	MenuItems.getPhotoRollFromTarget = function(target){
 		if (target instanceof SNAPPI.Y.OverlayContext) {
@@ -713,6 +784,46 @@ var DEFAULT_CFG_contextmenu = 	{
 	};
 	
 	
+	var CFG_Menu_SelectAll = function(){}; 
+	CFG_Menu_SelectAll.load = function(cfg){
+		var Y = SNAPPI.Y;
+		var defaultCfg = {
+			showOn: 'click',	
+			align: { points:['tl', 'bl'] },
+			init_hidden: true,
+			on: {
+				show: function(e) {
+					var target = this.get('currentNode');
+					if (target.ancestor('#lightbox')) {	// up for lightbox
+						this.set('align', { points:['bl', 'tl']})
+					} else {
+						this.set('align', { points:['tl', 'bl']});	
+					}
+					Menu.menuItem_beforeShow(e.target);
+				}
+			}
+		};
+		cfg = Y.merge(defaultCfg, cfg);
+		var CSS_ID = 'menu-select-all-markup';
+		var TRIGGER = cfg.trigger || 'li.select-all a.menu-open';
+		var MARKUP = {
+			id: CSS_ID,
+			selector: '#'+CSS_ID,
+			container: Y.one('#markup'),
+			uri: '/combo/markup/selectAll',
+			end: null
+		};
+		
+		// reuse, if found
+		if (Menu.find[CSS_ID]) 
+			return Menu.find[CSS_ID];
+
+		var callback = function(){
+			Menu.initContextMenu(MARKUP, TRIGGER, cfg);
+		};
+		return Menu.getMarkup(MARKUP , callback);
+	};	
+		
 	var CFG_Menu_Lightbox_Organize = function(){}; 
 	/**
 	 * load organize menu for lightbox
@@ -782,6 +893,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		'contextmenu-photoroll-markup': CFG_Context_Photoroll,
 		'contextmenu-hiddenshot-markup': CFG_Context_HiddenShot,
 		'menu-pagemaker-selected-create-markup': CFG_Menu_Pagemaker_Create, 
+		'menu-select-all-markup': CFG_Menu_SelectAll,
 		'menu-lightbox-organize-markup': CFG_Menu_Lightbox_Organize,
 		'menu-lightbox-share-markup': CFG_Menu_Lightbox_Share,
 		end: null

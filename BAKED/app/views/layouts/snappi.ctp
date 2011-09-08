@@ -119,11 +119,16 @@
 			<li action='settings' >
 				<a href="/my/settings">My Settings</a>
 			</li>
-			<li action='lightbox' class='before-show'>
-				<a href="javascript:;">Hide Lightbox</a>
-			</li>
 		</ul>
 	</div>		
+	<div id="menu-select-all-markup" class="menu yui3-aui-overlaycontext-hidden hide">
+		<ul>
+			<li action='select_all'>Select All</li>
+			<li action='select_all_pages' class='before-show'>Select All Pages</li>
+			<li action='clear_all'>Clear All</li>
+			<li action='remove_selected' class='before-show'>Remove Selected Snaps</li>
+		</ul>
+	</div>	
 	<div id="menu-lightbox-organize-markup" class="menu yui3-aui-overlaycontext-hidden hide">
 		<ul>
 			<li action='batch_rating' class='before-show'>Apply rating:</li>

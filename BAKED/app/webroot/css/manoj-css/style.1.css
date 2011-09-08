@@ -517,8 +517,8 @@ section.gallery.wide {
 
 /*temp CSS for selected*/
 .FigureBox.selected {
-	border: 2px solid red;
-	padding: 1px;
+	border: 2px solid red !important;
+	padding: 1px !important;
 }
 
 /* Hidden Shot icons */
@@ -863,7 +863,8 @@ section#lightbox .toolbar ul li{
 section#lightbox .toolbar ul li a{color:#000; font-size:11px;}
 
 section#lightbox .toolbar ul li.none{
-	background:none;}
+	background:none;
+}
 
 section#lightbox .gallery.photo {
 	border:1px solid #bdbcbd;
@@ -900,39 +901,6 @@ section#lightbox section.gallery.lightbox {
 	padding: 0;
 	margin-bottom: 1px;
 }
-
-
-/*
- * unused prev/next navigation buttons
- * 	cannot get the buttons to expand vertically along with Hscroll in .container
- */
-/*
- section#lightbox .gallery.lightbox nav {
-	display: inline-block;
-	background: #E1E9A0;
-	border: 1px solid #BDBCBD;
-	cursor: pointer;
-}
-section#lightbox .gallery.lightbox nav {
-	display: inline-block;
-	width: 16px;
-	line-height: 39px;
-	vertical-align: top;
-	background: #E1E9A0;
-	color: #000;
-	font-weight: bold;
-	padding-left: 4px;
-	
-}
-section#lightbox .gallery.lightbox nav.prev  {
-	-moz-border-radius: 5px 0 0 5px;
-	-webkit-border-radius: 5px 0 0 5px;
-}
-section#lightbox .gallery.lightbox nav.next  {
-	-moz-border-radius: 0 5px 5px 0;
-	-webkit-border-radius: 0 5px 5px 0;
-}*/
-
 
 /*
  * filmstrip CSS
@@ -1000,7 +968,18 @@ form input[type='text'].help {
 	color: gray;
 }
 
-
+/*
+ * toolbar
+ */
+.toolbar input[type='checkbox'] {
+	vertical-align: text-bottom;
+}
+.toolbar .menu-open {
+	padding-right: 10px;
+}
+.gallery-header .toolbar input[type='checkbox'] {
+	vertical-align: text-top;
+}
 /*
  * menus
  */
@@ -1008,6 +987,11 @@ form input[type='text'].help {
 	cursor: default;
 	color: gray;
 	background-color: lightgray;
+}
+
+.menu li.selected {
+	background: url(../images/arrow.png) no-repeat left center;
+	padding-left: 10px;
 }
 
 /*

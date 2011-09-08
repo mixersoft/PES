@@ -10,8 +10,11 @@
 	);
 ?>
 <section class="gallery-header container_16">
-	<h1 class="grid_2"><?php echo $total; ?>  Snaps</h1>
-    <nav class="settings push_7 grid_7">
+	<ul class="toolbar inline grid_3">
+		<li class="select-all"><input type="checkbox" value="" name=""><a class="menu-open"> </a></li>
+		<li><h1><?php echo $total; ?>  Snaps</h1></li>
+	</ul>
+    <nav class="settings push_6 grid_7">
 		<ul class="inline right">
 			<li class="display-option" onclick='PAGE.toggleDisplayOptions();'>
     			<a class='menu-open'>Display Options</a>

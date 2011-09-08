@@ -70,7 +70,7 @@
 	                	return;
 	                default: // thumbnail
 	                	try {
-			                target.ancestor('section').addClass('selected');
+			                target.ancestor('.FigureBox').addClass('selected');
 			                
 			                //How many items are selected
 			                var count;

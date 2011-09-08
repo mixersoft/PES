@@ -10,7 +10,10 @@
 	);
 ?>
 <section class="wide gallery-header gallery-display-options container_16">
-	<h1 class="grid_2"><?php echo $total; ?>  Snaps</h1>
+	<ul class="toolbar inline grid_2">
+		<li class="select-all"><input type="checkbox" value="" name=""><a class="menu-open"> </a></li>
+		<li><h1><?php echo $total; ?>  Snaps</h1></li>
+	</ul>	
 	<nav class="settings grid_4">
 		<ul class="wide-display-options inline">
 			<li class="btn option">Delete</li>

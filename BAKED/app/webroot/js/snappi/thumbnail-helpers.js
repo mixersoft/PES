@@ -43,7 +43,7 @@
 			if (!e.ctrlKey && !e.shiftKey) {
 				// No shift key - remove all selected images,
 				var found = false;
-				target.ancestor('ul').all('.FigureBox.selected').each(function(node) {
+				target.ancestor('.container').all('.FigureBox.selected').each(function(node) {
 					node.removeClass('selected');
 					if (node.Thumbnail && node.Thumbnail.select) node.Thumbnail.select(false);
 					found = true;

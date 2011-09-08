@@ -158,6 +158,7 @@
 				trigger: 'section#lightbox ul.menu-trigger li.create'
 			};
 			SNAPPI.MenuAUI.initMenus({
+				'menu-select-all-markup':1,
 				'menu-lightbox-organize-markup': 1,
 				'menu-lightbox-share-markup':1,
 				'menu-pagemaker-selected-create-markup': createCfg
@@ -731,10 +732,12 @@
 			}
 		},
 		onClearLightbox : function() {
-			// reset rating component to 0
-			try {
-				this.node.one('#lbx-rating').Rating.render(0);
-			} catch (e) {}
+			// Lightbox Organize > rating is reset in beforeShow
+			if (console) console.warn("Lightbox.onClearLightbox is deprecated");
+			// // reset rating component to 0
+			// try {
+				// this.node.one('#lbx-rating').Rating.render(0);
+			// } catch (e) {}
 		},
 		selectAll : function() {
 			SNAPPI.multiSelect.selectAll(this.Gallery.container);

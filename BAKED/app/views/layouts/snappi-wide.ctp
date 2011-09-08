@@ -122,11 +122,31 @@
 			<li action='settings' >
 				<a href="/my/settings">My Settings</a>
 			</li>
-			<li action='lightbox' class='before-show'>
-				<a href="javascript:;">Hide Lightbox</a>
-			</li>
 		</ul>
-	</div>		
+	</div>
+	<div id="menu-select-all-markup" class="menu yui3-aui-overlaycontext-hidden hide">
+		<ul>
+			<li action='select_all'>Select All</li>
+			<li action='select_all_pages' class='before-show'>Select All Pages</li>
+			<li action='clear_all'>Clear All</li>
+			<li action='remove_selected' class='before-show'>Remove Selected Snaps</li>
+		</ul>
+	</div>	
+	<div id="menu-lightbox-organize-markup" class="menu yui3-aui-overlaycontext-hidden hide">
+		<ul>
+			<li action='batch_rating' class='before-show'>Apply rating:</li>
+			<li action='tag' class='before-show'></li>
+			<li action='lightbox_group_as_shot'>Group as Shot</li>
+		</ul>
+	</div>
+	<div id="menu-lightbox-share-markup" class="menu yui3-aui-overlaycontext-hidden hide">
+		<ul>
+			<li action='share_with_this_circle' class='before-show'>Share with this Circle</li>
+			<li action='share_with_circle'>Share with Circle...</li>
+			<li action='photo_privacy'>Privacy...</li>
+		</ul>
+	</div>	
+	<?php $this->Layout->output($this->viewVars['menuMarkup_for_layout']); ?>
 </div>		
 
 <div id="footer" class="container_16">

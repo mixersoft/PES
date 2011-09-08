@@ -5,13 +5,10 @@
 			<li class="grid_7">
 				<nav class="toolbar">
 					<ul class="inline">
-						<li><input type="checkbox" value="" name=""></li><li>
-							<a>Edit</a></li><li>
-							<a>Tag</a></li><li>
-							<a>Rate</a></li><li>
-							<a>Sharing and Privacy</a></li><li>
-							<a>Create</a></li><li class="none">
-							<a>More</a>
+						<li><a class="menu-open"><input type="checkbox" value="" name=""></a></li><li>
+							<li class="organize">Organize</li>
+							<li class="share">Share</li>
+							<li class="create">Create</li>
 						</li>
 					</ul>
 				</nav>

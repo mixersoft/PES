@@ -637,6 +637,17 @@
         },
         listenMultiSelect : function () {
         	SNAPPI.multiSelect.listen(this.container, true);
+        	// select-all checkbox listener
+        	if (!this.node.listen['selectAll']) {
+	        	this.node.listen['selectAll'] = this.node.get('parentNode').delegate('click', function(e){
+	        		var checked = e.currentTarget.get('checked');
+	        		if (checked) this.container.all('.FigureBox').addClass('selected');
+	        		else {
+	        			this.container.all('.FigureBox').removeClass('selected');
+	        			SNAPPI.STATE.selectAllPages = false;
+	        		}
+	        	},'li.select-all input[type="checkbox"]', this);
+        	}
         	return;
         },
         listenMouseover : function(){
