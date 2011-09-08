@@ -337,6 +337,7 @@ class AppController extends Controller {
 		$this->__checkForContextChange();	
 		
 		$this->passedArgs['plugin'] = '';  // suppress plugin on Router::url() generation
+		if (!empty($this->passedArgs['debug'])) Configure::write('debug' , $this->passedArgs['debug']);
 		Configure::write('passedArgs', $this->passedArgs);
 		if (!$this->Session->check('stagepath_baseurl')) Session::write('stagepath_baseurl', '/'.Configure::read('path.stageroot.httpAlias').'/');
 	}

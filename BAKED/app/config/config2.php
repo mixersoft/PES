@@ -106,7 +106,8 @@ switch (env('SERVER_NAME')) {
 switch (env('SERVER_NAME')) {
 	case 'aws.snaphappi.com':
 	case 'gallery.snaphappi.com':
-//		Configure::write('debug', 0);
+	case 'dev2.snaphappi.com':
+		Configure::write('debug', 0);
 		break;
 }
 
