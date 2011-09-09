@@ -461,9 +461,9 @@
         		 * util scripts
         		 */
         		'snappi-imageloader', 'snappi-utils', 'snappi-io',  'snappi-io-helpers',  'snappi-session',
-        		'snappi-toolbutton', 'snappi-menu', 'snappi-menuitem', 'snappi-dialogbox', 'snappi-zoom', 
-        		'snappi-menucfg', 'snappi-dialogboxCfg','snappi-property',
-        		
+        		'snappi-property', 
+        		// deprecated
+        		// 'snappi-menucfg', 'snappi-toolbutton', 'snappi-menu', 'snappi-menuitem', 'snappi-dialogboxCfg','snappi-dialogbox', 'snappi-zoom', 
         		/*
         		 * aui modules
         		 */

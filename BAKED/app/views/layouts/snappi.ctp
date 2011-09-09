@@ -54,7 +54,7 @@
 <section id="body-container" class='container_16'><!--body container start-->
 	<?php echo $this->element('/nav/secondary'); ?>
 	<div id="content">
-		<div id="messages" class="container_16">
+		<div id="message" class="messages container_16">
 			<?php echo $this->Session->flash(); ?>
 			<?php echo $this->Session->flash('email'); ?>
 		</div>

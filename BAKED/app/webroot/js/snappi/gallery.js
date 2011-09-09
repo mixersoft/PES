@@ -84,7 +84,7 @@
     
     Gallery.filmstrip_getFromDom = function(dom) {
     	try {
-    		return dom.ynode().ancestor('div.filmstrip').one('ul.filmstrip').dom().Gallery;
+    		return dom.ynode().ancestor('div.filmstrip .container').Gallery;
     	} catch(e) {
     		return null;
     	}
@@ -228,6 +228,7 @@
 	        	this.container = node.one('div');
 	        }
 	        node.Gallery = this;
+	        node.dom().Gallery = this; 				// for firebug introspection
 	        node.Gallery.container.Gallery = this;	// is this necessary?
 	        delete _cfg.node;	// use this.container from this point forward
 	        
@@ -322,6 +323,15 @@
         setAudition: function(sh){
             this.auditionSH = sh;
         },
+        /*
+         *  re-render existing gallery to a new thumbSize;
+         */ 
+        renderThumbSize: function(thumbSize) {
+        	this._cfg.size = thumbSize;	// Gallery._cfg.size
+        	this.container.all('.FigureBox').each(function(n,i,l){
+        		n.Thumbnail.resize(thumbSize);
+        	});
+        }, 
         render: function(cfg, shotsSH){
         	cfg = cfg || {};
         	if (cfg.ID_PREFIX !== undefined && !cfg.ID_PREFIX) {
@@ -464,8 +474,8 @@
         	return;
         },
         createLI: function(ul, audition, cfg){
-        	cfg = cfg || this._cfg;
-        	cfg.photoroll = cfg.photoroll || this;
+        	cfg = SNAPPI.Y.merge(cfg || this._cfg);	// copy
+        	cfg.gallery = this;
         	var t = new SNAPPI.Thumbnail(audition, cfg);
         	ul.append(t.node);
         	return t.node;
@@ -477,7 +487,7 @@
             if (status) {
             	cfg = cfg || ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'RightClick', 'FsClick'];
             	for ( k in cfg){
-            		v = 'this.listen'+cfg[k]+'();';
+            		v = 'this.listen'+cfg[k]+'.call(this.node.Gallery);';
             		eval(v);
             	}
             }
@@ -508,23 +518,23 @@
             			 * 
             			 */
             			function(e) {
-            				var pr = e.container.Gallery;
+            				var gallery = this.Gallery;
             				var selected, target = e.currentTarget;
             				switch(e.currentTarget.get('innerHTML')) {
             				case '◄':
-            					selected = pr.auditionSH.prev(); 
+            					selected = gallery.auditionSH.prev(); 
             					break;
             				case '►':
-            					selected = pr.auditionSH.next();
+            					selected = gallery.auditionSH.next();
             					var extendCC = (selected === null);
             					break;
             				}
             				if (selected) {
-	            				var oldUuid = pr._cfg.uuid;
-	            				pr.filmstrip_SetFocus(selected);
+	            				var oldUuid = gallery._cfg.uuid;
+	            				gallery.filmstrip_SetFocus(selected);
 	                        	if (selected.id != oldUuid) {
 	                        		SNAPPI.domJsBinder.bindSelectedToPage.call(pr, selected, oldUuid);
-	                        		pr._cfg.uuid = selected.id;
+	                        		gallery._cfg.uuid = selected.id;
 	        	                }
             				}
             				/*
@@ -534,7 +544,7 @@
             				 */
             				// TODO: extendCC will fail near snappi_controller::__getExtendedCCRequest() boundary limit, currently 2000
             				if (extendCC === true) {
-            					selected = pr.auditionSH.getFocus();
+            					selected = gallery.auditionSH.getFocus();
             					// show "get more" link
             					// update cc using .json fetch
             					ccid = PAGE.jsonData.castingCall.CastingCall.ID;
@@ -552,24 +562,24 @@
             					}} );
             					// redirect to updated page
             				}  
-            			}, 'li.prev-next'
+            			}, 'li.prev-next', this.node
             	);	
                 this.node.listen['FsClick'] = this.container.delegate('click', 
 	                /*
 	                 * update all components on /photos/home page to match 'selected'
 	                 */		
 	                function(e){
-                		var pr = e.container.Gallery;
+                		var gallery = this.Gallery;
 	                	e.target.ancestor('li').removeClass('focus');
 	                	var selected = e.target.ancestor('li').audition;
-	                	var oldUuid = pr.auditionSH.get(pr._cfg.selected).id;
-	                	pr.filmstrip_SetFocus(selected);
+	                	var oldUuid = gallery.auditionSH.get(gallery._cfg.selected).id;
+	                	gallery.filmstrip_SetFocus(selected);
 	                	
 	                	if (selected.id != oldUuid) {
-	                		SNAPPI.domJsBinder.bindSelectedToPage.call(pr, selected, oldUuid);
+	                		SNAPPI.domJsBinder.bindSelectedToPage.call(gallery, selected, oldUuid);
 		                }
 
-	                }, 'img'); 
+	                }, 'img', this.node); 
 	            } 
         },
         /*
@@ -583,15 +593,15 @@
 	                 * update all components on /photos/home page to match 'selected'
 	                 */		
 	                function(e){
+	                	var gallery = this.Gallery;
         				e.container.all('.FigureBox').removeClass('focus');
 	                	var selected = e.target.ancestor('.FigureBox').audition;
-	                	var pr = e.container.Gallery;
-	                	var oldUuid = pr.auditionSH.getFocus().id;
-	                	pr.filmstrip_SetFocus(selected);
+	                	var oldUuid = gallery.auditionSH.getFocus().id;
+	                	gallery.filmstrip_SetFocus(selected);
 	                	if (selected.id != oldUuid) {
-	                		SNAPPI.domJsBinder.bindSelected2Preview.call(pr, selected);
+	                		SNAPPI.domJsBinder.bindSelected2Preview.call(gallery, selected);
 		                }
-	                }, 'img'); 
+	                }, 'img', this.node); 
 	          }
         	var detach = this.node.listen['Click'];
         	if (detach) detach.detach();
@@ -601,8 +611,8 @@
             	// section.gallery.photo or div.filmstrip.photo
                 this.node.listen['Click'] = this.node.delegate('click', function(e){
                     var next = e.target.getAttribute('linkTo');
-                    if (this.castingCall.CastingCall) {
-                    	next += '?ccid=' + this.castingCall.CastingCall.ID;
+                    if (this.Gallery.castingCall.CastingCall) {
+                    	next += '?ccid=' + this.Gallery.castingCall.CastingCall.ID;
 						try {
 							var shotType = e.currentTarget.ancestor('.FigureBox').audition.Audition.Substitutions.shotType;
 							if (shotType == 'Groupshot'){
@@ -611,13 +621,16 @@
 						} catch (e) {}
                     }
                     window.location.href = next;
-                }, '.FigureBox > figure > img', this);
+                }, '.FigureBox > figure > img', this.node);
                 try {
 	                // listen thumbnail size
-	                this.node.listen['thumbSize_Click'] = this.node.get('parentNode').one('section.gallery-header ul.thumb-size').delegate('click', function(e){
-	                	var thumbSize = e.currentTarget.getAttribute('thumb-size');
-	                	window.location.href = SNAPPI.IO.setNamedParams(window.location.href, {'thumbSize':thumbSize});
-	                }, 'li', this);
+	                this.node.listen['thumbSize_Click'] = this.node.get('parentNode').one('section.gallery-header ul.thumb-size').delegate('click', 
+		                function(e){
+		                	var thumbSize = e.currentTarget.getAttribute('thumb-size');
+		                	this.Gallery.renderThumbSize(thumbSize);
+		                	e.currentTarget.get('parentNode').all('li').removeClass('focus');
+		                	e.currentTarget.addClass('focus');
+		                }, 'li', this.node);
 				} catch (e) {}	                
 				try {
 	                // listen hiddenshot-icon
@@ -625,13 +638,13 @@
 	                	var thumbnail = e.currentTarget.ancestor('.FigureBox');
 						try {
 							var audition = thumbnail.audition;
-							var photoRoll = this;
+							var gallery = this.Gallery;
 							var shotType = audition.Audition.Substitutions.shotType;
 							if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
-							photoRoll.showHiddenShotsInDialog(audition, shotType);
+							gallery.showHiddenShotsInDialog(audition, shotType);
 						} catch (e) {
 						}                	
-	                }, 'div.hidden-shot', this);
+	                }, 'div.hidden-shot', this.node);
 	          	} catch (e) {}
 			}
         },
@@ -641,37 +654,34 @@
         	if (!this.node.listen['selectAll']) {
 	        	this.node.listen['selectAll'] = this.node.get('parentNode').delegate('click', function(e){
 	        		var checked = e.currentTarget.get('checked');
-	        		if (checked) this.container.all('.FigureBox').addClass('selected');
+	        		if (checked) this.Gallery.container.all('.FigureBox').addClass('selected');
 	        		else {
-	        			this.container.all('.FigureBox').removeClass('selected');
+	        			this.Gallery.container.all('.FigureBox').removeClass('selected');
 	        			SNAPPI.STATE.selectAllPages = false;
 	        		}
-	        	},'li.select-all input[type="checkbox"]', this);
+	        	},'li.select-all input[type="checkbox"]', this.node);
         	}
         	return;
         },
         listenMouseover : function(){
-        	
         	if(this.node.listen['Mouseover'] == undefined){
-        		this.node.listen['Mouseover'] = this.container.delegate('mouseover', function(e){
-        			
-        			var target = e.currentTarget;
-            		
-        			// may need to encapsulate the following code into a function. will refactor later.
-            		if(this.contextMenu && SNAPPI.util.isDOMVisible(this.contextMenu.container)) {
-            			this.contextMenu.parent.container = target;
-            			// context menu is visible
-            			if(!this.contextMenu.getNode().hasClass('hide')){
-                			this.contextMenu.show();
-                			this.stopClickListener();
-            			}
-            		}
-            		
-            		// set focus
-            		this.setFocus(target);
-
-            		
-                }, ' > li', this);
+        		this.node.listen['Mouseover'] = this.container.delegate('mouseover', 
+	        		function(e){
+	        			var target = e.currentTarget;
+	            		var gallery = this.Gallery;
+	        			// may need to encapsulate the following code into a function. will refactor later.
+	            		if(gallery.contextMenu && SNAPPI.util.isDOMVisible(gallery.contextMenu.container)) {
+	            			gallery.contextMenu.parent.container = target;
+	            			// context menu is visible
+	            			if(!gallery.contextMenu.getNode().hasClass('hide')){
+	                			gallery.contextMenu.show();
+	                			gallery.stopClickListener();
+	            			}
+	            		}
+	            		// set focus
+	            		gallery.setFocus(target);
+					}, ' > li', this.node
+				);
         	}
         	
         },
@@ -684,14 +694,16 @@
 		
         listenRightClick : function (){
         	if (this.node.listen['RightClick'] == undefined){
-        		this.node.listen['RightClick'] = this.container.delegate('contextmenu', function(e){
-					this.toggle_ContextMenu(e);
-        		}, '.FigureBox', this);
+        		this.node.listen['RightClick'] = this.container.delegate('contextmenu', 
+        		function(e){
+					this.Gallery.toggle_ContextMenu(e);
+        		}, '.FigureBox', this.node);
         		
         		// .FigureBox li.context-menu.icon
-     		this.node.listen['ContextMenu'] = this.container.delegate('click', function(e){
-					this.toggle_ContextMenu(e);
-        		}, '.FigureBox > ul > li.context-menu', this);        		
+     		this.node.listen['ContextMenu'] = this.container.delegate('click', 
+     			function(e){
+					this.Gallery.toggle_ContextMenu(e);
+        		}, '.FigureBox > ul > li.context-menu', this.node);        		
 			}        	
         	return;
         },
@@ -1646,7 +1658,7 @@
 				
 				var moveToParent = [];
 				for (var i in removed) {
-					audition = SNAPPI.Auditions._auditionSH.get(removed[i]);
+					audition = SNAPPI.Auditions.get(removed[i]);
 					/*
 					 *  unbind and hide removed node from hiddenShots dialog
 					 */

@@ -17,18 +17,18 @@
 	};
 
 	/**
-	 * add Paginator to photoroll
+	 * add Paginator to gallery
 	 * - uses A.DelayedTask, A.PluginIO
-	 * @param photoroll
+	 * @param gallery
 	 * @return [Paginator | 'delayed'], if created, or False if not created
 	 */
-	Paginator.paginate_Photoroll = function(photoroll){
-			var self = photoroll;	// photoRoll
+	Paginator.paginate_Photoroll = function(gallery){
+			var self = gallery;	// gallery
 			var target = self.container;
-			var NAME = 'section.gallery.photo';
+			var NAME = '.gallery.photo';
 			var DELAY = 1000;	// delay_task
 
-			var paginateContainer = target.ancestor(NAME).one('div.paging-numbers');
+			var paginateContainer = target.get('parentNode').next('div.paging-numbers');
 			if (!paginateContainer) {
 				if (target.ancestor('section.gallery')) {
 					// auto-create paging DIV
@@ -69,11 +69,12 @@
 					parseContent:true,
 					nameData: nameData,
 					dataType: 'json',
-					context: photoroll,	// test
+					context: gallery.node,	// test
 					on: {
 						success: function(e, id, o, args) {
+							// gallery = this.Gallery;
 							if (o.responseJson) {
-								PAGE.jsonData = o.responseJson;
+								PAGE.jsonData = o.responseJson.response;
 								SNAPPI.mergeSessionData();
 								SNAPPI.domJsBinder.bindAuditions2Photoroll();
 								// TODO: update paginateContainer.Paginator.set('total'), etc									
@@ -97,7 +98,7 @@
 					on: {
 						changeRequest: function(e) {
 							// this == Paginator
-							var self = photoroll;
+							// var self = gallery.node.Gallery;
 							var newState = e.state;
 							var userClicked = newState.before != undefined;
 							if (userClicked) {
@@ -163,7 +164,7 @@
 			var _getPage = function(pageNumber){
 				if (pageNumber == SNAPPI.STATE.displayPage.page) return;
 				var uri = controller.here + "/.json";		// TODO: use json rendering for groups
-		var uri = controller.here;					// deprecate, use json rendering when ready
+				var uri = controller.here;					// deprecate, use json rendering when ready
 				var nameData = {page: pageNumber};
 				if (target.io) {
 					// already plugged, just reuse

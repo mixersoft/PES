@@ -44,7 +44,6 @@
      */
     var Auditions = function(){
     };
-    Auditions.prototype = {};
     SNAPPI.Auditions = Auditions;	// expose Static properties and methods
     /*
      * static properties and methods
@@ -52,6 +51,10 @@
     Auditions._auditionSH = _auditionSH;		// expose for debugging
     Auditions._shotsSH = _shotsSH;		// enforced shot uniqueness
     
+    // convenience function
+    Auditions.get = function(id){
+    	return Auditions._auditionSH.get(id);
+    };
     
     /**
      * @param castingCall (by reference)
@@ -260,7 +263,7 @@
             key = typeof AuditionREFs[j] == 'string' ? AuditionREFs[j] : AuditionREFs[j].idref;
             audition = auditionSH.get(key);
             if (!audition) {
-            	audition = SNAPPI.Auditions._auditionSH.get(key);
+            	audition = _auditionSH.get(key);
             	if (audition) alert ('WARNING: existing audition not found in param auditionSH');
             	// why???
             }
@@ -381,7 +384,7 @@
 //                // passed by reference objects, shared by objects in the same group
 //                for (j in AuditionREFs) {
 //                    key = AuditionREFs[j].idref;
-//                    if (audition = SNAPPI.Auditions._auditionSH.get(key)) {
+//                    if (audition = SNAPPI.Auditions.get(key)) {
 //                        // attr storage format by groupings
 //                        switch (g) {
 //                            case 'Tag': // store as object properties, audition.Tag = {} to enforce unique key

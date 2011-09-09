@@ -244,11 +244,13 @@
 	 */
 	Rating.startListeners = function(delegateContainer, selector) {
 		var selector = selector || 'div.ratingGroup';
-
-		if (Y.Lang.isString(delegateContainer)) {
+		if (!delegateContainer instanceof Y.Node) {
 			delegateContainer = Y.one(delegateContainer);
 		}
-		delegateContainer.delegate('click', Rating.handleClick, selector);
+		var detach = delegateContainer.get('id') + selector;
+		if (!Rating.listen[detach]) {
+			Rating.listen[detach] = delegateContainer.delegate('click', Rating.handleClick, selector);	
+		}
 		
 		// Y.one(delegateContainer).delegate("mouseover",
 		// Rating.handleMouseOver, selector);
@@ -256,12 +258,11 @@
 		// Rating.handleMouseOut, selector);
 	};
 	Rating.stopListeners = function(delegateContainer) {
-		/*
-		 * Change to stop delegated listener
-		 */
-		if (Y.Lang.isString(delegateContainer))
+		if (!delegateContainer instanceof Y.Node) {
 			delegateContainer = Y.one(delegateContainer);
-		Y.detach("click", Rating.handleClick, delegateContainer);
+		}
+		var detach = delegateContainer.get('id') + selector;
+		if (Rating.listen[detach]) Rating.listen[detach].detach();
 	};
 	
 	
@@ -575,7 +576,7 @@
 				Y.fire('snappi:ratingChanged', r);
 				break;
 			case 'menuItem-contextRatingGrp': // right-click over .FigureBox
-				var audition = SNAPPI.Auditions._auditionSH.get(r.id);
+				var audition = SNAPPI.Auditions.get(r.id);
 				v = v || r.value;
 				_updateRatingChange(audition, v);
 				Y.fire('snappi:ratingChanged', r);

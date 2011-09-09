@@ -1515,9 +1515,11 @@
 						case "lm+lbx-tiny":
 						case "lm+sq":
 							// convert thumbnails from lm > sq
+							this.Gallery.renderThumbSize('sq');
 							break;						
 						case "sq+lm":
 							// convert thumbnails from sq > lm
+							this.Gallery.renderThumbSize('lm');
 							break;
 					};
 				}
@@ -1532,6 +1534,10 @@
 				} else {
 					this.action.filmstrip.apply(this, null);
 				};
+				
+				// set focus
+				e.currentTarget.get('parentNode').all('li').removeClass('focus');
+		        e.currentTarget.addClass('focus');
 			}
 		},
 		plugResizeAndDrag : function(node) {

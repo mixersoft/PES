@@ -44,18 +44,19 @@
 		var _defaultCfg = {
 			className : 'thumbnail',
 			size : 'lm',
-			// addClass : null,
+			addClass : null,
 			ID_PREFIX : '',
 			type : 'photo',
 			showLabel : false,
 			draggable : true,
 			queue : false, // ImageLoader queue
-			start : null,
-			end : null,
-			hideSubstituteCSS : false,
-			zoomBoxOverlay : null,
+			// start : null,
+			// end : null,
+
 
 			// old cfg props
+			hideSubstituteCSS : false,
+			zoomBoxOverlay : null,
 			deferLoad : false,
 			droppable : false,
 			hideRepeats : false,
@@ -68,8 +69,8 @@
 		 */
 		var Thumbnail = function(audition, cfg) {
 			this.init(cfg);
-			if (audition)
-				this.create(audition, cfg.photoroll);
+			if (audition) this.create(audition);
+			
 		};
 		
 		/*
@@ -101,36 +102,74 @@
 		 */
 		Thumbnail.prototype = {
 			init : function(cfg) {
-				this._cfg = Y.merge(_defaultCfg, cfg);
-			},
-			create : function(audition, photoroll) {
-				var node = Y.Node.create(_htmlTemplate);
-				node.addClass(this._cfg.className).addClass(
-						this._cfg.addClass).addClass(this._cfg.size);
-
-				// set id
-				var id = audition.id;
-				if (this._cfg.ID_PREFIX)
-					id = this._cfg.ID_PREFIX + id;
-				node.set('id', id);
-
-				var src, linkTo, title, score, votes;
-				switch (this._cfg.type) {
-				case 'photo':
-					SNAPPI.Auditions.bind(node, audition);
-					src = audition.getImgSrcBySize(audition.urlbase
-							+ audition.src, this._cfg.size);
-					linkTo = '/photos/home/' + audition.id;
-					// add ?ccid&shotType in photoroll.listenClick()
-					title = audition.label;
-					score = audition.Audition.Photo.Fix.Score;
-					votes = audition.Audition.Photo.Fix.Votes;
-					break;
-				case 'person':
-				case 'group':
-					break;
+				this._cfg = {};
+				for (var attr in _defaultCfg) {
+					this._cfg[attr] = (cfg[attr] !== undefined) ? cfg[attr] : _defaultCfg[attr];  
 				}
+				var check;
+			},
+			trimLabel: function(label, length) {
+	        	length = length || 15;
+	        	if (label.length > length) {
+	        		if (label.length < length-3) {
+	        			return label.substr(0,length);
+	        		} else return label.substr(0,length-3)+'...';
+	        	} else return label;
+	        }, 
+			resize : function(size) {
+				this.renderSizeElements(size);
+			},
+			renderSizeElements : function (size, audition) {
+				/*
+				 * set attributes based on thumbnail size
+				 */
+				size = size;
+				audition = audition || SNAPPI.Auditions.get(this.id);
+				var node = this.node;
+				
+				var src, linkTo, title, score, votes, exists, tooltip, shotCount, sizeCfg;
+				SNAPPI.Auditions.bind(node, audition);
+				src = audition.getImgSrcBySize(audition.urlbase + audition.src, size);
+				linkTo = '/photos/home/' + audition.id;
+				// add ?ccid&shotType in photoroll.listenClick()
+				title = audition.label;
+				score = audition.Audition.Photo.Fix.Score;
+				votes = audition.Audition.Photo.Fix.Votes;	
+							
+				switch (size) {
+					case 'lm':
+						sizeCfg = {
+							showLabel: false,
+							showExtras: true,
+							showHiddenShot: true,
+							showRatings: true
+						}
+						break;
+					case 'sq':
+						sizeCfg = {
+							showLabel: false,
+							showExtras: true,
+							showHiddenShot: true,
+							showRatings: false
+						}
+						break;
+					case 'll':
+						sizeCfg = {
+							showLabel: true,
+							showExtras: true,
+							showHiddenShot: true,
+							showRatings: true
+						}
+						break;
+				}
+				this._cfg = Y.merge(this._cfg, sizeCfg);
 
+				// set CSS
+				node.removeClass(this._cfg.size).addClass(size);
+				this._cfg.size = size;
+				
+				// set src to the correct size
+				src = audition.getImgSrcBySize(audition.urlbase	+ audition.src, size);
 				var img = node.one('img');
 				if (this._cfg.queue && SNAPPI.imageloader.QUEUE_IMAGES) {
 					img.qSrc = src;
@@ -138,55 +177,120 @@
 					// queue by selector
 				} else {
 					img.set('src', src);
-				}
-				img.setAttribute('linkTo', linkTo).set('title', title).set(
-						'alt', title);
-				if (this._cfg.draggable)
+				}		
+				
+				// set draggable	
+				if (this._cfg.draggable) {
 					img.addClass('drag');
-
-
-				this.node = node;
-				this.img = img;
-				node.Thumbnail = this;
+				} else {
+					img.removeClass('drag');
+				}
 				
 				// show caption, 
-				// TODO: update for .FigureBox
+				exists = node.one(".thumb-label");
 				if (this._cfg.showLabel) {
-					var n = node.create('<div class="thumb-label">' + this
-							.trimLabel(title) + '</div>');
-					node.append(n);
+					if (!exists) {
+						node.append('<div class="thumb-label">' + this.trimLabel(title) + '</div>');
+					} else {
+						exists.set('innerHTML', this.trimLabel(title));
+						exists.removeClass('hide');
+					}
+				} else {
+					if (exists) exists.addClass('hide');
 				}
 				
 				// show hidden shot icons
 				try {
-					if (/hiddenshot-/.test(node.get('id'))) throw("Skip hidden-shot in Hidden Shot view");
-					var icon, tooltip, shot_count = parseInt(audition.Audition.Shot.count);
-					tooltip = shot_count + " Snaps in this Shot.";
-					if (shot_count > 6) {
-						icon = '<div class="hidden-shot" title="'+tooltip+'"></div>';
-						node.one('figure').append(icon);						
-					} else if (shot_count > 1) {
-						icon = '<div class="hidden-shot c'+shot_count+'" title="'+tooltip+'"></div>';
-						node.one('figure').append(icon);
+					if (/hiddenshot-/.test(node.get('id'))) {
+						throw("Skip hidden-shot in Hidden Shot view");
+					}
+					exists = node.one(".hidden-shot");
+					if (this._cfg.showHiddenShot) {
+						shotCount = parseInt(audition.Audition.Shot.count);
+						tooltip = shotCount + " Snaps in this Shot.";
+						if (exists) {
+							// reuse
+							if (shotCount > 6) {
+								exists.set('className','hidden-shot').setAttribute('title', tooltip);
+							} else if (shotCount > 1) {
+								exists.set('className','hidden-shot').addClass('c'+shotCount).setAttribute('title', tooltip);
+							} else {
+								exists.remove();
+							}
+						} else {
+							if (shotCount > 6) {
+								exists = '<div class="hidden-shot" title="'+tooltip+'"></div>';
+								node.one('figure').append(exists);						
+							} else if (shotCount > 1) {
+								exists = '<div class="hidden-shot c'+shotCount+'" title="'+tooltip+'"></div>';
+								node.one('figure').append(exists);
+							}
+						}						
+						if (exists) exists.removeClass('hide');
+					} else {
+						if (exists) exists.addClass('hide');
 					}
 				} catch (e) { }
 				
+				// rating
+				exists = node.one('ul li.rating');
+				if (this._cfg.showRatings) {
+					if (exists && node.Rating) {
+						if (node.Rating.id != audition.id) {
+							// update rating
+							node.Rating.id = audition.id;
+							node.Rating.node.setAttribute('uuid', audition.id).set(
+									'id', audition.id + '_ratingGrp');
+							node.Rating.render(audition.rating);
+						}
+					} else {
+						// attach Rating
+		            	var gallery = this._cfg.gallery || SNAPPI.Gallery.getFromDom(node);
+		            	SNAPPI.Rating.pluginRating(gallery, node.Thumbnail, node.audition.rating);
+		            }
+		            if (exists) exists.removeClass('hide');	  
+	           } else {
+	           		if (exists) exists.addClass('hide');
+	           }
+
 				// show extras, i.e. rating, score, info, menu
-				if (this._cfg.showExtras === false) {
-					node.one('ul').remove();
-				} else if (this._cfg.size === 'sq') {
-					// don't attach Rating for sq~ (small) thumbnails
-				} else {
-					// attach Rating
-	            	photoroll = photoroll || SNAPPI.Gallery.getFromDom(node);
-	            	SNAPPI.Rating.pluginRating(photoroll, node.Thumbnail, node.audition.rating);
-	            	// attach Score
-	            	if (score !== undefined) {
-	            		var title = score + ' out of '+ votes +' vote';
+				if (this._cfg.showExtras) {
+					// update Score, show hide in showExtras
+					exists = node.one('li.score');
+					score = score || '0';
+            		if (!exists) {
+            			throw new Error('score markup missing from Thumbnail');
+            		} else {
+	            		title = score + ' out of '+ votes +' vote';
 	            		title += votes == '1' ? '.' : 's.';		// add plural as appropriate
-	            		node.one('li.score').set('innerHTML', score).setAttribute('title', title);
-	            	}	            	
-	            }
+	            		exists.set('innerHTML', score).setAttribute('title', title);
+            		}
+					node.one('ul').removeClass('hide');
+				} else {
+					node.one('ul').addClass('hide');
+				}				
+				return;
+			},
+			create : function(audition) {
+				var node = Y.Node.create(_htmlTemplate);
+				node.addClass(this._cfg.className).addClass(
+						this._cfg.addClass).addClass(this._cfg.size);
+
+				// set id
+				var id = audition.id;
+				this.id = id;
+				this.img = node.one('img');
+				this.node = node;
+				node.set('id', this._cfg.ID_PREFIX + id);
+				node.Thumbnail = this;
+				
+				// switch (this._cfg.type) {
+				// case 'photo':
+				// case 'person':
+				// case 'group':
+				// }
+				
+				this.renderSizeElements(this._cfg.size, audition);
 				return node;
 			},
 			/**
@@ -198,84 +302,19 @@
 			 * @return
 			 */
 			reuse : function(audition, node) {
+				audition = audition || SNAPPI.Auditions.get(this.id);
 				node = node || this.node;
 				node.set('className', 'FigureBox '+this._cfg.className)
 						.addClass(this._cfg.addClass || this._cfg.size);
 
 				// set id
 				var id = audition.id;
-				if (this._cfg.ID_PREFIX)
-					id = this._cfg.ID_PREFIX + id;
-				node.set('id', id);
+				this.id = id;
+				node.set('id', this._cfg.ID_PREFIX + id);
 
-				var src, linkTo, title, score, votes;
-				switch (this._cfg.type) {
-				case 'photo':
-					SNAPPI.Auditions.bind(node, audition);
-					src = audition.getImgSrcBySize(audition.urlbase
-							+ audition.src, this._cfg.size);
-					linkTo = '/photos/home/' + audition.id;
-					// add ?ccid&shotType in photoroll.listenClick()
-					title = audition.label;
-					score = audition.Audition.Photo.Fix.Score;
-					votes = audition.Audition.Photo.Fix.Votes;					
-					break;
-				case 'person':
-				case 'group':
-					break;
-				}
 
-				var img = this.img;
-				img.set('src', src).setAttribute('linkTo', linkTo).set('title',
-						title).set('alt', title);
-				if (this._cfg.draggable)
-					img.addClass('drag');
 
-				// show caption
-				if (this._cfg.showLabel) {
-					var n = node.create('<div class="thumb-label">' + this
-							.trimLabel(title) + '</div>');
-					node.append(n);
-				}
-
-				// show hidden shot icons
-				try {
-					var icon, tooltip, shot_count = parseInt(audition.Audition.Shot.count);
-					var icon = node.one(".hidden-shot");
-					tooltip = shot_count + " Snaps in this Shot.";
-					if (icon) {
-						// reuse
-						if (shot_count > 6) {
-							icon.set('className','hidden-shot').setAttribute('title', tooltip);
-						} else if (shot_count > 1) {
-							icon.set('className','hidden-shot').addClass('c'+shot_count).setAttribute('title', tooltip);
-						} else {
-							icon.remove();
-						}
-					} else {
-						if (shot_count > 6) {
-							icon = '<div class="hidden-shot" title="'+tooltip+'"></div>';
-							node.one('figure').append(icon);						
-						} else if (shot_count > 1) {
-							icon = '<div class="hidden-shot c'+shot_count+'" title="'+tooltip+'"></div>';
-							node.one('figure').append(icon);
-						}
-					}
-				} catch (e) { }
-				
-				// update Rating
-				if (node.Rating) {
-					node.Rating.id = audition.id;
-					node.Rating.node.setAttribute('uuid', audition.id).set(
-							'id', audition.id + '_ratingGrp');
-					node.Rating.render(audition.rating);
-				}
-				// update Score
-            	if (score !== undefined && node.one('li.score')) {
-            		var title = score + ' out of '+ votes +' vote';
-            		title += votes == '1' ? '.' : 's.';		// add plural as appropriate
-            		node.one('li.score').set('innerHTML', score).setAttribute('title', title);
-            	}				
+            	this.renderSizeElements(this._cfg.size, audition);				
 				return node;
 			},
 			setData : function(dataElement) {

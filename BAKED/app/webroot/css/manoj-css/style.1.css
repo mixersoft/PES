@@ -69,6 +69,13 @@ ul > li.label {
 	cursor: default !important;
 }
 
+div.messages > div.message {
+	border: 2px solid red;
+	margin:4px;
+	padding:4px;
+	overflow: auto;
+}
+
 /* header */
 header {
 	xoverflow: hidden;

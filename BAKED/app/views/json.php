@@ -14,6 +14,11 @@ class JsonView extends View {
 		if (isset($this->viewVars['jsonData']) && !empty($this->viewVars['jsonData'])) {
 			$response = $this->viewVars['jsonData'];
 		}
+		
+		// add standard JSON response format if missing
+		if (!isset($response['success'])) {
+			$response = array('success'=>'true', 'message'=>'', 'response'=>$response);
+		}
 //		Configure::write('debug', 0);
 //		header('Content-type: application/json');
 
