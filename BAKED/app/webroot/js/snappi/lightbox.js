@@ -1472,7 +1472,10 @@
 				// set width in pixels for 1 line
 				var count = Math.min(this.Gallery.auditionSH.count(), _LIGHTBOX_LIMIT);
 				var width = this.Gallery.container.one('.FigureBox').get('offsetWidth');
-				this.Gallery.container.setStyle('width', (width*count)+'px');
+				this.Gallery.container.setStyles({
+					width: (width*count)+'px',
+					height: 'auto'	
+				});
 				this.Gallery.container.ancestor('.filmstrip-wrap').removeClass('hide');
 				if (e) e.currentTarget.addClass('focus');
 			},
@@ -1485,9 +1488,14 @@
 				var height = this.Gallery.container.one('.FigureBox').get('offsetHeight');
 				if (rows*height > MAX_HEIGHT) {
 					rows = Math.floor(MAX_HEIGHT/height);
-					this.Gallery.container.setStyle('height', (rows*height)+'px');
-				} 
-				this.Gallery.container.setStyle('width', 'auto');
+					height = (rows*height)+'px';
+				} else {
+					height = 'auto';
+				}
+				this.Gallery.container.setStyles({
+					width: 'auto',
+					height: height	
+				});
 				this.Gallery.container.ancestor('.filmstrip-wrap').removeClass('hide');
 				e.currentTarget.addClass('focus');
 			},

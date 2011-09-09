@@ -155,10 +155,10 @@
             /**
              * NEW codepath to create Gallery from castingCall
              */
+            // skip
            var shotPhotoRoll = new SNAPPI.Gallery(showHiddenShotsCfg);	
            shotPhotoRoll.node.addClass('hiddenshots').addClass('filmstrip').removeClass('container_16');
            shotPhotoRoll.container.removeClass('grid_16');
-           shotPhotoRoll.renderContextMenu = SNAPPI.cfg.MenuCfg.renderSubstituteContextMenu;
            shotPhotoRoll.listen(true, ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'RightClick']);
 			
            shotPhotoRoll.setFocus(shot.indexOfBest());  // show best pic
@@ -487,8 +487,14 @@
             if (status) {
             	cfg = cfg || ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'RightClick', 'FsClick'];
             	for ( k in cfg){
-            		v = 'this.listen'+cfg[k]+'.call(this.node.Gallery);';
-            		eval(v);
+            		switch (cfg[k]) {
+            			case "Keypress": 	this.listenKeypress();	break;
+            			case "Mouseover": 	this.listenMouseover();	break;
+            			case "Click": 	this.listenClick();	break;
+            			case "MultiSelect": 	this.listenMultiSelect();	break;
+            			case "RightClick": 	this.listenRightClick();	break;
+            			case "FsClick": 	this.listenFsClick();	break;
+            		}
             	}
             }
             else {
@@ -651,8 +657,9 @@
         listenMultiSelect : function () {
         	SNAPPI.multiSelect.listen(this.container, true);
         	// select-all checkbox listener
-        	if (!this.node.listen['selectAll']) {
-	        	this.node.listen['selectAll'] = this.node.get('parentNode').delegate('click', function(e){
+        	if (this.node.get('parentNode') && !this.node.listen['selectAll']) {
+	        	this.node.listen['selectAll'] = this.node.get('parentNode').delegate('click', 
+	        	function(e){
 	        		var checked = e.currentTarget.get('checked');
 	        		if (checked) this.Gallery.container.all('.FigureBox').addClass('selected');
 	        		else {
@@ -1953,28 +1960,27 @@
     					arguments: closure,    					
     					on: {
     						successJson: function(e, i,o,args) {
-    							if (o.responseJson) {
-    								// get auditions from raw json castingCall
-    								var shotCC = o.responseJson.castingCall;
-    								var onDuplicate = function(a,b) {
-    			                    	return a; 	// return original, do not replace
-    								};
-    								var subAuditionSH =  SNAPPI.Auditions.parseCastingCall(shotCC, this.castingCall.providerName, null, onDuplicate);
-    			                    
-    			                    var audition = subAuditionSH.first();
-    			                    var shot = audition.Audition.Substitutions;
-    			                    shot.stale = shot._sh.count() != audition.Audition.Shot.count ;
-    			                    // adjust dialog size to fit hiddenShots
-    			                    var cells = shot._sh.count() > 6 ? {w:4,h:3} : {w:3,h:2}; 
-    			                    var offsets = args.dialog.cellOffsets;
-    			                    if (cells.w > 3) offsets.boundingBoxOffset.w += 19; // scrollbar
-    			                    args.dialog.get('boundingBox').setStyles({
-    			                    	width: cells.w * offsets.cellSize.w + offsets.boundingBoxOffset.w,
-    			                    	height: cells.h * offsets.cellSize.h + offsets.boundingBoxOffset.h
-    			                    })
-    			                    var shotPr = _showHiddenShots.call(this, null, shot, args.selected);
-    			                    return shotPr.node;
-    							}
+    							var response = o.responseJson.response;
+								// get auditions from raw json castingCall
+								var shotCC = response.castingCall;
+								var onDuplicate = function(a,b) {
+			                    	return a; 	// return original, do not replace
+								};
+								var subAuditionSH =  SNAPPI.Auditions.parseCastingCall(shotCC, this.castingCall.providerName, null, onDuplicate);
+			                    
+			                    var audition = subAuditionSH.first();
+			                    var shot = audition.Audition.Substitutions;
+			                    shot.stale = shot._sh.count() != audition.Audition.Shot.count ;
+			                    // adjust dialog size to fit hiddenShots
+			                    var cells = shot._sh.count() > 6 ? {w:4,h:3} : {w:3,h:2}; 
+			                    var offsets = args.dialog.cellOffsets;
+			                    if (cells.w > 3) offsets.boundingBoxOffset.w += 19; // scrollbar
+			                    args.dialog.get('boundingBox').setStyles({
+			                    	width: cells.w * offsets.cellSize.w + offsets.boundingBoxOffset.w,
+			                    	height: cells.h * offsets.cellSize.h + offsets.boundingBoxOffset.h
+			                    })
+			                    var shotPr = _showHiddenShots.call(this, null, shot, args.selected);
+			                    return shotPr.node;
     						}					
     					}
     			};
