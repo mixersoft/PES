@@ -419,7 +419,13 @@ section.gallery.wide {
 }
 
 /* thumbnails */
-.FigureBox {
+.FigureBox figcaption {
+	line-height: 1.2;
+	display: inline-block;
+	padding: 2px 0;
+}
+
+.FigureBox.Photo {
 	padding: 2px;
 	overflow: hidden;
 	border: 1px solid #e5e5e5;
@@ -432,41 +438,41 @@ section.gallery.wide {
 	background-color: #FFF;
 }
 
-.FigureBox .selected {
+.FigureBox.Photo .selected {
 	position: absolute;
 	top: 0px;
 	right: 0px;
 	width: auto;
 }
-.FigureBox:hover {
+.FigureBox.Photo:hover {
 	background: #fff88a;
 }
-.FigureBox.focus {
+.FigureBox.Photo.focus {
 	background: #fff88a;
 }
 
 
-.FigureBox ul {
-	list-style: none;
+.FigureBox.Photo ul.extras {
+	list-style-type: none;
 	margin: 0px;
 	padding: 0px;
 }
-.FigureBox ul li {
+.FigureBox.Photo .extras li {
 	float: left;
 	margin: 5px 4px 0 0;
 }
-.FigureBox ul li img {
+.FigureBox.Photo .extras li img {
 	float: left;
 }
 
-.FigureBox ul li.rating {
+.FigureBox.Photo .extras li.rating {
 	padding: 2px 0 0 0;
 }
-.FigureBox ul li.rating > img {
+.FigureBox.Photo .extras li.rating > img {
 	width: 13px;
 	height: 12px;
 }
-.FigureBox ul li.score {
+.FigureBox.Photo .extras li.score {
 	font-size: 11px;
 	background: -moz-linear-gradient(bottom, #eeeeee, #fff);
 	background: -webkit-gradient(linear, center bottom, center top, from(#eeeeee), to(#fff));
@@ -480,14 +486,14 @@ section.gallery.wide {
 	font-family: Arial, Helvetica, sans-serif;
 	cursor: default;
 }
-.FigureBox ul li.icon {
+.FigureBox.Photo .extras li.icon {
 	float:right;
 }
-.FigureBox ul li.info > img {
+.FigureBox.Photo .extras li.info > img {
 	width: 16px;
 	height: 17px;
 }
-.FigureBox ul li.context-menu > img {
+.FigureBox.Photo .extras li.context-menu > img {
 	width: 15px;
 	height: 16px;
 }
@@ -495,11 +501,11 @@ section.gallery.wide {
 /*
  * .lm landscape/medium
  */
-.FigureBox.lm {
+.FigureBox.Photo.lm {
 	width: 145px;		
 	height: 120px;	
 }
-.FigureBox.lm > figure > img {
+.FigureBox.Photo.lm > figure > img {
 	width: 144px;
 	height: 96px;
 }
@@ -508,58 +514,72 @@ section.gallery.wide {
  * .ll (landscape/large) == .large 
  */
 
-.FigureBox.ll > figure > img {
+.FigureBox.Photo.ll > figure > img {
 	width: 222px;
 	height: 148px;
 }
 /*
  * .sq (square) 
  */
-.FigureBox.sq > figure > img {
+.FigureBox.Photo.sq > figure > img {
 	width: 75px;
 	height: 75px;
 }
 
-
-
 /*temp CSS for selected*/
-.FigureBox.selected {
+.FigureBox.Photo.selected {
 	border: 2px solid red !important;
 	padding: 1px !important;
 }
 
+.FigureBox.Photo .label {
+	font-size: 8pt;
+	padding-top: 2px;
+	text-align: center;
+}
+
+
 /* Hidden Shot icons */
-.FigureBox div.hidden-shot {
+.FigureBox.Photo > figure {
+	position: relative;
+}
+
+.FigureBox.Photo.lbx-tiny div.hidden-shot {
+	display: none;
+}
+
+.FigureBox.Photo div.hidden-shot {
 	background: url(../images/icon-hidden-shot-null.png) no-repeat scroll ;
 	position: absolute;
-	right: 5px;
-	bottom: 29px;
+	right: 4px;
+	bottom: 4px;
 	width: 32px;
 	height: 18px;
 	cursor: pointer;
 }
-.FigureBox div.hidden-shot.c2 {
+.FigureBox.Photo div.hidden-shot.c2 {
 	background: url(../images/icon-hidden-shot-2.png) no-repeat scroll ;
 }
-.FigureBox div.hidden-shot.c3 {
+.FigureBox.Photo div.hidden-shot.c3 {
 	background: url(../images/icon-hidden-shot-3.png) no-repeat scroll ;
 }
-.FigureBox div.hidden-shot.c4 {
+.FigureBox.Photo div.hidden-shot.c4 {
 	background: url(../images/icon-hidden-shot-4.png) no-repeat scroll ;
 }
-.FigureBox div.hidden-shot.c5 {
+.FigureBox.Photo div.hidden-shot.c5 {
 	background: url(../images/icon-hidden-shot-5.png) no-repeat scroll ;
 }
-.FigureBox div.hidden-shot.c6 {
+.FigureBox.Photo div.hidden-shot.c6 {
 	background: url(../images/icon-hidden-shot-6.png) no-repeat scroll ;
 }
-.FigureBox.hiddenshot-hide {
+.FigureBox.Photo.hiddenshot-hide {
     display: none;
 }
 section.gallery.hiddenshots {
 	padding: 4px 0;
 }
-section.gallery.hiddenshots .FigureBox.hiddenshot-hide {
+
+section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
 	display: block;
 }
 /* ok to here ^^^ */
@@ -610,14 +630,11 @@ div.ratingGroup.r5 {
     background-position: 0 0;
 }
 
-section {
+/*section {
 	overflow-x: hidden;
-}
+}*/
 
-
-
-
-div.ratingGroup{
+/*div.ratingGroup{
 	z-index:auto;
 }
 
@@ -625,8 +642,7 @@ div.ratingGroup{
 ul.photo-roll {
 	overflow-x: hidden;
 	margin: 0 auto;
-}
-
+}*/
 
 #related-content {
 	background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0, rgb(197,232,250)),color-stop(1, rgb(232,246,253))	);
@@ -689,6 +705,19 @@ ul.photo-roll {
 	height: 22px;
 	display: table-cell
 }
+
+/*.tabbed-area div div {
+	padding: 20px;
+	min-height: 250px;
+	position: absolute;
+	top: -1px;
+	left: 0;
+	width: 100%;
+}
+.tabbed-area div div, .tabs li a {
+	border-top: 1px solid #8bc3e4;
+}*/
+
 #related-content aside .people {
 	margin-bottom: 30px;
 	display: block;
@@ -935,7 +964,7 @@ section#lightbox section.gallery.lightbox {
 
 
 
-.gallery .filmstrip .FigureBox.lbx-tiny {
+.gallery .filmstrip .FigureBox.Photo.lbx-tiny {
 	width:33px;
 	height:33px;
 	padding:3px;
@@ -948,16 +977,16 @@ section#lightbox section.gallery.lightbox {
 	margin:0;
 	position:relative;
 }
-.gallery .filmstrip .FigureBox.lbx-tiny > figure {
+.gallery .filmstrip .FigureBox.Photo.lbx-tiny > figure {
 	width:33px;
 	height:33px;
 }
-.gallery .filmstrip .FigureBox.lbx-tiny > figure > img {
+.gallery .filmstrip .FigureBox.Photo.lbx-tiny > figure > img {
 	width:33px;
 	height:33px;
 }
 
-.gallery .filmstrip .FigureBox {
+.gallery .filmstrip .FigureBox.Photo {
 	margin: 0;
 }
 
@@ -1009,6 +1038,11 @@ ul.circle-thumb li.selected {
 	margin-right:16px;
 	margin-bottom:8px;
 }
+/*replaces ul.circle-thumb li.selected */
+.FigureBox.Group.selected { 
+	margin-right:16px;
+	margin-bottom:8px;
+}
 
 .dialog-vert-select li {
 	border: 2px solid transparent;
@@ -1032,4 +1066,74 @@ ul.circle-thumb li.selected {
 .dialog-vert-select li:hover {
 	border: 2px solid gray;
 } 
+
+
+/*
+ * Group/Circle thumbnails
+ */
+.FigureBox.Group {
+	margin-bottom: 10px;
+	overflow: hidden;
+	display: inline-block;
+	vertical-align: top;
+}
+.FigureBox.Group figure {
+	font-size: 10pt;
+/*	thumbnail height */
+	xheight: 83px;
+}
+
+.FigureBox.Group figure > a > img {
+	border: 4px solid #fff;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-box-shadow: 0px 0px 20px #afb4b6;
+	-moz-box-shadow: 0px 0px 20px #afb4b6;
+	margin: 0px 4px 4px 0px;
+	vertical-align: top;
+}
+.FigureBox.Group  figcaption {
+	xdisplay: inline-block;
+	xpadding: 2px 0;
+/*	controls wrap for .extras.description*/
+	width: 215px;	
+}
+.FigureBox.Group  figcaption .extras li a {
+    color: #404040;
+    font-size: 11px;
+    font-weight: normal;
+    line-height: 18px;
+    text-decoration: none;
+}
+.FigureBox.Group .label {
+	
+	text-align: left;
+}
+.FigureBox.Group .description {
+	font-size: 0.8em;
+}
+.FigureBox.Group .extras li {
+	display: inline;
+	border-right: 1px solid #404040;
+	padding: 0 5px;
+}
+.FigureBox.Group .extras li.last {
+	border-right: none;
+}
+.FigureBox.Group .extras li.icon {
+	padding-left: 15px;
+}
+
+.FigureBox.Group li.privacy.public {
+	background: url(../images/lock.png) no-repeat left;
+}
+.FigureBox.Group li.privacy.listing {
+	background: url(../images/lock.png) no-repeat left;
+}
+.FigureBox.Group li.privacy.members {
+	background: url(../images/lock.png) no-repeat left;
+}
+.FigureBox.Group li.privacy.admin {
+	background: url(../images/lock.png) no-repeat left;
+}
 
