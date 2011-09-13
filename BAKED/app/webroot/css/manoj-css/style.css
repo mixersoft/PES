@@ -363,7 +363,7 @@ a.gallerypic span.zoom-icon selected {
 	position: relative;
 	border-top: 1px solid #8bc3e4;
 }
-.tabbed-area div div {
+/*.tabbed-area div div {
 	padding: 20px;
 	min-height: 250px;
 	position: absolute;
@@ -373,7 +373,7 @@ a.gallerypic span.zoom-icon selected {
 }
 .tabbed-area div div, .tabs li a {
 	border-top: 1px solid #8bc3e4;
-}
+}*/
 #box-one:target, #box-two:target, #box-three:target {
 	z-index: 1;
 }

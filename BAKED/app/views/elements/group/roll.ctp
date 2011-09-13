@@ -12,17 +12,20 @@ if (Configure::read('controller.isXhr')) {
 	$total = $state['displayPage']['count'] + 0;	// as int
 	$isPreview = (!empty($this->params['url']['preview']));
 ?>
-<div class='element-roll group placeholder'>
-	<ul class='inline group-roll-header'>
-		<li>Total of <?php echo $total; ?> Groups</li>
-		<li><?php echo $this->element('context'); ?></li>
-	</ul>
+<div class='gallery-container'>
+	<section class="gallery-header">
+		<ul class='inline group-roll-header'>
+			<li>Total of <?php echo $total; ?> Groups</li>
+			<li><?php echo $this->element('context'); ?></li>
+		</ul>		
+	</section>
 	<?php echo $this->element('/group/paging-inner'); ?>
 </div>
 <script type="text/javascript">
 var initOnce = function() {
-	SNAPPI.cfg.MenuCfg.listenToGroupRoll();
-	SNAPPI.cfg.MenuCfg.listenToSubstituteGroupRoll();
+	// SNAPPI.cfg.MenuCfg.listenToGroupRoll();
+	// SNAPPI.cfg.MenuCfg.listenToSubstituteGroupRoll();
+	
 <?php if (!$isPreview) {
 	// add aui-paginate
 	echo 'SNAPPI.Paginator.paginate_Grouproll();';

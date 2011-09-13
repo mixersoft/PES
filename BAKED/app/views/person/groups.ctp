@@ -7,11 +7,7 @@ PAGE.init.push(initOnce);
 <?php 
 	echo $this->element('nav/section', array('icon_src'=>$data['User']['src_thumbnail']));
 ?>
-<div class="users groups">
-	<div id='paging-groups'>
-	<?php echo $this->element('/group/roll');?>
-	</div>
-</div>
+<?php echo $this->element('/group/roll');?>
 <?php	// tagCloud
 		$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show', 'filter'=>'Group');
 		$xhrFrom = Configure::read('controller.xhrFrom');

@@ -20,11 +20,12 @@ $state['displayPage']['total'] = $total;
 $this->viewVars['jsonData']['STATE'] = $state;
 
 $THUMBSIZE = 'sq';
-$SHORT = 12; $LONG = 255;
+$SHORT = 20; $LONG = 255;
 $DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
 
 ?>
-<ul class='group-roll circle-thumb'>
+<section class="gallery group">
+	<div class="container">
 <?php
 			foreach ($groups as $group) { 
 				
@@ -51,41 +52,47 @@ $DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
 				$options = array('plugin'=>'','controller'=>$controllerAlias, $group['id']);
 				$group_members['href'] = Router::url($options+array('action'=>'members'));
 				$group_members['label'] = String::insert(":user_count Members", $fields);
-				$group_members['privacy'] = 'lock';
+				$group_privacy['privacy'] = 'admin';
+				$group_privacy['label'] = 'admin';
 				$group_photos['href']  = Router::url($options+array('action'=>'photos'));
 				$group_photos['label'] = String::insert(":asset_count Snaps", $fields); 
 				/*
 				 * end move
 				 */
 				?>
-		<li class='thumbnail <?php  echo $THUMBSIZE; ?>' id='<?php echo $group['id'] ?>'>
-			<figure class='thumb'>
+		<article class='FigureBox Group <?php  echo $THUMBSIZE; ?>' id='<?php echo $group['id'] ?>'>
+			<figure>
 				<?php $options = array('url'=>array('plugin'=>'','controller'=>$controllerAlias, 'action'=>'home', $group['id'])); 
 					if (isset($fields['title'])) $options['title'] = $fields['trim_caption'];
 					echo $this->Html->image( $fields['src_icon'] , $options); ?>
+				<figcaption>
+					<div class="label"><?php echo $fields['title']; ?></div>
+					<ul class="inline extras">
+					<?php 
+						echo String::insert("<li class='icon privacy :privacy' title=':label'></li>", $group_privacy); 
+						echo String::insert("<li class='members'><a href=':href' class='lock'>:label</a></li>", $group_members); 
+						echo String::insert("<li class='snaps last'><a href=':href'>:label</a></li>", $group_photos);
+					?>
+	<!-- 				<?php 
+						if($actionName == 'most_members'){
+							echo String::insert(":new :title (:count members)", $fields); 
+						}else{
+							echo String::insert(":new :title (:count pics)", $fields); 
+						}
+					?>
+					<?php //TODO: we should put unshare into the mouse context menu
+						if (Configure::read('controller.alias')=='photos') { 
+							// echo '<br>'.$this->Html->link('unShare', array('controller'=>'photos','action'=>'unshare', AppController::$uuid, '?'=>array('data[Group][gids]'=>$group['id'])), array('style'=>'font-size:0.7em;', 'class' => 'hide')); 
+						}
+					?> -->
+					</ul>
+					<div class="description" title="<?php echo $fields['caption']; ?>"><?php echo $fields['caption']; ?></div>
+				</figcaption>
 			</figure>
-			<figure class='thumb-label'>
-				<p><?php echo $fields['title']; ?></p>
-				<?php 
-					echo String::insert("<a href=':href' class='lock'>:label</a>", $group_members); 
-					echo String::insert("<a href=':href'>:label</a>", $group_photos);
-				?>
-<!-- 				<?php 
-					if($actionName == 'most_members'){
-						echo String::insert(":new :title (:count members)", $fields); 
-					}else{
-						echo String::insert(":new :title (:count pics)", $fields); 
-					}
-				?>
-				<?php //TODO: we should put unshare into the mouse context menu
-					if (Configure::read('controller.alias')=='photos') { 
-						// echo '<br>'.$this->Html->link('unShare', array('controller'=>'photos','action'=>'unshare', AppController::$uuid, '?'=>array('data[Group][gids]'=>$group['id'])), array('style'=>'font-size:0.7em;', 'class' => 'hide')); 
-					}
-				?> -->
-			</figure>
-		</li>
+		</article>
 		<?php } ?>
-</ul>		
+	</div>
+</section>
 <script type="text/javascript">
 var initOnce = function() {
 	SNAPPI.mergeSessionData();

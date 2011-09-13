@@ -421,8 +421,6 @@ section.gallery.wide {
 /* thumbnails */
 .FigureBox figcaption {
 	line-height: 1.2;
-	display: inline-block;
-	padding: 2px 0;
 }
 
 .FigureBox.Photo {
@@ -505,7 +503,7 @@ section.gallery.wide {
 	width: 145px;		
 	height: 120px;	
 }
-.FigureBox.Photo.lm > figure > img {
+.FigureBox.Photo.lm > figure > a > img {
 	width: 144px;
 	height: 96px;
 }
@@ -514,14 +512,14 @@ section.gallery.wide {
  * .ll (landscape/large) == .large 
  */
 
-.FigureBox.Photo.ll > figure > img {
+.FigureBox.Photo.ll > figure > a > img {
 	width: 222px;
 	height: 148px;
 }
 /*
  * .sq (square) 
  */
-.FigureBox.Photo.sq > figure > img {
+.FigureBox.Photo.sq > figure > a > img {
 	width: 75px;
 	height: 75px;
 }
@@ -557,6 +555,10 @@ section.gallery.wide {
 	height: 18px;
 	cursor: pointer;
 }
+.FigureBox.Photo.ll div.hidden-shot {
+	bottom: 20px;
+}
+
 .FigureBox.Photo div.hidden-shot.c2 {
 	background: url(../images/icon-hidden-shot-2.png) no-repeat scroll ;
 }
@@ -1093,8 +1095,8 @@ ul.circle-thumb li.selected {
 	vertical-align: top;
 }
 .FigureBox.Group  figcaption {
-	xdisplay: inline-block;
-	xpadding: 2px 0;
+	display: inline-block;
+	padding: 2px 0;
 /*	controls wrap for .extras.description*/
 	width: 215px;	
 }

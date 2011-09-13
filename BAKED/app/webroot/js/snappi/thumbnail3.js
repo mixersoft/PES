@@ -319,13 +319,13 @@
 	var Factory = function(){};
 	Factory.Photo = {
 		markup: '<article class="FigureBox Photo">'+
-                '	<figure><img alt="" src=""></figure>'+
-                '    <ul class="extras">'+
+                '	<figure><a><img alt="" src=""></a>'+
+                '    <figcaption><ul class="extras">'+
                 '    	 <li class="rating"></li>'+
                 '        <li class="score">0.0</li>'+
                 '        <li class="icon context-menu"><img alt="" title="actions" src="/css/images/icon2.png"></li>'+
                 '        <li class="icon info"><img alt="more info" src="/css/images/icon1.png"></li>'+
-				'	</ul>'+
+				'	</figcaption></ul></figure>'+
 				'</article>',
 		renderElementsBySize : function (size, audition){
 			/*
@@ -403,7 +403,7 @@
 					exists.removeClass('hide');
 				}
 			} else {
-				node.one('figure > img').set('title', title);
+				node.one('figure > a > img').set('title', title);
 				if (exists) exists.addClass('hide');
 			}
 			
@@ -428,10 +428,10 @@
 					} else {
 						if (shotCount > 6) {
 							exists = '<div class="hidden-shot" title="'+tooltip+'"></div>';
-							node.one('figure').append(exists);						
+							node.one('figure > a').append(exists);						
 						} else if (shotCount > 1) {
 							exists = '<div class="hidden-shot c'+shotCount+'" title="'+tooltip+'"></div>';
-							node.one('figure').append(exists);
+							node.one('figure > a').append(exists);
 						}
 					}						
 					if (exists) exists.removeClass('hide');
