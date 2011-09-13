@@ -550,7 +550,7 @@ section.gallery.wide {
 	background: url(../images/icon-hidden-shot-null.png) no-repeat scroll ;
 	position: absolute;
 	right: 4px;
-	bottom: 4px;
+	bottom: 5px;
 	width: 32px;
 	height: 18px;
 	cursor: pointer;

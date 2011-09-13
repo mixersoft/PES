@@ -319,7 +319,7 @@
 	var Factory = function(){};
 	Factory.Photo = {
 		markup: '<article class="FigureBox Photo">'+
-                '	<figure><a><img alt="" src=""></a>'+
+                '	<figure><img alt="" src="">'+
                 '    <figcaption><ul class="extras">'+
                 '    	 <li class="rating"></li>'+
                 '        <li class="score">0.0</li>'+
@@ -403,7 +403,7 @@
 					exists.removeClass('hide');
 				}
 			} else {
-				node.one('figure > a > img').set('title', title);
+				node.one('figure > img').set('title', title);
 				if (exists) exists.addClass('hide');
 			}
 			
@@ -428,10 +428,10 @@
 					} else {
 						if (shotCount > 6) {
 							exists = '<div class="hidden-shot" title="'+tooltip+'"></div>';
-							node.one('figure > a').append(exists);						
+							node.one('figure figcaption').insert(exists, 'before');						
 						} else if (shotCount > 1) {
 							exists = '<div class="hidden-shot c'+shotCount+'" title="'+tooltip+'"></div>';
-							node.one('figure > a').append(exists);
+							node.one('figure figcaption').insert(exists, 'before');	
 						}
 					}						
 					if (exists) exists.removeClass('hide');
@@ -556,7 +556,7 @@
 					exists.removeClass('hide');
 				}
 			} else {
-				node.one('figure > a > img').set('title', title);
+				node.one('figure > img').set('title', title);
 				if (exists) exists.addClass('hide');
 			}
 			

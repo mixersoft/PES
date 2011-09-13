@@ -276,7 +276,7 @@
                 moveOnEnd: false,
                 borderStyle: 'none'
             });
-            
+            var check;
         };
         /*
          * add Drag Plugin to element, use delegated event listener
@@ -291,6 +291,7 @@
                 moveOnEnd: false,
                 borderStyle: 'none'
             });
+            var check;
         };
         
         /*
