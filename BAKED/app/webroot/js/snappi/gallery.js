@@ -155,7 +155,7 @@
             /**
              * NEW codepath to create Gallery from castingCall
              */
-            // skip
+            // skip this line
            var shotPhotoRoll = new SNAPPI.Gallery(showHiddenShotsCfg);	
            shotPhotoRoll.node.addClass('hiddenshots').addClass('filmstrip').removeClass('container_16');
            shotPhotoRoll.container.removeClass('grid_16');
@@ -187,6 +187,7 @@
 	        	} 
 	        } catch (e) {}	        	
         }
+        // skip this line
 		SNAPPI.Y.fire('snappi:hideLoadingMask', node);
 		return shotPhotoRoll;
 	};	// end _showHiddenShots()    
@@ -1334,7 +1335,7 @@
             
             SNAPPI.STATE.showRatings = 'show';  
             SNAPPI.Rating.startListeners(pr.container);
-            SNAPPI.debug.showNodes();
+            // SNAPPI.debug.showNodes();
         },
         hideThumbnailRatings : function(node){
         	var pr = node ? SNAPPI.Gallery.getFromDom(node) : this;

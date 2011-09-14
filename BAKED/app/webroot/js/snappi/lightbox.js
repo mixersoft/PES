@@ -1640,7 +1640,7 @@
             
             SNAPPI.STATE.showRatings = 'show';  
             SNAPPI.Rating.startListeners(pr.container);
-            SNAPPI.debug_showNodes();
+            // SNAPPI.debug_showNodes();
         },
         hideThumbnailRatings : function(node){
         	var pr = node || this.Gallery;
