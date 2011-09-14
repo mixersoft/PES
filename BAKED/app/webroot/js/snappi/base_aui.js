@@ -52,8 +52,9 @@
 	/**
 	 * getHost - infers correct host config depending on startup mode [localhost|server|AIR]
 	 */
-	Config.getHostConfig = function() {
-	    var o = {};		
+	Config.getHostConfig = function(cfg) {
+		cfg = cfg || {};
+	    var defaultCfg, o = {};		
 	    try {
 	        // get host from AIR bootstrap
 	        host = SNAPPI.isAIR ? SNAPPI.AIR.host : window.location.host;
@@ -64,16 +65,26 @@
 	    o.host = host;
 	    o.isLocalhost = !(/snaphappi.com/.test(host)); // live vs dev site	
 	    if (o.isLocalhost) {
-	    	o.snappi_comboBase = 'baked/app/webroot&';
-	    	o.snappi_useCombo = false;
-	    	o.pagemaker_useCombo = true;
-	    	o.alloy_useCombo = true;
-//	    	o.alloy_useCombo = false;
+	    	defaultCfg = {
+	    		snappi_comboBase: 'baked/app/webroot&',
+	    		snappi_useCombo: false,
+	    		pagemaker_useCombo: true,
+	    		alloy_useCombo: true,
+	    	}
 	    } else {
-	    	o.snappi_comboBase = 'app/webroot&';
-	    	o.snappi_useCombo = false;	// TODO: combo doesn't work..
-	    	o.pagemaker_useCombo = true;
-	    	o.alloy_useCombo = true;	    	
+	    	defaultCfg = {
+	    		snappi_comboBase: 'app/webroot&',
+	    		snappi_useCombo: false,
+	    		pagemaker_useCombo: true,
+	    		alloy_useCombo: true,
+	    	}
+	    }
+	    // merge defaultCfg + overrides
+	    for (var prop in defaultCfg) {
+	    	o[prop] = defaultCfg[prop];
+	    }
+	    for (prop in cfg) {
+	    	o[prop] = cfg[prop];
 	    }
 		return o;
 	};    
@@ -180,7 +191,7 @@
                 },
                 'snappi-sortedhash': {
                     path: 'sortedhash.js',
-                    requires: ['node', 'snappi-sort', 'gallery-data-element']
+                    requires: ['node', 'snappi-sort']
                 },
                 'snappi-dragdrop': {
                     path: 'dragdrop3.js',
@@ -269,19 +280,19 @@
 	            modules: {
 	                'gallery-util': {
 	                    path: 'util.js',
-	                    requires: ['node', 'yui2-container']
+	                    requires: ['node']
 	                },
-	                'gallery-data-element': {
-	                    path: 'dataelement.js',
-	                    requires: ['node', 'yui2-container']
-	                },
+	                // 'gallery-data-element': {
+	                    // path: 'dataelement.js',
+	                    // requires: ['node']
+	                // },
 	                'gallery-group': {
 	                    path: 'groups3.js',
 	                    requires: ['node', 'snappi-sortedhash', 'snappi-dragdrop']
 	                },
 	                'gallery-datasource': {
 	                    path: 'datasource3.js',
-	                    requires: ['node', 'async-queue', 'io', 'datatype-xml', 'gallery-util', 'gallery-data-element', 'gallery-group']
+	                    requires: ['node', 'async-queue', 'io', 'datatype-xml', 'gallery-util']
 	                },
 	                'gallery-auditions': {
 	                    path: 'auditions.js',
@@ -350,11 +361,19 @@
 	/*
 	 * bootstrap YUI, Alloy, and snaphappi javascript
 	 */
-	var hostCfg = Config.getHostConfig();
+	var hostCfg = Config.getHostConfig(
+		{
+			// snappi_useCombo: false,
+			// pagemaker_useCombo: true,
+			alloy_useCombo: true,
+			// yui_CDN == true => use "http://yui.yahooapis.com/combo?"
+			yahoo_CDN: false
+		});
     var Y;
 	var yuiConfig = { // GLOBAL
     	// AUI will set base for yui load	
-//      base: "http://yui.yahooapis.com/combo?3.1.1/build/",  
+     	// yui3 base for alloy_useCombo=false
+    	// base: "/svc/lib/yui3/",		 
         timeout: 10000,
         loadOptional: false,
         combine: hostCfg.alloy_useCombo,	// yui & alloy combine values will match 
@@ -371,8 +390,13 @@
     		jsLib: Config.addModule_jsLib(hostCfg)
     	}
     };
+    if (hostCfg.alloy_useCombo && hostCfg.yahoo_CDN == false) {
+    	// use hosted combo services
+    	yuiConfig.comboBase = 'http://' + hostCfg.host + '/combo/js?baseurl=svc/lib/yui_3.3.0/yui/build&';
+    	yuiConfig.root = '/';
+    }
+    
     SNAPPI.yuiConfig = yuiConfig;		// make global
-	
     /*
      * YUI3 init, use External Module Loading
      * - base.js dependencies = 'node', 'event-custom', 'node-menunav', "yui2-container", 'snappi-utils', 'snappi-io',  'snappi-dragdrop', 'snappi-domJsBinder'
@@ -394,14 +418,7 @@
      */
     'async-queue',    
 
-	/*
-     * 'yui2-container'
-     * - required by gallery-data-element static function
-     * - gallery-util loading panel (deprecated)
-     */
-    'yui2-container', 
-    
-    'snappi-debug',
+    // 'snappi-debug',
     
     /*
      * callback function

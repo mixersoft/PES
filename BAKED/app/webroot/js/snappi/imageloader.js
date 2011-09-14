@@ -98,13 +98,6 @@
              */
             this.onComplete = [];
             
-            // // configure cleanup process
-            // SNAPPI.util.LoadingPanel.beforeShowEvent.subscribe(function(e){
-            // if (SNAPPI.imageLoader.cleanupTimer == null)
-            // SNAPPI.imageLoader.cleanupTimer = Y.later(10000,
-            // SNAPPI.imageLoader,
-            // SNAPPI.imageLoader.queueCleanup(), true);
-            // });
         };
         
         /*
@@ -276,8 +269,6 @@
                 }
                 this.onComplete = [];
             }
-            else 
-                SNAPPI.util.LoadingPanel.hide();
             return true;
         };
         
@@ -285,9 +276,11 @@
         /*
          * cleanup methods
          */
-        this.queueCleanup = function(){
-            var visible = SNAPPI.util.LoadingPanel.element.ynode().getStyle('visibility');
-            if (visible !== 'hidden') {
+        this.queueCleanup = function(loadingmask){
+        	try {
+        		var visible = loadingmask.overlaymask.get('visible');	
+        	} catch (e) {}
+            if (visible) {
                 SNAPPI.imageLoader.cleanup();
             }
             else {

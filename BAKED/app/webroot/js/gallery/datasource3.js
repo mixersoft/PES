@@ -43,6 +43,9 @@
             return null;
         }
     };
+    var _hashcode = function(){
+            return this.id;
+	}
     /*
      * enforce JS array structures by schema
      */
@@ -119,7 +122,7 @@
                     node = {};
                     audition = arrAuditions[p];
                     // extract additional properties from array
-                    node.hashcode = SNAPPI.DataElement.prototype.hashcode;
+                    node.hashcode = _hashcode;
                     node.id = audition.id;
                     node.pid = audition.Photo.id;
                     node.imageWidth = parseInt(audition.Photo.Img.Src.W);
@@ -228,7 +231,7 @@
                     node = {};
                     audition = arrAuditions[p];
                     // extract additional properties from array
-                    node.hashcode = SNAPPI.DataElement.prototype.hashcode;
+                    node.hashcode = _hashcode;
                     node.id = audition.id;
                     node.src = this.getImgSrcBySize(audition.Photo.Img.Src.previewSrc, 'tn');
                     node.urlbase = baseurl || audition.Photo.Img.Src.Baseurl || '';
@@ -289,7 +292,7 @@
                     audition = arrAuditions[p];
                     // extract additional properties from array
                     node.id = audition.id;
-                    node.hashcode = SNAPPI.DataElement.prototype.hashcode;
+                    node.hashcode = _hashcode;
                     node.urlbase = baseurl || audition.Photo.Img.Src.Baseurl || '';
                     node.src = audition.Photo.Img.Src.Src;
                     try {

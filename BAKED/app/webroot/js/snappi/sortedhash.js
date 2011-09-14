@@ -136,7 +136,7 @@
             // add onChange custom event to objects in sortedHash
             if (this.isDataElement && value && value.dataElementId === undefined) {
                 try {
-                	new SNAPPI.DataElement(value, 'snappi-sh-obj');
+                	// new SNAPPI.DataElement(value, 'snappi-sh-obj');	// deprecated
                 } catch(e) {}
             }
             var hashedKey = hash(key);
