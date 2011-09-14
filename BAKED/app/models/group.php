@@ -52,6 +52,14 @@ class Group extends AppModel {
 	}
 	
 	public function afterFind($results, $primary) {
+		// merge permissions
+		try {
+			$alias = $this->alias;
+			foreach ($results as $i => & $data) {
+				$data[$alias]['perms'] = $data["{$alias}Permission"]['perms'];
+			}
+		} catch (Exception $e) {}
+
 		if ($primary && !Configure::read('controller.isXhr')  && isset($results[0]['Group']['owner_id'])){
 			if ($results[0]['Group']['id'] == Configure::read('controller.xhrFrom.uuid')) {
 				Configure::write('controller.isOwner', $results[0]['Group']['owner_id'] == AppController::$userid);	

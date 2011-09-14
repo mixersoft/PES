@@ -20,7 +20,7 @@
 						  <section id="snaps">
 <?php
 	$ajaxSrc = Router::url($this->passedArgs + array('action'=>'groups', '?'=>array('preview'=>1)));
-	echo "<div id='groups-preview-xhr' class='grid_11 fragment' ajaxSrc='{$ajaxSrc}' ></div>";
+	echo "<div id='groups-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}' ></div>";
 ?>							  	
 						  </section>
 						</section>

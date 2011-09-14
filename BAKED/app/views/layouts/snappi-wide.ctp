@@ -59,7 +59,6 @@
 			<?php echo $this->Session->flash('email'); ?>
 		</div>
 		<?php echo $content_for_layout; ?>
-		<?php if (Configure::read('js.render_lightbox')) {echo $this->element('/lightbox'); }?>
 	</div>
 </section><!--body container ends-->
 		

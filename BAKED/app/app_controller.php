@@ -340,6 +340,8 @@ class AppController extends Controller {
 		if (!empty($this->passedArgs['debug'])) Configure::write('debug' , $this->passedArgs['debug']);
 		Configure::write('passedArgs', $this->passedArgs);
 		if (!$this->Session->check('stagepath_baseurl')) Session::write('stagepath_baseurl', '/'.Configure::read('path.stageroot.httpAlias').'/');
+		
+		$this->helpers[] = 'Layout';
 	}
 	
 	/*
@@ -437,15 +439,19 @@ class AppController extends Controller {
 		$titleName = ($controllerAttr['action'] != 'all') ? $controllerAttr['titleName'] : 'Explore';
 		switch ($titleName) {
 			case 'Me':
-				$focus = 'Home'; break;
-			case 'Group':
-			case 'Event':
-			case 'Wedding':
-			case 'Circle':	
+				if ($controllerAttr['action'] == 'home') $focus = 'Home'; 
+				// else if ($controllerAttr['action'] == 'groups') $focus = 'Circles';
+				// else if ($controllerAttr['action'] == 'photos') $focus = 'Snaps';
+				else $focus = 'Home'; 
+				break;
+			case 'Groups':
+			case 'Events':
+			case 'Weddings':
+			case 'Circles':	
 				$focus = 'Circles'; break;
-			case 'Photo':
+			case 'Photos':
 				$focus = 'Snaps'; break;
-			case 'Person':
+			case 'People':
 				$focus = 'People'; break;
 			case 'Explore':
 				$focus = 'Explore'; break;
@@ -453,7 +459,6 @@ class AppController extends Controller {
 				$focus = null;
 		}
 		Session::write("nav.primary", $focus);
-				
 	}
 	
 	/*

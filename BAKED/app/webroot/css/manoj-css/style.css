@@ -265,7 +265,7 @@ a.gallerypic span.zoom-icon selected {
 	xwidth: 282px;
 	xmargin-left: 10px;
 }
-#related-content .left article {
+/*#related-content .left article {
 	margin-bottom: 20px;
 }
 #related-content .left article header {
@@ -301,7 +301,7 @@ a.gallerypic span.zoom-icon selected {
 	border-bottom-color: red;
 	height: 22px;
 	display: table-cell
-}
+}*/
 #related-content aside .people {
 	margin-bottom: 30px;
 	display: block;

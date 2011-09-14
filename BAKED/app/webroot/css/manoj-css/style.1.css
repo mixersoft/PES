@@ -242,7 +242,8 @@ nav.secondary > ul li.preference {
 
 
 .gallery {
-	padding: 4px 10px 0 10px;
+	xpadding: 4px 10px 0 10px;
+	padding: 4px;
 	
 }
 /* gallery toolbars */
@@ -599,7 +600,7 @@ section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
  */
 div.ratingGroup {
     margin: 0 auto;
-    background: url('/img/css/smileyGrp.png') no-repeat;
+    background: url('../images/smileyGrp.png') no-repeat;
     background-position: -70px 0; /* init to 0 stars */
     width: 71px; /* width of 5 stars */
     height: 15px;
@@ -670,10 +671,10 @@ ul.photo-roll {
 	xwidth: 282px;
 	xmargin-left: 10px;
 }
-#related-content .left article {
+#related-content .left > article {
 	margin-bottom: 20px;
 }
-#related-content .left article header {
+#related-content .left > article header {
 	border-bottom: 1px solid #8bc3e4;
 	position: relative
 }
@@ -683,20 +684,20 @@ ul.photo-roll {
 	font-size: 15px;
 	color: #000;
 }
-#related-content .left article h3.recent {
+#related-content .left > article h3.recent {
 	background: url(../images/recent.png) left top no-repeat;
 	padding: 5px 0px 5px 44px;
 	margin-bottom: 4px
 }
-#related-content .left article h3.circle {
+#related-content .left > article h3.circle {
 	background: url(../images/cricle.png) left top no-repeat;
 	padding: 5px 0px 8px 44px;
 	margin-bottom: 4px
 }
-#related-content .left article header ul {
+#related-content .left > article header ul {
 	float: right;
 }
-#related-content .left article header ul li a {
+#related-content .left > article header ul li a {
 	border: 1px solid #8bc3e4;
 	color: #356aa0;
 	font-size: 13px;
@@ -1064,7 +1065,6 @@ ul.circle-thumb li.selected {
 .dialog-vert-select li > div.term {
 	width: 120px;
 }
-
 .dialog-vert-select li:hover {
 	border: 2px solid gray;
 } 
@@ -1073,11 +1073,19 @@ ul.circle-thumb li.selected {
 /*
  * Group/Circle thumbnails
  */
+.gallery.group {
+	padding: 4px;
+}
 .FigureBox.Group {
-	margin-bottom: 10px;
 	overflow: hidden;
 	display: inline-block;
 	vertical-align: top;
+}
+.FigureBox.Group:hover figure {
+	background: #fff88a;
+}
+.FigureBox.Group.focus figure {
+	background: #fff88a;
 }
 .FigureBox.Group figure {
 	font-size: 10pt;
@@ -1089,17 +1097,11 @@ ul.circle-thumb li.selected {
 	border: 4px solid #fff;
 	-webkit-border-radius: 4px;
 	-moz-border-radius: 4px;
-	-webkit-box-shadow: 0px 0px 20px #afb4b6;
-	-moz-box-shadow: 0px 0px 20px #afb4b6;
-	margin: 0px 4px 4px 0px;
+	-webkit-box-shadow: 0px 0px 8px #afb4b6;
+	-moz-box-shadow: 0px 0px 8px #afb4b6;
 	vertical-align: top;
 }
-.FigureBox.Group  figcaption {
-	display: inline-block;
-	padding: 2px 0;
-/*	controls wrap for .extras.description*/
-	width: 215px;	
-}
+
 .FigureBox.Group  figcaption .extras li a {
     color: #404040;
     font-size: 11px;
@@ -1108,9 +1110,9 @@ ul.circle-thumb li.selected {
     text-decoration: none;
 }
 .FigureBox.Group .label {
-	
 	text-align: left;
 }
+
 .FigureBox.Group .description {
 	font-size: 0.8em;
 }
@@ -1127,15 +1129,89 @@ ul.circle-thumb li.selected {
 }
 
 .FigureBox.Group li.privacy.public {
-	background: url(../images/lock.png) no-repeat left;
+	background: url(../images/earth.png) no-repeat left;
 }
 .FigureBox.Group li.privacy.listing {
-	background: url(../images/lock.png) no-repeat left;
+	background: url(../images/earth.png) no-repeat left;
 }
 .FigureBox.Group li.privacy.members {
-	background: url(../images/lock.png) no-repeat left;
+	background: url(../images/people.png) no-repeat left;
 }
 .FigureBox.Group li.privacy.admin {
 	background: url(../images/lock.png) no-repeat left;
 }
+.FigureBox.Group.sq {
+	margin-bottom: 10px;
+}
+.FigureBox.Group.sq figure {
+	margin:2px;
+	padding:2px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;		
+}
+.FigureBox.Group.sq figure > a > img {
+}
+.FigureBox.Group.sq  figcaption {
+	display: inline-block;
+	padding: 2px;
+/*	controls wrap for .extras.description*/
+	width: 215px;	
+}
+.FigureBox.Group.ll {
+	margin-bottom: 10px;
+}
+.FigureBox.Group.ll figure {
+	padding:2px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;		
+}
+.FigureBox.Group.ll  figcaption {
+	display: block;
+	padding: 2px 0;
+/*	controls wrap for .extras.description*/
+	width: 226px;	
+}
+.FigureBox.Group.ll .label {
+	font-weight: bold;
+	font-size: 1.1em;
+}
 
+
+/* Circles home page */
+section.item-header {
+	background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0, rgb(197,232,250)),color-stop(1, rgb(232,246,253))	);
+	background-image: -moz-linear-gradient(center bottom,rgb(197,232,250) 0%,rgb(232,246,253) 100%);
+	background: #FFFFC3;
+	border: 1px solid #8fb9d0;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-box-shadow: 0px 0px 7px #fff inset;
+	-moz-box-shadow: 0px 0px 7px #fff inset;
+	padding: 4px;	
+	overflow: hidden;
+}
+section.item-header ul {
+	height: 50px;
+}
+section.item-header .thumbnail img {
+	width: 50px;
+	height: 50px;
+	vertical-align: text-bottom;
+}
+section.item-header .label {
+	font-size: 1.5em;
+}
+section.item-header .item-class {
+	font-weight: 700;
+}
+
+
+
+
+/*temp classes  for debug only*/
+div.placeholder {
+	border: 1px solid red;
+}
+div.properties {
+	overflow: hidden;
+}

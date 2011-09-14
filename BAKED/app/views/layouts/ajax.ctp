@@ -26,12 +26,23 @@
 ?>
 <?php echo header('Pragma: no-cache');
 	  echo header('Cache-control: no-cache');
-	  echo header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); ?>
-<?php if (!empty($this->viewVars['jsonData'])) {  // debug($this->viewVars['jsonData']); ?>
-<script class='xhrInit' type="text/javascript">
-<?php foreach ($this->viewVars['jsonData'] as $key=>$value) {
-		echo "PAGE.jsonData.{$key}=".json_encode($value).";\n"; 
-} ?>
-</script>
-<?php } ?>
-<?php echo $content_for_layout; ?>
+	  echo header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); 
+	  ?>
+<?php echo $content_for_layout; 
+	$this->Layout->blockStart('jsonData');
+?> 
+	<script type="text/javascript">
+		<?php 	
+			$this->viewVars['jsonData']['controller'] = Configure::read('controller');
+			foreach ($this->viewVars['jsonData'] as $key=>$value) {
+				echo "PAGE.jsonData.{$key}=".json_encode($value).";\n"; 
+			} 
+		?>
+	</script>	
+<?php 
+	$this->Layout->blockEnd();
+	
+	// output JSON and javascript
+	$this->Layout->output($this->viewVars['jsonData_for_layout']);
+	$this->Layout->output($this->viewVars['javascript_for_layout']);
+?>	

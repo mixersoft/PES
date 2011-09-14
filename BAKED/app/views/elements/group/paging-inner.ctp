@@ -19,10 +19,18 @@ $total = $state['displayPage']['count'] + 0;	// as int
 $state['displayPage']['total'] = $total;	
 $this->viewVars['jsonData']['STATE'] = $state;
 
-$THUMBSIZE = 'sq';
-$SHORT = 20; $LONG = 255;
-$DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
+$isPreview = (!empty($this->params['url']['preview']));
+$THUMBSIZE = $isPreview ? 'sq' : 'll';
+switch ($THUMBSIZE) {
+	case "ll" :
+		$SHORT = 255; $LONG = 255;
+		break;
+	case "sq":
+		$SHORT = 20; $LONG = 255;
+		break;
+}
 
+$DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
 ?>
 <section class="gallery group">
 	<div class="container">
@@ -52,8 +60,14 @@ $DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
 				$options = array('plugin'=>'','controller'=>$controllerAlias, $group['id']);
 				$group_members['href'] = Router::url($options+array('action'=>'members'));
 				$group_members['label'] = String::insert(":user_count Members", $fields);
-				$group_privacy['privacy'] = 'admin';
-				$group_privacy['label'] = 'admin';
+				$lookup_privacyClassName = array(
+					'0567'=>'public',
+					'0631'=>'listing',
+					'0119'=>'members',
+					'0063'=>'admin',
+				);
+				$group_privacy['privacy'] = $lookup_privacyClassName[ $group['perms'] ];
+				$group_privacy['label'] = $group_privacy['privacy'];
 				$group_photos['href']  = Router::url($options+array('action'=>'photos'));
 				$group_photos['label'] = String::insert(":asset_count Snaps", $fields); 
 				/*

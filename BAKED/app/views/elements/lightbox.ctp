@@ -13,7 +13,7 @@ if (!empty($lightbox['auditions'])) {
 		unset($this->viewVars['jsonData']['lightbox']['innerHTML']);		// TODO: deprecate
 	}
 }
-if (isset($this->viewVars['jsonData']['lightbox']))  {
+if (isset($this->viewVars['jsonData']['lightbox']) && isset($this->viewVars['jsonData']['lightbox']['castingCall']))  {
 	$count = $this->viewVars['jsonData']['lightbox']['castingCall']['CastingCall']['Auditions']['Total']; 
 } else $count = 0;
 if (Configure::read('controller.action')=='lightbox') {
