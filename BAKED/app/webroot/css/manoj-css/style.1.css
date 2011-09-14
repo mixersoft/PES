@@ -168,26 +168,26 @@ section#body-container {
 
 
 /* secondary nav */
-nav.secondary {
+nav.section-header {
 	line-height: 32px !important;
 	font-size: 10pt;
 	overflow: hidden;
 	background-color: #E2E6EB;
 }
-nav.secondary h1 {
+nav.section-header h1 {
 	font-size: 1.1em;
 }
-nav.secondary > ul li {
+nav.section-header > ul li {
 	line-height: 1.5;
 	margin-left: 5px;
 	border: 1px solid #E2E6EB;
 	padding: 0 5px;
 }
-nav.secondary > ul li a {
+nav.section-header > ul li a {
 	color: #000;
 }
 
-nav.secondary > ul li:hover, nav.secondary > ul li.focus {
+nav.section-header > ul li:hover, nav.section-header > ul li.focus {
 	background: -moz-linear-gradient(bottom, #fca22f, #ffc374);	 
 	background: -webkit-gradient(linear, center bottom, center top, from(#fca22f), to(#ffc374));	border: 1px solid #cd7708;
 	-moz-border-radius: 4px;
@@ -195,17 +195,17 @@ nav.secondary > ul li:hover, nav.secondary > ul li.focus {
 	color: #fff;
 	border: 1px solid #CD7708;
 }
-nav.secondary > ul li:hover a, nav.secondary > ul li.focus a  {
+nav.section-header > ul li:hover a, nav.section-header > ul li.focus a  {
 	color: #fff;
 }
-nav.secondary > ul li.disabled a {
+nav.section-header > ul li.disabled a {
 	color: #888;
 	cursor: default;
 }
-nav.secondary > ul li.disabled {
+nav.section-header > ul li.disabled {
 	cursor: default !important;
 }
-nav.secondary > ul li.preference {
+nav.section-header > ul li.preference {
 	background: #8cd1ed;
 	border: 1px solid #006e9a;
 }

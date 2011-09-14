@@ -23,6 +23,7 @@ $isPreview = (!empty($this->params['url']['preview']));
 $isWide = !empty($this->params['named']['wide']);		// fluid layout
 $isXhr = Configure::read('controller.isXhr');
 ?>
+	<?php echo $this->element('/photo/section-header'); ?>
 	<div class='gallery-container' >
 		<?php 
 			if ($isWide) {

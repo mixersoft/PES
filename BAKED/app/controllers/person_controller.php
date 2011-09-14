@@ -327,6 +327,8 @@ class PersonController extends UsersController {
 	}
 
 	function groups($id = null){
+		$this->layout = 'snappi';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';	
 		//	this should be a redirect to /groups/byuser/userid, plus context
 		if (!$id) {
 			$this->Session->setFlash(sprintf(__('No %s found.', true), 'Photos'));
@@ -343,7 +345,6 @@ class PersonController extends UsersController {
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 		// end paginate
-		
 		$this->viewVars['jsonData'][$paginateModel] = $pageData;
 		$done = $this->renderXHRByRequest('json', '/elements/group/roll');
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	

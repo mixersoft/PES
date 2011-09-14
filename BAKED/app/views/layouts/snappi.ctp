@@ -50,9 +50,8 @@
 </head>
 <body>
 	<?php echo $this->element('/nav/primary'); ?>
-		
+	<?php $this->Layout->output($this->viewVars['itemHeader_for_layout']); ?>	
 <section id="body-container" class='container_16'><!--body container start-->
-	<?php echo $this->element('/nav/secondary'); ?>
 	<div id="content">
 		<div id="message" class="messages container_16">
 			<?php echo $this->Session->flash(); ?>
