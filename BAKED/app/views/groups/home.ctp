@@ -62,7 +62,7 @@ if (empty($this->passedArgs['wide'])) {
 	 */
 ?>
 <?php 
-	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'photos', 'perpage'=>6));
+	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'photos', 'perpage'=>24));
 	echo "<div id='gallery-photo-xhr' class='fragment' ajaxSrc='{$ajaxSrc}' nodelay='1'></div>";
 	// Configure::write('js.render_lightbox', true);
 ?>

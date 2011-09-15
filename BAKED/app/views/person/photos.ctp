@@ -1,10 +1,3 @@
-<?php
-if (empty($this->passedArgs['wide'])) {
-	$this->Layout->blockStart('itemHeader');
-		echo $this->element('nav/section', array('icon_src'=>$data['User']['src_thumbnail']));
-	$this->Layout->blockEnd();	
-}
-?>
 <?php echo $this->element('/photo/roll');?>
 
 <?php $this->Layout->blockStart('relatedContent');?>
@@ -26,8 +19,9 @@ if (empty($this->passedArgs['wide'])) {
 						<section class="box-wrap">
 						  <section id="snaps">
 <?php
+// this should be the circles which include user photos
 	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'groups', '?'=>array('preview'=>1)));
-	echo "<div id='groups-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}' ></div>";
+	// echo "<div id='groups-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}' ></div>";
 ?>							  	
 						  </section>
 						</section>

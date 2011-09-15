@@ -201,13 +201,31 @@ class PersonController extends UsersController {
 	}
 
 	function home($id = null) {
-		if (!$id && @empty($this->passedArgs[0])) {
-			$this->redirectSafe();
+		$this->layout = 'snappi';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';
+		if (!$id) {
+			$this->Session->setFlash("ERROR: invalid Photo id.");
+			$this->redirect(array('action' => 'all'));
 		}
 		
-		// get User data
+		// paginate 
+		$paginateModel = 'Asset';
+		$Model = $this->User->{$paginateModel};
+		$Model->Behaviors->attach('Pageable');
+		$paginateArray = $Model->getPaginatePhotosByUserId($id, $this->paginate[$paginateModel]);
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
+		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
+		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
+		// end paginate
+		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
+		$castingCall = $this->CastingCall->getCastingCall($pageData);
+		$this->viewVars['jsonData']['castingCall'] = $castingCall;
+
+		$done = $this->renderXHRByRequest('json', '/elements/photo/roll', null, 0);
+		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
 		$options = array(
-			'conditions'=>array('User.id'=>$id)
+			'conditions'=>array('User.id'=>$id),
+			'recursive' => -1,
 		);
 		$this->User->contain();
 		$data = $this->User->find('first', $options);
@@ -215,9 +233,10 @@ class PersonController extends UsersController {
 			/*
 			 * handle no permission to view record
 			 */
-			$this->Session->setFlash(sprintf(__('No %s found.', true), 'Members'));
+			$this->Session->setFlash("ERROR: You are not authorized to view this record.");
 			$this->redirectSafe();
 		} else {
+			$data['Asset'] = $pageData;
 			$this->set('data', $data);
 		}
 	}
@@ -261,8 +280,6 @@ class PersonController extends UsersController {
 			$data['Asset'] = $pageData;
 			$this->set('data', $data);
 		}
-		
-		// or $this->autoRender
 	}
 	
 	function photostreams($id=null){
