@@ -24,8 +24,8 @@ $this->Layout->blockEnd();
 						<section class="box-wrap">
 						  <section id="members">
 <?php 
-	$ajaxSrc = Router::url($this->passedArgs + array('action'=>'fragment', 'a'=>'members', 'e'=>'preview-members'));
-	$ajaxSrc = Router::url($this->passedArgs + array('action'=>'members', '?'=>array('preview'=>1)));
+	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'fragment', 'a'=>'members', 'e'=>'preview-members'));
+	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'members', '?'=>array('preview'=>1)));
 	echo "<div id='members-preview-xhr' class='xxxfragment' ajaxSrc='{$ajaxSrc}'></div>";
 ?>							  	
 						  </section>

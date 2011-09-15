@@ -33,7 +33,7 @@ catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP req
 </div>
 <div id='hiddenshots' class='filmstrip placeholder'><h3>Hidden Shots</h3><ul></ul></div>
 <?php
-	$ajaxSrc = Router::url($this->passedArgs + array('action'=>'groups', '?'=>array('preview'=>1)));
+	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'groups', '?'=>array('preview'=>1)));
 	echo "<div id='groups-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}'></div>";
 ?>	
 <h3>Details</h3>

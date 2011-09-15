@@ -316,7 +316,7 @@ class TagsController extends TagsAppController {
 			// filter tagCloud by Model
 			$paginateArray['conditions'] = array('Tagged.model'=>$this->passedArgs['filter']);
 		}		
-		$paginateArray['conditions'] = @$Model->Tag->appendFilterConditions(Configure::read('passedArgs'), $paginateArray['conditions']);
+		$paginateArray['conditions'] = @$Model->Tag->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		
 		// additional options, 
 		// TODO: move to $options['extras']['context']
@@ -371,7 +371,7 @@ class TagsController extends TagsAppController {
 			// filter tagCloud by Model
 			$paginateArray['conditions'] = array('Tagged.model'=>$this->passedArgs['filter']);
 		}		
-		$paginateArray['conditions'] = @$Model->Tag->appendFilterConditions(Configure::read('passedArgs'), $paginateArray['conditions']);
+		$paginateArray['conditions'] = @$Model->Tag->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		
 		// additional options, 
 		// TODO: move to $options['extras']['context']
@@ -420,7 +420,7 @@ class TagsController extends TagsAppController {
 			// filter tagCloud by Model
 			$paginateArray['conditions'] = array('Tagged.model'=>$this->passedArgs['filter']);
 		}		
-		$paginateArray['conditions'] = @$Model->Tag->appendFilterConditions(Configure::read('passedArgs'), $paginateArray['conditions']);
+		$paginateArray['conditions'] = @$Model->Tag->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		
 		// additional options, 
 		// TODO: move to $options['extras']['context']
@@ -449,7 +449,9 @@ class TagsController extends TagsAppController {
 			}
 		} else {
 			// action = "show", XHR load from div#tags-preview-xhr
-			$xhrView = '/elements/tags/preview';
+			$this->set('isPreview', 1);
+			$xhrView = '/elements/tags/tagCloud'; 
+			// $xhrView = '/elements/tags/preview';
 		}
 		$done = $this->renderXHRByRequest(null, $xhrView, null, 0);
 		if ($done) return;
@@ -511,7 +513,7 @@ class TagsController extends TagsAppController {
 		$this->{$paginateModel} = $Model;	// add model to controller for paginate()
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $Model->getPaginatePhotosByTagId($keyname, $this->paginate[$paginateModel]);
-		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs'), $paginateArray['conditions']);
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 		// end paginate		
@@ -545,7 +547,7 @@ class TagsController extends TagsAppController {
 		$this->{$paginateModel} = $Model;	// add model to controller for paginate()
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $Model->getPaginateGroupsByTagId($keyname, $this->paginate[$paginateModel]);
-		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs'), $paginateArray['conditions']);
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 		// end paginate	

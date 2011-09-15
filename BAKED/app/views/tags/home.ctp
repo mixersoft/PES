@@ -54,7 +54,7 @@
 </div>
 <?php 
 	// tagged photos
-	$ajaxSrc = Router::url($this->passedArgs + array('plugin'=>'','action'=>'photos', '?'=>array('preview'=>1)));
+	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('plugin'=>'','action'=>'photos', '?'=>array('preview'=>1)));
 	echo "<div id='photos-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}' nodelay='1'></div>";
 	Configure::write('js.render_lightbox', true);
 ?>
@@ -62,7 +62,7 @@
 <?php
 	// tagged groups
 //	$ajaxSrc = Router::url(array('action'=>'groups', AppController::$uuid));
-	$ajaxSrc = Router::url($this->passedArgs + array('plugin'=>'','action'=>'groups', '?'=>array('preview'=>1)));
+	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('plugin'=>'','action'=>'groups', '?'=>array('preview'=>1)));
 	echo "<div id='groups-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}'></div>";
 ?>	
 

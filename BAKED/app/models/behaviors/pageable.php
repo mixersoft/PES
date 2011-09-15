@@ -20,7 +20,7 @@ class PageableBehavior extends ModelBehavior {
 	public $controller = null;
 	
 /**
- * named params array, defaults to Configure::read('passedArgs');
+ * named params array, defaults to Configure::read('passedArgs.complete');
  *
  * @var Controller
  */
@@ -78,7 +78,7 @@ class PageableBehavior extends ModelBehavior {
 		if ($paginateArray === null) $paginateArray = $this->controller->paginate[$Model->name];
 		
 		$this->named = (!empty($this->settings['use_configure_passedArgs'])) 
-			? Configure::read('passedArgs') 
+			? Configure::read('passedArgs.complete') 
 			: $controller->params['named'];		
 		
 		
@@ -103,7 +103,7 @@ class PageableBehavior extends ModelBehavior {
  * 	- sort: /sort:/direction:
  * 
  * merge options from passedArgs > $options > default, passes all additional fields in paginateArray 
- * uses Configure::read('passedArgs') which is written in AppController::beforeFilter() somewhere
+ * uses Configure::read('passedArgs.complete') which is written in AppController::beforeFilter() somewhere
  * 
  * @param aa $options - options, most commonly from Controller->paginate[$Model->name]
  * @param string $alias - model alias
@@ -113,7 +113,7 @@ class PageableBehavior extends ModelBehavior {
 		$default = array_fill_keys(array('fields', 'order', 'limit', 'page', 'sort', 'direction', 'conditions'),'');
 		$default['page'] = 1;
 		
-		$passedArgs = Configure::read('passedArgs');
+		$passedArgs = Configure::read('passedArgs.complete');
 		$paginateArray = $passedArgs + $paginateArray + $default;		// left to right copy
 		if (!empty($paginateArray['perpage'])) {
 			$paginateArray['limit'] = $paginateArray['perpage'];

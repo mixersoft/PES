@@ -531,7 +531,7 @@ VALUES :chunk: ";
 		$Model = $this->Group;
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $this->paginate[$paginateModel];
-		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs'), $paginateArray['conditions']);
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		if ($this->action !== 'all') {
 			// force perpage set from feeds
 			Configure::write('passedArgs.perpage',$this->paginate[$paginateModel]['limit']);	// Configure::read('feeds.paginate.perpage')
@@ -557,7 +557,7 @@ VALUES :chunk: ";
 		$Model = $this->Group;
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $this->paginate[$paginateModel];	
-		$named = Configure::read('passedArgs');
+		$named = Configure::read('passedArgs.complete');
 		
 		if (isset($named['User'])) {
 			$paginateArray = $Model->getPaginateGroupsByUserId($named['User'], $paginateArray);
@@ -568,7 +568,7 @@ VALUES :chunk: ";
 		} else {
 			$paginateArray = $Model->getPaginateGroups($paginateArray);	
 		}		
-		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs'), $paginateArray['conditions']);
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray, 'members');
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 		// end paginate		
@@ -589,51 +589,54 @@ VALUES :chunk: ";
 	 * 		or GroupsUser.role=admin
 	 * 			-: how do we limit access to admins only?
 	 */
-	function __browseContentOk($groupId) {
-
-
+	function __browseContentOk($data) {
+		$lookup_privacyClassName = array(
+			'0567'=>'public',
+			'0631'=>'listing',
+			'0119'=>'members',
+			'0063'=>'admin',
+		);
+		$privacy = $lookup_privacyClassName[$data['Group']['perms']];
+		$groupId = $data['Group']['id'];
+		if ($privacy == 'admin') {
+			// check if owner/admin
+			// track admins via GroupsUser or Group.admin column?
+				//		$this->Group->recursive=-1;
+				//		$result = $this->Group->read(array('owner_id', 'id'), $groupId);
+		
+				$sql = "
+SELECT `Group`.`owner_id`, GroupsUser.user_id, GroupsUser.role
+FROM `groups` AS `Group`
+JOIN groups_users AS GroupsUser ON GroupsUser.group_id=`Group`.`id` AND GroupsUser.isActive=1
+WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";			
+				$result = $this->Group->query($sql);
+				if (Session::read('Auth.User.id') == $result[0]['Group']['owner_id']) {
+					return true;
+				}
+				$admins = (array)Set::extract($result, '/GroupsUser[role=admin]/user_id');
+				if (in_array(Session::read('Auth.User.id'), $admins)) {
+					return true;
+				}
+				return false;		
+		} else if ($privacy == 'members') {
+			// check if member
+			if (!in_array($groupId, Permissionable::getGroupIds())) {
+				return false;
+			}
+		} 
 		return true;
-
-
-//		$only_members_can_browse_group_content=true;	// test only
-//		if ($only_members_can_browse_group_content == false) {
-//			return true;
-//		}
-//		// check if member
-//		if (in_array($groupId, Permissionable::getGroupIds())) {
-//			return true;
-//		}
-//		// check if owner/admin
-//		// track admins via GroupsUser or Group.admin column?
-//		//		$this->Group->recursive=-1;
-//		//		$result = $this->Group->read(array('owner_id', 'id'), $groupId);
-//
-//		$sql = "
-//	SELECT `Group`.`owner_id`, GroupsUser.user_id, GroupsUser.role
-//	FROM `groups` AS `Group`
-//	JOIN groups_users AS GroupsUser ON GroupsUser.group_id=`Group`.`id` AND GroupsUser.isActive=1
-//	WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'		
-//		";			
-//		$result = $this->Group->query($sql);
-//		if (Session::read('Auth.User.id') == $result[0]['Group']['owner_id']) {
-//			return true;
-//		}
-//		$admins = (array)Set::extract($result, '/GroupsUser[role=admin]/user_id');
-//		if (in_array(Session::read('Auth.User.id'), $admins)) {
-//			return true;
-//		}
-//		return false;
 	}
 
 	function home($id = null) {
+		$this->layout = 'snappi';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';		
 		if (!$id) {
-			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'group'));
-			$this->redirect(array('action' => 'index'));
+			$this->redirect('/my/groups', null, true);
 		}
 		/*
 		 * get Permissionable associated data manually, add paging
 		 */
-		if ($browseContentOk = $this->__browseContentOk($id)) {
+		
 			// get Group data
 			$options = array(
 				'contain'=>array('Owner.id', 'Owner.username'),
@@ -650,22 +653,19 @@ VALUES :chunk: ";
 				$this->Session->setFlash(sprintf(__('No %s found.', true), 'Group'));
 				$this->redirectSafe();
 			} else {
-//				$data = array_merge($data, $pageData);
+				$this->set('browseContentOk', $this->__browseContentOk($data));
 				$this->set('data', $data);
 				/*
 				 * get Lookups
 				 */
 				Session::write('lookup.owner_names', Set::merge(Session::read('lookup.owner_names'), Set::combine($data, '/Owner/id', '/Owner/username')));
-				$this->set(compact('browseContentOk'));
 			}
-
-		} else {
-			// show only basic group content
-			// no related content
-		}
 	}
 
 	function photos($id = null){
+		$forceXHR = setXHRDebug($this, 0);
+		$this->layout = 'snappi';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';				
 		if (!$id) {
 			$this->Session->setFlash("ERROR: invalid Photo id.");
 			$this->redirect(array('action' => 'all'));
@@ -676,7 +676,7 @@ VALUES :chunk: ";
 		$Model = $this->Group->{$paginateModel};
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $Model->getPaginatePhotosByGroupId($id, $this->paginate[$paginateModel]);
-		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs'), $paginateArray['conditions']);
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 		// end paginate
@@ -691,7 +691,6 @@ VALUES :chunk: ";
 					
 		$done = $this->renderXHRByRequest('json', '/elements/photo/roll');
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
-		
 		$options = array('conditions'=>array('Group.id'=>$id));
 //		$this->Group->contain(null);	// TODO: why does contain(null) throw a warning only for photos?
 		$this->Group->contain('Owner.username');	
@@ -721,7 +720,7 @@ VALUES :chunk: ";
 		$Model = $this->Group->{$paginateModel};
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $Model->getPaginateUsersByGroupId($id, $this->paginate[$paginateModel]);
-		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs'), $paginateArray['conditions']);
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 		// end paginate		
@@ -755,7 +754,7 @@ VALUES :chunk: ";
 		$Model = $this->Group->Member->{$paginateModel};
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $Model->getPaginateProviderAccountsByGroupId($id, $this->paginate[$paginateModel]);
-		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs'), $paginateArray['conditions']);
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData['ProviderAccount'] = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 		// end paginate		ProviderAccount
@@ -768,7 +767,7 @@ VALUES :chunk: ";
 		$Model->Behaviors->attach('Pageable');		
 		foreach($pageData['ProviderAccount'] as $key => $value){
 			$paginateArray = $Model->getPaginatePhotosByProviderAccountId($value["id"], $this->paginate[$paginateModel]);
-			//$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs'), $paginateArray['conditions']);
+			//$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 			$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 			$pageData['ProviderAccount'][$key]['Assets'] = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 			// this is after considering Permissions, and NOT the same as counterCache result
@@ -1141,7 +1140,7 @@ VALUES :chunk: ";
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $this->paginate[$paginateModel];
 		$paginateArray = $Model->getPublicPaginateGroups($paginateArray);
-		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs'), $paginateArray['conditions']);
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 		// end paginate			

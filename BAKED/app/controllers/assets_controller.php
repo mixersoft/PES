@@ -263,7 +263,7 @@ class AssetsController extends AppController {
 		$Model = $this->Asset;
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $this->paginate[$paginateModel];
-		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs'), $paginateArray['conditions']);
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		if ($this->action !== 'all') {
 			// force perpage set from feeds
 			Configure::write('passedArgs.perpage',$this->paginate[$paginateModel]['limit']);
@@ -294,7 +294,7 @@ class AssetsController extends AppController {
 		$Model = $this->Asset;
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $this->paginate[$paginateModel];	
-		$named = Configure::read('passedArgs');
+		$named = Configure::read('passedArgs.complete');
 		
 		if (isset($named['User'])) {
 			$paginateArray = $Model->getPaginatePhotosByUserId($named['User'], $paginateArray);
@@ -305,7 +305,7 @@ class AssetsController extends AppController {
 		} else {
 			$paginateArray = $Model->getPaginatePhotos($paginateArray);	
 		}		
-		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs'), $paginateArray['conditions']);
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray, 'members');
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 		// end paginate		
@@ -332,7 +332,7 @@ class AssetsController extends AppController {
 		$Model = $this->Asset->{$paginateModel};
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $Model->getPaginateGroupsByPhotoId($id, $this->paginate[$paginateModel]);
-		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs'), $paginateArray['conditions']);
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 		// end paginate
@@ -401,7 +401,7 @@ class AssetsController extends AppController {
 				$paginateArray = $Model->getPaginatePhotosByShotId($id, $paginateArray, $shotType);
 			break;
 		}		
-		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs'), $paginateArray['conditions']);
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 		// end paginate		
@@ -498,7 +498,7 @@ class AssetsController extends AppController {
 							$Model = ClassRegistry::init($paginateModel);
 							$Model->Behaviors->attach('Pageable');
 							$paginateArray = $Model->getPaginatePhotosByGroupId($id, $this->paginate[$paginateModel]);
-							$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs'), $paginateArray['conditions']);
+							$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 							$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 							$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 							// end paginate
@@ -515,7 +515,7 @@ class AssetsController extends AppController {
 						$Model = $this->User->{$paginateModel};
 						$Model->Behaviors->attach('Pageable');
 						$paginateArray = $Model->getPaginatePhotosByUserId($id, $this->paginate[$paginateModel]);
-						$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs'), $paginateArray['conditions']);
+						$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 						$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 						$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 						// end paginate

@@ -43,7 +43,7 @@ class AppModel extends Model {
 	 * @deprecated, moved to pageable behavior
 	 * get paginate options 
 	 * merge options from $options > passedArgs > default
-	 * uses Configure::read('passedArgs') which is written in AppController::beforeFilter() somewhere
+	 * uses Configure::read('passedArgs.complete') which is written in AppController::beforeFilter() somewhere
 	 * @param aa $options - options, most commonly from Controller->paginate[$paginateModel]
 	 * @param string $alias - model alias
 	 */
@@ -51,7 +51,7 @@ class AppModel extends Model {
 		$model = $alias ? $alias : $this->alias;
 		$default = array_fill_keys(array('fields', 'order', 'limit', 'page', 'sort', 'direction', 'conditions'),'');
 		$default['page'] = 1;
-		$passedArgs = Configure::read('passedArgs');
+		$passedArgs = Configure::read('passedArgs.complete');
 		$mergedOptions = $options + $passedArgs + $default;		// left to right copy
 		if (!empty($mergedOptions['perpage'])) $mergedOptions['limit'] = $mergedOptions['perpage'];	
 		return $mergedOptions;	

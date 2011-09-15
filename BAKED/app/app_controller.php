@@ -338,7 +338,8 @@ class AppController extends Controller {
 		
 		$this->passedArgs['plugin'] = '';  // suppress plugin on Router::url() generation
 		if (!empty($this->passedArgs['debug'])) Configure::write('debug' , $this->passedArgs['debug']);
-		Configure::write('passedArgs', $this->passedArgs);
+		Configure::write('passedArgs.complete', $this->passedArgs);
+		Configure::write('passedArgs.min', array_diff_key($this->passedArgs, array_flip(array('perpage', 'page', 'sort', 'direction'))));
 		if (!$this->Session->check('stagepath_baseurl')) Session::write('stagepath_baseurl', '/'.Configure::read('path.stageroot.httpAlias').'/');
 		
 		$this->helpers[] = 'Layout';
@@ -436,6 +437,7 @@ class AppController extends Controller {
 			}
 		}
 		// cache nav location in session
+		// displayName == $controllerAttr['label']
 		$titleName = ($controllerAttr['action'] != 'all') ? $controllerAttr['titleName'] : 'Explore';
 		switch ($titleName) {
 			case 'Me':
@@ -514,7 +516,7 @@ class AppController extends Controller {
 			unset($this->passedArgs['context']);
 				
 			//			$this->passedArgs['plugin'] = '';
-			$here = Router::url($this->passedArgs);
+			$here = Router::url(Configure::read('passedArgs.min'));
 			// redirect, to remove context from url
 			$this->redirect($here, null, true);
 		}		

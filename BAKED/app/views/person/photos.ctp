@@ -19,7 +19,7 @@
 						<section class="box-wrap">
 						  <section id="snaps">
 <?php
-	$ajaxSrc = Router::url($this->passedArgs + array('action'=>'groups', '?'=>array('preview'=>1)));
+	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'groups', '?'=>array('preview'=>1)));
 	echo "<div id='groups-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}' ></div>";
 ?>							  	
 						  </section>
