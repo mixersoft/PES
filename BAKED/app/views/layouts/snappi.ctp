@@ -90,7 +90,7 @@
 			value = value ? 1 : null;
 			var here = SNAPPI.IO.setNamedParams(SNAPPI.STATE.controller.here, {wide: value});
 			window.location.href = here;
-		}		
+		};
 	</script>	
 <?php $this->Layout->blockEnd();?>	
 

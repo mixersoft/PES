@@ -13,7 +13,7 @@ if (empty($this->passedArgs['wide'])) {
 		?>
 		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Owner'); ?></span>
 		<span class='<?php echo $ddClass; if ($i % 2 == 0) echo $altClass;?>'>
-			<?php echo $this->Html->link($data['Owner']['username'], array('controller' => 'users', 'action' => 'home', $data['Owner']['id'])); ?>
+			<?php echo $this->Html->link($data['Owner']['username'], array('controller' => 'person', 'action' => 'home', $data['Owner']['id'])); ?>
 			&nbsp;
 		</span>	
 		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Photos'); ?></span>
@@ -62,7 +62,7 @@ if (empty($this->passedArgs['wide'])) {
 	 */
 ?>
 <?php 
-	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'photos', 'perpage'=>24));
+	$ajaxSrc = Router::url(Configure::read('passedArgs.complete') + array('action'=>'photos', 'perpage'=>24));
 	echo "<div id='gallery-photo-xhr' class='fragment' ajaxSrc='{$ajaxSrc}' nodelay='1'></div>";
 	// Configure::write('js.render_lightbox', true);
 ?>
@@ -86,9 +86,9 @@ if (empty($this->passedArgs['wide'])) {
 						<section class="box-wrap">
 						  <section id="members">
 <?php 
-	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'fragment', 'a'=>'members', 'e'=>'preview-members'));
+	// $ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'fragment', 'a'=>'members', 'e'=>'preview-members'));
 	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'members', '?'=>array('preview'=>1)));
-	echo "<div id='members-preview-xhr' class='xxxfragment' ajaxSrc='{$ajaxSrc}'></div>";
+	echo "<div id='members-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}'></div>";
 ?>							  	
 						  </section>
 						</section>

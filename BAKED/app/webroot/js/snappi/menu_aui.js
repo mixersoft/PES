@@ -595,9 +595,7 @@ var DEFAULT_CFG_contextmenu = 	{
 			// shots are NOT included. get shots via XHR and render
 			var subUri = '/my/groups';
 			dialog.io.set('uri', subUri );
-			var ioCfg = dialog.io.get('cfg');
-			// ioCfg.arguments = args;		// bound on load is ok for now
-			dialog.io.set('cfg', ioCfg);    			
+			// dialog.io.set('arguments', args );    			
 			dialog.io.start();			
 	};	
 	MenuItems.photo_privacy_click = function(menuItem, menu){
@@ -645,9 +643,7 @@ var DEFAULT_CFG_contextmenu = 	{
 			// shots are NOT included. get shots via XHR and render
 			var subUri = '/combo/markup/settings';	// placeholder
 			dialog.io.set('uri', subUri );
-			var ioCfg = dialog.io.get('cfg');
-			// ioCfg.arguments = args;		// bound on load is ok for now
-			dialog.io.set('cfg', ioCfg);    			
+			// dialog.io.set('arguments', args );
 			dialog.io.start();			
 	};	
 	

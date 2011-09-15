@@ -10,7 +10,8 @@ class PersonController extends UsersController {
 	
 	public $helpers  = array(
 		'Tags.TagCloud',
-		'Time','Text',
+		// 'Time',
+		'Text',
 		'CastingCallJson',
 		'Layout',
 //		'Js' => array('Jquery'),
@@ -202,6 +203,7 @@ class PersonController extends UsersController {
 
 	function home($id = null) {
 		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
 		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';
 		if (!$id) {
 			$this->Session->setFlash("ERROR: invalid Photo id.");
@@ -243,6 +245,7 @@ class PersonController extends UsersController {
 
 	function photos($id = null){
 		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
 		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';
 		if (!$id) {
 			$this->Session->setFlash("ERROR: invalid Photo id.");
@@ -345,6 +348,7 @@ class PersonController extends UsersController {
 
 	function groups($id = null){
 		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
 		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';	
 		//	this should be a redirect to /groups/byuser/userid, plus context
 		if (!$id) {

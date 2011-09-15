@@ -1181,6 +1181,7 @@ ul.circle-thumb li.selected {
 }
 
 
+
 /* Circles home page */
 section.item-header > div.wrap {
 	background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0, rgb(197,232,250)),color-stop(1, rgb(232,246,253))	);
@@ -1212,6 +1213,110 @@ section.item-header .item-class {
 }
 
 
+/*
+ * Person/Circle thumbnails
+ */
+.gallery.person {
+	padding: 4px;
+}
+.FigureBox.Person {
+	overflow: hidden;
+	display: inline-block;
+	vertical-align: top;
+}
+.FigureBox.Person:hover figure {
+	background: #fff88a;
+}
+.FigureBox.Person.focus figure {
+	background: #fff88a;
+}
+.FigureBox.Person figure {
+	font-size: 10pt;
+/*	thumbnail height */
+	xheight: 83px;
+}
+
+.FigureBox.Person figure > a > img {
+	border: 4px solid #fff;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-box-shadow: 0px 0px 8px #afb4b6;
+	-moz-box-shadow: 0px 0px 8px #afb4b6;
+	vertical-align: top;
+}
+
+.FigureBox.Person  figcaption .extras li a {
+    color: #404040;
+    font-size: 11px;
+    font-weight: normal;
+    line-height: 18px;
+    text-decoration: none;
+}
+.FigureBox.Person .label {
+	text-align: left;
+}
+
+.FigureBox.Person .label a {
+	text-decoration: none;
+}
+.FigureBox.Person .description {
+	font-size: 0.8em;
+}
+.FigureBox.Person .extras li {
+	display: inline;
+	border-right: 1px solid #404040;
+	padding-right: 5px;
+	margin-right: 5px;
+}
+.FigureBox.Person .extras li.last {
+	border-right: none;
+	margin-right: 0;
+}
+.FigureBox.Person .extras li.icon {
+	padding-left: 15px;
+}
+
+.FigureBox.Person.sq {
+	margin-bottom: 10px;
+}
+.FigureBox.Person.sq figure {
+	margin:2px;
+	padding:2px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;		
+}
+.FigureBox.Person.sq figure > a > img {
+	width: 75px;
+	height: 75px;
+}
+.FigureBox.Person.sq  figcaption {
+	display: inline-block;
+	padding: 2px;
+/*	controls wrap for .extras.description*/
+	width: 110px;	
+}
+.FigureBox.Person.lm {
+	margin-bottom: 10px;
+}
+.FigureBox.Person.lm figure {
+	padding:2px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;		
+}
+.FigureBox.Person.lm figure > a > img {
+	width: 144px;
+	height: 96px;
+}
+.FigureBox.Person.lm  figcaption {
+	display: block;
+	padding: 2px 0;
+/*	controls wrap for .extras.description*/
+	xwidth: 226px;	
+}
+.FigureBox.Person.lm .label {
+	font-weight: bold;
+	font-size: 1.1em;
+}
 
 
 /*temp classes  for debug only*/

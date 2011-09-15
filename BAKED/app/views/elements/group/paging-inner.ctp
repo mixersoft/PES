@@ -3,24 +3,20 @@
  * @param array $groups - usually $data['Group'] from $Model->find()
  */
 // make helpers to format photo labels
-function label() {
-	return $this->Text->truncate($lookupField[$data[$labelField]], 10);
-}
+// function label() {
+	// return $this->Text->truncate($lookupField[$data[$labelField]], 10);
+// }
 
 
-$this->Paginator->options['url']['plugin']='';
 $paginateModel = Configure::read('paginate.Model');
 $groups = & $jsonData[$paginateModel];
 
-$state['displayPage'] = array_filter_keys($this->params['paging'][$paginateModel], array('page', 'count', 'pageCount', 'current'));
-$state['displayPage']['perpage'] = $this->params['paging'][$paginateModel]['options']['limit'] ;
-// save for jsonData ouput 
-$total = $state['displayPage']['count'] + 0;	// as int
-$state['displayPage']['total'] = $total;	
-$this->viewVars['jsonData']['STATE'] = $state;
-
 $isPreview = (!empty($this->params['url']['preview']));
-$THUMBSIZE = $isPreview ? 'sq' : 'll';
+$isWide = !empty($this->params['named']['wide']);		// fluid layout
+
+$passedArgs = Configure::read('passedArgs.min');
+$THUMBSIZE = isset($passedArgs['thumbSize']) ?  $passedArgs['thumbSize'] : 'll';
+$THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 switch ($THUMBSIZE) {
 	case "ll" :
 		$SHORT = 255; $LONG = 255;
@@ -29,9 +25,7 @@ switch ($THUMBSIZE) {
 		$SHORT = 20; $LONG = 255;
 		break;
 }
-
 $DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
-$isWide = !empty($this->params['named']['wide']);		// fluid layout
 ?>
 <section class="<?php if ($isWide) echo "wide "; ?>gallery group container_16">
 	<div class="container">
@@ -46,12 +40,6 @@ $isWide = !empty($this->params['named']['wide']);		// fluid layout
 				$actionName = Configure::read('feeds.action');
 				$fields['user_count'] = (int)$group['groups_user_count'];
 				$fields['asset_count'] = (int)$group['assets_group_count'];
-				// if($actionName == 'most_members'){
-					// $fields['count'] = (int)$group['groups_user_count'];
-				// }else{
-					// $fields['count'] = (int)$group['assets_group_count'];
-				// }
-				// $fields['count'] = (int)$group['assets_group_count'];
 				$fields['trim_caption'] = $this->Text->truncate($fields['caption'], $LONG);
 				$fields['new'] = ($this->Time->wasWithinLast('3 day', $group['created'])) ? "<span class='new'>New! </span>" : '';
 				$fields['title'] = $this->Text->truncate("{$group['title']}", $SHORT);
@@ -88,18 +76,6 @@ $isWide = !empty($this->params['named']['wide']);		// fluid layout
 						echo String::insert("<li class='members'><a href=':href' class='lock'>:label</a></li>", $group_members); 
 						echo String::insert("<li class='snaps last'><a href=':href'>:label</a></li>", $group_photos);
 					?>
-	<!-- 				<?php 
-						if($actionName == 'most_members'){
-							echo String::insert(":new :title (:count members)", $fields); 
-						}else{
-							echo String::insert(":new :title (:count pics)", $fields); 
-						}
-					?>
-					<?php //TODO: we should put unshare into the mouse context menu
-						if (Configure::read('controller.alias')=='photos') { 
-							// echo '<br>'.$this->Html->link('unShare', array('controller'=>'photos','action'=>'unshare', AppController::$uuid, '?'=>array('data[Group][gids]'=>$group['id'])), array('style'=>'font-size:0.7em;', 'class' => 'hide')); 
-						}
-					?> -->
 					</ul>
 					<div class="description" title="<?php echo $fields['caption']; ?>"><?php echo $fields['caption']; ?></div>
 				</figcaption>
@@ -108,10 +84,3 @@ $isWide = !empty($this->params['named']['wide']);		// fluid layout
 		<?php } ?>
 	</div>
 </section>
-<script type="text/javascript">
-var initOnce = function() {
-	SNAPPI.mergeSessionData();
-};
-try {SNAPPI.ajax; initOnce(); }			// run now for XHR request, or
-catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request
-</script>	

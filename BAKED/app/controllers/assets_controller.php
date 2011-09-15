@@ -12,7 +12,7 @@ class AssetsController extends AppController {
 
 	public $helpers  = array(
 		'Tags.TagCloud',
-		'Time',
+		// 'Time',
 		'Text',
 		'CastingCallJson',
 //		'Js' => array('Jquery'),
@@ -326,7 +326,7 @@ class AssetsController extends AppController {
 		
 	
 	function groups($id){
-		
+		$this->helpers[] = 'Time';
 				// paginate 
 		$paginateModel = 'Group';
 		$Model = $this->Asset->{$paginateModel};
@@ -528,6 +528,9 @@ class AssetsController extends AppController {
 
 
 	function home($id = null) {
+		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';
 		if (!$id) {
 			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'asset'));
 			$this->redirectSafe();

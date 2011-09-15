@@ -5,6 +5,7 @@
 	/*
 	 * Generate Paginator->sort() urls when sortin on field in associated models
 	 */
+	$this->Paginator->options['url']['plugin']='';
 	// setup order by rating
 	$orderBy= '0.rating'; $default = 'desc';
 	$rating_markup = $this->Paginator->sort('Top Rated', $orderBy);	// this will ALWAYS BE direction:asc
@@ -27,8 +28,7 @@
 	$orderBy_options['caption'] = array('A_markup'=>$this->Paginator->sort('caption'));
 	$orderBy_options['keyword'] = array('A_markup'=>$this->Paginator->sort('keyword'));
 	$orderBy_selected = !empty($passed['sort']) ? $passed['sort'] : 'dateTaken';
-	$btn_active['orderBy'] = !(isset($passed['sort']) && $passed['sort'] == 'dateTaken' 
-		&& isset($passed['direction']) && $passed['direction'] == 'asc');
+	$btn_active['orderBy'] = isset($passed['sort']);
 	
 	$orderBy_options[$orderBy_selected]['selected'] = ' selected ';
 	// reformat as select option elements

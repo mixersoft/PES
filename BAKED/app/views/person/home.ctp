@@ -29,7 +29,7 @@ if (empty($this->passedArgs['wide'])) {
 	</div>
 <?php	$this->Layout->blockEnd();	} ?>	
 <?php 
-	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'photos', '?'=>array('preview'=>1)));
+	$ajaxSrc = Router::url(Configure::read('passedArgs.complete') + array('action'=>'photos', '?'=>array('preview'=>1)));
 	echo "<div id='photos-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}' nodelay='1'></div>";
 ?>
 

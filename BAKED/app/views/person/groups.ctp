@@ -26,9 +26,9 @@ if (empty($this->passedArgs['wide'])) {
 						<section class="box-wrap">
 						  <section id="members">
 <?php 
-	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'fragment', 'a'=>'members', 'e'=>'preview-members'));
-	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'members', '?'=>array('preview'=>1)));
-	echo "<div id='members-preview-xhr' class='xxxfragment' ajaxSrc='{$ajaxSrc}'></div>";
+	// $ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'fragment', 'a'=>'members', 'e'=>'preview-members'));
+	// $ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'members', '?'=>array('preview'=>1)));
+	// echo "<div id='members-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}'></div>";
 ?>							  	
 						  </section>
 						</section>

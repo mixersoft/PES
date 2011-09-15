@@ -1,18 +1,34 @@
-<?php
-if (Configure::read('controller.isXhr')) {
-	echo $this->element('/group/paging-inner');
-	return;
-};
+<?php	
+	// xhr response
+	if (Configure::read('controller.isXhr')) {
+		echo $this->element('/group/paging-inner');
+		
+		$this->Layout->blockStart('javascript');
+?> 
+	<script type="text/javascript">
+		SNAPPI.mergeSessionData();
+	</script>
+<?php 
+		$this->Layout->blockEnd();	
+		return;
+	};
 	
+	
+	// HTTP GET response
 /**
  * @param array $groups - usually $data['Group'] from $Model->find()
  */
 	$paginateModel = Configure::read('paginate.Model');
 	$state['displayPage'] = array_filter_keys($this->params['paging'][$paginateModel], array('page', 'count', 'pageCount', 'current'));
+	$state['displayPage']['perpage'] = $this->params['paging'][$paginateModel]['options']['limit'] ;	
 	$total = $state['displayPage']['count'] + 0;	// as int
+	$state['displayPage']['total'] = $total;	// as int;
+	$this->viewVars['jsonData']['STATE'] = $state;
+	
 	$isPreview = (!empty($this->params['url']['preview']));
 	$isWide = !empty($this->params['named']['wide']);		// fluid layout
 ?>
+
 <?php echo $this->element('/group/section-header'); ?>
 <div class='gallery-container'>
 		<?php 
@@ -23,8 +39,8 @@ if (Configure::read('controller.isXhr')) {
 	<?php echo $this->element('/group/paging-inner'); ?>
 </div>
 
-<?php $this->Layout->blockStart('javascript');?> 	
-	<script type="text/javascript">
+<?php $this->Layout->blockStart('javascript'); ?>
+	<script type="text/javascript">		
 		PAGE.goto = function (o) {
 			window.location.href = o.options[o.selectedIndex].value;
 		} 
@@ -59,18 +75,14 @@ if (Configure::read('controller.isXhr')) {
 			try {
 				SNAPPI.mergeSessionData();
 				PAGE.setDisplayOptions();
-<?php if (!$isPreview) {
-	// add aui-paginate
-	echo 'SNAPPI.Paginator.paginate_Grouproll();';
-	} 
-?>					
+				SNAPPI.Paginator.paginate_Grouproll();				
 			} catch (e) {}
 		};
 		try {
-			SNAPPI.ajax; 
+			SNAPPI.ajax.fetchXhr; 
 			initOnce(); 
 		} catch (e) {
 			PAGE.init.push(initOnce); 
 		}	// run from Y.on('domready') for HTTP request
-	</script>
-<?php $this->Layout->blockEnd();?> 
+	</script>	
+<?php $this->Layout->blockEnd(); ?> 

@@ -3,6 +3,7 @@
 	/*
 	 * Generate Paginator->sort() urls when sortin on field in associated models
 	 */
+	$this->Paginator->options['url']['plugin']='';
 	$btn_active=array();
 	// Sort select TAG
 	$paginate_desc['url']['direction'] = 'desc';
@@ -13,7 +14,7 @@
 	$orderBy_options['assets_group_count'] = array('A_markup'=>$this->Paginator->sort('Photos', 'assets_group_count', $paginate_desc ));
 	$orderBy_options['groups_user_count'] = array('A_markup'=>$this->Paginator->sort('Members', 'groups_user_count', $paginate_desc));
 	$orderBy_selected = !empty($passed['sort']) ? $passed['sort'] : 'title';
-	$btn_active['orderBy'] = $orderBy_selected !== 'All Circles';
+	$btn_active['orderBy'] = isset($passed['sort']);
 	$orderBy_options[$orderBy_selected]['selected'] = ' selected ';
 	
 	$filterBy_options = array();

@@ -3,39 +3,57 @@
  * @param array $photos - usually $data['Asset'] from $Model->find()
  */
 $context_class = Session::read('lookup.context.keyName');	
-
-$this->Paginator->options['url']['plugin']='';
+$passedArgs = Configure::read('passedArgs.min');
+$isPreview = !empty($this->params['url']['preview']);
+$isWide = !empty($this->params['named']['wide']);		// fluid layout
+$isXhr = Configure::read('controller.isXhr');
 $paginateModel = Configure::read('paginate.Model');
-$displayPage = array_filter_keys($this->params['paging']['Asset'], array('page', 'count', 'pageCount', 'current'));
-$displayPage['perpage'] = $this->params['paging'][$paginateModel]['options']['limit'] ;  
-$total = $displayPage['count'];
 $state = array();
-if (isset($this->passedArgs['rating'])) {
+$state['displayPage'] = array_filter_keys($this->params['paging'][$paginateModel], array('page', 'count', 'pageCount', 'current'));
+$state['displayPage']['perpage'] = $this->params['paging'][$paginateModel]['options']['limit'] ;
+$total = $state['displayPage']['count'] + 0;	// as int
+$state['displayPage']['total'] = $total;	// as int;	
+if (isset($passedArgs['rating'])) {
 	$state['showRatings']='show';
 	$state['showDisplayOptions'] = 1;
 }
-if (isset($this->passedArgs['thumbSize'])) {
-	$state['thumbSize']=$this->passedArgs['thumbSize'];
-}
-if ($state) $this->viewVars['jsonData']['STATE'] = $state;
-$isPreview = (!empty($this->params['url']['preview']));
+$this->viewVars['jsonData']['STATE'] = $state;
 
-$isWide = !empty($this->params['named']['wide']);		// fluid layout
-$isXhr = Configure::read('controller.isXhr');
+$THUMBSIZE = isset($passedArgs['thumbSize']) ?  $passedArgs['thumbSize'] : 'lm';
+$THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 ?>
-	<?php echo $this->element('/photo/section-header'); ?>
-	<div class='gallery-container' >
-		<?php 
-			if ($isWide) {
-				echo $this->element('/photo/header-wide', array('total'=>$total));
-			} else echo $this->element('/photo/header', array('total'=>$total));
-		?>
-		<section class="<?php if ($isWide) echo "wide "; ?>gallery photo container_16">
-			<div class='grid_16'></div>
-		</section>
-	</div>
-<?php $this->Layout->blockStart('javascript');?> 	
+
+
+<?php echo $this->element('/photo/section-header'); ?>
+<div class='gallery-container' >
+	<?php 
+		if ($isWide) {
+			echo $this->element('/photo/header-wide', array('total'=>$total));
+		} else echo $this->element('/photo/header', array('total'=>$total));
+	?>
+	<section class="<?php if ($isWide) echo "wide "; ?>gallery photo container_16">
+		<div class='grid_16'></div>
+	</section>
+</div>
+	
+	
+	
+<?php 
+	if ($isXhr) {
+		$this->Layout->blockStart('javascript'); ?>
+		<script type="text/javascript">
+			// xhr response
+			SNAPPI.mergeSessionData();
+			SNAPPI.domJsBinder.bindAuditions2Photoroll();
+			// SNAPPI.filter.initRating();
+		</script>
+<?php		
+		$this->Layout->blockEnd();
+	} else {
+		$this->Layout->blockStart('javascript');
+?> 	
 	<script type="text/javascript">
+		// HTTP GET response
 		PAGE.orderBy = function (o) {
 			window.location.href = o.options[o.selectedIndex].value;
 		} 
@@ -65,24 +83,23 @@ $isXhr = Configure::read('controller.isXhr');
 			try {
 				SNAPPI.mergeSessionData();
 				PAGE.setDisplayOptions();
+				SNAPPI.domJsBinder.bindAuditions2Photoroll();
+				// SNAPPI.filter.initRating();
 			} catch (e) {}
-			
-			
-			SNAPPI.domJsBinder.bindAuditions2Photoroll();
-			// TODO: SNAPPI.filter.initRating() should be moved into photoRoll.restoreState() (?)
-			// 	make sure restoreState works for both HTTP GET and XHR page loads
-			// or use 'snappi:ajaxLoad' custom event
-			SNAPPI.filter.initRating();
 		};
 		try {
-			SNAPPI.ajax; 
+			SNAPPI.ajax.fetchXhr; 
 			initOnce(); 
 		} catch (e) {
 			PAGE.init.push(initOnce); 
 		}	// run from Y.on('domready') for HTTP request
+		var check;
 	</script>
-<?php $this->Layout->blockEnd();?> 
-<?php $this->Layout->blockStart('lightbox'); 
-	echo $this->element('/lightbox'); 
-	$this->Layout->blockEnd();
+<?php 
+		$this->Layout->blockEnd();
+		
+		$this->Layout->blockStart('lightbox'); 
+			echo $this->element('/lightbox'); 
+		$this->Layout->blockEnd();
+	}
 ?> 

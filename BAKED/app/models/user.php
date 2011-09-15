@@ -186,7 +186,7 @@ abstract class UserPlugin extends AppModel {
 
 /**
  * Updates the last activity field of a user
- *
+ * 
  * @param string $user User ID
  * @return boolean True on success
  */
@@ -901,5 +901,46 @@ GROUP BY ProviderAccount.id, Asset.batchId ORDER BY photos DESC;";
 		$data = $this->find('first', $options);
 		return !empty($data);
 	}
+	
+	
+	/*
+	 * update Person counters for assets, memberships
+	 * 		works with counterCache, 
+	 */
+	function updateCounter($uid) {
+		$time = time();
+		$sql = "/* do not cache @{$time} */ SELECT u.id, COUNT(DISTINCT a.id) AS `asset_count`, COUNT(DISTINCT gu.group_id)+COUNT(DISTINCT g.id)  AS `groups_user_count`
+FROM `users` u
+LEFT JOIN assets a ON u.id = a.owner_id
+LEFT JOIN groups_users gu ON u.id = gu.user_id
+LEFT JOIN groups g ON (u.id = g.owner_id and g.isSystem=0)
+WHERE u.id='{$uid}';";
+		$result = $this->query($sql);
+		if ($result) {
+			$data['User'] = array_shift(array_shift($result));
+			$this->id = $uid;
+			$ret = $this->save($data, false, array('asset_count','groups_user_count'));
+			return $ret != false;
+		}
+		return false;
+	}	
+	
+	function updateAllCounts() {
+		$SQL = "
+UPDATE users AS `User`
+LEFT JOIN (
+	SELECT u.id as user_id, COUNT(DISTINCT a.id) AS `asset_count`,
+	  COUNT(DISTINCT gu.group_id)  AS `groups_user_count`
+	FROM `users` u
+	LEFT JOIN assets a ON u.id = a.owner_id
+	LEFT JOIN groups_users gu ON u.id = gu.user_id
+--	LEFT JOIN groups g ON (u.id = g.owner_id and g.isSystem=0)
+	GROUP BY u.id
+) AS t ON (`User`.id = t.user_id)
+SET `User`.asset_count = t.asset_count, `User`.groups_user_count = t.groups_user_count;";
+		$result = $this->query($sql);
+		return true;
+	}
+	
 }
 ?>

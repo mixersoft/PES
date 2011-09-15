@@ -12,7 +12,8 @@ class GroupsController extends AppController {
 
 	public $helpers  = array(
 		'Tags.TagCloud',
-		'Time','Text',
+		// 'Time',
+		'Text',
 		'CastingCallJson',
 //		'Js' => array('Jquery'),
 //		'Paginator',
@@ -629,6 +630,7 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 
 	function home($id = null) {
 		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
 		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';		
 		if (!$id) {
 			$this->redirect('/my/groups', null, true);
@@ -665,6 +667,7 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 	function photos($id = null){
 		$forceXHR = setXHRDebug($this, 0);
 		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
 		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';				
 		if (!$id) {
 			$this->Session->setFlash("ERROR: invalid Photo id.");
@@ -710,6 +713,10 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 	
 	
 	function members($id=null){
+		$forceXHR = setXHRDebug($this, 0);
+		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';			
 		if (!$id) {
 			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'group'));
 			$this->redirectSafe();
