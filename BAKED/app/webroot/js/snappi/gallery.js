@@ -229,6 +229,7 @@
 	        	this.container = node.one('div');
 	        }
 	        node.Gallery = this;
+	        this.node = node;
 	        node.dom().Gallery = this; 				// for firebug introspection
 	        node.Gallery.container.Gallery = this;	// is this necessary?
 	        delete _cfg.node;	// use this.container from this point forward

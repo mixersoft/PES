@@ -63,6 +63,7 @@ if (!empty($lightbox['auditions'])) {
 	<ul class="photo-roll"></ul>
 </div>
 <div id='pagemaker' class='placeholder'></div>
+<?php $this->Layout->blockStart('javascript');?>
 <script type="text/javascript">
 var initOnce = function() {
 	// load PG designer
@@ -94,3 +95,4 @@ var initOnce = function() {
 try {SNAPPI.ajax; initOnce(); }			// run now for XHR request, or
 catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request
 </script>
+<?php $this->Layout->blockEnd();?>	

@@ -557,7 +557,7 @@ ALTER TABLE `best_groupshots` DROP INDEX `shot_idx`,
  ADD UNIQUE INDEX `shot_idx` USING BTREE(`groupshot_id`, `user_id`); 
  
 ALTER TABLE `groups` 
-	ADD COLUMN `type` VARCHAR(10) DEFAULT 'Group' AFTER isSystem`;
+	ADD COLUMN `type` VARCHAR(10) DEFAULT 'Group' AFTER `isSystem`;
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;

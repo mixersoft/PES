@@ -23,7 +23,7 @@
 	 * @return [Paginator | 'delayed'], if created, or False if not created
 	 */
 	Paginator.paginate_Photoroll = function(gallery){
-			var self = gallery;	// gallery
+			var self = gallery.node.Gallery;	// gallery
 			var target = self.container;
 			var NAME = '.gallery.photo';
 			var DELAY = 1000;	// delay_task
@@ -55,7 +55,7 @@
 			 */
 			var _getPage = function(pageNumber){
 				if (pageNumber == SNAPPI.STATE.displayPage.page) return;
-				var uri = controller.here + "/.json";				
+				var uri = self.castingCall.CastingCall.Request+ "/.json";				
 				var nameData = {page: pageNumber};
 				if (target.io) {
 					// already plugged, just reuse
@@ -69,7 +69,7 @@
 					parseContent:true,
 					nameData: nameData,
 					dataType: 'json',
-					context: gallery.node,	// test
+					context: self.node,	// test
 					on: {
 						success: function(e, id, o, args) {
 							// gallery = this.Gallery;
