@@ -1,3 +1,10 @@
+<?php
+if (empty($this->passedArgs['wide'])) {
+	$this->Layout->blockStart('itemHeader');
+		echo $this->element('nav/section', array('icon_src'=>$data['User']['src_thumbnail']));
+	$this->Layout->blockEnd();	
+}
+?>
 <?php echo $this->element('/photo/roll');?>
 
 <?php $this->Layout->blockStart('relatedContent');?>

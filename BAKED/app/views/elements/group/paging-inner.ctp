@@ -31,8 +31,9 @@ switch ($THUMBSIZE) {
 }
 
 $DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
+$isWide = !empty($this->params['named']['wide']);		// fluid layout
 ?>
-<section class="gallery group">
+<section class="<?php if ($isWide) echo "wide "; ?>gallery group container_16">
 	<div class="container">
 <?php
 			foreach ($groups as $group) { 
@@ -80,7 +81,7 @@ $DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
 					if (isset($fields['title'])) $options['title'] = $fields['trim_caption'];
 					echo $this->Html->image( $fields['src_icon'] , $options); ?>
 				<figcaption>
-					<div class="label"><?php echo $fields['title']; ?></div>
+					<div class="label"><?php echo $fields['title']; ?><span><?php echo " ".$group['type']?></span></div>
 					<ul class="inline extras">
 					<?php 
 						echo String::insert("<li class='icon privacy :privacy' title=':label'></li>", $group_privacy); 

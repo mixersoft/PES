@@ -1,19 +1,17 @@
 <?php 
-	echo $this->element('nav/section', array('icon_src'=>$data['Group']['src_thumbnail']));
+	// echo $this->element('nav/section', array('icon_src'=>$data['Group']['src_thumbnail']));
 ?>
 <div class="groups photos">
 	<p>Show as <?php echo $this->Html->link('Photostream', $this->passedArgs + array('action'=>'photostreams'))?>
 	</p>
-	<div id='paging-photos' class='paging-content' xhrTarget='paging-photos-inner'>
-		<?php echo $this->element('/photo/roll');?>
-	</div>
+	<?php echo $this->element('/photo/roll');?>
 </div>
 <?php	// tagCloud
 	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show', 'filter'=>'Asset');
 	$xhrFrom = Configure::read('controller.xhrFrom');
 	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
 	$ajaxSrc = Router::url($xhrSrc);
-	echo "<div id='tags-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}'></div>";
+	echo "<div id='tags-preview-xhr' class='xfragment' ajaxSrc='{$ajaxSrc}'></div>";
 ?>	
 <script type="text/javascript">
 var initOnce = function() {

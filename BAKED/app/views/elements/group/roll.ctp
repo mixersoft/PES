@@ -11,27 +11,66 @@ if (Configure::read('controller.isXhr')) {
 	$state['displayPage'] = array_filter_keys($this->params['paging'][$paginateModel], array('page', 'count', 'pageCount', 'current'));
 	$total = $state['displayPage']['count'] + 0;	// as int
 	$isPreview = (!empty($this->params['url']['preview']));
+	$isWide = !empty($this->params['named']['wide']);		// fluid layout
 ?>
+<?php echo $this->element('/group/section-header'); ?>
 <div class='gallery-container'>
-	<section class="gallery-header">
-		<ul class='inline group-roll-header'>
-			<li>Total of <?php echo $total; ?> Groups</li>
-			<li><?php echo $this->element('context'); ?></li>
-		</ul>		
-	</section>
+		<?php 
+			if ($isWide) {
+				echo $this->element('/group/header-wide', array('total'=>$total));
+			} else echo $this->element('/group/header', array('total'=>$total));
+		?>
 	<?php echo $this->element('/group/paging-inner'); ?>
 </div>
-<script type="text/javascript">
-var initOnce = function() {
-	// SNAPPI.cfg.MenuCfg.listenToGroupRoll();
-	// SNAPPI.cfg.MenuCfg.listenToSubstituteGroupRoll();
-	
+
+<?php $this->Layout->blockStart('javascript');?> 	
+	<script type="text/javascript">
+		PAGE.goto = function (o) {
+			window.location.href = o.options[o.selectedIndex].value;
+		} 
+		PAGE.myGroups = function(o){
+			var set = /selected/.test(o.className) ? null : 1;
+			var href = window.location.href;
+			window.location.href = SNAPPI.IO.setNamedParams(href, {'filter-me':set});
+		}
+		PAGE.toggleDisplayOptions  = function(o){
+			var Y = SNAPPI.Y;
+			try {
+				SNAPPI.STATE.showDisplayOptions = SNAPPI.STATE.showDisplayOptions ? 0 : 1;
+				PAGE.setDisplayOptions();
+			} catch (e) {}
+		};
+		PAGE.setDisplayOptions = function(){
+			var Y = SNAPPI.Y;
+			try {
+				if (SNAPPI.STATE.showDisplayOptions) {
+					Y.one('section.gallery-header li.display-option').addClass('open');
+					Y.one('section.gallery-display-options').removeClass('hide');
+				} else {
+					Y.one('section.gallery-header li.display-option').removeClass('open');
+					Y.one('section.gallery-display-options').addClass('hide');
+				}	
+			} catch (e) {}
+		};
+		/**
+		 * run after EACH XHR request
+		 */
+		var initOnce = function() {
+			try {
+				SNAPPI.mergeSessionData();
+				PAGE.setDisplayOptions();
 <?php if (!$isPreview) {
 	// add aui-paginate
 	echo 'SNAPPI.Paginator.paginate_Grouproll();';
 	} 
-?>	
-};
-try {SNAPPI.ajax; initOnce(); }			// run now for XHR request, or
-catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request
-</script>
+?>					
+			} catch (e) {}
+		};
+		try {
+			SNAPPI.ajax; 
+			initOnce(); 
+		} catch (e) {
+			PAGE.init.push(initOnce); 
+		}	// run from Y.on('domready') for HTTP request
+	</script>
+<?php $this->Layout->blockEnd();?> 

@@ -1,76 +1,10 @@
 <?php
-	echo $this->element('nav/section', array('icon_src'=>$data['Group']['src_thumbnail']));
+$isMember = in_array($data['Group']['id'], Permissionable::getGroupIds());
+if (empty($this->passedArgs['wide'])) {
+	$this->Layout->blockStart('itemHeader');
+		echo $this->element('nav/section', array('icon_src'=>$data['Group']['src_thumbnail'])); 
 ?>
-<?php 	
-	$isMember = in_array($data['Group']['id'], Permissionable::getGroupIds());
-?>
-<div class="groups main-div placeholder">
-
-<div class="related photos">
-<?php 
-if ($browseContentOk) {  
-	$ajaxSrc = Router::url($this->passedArgs + array('action'=>'photos', '?'=>array('preview'=>1)));
-	echo "<div id='photos-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}' nodelay='1'></div>";
-	Configure::write('js.render_lightbox', true);
-} 
-?>
-</div>
-<div class="related collections">
-	<?php if (!empty($data['Collection'])):?>
-	<h3><?php printf(__('Related %s', true), __('Collections', true));?></h3>
-	<?php if ($browseContentOk) { ?>
-	<table cellpadding = "0" cellspacing = "0">
-	<tr>
-		<th><?php __('Id'); ?></th>
-		<th><?php __('Title'); ?></th>
-		<th><?php __('User Id'); ?></th>
-		<th><?php __('Description'); ?></th>
-		<th><?php __('Markup'); ?></th>
-		<th><?php __('Src'); ?></th>
-		<th><?php __('LastVisit'); ?></th>
-		<th><?php __('Created'); ?></th>
-		<th><?php __('Modified'); ?></th>
-		<th class="actions"><?php __('Actions');?></th>
-	</tr>
-	<?php
-		$i = 0;
-		foreach ($data['Collection'] as $collection):
-			$class = null;
-			if ($i++ % 2 == 0) {
-				$class = ' class="altrow"';
-			}
-		?>
-		<tr<?php echo $class;?>>
-			<td><?php echo $collection['id'];?></td>
-			<td><?php echo $collection['title'];?></td>
-			<td><?php echo $collection['owner_id'];?></td>
-			<td><?php echo $collection['description'];?></td>
-			<td><?php echo $collection['markup'];?></td>
-			<td><?php echo $collection['src'];?></td>
-			<td><?php echo $collection['lastVisit'];?></td>
-			<td><?php echo $collection['created'];?></td>
-			<td><?php echo $collection['modified'];?></td>
-			<td class="actions">
-				<?php echo $this->Html->link(__('View', true), array('controller' => 'collections', 'action' => 'home', $collection['id'])); ?>
-				<?php echo $this->Html->link(__('Edit', true), array('controller' => 'collections', 'action' => 'edit', $collection['id'])); ?>
-				<?php echo $this->Html->link(__('Delete', true), array('controller' => 'collections', 'action' => 'delete', $collection['id']), null, sprintf(__('Are you sure you want to delete # %s?', true), $collection['id'])); ?>
-			</td>
-		</tr>
-	<?php endforeach; ?>
-	</table>
-<?php }?>
-<?php endif; ?>
-</div>
-
-<?php 
-if ($browseContentOk) { 
-	$ajaxSrc = Router::url($this->passedArgs + array('action'=>'fragment', 'a'=>'members', 'e'=>'preview-members'));
-	$ajaxSrc = Router::url($this->passedArgs + array('action'=>'members', '?'=>array('preview'=>1)));
-	echo "<div id='members-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}'></div>";
-}
-?>	
-	
-<div class="properties">	
+<div class="properties placeholder container_16">	
 	<dl class="grid_16">
 		<?php $i = 0;
 			$dtClass = 'grid_3 alpha';
@@ -119,29 +53,72 @@ if ($browseContentOk) {
 		</span>
 	</dl>
 </div>	
+<?php	$this->Layout->blockEnd();	} ?>
+<?php 
+	$browseContentOk = $data['Group']['perms'];
+	if (!$browseContentOk) return; 
+	/*
+	 *  *************** stop here if Group Privacy setting should hide content  *******
+	 */
+?>
+<?php 
+	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'photos', 'perpage'=>6));
+	echo "<div id='gallery-photo-xhr' class='fragment' ajaxSrc='{$ajaxSrc}' nodelay='1'></div>";
+	// Configure::write('js.render_lightbox', true);
+?>
 
-<?php if ($browseContentOk) { ?>	
-	<?php echo $this->element('tags', array('domId'=>'groups-tags', 'data'=>&$group))?>
-	<?php	// tagCloud
-		$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show');
-		$xhrFrom = Configure::read('controller.xhrFrom');
-		$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
-		$ajaxSrc = Router::url($xhrSrc);
-		echo "<div id='tags-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}'></div>";
-	?>
-	<?php
-		$xhrSrc = array('plugin'=>'', 'action'=>'discussion', $this->passedArgs[0]);
-		$ajaxSrc = Router::url($xhrSrc);	
-		echo $this->element('comments/discussion-fragment', array('ajaxSrc'=>$ajaxSrc));
-	?>
-<?php }?>	
-</div>
-<script type="text/javascript">
-var initOnce = function() {
-	// init xhr paging & fetch fragments
-	// NOTE: any fragments will bind own PAGE.init() method
-	SNAPPI.ajax.init(); 
-};
-try {SNAPPI.ajax; initOnce(); }			// run now for XHR request, or
-catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request
-</script>
+<?php $this->Layout->blockStart('relatedContent');?>
+<aside id="related-content" class="container_16">		    	
+        <div class="grid_11">
+           	<section class="left">
+				<article>
+        	    	<section class="tabbed-area cur-nav-fix">  
+            		    <h3 class="recent">Recent Activity</h3>      		
+                		<section class="box-wrap">
+                            <section id="snaps">
+                          </section>
+                        </section>
+					</section>
+				</article>
+				<article>
+					<section class="tabbed-area cur-nav-fix">  
+						<h3 class="circle">Members</h3>      		
+						<section class="box-wrap">
+						  <section id="members">
+<?php 
+	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'fragment', 'a'=>'members', 'e'=>'preview-members'));
+	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'members', '?'=>array('preview'=>1)));
+	echo "<div id='members-preview-xhr' class='xxxfragment' ajaxSrc='{$ajaxSrc}'></div>";
+?>							  	
+						  </section>
+						</section>
+					</section>
+				</article>
+			</section>        	
+		</div>
+		<div class="grid_5">
+        	<aside>
+                <section id="tag-cloud" class="popular">
+					<h3 class="popular"><?php __('Trends');?></h3>
+<?php 
+	// tagCloud
+	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show');
+	$xhrFrom = Configure::read('controller.xhrFrom');
+	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
+	$ajaxSrc = Router::url($xhrSrc);
+	echo "<div id='tags-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}'></div>";
+		// tag form 	
+	echo $this->element('tags', array('domId'=>'groups-tags', 'data'=>&$group));
+?>
+	
+				</section>
+            	<section class="people">
+            		<h3 class="people">People</h3>
+				</section>
+			</aside>
+		</div>	
+		
+</aside>
+<?php 
+	$this->Layout->blockEnd();
+?>	

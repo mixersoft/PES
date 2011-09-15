@@ -33,6 +33,7 @@ class Group extends AppModel {
 		array('name' => 'description', 'type' => 'like', 'field' => 'description'),
 		array('name' => 'keyword', 'type' => 'like', 'field' => 'keyword'),
 		array('name' => 'tags', 'type' => 'subquery', 'method' => 'findByTags', 'field' => 'id'),
+		array('name' => 'type', 'type' => 'value', 'field' => 'type'),
 	);
 
 	public function findByTags($data = array()) {
@@ -245,6 +246,12 @@ ORDER BY photos DESC;";
 			$searchKeys = array('title', 'description', 'tags');
 			$filterConditions[] = $this->appendSearchConditions($options, $searchKeys );
 		}	
+		if (isset($options['filter-type'])) {
+			$filterConditions[] = array("`{$this->alias}`.type"=>$options['filter-type']);
+		}
+		if (isset($options['filter-me'])) {
+			$filterConditions[] = array("`{$this->alias}`.owner_id"=>AppController::$userid);
+		}
 		return @mergeAsArray( $conditions, $filterConditions);
 	}
 	

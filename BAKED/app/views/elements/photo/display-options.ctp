@@ -1,11 +1,13 @@
 <?php  
-	$passed = Configure::read('passedArgs');
+	$passed = Configure::read('passedArgs.complete');
+	
+	$btn_active=array();
 	/*
 	 * Generate Paginator->sort() urls when sortin on field in associated models
 	 */
 	// setup order by rating
 	$orderBy= '0.rating'; $default = 'desc';
-	$rating_markup = $this->Paginator->sort('Rating', $orderBy);	// this will ALWAYS BE direction:asc
+	$rating_markup = $this->Paginator->sort('Top Rated', $orderBy);	// this will ALWAYS BE direction:asc
 	// default = 'desc';
 	$isActive = isset($passed['sort']) && $passed['sort'] == $orderBy;
 	if ($isActive) {
@@ -25,6 +27,8 @@
 	$orderBy_options['caption'] = array('A_markup'=>$this->Paginator->sort('caption'));
 	$orderBy_options['keyword'] = array('A_markup'=>$this->Paginator->sort('keyword'));
 	$orderBy_selected = !empty($passed['sort']) ? $passed['sort'] : 'dateTaken';
+	$btn_active['orderBy'] = !(isset($passed['sort']) && $passed['sort'] == 'dateTaken' 
+		&& isset($passed['direction']) && $passed['direction'] == 'asc');
 	
 	$orderBy_options[$orderBy_selected]['selected'] = ' selected ';
 	// reformat as select option elements
@@ -40,9 +44,11 @@
 		unset($ratingRemoved_href['rating']);
 		unset($ratingRemoved_href['page']);
 		$ratingRemoved_href = Router::url($ratingRemoved_href);
+		$btn_active['filter-rating'] = 1;
 	} else {
 		$ratingRemoved_class .= ' hide'; 				// move to JS
 		$ratingRemoved_href = $this->here;
+		$btn_active['filter-rating'] = 0;
 	}
 	$isWide = !empty($this->params['named']['wide']);		// fluid layout
 	
@@ -55,7 +61,7 @@
 	$this->Layout->blockStart('inner_DisplayOptions'); ?> 
 	    	<ul class="filter inline">
 	    		<li class='label'>Filter</li>
-				<li class='rating btn'>
+				<li class='rating btn <?php if ($btn_active['filter-rating']) echo "selected" ?>'>
 					<ul>
 						<li class='<?php echo $ratingRemoved_class;  ?>'>
 							<a title='click here to REMOVE this filter' href='<?php echo $ratingRemoved_href ?>' >x</a>
@@ -70,9 +76,8 @@
 				<li class="btn">Date Taken <a><img src="/css/images/arrow-down.png" alt=""></a></li>
 			</ul>
 	        <ul class="sort inline right">
-	        	<li class='label'>Show</li>
-	            <li class='btn'>
-	            	Sort
+	        	<li class='label'>Sort</li>
+	            <li class='btn <?php if ($btn_active['orderBy']) echo "selected" ?>'>
 	             	<select onchange="PAGE.orderBy(this);">
 	             		<?php 
 							foreach ($orderBy_options as $id => $option) {

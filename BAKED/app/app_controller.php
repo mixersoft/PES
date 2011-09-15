@@ -339,7 +339,7 @@ class AppController extends Controller {
 		$this->passedArgs['plugin'] = '';  // suppress plugin on Router::url() generation
 		if (!empty($this->passedArgs['debug'])) Configure::write('debug' , $this->passedArgs['debug']);
 		Configure::write('passedArgs.complete', $this->passedArgs);
-		Configure::write('passedArgs.min', array_diff_key($this->passedArgs, array_flip(array('perpage', 'page', 'sort', 'direction'))));
+		Configure::write('passedArgs.min', array_diff_key($this->passedArgs, array_flip(array('perpage', 'page', 'sort', 'direction', 'filter'))));
 		if (!$this->Session->check('stagepath_baseurl')) Session::write('stagepath_baseurl', '/'.Configure::read('path.stageroot.httpAlias').'/');
 		
 		$this->helpers[] = 'Layout';

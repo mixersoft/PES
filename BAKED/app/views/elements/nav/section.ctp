@@ -147,76 +147,20 @@ switch ($classLabel) {
 		break;
 }
 ?>
-<div class='placeholder section-header'>
-<div class='thumbnail sq'><?php echo $this->Html->image($src, array('width'=>75, 'height'=>75)); ?></div>
-<div class='heading'>
-	<div class='label'>
-	<?php 
-		$options = ($label=='Guest') ? array('title'=>"Your guest id is ".AppController::$uuid) : array(); 
-		echo $this->Html->link(ucwords($label), $home, $options); 
-		?>
-	<span class='section-class'><?php echo $classLabel; ?></span></div>
-	<div class='primary-actions'>
-	<?php 
-		$check = false;
-		foreach ($actions as $label=>$url) {
-			
-			$options = null;
-			$confirm = null;
-			if (is_array($url)) $url = $passed + $url;
-			if (@array_key_exists('options', $url)) {
-				$options = $url['options'];
-				unset($url['options']);
-			}	
-			if (@array_key_exists('confirm', $url)) {
-				$confirm = $url['confirm'];
-				unset($url['confirm']);
-			}
-			if (isset($url['action']) && $url['action'] == 'trends') unset($url['filter']);
-			
-			$output[] = $this->Html->link($label, $url, $options, $confirm );
-			continue;
-		
-		};
-		
-		
-		// output moreActions, if any
-		if (!empty($moreActions)) {
-			// output more button
-			$output[] = "<a id='primaryActionsMoreBtn'>More ▼</a>";
-			
-			foreach ($moreActions as $label=>$url) {
-				
-				$options = null;
-				$confirm = null;
-				if (is_array($url)) $url = $this->passedArgs + $url;
-				if (@array_key_exists('options', $url)) {
-					$options = $url['options'];
-					unset($url['options']);
-				}	
-				if (@array_key_exists('confirm', $url)) {
-					$confirm = $url['confirm'];
-					unset($url['confirm']);
-				}
-				if (isset($url['action']) && $url['action'] == 'trends') unset($url['filter']);
-	
-				$moreActions_output[] = $this->Html->link($label, $url, $options, $confirm );
-				
-			}		
-		}
-		
-		if (!empty($output)) {
-			echo implode(' | ', $output);
-		};
-	?>
+<section class='item-header container_16'>
+	<div class='wrap'>
+		<ul class="inline grid_16">
+			<li class='thumbnail sq'><?php echo $this->Html->image($src, array('width'=>75, 'height'=>75)); ?></li>
+			<li>
+				<div class='item-class'><?php echo $classLabel; ?></div>
+				<h1 class='label'>
+				<?php 
+					// $options = ($label=='Guest') ? array('title'=>"Your guest id is ".AppController::$uuid) : array(); 
+					// echo $this->Html->link(ucwords($label), $home, $options); 
+					echo ucwords($label);
+					?>
+				</h1>
+			</li>
+		</ul>
 	</div>
-	<script type="text/javascript">
-		<?php 
-			if (!empty($moreActions)){
-				$this->viewVars['jsonData']['menu']['more'] = $moreActions_output;
-			}
-		?>
-	</script>
-	<div id='page-filters' class='placeholder'><ul class='inline'></ul></div>
-	</div>
-</div>
+</section>
