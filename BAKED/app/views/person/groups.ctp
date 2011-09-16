@@ -22,7 +22,7 @@ if (empty($this->passedArgs['wide'])) {
 				</article>
 				<article>
 					<section class="tabbed-area cur-nav-fix">  
-						<h3 class="circle">Members</h3>      		
+						<h3 class="person">People</h3>      		
 						<section class="box-wrap">
 						  <section id="members">
 <?php 
@@ -50,9 +50,6 @@ if (empty($this->passedArgs['wide'])) {
 	echo $this->element('tags', array('domId'=>'groups-tags', 'data'=>&$group));
 ?>
 	
-				</section>
-            	<section class="people">
-            		<h3 class="people">People</h3>
 				</section>
 			</aside>
 		</div>	

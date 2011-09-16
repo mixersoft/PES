@@ -1,7 +1,14 @@
 <?php	
+	$isPreview = (!empty($this->params['url']['preview']));
+	$isWide = !empty($this->params['named']['wide']);		// fluid layout
+	$paginateModel = Configure::read('paginate.Model');
+	$state['displayPage'] = array_filter_keys($this->params['paging'][$paginateModel], array('page', 'count', 'pageCount', 'current'));
+	$state['displayPage']['perpage'] = $this->params['paging'][$paginateModel]['options']['limit'] ;	
+	$total = $state['displayPage']['count'] + 0;	// as int
+	$state['displayPage']['total'] = $total;	// as int;	
 	// xhr response
 	if (Configure::read('controller.isXhr')) {
-		echo $this->element('/group/paging-inner');
+		echo $this->element('/group/paging-inner', compact('isPreview', 'isWide', 'total'));
 		
 		$this->Layout->blockStart('javascript');
 ?> 
@@ -18,15 +25,8 @@
 /**
  * @param array $groups - usually $data['Group'] from $Model->find()
  */
-	$paginateModel = Configure::read('paginate.Model');
-	$state['displayPage'] = array_filter_keys($this->params['paging'][$paginateModel], array('page', 'count', 'pageCount', 'current'));
-	$state['displayPage']['perpage'] = $this->params['paging'][$paginateModel]['options']['limit'] ;	
-	$total = $state['displayPage']['count'] + 0;	// as int
-	$state['displayPage']['total'] = $total;	// as int;
 	$this->viewVars['jsonData']['STATE'] = $state;
 	
-	$isPreview = (!empty($this->params['url']['preview']));
-	$isWide = !empty($this->params['named']['wide']);		// fluid layout
 ?>
 
 <?php echo $this->element('/group/section-header'); ?>
@@ -36,7 +36,7 @@
 				echo $this->element('/group/header-wide', array('total'=>$total));
 			} else echo $this->element('/group/header', array('total'=>$total));
 		?>
-	<?php echo $this->element('/group/paging-inner'); ?>
+	<?php echo $this->element('/group/paging-inner', compact('isPreview', 'isWide', 'total')); ?>
 </div>
 
 <?php $this->Layout->blockStart('javascript'); ?>

@@ -50,7 +50,7 @@ if (empty($this->passedArgs['wide'])) {
 					<section class="tabbed-area cur-nav-fix">  
 						<h3 class="circle">Circles</h3>      		
 						<section class="box-wrap">
-						  <section id="snaps">
+						  <section id="circles">
 <?php
 	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'groups', '?'=>array('preview'=>1)));
 	echo "<div id='groups-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}' ></div>";

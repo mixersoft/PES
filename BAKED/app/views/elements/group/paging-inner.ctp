@@ -11,9 +11,6 @@
 $paginateModel = Configure::read('paginate.Model');
 $groups = & $jsonData[$paginateModel];
 
-$isPreview = (!empty($this->params['url']['preview']));
-$isWide = !empty($this->params['named']['wide']);		// fluid layout
-
 $passedArgs = Configure::read('passedArgs.min');
 $THUMBSIZE = isset($passedArgs['thumbSize']) ?  $passedArgs['thumbSize'] : 'll';
 $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
@@ -25,13 +22,26 @@ switch ($THUMBSIZE) {
 		$SHORT = 20; $LONG = 255;
 		break;
 }
+$PREVIEW_LIMIT = $isPreview ? 2 : false;
 $DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
 ?>
 <section class="<?php if ($isWide) echo "wide "; ?>gallery group container_16">
+<?php if ($isPreview) { ?>	
+	<h1 class='count'>
+		<?php
+			if ($total==0) {
+				echo "You do not belong to any Circles yet.";
+			} else {
+				echo "Total <span>{$total}</span> Circle" . ($total>1 ? "s. " : ". ");
+				echo $this->Html->link('Show all', array('action'=>'groups')+$passedArgs); 
+			}
+		?> 
+		</h1>
+<?php } ?>		
 	<div class="container">
 <?php
+			if ($PREVIEW_LIMIT) $groups = array_slice($groups, 0, $PREVIEW_LIMIT); 
 			foreach ($groups as $group) { 
-				
 				/*
 				 * TODO: move this to LabelHelper when complete
 				 */

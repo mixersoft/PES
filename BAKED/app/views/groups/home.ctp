@@ -82,7 +82,7 @@ if (empty($this->passedArgs['wide'])) {
 				</article>
 				<article>
 					<section class="tabbed-area cur-nav-fix">  
-						<h3 class="circle">Members</h3>      		
+						<h3 class="person">Members</h3>      		
 						<section class="box-wrap">
 						  <section id="members">
 <?php 

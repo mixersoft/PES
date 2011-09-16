@@ -691,7 +691,17 @@ ul.photo-roll {
 	margin-bottom: 4px
 }
 #related-content .left > article h3.circle {
-	background: url(../images/cricle.png) left top no-repeat;
+	background: url(../images/circle.png) left top no-repeat;
+	padding: 5px 0px 8px 44px;
+	margin-bottom: 4px
+}
+#related-content .left > article h3.person {
+	background: url(../images/person.png) left top no-repeat;
+	padding: 5px 0px 8px 44px;
+	margin-bottom: 4px
+}
+#related-content .left > article h3.snap {
+	background: url(../images/snap.png) left top no-repeat;
 	padding: 5px 0px 8px 44px;
 	margin-bottom: 4px
 }
@@ -709,8 +719,22 @@ ul.photo-roll {
 	height: 22px;
 	display: table-cell
 }
+#related-content .left > article .box-wrap .count, #related-content aside .count  {
+	font-size: 0.9em;
+	font-weight: normal;
+	background-color: #8CD1ED;
+	color: #FFF;
+	padding: 0 10px;
+	display: inline;
+}
+#related-content .left > article .box-wrap .count > span, #related-content aside .count > span {
+	color: #000;
+	font-weight: bold;
+}
 
 /*.tabbed-area div div {
+ * 	
+ */
 	padding: 20px;
 	min-height: 250px;
 	position: absolute;

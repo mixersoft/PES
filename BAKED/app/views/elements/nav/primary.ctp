@@ -17,7 +17,7 @@
 	$sections['People']=array('label'=>'People','href'=>'#');
 	$sections['Explore']=array('label'=>'Explore','href'=>"/{$controllerAttr['alias']}/all");
 	$focus = Session::read("nav.primary");
-	$sections[$focus]['href'] = "javascript:;"; // unset href for section with focus
+	// $sections[$focus]['href'] = "javascript:;"; // unset href for section with focus
 	$sections[$focus]['class'] = 'class="focus"';
 ?>
 <!--top header start-->

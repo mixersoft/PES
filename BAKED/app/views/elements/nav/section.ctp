@@ -150,7 +150,11 @@ switch ($classLabel) {
 <section class='item-header container_16'>
 	<div class='wrap'>
 		<ul class="inline grid_16">
-			<li class='thumbnail sq'><?php echo $this->Html->image($src, array('width'=>75, 'height'=>75)); ?></li>
+			<li class='thumbnail sq'><?php 
+				$img = $this->Html->image($src, array('width'=>75, 'height'=>75));
+				$uuid = AppController::$userid  == AppController::$uuid ? array() : array(AppController::$uuid);
+				echo $this->Html->link($img, array('action'=>'home')+$uuid , array('escape'=>false)); 
+				?></li>
 			<li>
 				<div class='item-class'><?php echo $classLabel; ?></div>
 				<h1 class='label'>

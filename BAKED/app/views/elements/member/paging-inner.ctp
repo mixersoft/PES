@@ -10,9 +10,6 @@
 $paginateModel = Configure::read('paginate.Model');
 $members = & $jsonData[$paginateModel];
 
-$isPreview = (!empty($this->params['url']['preview']));
-$isWide = !empty($this->params['named']['wide']);		// fluid layout
-
 $passedArgs = Configure::read('passedArgs.min');
 $THUMBSIZE = isset($passedArgs['thumbSize']) ?  $passedArgs['thumbSize'] : 'lm';
 $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
@@ -24,13 +21,26 @@ switch ($THUMBSIZE) {
 		$SHORT = 12; $LONG = 255;
 		break;
 }
+$PREVIEW_LIMIT = $isPreview ? 6 : false;
 $DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
 ?>
 <section class="<?php if ($isWide) echo "wide "; ?>gallery group container_16">
+<?php if ($isPreview) { ?>	
+	<h1 class='count'>
+		<?php
+			if ($total==0) {
+				echo "This Circle has not members yet. Join now.";
+			} else {
+				echo "Total <span>{$total}</span> Member" . ($total>1 ? "s. " : ". ");
+				echo $this->Html->link('Show all', array('action'=>'members')+$passedArgs); 
+			}
+		?> 
+		</h1>
+<?php } ?>		
 	<div class="container">
 <?php
+			if ($PREVIEW_LIMIT) $members = array_slice($members, 0, $PREVIEW_LIMIT);
 			foreach ($members as $member) { 
-				// debug($member);
 				/*
 				 * TODO: move this to LabelHelper when complete
 				 */
