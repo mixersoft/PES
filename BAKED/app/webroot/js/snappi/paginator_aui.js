@@ -32,7 +32,7 @@
 			if (!paginateContainer) {
 				if (target.ancestor('section.gallery')) {
 					// auto-create paging DIV
-					paginateContainer = target.create("<div class='paging-control paging-numbers' />");
+					paginateContainer = target.create("<div class='paging-control paging-numbers grid_16' />");
 					target.get('parentNode').insert(paginateContainer,'after');
 				} else {
 					return false;	// this is a preview, do NOT auto-create paging DIV
@@ -94,11 +94,17 @@
 			var pageCfg = {
 					page: displayPage.page,
 					total: displayPage.total,  
-					maxPageLinks: 10,
+					maxPageLinks: 9,
 					rowsPerPage: displayPage.perpage,
 					rowsPerPageOptions: [displayPage.perpage, 12,24,48,96],
 					alwaysVisible: false,
 					containers: paginateContainer,
+		firstPageLinkLabel: '&nbsp;',
+		prevPageLinkLabel: '&nbsp;',	
+		nextPageLinkLabel: '&nbsp;',
+		lastPageLinkLabel: '&nbsp;',		
+		pageReportLabelTemplate: 'Page {page} of {totalPages}',
+		template:  '<div class="wrap"><div class="wrap-rows-per-page">Snaps per Page {RowsPerPageSelect}</div><div class="wrap-page-report">{CurrentPageReport}</div><div class="wrap-paginator-link">{FirstPageLink} {PrevPageLink} {PageLinks} {NextPageLink} {LastPageLink}</div></div>',	
 					on: {
 						changeRequest: function(e) {
 							// this == Paginator
@@ -120,19 +126,23 @@
 			};
 			if (DELAY) {
 				var delayed = new Y.DelayedTask( function() {
-					paginateContainer.Paginator = new Y.Paginator(pageCfg).render();
-					paginateContainer.dom().Paginator = paginateContainer.Paginator;
-					paginateContainer.Paginator.target = target;
-					Paginator.find[NAME] = paginateContainer.Paginator;
+					var P = new Y.Paginator(pageCfg);
+					paginateContainer.Paginator = P;
+					paginateContainer.dom().Paginator = P;
+					P.target = target;
+					Paginator.find[NAME] = P;
+					P.render();
 				}, this);
 				delayed.delay(DELAY);
 				return "delayed";
 			} else {
-				paginateContainer.Paginator = new Y.Paginator(pageCfg).render();
-				paginateContainer.dom().Paginator = paginateContainer.Paginator;
-				paginateContainer.Paginator.target = target;
-				Paginator.find[NAME] = paginateContainer.Paginator;				
-				return paginateContainer.Paginator;
+				var P = new Y.Paginator(pageCfg);
+				paginateContainer.Paginator = P;
+				paginateContainer.dom().Paginator = P;
+				P.target = target;
+				Paginator.find[NAME] = P;
+				P.render();			
+				return P;
 			}
 	};
 
@@ -148,6 +158,7 @@
 			var self, target, baseurl, NAME = selector;	
 			self = Y.one(NAME);
 			target = Y.one(NAME +' div.container');
+			var type = /person/.test(selector) ? 'Members' : 'Circles';
 				
 			var DELAY = 1000;	// delay_task			
 			// if (gallery) {
@@ -163,7 +174,7 @@
 			if (!paginateContainer) {
 				if (target.ancestor('section.gallery')) {
 					// auto-create paging DIV
-					paginateContainer = target.create("<div class='paging-control paging-numbers' />");
+					paginateContainer = target.create("<div class='paging-control paging-numbers grid_16' />");
 					target.get('parentNode').insert(paginateContainer,'after');
 				} else {
 					return false;	// this is a preview, do NOT auto-create paging DIV
@@ -184,6 +195,12 @@
 					rowsPerPageOptions: [displayPage.perpage, 12,24,48,96],
 					alwaysVisible: false,
 					containers: paginateContainer,
+		firstPageLinkLabel: '&nbsp;',
+		prevPageLinkLabel: '&nbsp;',	
+		nextPageLinkLabel: '&nbsp;',
+		lastPageLinkLabel: '&nbsp;',		
+		pageReportLabelTemplate: 'Page {page} of {totalPages}',
+		template:  '<div class="wrap"><div class="wrap-rows-per-page">'+type+' per Page {RowsPerPageSelect}</div><div class="wrap-page-report">{CurrentPageReport}</div><div class="wrap-paginator-link">{FirstPageLink} {PrevPageLink} {PageLinks} {NextPageLink} {LastPageLink}</div></div>',	
 					on: {
 						changeRequest: function(e) {
 							// this == Paginator

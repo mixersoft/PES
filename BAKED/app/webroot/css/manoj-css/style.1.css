@@ -1342,6 +1342,64 @@ section.item-header .item-class {
 	font-size: 1.1em;
 }
 
+/*  aui paginator  */
+.aui-paginator-container .wrap {
+	-webkit-border-radius: 5px;
+	border: 1px solid #D2D2D2;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	background: -moz-linear-gradient(bottom, #E2E6EB, #f5f5f5);
+	background: -webkit-gradient(linear, center bottom, center top, from(#E2E6EB), to(#f5f5f5));
+	line-height: 21px;
+	margin-bottom: 4px;
+	font-size: 10pt;
+	overflow: hidden;
+	position: relative;
+	padding: 0 20px;
+}
+.aui-paginator-container .wrap > div {
+	display: inline-block;
+}
+.wrap-rows-per-page {
+	width: 40%;
+}
+.aui-paginator-rows-per-page {
+	bottom: 2px;
+}
+.wrap-page-report {
+	width: 20%;
+}
+.aui-paginator-current-page-report {
+	display: block;
+	text-align:center;
+}
+.wrap-paginator-link {
+	width: 40%;
+	text-align: right;
+	cursor: pointer;
+}
+.wrap-paginator-link > a {
+	display: inline-block;
+	width: 11px;
+}
+.aui-paginator-first-link{
+	background: url(../images/first.png) no-repeat center;
+} 
+.aui-paginator-prev-link{
+	background: url(../images/prev.png) no-repeat center;
+} 
+.aui-paginator-next-link{
+	background: url(../images/next.png) no-repeat center;
+} 
+.aui-paginator-last-link{
+	background: url(../images/last.png) no-repeat center;
+} 
+.aui-paginator-page-link {
+	padding: 3px;
+} 
+
+
+
 
 /*temp classes  for debug only*/
 div.placeholder {
