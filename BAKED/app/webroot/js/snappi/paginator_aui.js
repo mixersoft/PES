@@ -56,10 +56,14 @@
 			var _getPage = function(pageNumber){
 				if (pageNumber == SNAPPI.STATE.displayPage.page) return;
 				var uri = self.castingCall.CastingCall.Request+ "/.json";				
-				var nameData = {page: pageNumber};
+				var nameData = {
+					page: pageNumber,
+					perpage: this.Paginator.get('rowsPerPage')
+				};
 				if (target.io) {
 					// already plugged, just reuse
 					uri = SNAPPI.IO.setNamedParams(uri, nameData);
+					target.io.set('arguments', nameData)
 					target.io.set('uri', uri).start();
 					return;
 				}
@@ -103,38 +107,57 @@
 							var userClicked = newState.before != undefined;
 							if (userClicked) {
 								console.warn('Page.changeRequest: page='+newState.page);
-								_getPage(newState.page);
+								_getPage.call(paginateContainer,newState.page);
 							} 
 							this.setState(newState);
-						}
+						},
+						rowsPerPageChange: function(e){
+							if (e.newVal == e.prevVal) return;
+							SNAPPI.STATE.displayPage.perpage = parseInt(e.newVal);
+							SNAPPI.STATE.displayPage.page = null;
+						}						
 					}
 			};
 			if (DELAY) {
 				var delayed = new Y.DelayedTask( function() {
 					paginateContainer.Paginator = new Y.Paginator(pageCfg).render();
+					paginateContainer.dom().Paginator = paginateContainer.Paginator;
+					paginateContainer.Paginator.target = target;
 					Paginator.find[NAME] = paginateContainer.Paginator;
 				}, this);
 				delayed.delay(DELAY);
 				return "delayed";
 			} else {
 				paginateContainer.Paginator = new Y.Paginator(pageCfg).render();
-				Paginator.find[NAME] = paginateContainer.Paginator;
+				paginateContainer.dom().Paginator = paginateContainer.Paginator;
+				paginateContainer.Paginator.target = target;
+				Paginator.find[NAME] = paginateContainer.Paginator;				
 				return paginateContainer.Paginator;
 			}
 	};
 
-	Paginator.paginate_Grouproll = function(gallery){
+	/**
+	 * add aui paginator to Gallery node, 
+	 * 		NOTE: tested for Xhr paginate, not .json
+	 * 	target is the node which receives the xhr content
+	 * 
+	 * @params CSS selector to Gallery node, i.e. section.gallery.person
+	 */
+	Paginator.paginate_Gallery = function(selector){
 			var Y = SNAPPI.Y;
-			
-			var NAME = '.gallery.group';
+			var self, target, baseurl, NAME = selector;	
+			self = Y.one(NAME);
+			target = Y.one(NAME +' div.container');
+				
 			var DELAY = 1000;	// delay_task			
-			if (gallery) {
-				self = gallery.node.Gallery;	// gallery
-				target = self.container;
-			} else {
-				self = Y.one(NAME);
-				target = Y.one(NAME +' div.container');	
-			}
+			// if (gallery) {
+				// self = gallery.node;	// gallery
+				// target = self.Gallery.container;
+			// } else {
+				// self = Y.one(NAME);
+				// target = Y.one(NAME +' div.container');	
+			// }
+			
 
 			var paginateContainer = target.get('parentNode').next('div.paging-numbers');
 			if (!paginateContainer) {
@@ -152,65 +175,7 @@
 				return Paginator.find[NAME];
 			}
 			
-			var controller = SNAPPI.STATE.controller;
 			var displayPage = SNAPPI.STATE.displayPage;
-			
-			/**
-			 * get requested page, uses A.Plugin.IO + SNAPPI.IO.pluginIO_RespondAsJson pattern
-			 * access == closure
-			 * @param pageNumber
-			 * @return 
-			 */
-			var _getPage = function(pageNumber){
-				if (pageNumber == SNAPPI.STATE.displayPage.page) return;
-				// WARNING: THIS DOES NOT WORK FOR .json XHR REQUESTS, USE new Gallery().render()
-				// var uri = controller.here + "/.json";		// TODO: use json rendering for groups
-				var uri = controller.here;					// deprecate, use json rendering when ready
-				var nameData = {page: pageNumber};
-				if (target.io) {
-					// already plugged, just reuse
-					uri = SNAPPI.IO.setNamedParams(uri, nameData);
-					target.io.set('arguments', nameData)					
-					target.io.set('uri', uri).start();
-					return;
-				}
-				// uses pluginIO_RespondAsJson() with Plugin.IO
-				uri = uri;
-			  	if (nameData) {		// for XHR response
-			    	uri = SNAPPI.IO.setNamedParams(uri, nameData);
-		    	};
-				target.plug(Y.Plugin.IO, {
-					uri: uri ,
-					parseContent:true,
-					arguments: nameData,
-					on: {
-						success: function(e, id, o , args) {
-							SNAPPI.mergeSessionData();
-							SNAPPI.STATE.displayPage.page = args.page;
-							var check;
-						}
-					},
-					// for pluginIO_RespondAsJson() only 
-					// nameData: nameData,		
-					// dataType: 'json',
-					// context: self,	// test
-					// on: {
-						// success: function(e, id, o, args) {
-							// if (o.responseJson) {
-								// PAGE.jsonData = o.responseJson;
-								// SNAPPI.mergeSessionData();
-								// SNAPPI.domJsBinder.bindAuditions2Photoroll();
-								// // TODO: update paginateContainer.Paginator.set('total'), etc									
-								// return false;	// plugin.IO already rendered
-							// }
-						// }	
-					// }
-					end: null
-				});
-				return;
-			};
-			
-			
 			var pageCfg = {
 					page: displayPage.page,
 					total: displayPage.total,  
@@ -227,25 +192,89 @@
 							var userClicked = newState.before != undefined;
 							if (userClicked) {
 								console.warn('Page.changeRequest: page='+newState.page);
-								_getPage(newState.page);
+								Paginator._getPage.call(paginateContainer, newState.page);
 							} 
 							this.setState(newState);
+						},
+						rowsPerPageChange: function(e){
+							if (e.newVal == e.prevVal) return;
+							SNAPPI.STATE.displayPage.perpage = parseInt(e.newVal);
+							SNAPPI.STATE.displayPage.page = null;
 						}
 					}
 			};
 			if (DELAY) {
 				var delayed = new Y.DelayedTask( function() {
 					paginateContainer.Paginator = new Y.Paginator(pageCfg).render();
+					paginateContainer.dom().Paginator = paginateContainer.Paginator;
+					paginateContainer.Paginator.target = target;
 					Paginator.find[NAME] = paginateContainer.Paginator;
 				}, this);
 				delayed.delay(DELAY);
 				return "delayed";
 			} else {
 				paginateContainer.Paginator = new Y.Paginator(pageCfg).render();
+				paginateContainer.dom().Paginator = paginateContainer.Paginator;
+				paginateContainer.Paginator.target = target;
 				Paginator.find[NAME] = paginateContainer.Paginator;
 				return paginateContainer.Paginator;
 			}
-	};
+	};	
 	
+	/**
+	 * get requested page, uses A.Plugin.IO + SNAPPI.IO.pluginIO_RespondAsJson pattern
+	 * @access private 
+	 * @param pageNumber
+	 * @return 
+	 */
+	Paginator._getPage = function(pageNumber){
+		var Y = SNAPPI.Y;
+		var target = this.Paginator.target;  // paginateContainer
+		if (pageNumber == SNAPPI.STATE.displayPage.page) return;
+		// WARNING: THIS DOES NOT WORK FOR .json XHR REQUESTS, USE new Gallery().render()
+		// var uri = controller.here + "/.json";		// TODO: use json rendering for groups
+		var baseurl = SNAPPI.STATE.controller.here;	
+		var nameData = {
+			page: pageNumber,
+			perpage: this.Paginator.get('rowsPerPage')
+		};
+		baseurl = SNAPPI.IO.setNamedParams(baseurl, nameData);
+		if (target.io) {
+			// already plugged, just reuse
+			target.io.set('arguments', nameData)					
+			target.io.set('uri', baseurl).start();
+		} else {
+			// uses pluginIO_RespondAsJson() with Plugin.IO
+			target.plug(Y.Plugin.IO, {
+				uri: baseurl ,
+				parseContent:true,
+				arguments: nameData,
+				on: {
+					success: function(e, id, o , args) {
+						SNAPPI.mergeSessionData();
+						SNAPPI.STATE.displayPage.page = args.page;
+						var check;
+					}
+				},
+				// for pluginIO_RespondAsJson() only 
+				// nameData: nameData,		
+				// dataType: 'json',
+				// context: self,	// test
+				// on: {
+					// success: function(e, id, o, args) {
+						// if (o.responseJson) {
+							// PAGE.jsonData = o.responseJson;
+							// SNAPPI.mergeSessionData();
+							// SNAPPI.domJsBinder.bindAuditions2Photoroll();
+							// // TODO: update paginateContainer.Paginator.set('total'), etc									
+							// return false;	// plugin.IO already rendered
+						// }
+					// }	
+				// }
+				end: null
+			});
+		}
+		return;
+	};	
 	SNAPPI.Paginator = Paginator;
 })();

@@ -68,8 +68,9 @@ $this->viewVars['jsonData']['STATE'] = $state;
 		};
 		var initOnce = function() {
 			try {
+				SNAPPI.mergeSessionData();
 				PAGE.setDisplayOptions();
-				SNAPPI.Paginator.paginate_Memberroll();
+				SNAPPI.Paginator.paginate_Gallery('.gallery.person');
 			} catch (e) {}
 		};
 		try {

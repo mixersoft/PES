@@ -75,7 +75,7 @@
 			try {
 				SNAPPI.mergeSessionData();
 				PAGE.setDisplayOptions();
-				SNAPPI.Paginator.paginate_Grouproll();				
+				SNAPPI.Paginator.paginate_Gallery('.gallery.group');				
 			} catch (e) {}
 		};
 		try {
