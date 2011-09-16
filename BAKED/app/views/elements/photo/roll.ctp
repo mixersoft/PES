@@ -5,6 +5,7 @@
 $context_class = Session::read('lookup.context.keyName');	
 $passedArgs = Configure::read('passedArgs.min');
 $isPreview = !empty($this->params['url']['preview']);
+$isGallery = !empty($this->params['url']['gallery']);	// init lightbox
 $isWide = !empty($this->params['named']['wide']);		// fluid layout
 $isXhr = Configure::read('controller.isXhr');
 $paginateModel = Configure::read('paginate.Model');
@@ -39,7 +40,7 @@ $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 	
 	
 <?php 
-	if ($isXhr) {
+	if ($isXhr && !$isGallery) {
 		$this->Layout->blockStart('javascript'); ?>
 		<script type="text/javascript">
 			// xhr response

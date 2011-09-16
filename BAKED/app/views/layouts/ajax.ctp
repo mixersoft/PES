@@ -41,6 +41,7 @@
 	</script>	
 <?php 
 	$this->Layout->blockEnd();
+	$this->Layout->output($lightbox_for_layout); 
 	
 	// output JSON and javascript
 	$this->Layout->output($this->viewVars['jsonData_for_layout']);
