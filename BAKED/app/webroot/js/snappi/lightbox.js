@@ -146,6 +146,8 @@
 				this.getMarkup(cfg);
 				return;
 			};
+			this.node.removeClass('hide');
+			SNAPPI.Y.one('div.anchor-bottom').append(this.node);	// move to the right location
 			this.node.Lightbox = this;
 			// plugin droppables
 			SNAPPI.DragDrop.pluginDrop(this.node);

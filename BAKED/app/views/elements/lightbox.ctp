@@ -32,8 +32,7 @@ if (Configure::read('controller.action')=='lightbox') {
 		'lm'=>'/css/images/img_3.gif',
 	);
 ?>
-<div class="anchor-bottom">
-<section class="lightbox drop container_16" id="lightbox">
+<section class="lightbox drop container_16 hide" id="lightbox">
 	<section class="header">
 		<ul class="inline">
 			<li class="grid_2"><h3>My Lightbox <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li>
@@ -74,4 +73,3 @@ if (Configure::read('controller.action')=='lightbox') {
 	</section>
 	<ul class="toolbar inline grid_16"></ul>
 </section>
-</div>
