@@ -26,14 +26,6 @@
     /*
      * dependencies
      */
-    var defaultCfg = {
-		ID_PREFIX: 'uuid-',
-		node: 'div.gallery-container > section.gallery.photo',
-		hideSubstituteCSS: false,
-		size: 'lm',
-		start: null,
-		end: null
-    };
     var charCode = {
         nextPatt: /(^110$)|(^39$)|(^32$)|(^54$)/, // n,right,space,
         // keypad right
@@ -62,13 +54,9 @@
     var Y = SNAPPI.Y;
     
     var Gallery = function(cfg){
-        /*
-         * protected methods
-         */
-        this.container = null;
-        this.auditionSH = null;
-        this.shots = null; 	
-        this.node = this.init(cfg);
+    	cfg = cfg || {type: 'Photo'};
+    	Factory[cfg.type].build(this, cfg);
+    	return this;
     };
     
     Gallery.getFromDom = function(dom) {
@@ -136,6 +124,7 @@
 			var oneShotCfg = {};
 			oneShotCfg[shot.id] = shot;		// format for Gallery constructor
 			var showHiddenShotsCfg = {
+				type : 'Photo',
 				ID_PREFIX : 'hiddenshot-',
 				size : 'lm',
 				selected : 1,
@@ -155,7 +144,6 @@
             /**
              * NEW codepath to create Gallery from castingCall
              */
-            // skip this line
            var shotPhotoRoll = new SNAPPI.Gallery(showHiddenShotsCfg);	
            shotPhotoRoll.node.addClass('hiddenshots').addClass('filmstrip').removeClass('container_16');
            shotPhotoRoll.container.removeClass('grid_16');
@@ -167,7 +155,7 @@
            selected.Audition.SubstitutionREF = shot.id;
            selected.Audition.Substitutions = shot;
            selected.substitutes = shot; // DEPRECATE
-           
+           // skip this line
            
            // manually show Ratings for Duplicates/shot
            shotPhotoRoll.showThumbnailRatings();
@@ -197,44 +185,8 @@
     Gallery.prototype = {
     	init: function(cfg) {
     		var Y = SNAPPI.Y;
-	    	var _cfg = {
-	    			PROVIDER_NAME: 'snappi'
-	    	};
-	    	_cfg = Y.merge(defaultCfg, _cfg, cfg);
-
-			// container should be section.gallery.photo
-			var node;
-	        if (_cfg.node) {
-	        	try {
-	        		node = _cfg.node instanceof Y.Node ? _cfg.node : Y.one(_cfg.node);	
-	        		if (node.Gallery) {
-	        			this.container = node.Gallery.container;
-		        		var oldPhotoRoll = parent.Gallery;
-			            // TODO: what do we do here???
-		        		// reuse existing photoRoll??? or do we need to destroy?	        			
-	        		} else {
-	        			if (node.hasClass('gallery') && !node.one('div.container')) {
-	        				node.prepend('<div class="container grid_16" />');
-	        			}
-	        			this.container = node.one('div.container');
-	        		}
-	        	} catch (e) {}
-	        }    
-	        if (!this.container) {
-	        	var MARKUP = '<section class="gallery photo container_16">'+
-	        					'<div class="container grid_16" />'+
-	        				'</section>';
-	        	node  = Y.Node.create(MARKUP);
-	        	if (cfg.isWide) node.addClass('wide');
-	        	this.container = node.one('div');
-	        }
-	        node.Gallery = this;
-	        this.node = node;
-	        node.dom().Gallery = this; 				// for firebug introspection
-	        node.Gallery.container.Gallery = this;	// is this necessary?
-	        delete _cfg.node;	// use this.container from this point forward
-	        
-	        this.providerName = _cfg.PROVIDER_NAME;
+	    	var _cfg = Y.merge(cfg);		// copy cfg
+	    	
 	        if (_cfg.sh) {
 	        	// resuse SH, if provided
 	            this.auditionSH = _cfg.sh;
@@ -256,9 +208,9 @@
 	        	var selected = this.auditionSH.setFocus(_cfg.selected);
 	        }
 
-	        if (cfg.shots) {
-	            this.shots = cfg.shots;
-	            delete cfg.shots;
+	        if (_cfg.shots) {
+	            this.shots = _cfg.shots;
+	            delete _cfg.shots;
 	        } else if (this.castingCall && this.castingCall.shots) {
 	        	this.shots =  this.castingCall.shots;
 	        }
@@ -317,10 +269,12 @@
 //	            }, this);
 	        	SNAPPI.DragDrop.pluginDelegatedDrag(this.container, 'img.drag');        	
 	        }
-	        SNAPPI.Rating.startListeners(this.container);
-	        SNAPPI.DragDrop.startListeners();
-	        Y.fire('snappi:afterPhotoRollInit', this.auditionSH); 
-	        return node;
+	        
+	        // start Gallery listeners
+	        if (this._cfg.listeners) this.listen(true, this._cfg.listeners);
+            // if (SNAPPI.DEBUG_MODE) SNAPPI.debug.showNodes('#content div, .FigureBox');	        
+	        
+	        Y.fire('snappi:afterGalleryInit', this.auditionSH); 
     	},
         setAudition: function(sh){
             this.auditionSH = sh;
@@ -1284,7 +1238,7 @@
 								// if (o.responseJson) {
 									// PAGE.jsonData = o.responseJson;
 									// SNAPPI.mergeSessionData();
-									// SNAPPI.domJsBinder.bindAuditions2Photoroll();
+									// new SNAPPI.Gallery({type:'Photo'});
 									// // TODO: update paginateContainer.Paginator.set('total'), etc									
 									// return false;	// plugin.IO already rendered
 								// }
@@ -2070,4 +2024,90 @@
      * make global
      */
     SNAPPI.Gallery = Gallery;
+    
+    var Factory = function(){};
+    /**
+     * attach gallery.node and gallery.container
+     */
+    Factory._attachNodes = function(gallery, cfg){
+        gallery.container = null;
+		var node;
+    	try {
+    		node = cfg.node instanceof Y.Node ? cfg.node : Y.one(cfg.node);	
+    		if (node.Gallery) {
+    			gallery.container = node.Gallery.container;
+        		var oldGallery = parent.Gallery;
+	            // TODO: what do we do here???
+        		// reuse existing photoRoll??? or do we need to destroy?	        			
+    		} else {
+    			if (node.hasClass('gallery') && !node.one('div.container')) {
+    				node.prepend('<div class="container grid_16" />');
+    			}
+    			gallery.container = node.one('div.container');
+    		}
+    	} catch (e) {}
+        if (!gallery.container) {
+        	node  = Y.Node.create(cfg.MARKUP);
+        	if (cfg.isWide) node.addClass('wide');
+        	gallery.container = node.one('div');
+        }	        
+        gallery.node = node;
+        gallery.node.Gallery = gallery;				// use to avoid closure bug on SNAPPI.io 
+        gallery.container.Gallery = gallery;		// is gallery reference necessary?
+		gallery.node.dom().Gallery = gallery; 		// for firebug introspection	        
+        delete cfg.node;				// use this.container from this point forward    		
+    }
+    
+    Factory.Photo = {
+    	defaultCfg : {
+			ID_PREFIX: 'uuid-',
+			PROVIDER_NAME: 'snappi',
+			MARKUP: '<section class="gallery photo container_16">'+
+	        			'<div class="container grid_16" />'+
+	        			'</section>',
+			node: 'div.gallery-container > section.gallery.photo',
+			listeners: ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'RightClick'],
+			hideSubstituteCSS: false,
+			size: 'lm',
+			start: null,
+			end: null
+	    },
+        /*
+         * build 
+         * - scan for a cfg.node or defaultCfg.node, 
+		 * - bind to JS auditions
+         * - call AFTER SNAPPI.mergeSessionData(), important for XHR JSON request
+         * @params gallery instance of SNAPPI.Gallery
+         * @params cfg object, cfg object
+         */
+    	build: function(gallery, cfg){
+            var Y = SNAPPI.Y;
+            // var self = gallery;		// instance of SNAPPI.Gallery
+            cfg = cfg || {};
+            // inherit javascript state information from current page, 
+            // called AFTER SNAPPI.mergeSessionData();
+            cfg = Y.merge(Factory.Photo.defaultCfg, SNAPPI.STATE.displayPage, cfg);	
+            if (SNAPPI.STATE.thumbSize) cfg.size = SNAPPI.STATE.thumbSize;
+            if (PAGE.jsonData.castingCall) cfg.castingCall = PAGE.jsonData.castingCall;
+            
+	        
+	        // .gallery.photo BEFORE init
+	        gallery.auditionSH = null;
+	        gallery.shots = null; 	
+	        
+	        // generic gallery BEFORE init
+			gallery.providerName = cfg.PROVIDER_NAME;	// deprecate: use this._cfg.providerName
+			Factory._attachNodes(gallery, cfg);
+	        gallery.init(cfg);
+	        
+	        // .gallery.photo AFTER init methods
+	        SNAPPI.Rating.startListeners(gallery.container);
+	        SNAPPI.DragDrop.startListeners();
+	        
+	        return gallery;					// return instance of SNAPPI.Gallery
+        }
+	};
+	
+	SNAPPI.Gallery.Factory = Factory;
+    
 })();

@@ -601,10 +601,9 @@
         /*
          * these methods reference audition property
          */
-        Y.on('snappi:afterPhotoRollInit', function(){
+        Y.on('snappi:afterGalleryInit', function(){
             /**
-             * 	- source: domJsBinder.bindAuditions2Photoroll(),
-             * 		also Y.io for JSON request
+             * 	- fired by: new Gallery.init(),
              */
         });
         

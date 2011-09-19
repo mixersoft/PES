@@ -80,7 +80,7 @@
 							if (o.responseJson) {
 								PAGE.jsonData = o.responseJson.response;
 								SNAPPI.mergeSessionData();
-								SNAPPI.domJsBinder.bindAuditions2Photoroll();
+								new SNAPPI.Gallery({type:'Photo'});
 								// TODO: update paginateContainer.Paginator.set('total'), etc									
 								return false;	// plugin.IO already rendered
 							}
@@ -282,7 +282,7 @@
 						// if (o.responseJson) {
 							// PAGE.jsonData = o.responseJson;
 							// SNAPPI.mergeSessionData();
-							// SNAPPI.domJsBinder.bindAuditions2Photoroll();
+							// new SNAPPI.Gallery({type:'Photo'});
 							// // TODO: update paginateContainer.Paginator.set('total'), etc									
 							// return false;	// plugin.IO already rendered
 						// }

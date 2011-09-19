@@ -225,6 +225,7 @@
              * NEW codepath to create Gallery from castingCall
              */
            var filmstripCfg = {
+            	type: 'Photo',
             	node: _cfg.node,
             	castingCall: castingCall,
         		flimstripHalfsize: (init.length-1)/2,
@@ -292,36 +293,6 @@
         		Y.one('#photos-home-rating').setAttribute('uuid', newUuid);
     		} catch (e) {}    		
     	};
-    	
-        /*
-         * bindAuditions2Photoroll 
-         * - scan for a photoRoll, if found, bind JS audition object to photoRoll
-         * - NOTE: DO WE REALLY NEED TO BIND audition TO .FigureBox?  perhaps
-         * 		it is enough to do a uuid lookup, 
-         * 				var audition = SNAPPI.auditions.auditionSH.get(id);
-         * - NOTE: this method ASSUMES only 1 photoRoll per page. is this valid??
-         */
-    	this.bindAuditions2Photoroll = function(cfg){
-            var Y = SNAPPI.Y;
-            cfg = cfg || {};
-            /*
-             * check for photo-roll
-             */
-            if (SNAPPI.STATE.thumbSize) cfg.size = SNAPPI.STATE.thumbSize;
-            var _cfg = Y.merge(defaultCfg, cfg);
-            /*
-             * check for photo-roll.json
-             *   switch to choose:
-             *   - json embedded in PAGE.jsonData.castingCall, or
-             *   	- this method is PREFERRED because it eliminates an asynch request and allows immediate page rendering
-             *   - json fetched async using Y.io AFTER html rendering
-             */
-           	_cfg.castingCall = PAGE.jsonData.castingCall;
-            _cfg = Y.merge(SNAPPI.STATE.displayPage, _cfg);	// only if photoRoll/castingCall is paged
-            var pr = new SNAPPI.Gallery(_cfg);
-            pr.listen(true, ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'RightClick']);
-            // if (SNAPPI.DEBUG_MODE) SNAPPI.debug.showNodes('#content div, .FigureBox');
-        };
     };
     
     DomJsBinder.prototype = {
@@ -420,6 +391,7 @@
             }
             
             var photoRoll = new SNAPPI.Gallery({
+            	type: 'Photo',
                 sh: castingCall.auditionSH,
                 shots:  castingCall.shots,
                 node: node

@@ -45,7 +45,7 @@ $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 		<script type="text/javascript">
 			// xhr response
 			SNAPPI.mergeSessionData();
-			SNAPPI.domJsBinder.bindAuditions2Photoroll();
+			new SNAPPI.Gallery({type:'Photo'});
 			// SNAPPI.filter.initRating();
 		</script>
 <?php		
@@ -84,7 +84,7 @@ $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 			try {
 				SNAPPI.mergeSessionData();
 				PAGE.setDisplayOptions();
-				SNAPPI.domJsBinder.bindAuditions2Photoroll();
+				new SNAPPI.Gallery({type:'Photo'});
 				// SNAPPI.filter.initRating();
 			} catch (e) {}
 		};

@@ -528,8 +528,9 @@ section.gallery.wide {
 
 /*temp CSS for selected*/
 .FigureBox.Photo.selected {
-	border: 2px solid red !important;
-	padding: 1px !important;
+	border: 1px solid red;
+	-webkit-box-shadow: 2px 2px 5px #FF0000; /* Safari and Chrome */
+	box-shadow: 2px 2px 5px #FF0000;
 }
 
 .FigureBox.Photo .label {
@@ -1004,6 +1005,10 @@ section#lightbox section.gallery.lightbox {
 	float:left;
 	margin:0;
 	position:relative;
+}
+.gallery .filmstrip .FigureBox.Photo.lbx-tiny.selected {
+	border: 2px solid red;
+	padding: 1px;
 }
 .gallery .filmstrip .FigureBox.Photo.lbx-tiny > figure {
 	width:33px;

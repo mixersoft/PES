@@ -326,6 +326,7 @@
 		             */
 					// use castingCall from drop source
 		            var cfg = {
+		            	type: 'Photo',
 		            	ID_PREFIX: this._cfg.ID_PREFIX,	
 		            	node:  this.node.one('section.gallery.photo'), 
 		            	size : 'sq',
@@ -650,6 +651,7 @@
 				// use castingCall from drop source
 //						var pr = nodeList.item(0).ancestor('section.gallery.photo').Gallery;
 	            var cfg = {
+	            	type: 'Photo',
 	            	ID_PREFIX: this._cfg.ID_PREFIX,	
 	            	node:  this.node.one('section.gallery.photo'), 
 	            	shots: castingCall.shots,
