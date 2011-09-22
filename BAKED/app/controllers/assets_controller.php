@@ -1155,13 +1155,14 @@ class AssetsController extends AppController {
 					}					
 				}
 			} else {
-				$success = false;
+				$success = 'false';
 				$message[] = 'AssetsController->shot: Warning, $this->data empty';
 			}
 		} else {
-			$success = false;
+			$success = 'false';
 			$message = 'AssetsController->shot: The request is not allowed!';
 		}
+		if ($resp0['success']===true) $resp0['success']='true';
 		$this->viewVars['jsonData'] = $resp0; 
 		$done = $this->renderXHRByRequest('json', null, null, $forceXHR);
 		return;

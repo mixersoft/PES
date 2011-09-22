@@ -1349,7 +1349,7 @@
 					context: this,	// photoroll
 					arguments: args, 
 					on: {
-						success:  function(e, id, o, args) {
+						successJson:  function(e, id, o, args) {
 							return args.success.apply(this, arguments);
 						}
 					}
@@ -1456,7 +1456,7 @@
 					context: this,	
 					arguments: args,
 					on: {
-						success:  function(e, id, o, args) {
+						successJson:  function(e, id, o, args) {
 							return args.success.apply(this, arguments);
 						}
 					}
@@ -1479,8 +1479,7 @@
 			/*
 			 * for hiddenShots
 			 */
-			if (photoroll.container.hasClass('hiddenshots')) {
-				// TODO: CHANGE TO ul.hidden-shots
+			if (photoroll._cfg.type=="DialogHiddenShot" || photoroll._cfg.type=="ShotGallery") {
 				hiddenShots_pr = photoroll;
 				photoroll = null;
 				// search hiddenShots for the node which is ALSO visible in photoroll
@@ -1509,7 +1508,7 @@
 				// close hiddenShot afterwards
 				try {
 					SNAPPI.MenuAUI.find['contextmenu-hiddenshot-markup'].hide();
-					SNAPPI.Dialog.find['photo-roll-hidden-shots'].hide();
+					SNAPPI.Dialog.find['dialog-photo-roll-hidden-shots'].hide();
 				} catch (e) {}
 				// cancel multiSelect
 				SNAPPI.multiSelect.clearAll(this.container);
@@ -1593,8 +1592,7 @@
 			/*
 			 * for hiddenShots, usually we remove from hiddenShots
 			 */
-			// TODO: CHANGE TO ul.hidden-shots
-			if (hiddenShots_pr.container.hasClass('hiddenshots')) {
+			if (hiddenShots_pr._cfg.type=="DialogHiddenShot" || photoroll._cfg.type=="ShotGallery") {
 				var audition, 
 					removed = response['removeFromShot']['assetIds'];
 //				var bestShotSystem_changed = response['updateBestShotSystem']['changed'],
