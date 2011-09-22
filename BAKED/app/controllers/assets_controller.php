@@ -528,6 +528,7 @@ class AssetsController extends AppController {
 
 
 	function home($id = null) {
+		$forceXHR = setXHRDebug($this, 0);
 		$this->layout = 'snappi';
 		$this->helpers[] = 'Time';
 		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';
@@ -544,17 +545,20 @@ class AssetsController extends AppController {
 			$this->__cache_genericCastingCall();
 			$this->redirect($this->here, null, true);
 		}
-		
 		/*
 		 * get Permissionable associated data manually, add paging
 		 */
 		// Collections
 		// Groups
-		
 		if (!empty($this->params['url']['shotType'])) {  
 			$shotType = $this->params['url']['shotType'];
-		} else $shotType = 'Usershot';
+		} else if (!empty($ccid['CastingCall']['Auditions']['ShotType'])) {
+			$shotType = $ccid['CastingCall']['Auditions']['ShotType'];
+		} else {
+			$shotType = 'Usershot';
+		}
 		$showHidden = !empty($this->passedArgs['showHidden'])? true : false;
+		
 //		debug("$shotType, showHidden=$showHidden");
 		$options = array(
 			'conditions'=>array('Asset.id'=>$id),

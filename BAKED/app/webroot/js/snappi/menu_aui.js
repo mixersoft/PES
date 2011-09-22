@@ -113,6 +113,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	Menu.initContextMenu = function(MARKUP, TRIGGER, cfg){
 		var Y = SNAPPI.Y;
 		cfg = cfg || {};	// closure
+		if (cfg.triggerRoot) TRIGGER = '#'+cfg.triggerRoot.get('id')+' '+ TRIGGER;
 		var _cfg = {
 				trigger: TRIGGER,
 				contentBox: MARKUP.selector,
@@ -144,7 +145,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		var menu = Menu.find[menu_ID];
 		if (menu.get('disabled')) {
 			menu.enable();
-			var trigger = e.currentTarget.hasClass('thumbnail') ? e.currentTarget : e.currentTarget.ancestor('.thumbnail');
+			var trigger = e.currentTarget.hasClass('FigureBox') ? e.currentTarget : e.currentTarget.ancestor('.FigureBox');
 			menu.set('trigger', trigger);			// 'startup/disabled' trigger
 			menu.show();
 			menu.set('trigger', menu._stashTrigger); 		// 'enabled' trigger
@@ -732,7 +733,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	CFG_Context_Photoroll.load = function(cfg){
 		var Y = SNAPPI.Y;
 		var CSS_ID = 'contextmenu-photoroll-markup';
-		var TRIGGER = 'section.gallery.photo .FigureBox';
+		var TRIGGER = ' .FigureBox';
 		var MARKUP = {
 				id: CSS_ID,
 				selector: '#'+CSS_ID,
@@ -765,7 +766,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	CFG_Context_HiddenShot.load = function(cfg){
 		var Y = SNAPPI.Y;
 		var CSS_ID = 'contextmenu-hiddenshot-markup';
-		var TRIGGER = 'ul.hiddenshots > .FigureBox';
+		var TRIGGER = ' .FigureBox.Photo';
 		var MARKUP = {
 				id: CSS_ID,
 				selector: '#'+CSS_ID,

@@ -55,8 +55,8 @@ var DEFAULT_CFG_io = {
 		var _cfg = {
 			title: 'Hidden Shots',
 			id: CSS_ID,
-			width: (3*145+64),	// 19 px for scrollbar
-			height: (2*97+146),
+			width: (660+20),	// 19 px for scrollbar
+			// height: (2*97+146),
 			destroyOnClose: false,
 			modal: false			
 		}

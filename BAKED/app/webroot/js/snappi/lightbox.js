@@ -48,65 +48,7 @@
 		this._cfg = null;
 		this.node = null;
 		this.listener = {};
-
-       this.addToolbar = function(parent){
-            
-        	var markup = "<a class='button' title='{tip}' href='#' action='{action}'><span>{label}</span></a>";
-            
-            var markupButton = "<a class='button' title='{tip}' href='#' action='{action}'><span>{label}</span>&nbsp;<span>▼</span></a>";
-            
-            var title = Y.Node.create('<li class="title">Lightbox</li>');
-            parent.append(title);
-            var buttons = [
-            {
-                action: 'selectAll',
-                tip: 'Select All',
-                label: 'Select All'
-            }, {
-            	id: 'clear',
-                action: 'clear',
-                tip: 'Clear',
-                label: 'Clear'
-            }, {
-            	id: 'organizeBtn',
-                action: 'organize',
-                tip: 'Organize your photos',
-                label: 'Organize',
-                drop: true
-            }, 
-            {
-                id: 'createBtn',
-                action: 'create',
-                tip: 'Create page gallery',
-                label: 'Create',
-                drop: true
-            },{
-            	// swtich to zoom mode
-            	// <li id='zoom-mode' class="button" onclick="SNAPPI.photoRoll.toggleZoomMode(this);">zoom mode</li>
-            	id:'lightbox_zoom_btn',
-            	action:'toggleZoomMode',
-            	tip: 'zoom/noraml mode',
-            	label: 'Zoom Mode'
-				}
-            ];
-            for (var i in buttons) {
-                
-            	
-            	var button = new ToolButton(buttons[i]);
-            	if(buttons[i].drop){
-            		button.addDropIcon();
-            	}
-            	parent.append(button.btnNode);
-            	
-            }
-
-			Y.fire('snappi:lightbox-afterToolBarCreated');
-			
-            return;
-        };
-
-
-		// this.init(cfg);
+		this.init(cfg);
 	};
 	
 	/*
@@ -668,7 +610,7 @@
 	            	default:
 	            		cfg.size = 'sq';
 		            	cfg.addClass = 'lbx-tiny';	            	
-	            		cfg.hideSubstituteCSS = true;
+	            		cfg.hideHiddenShotByCSS = true;
 		            	break;
 	            };
 	            this.Gallery = new SNAPPI.Gallery(cfg);			// does NOT render here

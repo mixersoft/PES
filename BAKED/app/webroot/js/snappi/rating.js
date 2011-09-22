@@ -537,7 +537,7 @@
 				if (audition.substitutes) {
 					audition.substitutes.findBest();
 					for ( var i in photoRolls) {
-						if (!photoRolls[i]._cfg.hideSubstituteCSS) {
+						if (photoRolls[i]._cfg.hideHiddenShotByCSS) {
 							// WARNING: this is causing a POST group on every rating change. WHY? 
 							photoRolls[i].groupAsShot(audition.substitutes);
 						}
@@ -560,7 +560,7 @@
 			case "photos-home-rating": // rating for IMG.preview
 				try {
 					v = v || r.value;
-					var auditionSH = Y.one('div#neighbors > ul.filmstrip').Gallery.auditionSH;
+					var auditionSH = Y.one('section#filmstrip-nav .gallery.photo.filmstrip').Gallery.auditionSH;
 					var audition = auditionSH.get(r.id);
 					_updateRatingChange(audition, v);
 				} catch (e) {

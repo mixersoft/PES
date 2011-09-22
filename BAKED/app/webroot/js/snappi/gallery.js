@@ -59,6 +59,8 @@
     	return this;
     };
     
+    Gallery.find = {}; 			// gallery lookup
+    
     Gallery.getFromDom = function(dom) {
     	try {
     		return dom.ynode().ancestor('section.gallery.photo').Gallery;
@@ -98,87 +100,87 @@
     };
     
 
-    // private helper function (closure)
-	/*
-	 * render all shots, including hidden, into a "preview" photoRoll on /photos/home page
-	 * - depending on how castingCall was created, we either 
-	 * 	1) render directly from castingCall, or 
-	 * 	2) if shot.stale==true, use XHR to get substitutionGroup castingCall, then render (async)
-	 * 
-	 */ 
-	var _showHiddenShots = function(node, shot, selected) {
-		var HIDDENSHOT_PREVIEW_LIMIT = 40;	// substitute roll preview LIMIT
-		if (shot) {
-            if (!node && /photos\/home/.test(window.location.href)) {
-            	// filmstrip not found,  build filmstrip
-            	// TODO: move to a better place. we cannot assume we are on the /photos/home page here
-            	var parent = SNAPPI.Y.one('div#hiddenshots');
-            	// node = parent.create('<section.gallery.photo></section>'); // class='filmstrip' or 'photo-roll'??
-                // parent.append(node);
-            }                
-
-            // TODO: should add a more... link to see paging view of shot
-            
-            var total = shot.count();
-            
-			var oneShotCfg = {};
-			oneShotCfg[shot.id] = shot;		// format for Gallery constructor
-			var showHiddenShotsCfg = {
-				type : 'Photo',
-				ID_PREFIX : 'hiddenshot-',
-				size : 'lm',
-				selected : 1,
-				start : 0,
-				end : Math.min(HIDDENSHOT_PREVIEW_LIMIT, total),
-				total : total,
-				uri : null,
-            	node: node,
-            	sh: shot._sh,
-            	castingCall: {
-					providerName: this.castingCall.providerName,
-					schemaParser: this.castingCall.schemaParser
-				},
-            	shots: oneShotCfg					
-			};            
-            
-            /**
-             * NEW codepath to create Gallery from castingCall
-             */
-           var shotPhotoRoll = new SNAPPI.Gallery(showHiddenShotsCfg);	
-           shotPhotoRoll.node.addClass('hiddenshots').addClass('filmstrip').removeClass('container_16');
-           shotPhotoRoll.container.removeClass('grid_16');
-           shotPhotoRoll.listen(true, ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'RightClick']);
-			
-           shotPhotoRoll.setFocus(shot.indexOfBest());  // show best pic
-           shotPhotoRoll.selected = selected;
-           // add shot to selected
-           selected.Audition.SubstitutionREF = shot.id;
-           selected.Audition.Substitutions = shot;
-           selected.substitutes = shot; // DEPRECATE
-           // skip this line
-           
-           // manually show Ratings for Duplicates/shot
-           shotPhotoRoll.showThumbnailRatings();
-
-        } else {	// no shots returned
-        	// hide/unbind everything
-	        try {
-	        	// no shots, just hide div#hiddenshots and unbind nodes
-	        	if (node.ancestor('div#hiddenshots')) { 
-	        		// hide substitute group, if we are on the /photos/home page
-	        		node.all('li').addClass('hide').each(function(n,i,l){
-		        		SNAPPI.Auditions.unbind(n);
-	        		});
-	        	} else if (node.ancestor('div#snappi-dialog')) { 
-	        		// hide/unbind shots on selected blur?
-	        		// detach contextMenu listener
-	        	} 
-	        } catch (e) {}	        	
-        }
-        // skip this line
-		SNAPPI.Y.fire('snappi:hideLoadingMask', node);
-		return shotPhotoRoll;
-	};	// end _showHiddenShots()    
+    // // private helper function (closure)
+	// /*
+	 // * render all shots, including hidden, into a "preview" photoRoll on /photos/home page
+	 // * - depending on how castingCall was created, we either 
+	 // * 	1) render directly from castingCall, or 
+	 // * 	2) if shot.stale==true, use XHR to get substitutionGroup castingCall, then render (async)
+	 // * 
+	 // */ 
+	// var _showHiddenShots = function(node, shot, selected) {
+		// var HIDDENSHOT_PREVIEW_LIMIT = 40;	// substitute roll preview LIMIT
+		// if (shot) {
+            // if (!node && /photos\/home/.test(window.location.href)) {
+            	// // filmstrip not found,  build filmstrip
+            	// // TODO: move to a better place. we cannot assume we are on the /photos/home page here
+            	// var parent = SNAPPI.Y.one('div#hiddenshots');
+            	// // node = parent.create('<section.gallery.photo></section>'); // class='filmstrip' or 'photo-roll'??
+                // // parent.append(node);
+            // }                
+// 
+            // // TODO: should add a more... link to see paging view of shot
+//             
+            // var total = shot.count();
+//             
+			// var oneShotCfg = {};
+			// oneShotCfg[shot.id] = shot;		// format for Gallery constructor
+			// var showHiddenShotsCfg = {
+				// type : 'Photo',
+				// ID_PREFIX : 'hiddenshot-',
+				// size : 'lm',
+				// selected : 1,
+				// start : 0,
+				// end : Math.min(HIDDENSHOT_PREVIEW_LIMIT, total),
+				// total : total,
+				// uri : null,
+            	// node: node,
+            	// sh: shot._sh,
+            	// castingCall: {
+					// providerName: this.castingCall.providerName,
+					// schemaParser: this.castingCall.schemaParser
+				// },
+            	// shots: oneShotCfg					
+			// };            
+//             
+            // /**
+             // * NEW codepath to create Gallery from castingCall
+             // */
+           // var shotPhotoRoll = new SNAPPI.Gallery(showHiddenShotsCfg);	
+           // shotPhotoRoll.node.addClass('hiddenshots').removeClass('container_16');
+           // shotPhotoRoll.container.removeClass('grid_16');
+           // shotPhotoRoll.listen(true, ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'Contextmenu']);
+// 			
+           // shotPhotoRoll.setFocus(shot.indexOfBest());  // show best pic
+           // shotPhotoRoll.selected = selected;
+           // // add shot to selected
+           // selected.Audition.SubstitutionREF = shot.id;
+           // selected.Audition.Substitutions = shot;
+           // selected.substitutes = shot; // DEPRECATE
+           // // skip this line
+//            
+           // // manually show Ratings for Duplicates/shot
+           // shotPhotoRoll.showThumbnailRatings();
+// 
+        // } else {	// no shots returned
+        	// // hide/unbind everything
+	        // try {
+	        	// // no shots, just hide div#hiddenshots and unbind nodes
+	        	// if (node.ancestor('div#hiddenshots')) { 
+	        		// // hide substitute group, if we are on the /photos/home page
+	        		// node.all('li').addClass('hide').each(function(n,i,l){
+		        		// SNAPPI.Auditions.unbind(n);
+	        		// });
+	        	// } else if (node.ancestor('div#snappi-dialog')) { 
+	        		// // hide/unbind shots on selected blur?
+	        		// // detach contextMenu listener
+	        	// } 
+	        // } catch (e) {}	        	
+        // }
+        // // skip this line
+		// SNAPPI.Y.fire('snappi:hideLoadingMask', node);
+		// return shotPhotoRoll;
+	// };	// end _showHiddenShots()    
 	
 	
 	
@@ -187,8 +189,8 @@
     		var Y = SNAPPI.Y;
 	    	var _cfg = Y.merge(cfg);		// copy cfg
 	    	
-	        if (_cfg.sh) {
-	        	// resuse SH, if provided
+	    	// skip this line
+	        if (_cfg.sh) {	// resuse SH, if provided
 	            this.auditionSH = _cfg.sh;
 	        }	        
 	        if (_cfg.castingCall) {
@@ -203,10 +205,11 @@
 	        }
 	        if (!this.auditionSH) this.auditionSH = new SNAPPI.SortedHash();
 	        
-	        if (_cfg.selected) {
-	        	// set focus to selected
-	        	var selected = this.auditionSH.setFocus(_cfg.selected);
-	        }
+	        // move to this.render()
+	        // if (_cfg.selected) {
+	        	// // set focus to selected
+	        	// var selected = this.auditionSH.setFocus(_cfg.selected);
+	        // }
 
 	        if (_cfg.shots) {
 	            this.shots = _cfg.shots;
@@ -238,10 +241,6 @@
 	        }; 
 	        
 	        switch (_cfg.ID_PREFIX) {
-	        case 'filmstrip-':
-	        	if (selected)  this.filmstrip_SetFocus(selected);
-	        	else this.render(_cfg);
-	        	break;
 	        case 'lightbox-':
 	        	// render manually to enforce LIMIT
 	        	this._cfg.showLabel = false;
@@ -262,12 +261,17 @@
 //	            }, this);
 	            SNAPPI.DragDrop.pluginDelegatedDrag(this.container, 'img.drag');
 	        	break;
+	        case 'nav-': 		// nav-filmstrip
+	        case 'shot-':
 	        case 'hiddenshot-':
 	        	this.render(_cfg);
-//	        	this.container.all('img.drag').each(function(n, i, l){
-//	                SNAPPI.DragDrop.pluginDrag(n);
-//	            }, this);
-	        	SNAPPI.DragDrop.pluginDelegatedDrag(this.container, 'img.drag');        	
+				this.setFilmstripWidth();
+				this.scrollFocus( cfg.uuid );
+				this.container.ancestor('.filmstrip-wrap').removeClass('hidden');
+				SNAPPI.DragDrop.pluginDelegatedDrag(this.container, 'img.drag');
+	        	break;
+	        default:
+	        	break;
 	        }
 	        
 	        // start Gallery listeners
@@ -291,16 +295,20 @@
         render: function(cfg, shotsSH){
         	cfg = cfg || {};
         	if (cfg.ID_PREFIX !== undefined && !cfg.ID_PREFIX) {
+        		this._cfg.ID_PREFIX = cfg.ID_PREFIX;
         		delete (cfg.ID_PREFIX);
         	}
+        	if (cfg.sh) {
+        		this.auditionSH = cfg.sh;
+        		delete (cfg.sh);
+        	}
         	var focusUuid = null;
-        	if (cfg.uuid) {
-        		focusUuid = cfg.uuid;
+        	if (cfg.uuid || cfg.selected) {
+        		focusUuid = cfg.uuid || cfg.selected;
+        		this.auditionSH.setFocus(focusUuid);
 //        		delete cfg.uuid;	// TODO: filmstrip doesn't work unless we update this._cfg.uuid
         	}
-        	
         	if (cfg) this._cfg = Y.merge(this._cfg, cfg);
-//        	cfg = this._cfg;
             
             var offset = 0;
             if (!this.auditionSH) 
@@ -308,11 +316,20 @@
             
             if (!this.container) 
                 return;
-            var offset, page, perpage, 
+            var offset, page, perpage, ccAuditions,
             	nlist = this.container.all('.FigureBox');
+            try {
+            	ccAuditions = this.castingCall.CastingCall.Auditions;
+            } catch (e) {
+            	ccAuditions = {
+            		Page: 1,
+            		Perpage: this.auditionSH.count(),
+            		Total: this.auditionSH.count(),
+            	}
+            }
             switch(this._cfg.ID_PREFIX) {
 	            case 'filmstrip-':
-	            case 'hiddenshot-':
+	            // case 'hiddenshot-':
 	            	offset = this._cfg.start;
 	            	perpage = this._cfg.end - this._cfg.start;            	
 	            	break;
@@ -322,13 +339,17 @@
 	                page = page ||  1;
 	                offset = (page - 1) * perpage;
 	            	break;
+	            case 'hiddenshot-':
+	            case 'nav-':
+	            case 'shot-':
+	            	this._cfg.perpage = ccAuditions.Perpage || ccAuditions.Total;
 	            case 'uuid-':
             	default:
                 	// calculate offset of requested page from Gallery.castingCall.Auditions.Page
                 	// cfg.page = SNAPPI.STATE.displayPage.page, or $this->passedArgs['page']
                 	// ccOffset = (ccPage-1)*ccPerpage            		
-                	var ccPage = this.castingCall.CastingCall.Auditions.Page;
-	            	var ccOffset = (ccPage-1)*this.castingCall.CastingCall.Auditions.Perpage;
+                	var ccPage = ccAuditions.Page;
+	            	var ccOffset = (ccPage-1) * ccAuditions.Perpage;
 	            	var displayPage = this._cfg.page;
 	            	var displayOffset = (displayPage-1)*this._cfg.perpage;
 	            	offset = displayOffset - ccOffset;
@@ -350,7 +371,7 @@
             		} else if (Y.Lang.isNumber(this._cfg.start) && this._cfg.end) {
 						var audition = this.auditionSH.get(offset+i);
 						if (audition && offset+i < this._cfg.end) { 
-						    this.reuseLI(li, audition);
+						    this.reuseThumbnail(li, audition);
 						    li.removeClass('focus');
 						    if (audition.id == focusUuid) li.addClass('focus');
 						} else {
@@ -375,13 +396,13 @@
                 audition = this.auditionSH.get(i++);
                 if (audition == null) 
                     break;
-                li = this.createLI(this.container, audition, this._cfg);
+                li = this.createThumbnail(audition, null);
                 if (audition.id == focusUuid) li.addClass('focus');
 
                 lastLI = li;
             }
             var check;
-            if (!this._cfg.hideSubstituteCSS) {
+            if (this._cfg.hideHiddenShotByCSS) {
 	            try {	// add CSS for shotsSH
 	            	var shot, processedShots = {};
 		            this.auditionSH.each(function(a){
@@ -425,15 +446,16 @@
         		} else return label.substr(0,length-3)+'...';
         	} else return label;
         }, 
-        reuseLI: function(article, audition){
+        reuseThumbnail: function(article, audition){
         	article.Thumbnail.reuse(audition);
         	return;
         },
-        createLI: function(ul, audition, cfg){
-        	cfg = SNAPPI.Y.merge(cfg || this._cfg);	// copy
+        createThumbnail: function(audition, cfg){
+        	cfg = SNAPPI.Y.merge(this._cfg, cfg);	// copy
         	cfg.gallery = this;
+        	cfg.type = cfg.tnType || cfg.type;
         	var t = new SNAPPI.Thumbnail(audition, cfg);
-        	ul.append(t.node);
+        	this.container.append(t.node);
         	return t.node;
         },
         listen: function(status, cfg){
@@ -441,15 +463,16 @@
             status = (status == undefined) ? true : status;
             var k,v;
             if (status) {
-            	cfg = cfg || ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'RightClick', 'FsClick'];
+            	cfg = cfg || ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'Contextmenu', 'FsClick'];
             	for ( k in cfg){
             		switch (cfg[k]) {
             			case "Keypress": 	this.listenKeypress();	break;
             			case "Mouseover": 	this.listenMouseover();	break;
             			case "Click": 	this.listenClick();	break;
             			case "MultiSelect": 	this.listenMultiSelect();	break;
-            			case "RightClick": 	this.listenRightClick();	break;
-            			case "FsClick": 	this.listenFsClick();	break;
+            			case "Contextmenu": 	this.listenContextmenu();	break;
+            			case "HiddenShotClick": 	this.listenHiddenShotClick();	break;
+            			case "FocusClick": 	this.listenFocusClick();	break;
             		}
             	}
             }
@@ -466,108 +489,21 @@
                 }
             }
         },
-        /**
-         * listen for click on arrow and .FigureBoxs
-         * 	- NOTE: must be started manually, as this method requires a closure
-         * 	- not compatible with 'listenClick'
-         * @param closure
-         * @return
-         */
-        listenFsClick: function(closure) {
-            if (this.node.listen['FsClick'] == undefined) {
-            	this.node.listen['FsPrevNextClick'] = this.container.delegate('click', 
-            			/*
-            			 * 
-            			 */
-            			function(e) {
-            				var gallery = this.Gallery;
-            				var selected, target = e.currentTarget;
-            				switch(e.currentTarget.get('innerHTML')) {
-            				case '◄':
-            					selected = gallery.auditionSH.prev(); 
-            					break;
-            				case '►':
-            					selected = gallery.auditionSH.next();
-            					var extendCC = (selected === null);
-            					break;
-            				}
-            				if (selected) {
-	            				var oldUuid = gallery._cfg.uuid;
-	            				gallery.filmstrip_SetFocus(selected);
-	                        	if (selected.id != oldUuid) {
-	                        		SNAPPI.domJsBinder.bindSelectedToPage.call(pr, selected, oldUuid);
-	                        		gallery._cfg.uuid = selected.id;
-	        	                }
-            				}
-            				/*
-            				 * load a bigger castingCall into session, 
-            				 * then reload the page using new castingCall
-            				 * 
-            				 */
-            				// TODO: extendCC will fail near snappi_controller::__getExtendedCCRequest() boundary limit, currently 2000
-            				if (extendCC === true) {
-            					selected = gallery.auditionSH.getFocus();
-            					// show "get more" link
-            					// update cc using .json fetch
-            					ccid = PAGE.jsonData.castingCall.CastingCall.ID;
-            					var updateCCUrl = '/snappi/extendcc/'+ccid+'/.json';
-            					SNAPPI.io.get(updateCCUrl, {complete: function(i, o, args) {
-            						var resp = o.responseJson;
-            						var extendReq = resp.request;
-                					SNAPPI.io.get(extendReq, {complete: function(i, o, args) {
-                						var resp = o.responseJson;
-                						// load page with new CastingCalls  
-                						var next = '/photos/home/'+selected.id+'?ccid='+resp.castingCall.CastingCall.ID;
-                						window.location.href = next;
-                					}} );            						
-            						
-            					}} );
-            					// redirect to updated page
-            				}  
-            			}, 'li.prev-next', this.node
-            	);	
-                this.node.listen['FsClick'] = this.container.delegate('click', 
-	                /*
-	                 * update all components on /photos/home page to match 'selected'
-	                 */		
-	                function(e){
-                		var gallery = this.Gallery;
-	                	e.target.ancestor('li').removeClass('focus');
-	                	var selected = e.target.ancestor('li').audition;
-	                	var oldUuid = gallery.auditionSH.get(gallery._cfg.selected).id;
-	                	gallery.filmstrip_SetFocus(selected);
-	                	
-	                	if (selected.id != oldUuid) {
-	                		SNAPPI.domJsBinder.bindSelectedToPage.call(gallery, selected, oldUuid);
-		                }
-
-	                }, 'img', this.node); 
-	            } 
-        },
-        /*
-         * what is this? not a click on the hiddenshot-icon.
-         * @deprecated???
-         */
-        listenHiddenShotClick: function(){
+	    listenFocusClick: function(){
+        	if (this.node.listen['FocusClick'] == undefined) {
+        		this.node.listen['FocusClick'] = this.container.delegate('click', 
+	                	Factory[this._cfg.type].handle_focusClick, 
+	                'img', this.node); 
+	          }	    	
+	    },
+	    listenHiddenShotClick: function(){
+	    	// listen hiddenshot-icon
         	if (this.node.listen['HiddenShotClick'] == undefined) {
         		this.node.listen['HiddenShotClick'] = this.container.delegate('click', 
-	                /*
-	                 * update all components on /photos/home page to match 'selected'
-	                 */		
-	                function(e){
-	                	var gallery = this.Gallery;
-        				e.container.all('.FigureBox').removeClass('focus');
-	                	var selected = e.target.ancestor('.FigureBox').audition;
-	                	var oldUuid = gallery.auditionSH.getFocus().id;
-	                	gallery.filmstrip_SetFocus(selected);
-	                	if (selected.id != oldUuid) {
-	                		SNAPPI.domJsBinder.bindSelected2Preview.call(gallery, selected);
-		                }
-	                }, 'img', this.node); 
-	          }
-        	var detach = this.node.listen['Click'];
-        	if (detach) detach.detach();
-	    },
+						Factory[this._cfg.type].handle_hiddenShotClick, 
+	            	'div.hidden-shot', this.node); 
+	          }	    	
+	    },	    
         listenClick: function(forceStart) {
             if (this.node.listen['Click'] == undefined || forceStart ) {
             	// section.gallery.photo or div.filmstrip.photo
@@ -586,7 +522,7 @@
                 }, '.FigureBox > figure > img', this.node);
                 try {
 	                // listen thumbnail size
-	                this.node.listen['thumbSize_Click'] = this.node.get('parentNode').one('section.gallery-header ul.thumb-size').delegate('click', 
+	                this.node.listen['thumbSize_Click'] = this.node.get('parentNode').one('section.gallery-header .thumb-size').delegate('click', 
 		                function(e){
 		                	var thumbSize = e.currentTarget.getAttribute('thumb-size');
 		                	this.Gallery.renderThumbSize(thumbSize);
@@ -594,20 +530,6 @@
 		                	e.currentTarget.addClass('focus');
 		                }, 'li', this.node);
 				} catch (e) {}	                
-				try {
-	                // listen hiddenshot-icon
-	                this.node.listen['hiddenShot_Click'] = this.node.delegate('click', function(e){
-	                	var thumbnail = e.currentTarget.ancestor('.FigureBox');
-						try {
-							var audition = thumbnail.audition;
-							var gallery = this.Gallery;
-							var shotType = audition.Audition.Substitutions.shotType;
-							if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
-							gallery.showHiddenShotsInDialog(audition, shotType);
-						} catch (e) {
-						}                	
-	                }, 'div.hidden-shot', this.node);
-	          	} catch (e) {}
 			}
         },
         listenMultiSelect : function () {
@@ -655,37 +577,48 @@
         	}
         },
 		
-        listenRightClick : function (){
-        	if (this.node.listen['RightClick'] == undefined){
-        		this.node.listen['RightClick'] = this.container.delegate('contextmenu', 
+        listenContextmenu : function (){
+        	if (this.node.listen['Contextmenu'] == undefined){
+        		this.node.listen['Contextmenu'] = this.container.delegate('contextmenu', 
         		function(e){
 					this.Gallery.toggle_ContextMenu(e);
         		}, '.FigureBox', this.node);
         		
         		// .FigureBox li.context-menu.icon
-     		this.node.listen['ContextMenu'] = this.container.delegate('click', 
+     			this.node.listen['ContextMenuIcon'] = this.container.delegate('click', 
      			function(e){
 					this.Gallery.toggle_ContextMenu(e);
-        		}, '.FigureBox > ul > li.context-menu', this.node);        		
+					e.stopImmediatePropagation();
+        		}, '.FigureBox  figcaption  li.context-menu', this.node);        		
 			}        	
         	return;
         },
         toggle_ContextMenu : function(e) {
 	        e.preventDefault();
         	
-        	var CSS_ID;
+        	var CSS_ID, TRIGGER;
+        	switch(this._cfg.type){
+        		case 'Photo':
+        		case 'NavFilmstrip': 
+        			CSS_ID = 'contextmenu-photoroll-markup';
+        			break;
+        		case 'DialogHiddenShot': 
+        		case 'ShotGallery': 
+        			CSS_ID = 'contextmenu-hiddenshot-markup';	
+        			break;
+				default:
+					return;        			
+        	}
         	if (this.node.hasClass('hiddenshots') || this.node.hasClass('hidden-shot')) {
         		CSS_ID = 'contextmenu-hiddenshot-markup';
-        	} else if (this.node.hasClass('filmstrip')) {
-        		// TODO: not yet done
-        		console.warn("Gallery.listenRightClick: not done for filmstrip");
-        	} else {
-        		CSS_ID = 'contextmenu-photoroll-markup';
-        	}  
+        	} 
         	
         	// load/toggle contextmenu
         	if (!SNAPPI.MenuAUI.find[CSS_ID]) {
-        		SNAPPI.MenuAUI.CFG[CSS_ID].load({currentTarget:e.currentTarget});
+        		SNAPPI.MenuAUI.CFG[CSS_ID].load({
+        			currentTarget:e.currentTarget,
+        			triggerRoot: this.container
+				});
         		this.stopClickListener();
         	} else {
         		var menu = SNAPPI.MenuAUI.toggleEnabled(CSS_ID, e);
@@ -808,41 +741,121 @@
         /**
          * set focus in DOM object
          * - NOT the same as auditionSH.getFocus()
-         * @param i, index or .FigureBox
+         * @param m mixed, .FigureBox Node, audition, UUID, or index
          * @return
          */
-        setFocus: function(i){
-        	var next, i = parseInt(i);
-        	if(!Y.Lang.isNumber(i)){
-        		next = i;
-        	}else {
-        		next = this.container.all('.FigureBox').item(i);
+        setFocus: function(m){
+        	var Y = SNAPPI.Y;
+        	var focusNode, o;
+        	if (m.id) {
+        		o = m;
+      		} else if (typeof m == 'string') {
+        		o = this.auditionSH.get(m);        		
+        	} else if (typeof m == 'number') {
+        		m = parseInt(m);
+        		o = this.auditionSH.get(m);
+			} else if (m instanceof Y.Node && m.hasClass('.FigureBox')) {
+				o = m.audition;  
+        		focusNode = m;
+        	} else {
+        		return;
+        	};
+        	if (o) this.auditionSH.setFocus(o);
+        	if (!focusNode) {
+        		focusNode = this.container.one('#'+this._cfg.ID_PREFIX+o.id);
         	}
-            
-            if (next) {
-	            var prev = this.container.one('li.focus');
-	            if (prev) {
-	                prev.removeClass('focus');
-	            };
-            
-                next.addClass('focus');
-                var id = this.getUuid(next);
-                this.auditionSH.setFocus(id);
+            if (focusNode) {
+	            var prev = this.container.all('.FigureBox.focus').removeClass('focus');
+                focusNode.addClass('focus');
             }
             return this;
         },
-        // DEPRCATE
-        renderContextMenu : function(next){
-        	// SEE photoroll.listenRightClick()
-            // TODO: put this initializing context is temp code. will refator later
-        	this.contextMenu.parent.container = next;
-			// context menu is visible
-			if(!this.contextMenu.getNode().hasClass('hide')){
-    			this.contextMenu.show();
-    			this.stopClickListener();
-			}
-    		
+        /*
+         * set filmstrip to 1 row tall with HScroll
+         */
+        setFilmstripWidth: function() {
+        	var parent = this.container.ancestor('.filmstrip');
+        	try {
+        		// set width in pixels to render as 1 row HScroll 
+				var count = this.auditionSH.count();
+				var width = parent.one('.FigureBox').get('offsetWidth');
+				this.container.setStyles({
+					width: (width*count)+'px',
+					height: 'auto'	
+				}); 	
+        	} catch (e) {}
         },
+        /*
+         * scroll ".gallery .filmstrip" to show focus in center
+         * @params m mixed, Y.Node (.FigureBox), uuid, or index
+         */
+        scrollFocus: function(m) {
+        	var i, thumbs, parent = this.container.ancestor('.filmstrip');
+        	try {
+        		if (m instanceof SNAPPI.Y.Node && m.hasClass('.FigureBox')) {
+        			thumbs = this.container.all('.FigureBox');
+        			i = thumbs.indexOf(m);
+        		} else if (typeof m == "string") {
+        			i = this.auditionSH.indexOfKey(m);
+        		} else if (typeof i == 'number') {
+					i = m;	        		
+	        	}
+        		var selected = this.auditionSH.setFocus(i);
+        		i = this.auditionSH.indexOf(selected);
+	        	var width = this.container.one('.FigureBox').get('offsetWidth');
+	        	var center = parent.get('clientWidth')/2 ;
+				var scrollLeft = (i + 0.5) * width - center; 
+				parent.set('scrollLeft', scrollLeft);
+				thumbs = thumbs || parent.all('.FigureBox');
+				// set focus
+				thumbs.removeClass('focus').item(i).addClass('focus');
+        	} catch (e) {}
+        	
+        },
+        /**
+         * for shot gallery 
+         */
+		processDrop : function(nodeList, onComplete) {
+			var g = this;
+			var Y = SNAPPI.Y;
+			/*
+			 * process dropped items only
+			 */
+			// current lightbox photoroll count
+			var LIMIT = 100;
+			
+			// nodeList of img from drag-drop
+			nodeList.each(function(n, i, l) {
+				var audition = n.ancestor('.FigureBox').audition;
+				this.auditionSH.add(audition);
+			}, g);
+			
+            var lastLI = g.render( {
+            	// uuid: null, 	// focus 
+				page : 1,
+				perpage : LIMIT
+			});
+
+			// reset .gallery-container li.select-all .checkbox
+			try {
+				var cb = SNAPPI.Y.one('.gallery-container li.select-all input[type="checkbox"]');
+				cb.set('checked', false);
+			} catch (e) {}
+            
+            /*
+             * POST groupAsShot with this.auditionSH
+             */
+            // TODO: post groupAsShot
+            
+			g.updateCount();
+			if (onComplete) onComplete();					
+			return lastLI;
+		},
+		updateCount: function() {
+			var count = this.auditionSH.count();
+			var label = count==1 ? '1 Snap' : count+" Snaps"; 
+			this.node.one('.header .count').set('innerHTML', label);
+		},        
         up : function() {
         	var next,
         		lineCount = 1,
@@ -968,49 +981,17 @@
             	this.renderContextMenu(next);
             }
         },
-        filmstrip_SetFocus: function(audition) {
-        	var selected = audition || this.auditionSH.getFocus();
-        	this.auditionSH.setFocus(selected);
-        	var selectedIndex = parseInt(this.auditionSH.indexOfKey(selected));
-        	var cfg = {
-				// ID_PREFIX: 'filmstrip-',
-				// size: 'tn',                			
-        		selected: selectedIndex,
-        		uuid : selected.id,
-        		start: selectedIndex - this._cfg.flimstripHalfsize,
-        		end: selectedIndex + this._cfg.flimstripHalfsize +1,
-        		hideSubstituteCSS: false
-        	};
-        	var count = this.auditionSH.count();	// count of auditions retrieved in castingCall
-        	if (0 <= cfg.start && cfg.end <= count) {
-        		cfg.focus = this._cfg.flimstripHalfsize;
+        getFocus: function() {
+        	var focus = this.auditionSH.getFocus();
+        	if (!focus) {
+        		focus = this.container.one('.FigureBox.focus');
+        		if (focus) this.auditionSH.setFocus(focus);
         	}
-        	if (cfg.start<0) {
-        		cfg.end -= cfg.start;
-        		cfg.start = 0;
-        	}
-        	if (cfg.end > count) {
-        		if (count == cfg.total) {
-            		cfg.start -= (cfg.end-count);
-            		cfg.end = count;
-        		} else {
-        			// TODO: Get next page of CastingCall
-            		cfg.start -= (cfg.end-count);
-            		cfg.end = count;
-        		}
-        	}
-        	// render #neighbors filmstrip
-        	this.render(cfg);
-    		this.setFocus(cfg.selected-cfg.start);
-        	
-//        	// if no dialogbox or dialogbox is invisible, then not render dialog box
-//        	if(SNAPPI.dialogbox.node && !SNAPPI.dialogbox.node.hasClass('hide')){
-//        		SNAPPI.propertyManager.renderDialogInPhotoRoll(selected);
-//        	}
-        	
-//        	this.renderAsNode(selected);
-        	
+        	return focus;
         },
+        /**
+         * @deprecated uses scotts property object
+         */
         renderAsNode: function(selected){
         	
         	var _renderAsNode = function(selected){
@@ -1791,134 +1772,210 @@
                 }
             });
         },
-        /**
-         * Show HiddenShots as Preview block
-         * @param selected audition - selected audition containing SubstitutionGroup
-         * @param shotType string, [Usershot|Groupshot|null], default Usershot
-         * @param ul - container for displaying SubstitutionGroup
-         * @return
-         */    
-        showHiddenShotsAsPreview : function(selected, ul) {    	
+        showShotGallery : function(selected) {
         	selected = selected || this.auditionSH.getFocus();
-        	var ul, parent, shots, Y = SNAPPI.Y;
-        	try {
-        		ul = ul || Y.one('div#hiddenshots > ul');
-        		// ERROR:  selected.Audition.Shot.id != selected.Audition.Substitutions.id
-        		shots = selected.Audition.Substitutions;
-        		shotType = shots.shotType;
-        	} catch (e) {
-        		// no hidden shots
-        		// /photos/home page: no shots, just hide div#hiddenshots on and unbind nodes
-            	if (ul && ul.ancestor('div#hiddenshots')) { 
-            		// hide substitute group, if we are on the /photos/home page
-            		ul.all('li').addClass('hide').each(function(n,i,l){
-    	        		SNAPPI.Auditions.unbind(n);
-            		});
-            	}
-        		return;
+        	var container, parent, shots, Y = SNAPPI.Y;
+        	var shot = selected.Audition.Substitutions;
+			var renderCfg = {
+  				shotType:  shot.shotType     		
         	}
-        	var closure = {
-        		photoroll : this,
-        		selected : selected
-        	};
-    		
-    		/*
-    		 * plugin Y.Plugin.IO
-    		 */
-    		if (!ul.io) {
-    			var cfg = {
-//    					uri: subUri,
-    					parseContent: false,
-    					autoLoad: false,
-    					context: this,
-    					arguments: closure, 
-    					on: {
-    						successJson: function(e, i,o,args) {
-    							if (o.responseJson) {
+
+        	if (shot.stale == false) {
+        		renderCfg.sh = shot._sh;
+        		this.render(renderCfg);
+        		// fire snappi:after-render-filmstrip
+				this.setFilmstripWidth();
+				this.scrollFocus( shot.best.id );
+				this.container.ancestor('.filmstrip-wrap').removeClass('hidden');
+				SNAPPI.DragDrop.pluginDelegatedDrag(this.container, 'img.drag');        		
+        	} else {
+				// SNAPPI.io GET JSON  
+				var container = this.container;
+	        	var args = {
+	        		selected : selected
+	        	};	    		/*
+	    		 * plugin Y.Plugin.IO
+	    		 */
+	    		if (!container.io) {
+	    			var cfg = {
+	//    					uri: subUri,
+	    					parseContent: false,
+	    					autoLoad: false,
+	    					context: this,
+	    					arguments: args, 
+	    					on: {
+	    						successJson: function(e, i,o,args) {
+    								var response = o.responseJson.response;
     								// get auditions from raw json castingCall
-    								var shotCC = o.responseJson.castingCall;
+    								var shotCC = response.castingCall;
     								var onDuplicate = function(a,b) {
     			                    	return a; 	// return original, do not replace
     								};
-    								var shotAuditionSH =  SNAPPI.Auditions.parseCastingCall(shotCC, this.castingCall.providerName, null, onDuplicate);
+    								var shotAuditionSH =  SNAPPI.Auditions.parseCastingCall(shotCC, this._cfg.PROVIDER_NAME, null, onDuplicate);
     			                    
     			                    var audition = shotAuditionSH.first();
     			                    var shot = audition.Audition.Substitutions;
     			                    shot.stale = shot._sh.count() != audition.Audition.Shot.count ;
-    			                    var shotPr = _showHiddenShots.call(this, ul, shot, args.selected);
-    			                    // start listener
-    			                    shotPr.listenHiddenShotClick();
+    			                    this.render({
+    			                    	sh: shotAuditionSH,
+    			                    	shotType: shot.shotType,
+    			                    	uuid: args.selected.id
+    			                    });
     			                    return false;
-    							};
-    						}					
-    					}
-    			};
-    			ul.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(cfg));
-    			// set loadingmask to parent
-    			ul.plug(Y.LoadingMask, {
-    				target: ul.get('parentNode')
-    			});
-    			ul.loadingmask._conf.data.value['target'] = ul.get('parentNode');
-    			ul.loadingmask.overlayMask._conf.data.value['target'] = ul.loadingmask._conf.data.value['target'];
-
-    		}
-    		
-    		
-    		if (shots.stale == false) {
-    			var pr = _showHiddenShots.call(this, ul, shots, selected);
-    			pr.listenHiddenShotClick();
-    		} else {
+	    						}					
+	    					}
+	    			};
+	    			var target = container.get('parentNode');
+	    			var loadingmaskHost = this.node.hasClass('filmstrip') ? container.ancestor('.filmstrip') : container;
+	    			container.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(cfg));
+	    			// set loadingmask to parent
+	    			container.plug(Y.LoadingMask, {
+	    				target: target
+	    			});
+	    			container.loadingmask._conf.data.value['target'] = target;
+	    			container.loadingmask.overlayMask._conf.data.value['target'] = container.loadingmask._conf.data.value['target'];
+	    			// container.loadingmask.set('target', target);
+	    			// container.loadingmask.overlayMask.set('target', target);
+	    			container.loadingmask.set('zIndex', 10);
+	    			container.loadingmask.overlayMask.set('zIndex', 10);
+	
+	    		}
     			// shots are NOT included. get shots via XHR and render
-    			var subUri = '/photos/hiddenShots/'+shots.id+'/'+shotType+'/.json';
-    			ul.io.set('uri', subUri );
-    			var ioCfg = ul.io.get('cfg');
-    			ioCfg.arguments = closure;
-    			ul.io.set('cfg', ioCfg);
-    			ul.io.start();			
-    		}
+    			var subUri = '/photos/hiddenShots/'+shot.id+'/'+shot.shotType+'/.json';
+    			container.io.set('uri', subUri );
+    			container.io.set('arguments', args);
+    			container.io.start();			
+        	}
         },
+        // /**
+         // * @deprecated, use showShotGallery instead
+         // * Show HiddenShots as Preview block
+         // * @param selected audition - selected audition containing SubstitutionGroup
+         // * @param shotType string, [Usershot|Groupshot|null], default Usershot
+         // * @param container - container for showing shot gallery
+         // * @return
+         // */    
+        // showHiddenShotsAsPreview : function(selected, container) {    	
+        	// selected = selected || this.auditionSH.getFocus();
+        	// var container, parent, shots, Y = SNAPPI.Y;
+        	// try {
+        		// container = container || Y.one('div#hiddenshots > container');
+        		// // ERROR:  selected.Audition.Shot.id != selected.Audition.Substitutions.id
+        		// shots = selected.Audition.Substitutions;
+        		// shotType = shots.shotType;
+        	// } catch (e) {
+        		// // no hidden shots
+        		// // /photos/home page: no shots, just hide div#hiddenshots on and unbind nodes
+            	// if (container && container.ancestor('div#hiddenshots')) { 
+            		// // hide substitute group, if we are on the /photos/home page
+            		// container.all('li').addClass('hide').each(function(n,i,l){
+    	        		// SNAPPI.Auditions.unbind(n);
+            		// });
+            	// }
+        		// return;
+        	// }
+        	// var closure = {
+        		// photoroll : this,
+        		// selected : selected
+        	// };
+//     		
+    		// /*
+    		 // * plugin Y.Plugin.IO
+    		 // */
+    		// if (!container.io) {
+    			// var cfg = {
+// //    					uri: subUri,
+    					// parseContent: false,
+    					// autoLoad: false,
+    					// context: this,
+    					// arguments: closure, 
+    					// on: {
+    						// successJson: function(e, i,o,args) {
+    							// if (o.responseJson) {
+    								// // get auditions from raw json castingCall
+    								// var shotCC = o.responseJson.castingCall;
+    								// var onDuplicate = function(a,b) {
+    			                    	// return a; 	// return original, do not replace
+    								// };
+    								// var shotAuditionSH =  SNAPPI.Auditions.parseCastingCall(shotCC, this.castingCall.providerName, null, onDuplicate);
+//     			                    
+    			                    // var audition = shotAuditionSH.first();
+    			                    // var shot = audition.Audition.Substitutions;
+    			                    // shot.stale = shot._sh.count() != audition.Audition.Shot.count ;
+    			                    // var shotPr = _showHiddenShots.call(this, container, shot, args.selected);
+    			                    // // start listener
+    			                    // shotPr.listenHiddenShotClick();
+    			                    // return false;
+    							// };
+    						// }					
+    					// }
+    			// };
+    			// container.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(cfg));
+    			// // set loadingmask to parent
+    			// container.plug(Y.LoadingMask, {
+    				// target: container.get('parentNode')
+    			// });
+    			// container.loadingmask._conf.data.value['target'] = container.get('parentNode');
+    			// container.loadingmask.overlayMask._conf.data.value['target'] = container.loadingmask._conf.data.value['target'];
+// 
+    		// }
+//     		
+//     		
+    		// if (shots.stale == false) {
+    			// var gallery = _showHiddenShots.call(this, container, shots, selected);
+    			// gallery.listenHiddenShotClick();
+    		// } else {
+    			// // shots are NOT included. get shots via XHR and render
+    			// var subUri = '/photos/hiddenShots/'+shots.id+'/'+shotType+'/.json';
+    			// container.io.set('uri', subUri );
+    			// var ioCfg = container.io.get('cfg');
+    			// ioCfg.arguments = closure;
+    			// container.io.set('cfg', ioCfg);
+    			// container.io.start();			
+    		// }
+        // },
         /**
          * show hidden shots in Dialog box
          * @param selected audition- selected audition containing SubstitutionGroup
          * @param shotType string, [Usershot|Groupshot|null], default Usershot
-         * @param ul - container for displaying SubstitutionGroup
          * @return
          */    
-        showHiddenShotsInDialog : function(selected, shotType, ul) {    	
+        showHiddenShotsInDialog : function(selected, shotType) {    	
         	selected = selected || this.auditionSH.getFocus();
         	shotType = shotType || 'Usershot';
     		var shots, 
     			Y = SNAPPI.Y;
     		
             try {
-            	shots = selected.Audition.Substitutions;
-        		if (!shots ) return; 
+            	shot = selected.Audition.Substitutions;
+        		if (!shot ) return; 
             } catch (e) { return; }
-        	var closure = {
-    			photoroll : this,
-        		selected : selected
-            };
-
     		
     		/*
     		 * create or reuse Dialog
     		 */
     		var dialog_ID = 'dialog-photo-roll-hidden-shots';
     		var dialog = SNAPPI.Dialog.find[dialog_ID];
+        	var args = {
+    			galleryPhoto : this,
+        		selected : selected,
+        		dialog: dialog,
+            };    		
     		if (!dialog) {
             	dialog = SNAPPI.Dialog.CFG[dialog_ID].load();
-            	closure.dialog = dialog;
+            	args.dialog = dialog;
     			var cfg = {
 //    					uri: subUri,
     					parseContent: false,
     					autoLoad: false,
     					context: this,
-    					arguments: closure,    					
+    					arguments: args,    					
     					on: {
     						successJson: function(e, i,o,args) {
     							var response = o.responseJson.response;
 								// get auditions from raw json castingCall
 								var shotCC = response.castingCall;
+								var galleryPhotoCC = args.galleryPhoto.castingCall;	// this == galleryPhoto
 								var onDuplicate = function(a,b) {
 			                    	return a; 	// return original, do not replace
 								};
@@ -1928,15 +1985,36 @@
 			                    var shot = audition.Audition.Substitutions;
 			                    shot.stale = shot._sh.count() != audition.Audition.Shot.count ;
 			                    // adjust dialog size to fit hiddenShots
-			                    var cells = shot._sh.count() > 6 ? {w:4,h:3} : {w:3,h:2}; 
-			                    var offsets = args.dialog.cellOffsets;
-			                    if (cells.w > 3) offsets.boundingBoxOffset.w += 19; // scrollbar
-			                    args.dialog.get('boundingBox').setStyles({
-			                    	width: cells.w * offsets.cellSize.w + offsets.boundingBoxOffset.w,
-			                    	height: cells.h * offsets.cellSize.h + offsets.boundingBoxOffset.h
-			                    })
-			                    var shotPr = _showHiddenShots.call(this, null, shot, args.selected);
-			                    return shotPr.node;
+			                    // args.dialog.get('boundingBox').setStyles({
+			                    	// width: cells.w * offsets.cellSize.w + offsets.boundingBoxOffset.w,
+			                    	// height: cells.h * offsets.cellSize.h + offsets.boundingBoxOffset.h
+			                    // })
+			                    
+			                    // render dialog-hidden-shot
+			                    var Y = SNAPPI.Y;
+			                    var gallery, body = args.dialog.get('bodyContent');
+			                    if (!body || (body.get('id') != 'dialog-hidden-shot')) {
+			                    	// get hidden-shot MARKUP
+			                    	body = Y.Node.create(Factory['DialogHiddenShot'].defaultCfg.MARKUP);
+			                    	dialog.setStdModContent('body',body);
+			                    }
+								gallery = body.one('.gallery.photo.filmstrip');
+			                    if (!gallery.Gallery) {
+			                    	var cfg = {
+			                    		type: 'DialogHiddenShot',
+			                    		sh: shot._sh,
+			                    		shots: shot,
+			                    		castingCall: false,
+			                    		uuid: shot.best.id,
+			                    		node: gallery,
+			                    	}			                    	
+			                    	// var origCastingCall = args.galleryPhoto.castingCall;
+			                    	gallery = new SNAPPI.Gallery(cfg);
+			                    	return body;
+			                    } else {
+			                    	gallery.Gallery.showShotGallery(shot.best);
+			                    	return body;
+			                    }
     						}					
     					}
     			};
@@ -1944,28 +2022,41 @@
     			// dialog_ID == dialog.get('boundingBox').get('id')
     			SNAPPI.Dialog.find[dialog_ID] = dialog;
     		} else {
+				var body = dialog.get('bodyContent');
+				if (!body || (body.get('id') != 'dialog-hidden-shot')) {
+					// get hidden-shota MARKUP
+					body = Y.Node.create(Factory['DialogHiddenShot'].defaultCfg.MARKUP);
+					dialog.setStdModContent('body',body);
+				}    				
     			if (!dialog.get('visible')) {
-    				dialog.setStdModContent('body','<ul />');
     				dialog.show();
     			}
     			dialog.io.set('title', 'Hidden Shots');
     		}
     		
     		
-    		if (shots.stale == false) {
-    			var ul = dialog.get('bodyContent');
-    			if (ul instanceof Y.Node === false) {
-    				ul = Y.Node.create('<ul />');
-    			};
-    			_showHiddenShots.call(this, ul, shots, selected);
-    			dialog.setStdModContent('body',ul);
+    		if (shot.stale == false) {
+    			var body = body || dialog.get('bodyContent');
+				gallery = body.one('.gallery.photo.filmstrip');    			
+                    if (!gallery.Gallery) {
+                    	var cfg = {
+                    		type: 'DialogHiddenShot',
+                    		sh: shot._sh,
+                    		shots: shot,
+                    		castingCall: false,
+                    		uuid: shot.best.id,
+                    		node: gallery,
+                    	}			                    	
+                    	gallery = new SNAPPI.Gallery(cfg);
+                    } else {
+                    	gallery.Gallery.showShotGallery(shot.best);
+                    }				
+    			dialog.setStdModContent('body',body);
     		} else {
-    			// shots are NOT included. get shots via XHR and render
-    			var subUri = '/photos/hiddenShots/'+shots.id+'/'+shotType+'/.json';
+    			// shot are NOT included. get shot via XHR and render
+    			var subUri = '/photos/hiddenShots/'+shot.id+'/'+shotType+'/.json';
     			dialog.io.set('uri', subUri );
-    			var ioCfg = dialog.io.get('cfg');
-    			ioCfg.arguments = closure;
-    			dialog.io.set('cfg', ioCfg);    			
+    			dialog.io.set('arguments', args);    			
     			dialog.io.start();			
     		}
         },
@@ -2066,8 +2157,8 @@
 	        			'<div class="container grid_16" />'+
 	        			'</section>',
 			node: 'div.gallery-container > section.gallery.photo',
-			listeners: ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'RightClick'],
-			hideSubstituteCSS: false,
+			listeners: ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'HiddenShotClick', 'Contextmenu'],
+			hideHiddenShotByCSS: true,
 			size: 'lm',
 			start: null,
 			end: null
@@ -2086,27 +2177,175 @@
             cfg = cfg || {};
             // inherit javascript state information from current page, 
             // called AFTER SNAPPI.mergeSessionData();
-            cfg = Y.merge(Factory.Photo.defaultCfg, SNAPPI.STATE.displayPage, cfg);	
-            if (SNAPPI.STATE.thumbSize) cfg.size = SNAPPI.STATE.thumbSize;
-            if (PAGE.jsonData.castingCall) cfg.castingCall = PAGE.jsonData.castingCall;
-            
+            cfg = Y.merge(Factory[cfg.type].defaultCfg, SNAPPI.STATE.displayPage, cfg);	
+            try {
+            	cfg.size = PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
+            } catch (e){}
+            try {
+            	if (!cfg.castingCall && cfg.castingCall !== false) cfg.castingCall = PAGE.jsonData.castingCall;
+            } catch (e){}
 	        
 	        // .gallery.photo BEFORE init
 	        gallery.auditionSH = null;
 	        gallery.shots = null; 	
 	        
 	        // generic gallery BEFORE init
-			gallery.providerName = cfg.PROVIDER_NAME;	// deprecate: use this._cfg.providerName
+			gallery.providerName = cfg.PROVIDER_NAME;	// deprecate: use this.cfg.providerName
 			Factory._attachNodes(gallery, cfg);
 	        gallery.init(cfg);
 	        
 	        // .gallery.photo AFTER init methods
 	        SNAPPI.Rating.startListeners(gallery.container);
 	        SNAPPI.DragDrop.startListeners();
-	        
+	        Gallery.find[cfg.ID_PREFIX] = gallery;		// add to gallery lookup
 	        return gallery;					// return instance of SNAPPI.Gallery
-        }
+        },
+        handle_hiddenShotClick : function(e){
+        	var thumbnail = e.currentTarget.ancestor('.FigureBox');
+			try {
+				var audition = thumbnail.audition;
+				var gallery = this.Gallery;
+				var shotType = audition.Audition.Substitutions.shotType;
+				if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
+				gallery.showHiddenShotsInDialog(audition, shotType);
+			} catch (e) {
+			}                	
+       },
 	};
+	Factory.NavFilmstrip = {
+		defaultCfg: {
+			type: 'NavFilmstrip',
+			tnType: 'Photo',	// thumbnail Type
+			ID_PREFIX: 'nav-',
+			PROVIDER_NAME: 'snappi',
+			MARKUP: '<section class="gallery photo filmstrip container_16">'+
+	        			'<div class="container grid_16" />'+
+	        			'</section>',			
+			node: 'section.filmstrip .gallery.photo.filmstrip',
+			castingCall: false,
+			size: 'sq',                			
+			uuid: null,	
+			showExtras: true,
+			hideHiddenShotByCSS: true,	
+			listeners: ['Keypress', 'Mouseover', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'FocusClick'],
+		},
+		build: Factory.Photo.build,
+		/*
+	     * update all components on /photos/home page to match 'selected'
+	     */		
+	    handle_focusClick: function(e){
+	    	var gallery = this.Gallery;
+	    	var selected = e.target.ancestor('.FigureBox').audition;
+	    	var oldUuid = gallery.getFocus().id;
+	    	gallery.auditionSH.setFocus(selected);
+	    	gallery.scrollFocus(selected.id);
+	    	// gallery.filmstrip_SetFocus(selected);
+	    	if (selected.id != oldUuid) {
+	    		SNAPPI.domJsBinder.bindSelected2Page(gallery, selected, oldUuid);
+	        }
+		},
+        handle_hiddenShotClick : function(e){
+        	e.stopImmediatePropagation();
+        	var thumbnail = e.currentTarget.ancestor('.FigureBox');
+			try {
+				var audition = thumbnail.audition;
+				var gallery = this.Gallery;
+				var shotType = audition.Audition.Substitutions.shotType;
+				if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
+				gallery.showHiddenShotsInDialog(audition, shotType);
+			} catch (e) {
+			}                	
+       },		
+	}	
+	Factory.ShotGallery = {
+		defaultCfg: {
+			type: 'ShotGallery',
+			tnType: 'Photo',	// thumbnail Type
+			ID_PREFIX: 'shot-',
+			PROVIDER_NAME: 'snappi',
+			MARKUP: '<section class="gallery photo filmstrip container_16">'+
+	        			'<div class="container grid_16" />'+
+	        			'</section>',			
+			node: 'section#shot-gallery .gallery.photo.filmstrip',
+			size: 'sq',
+			castingCall: false,
+			uuid: null,
+			showExtras: true,
+			showHiddenShot: false,
+			hideHiddenShotByCSS: false,		
+			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick']
+		},
+		build: Factory.Photo.build,
+		handle_focusClick: function(e){
+	    	var gallery = this.Gallery;
+	    	var selected = e.target.ancestor('.FigureBox').audition;
+	    	var oldUuid = gallery.getFocus().id;
+	    	gallery.auditionSH.setFocus(selected);
+	    	// gallery.filmstrip_SetFocus(selected);
+	    	if (selected.id != oldUuid) {
+	    		// TODO: just bind Selected to Preview
+	    		// SNAPPI.domJsBinder.bindSelected2Page(gallery, selected, oldUuid);
+	        }
+		},
+	}
+	Factory.DialogHiddenShot = {
+		defaultCfg: {
+			type: 'DialogHiddenShot',
+			tnType: 'Photo',	// thumbnail Type
+			ID_PREFIX : 'hiddenshot-',
+			PROVIDER_NAME: 'snappi',
+			MARKUP: 	'<div id="dialog-hidden-shot" class="container_16" > ' +
+	'	<section class="filmstrip drop alpha omega"> ' +
+	'		<section class="gallery photo filmstrip grid_11 alpha-b1 omega-b1"> ' +
+	'			<div class="filmstrip-wrap hidden"><div class="filmstrip"><div class="container"></div></div></div> ' +
+	'		</section>	 ' +
+	'		<section class="header grid_11 alpha-b1 omega-b1"> ' +
+	'			<ul class="inline"> ' +
+	'				<li class="grid_2 alpha"><h3>Hidden Shot Gallery <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li> ' +
+	'				<li class="grid_3"> ' +
+	'					<nav class="toolbar"> ' +
+	'						<div> ' +
+	'							<ul class="inline menu-trigger"> ' +
+	'								<li class="select-all"><input type="checkbox" value="" name=""><a class="menu-open"> </a></li> ' +
+	'							</ul> ' +
+	'						</div> ' +
+	'						<h1 class="count">0 Snaps</h1> ' +
+	'					</nav> ' +
+	'				</li>		 ' +	
+	'				<li class="grid_6 omega"> ' +
+	'					<nav class="window-options right"> ' +
+	'						<ul class="inline"> ' +
+	'							<li class="grid_6 omega-b1"> ' +
+	'								<nav class="window-options right"> ' +
+	'									<ul class="thumb-size inline"> ' +
+	'										<li class="label">Size</li> ' +
+	'										<li size="sq" action="set-display-size" class="btn focus"><img alt="" src="/css/images/img_1.gif"></li><li size="tn" action="set-display-size" class="btn "><img alt="" src="/css/images/img_2.gif"></li><li size="lm" action="set-display-size" class="btn "><img alt="" src="/css/images/img_3.gif"></li>	 ' +
+	'									</ul><ul class="inline"> ' +
+	'										<li action="filmstrip"><img src="/css/images/img_zoomin.gif"></li><li action="maximize"><img src="/css/images/img_zoomout.gif"></li> ' +
+	'									</ul> ' +
+	'								</nav> ' +
+	'							</li> ' +
+	'						</ul> ' +
+	'					</nav> ' +
+	'				</li> ' +
+	'			</ul> ' +
+	'		</section> ' +
+	'	</section>	 ' +
+	'</div> ',		
+			node: 'div#dialog-hidden-shot .gallery.photo.filmstrip'	,
+			size: 'lm',
+			castingCall: false,
+			uuid: null,
+			showExtras: true,
+			showHiddenShot: false,
+			hideHiddenShotByCSS: false,		
+			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick'],			
+		},
+		build: Factory.ShotGallery.build,
+		handle_focusClick: function(e) {
+			var gallery = this.Gallery;
+		}
+	}
 	
 	SNAPPI.Gallery.Factory = Factory;
     

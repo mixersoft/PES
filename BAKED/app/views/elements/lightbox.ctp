@@ -71,5 +71,4 @@ if (Configure::read('controller.action')=='lightbox') {
 			</div>
 		</div>
 	</section>
-	<ul class="toolbar inline grid_16"></ul>
 </section>

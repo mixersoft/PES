@@ -45,7 +45,7 @@
     		var Y = SNAPPI.Y;
     		var filmstrip;
     		if (this instanceof SNAPPI.Gallery) filmstrip = this;
-    		else filmstrip = Y.one('div#neighbors > ul.filmstrip').dom().Gallery;
+    		else filmstrip = Y.one('section#filmstrip-nav .gallery.photo.filmstrip').Gallery;
 //    		var castingCall = PAGE.jsonData.castingCall;
     		var castingCall = filmstrip.castingCall;
     		var parent = Y.one('#preview');
@@ -164,109 +164,41 @@
     		// set Details
 
     	};
-    	/*
-    	 *	div#neighbors filmstrip
-    	 * 	a filmstrip is a photoRoll with only 1 row, plus next/prev navigation
-    	 */
-    	this.bindAuditions2Filmstrip = function(cfg){
-            var Y = SNAPPI.Y;
-            /*
-             * scan for div.filmstrip on this page
-             */
-            var parent = Y.one('div#neighbors');
-            if (!parent) return;
-            
-            var castingCall = PAGE.jsonData.castingCall;
-            if (!castingCall) return;  // no castingCall, just return;
-            
-            var init = PAGE.jsonData.filmstrip.init;
-            
-            // scan for existing ul.filmstrip on this page
-            var _cfg = Y.merge(defaultCfg, cfg);
-            _cfg.node = _cfg.node || _cfg.ul;		// LEGACY
-            _cfg.node = _cfg.node || parent.one('section.gallery.photo');
-            if (_cfg.node) {
-            	// existing filmstrip found
-            	// TODO: this code path incomplete
-            } else {
-            	// filmstrip not found, build filmstrip NOW, because we need to know width
-            	var MARKUP = '<section class="gallery photo "><div class="filmstrip " /></section>';
-            	_cfg.node = parent.prepend(MARKUP).one('section.gallery.photo');
-            }
-            
-            // get RAW audition from json
-            var selectedId = castingCall.CastingCall.Auditions.Audition[init.selected].id;
-            
-            // calculate thumbnail size and center thumbnails in filmstrip
-            var container_w = _cfg.node.get('parentNode').getComputedStyle('width').replace('px','');
-            var MIN_WIDTH_FOR_TN = 900; var FILMSTRIP_PADDING_W = 90;
-            var thumbSize =  (container_w < MIN_WIDTH_FOR_TN) ? 'sq' : 'tn';
-            var thumb_w = (thumbSize == 'sq') ? 83 : 128;	// sq=83px wide, tn=128px
-            var filmstrip_w = init.length * thumb_w + FILMSTRIP_PADDING_W;
-            _cfg.node.one('.filmstrip').setStyle('width', filmstrip_w+'px');
-            try {
-            	var shotType = castingCall.CastingCall.Auditions.ShotType;
-            } catch (e) { shotType = 'Usershot'; }
-            var closure = {
-//            	auditions : auditions,
-        		cfg : {
-            		flimstripHalfsize: (init.length-1)/2,
-    				ID_PREFIX: 'filmstrip-',
-    				size: thumbSize,                			
-            		selected: init.selected,
-            		uuid: selectedId,
-            		start: init.start,
-            		end: init.start + init.length,
-            		total: init.Total,
-            		uri: castingCall.CastingCall.Request
-            	}
-            };
-            /**
-             * NEW codepath to create Gallery from castingCall
-             */
-           var filmstripCfg = {
-            	type: 'Photo',
-            	node: _cfg.node,
-            	castingCall: castingCall,
-        		flimstripHalfsize: (init.length-1)/2,
-				ID_PREFIX: 'filmstrip-',
-				size: thumbSize,                			
-        		selected: init.selected,
-        		uuid: selectedId,
-        		start: init.start,
-        		end: init.start + init.length,
-        		total: init.Total,
-        		uri: castingCall.CastingCall.Request            	
-            };
-            var fs = new SNAPPI.Gallery(filmstripCfg);
-    		fs.container.prepend('<li class="prev-next" title="previous photo">◄</li>');
-    		fs.container.append('<li class="prev-next" title="next photo">►</li>'); 
-    		fs.listenFsClick(closure);
-    		
-    		this.bindSelectedToPage.call(fs, fs.auditionSH.getFocus());
-
-    	};
     	
-    	this.bindSelectedToPage = function(selected, oldUuid) {
+    };
+    
+    DomJsBinder.prototype = {
+        _cfg: null,
+        init: function(cfg){
+            this._cfg = Y.merge(defaultCfg, cfg);
+        },
+        
+        bindSelected2Page : function(gallery, selected, oldUuid) {
+    		selected = selected || gallery.getFocus();
+    		if (!selected.id) selected = SNAPPI.Auditions.get(selected);
     		var newUuid = selected.id;
     		// this instanceof Gallery
         	/*
         	 * update div#hiddenshots, from filmstrip
         	 */
-    		this.showHiddenShotsAsPreview(selected); 
-//        	SNAPPI.domJsBinder.bindSelectedToSubstitutes.call(this, selected);
+        	SNAPPI.domJsBinder.bindSelected2Preview.call(gallery, selected);
         	
-        	/*
-        	 * update section-header
-        	 */
-        	// TODO: show/hide substitutes/neighbors button
+        	var shotGallery = SNAPPI.Gallery.find['shot-'];
+        	if (shotGallery) {
+        		if (selected.Audition.Shot.id) {
+        			shotGallery.showShotGallery(selected);
+	        	} else {
+	        		shotGallery.container.all('.FigureBox').addClass('hide');
+	        	}
+        	}
         	
-        	/*
-        	 * update div#preview
-        	 */
-        	SNAPPI.domJsBinder.bindSelected2Preview.call(this, selected);
-        	    		
-    		
+        	
+        	
+    		return;
+
+
+// SNAPPI.domJsBinder.bindSelectedToSubstitutes.call(this, selected);
+        	
     		
     		// update all page xhr fragments by uuid substitution in ajaxSrc
     		var fragments = Y.all('div.fragment');
@@ -286,20 +218,16 @@
         			n.setAttribute('href', oldHref.replace(oldUuid, newUuid));
     			}
     		});
-    		var newSrc = this.castingCall.schemaParser.getImgSrcBySize(selected.urlbase + selected.src, 'sq');
+    		var newSrc = gallery.castingCall.schemaParser.getImgSrcBySize(selected.urlbase + selected.src, 'sq');
     		try {
         		Y.one('#content div div img').setAttribute('src', newSrc);
         		Y.one('#TagForeignKey').setAttribute('value', newUuid);
         		Y.one('#photos-home-rating').setAttribute('uuid', newUuid);
     		} catch (e) {}    		
-    	};
-    };
-    
-    DomJsBinder.prototype = {
-        _cfg: null,
-        init: function(cfg){
-            this._cfg = Y.merge(defaultCfg, cfg);
-        },
+    	},
+        
+        
+        
         fetchCastingCall: function(cfg, callback){
             var ioCfg = {
 	           	headers: {

@@ -48,12 +48,11 @@
 					if (node.Thumbnail && node.Thumbnail.select) node.Thumbnail.select(false);
 					found = true;
 				});
-				if (found)
-					e.halt(); // halt click if necessary
-			} else
-				e.halt(); // if shift or control down, halt
+				if (found) e.stopImmediatePropagation(); // halt click if necessary
+			} 
 			if (e.shiftKey) {
 				this.selectContiguousHandler(target.ancestor('.FigureBox'));
+				e.stopImmediatePropagation(); 
 			} else if (e.ctrlKey) {
 				// Check if the target is an image and select it.
 				var target = target.ancestor('.FigureBox');
@@ -61,6 +60,7 @@
 				if (target.Thumbnail && target.Thumbnail.select) target.Thumbnail.select();
 				// save selction to Session for lightbox
 				if (target.ancestor('#lightbox')) SNAPPI.lightbox.save();
+				e.stopImmediatePropagation(); 
 			}
 		};
 	};

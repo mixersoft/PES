@@ -26,6 +26,7 @@
     
     var DragDrop = function(cfg){
         this._cfg = null;
+        this.listen = {};
         /*
          * start DD listners
          */
@@ -134,8 +135,16 @@
             }, this);
             listeners.push(handle);
         };
-        
-        this.processDrop = function(nodeList, dropTarget){
+        this.init();
+    };
+    
+    DragDrop.prototype = {
+        init : function(cfg){
+			var Y = SNAPPI.Y;
+            this._cfg = Y.merge(defaultCfg, cfg);
+            // plugin dropppables
+        },    	
+        processDrop : function(nodeList, dropTarget){
             // note: nodeList of LI wrapping IMG, dropTarget is LI
             if (dropTarget) {
                 var done = true,
@@ -147,92 +156,25 @@
                 };
                 
                 if (dropTarget.Lightbox) {
-                	// add to Lightbox
-                	var lightbox = dropTarget.Lightbox;
-                	try {
-                		dropTarget = lightbox.Gallery.container.all('.FigureBox').pop();
-                	}catch(e){
-                	}
-                	done = lightbox.processDrop(nodeList, _clearSelected);
-                } else if (dropTarget.ancestor('.section-header') && dropTarget.hasClass('thumbnail')){
-                	// change icon
-                	// TODO: move to helpers file
-                	dragNode = nodeList.get('node')[0];
-                	try {
-	                	var controllerJSONData = PAGE.jsonData.controller;
-	                	if(controllerJSONData.keyName == 'group'){
-	                		
-	                    	if(nodeList.size() > 1){  // check if user drags more than one img.
-	                    		alert("please drag one picture to set your icon. use ctrl to un-select photo");
-	                    		return false;
-	                    	}
-	                    	var isOwner = controllerJSONData.isOwner;
-	                    	if(!isOwner){  // check if user is the owner
-	                    		alert("you don't have permission to change cover of this group");
-	                    		return false;
-	                    	}
-	                    	
-	                    	var currentGroupId = controllerJSONData.xhrFrom.uuid,
-	                    		imgId = dragNode.ancestor('li').dom().audition.id;
-	                    	
-
-	                    	dropTarget.one('img').setAttribute('src', dragNode.get('src'));
-	                    	
-	                    	var uri = '/photos/set_as_group_cover/' + imgId + '/' + currentGroupId;
-	            			var callback = {
-	            				complete : function(id, o, args) {
-	            					var check;
-	            				}
-	            			};
-	            			SNAPPI.io.get(uri, callback, '', '', '');
-	                	}
-	                	else { // not in group page
-	                		// check if user drags more than one img.
-	                    	if(nodeList.size() > 1){
-	                    		alert("please drag one picture to set your icon.");
-	                    		return false;
-	                    	}
-	                    	
-	                    	var imgId = dragNode.ancestor('li').dom().audition.id;
-	                    	
-	                    	dragNode = nodeList.get('node')[0];
-	                    	dropTarget.one('img').setAttribute('src', dragNode.get('src'));
-	                    	
-	                    	var uri = '/photos/set_as_photo/' + imgId;
-	            			var callback = {
-	            				complete : function(id, o, args) {
-	            					var check;
-	            				}
-	            			};
-	            			SNAPPI.io.get(uri, callback, '', '', '');
-	                	}
-                	} catch (e) {}
-                }
-                
-                //                if (dropTarget.get('parentNode').hasClass('tags')) {
-                //                    // tags
-                //                    SNAPPI.Tags.addList(nodeList, dropTarget);
-                //                }
-                //                if (dropTarget.test('section.gallery.photo > div.substitutionGroup')) {
-                //                    // shots
-                //                    nodeList.get('parentNode').removeClass('selected');
-                //                    SNAPPI.Thumbnail.addToSubGroup(dropTarget, nodeList);
-                //                }
-                //                else 
-                //                    // NOT .substitutionGroup!
-                //                    if (dropTarget.test('section.gallery.photo > div')) {
-                //                        nodeList.get('parentNode').removeClass('selected');
-                //                        SNAPPI.Thumbnail.removeFromSubGroup(dropTarget, nodeList);
-                //                        
-                //                    }
+                	// try {
+                		// dropTarget = dropTarget.lightbox.Gallery.container.all('.FigureBox').pop();
+                	// }catch(e){
+                	// }
+                	done = dropTarget.Lightbox.processDrop(nodeList, _clearSelected);
+                } else if (dropTarget.Gallery) {
+                	// still need to initialize shot-gallery.Gallery
+                	done = dropTarget.Gallery.processDrop(nodeList, _clearSelected);
+                } 
+  				if (!done) Helpers.sectionBadge_ProcessDrop(dropTarget, nodeList);
+  				if (!done) Helpers.tags_ProcessDrop(dropTarget, nodeList);
+  				if (!done) Helpers.shotGroup_ProcessDrop(dropTarget, nodeList);
                 if (done) {
                     _clearSelected(nodeList);
                 }
                 return dropTarget;
             }
-        };
-        
-        this.animateDrop = function(nodeList, toXY){
+        },
+        animateDrop : function(nodeList, toXY){
             // nodeList of IMGs
             nodeList.each(function(node){
                 //Clone the image, position it on top of the original and animate it to the drop target
@@ -260,12 +202,11 @@
                 }, clone);
                 a.run();
             });
-        };
-        
+        },
         /*
          * add Drag Plugin to element
          */
-        this.pluginDrag = function(node){
+        pluginDrag : function(node){
             //Plugin the Drag plugin
             node.plug(Y.Plugin.Drag, {
                 offsetNode: false
@@ -277,11 +218,11 @@
                 borderStyle: 'none'
             });
             var check;
-        };
+        },
         /*
          * add Drag Plugin to element, use delegated event listener
          */        
-        this.pluginDelegatedDrag = function (container, selector) {
+        pluginDelegatedDrag : function (container, selector) {
             var delegate = new Y.DD.Delegate({
                 container: container,
                 nodes: selector
@@ -292,23 +233,98 @@
                 borderStyle: 'none'
             });
             var check;
-        };
-        
+        },
         /*
          * add Drop Plugin to element
          */
-        this.pluginDrop = function(node){
+        pluginDrop : function(node){
             //Add drop support to the albums
             node.plug(Y.Plugin.Drop);
             return node;
-        };
-        
-        this.init = function(cfg){
-			var Y = SNAPPI.Y;
-            this._cfg = Y.merge(defaultCfg, cfg);
-            // plugin dropppables
-        };
-        this.init();
-    };
-    SNAPPI.DragDrop = new DragDrop(); // singleton    
-})();
+        }
+	}
+	
+	var Helpers = function(){};	
+    /**
+     * drop thumbnail on section-header badge photo, sets cover photo for current item
+     */
+    Helpers.sectionBadge_ProcessDrop = function(dropTarget, nodeList) {
+    	if (dropTarget.ancestor('.section-header') && dropTarget.hasClass('thumbnail')) {
+	      	dragNode = nodeList.get('node')[0];
+	    	try {
+	        	var controllerJSONData = PAGE.jsonData.controller;
+	        	if (controllerJSONData.keyName == 'group') {
+	        		 
+	            	if(nodeList.size() > 1){  // check if user drags more than one img.
+	            		alert("please drag one picture to set your icon. use ctrl to un-select photo");
+	            		return false;
+	            	}
+	            	var isOwner = controllerJSONData.isOwner;
+	            	if(!isOwner){  // check if user is the owner
+	            		alert("you don't have permission to change cover of this group");
+	            		return false;
+	            	}
+	            	
+	            	var currentGroupId = controllerJSONData.xhrFrom.uuid,
+	            		imgId = dragNode.ancestor('li').dom().audition.id;
+	            	
+	
+	            	dropTarget.one('img').setAttribute('src', dragNode.get('src'));
+	            	
+	            	var uri = '/photos/set_as_group_cover/' + imgId + '/' + currentGroupId;
+	    			var callback = {
+	    				complete : function(id, o, args) {
+	    					var check;
+	    				}
+	    			};
+	    			SNAPPI.io.get(uri, callback, '', '', '');
+	        	} else { // not in group page
+	        		// check if user drags more than one img.
+	            	if(nodeList.size() > 1){
+	            		alert("please drag one picture to set your icon.");
+	            		return false;
+	            	}
+	            	
+	            	var imgId = dragNode.ancestor('li').dom().audition.id;
+	            	
+	            	dragNode = nodeList.get('node')[0];
+	            	dropTarget.one('img').setAttribute('src', dragNode.get('src'));
+	            	
+	            	var uri = '/photos/set_as_photo/' + imgId;
+	    			var callback = {
+	    				complete : function(id, o, args) {
+	    					var check;
+	    				}
+	    			};
+	    			SNAPPI.io.get(uri, callback, '', '', '');
+	        	}
+	    	} catch (e) {}  
+	    	return true;
+	    } else return false;  	
+    };	
+	    // legacy
+    Helpers.tags_ProcessDrop = function(dropTarget, nodeList){
+		if(dropTarget.get('parentNode').hasClass('tags')) {
+			// tags
+			SNAPPI.Tags.addList(nodeList, dropTarget);
+			return true;
+		} else
+			return false;
+	};
+    // legacy    
+    Helpers.shotGroup_ProcessDrop = function(dropTarget, nodeList){
+		if (dropTarget.test('section.gallery.photo > div.substitutionGroup')) {
+			nodeList.get('parentNode').removeClass('selected');
+			SNAPPI.Thumbnail.addToSubGroup(dropTarget, nodeList);
+		} else if (dropTarget.test('section.gallery.photo > div')) {
+			nodeList.get('parentNode').removeClass('selected');
+			SNAPPI.Thumbnail.removeFromSubGroup(dropTarget, nodeList);
+		
+		}
+	};
+	
+	SNAPPI.DragDrop = new DragDrop(); // singleton  
+})();    
+
+
+    

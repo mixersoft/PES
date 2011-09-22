@@ -47,6 +47,8 @@
 		addClass : null,
 		ID_PREFIX : '',
 		type : 'Photo',			// [ should match Factory.getTypes() ]
+		showExtras: true,
+		showHiddenShot: true,
 		showLabel : false,
 		draggable : true,
 		queue : false, // ImageLoader queue
@@ -55,7 +57,7 @@
 
 
 		// old cfg props
-		hideSubstituteCSS : false,
+		hideHiddenShotByCSS : true,
 		zoomBoxOverlay : null,
 		deferLoad : false,
 		droppable : false,
@@ -370,7 +372,7 @@
 					}
 					break;
 			}
-			this._cfg = Y.merge(this._cfg, sizeCfg);
+			this._cfg = Y.merge(sizeCfg, this._cfg);
 	
 			// set CSS
 			node.removeClass(this._cfg.size).addClass(size);
@@ -385,6 +387,7 @@
 			} else {
 				img.set('src', src);
 			}		
+			img.setAttribute('linkTo', linkTo);
 			
 			// set draggable	
 			if (this._cfg.draggable) {
