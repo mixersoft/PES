@@ -22,7 +22,8 @@
  *
  */
 (function(){
-
+	var Factory = SNAPPI.Factory.Gallery;
+	var Helper = SNAPPI.galleryHelper;
     /*
      * dependencies
      */
@@ -250,7 +251,7 @@
 	        	break;
 	        case 'uuid-':
 	        	this.render(_cfg); 
-	        	var paging = SNAPPI.Paginator.paginate_Photoroll(this);
+	        	var paging = SNAPPI.Paginator.paginate_PhotoGallery(this);
 	        	if (paging === false) {
 	        		// add view All
 	        		this.add_ViewAll();
@@ -765,7 +766,7 @@
         		focusNode = this.container.one('#'+this._cfg.ID_PREFIX+o.id);
         	}
             if (focusNode) {
-	            var prev = this.container.all('.FigureBox.focus').removeClass('focus');
+	            this.container.all('.FigureBox.focus').removeClass('focus');
                 focusNode.addClass('focus');
             }
             return this;
@@ -1166,94 +1167,6 @@
 			}
 			return false;	// this is a preview, do NOT auto-create paging DIV
 		},
-		/**
-		 * @deprecated using Paginator.paginate_Photoroll instead???
-		 * add aui Paginator to photoroll
-		 * @return
-		 */
-		add_Paginator: function(){
-			if (console) console.warn("WARNING: photo-roll.add_Paginator() is deprecated? using Paginator.paginate_Photoroll");
-			return;
-			
-			// var self = this;	// photoRoll
-			// var target = self.container;
-			// var paginateContainer = target.ancestor('div#paging-photos-inner').one('div.paging-numbers');
-			// if (!paginateContainer) {
-				// if (target.ancestor('#paging-photos')) {
-					// // auto-create paging DIV
-					// paginateContainer = target.create("<div class='paging-control paging-numbers' />");
-					// target.get('parentNode').insert(paginateContainer,'after');
-				// } else return false;	// this is a preview, do NOT auto-create paging DIV
-			// }
-			// if (paginateContainer.Paginator) {
-				// // already created, just reuse
-				// return paginateContainer.Paginator;
-			// }
-			// var controller = SNAPPI.STATE.controller;
-			// var displayPage = SNAPPI.STATE.displayPage;
-// 			
-			// /**
-			 // * private/closure method
-			 // * @param pageNumber
-			 // * @return
-			 // */
-			// var _getPage = function(pageNumber){
-				// if (pageNumber == SNAPPI.STATE.displayPage.page) return;
-				// var uri = controller.here + "/.json";				
-				// var nameData = {page: pageNumber};
-				// if (target.io) {
-					// // already plugged, just reuse
-					// uri = SNAPPI.IO.setNamedParams(uri, nameData);
-					// target.io.set('uri', uri).start();
-					// return;
-				// }
-				// // uses SNAPPI.IO.pluginIO_RespondAsJson() with Plugin.IO
-				// target.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson({
-					// uri: uri ,
-					// parseContent:true,
-					// nameData: nameData,
-					// dataType: 'json',					
-					// context: self,					
-					// on: {
-						// success: function(e, id, o, args) {
-								// if (o.responseJson) {
-									// PAGE.jsonData = o.responseJson;
-									// SNAPPI.mergeSessionData();
-									// new SNAPPI.Gallery({type:'Photo'});
-									// // TODO: update paginateContainer.Paginator.set('total'), etc									
-									// return false;	// plugin.IO already rendered
-								// }
-							// }
-					// }
-				// }));
-				// return;
-			// };
-// 			
-// 			
-			// var pageCfg = {
-					// page: displayPage.page,
-					// total: displayPage.total,  
-					// maxPageLinks: 10,
-					// rowsPerPage: displayPage.perpage,
-					// rowsPerPageOptions: [displayPage.perpage, 12,24,48,96],
-					// alwaysVisible: false,
-					// containers: paginateContainer,
-					// on: {
-						// changeRequest: function(e) {
-							// var self = this;
-							// var newState = e.state;
-							// var userClicked = newState.before !== undefined;
-							// if (userClicked) {
-								// console.warn('Page.changeRequest: page='+newState.page);
-								// _getPage(newState.page);
-							// } 
-							// self.setState(newState);
-						// }
-					// }
-			// };
-			// paginateContainer.Paginator = new Y.Paginator(pageCfg).render();
-			// return paginateContainer.Paginator;
-		},
 		// TODO: move these methods to SNAPPI.Thumbnail
         showThumbnailRatings : function(node){
 	        // private method
@@ -1346,7 +1259,7 @@
 					method: 'POST',
 					qs: data,
 					dataType: 'json',
-					context: this,	// photoroll
+					context: this,	// photoGallery
 					arguments: args, 
 					on: {
 						successJson:  function(e, id, o, args) {
@@ -1475,23 +1388,23 @@
         	var response = o.responseJson.response;
         	var hiddenShots = response['unGroupShot']['hiddenShots'],
         		shotIds = response['unGroupShot']['shotIds'];
-			var hiddenShots_pr, photoroll = this;
+			var shotGallery, photoGallery = this;
 			/*
 			 * for hiddenShots
 			 */
-			if (photoroll._cfg.type=="DialogHiddenShot" || photoroll._cfg.type=="ShotGallery") {
-				hiddenShots_pr = photoroll;
-				photoroll = null;
-				// search hiddenShots for the node which is ALSO visible in photoroll
-				hiddenShots_pr.auditionSH.each(function(audition){
+			if (photoGallery._cfg.type=="DialogHiddenShot" || photoGallery._cfg.type=="ShotGallery") {
+				shotGallery = photoGallery;
+				photoGallery = null;
+				// search hiddenShots for the node which is ALSO visible in photoGallery
+				shotGallery.auditionSH.each(function(audition){
 					var unbindNodes = [];
 					for (var i in audition.bindTo) {
 						var node = audition.bindTo[i];
-						if (!photoroll && /^uuid-/.test(node.get('id'))){
-							// find parent photoroll
-							photoroll = Gallery.getFromChild(node);
+						if (!photoGallery && /^uuid-/.test(node.get('id'))){
+							// find parent photoGallery
+							photoGallery = Gallery.getFromChild(node);
 						};
-						if (node.ancestor('ul') == hiddenShots_pr.container){
+						if (node.ancestor('ul') == shotGallery.container){
 							// unbind hiddenShots
 							unbindNodes.push(node);
 							// we will replace auditions with clean ones from response.hiddenShots
@@ -1517,8 +1430,8 @@
 			/*
 			 *  add hiddenShots back to Photoroll 
 			 */
-			photoroll.addFromCastingCall(hiddenShots, true, args.sort);
-			photoroll.render();
+			photoGallery.addFromCastingCall(hiddenShots, true, args.sort);
+			photoGallery.render();
 
 			// ALSO, search lightbox or bindTo[] for node in lightbox
 			var aids = args.aids;			
@@ -1571,7 +1484,7 @@
 					context: this,	
 					arguments: args,
 					on: {
-						success:  function(e, id, o, args) {
+						successJson:  function(e, id, o, args) {
 							return args.success.apply(this, arguments);
 						}
 					}
@@ -1588,16 +1501,16 @@
 		}, 
 		_removeFromShot_success: function(e, id, o, args) {
 			var response = o.responseJson.response;
-			var photoroll, hiddenShots_pr = this;
+			var photoGallery, shotGallery = this;
 			/*
 			 * for hiddenShots, usually we remove from hiddenShots
 			 */
-			if (hiddenShots_pr._cfg.type=="DialogHiddenShot" || photoroll._cfg.type=="ShotGallery") {
+			if (shotGallery._cfg.type=="DialogHiddenShot" || shotGallery._cfg.type=="ShotGallery") {
 				var audition, 
 					removed = response['removeFromShot']['assetIds'];
 //				var bestShotSystem_changed = response['updateBestShotSystem']['changed'],
 //					bestShotSystem_assetId = response['updateBestShotSystem']['asset_id'];
-				
+				var oldFocus = shotGallery.getFocus();
 				var moveToParent = [];
 				for (var i in removed) {
 					audition = SNAPPI.Auditions.get(removed[i]);
@@ -1605,13 +1518,13 @@
 					 *  unbind and hide removed node from hiddenShots dialog
 					 */
 					var unbindNodes = [];
+					var photoGallery_PREFIX = shotGallery._cfg.type=="ShotGallery" ? 'nav-' : 'uuid-';
 					for (var j in audition.bindTo) {
 						var node = audition.bindTo[j];
-						if (!photoroll && /^uuid-/.test(node.get('id'))){
-							// find (parent) photoroll
-							photoroll = Gallery.getFromChild(node);
+						if (!photoGallery && node.get('id').indexOf(photoGallery_PREFIX) == 0){
+							photoGallery = Gallery.getFromChild(node);
 						};
-						if (node.ancestor('ul') == hiddenShots_pr.container){
+						if (node.ancestor('ul') == shotGallery.container){
 							unbindNodes.push(node);
 						}
 					}	
@@ -1621,47 +1534,57 @@
 						SNAPPI.Auditions.unbind(node);
 						node.addClass('hide');
 					}
-					// remove audition from Shot, HiddenShot photoroll 
+					// remove audition from Shot, HiddenShot photoGallery 
 					audition.Audition.Substitutions.remove(audition);
-					hiddenShots_pr.auditionSH.remove(audition);
+					shotGallery.auditionSH.remove(audition);
 					moveToParent.push(audition);
 				}
-				if (!photoroll) {
+				if (!photoGallery) {
 					// none of the removed photos were visible, search all remaining hiddenShots
-					hiddenShots_pr.auditionSH.some(function(audition){
+					shotGallery.auditionSH.some(function(audition){
 						for (var k in audition.bindTo) {
 							var node = audition.bindTo[k];
-							if (/^uuid-/.test(node.get('id'))){
-								photoroll = Gallery.getFromChild(node);
+							if (node.get('id').indexOf(photoGallery_PREFIX) == 0){
+								photoGallery = Gallery.getFromChild(node);
 								return true;
 							};
 						}
 					});
 				}
-//				if (!photoroll) {
-//					photoroll = Y.one('section.gallery.photo');
-//					if (photoroll.Gallery) photoroll = photoroll.Gallery; 
-//				}
-				
-				
+				if (!photoGallery) {
+					// still not found, try to find by CSS
+					photoGallery = Y.one('section#nav-filmstrip .gallery.photo');
+					if (!photoGallery) photoGallery = Y.one('.gallery-contaienr .gallery.photo');				
+					if (photoGallery && photoGallery.Gallery) photoGallery = photoGallery.Gallery;
+				}
+
+
 				/*
-				 *  add removed Shots back to Photoroll 
+				 * update shotGallery
 				 */
-				while (moveToParent.length) {
-					photoroll.auditionSH.add(moveToParent.shift());
-				}
-				
-				// confirm showHidden bestShot is in main photoroll
-				var bestShot = hiddenShots_pr.auditionSH.first().Audition.Substitutions.best;
-				if (!photoroll.auditionSH.get(bestShot)) {
-					photoroll.auditionSH.add(bestShot);
-				}
-				// update Shot.count for div.hiddenshot
+				var bestShot = shotGallery.auditionSH.first().Audition.Substitutions.best;
+				// update Shot.count for div.hiddenshot						
 				bestShot.Audition.Shot.count = bestShot.Audition.Substitutions.count();
+				shotGallery.setFocus(bestShot);
+				// render changes
+				shotGallery.render();
+				shotGallery.updateHiddenShotPreview(shotGallery, oldFocus);
 				
-				// render photoroll
-				photoroll.auditionSH.sort(args.sort);
-				photoroll.render();
+				if (photoGallery) {
+					/*
+					 *  update photoGallery, add removed Shots back to Photoroll 
+					 */
+					while (moveToParent.length) {
+						photoGallery.auditionSH.add(moveToParent.shift());
+					}	
+					if (!photoGallery.auditionSH.get(bestShot)) {
+						// if new bestShot is not in photoGallery, add it
+						photoGallery.auditionSH.add(bestShot);
+					}				
+					photoGallery.auditionSH.sort(args.sort);
+					photoGallery.render();								
+				}
+				
 				
 				try {
 					SNAPPI.MenuAUI.find['contextmenu-hiddenshot-markup'].hide();
@@ -1670,6 +1593,20 @@
 				SNAPPI.multiSelect.clearAll(this.container);
 			}
 			return false;
+		},
+		updateHiddenShotPreview: function(gallery, oldFocus){
+			var focus = gallery.getFocus();
+			if (focus != oldFocus) {
+				gallery.setFocus(focus);
+				switch(gallery._cfg.type) {
+					case "DialogHiddenShot":
+						SNAPPI.galleryHelper.bindPreview(gallery);
+					break;
+					case "ShotGallery":
+						SNAPPI.domJsBinder.bindSelected2Preview.call(gallery, focus);
+					break;
+				}
+			}			
 		},
 		/**
 		 * 
@@ -1694,7 +1631,7 @@
 			};
 			var loadingNode = cfg.loadingNode;
 			if (loadingNode.io == undefined) {
-				var ioCfg = SNAPPI.IO.pluginIO_RespondAsJson({
+				var ioCfg = SNAPPIphotoGallery_PREFIXnIO_RespondAsJson({
 					uri: uri ,
 					parseContent:true,
 					method: 'POST',
@@ -1982,35 +1919,31 @@
 			                    var audition = subAuditionSH.first();
 			                    var shot = audition.Audition.Substitutions;
 			                    shot.stale = shot._sh.count() != audition.Audition.Shot.count ;
-			                    // adjust dialog size to fit hiddenShots
-			                    // args.dialog.get('boundingBox').setStyles({
-			                    	// width: cells.w * offsets.cellSize.w + offsets.boundingBoxOffset.w,
-			                    	// height: cells.h * offsets.cellSize.h + offsets.boundingBoxOffset.h
-			                    // })
-			                    
 			                    // render dialog-hidden-shot
 			                    var Y = SNAPPI.Y;
-			                    var gallery, body = args.dialog.get('bodyContent');
+			                    var filmstripNode, body = args.dialog.get('bodyContent');
 			                    if (!body || (body.get('id') != 'dialog-hidden-shot')) {
 			                    	// get hidden-shot MARKUP
 			                    	body = Y.Node.create(Factory['DialogHiddenShot'].defaultCfg.MARKUP);
 			                    	dialog.setStdModContent('body',body);
 			                    }
-								gallery = body.one('.gallery.photo.filmstrip');
-			                    if (!gallery.Gallery) {
+								filmstripNode = body.one('.gallery.photo.filmstrip');
+			                    if (!filmstripNode.Gallery) {
 			                    	var cfg = {
 			                    		type: 'DialogHiddenShot',
 			                    		sh: shot._sh,
 			                    		shots: shot,
 			                    		castingCall: false,
 			                    		uuid: shot.best.id,
-			                    		node: gallery,
+			                    		node: filmstripNode,
 			                    	}			                    	
-			                    	// var origCastingCall = args.galleryPhoto.castingCall;
-			                    	gallery = new SNAPPI.Gallery(cfg);
+			                    	filmstripNode.Gallery = new SNAPPI.Gallery(cfg);
+			                    	// filmstripNode.Dialog = args.dialog;
+			                    	Helper.bindPreview(filmstripNode.Gallery);
 			                    	return body;
 			                    } else {
-			                    	gallery.Gallery.showShotGallery(shot.best);
+			                    	filmstripNode.Gallery.showShotGallery(shot.best);
+			                    	Helper.bindPreview(filmstripNode.Gallery);
 			                    	return body;
 			                    }
     						}					
@@ -2025,31 +1958,32 @@
 					// get hidden-shota MARKUP
 					body = Y.Node.create(Factory['DialogHiddenShot'].defaultCfg.MARKUP);
 					dialog.setStdModContent('body',body);
+					dialog.io.set('title', 'Hidden Shot Gallery');
 				}    				
     			if (!dialog.get('visible')) {
     				dialog.show();
     			}
-    			dialog.io.set('title', 'Hidden Shots');
     		}
     		
     		
     		if (shot.stale == false) {
     			var body = body || dialog.get('bodyContent');
-				gallery = body.one('.gallery.photo.filmstrip');    			
-                    if (!gallery.Gallery) {
-                    	var cfg = {
-                    		type: 'DialogHiddenShot',
-                    		sh: shot._sh,
-                    		shots: shot,
-                    		castingCall: false,
-                    		uuid: shot.best.id,
-                    		node: gallery,
-                    	}			                    	
-                    	gallery = new SNAPPI.Gallery(cfg);
-                    } else {
-                    	gallery.Gallery.showShotGallery(shot.best);
-                    }				
+				var node = body.one('.gallery.photo.filmstrip');    			
+                if (!node.Gallery) {
+                	var cfg = {
+                		type: 'DialogHiddenShot',
+                		sh: shot._sh,
+                		shots: shot,
+                		castingCall: false,
+                		uuid: shot.best.id,
+                		node: node,
+                	}			                    	
+                	node.Gallery = new SNAPPI.Gallery(cfg);
+                } else {
+                	node.Gallery.showShotGallery(shot.best);
+                }				
     			dialog.setStdModContent('body',body);
+    			Helper.bindPreview(node.Gallery);
     		} else {
     			// shot are NOT included. get shot via XHR and render
     			var subUri = '/photos/hiddenShots/'+shot.id+'/'+shotType+'/.json';
@@ -2114,237 +2048,5 @@
      */
     SNAPPI.Gallery = Gallery;
     
-    var Factory = function(){};
-    /**
-     * attach gallery.node and gallery.container
-     */
-    Factory._attachNodes = function(gallery, cfg){
-        gallery.container = null;
-		var node;
-    	try {
-    		node = cfg.node instanceof Y.Node ? cfg.node : Y.one(cfg.node);	
-    		if (node.Gallery) {
-    			gallery.container = node.Gallery.container;
-        		var oldGallery = parent.Gallery;
-	            // TODO: what do we do here???
-        		// reuse existing photoRoll??? or do we need to destroy?	        			
-    		} else {
-    			if (node.hasClass('gallery') && !node.one('div.container')) {
-    				node.prepend('<div class="container grid_16" />');
-    			}
-    			gallery.container = node.one('div.container');
-    		}
-    	} catch (e) {}
-        if (!gallery.container) {
-        	node  = Y.Node.create(cfg.MARKUP);
-        	if (cfg.isWide) node.addClass('wide');
-        	gallery.container = node.one('div');
-        }	        
-        gallery.node = node;
-        gallery.node.Gallery = gallery;				// use to avoid closure bug on SNAPPI.io 
-        gallery.container.Gallery = gallery;		// is gallery reference necessary?
-		gallery.node.dom().Gallery = gallery; 		// for firebug introspection	        
-        delete cfg.node;				// use this.container from this point forward    		
-    }
-    
-    Factory.Photo = {
-    	defaultCfg : {
-			ID_PREFIX: 'uuid-',
-			PROVIDER_NAME: 'snappi',
-			MARKUP: '<section class="gallery photo container_16">'+
-	        			'<div class="container grid_16" />'+
-	        			'</section>',
-			node: 'div.gallery-container > section.gallery.photo',
-			listeners: ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'HiddenShotClick', 'Contextmenu'],
-			hideHiddenShotByCSS: true,
-			size: 'lm',
-			start: null,
-			end: null
-	    },
-        /*
-         * build 
-         * - scan for a cfg.node or defaultCfg.node, 
-		 * - bind to JS auditions
-         * - call AFTER SNAPPI.mergeSessionData(), important for XHR JSON request
-         * @params gallery instance of SNAPPI.Gallery
-         * @params cfg object, cfg object
-         */
-    	build: function(gallery, cfg){
-            var Y = SNAPPI.Y;
-            // var self = gallery;		// instance of SNAPPI.Gallery
-            cfg = cfg || {};
-            // inherit javascript state information from current page, 
-            // called AFTER SNAPPI.mergeSessionData();
-            cfg = Y.merge(Factory[cfg.type].defaultCfg, SNAPPI.STATE.displayPage, cfg);	
-            try {
-            	cfg.size = PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
-            } catch (e){}
-            try {
-            	if (!cfg.castingCall && cfg.castingCall !== false) cfg.castingCall = PAGE.jsonData.castingCall;
-            } catch (e){}
-	        
-	        // .gallery.photo BEFORE init
-	        gallery.auditionSH = null;
-	        gallery.shots = null; 	
-	        
-	        // generic gallery BEFORE init
-			gallery.providerName = cfg.PROVIDER_NAME;	// deprecate: use this.cfg.providerName
-			Factory._attachNodes(gallery, cfg);
-	        gallery.init(cfg);
-	        
-	        // .gallery.photo AFTER init methods
-	        SNAPPI.Rating.startListeners(gallery.container);
-	        SNAPPI.DragDrop.startListeners();
-	        Gallery.find[cfg.ID_PREFIX] = gallery;		// add to gallery lookup
-	        return gallery;					// return instance of SNAPPI.Gallery
-        },
-        handle_hiddenShotClick : function(e){
-        	var thumbnail = e.currentTarget.ancestor('.FigureBox');
-			try {
-				var audition = thumbnail.audition;
-				var gallery = this.Gallery;
-				var shotType = audition.Audition.Substitutions.shotType;
-				if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
-				gallery.showHiddenShotsInDialog(audition, shotType);
-			} catch (e) {
-			}                	
-       },
-	};
-	Factory.NavFilmstrip = {
-		defaultCfg: {
-			type: 'NavFilmstrip',
-			tnType: 'Photo',	// thumbnail Type
-			ID_PREFIX: 'nav-',
-			PROVIDER_NAME: 'snappi',
-			MARKUP: '<section class="gallery photo filmstrip container_16">'+
-	        			'<div class="container grid_16" />'+
-	        			'</section>',			
-			node: 'section.filmstrip .gallery.photo.filmstrip',
-			castingCall: false,
-			size: 'sq',                			
-			uuid: null,	
-			showExtras: true,
-			hideHiddenShotByCSS: true,	
-			listeners: ['Keypress', 'Mouseover', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'FocusClick'],
-		},
-		build: Factory.Photo.build,
-		/*
-	     * update all components on /photos/home page to match 'selected'
-	     */		
-	    handle_focusClick: function(e){
-	    	var gallery = this.Gallery;
-	    	var selected = e.target.ancestor('.FigureBox').audition;
-	    	var oldUuid = gallery.getFocus().id;
-	    	gallery.auditionSH.setFocus(selected);
-	    	gallery.scrollFocus(selected.id);
-	    	// gallery.filmstrip_SetFocus(selected);
-	    	if (selected.id != oldUuid) {
-	    		SNAPPI.domJsBinder.bindSelected2Page(gallery, selected, oldUuid);
-	        }
-		},
-        handle_hiddenShotClick : function(e){
-        	e.stopImmediatePropagation();
-        	var thumbnail = e.currentTarget.ancestor('.FigureBox');
-			try {
-				var audition = thumbnail.audition;
-				var gallery = this.Gallery;
-				var shotType = audition.Audition.Substitutions.shotType;
-				if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
-				gallery.showHiddenShotsInDialog(audition, shotType);
-			} catch (e) {
-			}                	
-       },		
-	}	
-	Factory.ShotGallery = {
-		defaultCfg: {
-			type: 'ShotGallery',
-			tnType: 'Photo',	// thumbnail Type
-			ID_PREFIX: 'shot-',
-			PROVIDER_NAME: 'snappi',
-			MARKUP: '<section class="gallery photo filmstrip container_16">'+
-	        			'<div class="container grid_16" />'+
-	        			'</section>',			
-			node: 'section#shot-gallery .gallery.photo.filmstrip',
-			size: 'sq',
-			castingCall: false,
-			uuid: null,
-			showExtras: true,
-			showHiddenShot: false,
-			hideHiddenShotByCSS: false,		
-			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick']
-		},
-		build: Factory.Photo.build,
-		handle_focusClick: function(e){
-	    	var gallery = this.Gallery;
-	    	var selected = e.target.ancestor('.FigureBox').audition;
-	    	var oldUuid = gallery.getFocus().id;
-	    	gallery.auditionSH.setFocus(selected);
-	    	// gallery.filmstrip_SetFocus(selected);
-	    	if (selected.id != oldUuid) {
-	    		// TODO: just bind Selected to Preview
-	    		// SNAPPI.domJsBinder.bindSelected2Page(gallery, selected, oldUuid);
-	        }
-		},
-	}
-	Factory.DialogHiddenShot = {
-		defaultCfg: {
-			type: 'DialogHiddenShot',
-			tnType: 'Photo',	// thumbnail Type
-			ID_PREFIX : 'hiddenshot-',
-			PROVIDER_NAME: 'snappi',
-			MARKUP: 	'<div id="dialog-hidden-shot" class="container_16" > ' +
-	'	<section class="filmstrip drop alpha omega"> ' +
-	'		<section class="gallery photo filmstrip grid_11 alpha-b1 omega-b1"> ' +
-	'			<div class="filmstrip-wrap hidden"><div class="filmstrip"><div class="container"></div></div></div> ' +
-	'		</section>	 ' +
-	'		<section class="header grid_11 alpha-b1 omega-b1"> ' +
-	'			<ul class="inline"> ' +
-	'				<li class="grid_2 alpha"><h3>Hidden Shot Gallery <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li> ' +
-	'				<li class="grid_3"> ' +
-	'					<nav class="toolbar"> ' +
-	'						<div> ' +
-	'							<ul class="inline menu-trigger"> ' +
-	'								<li class="select-all"><input type="checkbox" value="" name=""><a class="menu-open"> </a></li> ' +
-	'							</ul> ' +
-	'						</div> ' +
-	'						<h1 class="count">0 Snaps</h1> ' +
-	'					</nav> ' +
-	'				</li>		 ' +	
-	'				<li class="grid_6 omega"> ' +
-	'					<nav class="window-options right"> ' +
-	'						<ul class="inline"> ' +
-	'							<li class="grid_6 omega-b1"> ' +
-	'								<nav class="window-options right"> ' +
-	'									<ul class="thumb-size inline"> ' +
-	'										<li class="label">Size</li> ' +
-	'										<li size="sq" action="set-display-size" class="btn focus"><img alt="" src="/css/images/img_1.gif"></li><li size="tn" action="set-display-size" class="btn "><img alt="" src="/css/images/img_2.gif"></li><li size="lm" action="set-display-size" class="btn "><img alt="" src="/css/images/img_3.gif"></li>	 ' +
-	'									</ul><ul class="inline"> ' +
-	'										<li action="filmstrip"><img src="/css/images/img_zoomin.gif"></li><li action="maximize"><img src="/css/images/img_zoomout.gif"></li> ' +
-	'									</ul> ' +
-	'								</nav> ' +
-	'							</li> ' +
-	'						</ul> ' +
-	'					</nav> ' +
-	'				</li> ' +
-	'			</ul> ' +
-	'		</section> ' +
-	'	</section>	 ' +
-	'</div> ',		
-			node: 'div#dialog-hidden-shot .gallery.photo.filmstrip'	,
-			size: 'lm',
-			castingCall: false,
-			uuid: null,
-			showExtras: true,
-			showHiddenShot: false,
-			hideHiddenShotByCSS: false,		
-			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick'],			
-		},
-		build: Factory.ShotGallery.build,
-		handle_focusClick: function(e) {
-			var gallery = this.Gallery;
-		}
-	}
-	
-	SNAPPI.Gallery.Factory = Factory;
     
 })();

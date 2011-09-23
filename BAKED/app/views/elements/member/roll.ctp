@@ -70,7 +70,7 @@ $this->viewVars['jsonData']['STATE'] = $state;
 			try {
 				SNAPPI.mergeSessionData();
 				PAGE.setDisplayOptions();
-				SNAPPI.Paginator.paginate_Gallery('.gallery.person');
+				SNAPPI.Paginator.paginate_CircleMemberGallery('.gallery.person');
 			} catch (e) {}
 		};
 		try {

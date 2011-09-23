@@ -53,7 +53,7 @@ var DEFAULT_CFG_io = {
 		var Y = SNAPPI.Y;
 		var CSS_ID = 'dialog-photo-roll-hidden-shots';
 		var _cfg = {
-			title: 'Hidden Shots',
+			title: 'Hidden Shot Gallery',
 			id: CSS_ID,
 			width: (660+20),	// 19 px for scrollbar
 			// height: (2*97+146),

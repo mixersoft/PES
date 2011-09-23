@@ -45,7 +45,7 @@
     		var Y = SNAPPI.Y;
     		var filmstrip;
     		if (this instanceof SNAPPI.Gallery) filmstrip = this;
-    		else filmstrip = Y.one('section#filmstrip-nav .gallery.photo.filmstrip').Gallery;
+    		else filmstrip = Y.one('section#nav-filmstrip .gallery.photo.filmstrip').Gallery;
 //    		var castingCall = PAGE.jsonData.castingCall;
     		var castingCall = filmstrip.castingCall;
     		var parent = Y.one('#preview');
@@ -136,7 +136,7 @@
         		}
     		}catch(e){}
     		
-    		var src = castingCall.schemaParser.getImgSrcBySize(selected.urlbase + selected.src, size);
+    		var src = selected.getImgSrcBySize(selected.urlbase + selected.src, size);
     		var preview = parent.one('div.preview');
     		var previewImg = preview.one('img');
     		if (!previewImg) {

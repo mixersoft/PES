@@ -22,7 +22,7 @@
 	 * @param gallery
 	 * @return [Paginator | 'delayed'], if created, or False if not created
 	 */
-	Paginator.paginate_Photoroll = function(gallery){
+	Paginator.paginate_PhotoGallery = function(gallery){
 			var self = gallery.node.Gallery;	// gallery
 			var target = self.container;
 			var NAME = '.gallery.photo';
@@ -153,7 +153,7 @@
 	 * 
 	 * @params CSS selector to Gallery node, i.e. section.gallery.person
 	 */
-	Paginator.paginate_Gallery = function(selector){
+	Paginator.paginate_CircleMemberGallery = function(selector){
 			var Y = SNAPPI.Y;
 			var self, target, baseurl, NAME = selector;	
 			self = Y.one(NAME);

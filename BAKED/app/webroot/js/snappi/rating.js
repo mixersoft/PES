@@ -560,7 +560,7 @@
 			case "photos-home-rating": // rating for IMG.preview
 				try {
 					v = v || r.value;
-					var auditionSH = Y.one('section#filmstrip-nav .gallery.photo.filmstrip').Gallery.auditionSH;
+					var auditionSH = Y.one('section#nav-filmstrip .gallery.photo.filmstrip').Gallery.auditionSH;
 					var audition = auditionSH.get(r.id);
 					_updateRatingChange(audition, v);
 				} catch (e) {

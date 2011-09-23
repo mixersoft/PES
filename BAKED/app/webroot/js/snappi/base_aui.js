@@ -217,13 +217,12 @@
                 'snappi-gallery': {
                     path: 'gallery.js',
                     requires: ['node', 'event', 'event-key', 'snappi-event-hover', 'snappi-utils', 'snappi-rating', 
-                               'snappi-dialog-aui', 'snappi-menu-aui', 'snappi-paginator', 'snappi-thumbnail-helpers'] // snappi-util -> SNAPPI.shotController(move)
+                               'snappi-dialog-aui', 'snappi-menu-aui', 'snappi-paginator', 'snappi-gallery-helpers', 'snappi-thumbnail-helpers'] // snappi-util -> SNAPPI.shotController(move)
                 },                                       
-                // 'snappi-photoroll': {
-                    // path: 'photo-roll.js',
-                    // requires: ['node', 'event', 'event-key', 'snappi-event-hover', 'snappi-utils', 'snappi-rating', 
-                               // 'snappi-dialog-aui', 'snappi-menu-aui', 'snappi-paginator', 'snappi-thumbnail-helpers'] // snappi-util -> SNAPPI.shotController(move)
-                // },
+                'snappi-gallery-helpers': {
+                    path: 'gallery-helpers.js',
+                    requires: []
+                },
                 'snappi-domJsBinder': {
                     path: 'domJsBinder.js',
                     requires: ['node', 'event-custom', 'io', 'gallery-datasource', 'gallery-auditions', 'snappi-sort', 'snappi-gallery']

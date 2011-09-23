@@ -9,7 +9,7 @@
 	);
 ?>
 <section id="shot-gallery" class="filmstrip drop alpha omega">
-	<section class='gallery photo filmstrip grid_11 alpha-b1 omega-b1'>
+	<section class='gallery photo filmstrip hiddenshots grid_11 alpha-b1 omega-b1'>
 		<div class="filmstrip-wrap hidden"><div class='filmstrip'><div class='container'></div></div></div>
 	</section>	
 	<section class="header">
