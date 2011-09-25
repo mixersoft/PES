@@ -1366,7 +1366,7 @@
 			// console.log(this.container.get('parentNode'));
 			if (!this.node.ancestor('#content')) {
 				// container is no longer visible, detach all listeners
-				// probably replaced by new ajax fragment
+				// probably replaced by new ajax xhr-get
 				this.listen(false);
 				return;
 			}

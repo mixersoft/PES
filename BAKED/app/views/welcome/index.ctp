@@ -15,13 +15,13 @@
 
 <?php	// tagCloud
 	$ajaxSrc = Router::url(array('plugin'=>'', 'controller'=>'tags','action'=>'show'));
-	echo "<div id='tags-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}'></div>";
+	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
 ?>	
 <script type="text/javascript">
 var initOnce = function() {
 	// TODO: bind members to MemberRoll
-	SNAPPI.ajax.init();
+	SNAPPI.xhrFetch.init();
 };
-try {SNAPPI.ajax; initOnce(); }			// run now for XHR request, or
+try {SNAPPI.xhrFetch.fetchXhr; initOnce(); }			// run now for XHR request, or
 catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request
 </script>

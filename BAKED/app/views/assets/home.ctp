@@ -69,7 +69,7 @@ if (empty($this->passedArgs['wide'])) {
 <div id='hiddenshots' class='filmstrip placeholder'><h3>Hidden Shots</h3><ul></ul></div>
 <?php
 	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'groups', '?'=>array('preview'=>1)));
-	echo "<div id='groups-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}'></div>";
+	echo "<div id='groups-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
 ?>	
 <h3>Details</h3>
 <blockquote>
@@ -83,7 +83,7 @@ if (empty($this->passedArgs['wide'])) {
 		$xhrFrom = Configure::read('controller.xhrFrom');
 		$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
 		$ajaxSrc = Router::url($xhrSrc);
-		echo "<div id='tags-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}'></div>";
+		echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
 	?>	
 
 	<?php
@@ -161,10 +161,10 @@ if (empty($this->passedArgs['wide'])) {
 		
 		// SNAPPI.domJsBinder.bindAuditions2Filmstrip();
 		SNAPPI.domJsBinder.bindSelected2Page(fs);
-		SNAPPI.ajax.init(); 
+		SNAPPI.xhrFetch.init(); 
 	
 	};
-	try {SNAPPI.ajax.fetchXhr; initOnce(); }			// run now for XHR request, or
+	try {SNAPPI.xhrFetch.fetchXhr; initOnce(); }			// run now for XHR request, or
 	catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request
 </script>
 <?php $this->Layout->blockEnd();?>

@@ -641,7 +641,7 @@
          * embedded PAGE.init scripts
          */ 
         pageInit(); 
-        SNAPPI.ajax.fetchXhr();
+        SNAPPI.xhrFetch.fetchXhr();
 
         
         /*

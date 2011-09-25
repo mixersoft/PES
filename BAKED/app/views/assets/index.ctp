@@ -1,7 +1,7 @@
 
 <script type="text/javascript">
 var initOnce = function() {
-	SNAPPI.ajax.init(); 
+	SNAPPI.xhrFetch.init(); 
 };
 PAGE.init.push(initOnce);
 </script>
@@ -15,5 +15,5 @@ PAGE.init.push(initOnce);
 </div>		
 <?php	// tagCloud
 	$ajaxSrc = Router::url(array('plugin'=>'', 'controller'=>'tags','action'=>'all', 'filter'=>'Asset'));
-	echo "<div id='tags-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}'></div>";
+	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
 ?>	

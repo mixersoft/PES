@@ -200,14 +200,14 @@
 // SNAPPI.domJsBinder.bindSelectedToSubstitutes.call(this, selected);
         	
     		
-    		// update all page xhr fragments by uuid substitution in ajaxSrc
-    		var fragments = Y.all('div.fragment');
+    		// update all page xhr xhr-gets by uuid substitution in ajaxSrc
+    		var fragments = Y.all('.xhr-get');
     		if (fragments) {
     			fragments.each(function(n,i,l) {
         			var xhrSrc = n.getAttribute('ajaxsrc');
         			// var newSrc = xhrSrc.replace(/\/([0-9a-f\-]{36})(?=\W)/i, '/'+cfg.uuid);
 	    			n.setAttribute('ajaxsrc', xhrSrc.replace(oldUuid, newUuid));
-	    			SNAPPI.ajax.fetchXhr(n);
+	    			SNAPPI.xhrFetch.fetchXhr(n);
     			});
     		}
     		

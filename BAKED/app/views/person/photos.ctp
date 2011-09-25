@@ -21,7 +21,7 @@
 <?php
 // this should be only the circles which include user photos
 	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'groups', '?'=>array('preview'=>1)));
-	echo "<div id='groups-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}' ></div>";
+	echo "<div id='groups-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' ></div>";
 	
 ?>							  	
 						  </section>
@@ -39,7 +39,7 @@
 		$xhrFrom = Configure::read('controller.xhrFrom');
 		$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
 		$ajaxSrc = Router::url($xhrSrc);
-	echo "<div id='tags-preview-xhr' class='grid_5 fragment' ajaxSrc='{$ajaxSrc}'></div>";
+	echo "<div id='tags-preview-xhr' class='grid_5 xhr-get' xhrSrc='{$ajaxSrc}'></div>";
 ?>	
 				</section>
             	<section class="people">

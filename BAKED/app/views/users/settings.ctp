@@ -7,13 +7,13 @@ gotoTab = function(dom){
 	PAGE={section: dom.className};
 	SNAPPI.TabNav.selectByName(PAGE);
 	var container = SNAPPI.Y.one("#tab-section").setAttribute('ajaxSrc', dom.href);
-	SNAPPI.ajax.requestFragment(container);
+	SNAPPI.xhrFetch.requestFragment(container);
 	return false;
 };
 var initOnce = function() {
-	// init xhr paging & fetch fragments
-	// NOTE: any fragments will bind own PAGE.init() method
-	SNAPPI.ajax.fetchXhr(); 
+	// init xhr paging & fetch xhr-gets
+	// NOTE: any xhr-gets will bind own PAGE.init() method
+	SNAPPI.xhrFetch.fetchXhr(); 
 };
 PAGE.init.push(initOnce);
 </script>
@@ -42,7 +42,7 @@ PAGE.init.push(initOnce);
 				<li><a class='tab-moderator' href='<?php echo $moderatorSrc ?>' onclick='return gotoTab(this);'>Moderation</a></li>
 			</ul>
 		</div>	
-		<div id='tab-section' class="setting placeholder fragment"  ajaxSrc='<?php echo $identitySrc ?>'>
+		<div id='tab-section' class="setting placeholder xhr-get"  xhrSrc='<?php echo $identitySrc ?>'>
 		</div>	
 	</div>	
 </div>

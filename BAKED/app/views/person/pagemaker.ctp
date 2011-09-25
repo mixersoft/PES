@@ -92,7 +92,7 @@ var initOnce = function() {
 			}, SNAPPI.lightbox
 	);
 };
-try {SNAPPI.ajax; initOnce(); }			// run now for XHR request, or
+try {SNAPPI.xhrFetch.fetchXhr; initOnce(); }			// run now for XHR request, or
 catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request
 </script>
 <?php $this->Layout->blockEnd();?>	

@@ -58,7 +58,7 @@ Configure::write('debug',1);
 			var initOnce = function() {
 				//TODO: init aui_paginator 
 			};
-			try {SNAPPI.ajax; initOnce(); }			// run now for XHR request, or
+			try {SNAPPI.xhrFetch.fetchXhr; initOnce(); }			// run now for XHR request, or
 			catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request
 		</script>	
 <?php } ?>

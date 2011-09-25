@@ -63,7 +63,7 @@ if (empty($this->passedArgs['wide'])) {
 ?>
 <?php 
 	$ajaxSrc = Router::url(Configure::read('passedArgs.complete') + array('action'=>'photos', 'perpage'=>24, '?'=>array('gallery'=>1)));
-	echo "<div id='gallery-photo-xhr' class='fragment' ajaxSrc='{$ajaxSrc}' nodelay='1'></div>";
+	echo "<div id='gallery-photo-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' nodelay='1'></div>";
 	// Configure::write('js.render_lightbox', true);
 ?>
 
@@ -86,9 +86,9 @@ if (empty($this->passedArgs['wide'])) {
 						<section class="box-wrap">
 						  <section id="members">
 <?php 
-	// $ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'fragment', 'a'=>'members', 'e'=>'preview-members'));
+	// $ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'xhr-get', 'a'=>'members', 'e'=>'preview-members'));
 	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'members', '?'=>array('preview'=>1)));
-	echo "<div id='members-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}'></div>";
+	echo "<div id='members-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
 ?>							  	
 						  </section>
 						</section>
@@ -106,7 +106,7 @@ if (empty($this->passedArgs['wide'])) {
 	$xhrFrom = Configure::read('controller.xhrFrom');
 	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
 	$ajaxSrc = Router::url($xhrSrc);
-	echo "<div id='tags-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}'></div>";
+	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
 		// tag form 	
 	echo $this->element('tags', array('domId'=>'groups-tags', 'data'=>&$group));
 ?>

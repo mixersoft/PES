@@ -173,7 +173,7 @@
     		            var node = target.set('innerHTML', data);
     		            target.prepend(pagingControls);
     		            
-    		            SNAPPI.ajax.xhrInit(node); // execute js in ajax markup
+    		            SNAPPI.xhrFetch.xhrInit(node); // execute js in ajax markup
     		            Y.fire('snappi:ajaxLoad'); // execute js in script files
     		            /*
     		             * end XHR page update

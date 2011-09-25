@@ -55,7 +55,7 @@
 <?php 
 	// tagged photos
 	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('plugin'=>'','action'=>'photos', '?'=>array('gallery'=>1)));
-	echo "<div id='gallery-photo-xhr' class='fragment' ajaxSrc='{$ajaxSrc}' nodelay='1'></div>";
+	echo "<div id='gallery-photo-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' nodelay='1'></div>";
 	Configure::write('js.render_lightbox', true);
 ?>
 
@@ -63,7 +63,7 @@
 	// tagged groups
 //	$ajaxSrc = Router::url(array('action'=>'groups', AppController::$uuid));
 	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('plugin'=>'','action'=>'groups', '?'=>array('preview'=>1)));
-	echo "<div id='groups-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}'></div>";
+	echo "<div id='groups-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
 ?>	
 
 <?php
@@ -71,7 +71,7 @@
 	$xhrFrom = Configure::read('controller.xhrFrom');
 	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
 	$ajaxSrc = Router::url($xhrSrc);
-	echo "<div id='tags-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}'></div>";
+	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
 ?>	
 
 <?php
@@ -81,10 +81,10 @@
 ?>
 <script type="text/javascript">
 var initOnce = function() {
-	// init xhr paging & fetch fragments
-	// NOTE: any fragments will bind own PAGE.init() method
-	SNAPPI.ajax.init();
+	// init xhr paging & fetch xhr-gets
+	// NOTE: any xhr-gets will bind own PAGE.init() method
+	SNAPPI.xhrFetch.init();
 };
-try {SNAPPI.ajax; initOnce(); }			// run now for XHR request, or
+try {SNAPPI.xhrFetch.fetchXhr; initOnce(); }			// run now for XHR request, or
 catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request
 </script>

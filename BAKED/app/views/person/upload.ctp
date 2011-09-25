@@ -21,9 +21,9 @@
 </div>
 <script type="text/javascript">
 var initOnce = function() {
-	// init xhr paging & fetch fragments
-	// NOTE: any fragments will bind own PAGE.init() method
-//	SNAPPI.ajax.init(); 
+	// init xhr paging & fetch xhr-gets
+	// NOTE: any xhr-gets will bind own PAGE.init() method
+//	SNAPPI.xhrFetch.init(); 
 
 
 	// USE default look and feel. 

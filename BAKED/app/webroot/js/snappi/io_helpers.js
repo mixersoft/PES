@@ -99,11 +99,11 @@
 
 	/*
 	 * XhrFetch Class (singleton class) 
-	 * Use '.fragment' markup to request CakePhp element by XHR/XhrFetch 
+	 * Use '.xhr-get' markup to request CakePhp element by XHR/XhrFetch 
 	 * uses the following custom dom attr to encode src/target for request 
-	 * - ajaxSrc: cakePhp request 
+	 * - xhrSrc: cakePhp request 
 	 * - xhrTarget: target for ajax response, default to current DOM element by Id 
-	 * fragment request is automatically made for all '.fragment' markup
+	 * xhr-get request is automatically made for all '.xhr-get' markup
 	 */
 	var XhrFetch = function(cfg) {
 		if (XhrFetch.instance) return XhrFetch.instance;
@@ -114,11 +114,11 @@
 	XhrFetch.instance = null;
 	
 	XhrFetch.prototype = {
-		CSS_CLASS_TRIGGER: 'fragment',
+		CSS_CLASS_TRIGGER: 'xhr-get',
 		XHR_PAGE_INIT_DELAY: 500,
 		/**
 		 * singleton init - attaches delegated click handlers for ajax paging -
-		 * launches request for any ajax fragments to fetch after initial page
+		 * launches request for any ajax xhr-gets to fetch after initial page
 		 * load
 		 */
 		init : function(cfg) {
@@ -127,7 +127,7 @@
 			this.fetchXhr(null);
 		},
 		/*
-		 * search for page fragments to fetch via ajax request
+		 * search for page xhr-gets to fetch via ajax request
 		 */
 		fetchXhr : function(n, cfg) {
 			var Y = SNAPPI.Y;
@@ -136,7 +136,7 @@
 				// direct request, just fetch without delay
 				this.requestFragment(n);
 			} else {
-				// searches page for fragments, add delay as necessary
+				// searches page for xhr-gets, add delay as necessary
 				var wait = this.XHR_PAGE_INIT_DELAY;
 				var fragments = Y.all('.'+TRIGGER);
 				if (fragments) {
@@ -161,12 +161,12 @@
 
 		/**
 		 * render ajax request into replaceDiv#id on page load uses the
-		 * following custom dom attr to encode src/target for request - ajaxSrc:
+		 * following custom dom attr to encode src/target for request - xhrSrc:
 		 * cakePhp request - xhrTarget: target for ajax response, default to
-		 * current DOM element by Id fragment request is automatically made for
-		 * all 'div.fragment' markup
+		 * current DOM element by Id xhr-get request is automatically made for
+		 * all 'div.xhr-get' markup
 		 * 
-		 * @param {Object} n - YUI3 node for 'div.fragment'
+		 * @param {Object} n - YUI3 node for 'div.xhr-get'
 		 */
 		requestFragment : function(n) {
 			var Y = SNAPPI.Y;
@@ -174,7 +174,7 @@
 			var target = n.getAttribute('xhrTarget');
 			var nodelay = n.getAttribute('nodelay');
 			target = target ? Y.one('#'+target) : n;
-			var uri = n.getAttribute('ajaxSrc');
+			var uri = n.getAttribute('xhrSrc');
 			
 //			var _updateDOM = this._updateDOM;
 			// NOTE: key events 
@@ -212,7 +212,7 @@
 				// console.warn("before Y.Plugin.IO.setContent()");
 				// detach.detach();
 				// this.before_SetContent(content, target, fragment);
-				// // new Y.DelayedTask(SNAPPI.ajax.init).delay(100);
+				// // new Y.DelayedTask(SNAPPI.xhrFetch.init).delay(100);
 			// }, target.io, 'setContent', this, target, n); 
 			       				
 			target.io.set('uri', uri);
@@ -255,7 +255,7 @@
 		 * render new page into 'div.paging-content' - searches for
 		 * 'div.paging-content' to attach delegated click listener to
 		 * PaginateHelper <A> elements using CSS selector = '.paging-control a' -
-		 * ajaxSrc == A.href from e.target.get('href') - replaces innerHTML in
+		 * xhrSrc == A.href from e.target.get('href') - replaces innerHTML in
 		 * target uses the following custom dom attr - xhrTarget: target for
 		 * ajax response, default to 'div.paging-content', referenced by Id
 		 * 
@@ -298,23 +298,23 @@
 		 * @param {Object} args args.sectionId == id of DOM container
 		 */
 		_updateDOM : function(id, o, args) {
-			console.warning("DEPRECATE? SNAPPI.ajax._updateDOM");
+			console.warning("DEPRECATE? SNAPPI.xhrFetch._updateDOM");
 			var Y = SNAPPI.Y;
 			var data = o.responseText; // Response data.
 			var target = args.target || args[0]; // DOM element id to put
 													// data
 			var node = target.setContent(data);
 	
-			SNAPPI.ajax.xhrInit(node); // execute js in ajax markup
+			SNAPPI.xhrFetch.xhrInit(node); // execute js in ajax markup
 			Y.fire('snappi:ajaxLoad'); // execute js in script files
 		},
 		/**
 		 * DEPRECATED (?) XHR request should call 
-		 * XHR page fragments can add init code by markup like this: 
+		 * XHR page xhr-gets can add init code by markup like this: 
 		 * // <script class='xhrInit' type='text/javascript'> 
 		 */
 		xhrInit : function(xhrNode) {
-			console.warning("DEPRECATE? SNAPPI.ajax.xhrInit: PAGE.init.length="+PAGE.init.length);
+			console.warning("DEPRECATE? SNAPPI.xhrFetch.xhrInit: PAGE.init.length="+PAGE.init.length);
 			// execute deferred javascript init
 			while (PAGE.init.length) {
 				var init = PAGE.init.shift();

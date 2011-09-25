@@ -10,9 +10,9 @@ echo $this->element('nav/section', array('icon_src'=>$data['Asset']['src_thumbna
 			var initOnce = function() {
 				// TODO: bind members to MemberRoll
 				SNAPPI.domJsBinder.bindAuditions2Filmstrip();
-				SNAPPI.ajax.init();
+				SNAPPI.xhrFetch.init();
 			};
-			try {SNAPPI.ajax; initOnce(); }			// run now for XHR request, or
+			try {SNAPPI.xhrFetch.fetchXhr; initOnce(); }			// run now for XHR request, or
 			catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request
 	</script>	
 </div>

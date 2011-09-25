@@ -74,7 +74,7 @@ $this->viewVars['jsonData']['STATE'] = $state;
 			} catch (e) {}
 		};
 		try {
-			SNAPPI.ajax.fetchXhr; 
+			SNAPPI.xhrFetch.fetchXhr; 
 			initOnce(); 
 		} catch (e) {
 			PAGE.init.push(initOnce); 

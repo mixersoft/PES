@@ -28,7 +28,7 @@ if (empty($this->passedArgs['wide'])) {
 <?php 
 	// $ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'fragment', 'a'=>'members', 'e'=>'preview-members'));
 	// $ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'members', '?'=>array('preview'=>1)));
-	// echo "<div id='members-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}'></div>";
+	// echo "<div id='members-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
 ?>							  	
 						  </section>
 						</section>
@@ -45,7 +45,7 @@ if (empty($this->passedArgs['wide'])) {
 	$xhrFrom = Configure::read('controller.xhrFrom');
 	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
 	$ajaxSrc = Router::url($xhrSrc);
-	echo "<div id='tags-preview-xhr' class='fragment' ajaxSrc='{$ajaxSrc}'></div>";
+	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
 		// tag form 	
 	echo $this->element('tags', array('domId'=>'groups-tags', 'data'=>&$group));
 ?>
