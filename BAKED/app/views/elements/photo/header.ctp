@@ -23,7 +23,7 @@
 			<li class="label">Size</li>
 			<?php 
 				foreach ($sizes as $size => $src ) {
-					echo "<li class='btn ".($focus==$size ? 'focus' : '')."' thumb-size='{$size}'><img src='{$src}' alt=''></li>";
+					echo "<li class='btn ".($focus==$size ? 'focus' : '')."' size='{$size}'><img src='{$src}' alt=''></li>";
 				}
 			?>
 			<li class='btn' onclick="PAGE.toggle_fullscreen(true);">Fullscreen</li>

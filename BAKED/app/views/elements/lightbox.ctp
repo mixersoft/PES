@@ -33,7 +33,7 @@ if (Configure::read('controller.action')=='lightbox') {
 	);
 ?>
 <section class="lightbox drop container_16 hide" id="lightbox">
-	<section class="header">
+	<section class="gallery-header">
 		<ul class="inline">
 			<li class="grid_2"><h3>My Lightbox <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li>
 			<li class="grid_8">
@@ -55,7 +55,7 @@ if (Configure::read('controller.action')=='lightbox') {
 						<li class="label">Size</li>
 						<?php 
 							foreach ($sizes as $size => $src ) {
-								echo "<li class='btn ".($focus==$size ? 'focus' : '')."' action='set-display-size' size='{$size}'><img src='{$src}' alt=''></li>";
+								echo "<li class='btn ".($focus==$size ? 'focus' : '')."' size='{$size}'><img src='{$src}' alt=''></li>";
 							}
 						?>
 					</ul>
@@ -68,7 +68,6 @@ if (Configure::read('controller.action')=='lightbox') {
 	</section>
 	<section class='gallery photo lightbox grid_16 '>
 		<div class="filmstrip-wrap"><div class='filmstrip'><div class='container'></div>
-			</div>
-		</div>
+			</div></div>
 	</section>
 </section>

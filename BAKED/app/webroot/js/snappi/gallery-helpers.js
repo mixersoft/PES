@@ -64,13 +64,15 @@
     
     GalleryFactory.Photo = {
     	defaultCfg : {
+    		type: 'Photo',
 			ID_PREFIX: 'uuid-',
 			PROVIDER_NAME: 'snappi',
 			MARKUP: '<section class="gallery photo container_16">'+
 	        			'<div class="container grid_16" />'+
 	        			'</section>',
 			node: 'div.gallery-container > section.gallery.photo',
-			listeners: ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'HiddenShotClick', 'Contextmenu'],
+			listeners: ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'ThumbsizeClick'],
+			draggable: true,
 			hideHiddenShotByCSS: true,
 			size: 'lm',
 			start: null,
@@ -108,9 +110,9 @@
 	        gallery.init(cfg);
 	        
 	        // .gallery.photo AFTER init methods
-	        SNAPPI.Rating.startListeners(gallery.container);
-	        SNAPPI.DragDrop.startListeners();
 	        SNAPPI.Gallery.find[cfg.ID_PREFIX] = gallery;		// add to gallery lookup
+	        SNAPPI.Rating.startListeners(gallery.container);
+	        Y.fire('snappi:afterGalleryInit', this); 
 	        return gallery;					// return instance of SNAPPI.Gallery
         },
         handle_hiddenShotClick : function(e){
@@ -123,8 +125,97 @@
 				gallery.showHiddenShotsInDialog(audition, shotType);
 			} catch (e) {
 			}                	
-       },
+		},
+		handle_ThumbsizeClick: function(e) {
+    		var thumbSize = e.currentTarget.getAttribute('size');
+        	this.Gallery.renderThumbSize(thumbSize);
+        	e.currentTarget.get('parentNode').all('li').removeClass('focus');
+        	e.currentTarget.addClass('focus');			
+		}
+       
 	};
+	
+	LIGHTBOX_PERPAGE_LIMIT = 72;
+    GalleryFactory.Lightbox = {
+    	defaultCfg : {
+    		type: 'Lightbox',
+			ID_PREFIX: 'lightbox-',
+			PROVIDER_NAME: 'snappi',
+			MARKUP: '<section class="gallery photo container_16">'+
+	        			'<div class="container grid_16" />'+
+	        			'</section>',
+	        tnType: 'Photo',	// thumbnail Type
+			node: '#lightbox section.gallery.lightbox',
+			// listeners: ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'ThumbsizeClick'],
+			listeners: ['MultiSelect', 'ThumbsizeClick'],
+			draggable: false,
+			hideHiddenShotByCSS: false,
+			size: 'lbx-tiny',
+			perpage: LIGHTBOX_PERPAGE_LIMIT, 
+			start: null,
+			end: null
+	    },
+        /*
+         * build 
+         * - scan for a cfg.node or defaultCfg.node, 
+		 * - bind to JS auditions
+         * - call AFTER SNAPPI.mergeSessionData(), important for XHR JSON request
+         * @params gallery instance of SNAPPI.Gallery
+         * @params cfg object, cfg object
+         */
+    	build: function(gallery, cfg){
+            var Y = SNAPPI.Y;
+            // var self = gallery;		// instance of SNAPPI.Gallery
+            cfg = cfg || {};
+            // inherit javascript state information from current page, 
+            // called AFTER SNAPPI.mergeSessionData();
+            cfg = Y.merge(GalleryFactory[cfg.type].defaultCfg, SNAPPI.STATE.displayPage, cfg);	
+            try {
+            	cfg.size = PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
+            } catch (e){}
+            try {
+            	if (!cfg.castingCall && cfg.castingCall !== false) cfg.castingCall = PAGE.jsonData.lightbox.castingCall;
+            } catch (e){}
+	        
+	        // .gallery.photo BEFORE init
+	        gallery.auditionSH = null;
+	        gallery.shots = null; 	
+	        
+	        // generic gallery BEFORE init
+			gallery.providerName = cfg.PROVIDER_NAME;	// deprecate: use this.cfg.providerName
+			GalleryFactory._attachNodes(gallery, cfg);
+	        gallery.init(cfg);
+	        
+	        // .gallery.photo AFTER init methods
+	        SNAPPI.Gallery.find[cfg.ID_PREFIX] = gallery;		// add to gallery lookup
+	        SNAPPI.Rating.startListeners(gallery.container);
+	        Y.fire('snappi:afterGalleryInit', this); 
+	        return gallery;					// return instance of SNAPPI.Gallery
+        },
+        // handle_hiddenShotClick : function(e){
+        	// var thumbnail = e.currentTarget.ancestor('.FigureBox');
+			// try {
+				// var audition = thumbnail.audition;
+				// var gallery = this.Gallery;
+				// var shotType = audition.Audition.Substitutions.shotType;
+				// if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
+				// gallery.showHiddenShotsInDialog(audition, shotType);
+			// } catch (e) {
+			// }                	
+		// },
+		handle_ThumbsizeClick: function(e) {
+    		var thumbSize = e.currentTarget.getAttribute('size');
+        	this.Gallery.renderThumbSize(thumbSize);
+        	e.currentTarget.get('parentNode').all('li').removeClass('focus');
+        	e.currentTarget.addClass('focus');	
+        	// check display mode for filmstrip
+        	if (this.Gallery.container.getStyle('width') != 'auto') {
+        		this.Gallery.setFilmstripWidth();
+        	};
+		}
+       
+	};
+	
 	GalleryFactory.NavFilmstrip = {
 		defaultCfg: {
 			type: 'NavFilmstrip',
@@ -140,7 +231,8 @@
 			uuid: null,	
 			showExtras: true,
 			hideHiddenShotByCSS: true,	
-			listeners: ['Keypress', 'Mouseover', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'FocusClick'],
+			draggable: true,
+			listeners: ['Keypress', 'Mouseover', 'MultiSelect', 'Contextmenu', 'FocusClick', 'ThumbsizeClick'],
 		},
 		build: GalleryFactory.Photo.build,
 		/*
@@ -168,7 +260,8 @@
 				gallery.showHiddenShotsInDialog(audition, shotType);
 			} catch (e) {
 			}                	
-       },		
+		},
+		handle_ThumbsizeClick: GalleryFactory.Lightbox.handle_ThumbsizeClick,	
 	}	
 	GalleryFactory.ShotGallery = {
 		defaultCfg: {
@@ -185,8 +278,9 @@
 			uuid: null,
 			showExtras: true,
 			showHiddenShot: false,
-			hideHiddenShotByCSS: false,		
-			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick']
+			hideHiddenShotByCSS: false,	
+			draggable: true,	
+			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick', 'ThumbsizeClick']
 		},
 		build: GalleryFactory.Photo.build,
 		handle_focusClick: function(e){
@@ -201,7 +295,25 @@
 	    		SNAPPI.domJsBinder.bindSelected2Preview.call(gallery, selected);
 	        }
 		},
+		handle_ThumbsizeClick: GalleryFactory.Lightbox.handle_ThumbsizeClick,	
+		// handle_ThumbsizeClick: function(e) {
+        	// var thumbSize = e.currentTarget.getAttribute('size');
+        	// this.Gallery.renderThumbSize(thumbSize);
+        	// e.currentTarget.get('parentNode').all('li').removeClass('focus');
+        	// e.currentTarget.addClass('focus');
+        	// // add renderThumbsize for size='tn'
+		// }		
+
+		
 	}
+	
+	
+            // skip 307	
+	
+	
+	
+	
+	
 	GalleryFactory.DialogHiddenShot = {
 		defaultCfg: {
 			type: 'DialogHiddenShot',
@@ -214,9 +326,9 @@
 	'		<section class="gallery photo filmstrip hiddenshots grid_11 alpha-b1 omega-b1"> ' +
 	'			<div class="filmstrip-wrap hidden"><div class="filmstrip"><div class="container"></div></div></div> ' +
 	'		</section>	 ' +
-	'		<section class="header grid_11 alpha-b1 omega-b1"> ' +
+	'		<section class="gallery-header grid_11 alpha-b1 omega-b1"> ' +
 	'			<ul class="inline"> ' +
-	'				<li class="grid_2 alpha"><h3>Hidden Shot Gallery <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li> ' +
+	'				<li class="grid_2 alpha"><h3><img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li> ' +
 	'				<li class="grid_3"> ' +
 	'					<nav class="toolbar"> ' +
 	'						<div> ' +
@@ -227,22 +339,16 @@
 	'						<h1 class="count">0 Snaps</h1> ' +
 	'					</nav> ' +
 	'				</li>		 ' +	
-	'				<li class="grid_6 omega"> ' +
-	'					<nav class="window-options right"> ' +
-	'						<ul class="inline"> ' +
-	'							<li class="grid_6 omega-b1"> ' +
+	'							<li class="grid_6 omega"> ' +
 	'								<nav class="window-options right"> ' +
 	'									<ul class="thumb-size inline"> ' +
 	'										<li class="label">Size</li> ' +
-	'										<li size="sq" action="set-display-size" class="btn focus"><img alt="" src="/css/images/img_1.gif"></li><li size="tn" action="set-display-size" class="btn "><img alt="" src="/css/images/img_2.gif"></li><li size="lm" action="set-display-size" class="btn "><img alt="" src="/css/images/img_3.gif"></li>	 ' +
+	'										<li size="sq" class="btn"><img alt="" src="/css/images/img_1.gif"></li><li size="tn" class="btn "><img alt="" src="/css/images/img_2.gif"></li><li size="lm" class="btn focus"><img alt="" src="/css/images/img_3.gif"></li>	 ' +
 	'									</ul><ul class="inline"> ' +
 	'										<li action="filmstrip"><img src="/css/images/img_zoomin.gif"></li><li action="maximize"><img src="/css/images/img_zoomout.gif"></li> ' +
 	'									</ul> ' +
 	'								</nav> ' +
 	'							</li> ' +
-	'						</ul> ' +
-	'					</nav> ' +
-	'				</li> ' +
 	'			</ul> ' +
 	'		</section> ' +
 	'	</section>	 ' +
@@ -253,8 +359,9 @@
 			uuid: null,
 			showExtras: true,
 			showHiddenShot: false,
-			hideHiddenShotByCSS: false,		
-			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick'],			
+			hideHiddenShotByCSS: false,	
+			draggable: true,	
+			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick', 'ThumbsizeClick'],			
 		},
 		build: GalleryFactory.ShotGallery.build,
 		handle_focusClick: function(e) {
@@ -262,7 +369,8 @@
 			var selected = e.currentTarget.ancestor('.FigureBox').audition;
 			gallery.setFocus(selected);
 			SNAPPI.galleryHelper.bindPreview(gallery);
-		}
+		},
+		handle_ThumbsizeClick: GalleryFactory.ShotGallery.handle_ThumbsizeClick,
 	}
 	
 	SNAPPI.Factory.Gallery = GalleryFactory;

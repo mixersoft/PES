@@ -12,7 +12,7 @@
 	<section class='gallery photo filmstrip hiddenshots grid_11 alpha-b1 omega-b1'>
 		<div class="filmstrip-wrap hidden"><div class='filmstrip'><div class='container'></div></div></div>
 	</section>	
-	<section class="header">
+	<section class="gallery-header">
 		<ul class="inline">
 			<li class="grid_2 alpha-b1"><h3>Hidden Shot Gallery <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li>
 			<li class="grid_3">

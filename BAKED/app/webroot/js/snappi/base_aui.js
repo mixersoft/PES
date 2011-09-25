@@ -600,11 +600,22 @@
         /*
          * these methods reference audition property
          */
-        Y.on('snappi:afterGalleryInit', function(){
+        var once = Y.on('snappi:afterGalleryInit', function(){
             /**
              * 	- fired by: new Gallery.init(),
              */
+            once.detach();
+            SNAPPI.lightbox = new SNAPPI.Lightbox();
         });
+        Y.on('snappi:afterLightboxInit', function(){
+            /**
+             * 	- fired by: new Lightbox.init(),
+             */
+        });        
+        Y.on('snappi:afterMain', function(){
+            SNAPPI.DragDrop.startListeners(); // singleton 
+            var check;
+        });       
         
         /****************************************************************************
          * init singletons AFTER ALL SCRIPTS HAVE BEEN LOADED
@@ -615,10 +626,10 @@
          */
         SNAPPI.sortConfig.init();	
         
-        var event;
-        if (PAGE.jsonData.castingCall) event = 'snappi:afterPhotoRollInit';
-        else if (PAGE.jsonData.lightbox) event = 'snappi:afterMain';
-        SNAPPI.Lightbox.loadonce(null, event);
+        // var event;
+        // if (PAGE.jsonData.castingCall) event = 'snappi:afterGalleryInit';
+        // else if (PAGE.jsonData.lightbox) event = 'snappi:afterMain';
+        // SNAPPI.Lightbox.loadonce(event);
         
         /*
          * filter bar

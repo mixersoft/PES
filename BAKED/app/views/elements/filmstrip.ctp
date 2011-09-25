@@ -12,7 +12,7 @@ if (isset($this->viewVars['jsonData']['castingCall']['CastingCall']['Auditions']
 	);
 ?>
 <section id="nav-filmstrip" class="filmstrip">
-	<section class="header">
+	<section class="gallery-header">
 		<ul class="inline">
 			<li class="grid_2 alpha-b1"><h3>Filmstrip <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li>
 			<li class="grid_8">

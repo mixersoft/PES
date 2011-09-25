@@ -244,10 +244,12 @@
 	        switch (_cfg.ID_PREFIX) {
 	        case 'lightbox-':
 	        	// render manually to enforce LIMIT
-	        	this._cfg.showLabel = false;
-	        	if (this._cfg.addClass == 'lbx-tiny' ) {
-	        		this._cfg.showExtras = false;	        		
-	        	}
+	        	this.render(_cfg);
+	        	// if (this.container.getStyle('width') != 'auto') {
+	        		// this.setFilmstripWidth();
+	        	// };
+	        	// this.scrollFocus( cfg.uuid );
+	        	this.container.ancestor('.filmstrip-wrap').removeClass('hidden');
 	        	break;
 	        case 'uuid-':
 	        	this.render(_cfg); 
@@ -257,29 +259,25 @@
 	        		this.add_ViewAll();
 	        	}
 	        	this.restoreState();	// photoRolls have state, but filmstrips do not.
-//	        	this.container.all('img.drag').each(function(n, i, l){
-//	                SNAPPI.DragDrop.pluginDrag(n);
-//	            }, this);
-	            SNAPPI.DragDrop.pluginDelegatedDrag(this.container, 'img.drag');
+	        	var selector = '.FigureBox > figure > img';
 	        	break;
 	        case 'nav-': 		// nav-filmstrip
 	        case 'shot-':
 	        case 'hiddenshot-':
 	        	this.render(_cfg);
-				this.setFilmstripWidth();
+				// this.setFilmstripWidth();
 				this.scrollFocus( cfg.uuid );
 				this.container.ancestor('.filmstrip-wrap').removeClass('hidden');
-				SNAPPI.DragDrop.pluginDelegatedDrag(this.container, 'img.drag');
 	        	break;
 	        default:
 	        	break;
 	        }
 	        
+	        if (_cfg.draggable) SNAPPI.DragDrop.pluginDelegatedDrag(this.container, 'img.drag');
 	        // start Gallery listeners
 	        if (this._cfg.listeners) this.listen(true, this._cfg.listeners);
             // if (SNAPPI.DEBUG_MODE) SNAPPI.debug.showNodes('#content div, .FigureBox');	        
 	        
-	        Y.fire('snappi:afterGalleryInit', this.auditionSH); 
     	},
         setAudition: function(sh){
             this.auditionSH = sh;
@@ -329,11 +327,6 @@
             	}
             }
             switch(this._cfg.ID_PREFIX) {
-	            case 'filmstrip-':
-	            // case 'hiddenshot-':
-	            	offset = this._cfg.start;
-	            	perpage = this._cfg.end - this._cfg.start;            	
-	            	break;
 	            case 'lightbox-':
             		// use the existing number of .FigureBoxs
 	                perpage =  this._cfg.perpage || this.auditionSH.size();
@@ -417,6 +410,11 @@
 	            } catch (e) {}
             }
             
+            if (this.container.get('parentNode').hasClass('filmstrip')) {
+	        	if (this.container.getStyle('width') != 'auto') {
+	        		this.setFilmstripWidth();
+	        	};            	
+            }
             return lastLI;
         },
         /**
@@ -464,7 +462,7 @@
             status = (status == undefined) ? true : status;
             var k,v;
             if (status) {
-            	cfg = cfg || ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'Contextmenu', 'FsClick'];
+            	cfg = cfg || ['Keypress', 'Mouseover', 'Click', 'ThumbsizeClick', 'MultiSelect', 'Contextmenu', 'FsClick'];
             	for ( k in cfg){
             		switch (cfg[k]) {
             			case "Keypress": 	this.listenKeypress();	break;
@@ -474,6 +472,7 @@
             			case "Contextmenu": 	this.listenContextmenu();	break;
             			case "HiddenShotClick": 	this.listenHiddenShotClick();	break;
             			case "FocusClick": 	this.listenFocusClick();	break;
+            			case "ThumbsizeClick": 	this.listenThumbsizeClick();	break;
             		}
             	}
             }
@@ -521,16 +520,19 @@
                     }
                     window.location.href = next;
                 }, '.FigureBox > figure > img', this.node);
-                try {
-	                // listen thumbnail size
-	                this.node.listen['thumbSize_Click'] = this.node.get('parentNode').one('section.gallery-header .thumb-size').delegate('click', 
-		                function(e){
-		                	var thumbSize = e.currentTarget.getAttribute('thumb-size');
-		                	this.Gallery.renderThumbSize(thumbSize);
-		                	e.currentTarget.get('parentNode').all('li').removeClass('focus');
-		                	e.currentTarget.addClass('focus');
-		                }, 'li', this.node);
-				} catch (e) {}	                
+			}
+        },
+        listenThumbsizeClick : function(action) {
+        	action = 'ThumbsizeClick';
+            if (this.node.listen[action] == undefined) {
+                // listen thumbnail size
+                this.node.listen[action] = this.node.get('parentNode').one('section.gallery-header .thumb-size').delegate('click', 
+	                function(e, action){
+	                	var fn = Factory[this.Gallery._cfg.type]['handle_'+action];
+	                	try {
+	                		fn.call(this, e);
+	                	} catch (e) {}
+	                }, 'li', this.node, action);
 			}
         },
         listenMultiSelect : function () {
@@ -580,13 +582,13 @@
 		
         listenContextmenu : function (){
         	if (this.node.listen['Contextmenu'] == undefined){
-        		this.node.listen['Contextmenu'] = this.container.delegate('contextmenu', 
+        		this.node.listen['ContextMenuClick'] = this.container.delegate('contextmenu', 
         		function(e){
 					this.Gallery.toggle_ContextMenu(e);
         		}, '.FigureBox', this.node);
         		
         		// .FigureBox li.context-menu.icon
-     			this.node.listen['ContextMenuIcon'] = this.container.delegate('click', 
+     			this.node.listen['ContextMenuIconClick'] = this.container.delegate('click', 
      			function(e){
 					this.Gallery.toggle_ContextMenu(e);
 					e.stopImmediatePropagation();
@@ -780,8 +782,9 @@
         		// set width in pixels to render as 1 row HScroll 
 				var count = this.auditionSH.count();
 				var width = parent.one('.FigureBox').get('offsetWidth');
+				var containerWidth = Math.max(width*count, parent.get('clientWidth'));
 				this.container.setStyles({
-					width: (width*count)+'px',
+					width: (containerWidth)+'px',
 					height: 'auto'	
 				}); 	
         	} catch (e) {}
@@ -1076,7 +1079,7 @@
         },
 		getSelected : function() {
 			var auditionSH; 	// return sortedHash, allows auditionSH.each() maintains consistency
-			if (SNAPPI.STATE.selectAllPages){ 
+			if (0 && SNAPPI.STATE.selectAllPages){ 
 				// TODO: get all assetIds for ALL pages in CastingCall
 				// from lightbox.js ProcessDrop
 //				var callback = {

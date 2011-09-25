@@ -43,42 +43,30 @@
 
 	var Lightbox = function(cfg) {
 		// this is a singleton Class
-		if (SNAPPI.Lightbox.instance) return SNAPPI.Lightbox.instance;
-		
+		if (Lightbox.instance) return Lightbox.instance;
 		this._cfg = null;
 		this.node = null;
-		this.listener = {};
 		this.init(cfg);
+		Lightbox.instance = this;	// singleton Class
 	};
 	
-	/*
-	 * static properties and methods
-	 */
-	Lightbox.loadonce = function(selector, event) {
-		Lightbox.loadonce = function(){
-			return true;
-		};
-		selector = selector || '#lightbox';
-		event = event || 'snappi:afterPhotoRollInit';
-		var run_once = function(){
-    		once.detach();
-            /*
-             * lightbox
-             */
-            var lightboxNode = Y.one(selector);
-            if (lightboxNode && SNAPPI.lightbox) {
-            	SNAPPI.lightbox.init(); // must be before domJsBinder
-            	SNAPPI.lightbox.listen(true);
-            	SNAPPI.namespace("SNAPPI.PM");
-            };
-    	};
-    	var once = SNAPPI.Y.on( event, run_once );		
-	};
+	// /*
+	 // * static properties and methods
+	 // */
+	// Lightbox.loadonce = function(event) {
+		// event = event || 'snappi:afterPhotoRollInit';
+		// var run_once = function(){
+    		// once.detach();
+			// SNAPPI.lightbox = new Lightbox();
+    	// };
+    	// var once = SNAPPI.Y.on( event, run_once );		
+	// };
 	SNAPPI.Lightbox = Lightbox;
 
 
 	Lightbox.prototype = {
 		init : function(cfg) {
+			var Y = SNAPPI.Y;
 			this._cfg = Y.merge(defaultCfg, cfg);
 			this.node = Y.one('section.lightbox');
 			if (this.node) {
@@ -91,12 +79,15 @@
 			this.node.removeClass('hide');
 			SNAPPI.Y.one('div.anchor-bottom').append(this.node);	// move to the right location
 			this.node.Lightbox = this;
+			this.node.dom().Lightbox = this;
 			// plugin droppables
 			SNAPPI.DragDrop.pluginDrop(this.node);
 			
 			this.restoreLightboxFromJson();	// lightbox.visible, lightbox.regionAsJSON
 //			this.yui2_plugResizeAndDrag.call(this, this.node);	// yui2 lightbox resize and drag	
-			this.plugResizeAndDrag.call(this, this.node);		// yui3 lightbox resize and drag			
+// 			this.plugResizeAndDrag.call(this, this.node);		// yui3 lightbox resize and drag			
+			
+			SNAPPI.namespace("SNAPPI.PM");  // for menu-pagemaker-selected-create-markup
 			var createCfg = {
 				align: { points:['bl', 'tl'] },
 				trigger: 'section#lightbox ul.menu-trigger li.create'
@@ -107,9 +98,10 @@
 				'menu-lightbox-share-markup':1,
 				'menu-pagemaker-selected-create-markup': createCfg
 			});
+			this.listen(true);
+			this.updateCount();
 			
-			SNAPPI.Lightbox.instance = this;	// singleton class
-			Y.fire('snappi:lightbox-afterLoad');
+			Y.fire('snappi:afterLightboxInit', this); 
 		},
 	/**
 	 * load lightbox markup
@@ -181,23 +173,29 @@
 	    	
 	        listen: function(status){
 	            status = (status == undefined) ? true : status;
+	            var node = this.node;
+	            if (node.listen == undefined) node.listen = {};
 	            if (status) {
-	                if (this.listener.keypress == undefined) {
-//	                    this.listener.keypress = Y.on('keypress', this.handleKeypress, document, this);
-	                    //					this.listener.keypress = Y.on('keyup', this.handleKeypress, this.node, '46', this);
+	                if (node.listen.keypress == undefined) {
+//	                    this.listen.keypress = Y.on('keypress', this.handleKeypress, document, this);
+	                    //					this.listen.keypress = Y.on('keyup', this.handleKeypress, node, '46', this);
 	                }
-	                if (this.listener.toolbar == undefined) {
-	                    // this.listener.toolbar = this.node.one('ul.toolbar').delegate('click', this.handleClick, 'li.button', this);
-	                	this.listener.toolbar = this.node.one('nav.toolbar').delegate('click', this.handleClick, 'ul > li', this);
+	                if (node.listen['ToolbarClick'] == undefined) {
+	                    // this.listen.toolbar = node.one('ul.toolbar').delegate('click', this.handleClick, 'li.button', this);
+	                	node.listen['ToolbarClick'] = node.one('nav.toolbar').delegate('click', 
+	                		this.handleClick, 
+	                	'ul > li', this);
 	                	// listen clicking on toolbar button's submenu
-	                	this.listener.options = this.node.one('nav.window-options').delegate('click', this.handleClick, 'ul > li', this);
+	                	node.listen['ThumbsizeClick'] = node.one('nav.window-options').delegate('click', 
+	                		this.handleClick, 
+	                	'ul > li', this);
 	                }
 	            }
 	            else {
-	                for (var i in this.listener) {
-	                    this.listener[i].detach();
+	                for (var i in node.listen) {
+	                    node.listen[i].detach();
 	                }
-	                this.listener = {};
+	                node.listen = {};
 	            }
 	        },
 		toggleZoomMode: function() {
@@ -265,35 +263,40 @@
 				if (!this.Gallery) {
 		            /**
 		             * NEW codepath to create Gallery from castingCall
+		             * TODO: use GalleryFactory pattern
 		             */
 					// use castingCall from drop source
 		            var cfg = {
-		            	type: 'Photo',
-		            	ID_PREFIX: this._cfg.ID_PREFIX,	
-		            	node:  this.node.one('section.gallery.photo'), 
-		            	size : 'sq',
-		            	addClass : 'lbx-tiny',
-			            end: null                		
+		            	type: 'Lightbox',
+		            	node:  this.node.one('section.gallery.lightbox'), 
 		            };
 		            this.Gallery = new SNAPPI.Gallery(cfg);
-		            this.Gallery.listen(true, ['MultiSelect']);
-				}	
+		            // this.Gallery.listen(true, ['MultiSelect']);
+				} 
+				
 				// nodeList of img from drag-drop
 				nodeList.each(function(n, i, l) {
 					var audition = n.ancestor('.FigureBox').audition;
 					this.Gallery.auditionSH.add(audition);
-				}, this);
-				
+				}, this);					
 	            var lastLI = this.Gallery.render( {
 					page : 1,
 					perpage : LIMIT
-				});
+				});					
+
 
 				// reset .gallery-container li.select-all .checkbox
-				try {
-					var cb = SNAPPI.Y.one('.gallery-container li.select-all input[type="checkbox"]');
-					cb.set('checked', false);
-				} catch (e) {}
+				// reset #lightbox .checkbox
+				var galleryHeaders = {
+					'.gallery-container gallery-header':1,
+					'#lightbox':1,
+				}
+				for (var header in galleryHeaders) {
+					try {
+						var cb = SNAPPI.Y.one(header + ' li.select-all input[type="checkbox"]');
+						cb.set('checked', false);
+					} catch (e) {}
+				}
 	            
 				this.save();
 				this.updateCount();					
@@ -301,9 +304,11 @@
 			}
 		},
 		updateCount: function() {
-			var count = this.Gallery.auditionSH.count();
-			var label = count==1 ? '1 Snap' : count+" Snaps"; 
-			this.node.one('.header .count').set('innerHTML', label);
+			try {
+				var count = this.Gallery.auditionSH.count();
+				var label = count==1 ? '1 Snap' : count+" Snaps"; 
+				this.node.one('.gallery-header .count').set('innerHTML', label);
+			} catch (e) {}
 		},
 		getSelected : function() {
 			var auditionSH,			// return sortedHash, allows auditionSH.each() maintains consistency
@@ -397,30 +402,6 @@
 				this.Gallery.auditionSH.remove(node.dom().audition);
 			} catch (e) {
 			}
-		},
-		setThumbsize : function (size) {
-			var oldsize = null;
-			this.Gallery.container.all('.FigureBox'). each(
-				function(n, i, l) {
-					if (oldsize == null) {
-						var haystack = n.getAttribute('class');
-						haystack = haystack.split(' ');
-						for (var i in haystack) {
-							// search for a 2 char classname
-							if (haystack[i].length == 2) {
-								oldsize = haystack[i];
-								break;
-							}
-						}
-					}
-					// remove old class
-					n.replaceClass(oldsize, size);
-					var img = n.one('figure > img');
-					var _getImgSrcBySize = n.audition.getImgSrcBySize;
-					img.set('src', _getImgSrcBySize(img.get('src'), size));
-				}
-				, this
-			);
 		},
 		/*
 		 * SAVE We need to choose how we save changes to lightbox so we can
@@ -593,12 +574,9 @@
 				// use castingCall from drop source
 //						var pr = nodeList.item(0).ancestor('section.gallery.photo').Gallery;
 	            var cfg = {
-	            	type: 'Photo',
-	            	ID_PREFIX: this._cfg.ID_PREFIX,	
-	            	node:  this.node.one('section.gallery.photo'), 
-	            	shots: castingCall.shots,
-	            	// castingCall: castingCall,
-		            end: null                		
+	            	type: 'Lightbox',
+	            	castingCall: castingCall,
+	            	// shots: castingCall.shots,
 	            };
 	            switch (SNAPPI.STATE.controller.action) {
 		            case 'lightbox':
@@ -608,24 +586,23 @@
 		            	cfg.size = 'tn';
 		            	break;
 	            	default:
-	            		cfg.size = 'sq';
-		            	cfg.addClass = 'lbx-tiny';	            	
-	            		cfg.hideHiddenShotByCSS = true;
+	            		cfg.size = 'lbx-tiny';	            	
+	            		// cfg.hideHiddenShotByCSS = true;
 		            	break;
 	            };
 	            this.Gallery = new SNAPPI.Gallery(cfg);			// does NOT render here
-	            this.Gallery.listen(true, ['MultiSelect']);	
+	            // this.Gallery.listen(true, ['MultiSelect']);	
+			} else {
+				// add new auditions to existing Gallery.auditionSH
+				parsedCastingCall_AuditionSH.each(function(audition){
+					this.Gallery.auditionSH.add(audition);
+				}, this);
+				// TODO: use GalleryFactory pattern
+	            this.Gallery.render( {
+					page : 1,
+					perpage : LIMIT
+				});				
 			}
-			
-			// add new auditions to existing Gallery.auditionSH
-			parsedCastingCall_AuditionSH.each(function(audition){
-				this.Gallery.auditionSH.add(audition);
-			}, this);
-			
-            this.Gallery.render( {
-				page : 1,
-				perpage : LIMIT
-			});        	
          },
         /*
          * render popup menus
@@ -1445,7 +1422,7 @@
 				this.Gallery.container.ancestor('.filmstrip-wrap').removeClass('hide');
 				e.currentTarget.addClass('focus');
 			},
-			'set-display-size' : function(e) {
+			thumbSize : function(e) {
 				var srcSize, displaySize;
 				// displaySize: [lbx-tiny | sq | lm], also "summary"
 				try {
@@ -1612,8 +1589,4 @@
 	Y.on('snappi:lightbox-onload', function(){	
 	});	
 
-	/*
-	 * make global
-	 */
-	SNAPPI.lightbox = new Lightbox();
 })();

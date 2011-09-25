@@ -142,6 +142,13 @@
 			<li action='photo_privacy'>Privacy...</li>
 		</ul>
 	</div>	
+	<div id="menu-pagemaker-selected-create-markup" class="menu yui3-aui-overlaycontext-hidden">
+		<ul>
+			<li action='create_pagegallery' >
+				<a>Create PageGallery</a>
+			</li>
+		</ul>
+	</div>	
 	<?php $this->Layout->output($this->viewVars['menuMarkup_for_layout']); ?>
 </div>		
 

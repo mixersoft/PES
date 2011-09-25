@@ -55,9 +55,11 @@ class Group extends AppModel {
 	public function afterFind($results, $primary) {
 		// merge permissions
 		try {
-			$alias = $this->alias;
-			foreach ($results as $i => & $data) {
-				$data[$alias]['perms'] = $data["{$alias}Permission"]['perms'];
+			if ($primary) {
+				$alias = $this->alias;
+				foreach ($results as $i => & $data) {
+					if (isset($data["{$alias}Permission"]['perms'])) $data[$alias]['perms'] = $data["{$alias}Permission"]['perms'];
+				}
 			}
 		} catch (Exception $e) {}
 

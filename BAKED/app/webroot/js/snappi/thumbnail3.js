@@ -126,7 +126,7 @@
 		create : function(audition) {
 			var markup = Factory[this._cfg.type].markup;
 			var node = Y.Node.create(markup);
-			node.addClass(this._cfg.type).addClass(this._cfg.addClass).addClass(this._cfg.size);
+			node.addClass(this._cfg.type);
 
 			// set id
 			var id = audition.id;
@@ -329,57 +329,66 @@
                 '        <li class="icon info"><img alt="more info" src="/css/images/icon1.png"></li>'+
 				'	</figcaption></ul></figure>'+
 				'</article>',
-		renderElementsBySize : function (size, audition){
+		renderElementsBySize : function (size, audition, cfg){
+			cfg = cfg || {};
 			/*
 			 * set attributes based on thumbnail size
 			 */
-			size = size;
 			audition = audition || SNAPPI.Auditions.get(this.id);
 			var node = this.node;
 			
 			var src, linkTo, title, score, votes, exists, tooltip, shotCount, sizeCfg;
 			SNAPPI.Auditions.bind(node, audition);
-			src = audition.getImgSrcBySize(audition.urlbase + audition.src, size);
 			linkTo = '/photos/home/' + audition.id;
 			// add ?ccid&shotType in photoroll.listenClick()
 			title = audition.label;
 			score = audition.Audition.Photo.Fix.Score;
 			votes = audition.Audition.Photo.Fix.Votes;	
-						
+			sizeCfg = {
+				size: size,
+			};			
 			switch (size) {
 				case 'lm':
-					sizeCfg = {
-						showLabel: false,
-						showExtras: true,
-						showHiddenShot: true,
-						showRatings: true
-					}
+				case 'tn':
+					sizeCfg.showLabel = false;
+					sizeCfg.showExtras = true;
+					sizeCfg.showHiddenShot = true;
+					sizeCfg.showRatings = true;
+					break;
+				case 'lbx-tiny': 
+					sizeCfg.size = 'sq';			// use sq thumbnail size
+					sizeCfg.addClass = 'lbx-tiny';	// CSS to resize
+					sizeCfg.showLabel = false;
+					sizeCfg.showExtras = false;
+					sizeCfg.showHiddenShot = true;
+					sizeCfg.showRatings = false;
 					break;
 				case 'sq':
-					sizeCfg = {
-						showLabel: false,
-						showExtras: true,
-						showHiddenShot: true,
-						showRatings: false
-					}
-					break;
+					sizeCfg.showLabel = false;
+					sizeCfg.showExtras = true;
+					sizeCfg.showHiddenShot = true;
+					sizeCfg.showRatings = false;
+					break;				
 				case 'll':
-					sizeCfg = {
-						showLabel: true,
-						showExtras: true,
-						showHiddenShot: true,
-						showRatings: true
-					}
+					sizeCfg.showLabel = true;
+					sizeCfg.showExtras = true;
+					sizeCfg.showHiddenShot = true;
+					sizeCfg.showRatings = true;
 					break;
 			}
-			this._cfg = Y.merge(sizeCfg, this._cfg);
 	
-			// set CSS
-			node.removeClass(this._cfg.size).addClass(size);
-			this._cfg.size = size;
+			// set CSS classNames
+			node.set('className', 'FigureBox Photo').addClass(sizeCfg.size);
+			if (sizeCfg.addClass) node.addClass(sizeCfg.addClass);
+			delete(sizeCfg.addClass);		// keep size classes local
 			
+			// addClass from this._cfg
+			this._cfg = Y.merge(this._cfg, sizeCfg, cfg);
+			if (this._cfg.addClass) node.addClass(this._cfg.addClass);
+
 			// set src to the correct size
 			var img = node.one('img');
+			src = audition.getImgSrcBySize(audition.urlbase + audition.src, sizeCfg.size);
 			if (this._cfg.queue && SNAPPI.imageloader.QUEUE_IMAGES) {
 				img.qSrc = src;
 				// SNAPPI.util3.ImageLoader.queueOneImg(img); // defer,

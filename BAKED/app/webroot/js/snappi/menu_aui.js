@@ -90,10 +90,15 @@ var DEFAULT_CFG_contextmenu = 	{
 	 */
 	Menu.initMenus = function(menus){
 		var Y = SNAPPI.Y;
-		var defaultMenus = {
+		var defaultMenus;
+		try {
+			defaultMenus = {
 				'menu-header-markup': SNAPPI.STATE.controller.userid,	// authenticated
 				end: 0
-		};
+			};
+		} catch (e) {
+			defaultMenus = {};		// catch race condition
+		}
 		menus = Y.merge(defaultMenus, menus);
 		for (var i in menus) {
 			var CSS_ID = menus[i] ? i : null; 

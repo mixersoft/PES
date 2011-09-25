@@ -136,7 +136,13 @@ if (empty($this->passedArgs['wide'])) {
 </table>
 	<?php endif; ?></div>
 	
-<?php $this->Layout->blockStart('javascript');?>
+<?php 
+		$this->Layout->blockStart('lightbox'); 
+			echo $this->element('/lightbox'); 
+		$this->Layout->blockEnd();
+
+		$this->Layout->blockStart('javascript');
+?>
 <script type="text/javascript">
 	var initOnce = function() {
 		var Y = SNAPPI.Y;

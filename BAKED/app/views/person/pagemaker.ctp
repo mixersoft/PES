@@ -69,7 +69,7 @@ var initOnce = function() {
 	// load PG designer
 	// after lightbox Load
 	var detach;
-	detach = SNAPPI.Y.on('snappi:lightbox-afterLoad',
+	detach = SNAPPI.Y.on('snappi:afterLightboxInit',
 			function(){
 				detach.detach();
 				var count = this.Gallery.auditionSH.size();

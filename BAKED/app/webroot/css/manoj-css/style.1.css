@@ -281,9 +281,9 @@ section.gallery-header h1 {
 	line-height: 28px;
 }
 section.gallery-header ul > li {
-	line-height: 1.5;
 }
-section.gallery-header ul {
+.gallery-container section.gallery-header ul {
+	line-height: 1.5;
 }
 section.gallery-header li.display-option {
 /*	background: -moz-linear-gradient(bottom, #E2E6EB, #ffffff);
@@ -902,24 +902,24 @@ section#lightbox {
 	overflow: hidden;
 }	
 
-section#lightbox .header {
+section#lightbox .gallery-header {
 	overflow: hidden;
 }
-section#lightbox .header ul {
+section#lightbox .gallery-header ul {
 	xoverflow:hidden;
 	xdisplay: inline-block;
 	line-height: 24px;
 	font-size: 10pt;
 }
-section#lightbox .header > ul > li {
+section#lightbox .gallery-header > ul > li {
 	padding-top: 3px;
 }
-section#lightbox .header .toolbar > div {
+section#lightbox .gallery-header .toolbar > div {
 	display:inline-block;
 }
-section#lightbox .header .toolbar ul {
+section#lightbox .gallery-header .toolbar ul {
 }
-section#lightbox .header .count {
+section#lightbox .gallery-header .count {
 	display: inline-block;
 	font-size: 0.9em;
 	padding-left: 4px;
@@ -1007,40 +1007,40 @@ section.filmstrip {
 	overflow: hidden;
 }	
 
-section.filmstrip .header {
+section.filmstrip .gallery-header {
 	overflow: hidden;
 }
-section.filmstrip .header ul {
+section.filmstrip .gallery-header ul {
 	xoverflow:hidden;
 	xdisplay: inline-block;
 	line-height: 24px;
 	font-size: 10pt;
 }
-section.filmstrip .header > ul > li {
+section.filmstrip .gallery-header > ul > li {
 	padding-top: 3px;
 }
-section.filmstrip .header .toolbar > div {
+section.filmstrip .gallery-header .toolbar > div {
 	display:inline-block;
 }
-section.filmstrip .header .toolbar ul {
+section.filmstrip .gallery-header .toolbar ul {
 }
-section.filmstrip .header .count {
+section.filmstrip .gallery-header .count {
 	display: inline-block;
 	font-size: 0.9em;
 	padding-left: 4px;
 }
-section.filmstrip .header .toolbar ul li {
+section.filmstrip .gallery-header .toolbar ul li {
 	height: 32px;
 }
-section.filmstrip .header .window-options > ul {
+section.filmstrip .gallery-header .window-options > ul {
 	display: inline-block;
 	margin-left: 10px;
 	line-height: 24px;
 }
-section.filmstrip .header .toolbar {
+section.filmstrip .gallery-header .toolbar {
 	margin-bottom: -1px;
 	}
-section.filmstrip .header .toolbar ul {
+section.filmstrip .gallery-header .toolbar ul {
 	background: -moz-linear-gradient(bottom, #efefef, #fcfcfc);
 	background: -webkit-gradient(linear, center bottom, center top, from(#fcfcfc), to(#efefef));
 	border:1px solid #cfcfcf;
@@ -1058,14 +1058,15 @@ section.filmstrip .toolbar ul li.none{
 	background:none;
 }
 
-section.filmstrip .header ul.thumb-size li {
+section.filmstrip .gallery-header ul.thumb-size li {
 	border: 1px solid transparent;
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
 	margin-left: 4px;
 	padding: 2px;
+	line-height: 24px;
 }
-section.filmstrip .header ul.thumb-size li.btn:hover, section.filmstrip  ul.thumb-size li.btn.focus {
+section.filmstrip .gallery-header ul.thumb-size li.btn:hover, section.filmstrip  ul.thumb-size li.btn.focus {
 	background: -moz-linear-gradient(bottom, #fca22f, #ffc374);	 
 	background: -webkit-gradient(linear, center bottom, center top, from(#fca22f), to(#ffc374));	border: 1px solid #cd7708;
 	-moz-border-radius: 4px;
@@ -1074,11 +1075,11 @@ section.filmstrip .header ul.thumb-size li.btn:hover, section.filmstrip  ul.thum
 	border: 1px solid #CD7708;
 }
 
-section.filmstrip .header ul.thumb-size li.btn.focus {
+section.filmstrip .gallery-header ul.thumb-size li.btn.focus {
 	cursor: default !important;
 }
 
-section.filmstrip .header ul.thumb-size li.btn {
+section.filmstrip .gallery-header ul.thumb-size li.btn {
 	border-color: #D8D5D5;
 	height: 24px;
 }
@@ -1129,7 +1130,7 @@ section#shot-gallery.filmstrip, #dialog-hidden-shot > section.filmstrip {
 section#shot-gallery section.filmstrip {
 	xborder-radius: 0 0 10px 10px;
 }
-section#shot-gallery .header {
+section#shot-gallery .gallery-header {
 	clear: both;
 }
 

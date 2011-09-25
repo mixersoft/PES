@@ -22,34 +22,38 @@
 (function(){
     var Y = SNAPPI.Y;
     var defaultCfg = {};
-    var listeners = [];
     
     var DragDrop = function(cfg){
+    	if (DragDrop.instance) return DragDrop.instance;
         this._cfg = null;
         this.listen = {};
-        /*
-         * start DD listners
-         */
-        this.startListeners = function(){
-            if (listeners.length) 
-                return;
+    };
+    
+    DragDrop.prototype = {
+        init : function(cfg){
+            this._cfg = SNAPPI.Y.merge(defaultCfg, cfg);
+            this.startListeners();
+            // plugin dropppables
+        },    
+        startListeners : function(){
             var Y = SNAPPI.Y;
             /*
              * parent = Stack.thumbListEl (<UL>), or list of <LI>
              */
             //Stop the drag with the escape key
             var body = Y.one(document.body);
-            var handle = Y.on('keypress', function(e){
-                //The escape key was pressed
-                if ((e.keyCode === 27) || (e.charCode === 27)) {
-                    //We have an active Drag
-                    if (Y.DD.DDM.activeDrag) {
-                        //Stop the drag
-                        Y.DD.DDM.activeDrag.stopDrag();
-                    }
-                }
-            }, document.body);
-            listeners.push(handle);
+            if (!this.listen['keypress']) {
+	            this.listen['keypress'] = Y.on('keypress', function(e){
+	                //The escape key was pressed
+	                if ((e.keyCode === 27) || (e.charCode === 27)) {
+	                    //We have an active Drag
+	                    if (Y.DD.DDM.activeDrag) {
+	                        //Stop the drag
+	                        Y.DD.DDM.activeDrag.stopDrag();
+	                    }
+	                }
+	            }, document.body);
+            }
             
             
             //On the drag:mouseDown add the selected class
@@ -61,118 +65,107 @@
             /*
              * on drag
              */
-            handle = Y.DD.DDM.on('drag:start', function(e){
-                //On drag start, get all the selected elements
-                //Add the count to the proxy element and offset it to the cursor.
-                var target = e.target.get('node');
-                switch (target.get('id')) {
-	                case 'snappi-zoomBox':
-	                	// do no additional processing
-	                	return;
-	                default: // thumbnail
-	                	try {
-			                target.ancestor('.FigureBox').addClass('selected');
-			                
-			                //How many items are selected
-			                var count;
-			                try {
+            if (!this.listen['drag:start']) {
+	            this.listen['drag:start']= Y.DD.DDM.on('drag:start', function(e){
+	                //On drag start, get all the selected elements
+	                //Add the count to the proxy element and offset it to the cursor.
+	                var target = e.target.get('node');
+	                switch (target.get('id')) {
+		                case 'snappi-zoomBox':
+		                	// do no additional processing
+		                	return;
+		                default: // thumbnail
+		                	try {
+				                target.ancestor('.FigureBox').addClass('selected');
+				                
+				                //How many items are selected
+				                var g, count;
+			                	g = target.ancestor('section.gallery.photo').Gallery;
 			                    if (SNAPPI.STATE.selectAllPages && target.ancestor('section.gallery')) {
 			                    	try {
-			                    		var pr=target.ancestor('section.gallery.photo').Gallery;
-			                    		count = pr.castingCall.CastingCall.Auditions.Total;
-			                    	} catch (e) {
-			                    		count = target.ancestor('section.gallery').all('.FigureBox.selected').size();
+			                    		count = g.castingCall.CastingCall.Auditions.Total;
+			                    	} catch (e) { 
+			                    		count = g.node.all('.FigureBox.selected').size();
 			                    	}
 			                    }
 			                    else {
-			                        count = target.ancestor('section.gallery').all('.FigureBox.selected').size();
+			                        count = g.node.all('.FigureBox.selected').size();
 			                    }
-			                } 
-			                catch (e) {
-			                    count = target.ancestor('section.gallery').all('.FigureBox.selected').size();
-			                }
-			                
-			                //Set the style on the proxy node, the count badge
-			                e.target.get('dragNode').setStyles({
-			                    height: '25px',
-			                    width: '25px'
-			                }).set('innerHTML', '<span>' + count + '</span>');
-			                //Offset the dragNode
-			                e.target.deltaXY = [25, 5];
-	                	} catch (ex) {
-	                		e.halt();
-	                	}
-                }
-                
-                // activate targets
-            }, this);
-            listeners.push(handle);
+				                e.target.Gallery = g; // reference for drag:drophit
+				                
+				                //Set the style on the proxy node, the count badge
+				                e.target.get('dragNode').setStyles({
+				                    height: '25px',
+				                    width: '25px'
+				                }).set('innerHTML', '<span>' + count + '</span>');
+				                
+				                //Offset the dragNode
+				                e.target.deltaXY = [25, 5];
+				                
+				                
+		                	} catch (ex) {
+		                		e.halt();
+		                	}
+	                }
+	                
+	                // activate targets
+	            }, this);
+            }
             
             
             /*
              * on drop
              */
-            handle = Y.DD.DDM.on('drag:drophit', function(e){
-            	var toXY;
-            	var parent = e.target.get('node').ancestor('section.gallery');
-                //get the imgs of the selected LIs.
-                var imgs = parent.all('.FigureBox.selected > figure > img');
-                var dropTarget = e.drop.get('node');
-                
-                /*
-                 * process the drop
-                 */
-                dropTarget = this.processDrop(imgs, dropTarget);
-                if(dropTarget.getXY){
-                    /*
-                     * animate drop
-                     */
-                    this.animateDrop(imgs, dropTarget.getXY());
-                }else {
-                	SNAPPI.multiSelect.clearAll(parent);
-                }
-                
-            }, this);
-            listeners.push(handle);
-        };
-        this.init();
-    };
-    
-    DragDrop.prototype = {
-        init : function(cfg){
-			var Y = SNAPPI.Y;
-            this._cfg = Y.merge(defaultCfg, cfg);
-            // plugin dropppables
-        },    	
+            if (!this.listen['drag:drophit']) {
+	            this.listen['drag:drophit'] = Y.DD.DDM.on('drag:drophit', 
+	            function(e){
+	            	try {
+	            		/*
+	            		 * drop selected from Gallery
+	            		 */
+		            	var toXY, gallery, imgs, dropTarget;
+		            	gallery = e.target.Gallery;
+		            	imgs = gallery.container.all('.FigureBox.selected > figure > img');
+		            	dropTarget = e.drop.get('node');
+		                /*
+		                 * process the drop
+		                 */
+		                dropTarget = this.processDrop(imgs, dropTarget);
+		                if(dropTarget.getXY){
+		                    this.animateDrop(imgs, dropTarget.getXY());
+		                }
+		                // gallery.clearAll();		// clearAll in processDrop()
+	            	} catch (e) {}
+	            }, this);
+			}
+        },	
         processDrop : function(nodeList, dropTarget){
-            // note: nodeList of LI wrapping IMG, dropTarget is LI
-            if (dropTarget) {
-                var done = true,
-                	dragNode, lastLI;
-                var _clearSelected = function(nodeList){
-                    nodeList.each(function(n, i, l){
-                        n.ancestor('.FigureBox').removeClass('selected');
-                    });
-                };
-                
-                if (dropTarget.Lightbox) {
-                	// try {
-                		// dropTarget = dropTarget.lightbox.Gallery.container.all('.FigureBox').pop();
-                	// }catch(e){
-                	// }
-                	done = dropTarget.Lightbox.processDrop(nodeList, _clearSelected);
-                } else if (dropTarget.Gallery) {
-                	// still need to initialize shot-gallery.Gallery
-                	done = dropTarget.Gallery.processDrop(nodeList, _clearSelected);
-                } 
-  				if (!done) Helpers.sectionBadge_ProcessDrop(dropTarget, nodeList);
-  				if (!done) Helpers.tags_ProcessDrop(dropTarget, nodeList);
-  				if (!done) Helpers.shotGroup_ProcessDrop(dropTarget, nodeList);
-                if (done) {
-                    _clearSelected(nodeList);
-                }
-                return dropTarget;
+            // note: nodeList ".FigureBox.selected > figure > img" , dropTarget is .drop
+            var done = true,
+            	dragNode, lastLI;
+            var _clearSelected = function(nodeList){
+                nodeList.each(function(n, i, l){
+                    n.ancestor('.FigureBox').removeClass('selected');
+                });
+            };
+            
+            if (dropTarget.Lightbox) {
+            	// try {
+            		// dropTarget = dropTarget.lightbox.Gallery.container.all('.FigureBox').pop();
+            	// }catch(e){
+            	// }
+            	done = dropTarget.Lightbox.processDrop(nodeList, _clearSelected);
+            } else if (dropTarget.Gallery) {
+            	// still need to initialize shot-gallery.Gallery
+            	done = dropTarget.Gallery.processDrop(nodeList, _clearSelected);
+            } 
+			if (!done) Helpers.sectionBadge_ProcessDrop(dropTarget, nodeList);
+			if (!done) Helpers.tags_ProcessDrop(dropTarget, nodeList);
+			if (!done) Helpers.shotGroup_ProcessDrop(dropTarget, nodeList);
+            if (done) {
+                _clearSelected(nodeList);
             }
+            return dropTarget;
         },
         animateDrop : function(nodeList, toXY){
             // nodeList of IMGs
@@ -243,6 +236,8 @@
             return node;
         }
 	}
+	
+	SNAPPI.DragDrop = new DragDrop();
 	
 	var Helpers = function(){};	
     /**
@@ -323,7 +318,6 @@
 		}
 	};
 	
-	SNAPPI.DragDrop = new DragDrop(); // singleton  
 })();    
 
 
