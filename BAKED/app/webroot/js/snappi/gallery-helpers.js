@@ -227,7 +227,7 @@
         	e.currentTarget.get('parentNode').all('li').removeClass('focus');
         	e.currentTarget.addClass('focus');	
         	// check display mode for filmstrip mode
-        	if (this.container.hasClass('one-row')) this.Gallery.setFilmstripWidth();
+        	if (this.Gallery.container.hasClass('one-row')) this.Gallery.setFilmstripWidth();
 		}
        
 	};

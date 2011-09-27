@@ -39,13 +39,6 @@ a {
 	float: right;
 }
 
-
-/*  deprecate, use alpha_b1 omega_b1 */
-.grid_16.wrapped {
-	width: 938px !important;
-	border: 1px solid transparent;
-}
-
 ul.inline {
 	font-size: 10pt;
 	xcursor: default;
@@ -343,9 +336,11 @@ section.gallery-header ul.thumb-size li.btn {
 /*
  * good
  */
-section.gallery-display-options nav.settings {
-	-webkit-border-radius: 5px;
+section.gallery-display-options nav.settings.grid_16 {
 	border: 1px solid #D2D2D2;
+	width: 938px;
+}
+section.gallery-display-options nav.settings {
 	-moz-border-radius: 5px 0px 5px 5px;
 	-webkit-border-radius: 5px 0px 5px 5px;
 	background: -moz-linear-gradient(bottom, #E2E6EB, #f5f5f5);
@@ -612,7 +607,121 @@ section.gallery.hiddenshots {
 section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
 	display: block;
 }
-/* ok to here ^^^ */
+
+/* preview photo */
+.FigureBox.PhotoPreview {
+	float: none;
+	margin: 0 !important;
+}
+.FigureBox.PhotoPreview figcaption {
+	overflow: hidden;	
+}
+.FigureBox.PhotoPreview.bp {
+	border: none !important;
+	padding: 0;
+}
+/* copied from section.gallery-display-options */
+.FigureBox.PhotoPreview figcaption .extras {
+	border: 1px solid #D2D2D2;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	background: -moz-linear-gradient(bottom, #E2E6EB, #f5f5f5);
+	background: -webkit-gradient(linear, center bottom, center top, from(#E2E6EB), to(#f5f5f5));
+	line-height: 20px !important;
+	font-size: 10pt;
+	overflow: hidden;
+	padding: 4px 10px;
+}
+.FigureBox.PhotoPreview figcaption .extras > li {
+	float:left;
+	list-style-type: none;
+	font-size: 10pt;
+	margin: 0px 2px;
+	height: 23px;
+	line-height: 23px;
+	cursor: default;
+}
+.FigureBox.PhotoPreview figcaption .extras li.btn {
+	background: #FFF;
+	border: 1px solid #D8D5D5;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;	
+	color: #494949;
+}
+.FigureBox.PhotoPreview figcaption .extras li.rating.btn {
+	width: 156px;
+}
+.FigureBox.PhotoPreview figcaption .extras li div.ratingGroup {
+	margin: 2px 5px 2px
+}
+.FigureBox.PhotoPreview .extras li.score {
+	font-size: 11px;
+	background: -moz-linear-gradient(bottom, #eeeeee, #fff);
+	background: -webkit-gradient(linear, center bottom, center top, from(#eeeeee), to(#fff));
+	border: 1px solid #e2e2e2;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	width: 25px;
+	height: 17px;
+	line-height: 17px;
+	text-align: center;
+	font-family: Arial, Helvetica, sans-serif;
+	cursor: default;
+}
+.FigureBox.PhotoPreview figcaption .extras li .sizes li.btn {
+	margin: -1px 2px;
+}
+.FigureBox.PhotoPreview figcaption .extras li.btn:hover, .FigureBox.PhotoPreview figcaption .extras li.btn.selected {
+	background: -moz-linear-gradient(bottom, #fca22f, #ffc374);	 
+	background: -webkit-gradient(linear, center bottom, center top, from(#fca22f), to(#ffc374));	border: 1px solid #cd7708;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	color: #fff;
+	border: 1px solid #CD7708;
+}
+.FigureBox.PhotoPreview figcaption .extras nav.settings {
+	margin-left:2px;
+}
+.FigureBox.PhotoPreview figcaption .extras.wide nav.settings {
+	-webkit-border-radius: 5px;
+	border: 1px solid #D2D2D2;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	background: -moz-linear-gradient(bottom, #E2E6EB, #f5f5f5);
+	background: -webkit-gradient(linear, center bottom, center top, from(#E2E6EB), to(#f5f5f5));
+	line-height: 20px !important;
+	font-size: 10pt;
+	overflow: hidden;	
+}
+.FigureBox.PhotoPreview figcaption .extras li.label {
+	xpadding: 4px 10px 0 4px;
+	font-size: 1.0em;
+	color: black;
+}
+.FigureBox.PhotoPreview div.hidden-shot {
+	background: url(../images/icon-hidden-shot-null.png) no-repeat scroll ;
+	width: 32px;
+	height: 18px;
+	cursor: pointer;
+}
+.FigureBox.PhotoPreview.ll div.hidden-shot {
+	bottom: 20px;
+}
+.FigureBox.PhotoPreview div.hidden-shot.c2 {
+	background: url(../images/icon-hidden-shot-2.png) no-repeat scroll ;
+}
+.FigureBox.PhotoPreview div.hidden-shot.c3 {
+	background: url(../images/icon-hidden-shot-3.png) no-repeat scroll ;
+}
+.FigureBox.PhotoPreview div.hidden-shot.c4 {
+	background: url(../images/icon-hidden-shot-4.png) no-repeat scroll ;
+}
+.FigureBox.PhotoPreview div.hidden-shot.c5 {
+	background: url(../images/icon-hidden-shot-5.png) no-repeat scroll ;
+}
+.FigureBox.PhotoPreview div.hidden-shot.c6 {
+	background: url(../images/icon-hidden-shot-6.png) no-repeat scroll ;
+}
 
 
 
@@ -1011,13 +1120,10 @@ section.filmstrip .gallery-header {
 	overflow: hidden;
 }
 section.filmstrip .gallery-header ul {
-	xoverflow:hidden;
-	xdisplay: inline-block;
 	line-height: 24px;
 	font-size: 10pt;
 }
 section.filmstrip .gallery-header > ul > li {
-	padding-top: 3px;
 }
 section.filmstrip .gallery-header .toolbar > div {
 	display:inline-block;
@@ -1096,12 +1202,16 @@ section.filmstrip .gallery-header ul.thumb-size li.btn {
 /*	height needs to expand to accommodate Hscrollbar*/
 	height: auto;
 	display:inline-block;
-	min-height: 39px;
 }
 .gallery .filmstrip-wrap .filmstrip > .container {
 	display:inline-block;
+/*	this value must be set in javascript to allow .container.one-row */
+	width: auto;	
 }
-
+.gallery .filmstrip .container.one-row {
+	height: auto;
+	min-height: 39px;
+}
 .gallery.photo.filmstrip {
 	border:1px solid #bdbcbd;
 	-webkit-border-radius:5px;
@@ -1115,25 +1225,36 @@ section.filmstrip section.gallery.lightbox {
 	padding: 0;
 	margin-bottom: 1px;
 }
-.gallery.lightbox div.container {
-/*	this value must be set in javascript to accomodate the count of thumbnails*/
-	width: auto;
+#lightbox .filmstrip-wrap .filmstrip {
+	min-height: 39px;
 }
 #dialog-hidden-shot {
 	width: 660px;
 }
-section#shot-gallery.filmstrip, #dialog-hidden-shot > section.filmstrip {
+#dialog-hidden-shot > section.filmstrip {
 	width: 660px;
 	border-radius: 0 0 10px 10px;
 }
+/* navFilmstrip */
 
-section#shot-gallery section.filmstrip {
-	xborder-radius: 0 0 10px 10px;
+
+/* shotGallery must fit INSIDE grid_11 */
+#shot-gallery.filmstrip {
+	border-radius: 0 0 10px 10px;
 }
-section#shot-gallery .gallery-header {
+#shot-gallery .gallery.photo.filmstrip {
+/*	640px less 10px margin */
+	width: 620px;
+}
+#shot-gallery .gallery-header {
 	clear: both;
 }
-
+#shot-gallery.minimize .gallery-header {
+	height: 10px;
+}
+#shot-gallery.minimize .filmstrip-wrap {
+	height: 0;
+}
 
 
 .gallery .filmstrip .FigureBox.Photo.lbx-tiny {

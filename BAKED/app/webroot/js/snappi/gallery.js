@@ -766,16 +766,30 @@
          */
         setFilmstripWidth: function() {
         	var parent = this.container.ancestor('.filmstrip');
-        	try {
-        		// set width in pixels to render as 1 row HScroll 
-				var count = this.auditionSH.count();
-				var width = parent.one('.FigureBox').get('offsetWidth');
-				var containerWidth = Math.max(width*count, parent.get('clientWidth'));
-				this.container.setStyles({
-					width: (containerWidth)+'px',
-					height: 'auto'	
-				}); 	
-        	} catch (e) {}
+        	var count = this.auditionSH.count();
+			var width = parent.one('.FigureBox').get('offsetWidth');
+			var containerWidth = Math.max(width*count, parent.get('clientWidth'));
+			this.container.setStyles({
+				width: (containerWidth)+'px',
+				height: 'auto'	
+			});         	
+			// recheck thumbnail offsetWidth in case final value not immediately loaded
+        	var delayed = new Y.DelayedTask( function() {
+	        	try {
+	        		// set width in pixels to render as 1 row HScroll 
+					var recheck = parent.one('.FigureBox').get('offsetWidth');
+					if (width != recheck) {
+						var containerWidth = Math.max(recheck*count, parent.get('clientWidth'));
+						this.container.setStyles({
+							width: (containerWidth)+'px',
+							height: 'auto'	
+						}); 	
+					}
+	        	} catch (e) {}								
+			}, this);
+			// executes after XXXms the callback
+			delayed.delay(100);
+
         },
         /*
          * scroll ".gallery .filmstrip" to show focus in center
