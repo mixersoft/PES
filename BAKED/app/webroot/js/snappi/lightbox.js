@@ -1398,7 +1398,7 @@
 				this.Gallery.container.setStyles({
 					width: (width*count)+'px',
 					height: 'auto'	
-				});
+				}).addClass('one-row');
 				this.Gallery.container.ancestor('.filmstrip-wrap').removeClass('hide');
 				if (e) e.currentTarget.addClass('focus');
 			},
@@ -1418,7 +1418,7 @@
 				this.Gallery.container.setStyles({
 					width: 'auto',
 					height: height	
-				});
+				}).removeClass('one-row');;
 				this.Gallery.container.ancestor('.filmstrip-wrap').removeClass('hide');
 				e.currentTarget.addClass('focus');
 			},

@@ -12,16 +12,16 @@ if (isset($this->viewVars['jsonData']['castingCall']['CastingCall']['Auditions']
 	);
 ?>
 <section id="nav-filmstrip" class="filmstrip">
-	<section class="gallery-header">
+	<section class="gallery-header grid_16">
 		<ul class="inline">
-			<li class="grid_2 alpha-b1"><h3>Filmstrip <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li>
-			<li class="grid_8">
+			<li><h3>Filmstrip <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li>
+			<li>
 				<nav class="toolbar">
-					<h1 class="count"><?php echo $count ?> Snaps</h1>
+					<h1 class="count"></h1>
 				</nav>
 			</li>			
-			<li class="grid_6 omega-b1">
-				<nav class="window-options right">
+			<li class="right">
+				<nav class="window-options ">
 					<ul class="thumb-size inline">
 						<li class="label">Size</li>
 						<?php 

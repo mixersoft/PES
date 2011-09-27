@@ -33,10 +33,10 @@ if (Configure::read('controller.action')=='lightbox') {
 	);
 ?>
 <section class="lightbox drop container_16 hide" id="lightbox">
-	<section class="gallery-header">
+	<section class="gallery-header grid_16">
 		<ul class="inline">
-			<li class="grid_2"><h3>My Lightbox <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li>
-			<li class="grid_8">
+			<li><h3>My Lightbox <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li>
+			<li>
 				<nav class="toolbar">
 					<div>
 						<ul class="inline menu-trigger">
@@ -46,11 +46,11 @@ if (Configure::read('controller.action')=='lightbox') {
 							<li class="create">Create</li>
 						</ul>
 					</div>
-					<h1 class="count"><?php echo $count ?> Snaps</h1>
+					<h1 class="count"></h1>
 				</nav>
 			</li>			
-			<li class="grid_6">
-				<nav class="window-options right">
+			<li class="right">
+				<nav class="window-options">
 					<ul class="thumb-size inline">
 						<li class="label">Size</li>
 						<?php 

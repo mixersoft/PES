@@ -242,15 +242,6 @@
 	        }; 
 	        
 	        switch (_cfg.ID_PREFIX) {
-	        case 'lightbox-':
-	        	// render manually to enforce LIMIT
-	        	this.render(_cfg);
-	        	// if (this.container.getStyle('width') != 'auto') {
-	        		// this.setFilmstripWidth();
-	        	// };
-	        	// this.scrollFocus( cfg.uuid );
-	        	this.container.ancestor('.filmstrip-wrap').removeClass('hidden');
-	        	break;
 	        case 'uuid-':
 	        	this.render(_cfg); 
 	        	var paging = SNAPPI.Paginator.paginate_PhotoGallery(this);
@@ -260,12 +251,19 @@
 	        	}
 	        	this.restoreState();	// photoRolls have state, but filmstrips do not.
 	        	var selector = '.FigureBox > figure > img';
+	        	break;	        	
+	        case 'lightbox-':
+	        	this.container.addClass('one-row'); // these are all filmstrips, init in filmstrip mode
+	        	this.render(_cfg);
+	        	// this.scrollFocus( cfg.uuid );
+	        	this.container.ancestor('.filmstrip-wrap').removeClass('hidden');
 	        	break;
-	        case 'nav-': 		// nav-filmstrip
+	        case 'nav-': 		
 	        case 'shot-':
 	        case 'hiddenshot-':
+	        	// TODO: set one-row from session, profile
+	        	this.container.addClass('one-row'); // these are all filmstrips, init in filmstrip mode
 	        	this.render(_cfg);
-				// this.setFilmstripWidth();
 				this.scrollFocus( cfg.uuid );
 				this.container.ancestor('.filmstrip-wrap').removeClass('hidden');
 	        	break;
@@ -274,6 +272,7 @@
 	        }
 	        
 	        if (_cfg.draggable) SNAPPI.DragDrop.pluginDelegatedDrag(this.container, 'img.drag');
+	        if (_cfg.droppable) SNAPPI.DragDrop.pluginDrop(this.node);
 	        // start Gallery listeners
 	        if (this._cfg.listeners) this.listen(true, this._cfg.listeners);
             // if (SNAPPI.DEBUG_MODE) SNAPPI.debug.showNodes('#content div, .FigureBox');	        
@@ -356,41 +355,35 @@
             /*
              * reuse or create LIs
              */
+            var thumbCfg = {};
+            if (this.node.hasClass('hiddenshots')) thumbCfg = {	showHiddenShot : false	}
             if (nlist.size()) {
-                // if UL>LIs exist, reuse
-            	nlist.each(function(li, i, l){
+                // if .FigureBox exist, reuse
+            	nlist.each(function(n, i, l){
             		if (i >= perpage  ) {
             			// hide extras
-            			li.addClass('hide');
+            			n.addClass('hide');
             		} else if (Y.Lang.isNumber(this._cfg.start) && this._cfg.end) {
 						var audition = this.auditionSH.get(offset+i);
 						if (audition && offset+i < this._cfg.end) { 
-						    this.reuseThumbnail(li, audition);
-						    li.removeClass('focus');
-						    if (audition.id == focusUuid) li.addClass('focus');
+						    this.reuseThumbnail(audition, n, thumbCfg);
+						    n.removeClass('focus');
+						    if (audition.id == focusUuid) n.addClass('focus');
 						} else {
-							li.addClass('hide');
+							n.addClass('hide');
 						}
-            		} else {
-            			// on first bind with cakephp render, 
-            			// we match li.id with audition.id and add li.audition
-            			// TODO: deprecate when we move to JSON/JS .FigureBox rendering
-//	                	var id = li.get('id');	
-//	                	if (this._cfg.ID_PREFIX) id = id.replace(this._cfg.ID_PREFIX, '');
-//	                    var audition = this.auditionSH.get(id);
-//	                    if (audition) 
-//	                        this.bindLI(li, audition);
             		}
                 }, this);
             }
             // otherwise create new LIs, or if there is not enough
             var li, audition, i = offset + nlist.size(), limit = offset + perpage;
             var lastLI;
+            
             while (i < limit) {
                 audition = this.auditionSH.get(i++);
                 if (audition == null) 
                     break;
-                li = this.createThumbnail(audition, null);
+                li = this.createThumbnail(audition, thumbCfg);
                 if (audition.id == focusUuid) li.addClass('focus');
 
                 lastLI = li;
@@ -409,12 +402,8 @@
 		            }, this);
 	            } catch (e) {}
             }
-            
-            if (this.container.get('parentNode').hasClass('filmstrip')) {
-	        	if (this.container.getStyle('width') != 'auto') {
-	        		this.setFilmstripWidth();
-	        	};            	
-            }
+            this.updateCount();
+            if (this.container.hasClass('one-row')) this.setFilmstripWidth();
             return lastLI;
         },
         /**
@@ -445,9 +434,8 @@
         		} else return label.substr(0,length-3)+'...';
         	} else return label;
         }, 
-        reuseThumbnail: function(article, audition){
-        	article.Thumbnail.reuse(audition);
-        	return;
+        reuseThumbnail: function(audition, node, cfg){
+        	node.Thumbnail.reuse(audition, node, cfg);
         },
         createThumbnail: function(audition, cfg){
         	cfg = SNAPPI.Y.merge(this._cfg, cfg);	// copy
@@ -856,9 +844,15 @@
 			return lastLI;
 		},
 		updateCount: function() {
-			var count = this.auditionSH.count();
+			var count;
+			if (this._cfg.pageCount > 1) {
+				// use Total if the gallery is paged	
+				count = this._cfg.total;
+			} else count = this.auditionSH.count();
 			var label = count==1 ? '1 Snap' : count+" Snaps"; 
-			this.node.one('.header .count').set('innerHTML', label);
+			var count = this.node.get('parentNode').one('.gallery-header .count')
+			if (count) 
+				count.set('innerHTML', label);
 		},        
         up : function() {
         	var next,

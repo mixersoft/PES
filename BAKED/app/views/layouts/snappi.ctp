@@ -142,7 +142,7 @@
 			<li action='photo_privacy'>Privacy...</li>
 		</ul>
 	</div>	
-	<div id="menu-pagemaker-selected-create-markup" class="menu yui3-aui-overlaycontext-hidden">
+	<div id="menu-pagemaker-selected-create-markup" class="menu yui3-aui-overlaycontext-hidden hide">
 		<ul>
 			<li action='create_pagegallery' >
 				<a>Create PageGallery</a>

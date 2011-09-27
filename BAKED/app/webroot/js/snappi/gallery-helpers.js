@@ -22,14 +22,32 @@
  */
 
 (function() {
-	SNAPPI.namespace('SNAPPI.Factory');
 	var Y = SNAPPI.Y;
     var GalleryFactory = function(){};
-    
+    SNAPPI.namespace('SNAPPI.Factory');
+    SNAPPI.Factory.Gallery = GalleryFactory;
     /*
      * static methods
      */
-    
+    // DEFAULT handlers for Gallery class. move to SNAPPI.Gallery?
+    GalleryFactory.actions = {
+    	setView: function(g, view) {
+    		var parent = g.node.get('parentNode');
+    		switch(view) {
+    			case 'minimize':  
+	        		parent.addClass('minimize');
+	        		// gallery.container.addClass('one-row');
+	        		parent.one('.gallery-header > ul').addClass('hide');      			
+	    			break;
+    			case 'filmstrip': 
+	        		parent.removeClass('minimize');
+	        		// gallery.container.addClass('one-row');
+	        		parent.one('.gallery-header > ul').removeClass('hide');
+	        		break;
+    			case 'maximize':  break;
+    		}
+    	},
+    }
     /**
      * attach gallery.node and gallery.container
      */
@@ -208,10 +226,8 @@
         	this.Gallery.renderThumbSize(thumbSize);
         	e.currentTarget.get('parentNode').all('li').removeClass('focus');
         	e.currentTarget.addClass('focus');	
-        	// check display mode for filmstrip
-        	if (this.Gallery.container.getStyle('width') != 'auto') {
-        		this.Gallery.setFilmstripWidth();
-        	};
+        	// check display mode for filmstrip mode
+        	if (this.container.hasClass('one-row')) this.Gallery.setFilmstripWidth();
 		}
        
 	};
@@ -279,7 +295,8 @@
 			showExtras: true,
 			showHiddenShot: false,
 			hideHiddenShotByCSS: false,	
-			draggable: true,	
+			draggable: true,
+			droppable: true,	
 			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick', 'ThumbsizeClick']
 		},
 		build: GalleryFactory.Photo.build,
@@ -326,10 +343,10 @@
 	'		<section class="gallery photo filmstrip hiddenshots grid_11 alpha-b1 omega-b1"> ' +
 	'			<div class="filmstrip-wrap hidden"><div class="filmstrip"><div class="container"></div></div></div> ' +
 	'		</section>	 ' +
-	'		<section class="gallery-header grid_11 alpha-b1 omega-b1"> ' +
+	'		<section class="gallery-header alpha-b1 grid_11 omega-b1"> ' +
 	'			<ul class="inline"> ' +
-	'				<li class="grid_2 alpha"><h3><img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li> ' +
-	'				<li class="grid_3"> ' +
+	'				<li><h3><img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li> ' +
+	'				<li> ' +
 	'					<nav class="toolbar"> ' +
 	'						<div> ' +
 	'							<ul class="inline menu-trigger"> ' +
@@ -339,8 +356,8 @@
 	'						<h1 class="count">0 Snaps</h1> ' +
 	'					</nav> ' +
 	'				</li>		 ' +	
-	'							<li class="grid_6 omega"> ' +
-	'								<nav class="window-options right"> ' +
+	'							<li class="right"> ' +
+	'								<nav class="window-options"> ' +
 	'									<ul class="thumb-size inline"> ' +
 	'										<li class="label">Size</li> ' +
 	'										<li size="sq" class="btn"><img alt="" src="/css/images/img_1.gif"></li><li size="tn" class="btn "><img alt="" src="/css/images/img_2.gif"></li><li size="lm" class="btn focus"><img alt="" src="/css/images/img_3.gif"></li>	 ' +
@@ -373,7 +390,6 @@
 		handle_ThumbsizeClick: GalleryFactory.ShotGallery.handle_ThumbsizeClick,
 	}
 	
-	SNAPPI.Factory.Gallery = GalleryFactory;
 	
 	var GalleryHelper = function(cfg) {	};
 	

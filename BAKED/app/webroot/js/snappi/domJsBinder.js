@@ -37,135 +37,7 @@
     
     var Y = SNAPPI.Y;
     
-    var DomJsBinder = function(cfg){
-    	/*
-    	 * /photos/home preview image
-    	 */
-    	this.bindSelected2Preview = function(selected) {
-    		var Y = SNAPPI.Y;
-    		var filmstrip;
-    		if (this instanceof SNAPPI.Gallery) filmstrip = this;
-    		else filmstrip = Y.one('section#nav-filmstrip .gallery.photo.filmstrip').Gallery;
-//    		var castingCall = PAGE.jsonData.castingCall;
-    		var castingCall = filmstrip.castingCall;
-    		var parent = Y.one('#preview');
-    		if (!parent) return;
-    		var uuid, size, auditionSH;
-    		size = parent.getAttribute('size');
-    		if (selected)  {
-    			parent.setAttribute('uuid', selected.id);
-    			uuid = selected.id;
-    		} else {
-	    		uuid  = parent.getAttribute('uuid');
-    		}
-            // get auditions from global or raw json castingCall
-    		if (filmstrip.auditionSH) {
-    			selected = filmstrip.auditionSH.get(uuid);
-    		} else {
-    			// this should already have been parsed in bindAuditions2Filmstrip()
-	            var providerName = filmstrip._cfg.PROVIDER_NAME;
-	            filmstrip.auditionSH = SNAPPI.Auditions.parseCastingCall(castingCall, providerName);
-	            selected = filmstrip.auditionSH.get(uuid);
-    		}
-            
-            // set rating in ul.photo-header
-            var rating = Y.one('div#photos-home-rating');
-            if (rating) {
-            	// update rating component
-            	SNAPPI.Rating.attach(rating, {
-            		id:'photos-home-ratingGroup', 
-            		uuid: uuid, 
-            		v: selected.rating
-            		});
-            	// update selected.bindTo
-            	if (rating.audition) {
-            		// unbind old audition
-            		rating.audition.bindTo.splice(rating.audition.bindTo.indexOf(rating), 1);
-            	}
-            	rating.audition = selected;
-            	selected.bindTo.push(rating);
-            } else {
-            	// init Rating in div.photo-header
-            	var n = Y.one('#set-rating');
-            	try {
-            		var cfg = {
-            				id : "photos-home-rating",
-            				v : selected.rating,
-            				uuid: selected.id,
-            				'setDbValueFn': SNAPPI.AssetRatingController.postRating,
-            				listen: true
-            		};
-            		SNAPPI.Rating.attach(n, cfg);
-                	n.Rating.node.audition = selected;
-                	selected.bindTo.push(n.Rating.node);            		
-            	} catch(e) {
-            	}
-            	n.removeClass('hide');            	
-            }
-            
-            // set size buttons
-            try {
-            	var ccid = (filmstrip.auditionSH.count() > 1) ? castingCall.CastingCall.ID : null;
-            } catch (e) {}
-    		var href, j=0, sizes = [{ key: 'sq', label: 'Square' }, 
-    		                        { key: 'tn', label: 'Thumbnail' }, 
-    		                        { key: 'bs', label: 'Small' }, 
-    		                        { key: 'bm', label: 'Medium' }, 
-    		                        { key: 'bp', label: 'Preview' }];
-    		parent.all('ul.sizes > li.button').each(function(n,i,l){
-    			// reuse existing buttons
-    			href = '/photos/home/'+uuid+'/size:'+sizes[i].key;
-    			if (ccid) href += '?ccid='+ccid;
-    			n.one('a').set('href', href);
-    			j=i+1;
-    		});
-    		var ul = parent.one('ul.sizes ');
-    		for (j; j<sizes.length; j++) {
-    			// create buttons if missing
-    			href = '/photos/home/'+uuid+'/size:'+sizes[j].key;
-    			if (ccid) href += '?ccid='+ccid;
-    			ul.append(ul.create('<li class="button"><a href="'+href+'" onclick="SNAPPI.helper.Session.savePreviewSize(\'' + sizes[j].key + '\')">'+sizes[j].label+'</a></li>'));
-    		}
-            
-            
-            // set preview image
-    		try{
-    			var previewSize = PAGE.jsonData.profile.previewSize;
-        		if(previewSize){
-        			size = previewSize;
-        		}
-    		}catch(e){}
-    		
-    		var src = selected.getImgSrcBySize(selected.urlbase + selected.src, size);
-    		var preview = parent.one('div.preview');
-    		var previewImg = preview.one('img');
-    		if (!previewImg) {
-    			// create preview img
-    			var previewImg = parent.create('<img src="" title="'+selected.label+'">'); 
-    			preview.append(previewImg);
-    			// plugin loadingmask
-    			if (!preview.loadingmask) {
-    				preview.plug(Y.LoadingMask, {
-    					strings: {loading:''}, 	// BUG: A.LoadingMask
-    					target: previewImg,
-    					end: null
-    				});
-    				// BUG: A.LoadingMask does not set target properly
-    				preview.loadingmask._conf.data.value['target'] = previewImg;
-    				preview.loadingmask.overlayMask._conf.data.value['target'] = preview.loadingmask._conf.data.value['target'];
-    			}    			
-    			if (!preview.listen) preview.listen = {};
-    			preview.listen['imgOnLoad'] = previewImg.on('load', function(e,i,o){
-    				preview.loadingmask.hide();
-    			});
-    		}
-    		preview.loadingmask.show();  
-    		previewImg.set('src', src).set('title', selected.label);
-    		// set Details
-
-    	};
-    	
-    };
+    var DomJsBinder = function(cfg){};
     
     DomJsBinder.prototype = {
         _cfg: null,
@@ -181,7 +53,8 @@
         	/*
         	 * update div#hiddenshots, from filmstrip
         	 */
-        	SNAPPI.domJsBinder.bindSelected2Preview.call(gallery, selected);
+        	SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected);
+        	// SNAPPI.domJsBinder.bindSelected2Preview.call(gallery, selected);
         	
         	var shotGallery = SNAPPI.Gallery.find['shot-'];
         	if (shotGallery) {

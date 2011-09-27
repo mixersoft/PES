@@ -50,34 +50,15 @@ if (empty($this->passedArgs['wide'])) {
 		</dl>
 	</div>
 <?php	$this->Layout->blockEnd();	} ?>	
-<?php echo $this->element('filmstrip') ?>
-<div class="assets main-div placeholder">
-<div class='element-roll preview'>
-	<div id='preview' class='photo placeholder' <?php $size = !empty($this->passedArgs['size']) ?  $this->passedArgs['size'] : 'bp';  echo "size='{$size}' uuid='".AppController::$uuid."'"; ?> >
-		<ul class='inline photo-header'>
-			<li class="button" onclick="return false;">actions</li>
-			<li class="button" onclick="return false;">share</li>
-			<li id='set-rating' class="button hide" onclick="return false;"></li>
-		</ul>
-		<ul class='sizes inline'>
-			<li><h3 style='display: inline'>Sizes:</h3></li>
-		</ul>
-		<div class='preview  grid_11'></div>
-		<?php echo $this->element('shotGallery') ?>
+<?php echo $this->element('navFilmstrip') ?>
+<section class="photo">
+	<div class="preview grid_11">
+		<div class='preview-body' <?php $size = !empty($this->passedArgs['size']) ?  $this->passedArgs['size'] : 'bp';  echo "size='{$size}' uuid='".AppController::$uuid."'"; ?> >
+			<?php echo $this->element('shotGallery') ?>
+		</div>		
 	</div>
-</div>
-<div id='hiddenshots' class='filmstrip placeholder'><h3>Hidden Shots</h3><ul></ul></div>
-<?php
-	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'groups', '?'=>array('preview'=>1)));
-	echo "<div id='groups-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
-?>	
-<h3>Details</h3>
-<blockquote>
-<!-- I am not sure if it's good to put more info here, so I add styles in tag temporarily. I will add them in css after we fix the node -->
-<div><h4 style="float:left;">History</h4></div>
-
-</blockquote>
-	<?php echo $this->element('tags', array('domId'=>'assets-tags', 'data'=>&$asset))?>
+	<aside class="related-content grid_5">
+		<section id="tag-cloud">
 	<?php	// tagCloud
 		$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show', 'filter'=>'Asset');
 		$xhrFrom = Configure::read('controller.xhrFrom');
@@ -85,56 +66,23 @@ if (empty($this->passedArgs['wide'])) {
 		$ajaxSrc = Router::url($xhrSrc);
 		echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
 	?>	
-
+	<?php echo $this->element('tags', array('domId'=>'assets-tags', 'data'=>&$asset))?>
+		</section>
+		<section id="circles">
+	<?php
+		$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'groups', '?'=>array('preview'=>1)));
+		echo "<div id='groups-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
+	?>			
+		</section>
+	</aside>
+	
+<h3>Details</h3>
 	<?php
 		$xhrSrc = array('plugin'=>'', 'action'=>'discussion', $this->passedArgs[0]);
 		$ajaxSrc = Router::url($xhrSrc);	
 		echo $this->element('comments/discussion-fragment', array('ajaxSrc'=>$ajaxSrc));
 	?>
-</div>
-
-
-<div class="related"><?php if (!empty($data['Collection'])):?>
-<h3><?php printf(__('Related %s', true), __('Collections', true));?></h3>
-<table cellpadding="0" cellspacing="0">
-	<tr>
-		<th><?php __('Id'); ?></th>
-		<th><?php __('Title'); ?></th>
-		<th><?php __('User Id'); ?></th>
-		<th><?php __('Description'); ?></th>
-		<th><?php __('Markup'); ?></th>
-		<th><?php __('Src'); ?></th>
-		<th><?php __('LastVisit'); ?></th>
-		<th><?php __('Created'); ?></th>
-		<th><?php __('Modified'); ?></th>
-		<th class="actions"><?php __('Actions');?></th>
-	</tr>
-	<?php
-	$i = 0;
-	foreach ($data['Collection'] as $collection):
-	$class = null;
-	if ($i++ % 2 == 0) {
-		$class = ' class="altrow"';
-	}
-	?>
-	<tr <?php echo $class;?>>
-		<td><?php echo $collection['id'];?></td>
-		<td><?php echo $collection['title'];?></td>
-		<td><?php echo $collection['owner_id'];?></td>
-		<td><?php echo $collection['description'];?></td>
-		<td><?php echo $collection['markup'];?></td>
-		<td><?php echo $collection['src'];?></td>
-		<td><?php echo $collection['lastVisit'];?></td>
-		<td><?php echo $collection['created'];?></td>
-		<td><?php echo $collection['modified'];?></td>
-		<td class="actions"><?php echo $this->Html->link(__('View', true), array('controller' => 'collections', 'action' => 'home', $collection['id'])); ?>
-		<?php echo $this->Html->link(__('Edit', true), array('controller' => 'collections', 'action' => 'edit', $collection['id'])); ?>
-		<?php echo $this->Html->link(__('Delete', true), array('controller' => 'collections', 'action' => 'delete', $collection['id']), null, sprintf(__('Are you sure you want to delete # %s?', true), $collection['id'])); ?>
-		</td>
-	</tr>
-	<?php endforeach; ?>
-</table>
-	<?php endif; ?></div>
+</section>
 	
 <?php 
 		$this->Layout->blockStart('lightbox'); 
@@ -154,12 +102,6 @@ if (empty($this->passedArgs['wide'])) {
 		};
 		var fs = new SNAPPI.Gallery(filmstripCfg);
 		
-		var shotGallery = new SNAPPI.Gallery({
-			type: 'ShotGallery'
-		});
-		SNAPPI.DragDrop.pluginDrop(shotGallery.node);
-		
-		// SNAPPI.domJsBinder.bindAuditions2Filmstrip();
 		SNAPPI.domJsBinder.bindSelected2Page(fs);
 		SNAPPI.xhrFetch.init(); 
 	

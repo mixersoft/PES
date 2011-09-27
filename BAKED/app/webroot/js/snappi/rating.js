@@ -106,7 +106,7 @@
 		SNAPPI.AssetRatingController.postRating(v, null, r, options);
 		return;
 	};	
-	Rating.pluginRating = function(container, mixed, v) {
+	Rating.pluginRating = function(container, mixed, v, cfg) {
 		var thumbnail, uuid;
 		if (mixed instanceof SNAPPI.Thumbnail) {
 			parent = mixed.node;
@@ -134,9 +134,10 @@
 			setDbValueFn : Rating.postRatingChangeAndCleanup,
 			listen : false
 		};
+		ratingCfg = SNAPPI.Y.merge(ratingCfg, cfg);
 		Rating.attach(parent, ratingCfg);
-		if (parent.one('img')) parent.one('img').addClass('rating' + v);
-		if (parent.one('div.thumb-label')) parent.one('div.thumb-label').addClass('hide');
+		// if (parent.one('figure > img')) parent.one('figure > img').addClass('rating' + v);
+		// if (parent.one('div.thumb-label')) parent.one('div.thumb-label').addClass('hide');
 	};
 
 	/*
@@ -251,11 +252,11 @@
 		if (!Rating.listen[detach]) {
 			Rating.listen[detach] = delegateContainer.delegate('click', Rating.handleClick, selector);	
 		}
-		
 		// Y.one(delegateContainer).delegate("mouseover",
 		// Rating.handleMouseOver, selector);
 		// Y.one(delegateContainer).delegate("mouseout",
 		// Rating.handleMouseOut, selector);
+		return Rating.listen[detach];
 	};
 	Rating.stopListeners = function(delegateContainer) {
 		if (!delegateContainer instanceof Y.Node) {

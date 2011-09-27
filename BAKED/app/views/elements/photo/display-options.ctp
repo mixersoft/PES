@@ -97,7 +97,7 @@
 		$this->Layout->output($this->viewVars['inner_DisplayOptions_for_layout']);
 	} else {  ?>      	
 <section class="gallery-display-options container_16 hide">
-	<nav class="settings grid_16 wrapped">
+	<nav class="settings grid_16">
 		<?php $this->Layout->output($this->viewVars['inner_DisplayOptions_for_layout']); ?>
 	</nav>
 </section>
