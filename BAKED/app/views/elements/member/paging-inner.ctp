@@ -24,7 +24,7 @@ switch ($THUMBSIZE) {
 $PREVIEW_LIMIT = $isPreview ? 6 : false;
 $DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
 ?>
-<section class="<?php if ($isWide) echo "wide "; ?>gallery person container_16">
+<section class="<?php if ($isWide) echo "wide "; ?>gallery person">
 <?php if ($isPreview) { ?>	
 	<h1 class='count'>
 		<?php

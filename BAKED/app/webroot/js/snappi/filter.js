@@ -57,6 +57,7 @@
     		if (!this.container) {
     			// this.container = Y.one('#page-filters');	
     			this.container = Y.one('#display-option-sub');
+    			if (!this.container) return;
     		}    		
     		if (!filters) {
     			// disable for manoj HTML

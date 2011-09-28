@@ -128,7 +128,8 @@ class AppController extends Controller {
 			$xhrFrom['view']= isset($xhrFromParts[3]) ? $xhrFromParts[3] : null;
 			unset($this->params['url']['xhrfrom']);
 		} else {
-			$xhrFrom['keyName'] = Configure::read("lookup.keyName.".Configure::read('controller.name')); // keyName
+			// $xhrFrom['keyName'] = Configure::read("lookup.keyName.".Configure::read('controller.name')); // keyName
+			$xhrFrom['keyName'] = Configure::read("controller.label"); // keyName
 			$xhrFrom['uuid'] = AppController::$uuid;  // add as ? 'src'=>implode('~',$xhrRoot)				// uuid
 			$xhrFrom['action'] = null; // action (optional)
 			$xhrFrom['view'] = null; 
@@ -328,7 +329,7 @@ class AppController extends Controller {
 	
 	function prepareRequest() {
 		$this->__cacheAuth();
-		$this->__cacheControllerAttrs();
+		$this->__cacheControllerAttrs();	
 		$this->__cacheClickStream();
 		$this->__setXhrFrom();			
 		$this->__moveParamToNamed();
@@ -341,7 +342,7 @@ class AppController extends Controller {
 		Configure::write('passedArgs.complete', $this->passedArgs);
 		Configure::write('passedArgs.min', array_diff_key($this->passedArgs, array_flip(array('perpage', 'page', 'sort', 'direction', 'filter'))));
 		if (!$this->Session->check('stagepath_baseurl')) Session::write('stagepath_baseurl', '/'.Configure::read('path.stageroot.httpAlias').'/');
-		
+		// $this->viewVars['jsonData']['named'] = $this->params['named'];
 		$this->helpers[] = 'Layout';
 	}
 	
@@ -388,8 +389,10 @@ class AppController extends Controller {
 //			$this->passedArgs[0] = AppController::$uuid;
 			
 			$controllerAttr = array(
-				'name'=>$this->name, 
+				'name'=>$this->name,
+				// deprecate keyName, use label/displayName instead 
 				'keyName'=>Configure::read("lookup.keyName.{$this->name}"), 
+				'label'=>$this->displayName, 
 				'alias'=>$this->getControllerAlias(),
 				'titleName'=>isset($this->titleName) ? $this->titleName : '',
 				'action'=>$this->action,
@@ -402,13 +405,13 @@ class AppController extends Controller {
 			
 			$extras = array( 
 				'class'=>Inflector::singularize($this->name),		// ?? is this still used? replaced by keyName? 
-				'label'=>isset($this->displayName) ? $this->displayName : '', 
+				// 'label'=>isset($this->displayName) ? $this->displayName : '', 
 				'isWide'=>!empty($this->params['named']['wide']),
 			);
 			$controllerAttr = array_merge($controllerAttr, $extras);
 			
 			Configure::write('controller', $controllerAttr);	
-			$this->keyName = $controllerAttr['keyName'];	// save for easy usage inside controller 
+			$this->keyName = $controllerAttr['label'];	 
 //			$this->viewVars['jsonData']['controller'] = $controllerAttr;	// moved to layout		
 		}	
 	}
@@ -426,39 +429,46 @@ class AppController extends Controller {
 	 */
 	function __cacheClickStream() {
 		if (!AppController::$uuid) return;  // all page, no clickstream update
+		if ($this->RequestHandler->isAjax()) return; // don't update ajax requests
+		
 		$controllerAttr = Configure::read('controller');
-		$trail_uuid = Session::read("lookup.trail.{$controllerAttr['keyName']}.uuid");
-		if (in_array($controllerAttr['name'], array('Users', 'Groups', 'Assets', 'Tags', 'Events', 'Collections'))){
+		
+		if (in_array($controllerAttr['name'], array('Users', 'Groups', 'Assets', 'Tags', 'Collections'))){
+			$trail_uuid = Session::read("lookup.trail.{$this->keyName}.uuid");
 			if ($trail_uuid !== AppController::$uuid) 
 			{
 				// update trail with new breadcrumb
-				$newCrumb = array('uuid'=>AppController::$uuid, 'classLabel'=>$this->displayName);
-				Session::write("lookup.trail.{$controllerAttr['keyName']}", $newCrumb);
+				$newCrumb = array('uuid'=>AppController::$uuid, 'classLabel'=>$controllerAttr['label']);
+				Session::write("lookup.trail.{$this->keyName}", $newCrumb);
 			}
 		}
 		// cache nav location in session
-		// displayName == $controllerAttr['label']
-		$titleName = ($controllerAttr['action'] != 'all') ? $controllerAttr['titleName'] : 'Explore';
-		switch ($titleName) {
+		// displayName == $controllerAttr['label'] == Me, Person, Group, Photo/Snap, Tag (section header)
+		// titleName = Me, People, Groups, Tags
+		$navPrimary = ($controllerAttr['action'] != 'all') ? $this->keyName : 'Explore';
+		if ($navPrimary == "Tag") {
+			$context = array_shift(Session::read("lookup.context"));
+			$navPrimary = isset($context['classLabel']) ? $context['classLabel'] : 'Tag';	
+		}
+		switch ($navPrimary) {
 			case 'Me':
-				if ($controllerAttr['action'] == 'home') $focus = 'Home'; 
-				// else if ($controllerAttr['action'] == 'groups') $focus = 'Circles';
-				// else if ($controllerAttr['action'] == 'photos') $focus = 'Snaps';
-				else $focus = 'Home'; 
+				// if ($controllerAttr['action'] == 'home') $focus = 'Home'; 
+				$focus = 'Home'; 
 				break;
-			case 'Groups':
-			case 'Events':
-			case 'Weddings':
-			case 'Circles':	
+			case 'Group':
+			case 'Event':
+			case 'Wedding':
 				$focus = 'Circles'; break;
-			case 'Photos':
+			case 'Snap':
+			case 'Photo':
+			case 'Story':	
 				$focus = 'Snaps'; break;
-			case 'People':
+			case 'Person':
 				$focus = 'People'; break;
+			case 'Tag':
 			case 'Explore':
-				$focus = 'Explore'; break;
 			default: 
-				$focus = null;
+				$focus = 'Explore'; break;				
 		}
 		Session::write("nav.primary", $focus);
 	}
@@ -477,10 +487,13 @@ class AppController extends Controller {
 	
 	
 	/**
-	 * persist Context into Session for subsequent pageviews
-	 * @param $keyName mixed. array or $keyName value of uuid
+	 * set Context explicitly to add as a filter condition for subsequent pageviews
+	 * 		called by $this->__checkForContextChange()
+	 * 		to set context, add named param, '/context:{$controllerAttr['label']}' 
+	 * 		keyName values: Me, Person, Group, Photo/Snap, Tag (section header)
+	 * @param $keyName mixed. array or String, Controller::$displayName, aka $controllerAttr['label']
 	 * @param $uuid
-	 * @param $extras
+	 * @param $extras, additional keys, ['classLabel']
 	 * @return void
 	 */	
 	function __setContext($keyName, $uuid=null, $extras=null ) {
@@ -500,9 +513,14 @@ class AppController extends Controller {
 				$new_context = array_merge($extras, $new_context);
 			}
 			Session::write('lookup.context', $new_context);
+			return $new_context;
 		}
 	}
-	
+	/**
+	 * check passedArgs to set/clear Context
+	 * 		to set context, add named param, '/context:{$controllerAttr['label']}' 
+	 * 		keyName values: Me, Person, Group, Photo/Snap, Tag (section header)
+	 */
 	function __checkForContextChange() {
 			// check for explicit Context change, update and redirect if found
 		if (isset($this->params['named']['context'])) {
@@ -512,11 +530,11 @@ class AppController extends Controller {
 			else {
 				$this->__setContext($this->params['named']['context']); 
 			}
-			unset($this->params['named']['context']);
+			// unset($this->params['named']['context']);
 			unset($this->passedArgs['context']);
 				
 			//			$this->passedArgs['plugin'] = '';
-			$here = Router::url(Configure::read('passedArgs.min'));
+			$here = Router::url($this->passedArgs);
 			// redirect, to remove context from url
 			$this->redirect($here, null, true);
 		}		

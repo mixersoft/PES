@@ -119,7 +119,7 @@ switch ($classLabel) {
 		}
 		$moreActions['Set as My Photo'] = array('action'=>'set_as_photo', 0=>null);
 		// TODO: we should check writeOk on Group
-		if ($contextKeyName=='group' ) {
+		if ($contextKeyName=='Group' ) {
 			$gid = $context['uuid'];
 			if (ClassRegistry::init('Group')->hasPermission('write',$gid)) {
 				$context = Session::read("lookup.context");

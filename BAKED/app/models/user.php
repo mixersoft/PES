@@ -800,7 +800,6 @@ GROUP BY ProviderAccount.id, Asset.batchId ORDER BY photos DESC;";
 		// refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$controllerClass = Configure::read('controller.alias');	// refactor
 		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for GroupId
@@ -809,11 +808,11 @@ GROUP BY ProviderAccount.id, Asset.batchId ORDER BY photos DESC;";
 		$skip = $skipContext;
 		// add context
 		if (!$skip) {
-			if ($context['keyName'] == 'person') {
+			if (in_array($context['keyName'], array('Me', 'Person'))) {
 			}
-			if ($context['keyName'] == 'group') {
+			if (in_array($context['keyName'], array('Group','Event','Wedding'))) {
 			}
-			if ($context['keyName'] == 'tag') {
+			if ($context['keyName'] == 'Tag') {
 			}
 		}
 		if (!empty($joins)) $paginate['joins'] = @mergeAsArray($paginate['joins'], $joins);
@@ -829,7 +828,6 @@ GROUP BY ProviderAccount.id, Asset.batchId ORDER BY photos DESC;";
 		// refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$controllerClass = Configure::read('controller.alias');	// refactor
 		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for GroupId
@@ -849,17 +847,17 @@ GROUP BY ProviderAccount.id, Asset.batchId ORDER BY photos DESC;";
 		$conditions = array('OR'=>array("`Member`.id = `GroupOwner`.owner_id", "`HABTM`.user_id IS NOT NULL" ));
 				
 		// check of context == controller
-		$skip = $context['keyName'] == $controllerClass;
+		$skip = $context['keyName'] == Configure::read('controller.label');
 		// add context
 		if (!$skip) {
-			if ($context['keyName'] == 'person') {
+			if (in_array($context['keyName'], array('Me', 'Person'))) {
 				// no meaningful context restriction for /groups/members context=Users
 //				$conditions[] = "`Member`.id='{$context['uuid']}'";
 			}
-			if ($context['keyName'] == 'group') {
+			if (in_array($context['keyName'], array('Group','Event','Wedding'))) {
 				// skip
 			}
-			if ($context['keyName'] == 'tag') {
+			if ($context['keyName'] == 'Tag') {
 				// skip no tags on Members/Users
 			}
 		}

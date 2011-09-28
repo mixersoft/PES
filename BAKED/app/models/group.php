@@ -264,7 +264,6 @@ ORDER BY photos DESC;";
 		// refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$controllerClass = Configure::read('controller.alias');	// refactor
 		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for photo/asset_id
@@ -274,11 +273,11 @@ ORDER BY photos DESC;";
 		$skip = $skipContext;
 		// add context
 		if (!$skip) {
-			if ($context['keyName'] == 'person') {
+			if (in_array($context['keyName'], array('Me', 'Person'))) {
 			}
-			if ($context['keyName'] == 'group') {
+			if (in_array($context['keyName'], array('Group','Event','Wedding'))) {
 			}
-			if ($context['keyName'] == 'tag') {
+			if ($context['keyName'] == 'Tag') {
 			}
 		}
 		if (!empty($joins)) $paginate['joins'] = @mergeAsArray($paginate['joins'], $joins);
@@ -293,7 +292,6 @@ ORDER BY photos DESC;";
 		// refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$controllerClass = Configure::read('controller.alias');	// refactor
 		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for photo/asset_id
@@ -307,10 +305,10 @@ ORDER BY photos DESC;";
 		$conditions[] = "AssetsGroup.asset_id='{$assetid}'";
 		
 		// check of context == controller
-		$skip = $context['keyName'] == $controllerClass;
+		$skip = $context['keyName'] == Configure::read('controller.label');
 		// add context
 		if (!$skip) {
-			if ($context['keyName'] == 'person') {
+			if (in_array($context['keyName'], array('Me', 'Person'))) {
 				$assocModel = 'Group';
 				//photos/groups
 				if ($context['uuid'] != $currentUserid) {
@@ -323,10 +321,10 @@ ORDER BY photos DESC;";
 					);
 				}
 			}
-			if ($context['keyName'] == 'group') {
+			if (in_array($context['keyName'], array('Group','Event','Wedding'))) {
 				// skip
 			}
-			if ($context['keyName'] == 'tag') {
+			if ($context['keyName'] == 'Tag') {
 				$joins[] =	array(
 							'table'=>'tagged',
 							'alias'=>'Tagged',
@@ -360,7 +358,6 @@ ORDER BY photos DESC;";
 		// add context, refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$controllerClass = Configure::read('controller.alias');	// refactor
 		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for UserId
@@ -391,18 +388,18 @@ ORDER BY photos DESC;";
 		}	
 		
 		// check of context == controller
-		$skip = $context['keyName'] == $controllerClass;
+		$skip = $context['keyName'] == Configure::read('controller.label');
 		// add context
 		if (!$skip) {
-			if ($context['keyName'] == 'person') {
+			if (in_array($context['keyName'], array('Me', 'Person'))) {
 				//	skip. no context required for /users/groups and context=Users
 			}
-			if ($context['keyName'] == 'group') {
+			if (in_array($context['keyName'], array('Group','Event','Wedding'))) {
 				// skip /groups/groups == /groups/home	
 				// but NOT /users/groups	
 				$conditions[] = array("`{$paginateModel}`.id"=>$context['uuid']);		
 			}
-			if ($context['keyName'] == 'tag') {
+			if ($context['keyName'] == 'Tag') {
 				$joins[] = 	array(
 							'table'=>'tagged',
 							'alias'=>'Tagged',
@@ -428,7 +425,6 @@ ORDER BY photos DESC;";
 		// add context, refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$controllerClass = Configure::read('controller.alias');	// refactor
 		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for UserId
@@ -448,17 +444,17 @@ ORDER BY photos DESC;";
 		$conditions[] = array('`Tag`.keyname'=>$tagid);
 		
 		// check of context == controller
-		$skip = $context['keyName'] == $controllerClass;
+		$skip = $context['keyName'] == Configure::read('controller.label');
 		// add context
 		if (!$skip) {
-			if ($context['keyName'] == 'person') {
+			if (in_array($context['keyName'], array('Me', 'Person'))) {
 				$conditions[] = "Group.owner_id='{$context['uuid']}'";	// groups OWNED by user
 				// TODO: should we also include group memberships of $context['uuid'] ???
 			}
-			if ($context['keyName'] == 'group') {
+			if (in_array($context['keyName'], array('Group','Event','Wedding'))) {
 				// skip
 			}
-			if ($context['keyName'] == 'tag') {
+			if ($context['keyName'] == 'Tag') {
 				// skip
 			}
 		}
@@ -474,7 +470,6 @@ ORDER BY photos DESC;";
 		// add context, refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$controllerClass = Configure::read('controller.alias');	// refactor
 		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for UserId
@@ -499,18 +494,18 @@ ORDER BY photos DESC;";
 		);
 		
 		// check of context == controller
-		$skip = $context['keyName'] == $controllerClass;
+		$skip = $context['keyName'] == Configure::read('controller.label');
 		// add context
 		if (!$skip) {
-			if ($context['keyName'] == 'person') {
+			if (in_array($context['keyName'], array('Me', 'Person'))) {
 				//	skip. no context required for /users/groups and context=Users
 			}
-			if ($context['keyName'] == 'group') {
+			if (in_array($context['keyName'], array('Group','Event','Wedding'))) {
 				// skip /groups/groups == /groups/home	
 				// but NOT /users/groups	
 				$conditions[] = array("`{$paginateModel}`.id"=>$context['uuid']);		
 			}
-			if ($context['keyName'] == 'tag') {
+			if ($context['keyName'] == 'Tag') {
 				$joins[] = 	array(
 							'table'=>'tagged',
 							'alias'=>'Tagged',

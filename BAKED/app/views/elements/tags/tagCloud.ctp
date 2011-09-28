@@ -38,8 +38,19 @@ Configure::write('debug',1);
 <?php 
 	if (isset($cloudTags)) {
 		if ($PREVIEW_LIMIT) $cloudTags = array_slice($cloudTags,  0, $PREVIEW_LIMIT); 
+		// debug($xhrFrom);
+		
+		// set Context for tags
+		if ($ENABLED = 0) {
+			$route = array('plugin'=>'','controller' => 'tags', 'action'=>'home');
+			$context = array_shift(Session::read("lookup.context"));
+			if (!$context && in_array($xhrFrom['keyName'], array('Photo', 'Snap'))) {
+				$route['context']=$xhrFrom['keyName'];
+			}
+		}
+
 		echo $this->TagCloud->display($cloudTags, array(
-			'url' => array('plugin'=>'','controller' => 'tags', 'action'=>'home'),
+			'url' => $route,
 			'before' => '<li><span style="font-size: %size%pt" class="tag">',
 			'after' => '</span></li>',
 			'minSize' => '8',

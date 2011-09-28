@@ -102,7 +102,6 @@ class ProviderAccount extends AppModel {
 		// refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$controllerClass = Configure::read('controller.alias');	// refactor
 		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for GroupId
@@ -114,10 +113,10 @@ class ProviderAccount extends AppModel {
 		$skip = $context['keyName']  == $controllerClass;
 		// add context
 		if (!$skip) {
-			if ($context['keyName']  == 'person') {
+			if ($context['keyName']  == 'Person') {
 				// skip
 			}
-			if ($context['keyName']  == 'group') {
+			if ($context['keyName']  == 'Group') {
 				// Asset habtm Group
 				$joins[] =  array(
 						'table'=>'assets_groups',
@@ -125,7 +124,7 @@ class ProviderAccount extends AppModel {
 						'type'=>'INNER',
 						'conditions'=>array("AssetsGroup.asset_id=`Asset`.id", "AssetsGroup.group_id"=>$context['uuid']),
 				);				}
-			if ($context['keyName']  == 'tag') {
+			if ($context['keyName']  == 'Tag') {
 				$joins[] =	array(
 							'table'=>'tagged',
 							'alias'=>'Tagged',
@@ -151,7 +150,6 @@ class ProviderAccount extends AppModel {
 		// refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$controllerClass = Configure::read('controller.alias');	// refactor
 		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for GroupId
@@ -169,14 +167,14 @@ class ProviderAccount extends AppModel {
 		$skip = $context['keyName']  == $controllerClass;
 		// add context
 		if (!$skip) {
-			if ($context['keyName']  == 'person') {
+			if ($context['keyName']  == 'Person') {
 				//groups/photos
 				$conditions[] = "`Asset`.owner_id='{$context['uuid']}'";
 			}
-			if ($context['keyName']  == 'group') {
+			if ($context['keyName']  == 'Group') {
 				// skip
 			}
-			if ($context['keyName']  == 'tag') {
+			if ($context['keyName']  == 'Tag') {
 				$joins[] =	array(
 							'table'=>'tagged',
 							'alias'=>'Tagged',

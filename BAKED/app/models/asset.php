@@ -588,7 +588,6 @@ class Asset extends AppModel {
 //debug($paginateModel);	 
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$controllerClass = Configure::read('controller.alias');	// refactor
 		$currentUserid = Session::read('Auth.User.id');
 		
 		$conditions = $joins = array();
@@ -597,11 +596,11 @@ class Asset extends AppModel {
 		$skip = $skipContext;
 		// add context
 		if (!$skip) {
-			if ($context['keyName'] == 'person') {
+			if (in_array($context['keyName'], array('Me', 'Person'))) {
 			}
-			if ($context['keyName'] == 'group') {
+			if (in_array($context['keyName'], array('Group','Event','Wedding'))) {
 			}
-			if ($context['keyName'] == 'tag') {
+			if ($context['keyName'] == 'Tag') {
 			}
 		}
 		if (!empty($joins)) $paginate['joins'] = @mergeAsArray($paginate['joins'], $joins);
@@ -615,7 +614,6 @@ class Asset extends AppModel {
 		
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$controllerClass = Configure::read('controller.alias');	// refactor
 		$currentUserid = Session::read('Auth.User.id');
 		
 		$conditions = $joins = array();
@@ -625,11 +623,11 @@ class Asset extends AppModel {
 		$skip = $skipContext;
 		// add context
 		if (!$skip) {
-			if ($context['keyName'] == 'person') {
+			if (in_array($context['keyName'], array('Me', 'Person'))) {
 			}
-			if ($context['keyName'] == 'group') {
+			if (in_array($context['keyName'], array('Group','Event','Wedding'))) {
 			}
-			if ($context['keyName'] == 'tag') {
+			if ($context['keyName'] == 'Tag') {
 			}
 		}
 		if (!empty($joins)) $paginate['joins'] = @mergeAsArray($paginate['joins'], $joins);
@@ -648,7 +646,6 @@ class Asset extends AppModel {
 		// refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$controllerClass = Configure::read('controller.alias');	// refactor
 		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for GroupId
@@ -663,17 +660,17 @@ class Asset extends AppModel {
 		
 		$conditions[] = "AssetsGroup.group_id='{$groupid}'";
 		// check of context == controller
-		$skip = $context['keyName'] == $controllerClass;
+		$skip = $context['keyName'] == Configure::read('controller.label');
 		// add context
 		if (!$skip) {
-			if ($context['keyName'] == 'person') {
+			if (in_array($context['keyName'], array('Me', 'Person'))) {
 				//groups/photos
 				$conditions[] = "`Asset`.owner_id='{$context['uuid']}'";
 			}
-			if ($context['keyName'] == 'groups') {
+			if (in_array($context['keyName'], array('Group','Event','Wedding'))) {
 				// skip
 			}
-			if ($context['keyName'] == 'tags') {
+			if ($context['keyName'] == 'Tag') {
 				$joins[] =	array(
 							'table'=>'tagged',
 							'alias'=>'Tagged',
@@ -700,7 +697,6 @@ class Asset extends AppModel {
 		// add context, refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$controllerClass = Configure::read('controller.alias');	// refactor
 		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for UserId
@@ -708,13 +704,13 @@ class Asset extends AppModel {
 		$conditions[] = "Asset.owner_id='{$userid}'";
 		
 		// check of context == controller
-		$skip = $context['keyName'] == $controllerClass;
+		$skip = $context['keyName'] == Configure::read('controller.label');
 		// add context
 		if (!$skip) {
-			if ($context['keyName'] == 'person') {
+			if (in_array($context['keyName'], array('Me', 'Person'))) {
 				// skip
 			}
-			if ($context['keyName'] == 'group') {
+			if (in_array($context['keyName'], array('Group','Event','Wedding'))) {
 				// Asset habtm Group
 				$joins[] =  array(
 						'table'=>'assets_groups',
@@ -723,7 +719,7 @@ class Asset extends AppModel {
 						'conditions'=>array("AssetsGroup.asset_id=`Asset`.id", "AssetsGroup.group_id"=>$context['uuid']),
 				);						
 			}
-			if ($context['keyName'] == 'tag') {
+			if ($context['keyName'] == 'Tag') {
 				$joins[] = 	array(
 							'table'=>'tagged',
 							'alias'=>'Tagged',
@@ -749,7 +745,6 @@ class Asset extends AppModel {
 		// add context, refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$controllerClass = Configure::read('controller.alias');	// refactor
 		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for UserId
@@ -769,13 +764,13 @@ class Asset extends AppModel {
 		$conditions[] = array('`Tag`.keyname'=>$tagid);
 		
 		// check of context == controller
-		$skip = $context['keyName'] == $controllerClass;
+		$skip = $context['keyName'] == Configure::read('controller.label');
 		// add context
 		if (!$skip) {
-			if ($context['keyName'] == 'person') {
+			if (in_array($context['keyName'], array('Me', 'Person'))) {
 				$conditions[] = "Asset.owner_id='{$context['uuid']}'";
 			}
-			if ($context['keyName'] == 'group') {
+			if (in_array($context['keyName'], array('Group','Event','Wedding'))) {
 				$joins[] =  array(
 					'table'=>'assets_groups',
 					'alias'=>'AssetsGroup',
@@ -783,7 +778,7 @@ class Asset extends AppModel {
 					'conditions'=>array("AssetsGroup.asset_id = `Asset`.`id`", "AssetsGroup.group_id"=>$context['uuid']),
 				);
 			}
-			if ($context['keyName'] == 'tag') {
+			if ($context['keyName'] == 'Tag') {
 				// skip
 			}
 		}
@@ -803,7 +798,6 @@ class Asset extends AppModel {
 		// refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$controllerClass = Configure::read('controller.alias');	// refactor
 		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for GroupId
@@ -822,14 +816,14 @@ class Asset extends AppModel {
 		$skip = $context['keyName']  == $controllerClass;
 		// add context
 		if (!$skip) {
-			if ($context['keyName']  == 'Users') {
+			if ($context['keyName']  == 'Person') {
 				//groups/photos
 				$conditions[] = "`Asset`.owner_id='{$context['uuid']}'";
 			}
-			if ($context['keyName']  == 'Groups') {
+			if ($context['keyName']  == 'Group') {
 				// skip
 			}
-			if ($context['keyName']  == 'Tags') {
+			if ($context['keyName']  == 'Tag') {
 				$joins[] =	array(
 							'table'=>'tagged',
 							'alias'=>'Tagged',

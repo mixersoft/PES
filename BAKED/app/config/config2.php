@@ -129,10 +129,14 @@ $config['lookup.roles'] = $lookup_roles;
 // keyName from controller->name. use keyName as controller/context param for building urls
 $config['lookup.keyName'] = array('Users'=>'person','Groups'=>'group','Assets'=>'photo','Tags'=>'tag');
 // xfr (from XHR root) lookup, keys should match keyName lookup 
-$config['lookup.xfr']['person'] = array('Model'=>'User', 'ControllerAlias'=>'users');
-$config['lookup.xfr']['group'] = array('Model'=>'Group', 'ControllerAlias'=>'groups');
-$config['lookup.xfr']['photo'] = array('Model'=>'Asset', 'ControllerAlias'=>'photos');
-$config['lookup.xfr']['tag'] = array('Model'=>'Tag', 'ControllerAlias'=>'tags');
+$config['lookup.xfr']['Me'] = array('Model'=>'User', 'ControllerAlias'=>'person');
+$config['lookup.xfr']['Person'] = array('Model'=>'User', 'ControllerAlias'=>'person');
+$config['lookup.xfr']['Group'] = array('Model'=>'Group', 'ControllerAlias'=>'groups');
+$config['lookup.xfr']['Event'] = array('Model'=>'Group', 'ControllerAlias'=>'groups');
+$config['lookup.xfr']['Wedding'] = array('Model'=>'Group', 'ControllerAlias'=>'groups');
+$config['lookup.xfr']['Photo'] = array('Model'=>'Asset', 'ControllerAlias'=>'photos');
+$config['lookup.xfr']['Snap'] = array('Model'=>'Asset', 'ControllerAlias'=>'photos');
+$config['lookup.xfr']['Tag'] = array('Model'=>'Tag', 'ControllerAlias'=>'tags');
 
 Configure::write('feeds.paginate.perpage', 20);
 Configure::write('feeds.action', 'all');
