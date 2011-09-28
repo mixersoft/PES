@@ -380,6 +380,7 @@ class CastingCallComponent extends Object {
 		$strip = "http://".env('HTTP_HOST');
 		$request = str_replace($strip, '', $request);
 		$route = Router::parse($request);
+// debug($route);		
 		/*
 		 * get a new CastingCall using the $request URL
 		 */
@@ -388,9 +389,25 @@ class CastingCallComponent extends Object {
 		$passedArgs['page'] = $page;
 		if ($perpage !== null) $passedArgs['perpage'] = $perpage;
 		if ($page !== null) $passedArgs['page'] = $page ? $page : 1;
+		if ($cacheKey)	 {
+			// check for cacheHit
+			$cc = Session::read("castingCall.{$mixed}"); 
+			if (
+				empty($cc['Stale'])
+				&& isset($cc['Auditions']['Perpage']) 
+				&& ($cc['Auditions']['Perpage'] == $passedArgs['perpage'])
+				&& (!$passedArgs['page'] || $cc['Auditions']['Page'] == $passedArgs['page'])
+				&& (time() - $cc['ID'] < CastingCallComponent::$MAX_AGE) 
+			) {
+				// debug($cc['Request']);	
+				$castingCall['CastingCall'] = $cc; 	// format as CastingCall 
+				return $castingCall;
+			}
+		}
+		
 		Configure::write('passedArgs.complete', $passedArgs); 
 		
-		$id = isset($route[0]) ? $route[0] : null;
+		$id = isset($route['pass'][0]) ? $route['pass'][0] : null;
 		$paginateModel = 'Asset';
 		$Model = ClassRegistry::init($paginateModel);
 		$Model->Behaviors->attach('Pageable');
@@ -410,6 +427,7 @@ class CastingCallComponent extends Object {
 			case 'my':	
 				$id = AppController::$userid;
 			case 'person':
+			case 'people':
 			case 'users':	
 				if (!$id) return;
 				// paginate
@@ -420,11 +438,17 @@ class CastingCallComponent extends Object {
 				// end paginate
 				break;
 			case 'tags':
+				$paginateArray = $Model->getPaginatePhotosByTagId($id, $this->controller->paginate[$paginateModel]);
+				$paginateArray['conditions'] = @$Model->appendFilterConditions($passedArgs, $paginateArray['conditions']);
+				$this->controller->paginate[$paginateModel] = $Model->getPageablePaginateArray($this->controller, $paginateArray);
+				$pageData = Set::extract($this->controller->paginate($paginateModel), "{n}.{$paginateModel}");
+				// end paginate
+				break;
 			default:				
 				return false;
 				break;	
 		}		
-// debug($pageData);
+// debug($pageData); exit;
 		$options['cache_key'] = $cacheKey;
 		$options['request'] = $request;
 		$castingCall = $this->getCastingCall($pageData, true, $options);		// cache=true

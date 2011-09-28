@@ -3,7 +3,7 @@ if (empty($this->passedArgs['wide'])) {
 	$this->Layout->blockStart('itemHeader');
 		echo $this->element('nav/section', array('icon_src'=>$data['Asset']['src_thumbnail'])); 
 ?>
-	<div class='properties placehoder container_16'>
+	<div class='properties container_16'>
 		<dl class="grid_16">
 		<?php $i = 0;
 			$dtClass = 'grid_2 alpha';
@@ -53,12 +53,32 @@ if (empty($this->passedArgs['wide'])) {
 <?php echo $this->element('navFilmstrip') ?>
 <section class="photo">
 	<div class="preview grid_11">
-		<div class='preview-body' <?php $size = !empty($this->passedArgs['size']) ?  $this->passedArgs['size'] : 'bp';  echo "size='{$size}' uuid='".AppController::$uuid."'"; ?> >
+		<section class='preview-body' <?php $size = !empty($this->passedArgs['size']) ?  $this->passedArgs['size'] : 'bp';  echo "size='{$size}' uuid='".AppController::$uuid."'"; ?> >
 			<?php echo $this->element('shotGallery') ?>
-		</div>		
+		</section>		
+		<section class="comments">
+	<?php
+		$xhrSrc = array('plugin'=>'', 'action'=>'discussion', $this->passedArgs[0]);
+		$ajaxSrc = Router::url($xhrSrc);	
+		echo $this->element('comments/discussion-fragment', array('ajaxSrc'=>$ajaxSrc));
+	?>			
+		</section>
 	</div>
-	<aside class="related-content grid_5">
-		<section id="tag-cloud">
+	<aside id="related-content" class="related-content grid_5">
+		<section class='Sharing'>
+			<h1>Sharing</h1>
+		</section>
+
+		<section class="circle">
+			<h1 class="circle">Circles</h1>
+	<?php
+		$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'groups', '?'=>array('preview'=>1)));
+		echo "<div id='groups-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
+	?>			
+		</section>
+		
+		<section id="tag-cloud" class="popular">
+			<h1 class="popular">Tags</h1>
 	<?php	// tagCloud
 		$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show', 'filter'=>'Asset');
 		$xhrFrom = Configure::read('controller.xhrFrom');
@@ -68,20 +88,17 @@ if (empty($this->passedArgs['wide'])) {
 	?>	
 	<?php echo $this->element('tags', array('domId'=>'assets-tags', 'data'=>&$asset))?>
 		</section>
-		<section id="circles">
-	<?php
-		$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'groups', '?'=>array('preview'=>1)));
-		echo "<div id='groups-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
-	?>			
+		
+		<section class="details">
+			<h1>Snap Details</h1>
 		</section>
+		<section class="exif">
+			<h1>Snap Exif</h1>
+		</section>	
 	</aside>
 	
-<h3>Details</h3>
-	<?php
-		$xhrSrc = array('plugin'=>'', 'action'=>'discussion', $this->passedArgs[0]);
-		$ajaxSrc = Router::url($xhrSrc);	
-		echo $this->element('comments/discussion-fragment', array('ajaxSrc'=>$ajaxSrc));
-	?>
+
+
 </section>
 	
 <?php 

@@ -482,7 +482,8 @@ class AssetsController extends AppController {
 	function __cache_genericCastingCall($ccid = null) {
 			$from = env('HTTP_REFERER');  // example: http://git:88/my/photos
 			if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
-			return $this->CastingCall->cacheRefresh($from);
+debug("WARNING: This code path is not tested");			
+			return $this->CastingCall->cache_Refresh($from);
 			
 			// legacy
 			$from = explode('/', $from);
@@ -546,6 +547,9 @@ class AssetsController extends AppController {
 		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 		$ccid = (isset($this->params['url']['ccid'])) ? $ccid = $this->params['url']['ccid'] : null;
 		$castingCall = $this->CastingCall->cache_Refresh($ccid, $FILMSTRIP_LIMIT);
+// debug($ccid);			
+// debug($castingCall['CastingCall']['Request']); 	
+// debug(Session::read('castingCall'));exit;	
 		if (!$castingCall) {
 			// no ccid available, cache generic castingCall. redirect to clean url
 			$this->__cache_genericCastingCall();

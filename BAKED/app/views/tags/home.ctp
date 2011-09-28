@@ -1,58 +1,58 @@
 <?php
-/**
- * CakePHP Tags Plugin
- *
- * Copyright 2009 - 2010, Cake Development Corporation
- *                        1785 E. Sahara Avenue, Suite 490-423
- *                        Las Vegas, Nevada 89104
- *
- * Licensed under The MIT License
- * Redistributions of files must retain the above copyright notice.
- */
+if (empty($this->passedArgs['wide'])) {
+	$this->Layout->blockStart('itemHeader');
+		// echo $this->element('nav/section', array('icon_src'=>$data['Asset']['src_thumbnail'])); 
+		echo $this->element('nav/section'); 
 ?>
-<?php 
-	echo $this->element('nav/section'); 
-?>
-<div class="tags ">
-	<dl><?php $i = 0; $class = ' class="altrow"';?>
-		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Id'); ?></dt>
-		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
+<div class="properties container_16">
+	<dl class="grid_16">
+		<?php $i = 0;
+			$dtClass = 'grid_2 alpha';
+			$ddClass = 'grid_12 suffix_2 omega';
+			$altClass = ' altrow ';
+		?>
+		<span<?php $i++; echo $dtClass; if ($i % 2 == 0) echo $altClass;?>><?php __('Id'); ?></span>
+		<span<?php $ddClass; if ($i++ % 2 == 0) echo $altClass;?>>
 			<?php echo $data['Tag']['id']; ?>
 			&nbsp;
-		</dd>
-		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Identifier'); ?></dt>
-		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
+		</span>
+		<span<?php $i++; echo $dtClass; if ($i % 2 == 0) echo $altClass;?>><?php __('Identifier'); ?></span>
+		<span<?php $ddClass; if ($i++ % 2 == 0) echo $altClass;?>>
 			<?php echo $data['Tag']['identifier']; ?>
 			&nbsp;
-		</dd>
-		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Name'); ?></dt>
-		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
+		</span>
+		<span<?php $i++; echo $dtClass; if ($i % 2 == 0) echo $altClass;?>><?php __('Name'); ?></span>
+		<span<?php $ddClass; if ($i++ % 2 == 0) echo $altClass;?>>
 			<?php echo $data['Tag']['name']; ?>
 			&nbsp;
-		</dd>
-		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Keyname'); ?></dt>
-		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
+		</span>
+		<span<?php $i++; echo $dtClass; if ($i % 2 == 0) echo $altClass;?>><?php __('Keyname'); ?></span>
+		<span<?php $ddClass; if ($i++ % 2 == 0) echo $altClass;?>>
 			<?php echo $data['Tag']['keyname']; ?>
 			&nbsp;
-		</dd>
-		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Weight'); ?></dt>
-		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
+		</span>
+		<span<?php $i++; echo $dtClass; if ($i % 2 == 0) echo $altClass;?>><?php __('Weight'); ?></span>
+		<span<?php $ddClass; if ($i++ % 2 == 0) echo $altClass;?>>
 			<?php echo $data['Tag']['weight']; ?>
 			&nbsp;
-		</dd>
-		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Created'); ?></dt>
-		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
+		</span>
+		<span<?php $i++; echo $dtClass; if ($i % 2 == 0) echo $altClass;?>><?php __('Created'); ?></span>
+		<span<?php $ddClass; if ($i++ % 2 == 0) echo $altClass;?>>
 			<?php echo $data['Tag']['created']; ?>
 			&nbsp;
-		</dd>
-		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Modified'); ?></dt>
-		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
+		</span>
+		<span<?php $i++; echo $dtClass; if ($i % 2 == 0) echo $altClass;?>><?php __('Modified'); ?></span>
+		<span<?php $ddClass; if ($i++ % 2 == 0) echo $altClass;?>>
 			<?php echo $data['Tag']['modified']; ?>
 			&nbsp;
-		</dd>
+		</span>
 	</dl>
 </div>
 <?php 
+	
+	$this->Layout->blockEnd();	} 
+
+
 	// tagged photos
 	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('plugin'=>'','action'=>'photos', '?'=>array('gallery'=>1)));
 	echo "<div id='gallery-photo-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' nodelay='1'></div>";

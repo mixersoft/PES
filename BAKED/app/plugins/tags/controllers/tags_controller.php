@@ -500,11 +500,26 @@ class TagsController extends TagsAppController {
 	}
 
 	public function home($keyname = null) {
+		$this->layout = 'snappi';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';
+		if (!$keyname) {
+			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'tag'));
+			$this->redirectSafe();
+		}		
+		
+		
 		$data = $this->__getTag($keyname);
 		$this->set('data', $data);
 	}	
 	
 	function photos($keyname = null){
+		$this->layout = 'snappi';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';
+		if (!$keyname) {
+			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'tag'));
+			$this->redirectSafe();
+		}		
+		
 		$data = $this->__getTag($keyname);
 
 		// paginate 
@@ -518,9 +533,9 @@ class TagsController extends TagsAppController {
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 		// end paginate		
 		$this->CastingCall = loadComponent('CastingCall', $this);
-		$this->viewVars['jsonData']['castingCall'] = $this->CastingCall->getCastingCall($pageData); 
+		$castingCall = $this->CastingCall->getCastingCall($pageData);
+		$this->viewVars['jsonData']['castingCall'] = $castingCall;
 		$done = $this->renderXHRByRequest('json', '/elements/photo/roll', null, 0);	
-		// TODO: need to set $this->viewVar['data'] for comments on Tags
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
 		
 		$taggable = $paginateModel;
@@ -539,6 +554,13 @@ class TagsController extends TagsAppController {
 	}
 	
 	function groups($keyname = null){
+		$this->layout = 'snappi';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';
+		if (!$keyname) {
+			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'tag'));
+			$this->redirectSafe();
+		}	
+				
 		$data = $this->__getTag($keyname);
 			
 		// paginate 
@@ -551,24 +573,21 @@ class TagsController extends TagsAppController {
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 		// end paginate	
-				
+		
+		$this->viewVars['jsonData'][$paginateModel] = $pageData;
+		$done = $this->renderXHRByRequest('json', '/elements/group/roll');
+		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
+						
 		$taggable = $paginateModel;
 		$data[$taggable] = $pageData;
 		$this->set(compact('data','keyname'));
-		
+				
 		if (@empty($this->params['paging'][$paginateModel]['count'])) {
 			/*
 			 * handle no tags, no permission to view record
 			 */
 			$this->Session->setFlash("There are no Groups tagged {$keyname}.");
 		}
-		
-		$this->viewVars['jsonData'][$paginateModel] = $pageData;
-		
-		
-		$this->plugin = null;
-		$done = $this->renderXHRByRequest('json', '/elements/group/roll');
-		
 	}
 
 

@@ -1,23 +1,59 @@
-
-<script type="text/javascript">
-var initOnce = function() {
-	SNAPPI.xhrFetch.init(); 
-};
-PAGE.init.push(initOnce);
-</script>
-<?php 
-	echo $this->element('nav/section');
+<?php
+if (empty($this->passedArgs['wide'])) {
+	$this->Layout->blockStart('itemHeader');
+		// echo $this->element('nav/section', array('icon_src'=>$data['Asset']['src_thumbnail'])); 
+		echo $this->element('nav/section'); 
 ?>
+<div class="properties container_16">
+	<dl class="grid_16">
+		<?php $i = 0;
+			$dtClass = 'grid_2 alpha';
+			$ddClass = 'grid_12 suffix_2 omega';
+			$altClass = ' altrow ';
+		?>
+		<span<?php $i++; echo $dtClass; if ($i % 2 == 0) echo $altClass;?>><?php __('Id'); ?></span>
+		<span<?php $ddClass; if ($i++ % 2 == 0) echo $altClass;?>>
+			<?php echo $data['Tag']['id']; ?>
+			&nbsp;
+		</span>
+		<span<?php $i++; echo $dtClass; if ($i % 2 == 0) echo $altClass;?>><?php __('Identifier'); ?></span>
+		<span<?php $ddClass; if ($i++ % 2 == 0) echo $altClass;?>>
+			<?php echo $data['Tag']['identifier']; ?>
+			&nbsp;
+		</span>
+		<span<?php $i++; echo $dtClass; if ($i % 2 == 0) echo $altClass;?>><?php __('Name'); ?></span>
+		<span<?php $ddClass; if ($i++ % 2 == 0) echo $altClass;?>>
+			<?php echo $data['Tag']['name']; ?>
+			&nbsp;
+		</span>
+		<span<?php $i++; echo $dtClass; if ($i % 2 == 0) echo $altClass;?>><?php __('Keyname'); ?></span>
+		<span<?php $ddClass; if ($i++ % 2 == 0) echo $altClass;?>>
+			<?php echo $data['Tag']['keyname']; ?>
+			&nbsp;
+		</span>
+		<span<?php $i++; echo $dtClass; if ($i % 2 == 0) echo $altClass;?>><?php __('Weight'); ?></span>
+		<span<?php $ddClass; if ($i++ % 2 == 0) echo $altClass;?>>
+			<?php echo $data['Tag']['weight']; ?>
+			&nbsp;
+		</span>
+		<span<?php $i++; echo $dtClass; if ($i % 2 == 0) echo $altClass;?>><?php __('Created'); ?></span>
+		<span<?php $ddClass; if ($i++ % 2 == 0) echo $altClass;?>>
+			<?php echo $data['Tag']['created']; ?>
+			&nbsp;
+		</span>
+		<span<?php $i++; echo $dtClass; if ($i % 2 == 0) echo $altClass;?>><?php __('Modified'); ?></span>
+		<span<?php $ddClass; if ($i++ % 2 == 0) echo $altClass;?>>
+			<?php echo $data['Tag']['modified']; ?>
+			&nbsp;
+		</span>
+	</dl>
+</div>
+<?php $this->Layout->blockEnd();	} ?>
+
 <div class="tags photos">
-	<h2><?php 
-		$link2Tag = $this->Html->link($data['Tag']['name'], array('action'=>'home', $data['Tag']['keyname']));  
-		echo "Photos for Tag {$link2Tag}";?>
-	</h2>
 	<p>Show as <?php echo $this->Html->link('Photostream', $this->passedArgs + array('action'=>'photostreams') );?>
 	</p>	
-	<div id='paging-photos' class='paging-content' xhrTarget='paging-photos-inner'>
-		<?php echo $this->element('/photo/roll');?>
-	</div>
+	<?php echo $this->element('/photo/roll');?>
 	<?php
 		$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show', 'filter'=>'Asset');
 		$xhrFrom = Configure::read('controller.xhrFrom');

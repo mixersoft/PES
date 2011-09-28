@@ -44,6 +44,7 @@ Configure::write('debug',1);
 			'after' => '</span></li>',
 			'minSize' => '8',
 			'maxSize' => '16',
+			'named' => 0,
 			'shuffle' => 0
 		));
 	}
