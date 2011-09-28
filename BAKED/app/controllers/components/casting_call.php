@@ -217,11 +217,19 @@ class CastingCallComponent extends Object {
 		return "***********   PLACEHOLDER FOR SCRUBS *********************";
 	}
 
-	function getCastingCall($assets, $cache = true, $ProviderName = 'snappi') {
+	/**
+	 * @params $options assoc array
+	 * 	$options['ProviderName] = 'snappi'
+	 *  $options['request'] = cache_Refresh Request
+	 *  $options['cache_key'] = cache_Refresh cache_key
+	 */
+	function getCastingCall($assets, $cache = true, $options=array()) {
+		$options = array_merge(array('ProviderName'=>'snappi'), $options);
+		extract($options);
 		$class='Asset';
 		if (isset($assets['Asset'])) $assets = & $assets['Asset'];
 		
-		$Request = $this->controller->here;
+		$Request = !empty($request) ? $request : $this->controller->here;
 		$ShowHidden = Configure::read("afterFind.Asset.showHiddenShots");
 //		Configure::delete('afterFind.Asset.showHiddenShots');
 		$Page = @ifed($this->controller->params['paging'][$class]['page'], 1);
@@ -262,9 +270,9 @@ class CastingCallComponent extends Object {
 		 */
 		$castingCall = compact('CastingCall', 'lookups');
 		if ($cache) {
-//			Session::write("castingCall.{$ID}", $CastingCall);
-//			Session::delete("castingCall");
-			$this->cache_Push(array($ID=>$CastingCall));
+			if (empty($cache_key)) $cache_key = $ID;
+			$cache_Entry[$cache_key] = $CastingCall;
+			$this->cache_Push($cache_Entry);
 		}
 		return $castingCall;
 	}
@@ -276,36 +284,56 @@ class CastingCallComponent extends Object {
 	 * @param newCC array($ID=>$castingCall)
 	 */
 	static $MAX_AGE = 600; // 10 minutes
-	static $MAX_ENTRIES = 10; // LAST 10 castingCalls 
-	function cache_Push($newCC){
-		$this->cache_Expire($newCC);	// saves a write to Session this way
+	static $MAX_ENTRIES = 20; // LAST 10 castingCalls 
+	function cache_Clear(){
+		Session::write('castingCall', null); 
 	}
-	function cache_Expire($newCC = array(), $MAX_AGE = null, $MAX_ENTRIES = null) {
+	function cache_Push($newCC){
+		// example: $newCC = array (
+    		// [1317144348] => Array (
+		            // [ID] => 1317144348
+		            // [ProviderName] => snappi
+		            // [Auditions] => Array()
+				// ))
+		$this->cache_Age($newCC);	// saves a write to Session this way
+	}
+	/**
+	 * age entries from cache, just keep Request for old cache keys
+	 */
+	function cache_Age($newCC = array(), $MAX_AGE = null, $MAX_ENTRIES = null) {
 		if ($MAX_AGE == null) $MAX_AGE = CastingCallComponent::$MAX_AGE;
 		if ($MAX_ENTRIES == null) $MAX_ENTRIES = CastingCallComponent::$MAX_ENTRIES;			
 		$cc = (array)Session::read('castingCall');
 		$changed = false;
 		if ($cc) {
 			$now = time(); 
-			$ccIds = array_keys($cc);
-			arsort($ccIds);
+			// Comparison function, most recent by castingCall timestamp
+			function mostRecent($a, $b) {
+			    if ($a['ID'] == $b['ID']) {
+			        return 0;
+			    }
+			    return ($a['ID'] > $b['ID'] ) ? -1 : 1;
+			}
+			uasort($cc, 'mostRecent');
 			// max entries
 			$count = 0;
-			foreach ($ccIds as $timestamp) {
+			foreach ($cc as $key => $CastingCall ) {
+				$timestamp = $CastingCall['ID'];
+				if ($timestamp=='Lightbox') continue;
+
 				$age = $now - $timestamp;
-				if ($timestamp=='Lightbox') {
-					continue;
-				} else if (++$count >= $MAX_ENTRIES) {
-					unset($cc[$timestamp]);
+				if (++$count >= $MAX_ENTRIES) {
+					$this->cache_MarkStale($cc, $key);
 					$changed = true;
 				} else if ($age > $MAX_AGE) {
-					unset($cc[$timestamp]);	// delete old ccids from Session, but not the last one
+					$this->cache_MarkStale($cc, $key);
+					// unset($cc[$timestamp]);	// delete old ccids from Session, but not the last one
 					$changed = true;
 				}
 			}
 		}
 		if ($newCC) {
-			$cc = $cc+$newCC;
+			$cc = $newCC + $cc;
 			$changed = true;
 		}
 		if ($changed) Session::write('castingCall', $cc); 
@@ -323,42 +351,90 @@ class CastingCallComponent extends Object {
 	}
 	function cache_MarkStale($ccid){
 		// mark castingCall as Stale
-		$request = Session::read("castingCall.{$ccid}.CastingCall.Request");
+		$request = Session::read("castingCall.{$ccid}.Request");
 		if ($request) {
-			$castingCall = array();
-			$castingCall['CastingCall'] = array('ID'=>$ccid, 'Request'=>$request, 'Stale'=>true);
+			$castingCall = array('ID'=>$ccid, 'Request'=>$request, 'Stale'=>true);
 			Session::write("castingCall.{$ccid}", $castingCall);
 		} else Session::delete("castingCall.{$ccid}");
 	}
-	function cache_Refresh($cc){
-		if (is_numeric($cc)) {
-			$ccid = $cc;
-			$request = Session::read("castingCall.{$ccid}.CastingCall.Request");
-			/*
-			 * get a new CastingCall using the $request URL
-			 */
-//	App::import('Controller', 'Assets');
-//	$AssetsController = new AssetsController();
-//	$AssetsController->constructClasses();
-//	$castingCall = $AssetsController->getCC($lightbox['auditions']);
-			
-// TODO: use HTTP get to load new castingCall
-			
-			/*
-			 * save to cache
-			 */
-			Session::delete("castingCall.{$ccid}");
-			Session::write("castingCall.{$cc['CastingCall']['ID']}", $cc);
-			return $cc;
+	/**
+	 * @params $mixed int or aa, ccid or CastingCall
+	 * @params $perpage int (optional), override perpage defaults to get more rows
+	 * @params $page int (optional)
+	 */
+	function cache_Refresh($mixed, $perpage=null, $page=null){
+		$cacheKey = null;
+		if (is_array($mixed) && isset($mixed['Request'])) {
+			// example: /photos/home/4bbb3976-42b8-4d23-b9c1-11a0f67883f5
+			$request = $mixed['Request'];
+		} else if (is_numeric($mixed)) {
+			$request = Session::read("castingCall.{$mixed}.Request"); 
+			$cacheKey = $mixed;	// reuse this cacheKey, but update ['CastingCall']['ID']/timestamp
+		} else {
+			// example: http://git:88/my/photos
+			$request = env('HTTP_REFERER');
 		}
+		if (empty($request)) return false;
+
+// debug($request);		
+		$strip = "http://".env('HTTP_HOST');
+		$request = str_replace($strip, '', $request);
+		$route = Router::parse($request);
+		/*
+		 * get a new CastingCall using the $request URL
+		 */
+		// set extended paging, if necessary
+		$passedArgs = $route['named'];
+		$passedArgs['page'] = $page;
+		if ($perpage !== null) $passedArgs['perpage'] = $perpage;
+		if ($page !== null) $passedArgs['page'] = $page ? $page : 1;
+		Configure::write('passedArgs.complete', $passedArgs); 
 		
+		$id = isset($route[0]) ? $route[0] : null;
+		$paginateModel = 'Asset';
+		$Model = ClassRegistry::init($paginateModel);
+		$Model->Behaviors->attach('Pageable');
+		switch ($route['controller']) {
+			case 'groups':
+			case 'circles':
+			case 'events':
+			case 'weddings':
+				if (!$id) return false;
+				// paginate 
+				$paginateArray = $Model->getPaginatePhotosByGroupId($id, $this->controller->paginate[$paginateModel]);
+				$paginateArray['conditions'] = @$Model->appendFilterConditions($passedArgs, $paginateArray['conditions']);
+				$this->controller->paginate[$paginateModel] = $Model->getPageablePaginateArray($this->controller, $paginateArray);
+				$pageData = Set::extract($this->controller->paginate($paginateModel), "{n}.{$paginateModel}");
+					// end paginate
+				break;						
+			case 'my':	
+				$id = AppController::$userid;
+			case 'person':
+			case 'users':	
+				if (!$id) return;
+				// paginate
+				$paginateArray = $Model->getPaginatePhotosByUserId($id, $this->controller->paginate[$paginateModel]);
+				$paginateArray['conditions'] = @$Model->appendFilterConditions($passedArgs, $paginateArray['conditions']);
+				$this->controller->paginate[$paginateModel] = $Model->getPageablePaginateArray($this->controller, $paginateArray);
+				$pageData = Set::extract($this->controller->paginate($paginateModel), "{n}.{$paginateModel}");
+				// end paginate
+				break;
+			case 'tags':
+			default:				
+				return false;
+				break;	
+		}		
+// debug($pageData);
+		$options['cache_key'] = $cacheKey;
+		$options['request'] = $request;
+		$castingCall = $this->getCastingCall($pageData, true, $options);		// cache=true
+		return $castingCall;
 	}
 	function cache_Lightbox($aids, $MAX_AGE = null) {
 		if ($MAX_AGE == null) $MAX_AGE = CastingCallComponent::$MAX_AGE;		
 		if (Session::read('castingCall.Lightbox.key', $aids)) {
 			$ccLightbox = Session::read('castingCall.Lightbox.castingCall');
 			$ccLightbox['CastingCall']['Cached'] = true;
-debug("cahced lightbox"); exit;			
 			$timestamp = $ccLightbox['CastingCall']['ID'];
 			if (time() - $timestamp <= $MAX_AGE) {
 				return $ccLightbox;

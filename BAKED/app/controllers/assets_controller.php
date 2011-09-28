@@ -470,18 +470,21 @@ class AssetsController extends AppController {
 		
 		if ($cc === null) return null;
 		if (isset($cc['Stale'])) {
-			// refresh
-//			$cc = $this->CastingCall->cache_Refresh($cc);
-			return null;
+			$cc = $this->CastingCall->cache_Refresh($ccid);
 		} 
 		return isset($cc['ID']) ? $cc['ID'] : null;
 	}
 	
 	/**
+	 * @deprecated ? see $this->CastingCall->cacheRefresh()
 	 *	get and cache a generic/unsorted/unordered castingCall by inference from  env('HTTP_REFERER')
 	 */
-	function __cache_genericCastingCall() {
+	function __cache_genericCastingCall($ccid = null) {
 			$from = env('HTTP_REFERER');  // example: http://git:88/my/photos
+			if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
+			return $this->CastingCall->cacheRefresh($from);
+			
+			// legacy
 			$from = explode('/', $from);
 			if (isset($from[3])) {
 				$type = $from[3];
@@ -528,6 +531,7 @@ class AssetsController extends AppController {
 
 
 	function home($id = null) {
+		$FILMSTRIP_LIMIT = 999;
 		$forceXHR = setXHRDebug($this, 0);
 		$this->layout = 'snappi';
 		$this->helpers[] = 'Time';
@@ -537,10 +541,12 @@ class AssetsController extends AppController {
 			$this->redirectSafe();
 		}
 		/*
-		 * neighbor/filmstrip processing
+		 * navFilmstrip processing
 		 */
-		$ccid = $this->__getCcid();
-		if (!$ccid) {
+		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
+		$ccid = (isset($this->params['url']['ccid'])) ? $ccid = $this->params['url']['ccid'] : null;
+		$castingCall = $this->CastingCall->cache_Refresh($ccid, $FILMSTRIP_LIMIT);
+		if (!$castingCall) {
 			// no ccid available, cache generic castingCall. redirect to clean url
 			$this->__cache_genericCastingCall();
 			$this->redirect($this->here, null, true);
@@ -548,12 +554,10 @@ class AssetsController extends AppController {
 		/*
 		 * get Permissionable associated data manually, add paging
 		 */
-		// Collections
-		// Groups
 		if (!empty($this->params['url']['shotType'])) {  
 			$shotType = $this->params['url']['shotType'];
-		} else if (!empty($ccid['CastingCall']['Auditions']['ShotType'])) {
-			$shotType = $ccid['CastingCall']['Auditions']['ShotType'];
+		} else if (!empty($castingCall['CastingCall']['Auditions']['ShotType'])) {
+			$shotType = $castingCall['CastingCall']['Auditions']['ShotType'];
 		} else {
 			$shotType = 'Usershot';
 		}
@@ -581,19 +585,12 @@ class AssetsController extends AppController {
 		} else {
 			$this->set('data', $data);	
 			Session::write('lookup.owner_names', Set::merge(Session::read('lookup.owner_names'), Set::combine($data, '/Owner/id', '/Owner/username')));
-			// returns keys init, castingCall, and ccid
-			$result = $this->__getFilmstripInit($id, $ccid);
-			// get ShotType from CC request
-			$cc_request = $result['castingCall']['CastingCall']['Request'];
-			if (empty($result['castingCall']['CastingCall'])) {
+			if (empty($castingCall['CastingCall'])) {
 				// cache miss, build a new castingCall with one photo
 				if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 				$castingCall = $this->CastingCall->getCastingCall(array($data['Asset']), false); 
-				$result = $this->__getFilmstripInit($id, $castingCall['CastingCall']);
 			} 
-			$this->viewVars['jsonData']['filmstrip']['init'] = $result['init'];
-			$this->viewVars['jsonData']['castingCall'] = $result['castingCall'];
-			$this->viewVars['jsonData']['ccid'] = $ccid;
+			$this->viewVars['jsonData']['castingCall'] = $castingCall;
 		}
 	}
 
