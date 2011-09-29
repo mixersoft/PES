@@ -69,8 +69,8 @@ if (empty($this->passedArgs['wide'])) {
 		$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show');
 		$xhrFrom = Configure::read('controller.xhrFrom');
 		$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
-		$ajaxSrc = Router::url($xhrSrc);
-	echo "<div id='tags-preview-xhr' class='grid_5 xhr-get' xhrSrc='{$ajaxSrc}'></div>";
+		$xhrSrc = Router::url($xhrSrc);
+	echo "<div id='tags-preview-xhr' class='grid_5 xhr-get' xhrSrc='{$xhrSrc}'></div>";
 ?>	
 				</section>
             	<section class="people">

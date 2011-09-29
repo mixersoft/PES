@@ -26,42 +26,55 @@
 	}
 
 	$_userLink = $comment[$userModel]['username'];
-	
+	$User = $comment[$userModel];
 	$DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
+	$THUMBSIZE = 'sq';
 	$SHORT = 12;
 	$options = array();
 	$fields = array();
-	$fields['owner'] = $comment[$userModel]['username'];
-	$fields['trim_owner'] = $this->Text->truncate($comment[$userModel]['username'], $SHORT-4);	
+	$ownerUrl = Router::url(array('plugin'=>'','controller'=>'person', 'action'=>'home', $User['id']));
+	$fields['owner'] = $User['username'];
+	$fields['trim_owner'] = $this->Text->truncate($User['username'], $SHORT-4);	
 	$fields['src_icon'] =  $DEFAULT_SRC_ICON;
-	$fields['ownerLink'] = $this->Html->link($fields['trim_owner'], array('plugin'=>'','controller'=>'users', 'action'=>'home', $comment[$userModel]['id']), $options );
+	$fields['src_icon'] =  $User['src_thumbnail'] ? Session::read('stagepath_baseurl').getImageSrcBySize($User['src_thumbnail'], $THUMBSIZE) : $DEFAULT_SRC_ICON;
+	$fields['ownerLink'] = $this->Html->link($fields['trim_owner'], $ownerUrl, $options );
 	$fields['new'] = ($this->Time->wasWithinLast('3 day', $comment['Comment']['created'])) ? "<span class='new'>New! </span>" : '';
-	//print_r($comment[$userModel]);
+	// debug($User);
 	
+	$person_snaps['label'] = String::insert(":asset_count Snaps", $User); 
+	// $person_snaps['href'] = Router::url($options+array('action'=>'photos'));
+	$person_memberships['label'] = String::insert(":groups_user_count Circles", $User); 
+	// $person_memberships['href'] =  Router::url($options+array('action'=>'groups'));
+	$fields['last_login'] = "last visit: {$this->Time->timeAgoInWords($User['last_login'])}";
+	$fields['owner_tooltip'] = "{$person_snaps['label']}, {$person_memberships['label']}, {$fields['last_login']}";
 	/**
 	 * below is the list of comments with username, comment title,commentbody, posted time 
 	 */
 ?>
 <div class="comments">
-	 <li class='member-label thumbnail sq' id='<?php echo $comment[$userModel]['id'] ?>'>
-	   <div class='thumb'>
-	    <?php $options = array('url'=>array_merge(array('plugin'=>'','controller'=>'users', 'action'=>'home', $comment[$userModel]['id']))); 
+	<article class="FigureBox Person <?php  echo $THUMBSIZE; ?>" id='<?php echo $User['id'] ?>'>
+       	<figure>
+	<?php $options = array('url'=>$ownerUrl, 'title'=>$fields['owner_tooltip']); 
 	     if (isset($fields['title'])) $options['title'] = $fields['title'];
-	     echo $this->Html->image($fields['src_icon'] , $options) ?>
-	   </div>
-	   <div class='thumb-label'>
-	    <?php echo String::insert(":new :ownerLink", $fields); ?>
-	   </div>
-	  </li>
-	
+	     echo $this->Html->image($fields['src_icon'] , $options);  
+	?>
+    		<figcaption>
+    		<div class="label">
+    			<?php echo String::insert(":new", $fields); ?>
+    			<span class="user"><?php echo $fields['ownerLink'] ?> says:</span>
+    			<span class='right'> &nbsp;<?php echo join('&nbsp;', $_actionLinks);?></span>
+    		</div>
 	<div class='item'>
-		<span class="user"><?php echo $fields['ownerLink'] ?> says:</span>
 		<div class="title"><!--<a name="comment<?php echo $comment['Comment']['id'];?>">--><?php echo $comment['Comment']['title'];?><!--</a>--></div>
 		<div class="body"><?php echo $cleaner->bbcode2js($comment['Comment']['body']);?></div>
 		<div class="instruction">
-			<span style='float:right'> &nbsp;<?php echo join('&nbsp;', $_actionLinks);?></span>
 			<span ><?php __d('comments', 'Posted'); ?>&nbsp; <?php echo $time->timeAgoInWords($comment['Comment']['created']); ?></span>
 		</div>
-
-	</div>
+	</div>	    		
+    		<ul class="inline extras hide">
+    		 	<li class="snaps"><a></a></li>
+    			<li class="circles last"><a></a></li>
+			</ul></figcaption>
+		</figure>
+	</article>
 </div>

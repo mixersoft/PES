@@ -87,8 +87,8 @@ if (empty($this->passedArgs['wide'])) {
 						  <section id="members">
 <?php 
 	// $ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'xhr-get', 'a'=>'members', 'e'=>'preview-members'));
-	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'members', '?'=>array('preview'=>1)));
-	echo "<div id='members-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
+	$xhrSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'members', '?'=>array('preview'=>1)));
+	echo "<div id='members-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
 ?>							  	
 						  </section>
 						</section>
@@ -105,8 +105,8 @@ if (empty($this->passedArgs['wide'])) {
 	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show');
 	$xhrFrom = Configure::read('controller.xhrFrom');
 	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
-	$ajaxSrc = Router::url($xhrSrc);
-	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
+	$xhrSrc = Router::url($xhrSrc);
+	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
 		// tag form 	
 	echo $this->element('tags', array('domId'=>'groups-tags', 'data'=>&$group));
 ?>
@@ -119,6 +119,16 @@ if (empty($this->passedArgs['wide'])) {
 		</div>	
 		
 </aside>
+
+	<section class="comments container_16">
+		<div class="grid_11">
+	<?php
+		$xhrSrc = array('plugin'=>'', 'action'=>'discussion', AppController::$uuid);
+		$xhrSrc = Router::url($xhrSrc);	
+		echo $this->element('comments/discussion-fragment', array('xhrSrc'=>$xhrSrc));
+	?>			
+		</div>
+	</section>
 <?php 
 	$this->Layout->blockEnd();
 ?>	

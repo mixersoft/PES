@@ -39,6 +39,7 @@ class AssetsController extends AppController {
 		),
 		'Comment' =>array(
 			'limit'=>3,
+			'contain'=>array('User.src_thumbnail', 'User.asset_count', 'User.groups_user_count', 'User.last_login'),
 		)
 	);
 	
@@ -850,16 +851,22 @@ debug("WARNING: This code path is not tested");
 			$this->redirectSafe();
 		}
 		$BIG_LIMIT = 10;
-		$this->Asset->contain('Comment');
+//		debug("$shotType, showHidden=$showHidden");
 		$options = array(
 			'conditions'=>array('Asset.id'=>$id),
-		);
+			'contain'=> array('Comment', 'Owner.id', 'Owner.username', 'ProviderAccount.id', 'ProviderAccount.provider_name', 'ProviderAccount.display_name'),
+			'fields'=>'Asset.*',		// MUST ADD 'fields' for  containable+permissionable
+			'extras'=>array(
+				'show_edits'=>false,
+				'join_shots'=>false, 		// join shots to get shot_count?
+				'join_bestshot'=>false,			// do NOT need bestShots when we access by $asset_id
+				'show_hidden_shots'=>true,		// by $asset_id, hidden shots ok, or DONT join_bestshot
+			),
+		);		
 		$data = $this->Asset->find('first', $options);
 		$this->set('data', $data);	
 		
-		//TODO: deprecate fragment
-		$from = @ifed($this->passedArgs['f'],$this->action);
-		if ($from=='discussion') $this->paginate['Comment']['limit'] = $BIG_LIMIT;
+		if (Configure::read('controller.action')=='discussion') $this->paginate['Comment']['limit'] = $BIG_LIMIT;
 		
 		$done = $this->renderXHRByRequest(null, '/elements/comments/discussion');
 		// or $this->autoRender

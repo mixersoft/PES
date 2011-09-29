@@ -19,8 +19,8 @@
 	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show', 'filter'=>'Group');
 	$xhrFrom = Configure::read('controller.xhrFrom');
 	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
-	$ajaxSrc = Router::url($xhrSrc);
-	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
+	$xhrSrc = Router::url($xhrSrc);
+	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
 ?>	
 <script type="text/javascript">
 var initOnce = function() {

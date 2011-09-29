@@ -6,7 +6,7 @@
 	if (isset($this->passedArgs['perpage'])) $xhrSrc['perpage'] = $this->passedArgs['perpage'];
 	$xhrFrom = Configure::read('controller.xhrFrom');
 	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom),'preview'=>0);
-	$ajaxSrc = Router::url($xhrSrc);	
+	$xhrSrc = Router::url($xhrSrc);	
 	echo "<div id='paging-tags-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
 ?>	
 <script type="text/javascript">

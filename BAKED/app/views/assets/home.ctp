@@ -59,8 +59,8 @@ if (empty($this->passedArgs['wide'])) {
 		<section class="comments">
 	<?php
 		$xhrSrc = array('plugin'=>'', 'action'=>'discussion', $this->passedArgs[0]);
-		$ajaxSrc = Router::url($xhrSrc);	
-		echo $this->element('comments/discussion-fragment', array('ajaxSrc'=>$ajaxSrc));
+		$xhrSrc = Router::url($xhrSrc);	
+		echo $this->element('comments/discussion-fragment', array('xhrSrc'=>$xhrSrc));
 	?>			
 		</section>
 	</div>
@@ -83,8 +83,8 @@ if (empty($this->passedArgs['wide'])) {
 		$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show', 'filter'=>'Asset');
 		$xhrFrom = Configure::read('controller.xhrFrom');
 		$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
-		$ajaxSrc = Router::url($xhrSrc);
-		echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
+		$xhrSrc = Router::url($xhrSrc);
+		echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
 	?>	
 	<?php echo $this->element('tags', array('domId'=>'assets-tags', 'data'=>&$asset))?>
 		</section>

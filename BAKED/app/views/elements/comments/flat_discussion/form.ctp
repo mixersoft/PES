@@ -31,6 +31,8 @@
 	 */
 //	echo $form->input('Comment.title');
 	echo $form->input('Comment.body', array(
+		'label' => '',
+		'type' => 'textarea',
 	    'error' => array(
 	        'body_required' => __d('comments', 'This field cannot be left blank',true),
 	        'body_markup' => sprintf(__d('comments', 'You can use only headings from %s to %s' ,true), 4, 7))));

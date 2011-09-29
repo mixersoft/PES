@@ -41,8 +41,8 @@ Configure::write('debug',1);
 		// debug($xhrFrom);
 		
 		// set Context for tags
+		$route = array('plugin'=>'','controller' => 'tags', 'action'=>'home');
 		if ($ENABLED = 0) {
-			$route = array('plugin'=>'','controller' => 'tags', 'action'=>'home');
 			$context = array_shift(Session::read("lookup.context"));
 			if (!$context && in_array($xhrFrom['keyName'], array('Photo', 'Snap'))) {
 				$route['context']=$xhrFrom['keyName'];

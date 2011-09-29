@@ -1290,15 +1290,6 @@ section.filmstrip section.gallery.lightbox {
 /*	hiddenShot-filmstrip:  */
 
 
-
-/*  filmstrip preview  */
-div.preview nav.toolbar ul {
-	line-height: 1.5;
-}
-div.preview nav.toolbar li.btn {
-	background: #FFF;
-}
-
 /*
  * forms
  */
@@ -1800,4 +1791,67 @@ aside.related-content.grid_5 section > h1 {
 }
 .grid_5 .FigureBox.Group.sq  figcaption .description {
 	display: none;
+}
+
+.preview section {
+	margin-bottom: 20px;
+}
+.preview section.preview-body {
+	overflow: hidden;
+}
+
+/* Comments */
+.comments-main .post {
+	margin: 10px 20px;
+	overflow: hidden;
+}
+.comments-main .post h3 {
+	font-size: 0.9em;
+}
+.comments-main .post form .input.textarea {
+}
+.comments-main .post form textarea {
+	width: 100%;
+	height: 40px;
+}
+.comments-main .post form .submit {
+	float: right;
+	margin-top: 4px;
+}
+.comments-main .FigureBox.Person .label {
+	overflow: hidden;
+}
+.comments-main .FigureBox.Person .label span.new {
+	font-weight: bold;
+	color: red;
+}
+.comments-main .FigureBox.Person .label span a {
+	font-weight: bold;
+	color: #0063DC;
+}
+.comments-main .FigureBox.Person .description {
+	font-size: 0.8em;
+}
+
+.comments-main  .FigureBox.Person.sq {
+	margin-bottom: 10px;
+}
+
+.grid_11 .comments-main .comments {
+	width: 620px;
+	padding: 0 10px;
+}
+
+.grid_11 .comments-main .FigureBox.Person.sq  figcaption {
+	width: 520px;	
+}
+.comments div.body {
+    padding: 5px 0px 10px 0px;
+    font-size: 13px;
+    color: #000000;
+}
+.comments div.instruction {
+    font-size: 12px;
+    width: 100%;
+    color: #878787;
 }
