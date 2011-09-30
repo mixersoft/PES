@@ -521,11 +521,11 @@ section.gallery.wide {
 /*
  * .lm landscape/medium
  */
-.FigureBox.Photo.lm {
+.FigureBox.lm {
 	width: 145px;		
 	height: 120px;	
 }
-.FigureBox.Photo.lm > figure > a > img {
+.FigureBox.lm > figure > a > img {
 	width: 144px;
 	height: 96px;
 }
@@ -534,16 +534,25 @@ section.gallery.wide {
  * .ll (landscape/large) == .large 
  */
 
-.FigureBox.Photo.ll > figure > a > img {
+.FigureBox.ll > figure > a > img {
 	width: 222px;
 	height: 148px;
 }
 /*
  * .sq (square) 
  */
-.FigureBox.Photo.sq > figure > a > img {
+.FigureBox.sq > figure > a > img {
 	width: 75px;
 	height: 75px;
+}
+
+/*
+ * .tiny (lightbox square) 
+ * TODO: update lbx-tiny
+ */
+.FigureBox.tiny > figure > a > img {
+	width: 33px;
+	height: 33px;
 }
 
 /*temp CSS for selected*/
@@ -802,11 +811,6 @@ ul.photo-roll {
 	margin: auto;
 	padding: 0 0 0 0;
 }
-#related-content aside {
-	xfloat: left;
-	xwidth: 282px;
-	xmargin-left: 10px;
-}
 #related-content .left > article {
 	margin-bottom: 20px;
 }
@@ -854,18 +858,7 @@ ul.photo-roll {
 	height: 22px;
 	display: table-cell
 }
-#related-content .left > article .box-wrap .count, #related-content aside .count  {
-	font-size: 0.9em;
-	font-weight: normal;
-	background-color: #8CD1ED;
-	color: #FFF;
-	padding: 0 10px;
-	display: inline;
-}
-#related-content .left > article .box-wrap .count > span, #related-content aside .count > span {
-	color: #000;
-	font-weight: bold;
-}
+
 
 /*.tabbed-area div div {
  * 	
@@ -880,63 +873,6 @@ ul.photo-roll {
 .tabbed-area div div, .tabs li a {
 	border-top: 1px solid #8bc3e4;
 }*/
-
-#related-content aside .people {
-	margin-bottom: 30px;
-	display: block;
-	overflow: hidden;
-	padding: 0px 0px 0px 5px
-}
-#related-content aside .popular {
-	margin-bottom: 30px;
-	display: block;
-	overflow: hidden;
-	padding: 0px 0px 0px 5px
-}
-#related-content aside .popular section h1.popular {
-	background: url(../images/popular.png) left top no-repeat;
-	padding: 5px 0px 5px 22px;
-	margin-bottom: 4px
-}
-#related-content aside .popular ul {
-	font-size: 10pt;
-}
-#related-content aside .popular ul li {
-	-webkit-border-radius: 6px;
-	-moz-border-radius: 6px;
-	-webkit-box-shadow: 0px 0px 3px #ccd6db;
-	-moz-box-shadow: 0px 0px 3px #ccd6db;
-/*	background: #e9f1f8;*/
-/*	border: 1px solid #cee3f2;*/
-	background: #22AED1; 
-	border: 1px solid #006E9A;
-	line-height:16px;
-}
-#related-content aside .popular ul li a {
-/*	color: #0c5586;*/
-	color: #FFF;
-	display: block;
-}
-#related-content aside p {
-	margin-top: 15px;
-	font-size: 0.9em;
-}
-#related-content aside .people section h1.people {
-	background: url(../images/people.png) left top no-repeat;
-	padding: 5px 0px 8px 27px;
-	margin-bottom: 4px
-}
-#related-content aside .people ul li {
-	margin: 0px 8px 12px 0px;
-	float: left;
-	border: 2px solid #8bc3e4;
-	height: 43px;
-	width: 43px;
-	overflow: hidden;
-}
-#related-content aside .people ul li:nth-child(5n+5) {
-	margin-right: 0px;
-}
 
 
 
@@ -1679,45 +1615,48 @@ div.properties {
 }
 
 
-/* /photos/home aside */
-aside.related-content .people {
-	xmargin-bottom: 30px;
-	xdisplay: block;
-	xoverflow: hidden;
-	xpadding: 0px 0px 0px 5px
-}
-aside.related-content .popular {
-	xmargin-bottom: 30px;
-	xdisplay: block;
-	xoverflow: hidden;
-	xpadding: 0px 0px 0px 5px
-}
-
-aside.related-content .popular ul {
-	font-size: 10pt;
-}
-aside.related-content .popular ul li {
-	-webkit-border-radius: 6px;
-	-moz-border-radius: 6px;
-	-webkit-box-shadow: 0px 0px 3px #ccd6db;
-	-moz-box-shadow: 0px 0px 3px #ccd6db;
-/*	background: #e9f1f8;*/
-/*	border: 1px solid #cee3f2;*/
-	background: #22AED1; 
-	border: 1px solid #006E9A;
-	line-height:16px;
-}
-aside.related-content .popular ul li a {
-/*	color: #0c5586;*/
-	color: #FFF;
+/*  related content:  section headers & icons */
+aside.related-content .right section {
+	margin-bottom: 30px;
 	display: block;
+	overflow: hidden;
+	padding: 0px 0px 0px 5px;
 }
-aside.related-content p {
-	margin-top: 15px;
-	font-size: 0.9em;
+aside.related-content .right section > h1 {
+/*	.right icons should be 24x24px, using placeholders for now */
+	height: 24px;	
+	padding: 4px 0 4px 28px;
+	margin-bottom: 4px	
+}
+/*	TODO: update icons */
+aside.related-content section.recent > h1 {
+	background: url(../images/recent.png) left top no-repeat;
+}
+aside.related-content section.circle > h1 {
+	background: url(../images/circle.png) left top no-repeat;
+}
+aside.related-content section.person > h1 {
+	background: url(../images/person.png) left top no-repeat;
+}
+aside.related-content section.people h1 {
+	background: url(../images/people.png) left top no-repeat;
+}
+aside.related-content section.snap > h1 {
+	background: url(../images/snap.png) left top no-repeat;
+}
+aside.related-content section.trends > h1 {
+	background: url(../images/popular.png) left top no-repeat;
+}
+aside.related-content  section.discussion > h1 {
+	background: url(../images/discussion.png) left top no-repeat;
+} 
+
+#related-content aside p, aside.related-content p {
+	xmargin-top: 15px;
+	xfont-size: 0.9em;
 }
 
-aside.related-content .people ul li {
+aside.related-content section.people ul li {
 	margin: 0px 8px 12px 0px;
 	float: left;
 	border: 2px solid #8bc3e4;
@@ -1725,38 +1664,39 @@ aside.related-content .people ul li {
 	width: 43px;
 	overflow: hidden;
 }
-aside.related-content .people ul li:nth-child(5n+5) {
+aside.related-content section.people ul li:nth-child(5n+5) {
 	margin-right: 0px;
 }
 
+aside.related-content section.trends ul {
+	font-size: 10pt;
+}
+aside.related-content section.trends ul li {
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	-webkit-box-shadow: 0px 0px 3px #ccd6db;
+	-moz-box-shadow: 0px 0px 3px #ccd6db;
+	background: #22AED1; 
+	border: 1px solid #006E9A;
+	line-height:16px;
+	margin: 4px 4px 0 0;
+	padding: 2px;
+}
+aside.related-content section.trends ul li a {
+/*	color: #0c5586;*/
+	color: #FFF;
+	display: block;
+}
+section.trends form > div {
+	display: inline-block;
+}
+section.trends form input[type="text"] {
+	margin: 4px 4px 4px 0;
+	width: 240px;
+}
 
-
-aside.related-content section > h1{
-/*	.right icons should be 24x24px, using placeholders for now */
-	height: 24px;	
-	padding: 4px 0 4px 28px;
-	margin-bottom: 4px	
-}
-aside.related-content section > h1.recent {
-	background: url(../images/recent.png) left top no-repeat;
-}
-aside.related-content section > h1.circle {
-	background: url(../images/circle.png) left top no-repeat;
-}
-aside.related-content section > h1.person {
-	background: url(../images/person.png) left top no-repeat;
-}
-aside.related-content section h1.people {
-	background: url(../images/people.png) left top no-repeat;
-}
-aside.related-content section > h1.snap {
-	background: url(../images/snap.png) left top no-repeat;
-}
-aside.related-content section > h1.popular {
-	background: url(../images/popular.png) left top no-repeat;
-}
 /* this should be aside > section > h2 */
-aside.related-content .count  {
+aside.related-content h2  {
 	font-size: 0.9em;
 	font-weight: normal;
 	background-color: #8CD1ED;
@@ -1764,7 +1704,7 @@ aside.related-content .count  {
 	padding: 0 10px;
 	display: inline;
 }
-aside.related-content .count > span {
+aside.related-content h2 > span.count {
 	color: #000;
 	font-weight: bold;
 }
@@ -1777,11 +1717,9 @@ aside.related-content.grid_5 > section {
 	padding: 4px;
 	margin-bottom: 4px;
 }
-aside.related-content.grid_5 section > h1 {
-	xfont-weight: normal;
-}
 
 /* /photos/home page grid_5 */
+/*  TODO: USE .tiny */
 .grid_5 .FigureBox.Group.sq  figure > a > img {
 	width: 33px;
 	height: 33px;

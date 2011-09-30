@@ -55,50 +55,53 @@ if (empty($this->passedArgs['wide'])) {
 	<div class="preview grid_11">
 		<section class='preview-body' <?php $size = !empty($this->passedArgs['size']) ?  $this->passedArgs['size'] : 'bp';  echo "size='{$size}' uuid='".AppController::$uuid."'"; ?> >
 			<?php echo $this->element('shotGallery') ?>
-		</section>		
-		<section class="comments">
-	<?php
-		$xhrSrc = array('plugin'=>'', 'action'=>'discussion', $this->passedArgs[0]);
-		$xhrSrc = Router::url($xhrSrc);	
-		echo $this->element('comments/discussion-fragment', array('xhrSrc'=>$xhrSrc));
-	?>			
-		</section>
+		</section>	
+		
+		<aside class="related-content">	
+			<a name='discussion'></a>
+			<section class="discussion">
+				<h1><?php __('Discussion'); ?></h1>			
+			<?php
+				$xhrSrc = array('plugin'=>'', 'action'=>'discussion', $this->passedArgs[0]);
+				$xhrSrc = Router::url($xhrSrc);
+				echo "<div id='paging-comments' class='paging-content xhr-get' xhrSrc='{$xhrSrc}'  xhrTarget='paging-comments'></div>";	
+				// echo $this->element('comments/discussion-fragment', array('xhrSrc'=>$xhrSrc));
+			?>	
+			</section>
+		</aside>	
 	</div>
 	<aside id="related-content" class="related-content grid_5">
-		<section class='Sharing'>
-			<h1>Sharing</h1>
-		</section>
-
-		<section class="circle">
-			<h1 class="circle">Circles</h1>
-	<?php
-		$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'groups', '?'=>array('preview'=>1)));
-		echo "<div id='groups-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
-	?>			
-		</section>
-		
-		<section id="tag-cloud" class="popular">
-			<h1 class="popular">Tags</h1>
-	<?php	// tagCloud
-		$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show', 'filter'=>'Asset');
-		$xhrFrom = Configure::read('controller.xhrFrom');
-		$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
-		$xhrSrc = Router::url($xhrSrc);
-		echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
-	?>	
-	<?php echo $this->element('tags', array('domId'=>'assets-tags', 'data'=>&$asset))?>
-		</section>
-		
-		<section class="details">
-			<h1>Snap Details</h1>
-		</section>
-		<section class="exif">
-			<h1>Snap Exif</h1>
-		</section>	
-	</aside>
-	
-
-
+		<div class=" alpha grid_5 omega right">
+			<section class='Sharing'>
+				<h1>Sharing</h1>
+			</section>
+			<section class="circle">
+				<h1 class="circle">Circles</h1>
+		<?php
+			$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'groups', '?'=>array('preview'=>1)));
+			echo "<div id='groups-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
+		?>			
+			</section>
+			
+			<section id="tag-cloud" class="trends">
+				<h1>Tags</h1>
+		<?php	// tagCloud
+			$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show', 'filter'=>'Asset');
+			$xhrFrom = Configure::read('controller.xhrFrom');
+			$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
+			$xhrSrc = Router::url($xhrSrc);
+			echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
+		?>	
+		<?php echo $this->element('tags', array('domId'=>'assets-tags', 'data'=>$data))?>
+			</section>
+			
+			<section class="details">
+				<h1>Snap Details</h1>
+			</section>
+			<section class="exif">
+				<h1>Snap Exif</h1>
+			</section>
+	</div></aside>
 </section>
 	
 <?php 

@@ -22,17 +22,17 @@ Configure::write('debug',1);
 	<?php if (!$isPreview  && Configure::read("paginate.Options.{$paginateModel}.context")!='skip' ) { echo "<li>{$this->element('context')}</li>"; }?>
 </ul>
 <?php if ($isPreview) { ?>	
-	<h1 class='count'>
+	<h2>
 		<?php
 			if ($total==0) {
-				echo "There are no added Tags. Add some below.";
+				echo "There are <span class='count'>no</span> Tags for this item.";
 			} else {
-				echo "Total <span>{$total}</span> Tag" . ($total>1 ? "s. " : ". ");
+				echo "Total <span class='count'>{$total}</span> Tag" . ($total>1 ? "s. " : ". ");
 				$next = array('controller'=>$xhrFrom['keyName'],'action'=>'trends', $xhrFrom['uuid']) + $passedArgs;
 				echo $this->Html->link('Show all', $next); 
 			}
 		?> 
-	</h1>
+	</h2>
 <?php } ?>	
 <ul class='inline'>
 <?php 

@@ -24,7 +24,7 @@
 			endif;
 		endif;
 	else: ?>
-		<h3><?php __d('comments', 'Discussion'); ?></h3>
+		<h3><?php __d('comments', 'Comment'); ?></h3>
 		<?php
 			echo sprintf(__d('comments', 'If you want to post comments, you need to login first.', true), $html->link(__d('comments', 'login', true), array('controller' => 'users', 'action' => 'login', 'prefix' => $adminRoute, $adminRoute => false)));
 	endif;

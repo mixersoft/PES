@@ -26,16 +26,16 @@ $DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
 ?>
 <section class="<?php if ($isWide) echo "wide "; ?>gallery person">
 <?php if ($isPreview) { ?>	
-	<h1 class='count'>
+	<h2>
 		<?php
 			if ($total==0) {
-				echo "This Circle has not members yet. Join now.";
+				echo "This Circle has <span class='count'>no</span> members. Join now.";
 			} else {
-				echo "Total <span>{$total}</span> Member" . ($total>1 ? "s. " : ". ");
+				echo "Total <span class='count'>{$total}</span> Member" . ($total>1 ? "s. " : ". ");
 				echo $this->Html->link('Show all', array('action'=>'members')+$passedArgs); 
 			}
 		?> 
-		</h1>
+		</h2>
 <?php } ?>		
 	<div class="container">
 <?php

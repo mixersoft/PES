@@ -866,4 +866,18 @@
 			return this;
 		}
 	};
+	Factory.Person = {
+		markup: '<article class="FigureBox Person">'+
+                '	<figure><a><img alt="" src=""></a>'+
+                '		<figcaption>'+
+                '		 <div class="label"></div>'+
+                '		 <ul class="inline extras">'+
+                '		 	<li class="snaps"><a></a></li>'+
+                '		 	<li class="circles last"><a></a></li>'+
+				'		</ul></figcaption>'+
+				'</figure></article>',
+		renderElementsBySize: function(size, o) {
+			
+		}
+	};	
 })();

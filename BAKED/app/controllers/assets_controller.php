@@ -846,10 +846,13 @@ debug("WARNING: This code path is not tested");
 	}
 
 	function discussion($id) {
+		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';
 		if (!$id) {
-			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'group'));
+			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'Snap'));
 			$this->redirectSafe();
-		}
+		}		
 		$BIG_LIMIT = 10;
 //		debug("$shotType, showHidden=$showHidden");
 		$options = array(

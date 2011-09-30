@@ -68,7 +68,7 @@ if (empty($this->passedArgs['wide'])) {
 ?>
 
 <?php $this->Layout->blockStart('relatedContent');?>
-<aside id="related-content" class="container_16">		    	
+<aside id="related-content" class="related-content container_16">		    	
         <div class="grid_11">
            	<section class="left">
 				<article>
@@ -96,10 +96,9 @@ if (empty($this->passedArgs['wide'])) {
 				</article>
 			</section>        	
 		</div>
-		<div class="grid_5">
-        	<aside>
-                <section id="tag-cloud" class="popular">
-					<h3 class="popular"><?php __('Trends');?></h3>
+		<div class="grid_5 right">
+            <section id="tag-cloud" class="trends">
+				<h1><?php __('Trends');?></h1>
 <?php 
 	// tagCloud
 	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show');
@@ -107,15 +106,13 @@ if (empty($this->passedArgs['wide'])) {
 	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
 	$xhrSrc = Router::url($xhrSrc);
 	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
-		// tag form 	
-	echo $this->element('tags', array('domId'=>'groups-tags', 'data'=>&$group));
+	// tag form 	
+	echo $this->element('tags', array('domId'=>'groups-tags', 'data'=>$data));
 ?>
-	
-				</section>
-            	<section class="people">
-            		<h3 class="people">People</h3>
-				</section>
-			</aside>
+			</section>
+        	<section class="people">
+        		<h1>People</h1>
+			</section>
 		</div>	
 		
 </aside>

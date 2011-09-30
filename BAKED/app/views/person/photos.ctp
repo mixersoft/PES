@@ -1,7 +1,7 @@
 <?php echo $this->element('/photo/roll');?>
 
 <?php $this->Layout->blockStart('relatedContent');?>
-<aside id="related-content" class="container_16">		    	
+<aside id="related-content" class="related-content container_16">		    	
         <div class="grid_11">
            	<section class="left">
 				<article>
@@ -30,23 +30,20 @@
 				</article>
 			</section>        	
 		</div>
-		<div class="grid_5">
-        	<aside>
-                <section id="tag-cloud" class="popular">
-					<h3 class="popular"><?php __('Trends');?></h3>
+		<div class="grid_5 right">
+            <section id="tag-cloud" class="trends">
+				<h1><?php __('Trends');?></h1>
 <?php	// tagCloud
 		$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show', 'filter'=>'Asset');
 		$xhrFrom = Configure::read('controller.xhrFrom');
 		$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
 		$xhrSrc = Router::url($xhrSrc);
-	echo "<div id='tags-preview-xhr' class='grid_5 xhr-get' xhrSrc='{$xhrSrc}'></div>";
+	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
 ?>	
-				</section>
-            	<section class="people">
-            		<h3 class="people">People</h3>
-				</section>
-			</aside>
+			</section>
+        	<section class="people">
+        		<h1>People</h1>
+			</section>
 		</div>	
-		
 </aside>
 <?php $this->Layout->blockEnd();?>	
