@@ -805,49 +805,23 @@ ul.photo-roll {
 	overflow: hidden;
 }
 
-#related-content .left {
+#related-content .body {
 	width: 100%;
 	position: relative;
 	margin: auto;
 	padding: 0 0 0 0;
 }
-#related-content .left > article {
+#related-content .body > article {
 	margin-bottom: 20px;
 }
-#related-content .left > article header {
+#related-content .body > article header {
 	border-bottom: 1px solid #8bc3e4;
 	position: relative
 }
-#related-content .left header h3 {
-	position: absolute;
-	left: 0px;
-	font-size: 15px;
-	color: #000;
-}
-#related-content .left > article section h1.recent {
-	background: url(../images/recent.png) left top no-repeat;
-	padding: 5px 0px 5px 44px;
-	margin-bottom: 4px
-}
-#related-content .left > article section h1.circle {
-	background: url(../images/circle.png) left top no-repeat;
-	padding: 5px 0px 8px 44px;
-	margin-bottom: 4px
-}
-#related-content .left > article section h1.person {
-	background: url(../images/person.png) left top no-repeat;
-	padding: 5px 0px 8px 44px;
-	margin-bottom: 4px
-}
-#related-content .left > article section h1.snap {
-	background: url(../images/snap.png) left top no-repeat;
-	padding: 5px 0px 8px 44px;
-	margin-bottom: 4px
-}
-#related-content .left > article header ul {
+#related-content .body > article header ul {
 	float: right;
 }
-#related-content .left > article header ul li a {
+#related-content .body > article header ul li a {
 	border: 1px solid #8bc3e4;
 	color: #356aa0;
 	font-size: 13px;
@@ -859,19 +833,24 @@ ul.photo-roll {
 	display: table-cell
 }
 
+aside.related-content .body section > h1 {
+	font-size: 15px;
+	color: #000;
+	border-bottom: 1px solid #8BC3E4;
+	padding: 5px 0px 5px 44px;
+	margin-bottom: 4px	
+}
 
 /*.tabbed-area div div {
- * 	
- */
 	padding: 20px;
 	min-height: 250px;
-	position: absolute;
-	top: -1px;
-	left: 0;
+	xposition: absolute;
+	xtop: -1px;
+	xleft: 0;
 	width: 100%;
 }
 .tabbed-area div div, .tabs li a {
-	border-top: 1px solid #8bc3e4;
+	xborder-top: 1px solid #8bc3e4;
 }*/
 
 
@@ -1616,13 +1595,13 @@ div.properties {
 
 
 /*  related content:  section headers & icons */
-aside.related-content .right section {
+aside.related-content .body-right section {
 	margin-bottom: 30px;
 	display: block;
 	overflow: hidden;
 	padding: 0px 0px 0px 5px;
 }
-aside.related-content .right section > h1 {
+aside.related-content .body-right section > h1 {
 /*	.right icons should be 24x24px, using placeholders for now */
 	height: 24px;	
 	padding: 4px 0 4px 28px;
@@ -1632,9 +1611,10 @@ aside.related-content .right section > h1 {
 aside.related-content section.recent > h1 {
 	background: url(../images/recent.png) left top no-repeat;
 }
-aside.related-content section.circle > h1 {
+aside.related-content section.circles > h1 {
 	background: url(../images/circle.png) left top no-repeat;
 }
+/* deprecate person, use people instead*/
 aside.related-content section.person > h1 {
 	background: url(../images/person.png) left top no-repeat;
 }
@@ -1656,7 +1636,7 @@ aside.related-content  section.discussion > h1 {
 	xfont-size: 0.9em;
 }
 
-aside.related-content section.people ul li {
+aside.related-content .body-right section.people ul li {
 	margin: 0px 8px 12px 0px;
 	float: left;
 	border: 2px solid #8bc3e4;
@@ -1664,7 +1644,7 @@ aside.related-content section.people ul li {
 	width: 43px;
 	overflow: hidden;
 }
-aside.related-content section.people ul li:nth-child(5n+5) {
+aside.related-content .body-right section.people ul li:nth-child(5n+5) {
 	margin-right: 0px;
 }
 
@@ -1716,6 +1696,7 @@ aside.related-content.grid_5 > section {
 	-webkit-border-radius: 5px;	
 	padding: 4px;
 	margin-bottom: 4px;
+	
 }
 
 /* /photos/home page grid_5 */
@@ -1746,11 +1727,16 @@ aside.related-content.grid_5 > section {
 .comments-main .post h3 {
 	font-size: 0.9em;
 }
+.comments-main form > div {
+	display: inline-block;
+}
+.comments-main form textarea {
+	width: 530px;
+	height: 40px;
+}
 .comments-main .post form .input.textarea {
 }
 .comments-main .post form textarea {
-	width: 100%;
-	height: 40px;
 }
 .comments-main .post form .submit {
 	float: right;
@@ -1782,6 +1768,13 @@ aside.related-content.grid_5 > section {
 
 .grid_11 .comments-main .FigureBox.Person.sq  figcaption {
 	width: 520px;	
+}
+section.discussion div.wrap {
+	background-color: #FFF;
+	padding: 4px;
+	border: 1px solid #D2D2D2;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
 }
 .comments div.body {
     padding: 5px 0px 10px 0px;

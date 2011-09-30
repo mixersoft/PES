@@ -71,7 +71,7 @@ if (empty($this->passedArgs['wide'])) {
 		</aside>	
 	</div>
 	<aside id="related-content" class="related-content grid_5">
-		<div class=" alpha grid_5 omega right">
+		<div class=" alpha grid_5 omega body-right">
 			<section class='Sharing'>
 				<h1>Sharing</h1>
 			</section>

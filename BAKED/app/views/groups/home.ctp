@@ -70,20 +70,20 @@ if (empty($this->passedArgs['wide'])) {
 <?php $this->Layout->blockStart('relatedContent');?>
 <aside id="related-content" class="related-content container_16">		    	
         <div class="grid_11">
-           	<section class="left">
+           	<div class="body">
 				<article>
-        	    	<section class="tabbed-area cur-nav-fix">  
-            		    <h3 class="recent">Recent Activity</h3>      		
-                		<section class="box-wrap">
-                            <section id="snaps">
+        	    	<section class="recent tabbed-area cur-nav-fix">  
+            		    <h1>Recent Activity</h1>      		
+                		<section class="wrap">
+                          <section id="snaps">
                           </section>
                         </section>
 					</section>
 				</article>
 				<article>
-					<section class="tabbed-area cur-nav-fix">  
-						<h3 class="person">Members</h3>      		
-						<section class="box-wrap">
+					<section class="people tabbed-area cur-nav-fix">  
+						<h1>Members</h1>      		
+						<section class="wrap">
 						  <section id="members">
 <?php 
 	// $ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'xhr-get', 'a'=>'members', 'e'=>'preview-members'));
@@ -94,9 +94,21 @@ if (empty($this->passedArgs['wide'])) {
 						</section>
 					</section>
 				</article>
-			</section>        	
+				<article>
+					<a name='discussion'></a>
+					<section class="discussion">
+						<h1><?php __('Discussion'); ?></h1>			
+					<?php
+						$xhrSrc = array('plugin'=>'', 'action'=>'discussion', $this->passedArgs[0]);
+						$xhrSrc = Router::url($xhrSrc);
+						echo "<div id='paging-comments' class='paging-content wrap xhr-get' xhrSrc='{$xhrSrc}'  xhrTarget='paging-comments'></div>";	
+						// echo $this->element('comments/discussion-fragment', array('xhrSrc'=>$xhrSrc));
+					?>	
+					</section>
+				</article>				
+			</div>        	
 		</div>
-		<div class="grid_5 right">
+		<div class="grid_5 body-right">
             <section id="tag-cloud" class="trends">
 				<h1><?php __('Trends');?></h1>
 <?php 
@@ -116,16 +128,6 @@ if (empty($this->passedArgs['wide'])) {
 		</div>	
 		
 </aside>
-
-	<section class="comments container_16">
-		<div class="grid_11">
-	<?php
-		$xhrSrc = array('plugin'=>'', 'action'=>'discussion', AppController::$uuid);
-		$xhrSrc = Router::url($xhrSrc);	
-		echo $this->element('comments/discussion-fragment', array('xhrSrc'=>$xhrSrc));
-	?>			
-		</div>
-	</section>
 <?php 
 	$this->Layout->blockEnd();
 ?>	

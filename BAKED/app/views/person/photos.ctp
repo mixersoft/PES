@@ -3,20 +3,20 @@
 <?php $this->Layout->blockStart('relatedContent');?>
 <aside id="related-content" class="related-content container_16">		    	
         <div class="grid_11">
-           	<section class="left">
+           	<div class="body">
 				<article>
-        	    	<section class="tabbed-area cur-nav-fix">  
-            		    <h3 class="recent">Recent Activity</h3>      		
-                		<section class="box-wrap">
+        	    	<section class="recent tabbed-area cur-nav-fix">  
+            		    <h1>Recent Activity</h1>      		
+                		<section class="wrap">
                             <section id="snaps">
                           </section>
                         </section>
 					</section>
 				</article>
 				<article>
-					<section class="tabbed-area cur-nav-fix">  
-						<h3 class="circle">Circles</h3>      		
-						<section class="box-wrap">
+					<section class="circles tabbed-area cur-nav-fix">  
+						<h1>Circles</h1>      		
+						<section class="wrap">
 						  <section id="circles">
 <?php
 // this should be only the circles which include user photos
@@ -28,9 +28,9 @@
 						</section>
 					</section>
 				</article>
-			</section>        	
+			</div>        	
 		</div>
-		<div class="grid_5 right">
+		<div class="grid_5 body-right">
             <section id="tag-cloud" class="trends">
 				<h1><?php __('Trends');?></h1>
 <?php	// tagCloud
