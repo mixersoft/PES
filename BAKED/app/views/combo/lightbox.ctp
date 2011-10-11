@@ -22,7 +22,7 @@
 						<li size="lbx-tiny" class="btn"><img alt="" src="/css/images/img_1.gif"></li><li size="sq" class="btn "><img alt="" src="/css/images/img_2.gif"></li><li size="lm" class="btn "><img alt="" src="/css/images/img_3.gif"></li>
 					</ul>
 					<ul class="inline">
-						<li action='filmstrip'><img src="/css/images/img_zoomin.gif"></li><li action="maximize"><img src="/css/images/img_zoomout.gif"></li>
+						<li action='set-display-view:one-row'><img src="/css/images/img_zoomin.gif"></li><li action="set-display-view:maximize"><img src="/css/images/img_zoomout.gif"></li>
 					</ul>
 				</nav>
 			</li>

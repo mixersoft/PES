@@ -352,31 +352,7 @@ class AssetsController extends AppController {
 		$this->set('data', $data);	
 //		debug($data);
 	}	
-	
-	function neighbors($id, $ccid) {
-		/*
-		 * neighborhood filmstrip, 
-		 * - allow JSON request only, for rendering in JS
-		 */
-		$result = $this->__getFilmstripInit($id, $ccid);
-//		$this->set('jsonData',array('init'=>$result['init'], 'CastingCall'=>$result['castingCall']));
-		$this->viewVars['jsonData']['filmstrip']['init'] = $result['init'];
-		$this->viewVars['jsonData']['castingCall'] = $result['castingCall'];
-		$this->viewVars['jsonData']['ccid'] = $ccid;		
-		
-		
-		$done = $this->renderXHRByRequest('json', '/elements/photo/filmstrip');
-		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
-		
-		// or autoRender
-//		debug($result);
-		$this->set($result);
-		$options = array('conditions'=>array('Asset.id'=>$id)		);
-		$this->Asset->contain(null);		
-		$data = @$this->Asset->find('first', $options);
-		$this->set('data', $data);	
-		Configure::write('js.render_lightbox', false);
-	}
+
 	
 	/**
 	 * get castingCall/photos showing hidden shots.
@@ -423,31 +399,6 @@ class AssetsController extends AppController {
 		$data = @$this->Asset->find('first', $options);
 		$this->set('asset', $data);	// for PRIMARY asset label
 	}	
-	
-	function __getFilmstripInit($id, $ccIdorCastingCall) {
-		$FILMSTRIP_HALFSIZE = 3;
-//		App::import('Helper', 'Js');
-//		$this->Js = new JsHelper();	
-		/*
-		 * neighbor/filmstrip processing
-		 */
-		$castingCall = is_numeric($ccIdorCastingCall) ? Session::read("castingCall.{$ccIdorCastingCall}") : $ccIdorCastingCall;
-		$Auditions = !empty($castingCall['Auditions']) ? $castingCall['Auditions'] : array();
-		$Total=$Perpage=$Page=$Audition=0;
-		extract($Auditions, EXTR_IF_EXISTS);
-		$selected = array_search($id, Set::extract("/Audition/id", $Auditions));
-		if ($selected===false) {
-			return false;
-		} else {	
-			// calculate filmstrip params
-			$start =  max(0, $selected - $FILMSTRIP_HALFSIZE);
-			$length = min($Total,(2*$FILMSTRIP_HALFSIZE+1));
-			$start = min($start, $Total- $length);
-			$init = compact('selected','start','length','Total', 'Perpage', 'Page', 'ccid');
-			$castingCall = array('CastingCall'=>$castingCall);
-			return compact('init', 'castingCall', 'ccid');
-		}
-	}
 	
 
 	/**
@@ -532,30 +483,60 @@ debug("WARNING: This code path is not tested");
 	}
 
 
+	/**
+	 * get cached CastingCall, extend if necessary for filmstrip Navigation
+	 */
+	function neighbors($ccid=null) {
+		// force JSON request
+		if ($this->RequestHandler->ext !== 'json') $this->redirectSafe();
+		
+		$FILMSTRIP_LIMIT = 999;
+		$options = $this->params['named'];
+		if (empty($options['perpage'])) $options['perpage'] = $FILMSTRIP_LIMIT;
+		/*
+		 * navFilmstrip processing
+		 */
+		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
+		if (empty($ccid) && isset($this->params['url']['ccid'])) $ccid = $this->params['url']['ccid'];
+		$castingCall = $this->CastingCall->cache_Refresh($ccid, $options);		
+		$this->viewVars['jsonData']['castingCall'] = $castingCall;
+		$done = $this->renderXHRByRequest('json', null, null , 0);
+		return;
+	}
+
+
 	function home($id = null) {
 		$FILMSTRIP_LIMIT = 999;
 		$forceXHR = setXHRDebug($this, 0);
+
+		/*
+		 * navFilmstrip processing
+		 */
+		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
+		$ccid = (isset($this->params['url']['ccid'])) ? $ccid = $this->params['url']['ccid'] : null;
+		$castingCall = $this->CastingCall->cache_Refresh($ccid, array('perpage_on_cache_stale'=>$FILMSTRIP_LIMIT));
+// debug($ccid);			exit;
+// debug($castingCall['CastingCall']['Request']); 	
+// debug(Session::read('castingCall'));exit;	
+		// if (!$castingCall) {
+			// // no ccid available, cache generic castingCall. redirect to clean url
+			// $this->__cache_genericCastingCall();
+			// $this->redirect($this->here, null, true);
+		// }
+		$this->viewVars['jsonData']['castingCall'] = $castingCall;
+		$done = $this->renderXHRByRequest('json', null, null , 0);
+		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
+		/*
+		 * navFilmstrip done
+		 */
+		
 		$this->layout = 'snappi';
 		$this->helpers[] = 'Time';
 		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';
 		if (!$id) {
 			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'asset'));
 			$this->redirectSafe();
-		}
-		/*
-		 * navFilmstrip processing
-		 */
-		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
-		$ccid = (isset($this->params['url']['ccid'])) ? $ccid = $this->params['url']['ccid'] : null;
-		$castingCall = $this->CastingCall->cache_Refresh($ccid, $FILMSTRIP_LIMIT);
-// debug($ccid);			
-// debug($castingCall['CastingCall']['Request']); 	
-// debug(Session::read('castingCall'));exit;	
-		if (!$castingCall) {
-			// no ccid available, cache generic castingCall. redirect to clean url
-			$this->__cache_genericCastingCall();
-			$this->redirect($this->here, null, true);
-		}
+		}		
 		/*
 		 * get Permissionable associated data manually, add paging
 		 */
@@ -595,7 +576,6 @@ debug("WARNING: This code path is not tested");
 				if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 				$castingCall = $this->CastingCall->getCastingCall(array($data['Asset']), false); 
 			} 
-			$this->viewVars['jsonData']['castingCall'] = $castingCall;
 		}
 	}
 
@@ -1337,6 +1317,65 @@ debug("WARNING: This code path is not tested");
 		return;
 	}
 	
+	/************************************
+	 * legacy code
+	 */
+	
+	/**
+	 * @deprecated use filmstrip with HScroll instead
+	 */
+	function __getFilmstripInit($id, $ccIdorCastingCall) {
+		$FILMSTRIP_HALFSIZE = 3;
+//		App::import('Helper', 'Js');
+//		$this->Js = new JsHelper();	
+		/*
+		 * neighbor/filmstrip processing
+		 */
+		$castingCall = is_numeric($ccIdorCastingCall) ? Session::read("castingCall.{$ccIdorCastingCall}") : $ccIdorCastingCall;
+		$Auditions = !empty($castingCall['Auditions']) ? $castingCall['Auditions'] : array();
+		$Total=$Perpage=$Page=$Audition=0;
+		extract($Auditions, EXTR_IF_EXISTS);
+		$selected = array_search($id, Set::extract("/Audition/id", $Auditions));
+		if ($selected===false) {
+			return false;
+		} else {	
+			// calculate filmstrip params
+			$start =  max(0, $selected - $FILMSTRIP_HALFSIZE);
+			$length = min($Total,(2*$FILMSTRIP_HALFSIZE+1));
+			$start = min($start, $Total- $length);
+			$init = compact('selected','start','length','Total', 'Perpage', 'Page', 'ccid');
+			$castingCall = array('CastingCall'=>$castingCall);
+			return compact('init', 'castingCall', 'ccid');
+		}
+	}
+		
+	/**
+	 * get photos before/after selected photo
+	 */
+	function XXXneighbors($id, $ccid) {
+		/*
+		 * neighborhood filmstrip, 
+		 * - allow JSON request only, for rendering in JS
+		 */
+		$result = $this->__getFilmstripInit($id, $ccid);
+//		$this->set('jsonData',array('init'=>$result['init'], 'CastingCall'=>$result['castingCall']));
+		$this->viewVars['jsonData']['filmstrip']['init'] = $result['init'];
+		$this->viewVars['jsonData']['castingCall'] = $result['castingCall'];
+		$this->viewVars['jsonData']['ccid'] = $ccid;		
+		
+		
+		$done = $this->renderXHRByRequest('json', '/elements/photo/filmstrip');
+		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
+		
+		// or autoRender
+//		debug($result);
+		$this->set($result);
+		$options = array('conditions'=>array('Asset.id'=>$id)		);
+		$this->Asset->contain(null);		
+		$data = @$this->Asset->find('first', $options);
+		$this->set('data', $data);	
+		Configure::write('js.render_lightbox', false);
+	}	
 	
 }
 ?>

@@ -46,24 +46,81 @@
         },
         
         bindSelected2Page : function(gallery, selected, oldUuid) {
-    		selected = selected || gallery.getFocus();
-    		if (!selected.id) selected = SNAPPI.Auditions.get(selected);
-    		var newUuid = selected.id;
-    		// this instanceof Gallery
-        	/*
-        	 * update div#hiddenshots, from filmstrip
-        	 */
-        	SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected);
-        	// SNAPPI.domJsBinder.bindSelected2Preview.call(gallery, selected);
-        	
-        	var shotGallery = SNAPPI.Gallery.find['shot-'];
-        	if (shotGallery) {
-        		if (selected.Audition.Shot.id) {
-        			shotGallery.showShotGallery(selected);
-	        	} else {
-	        		shotGallery.container.all('.FigureBox').addClass('hide');
+    		try {
+    			if (!PAGE.jsonData.castingCall.auditionSH) {
+	        		SNAPPI.Auditions.parseCastingCall(PAGE.jsonData.castingCall);
 	        	}
-        	}
+	        	// get selected
+	        	if (!selected) {
+	        		try {
+	        			if (gallery) selected = gallery.getFocus();
+	        			else {
+	        				selected = PAGE.jsonData.controller.xhrFrom.uuid;
+	        				if (!selected) throw new Error();
+	        			}
+	        		} catch (e) {
+	        			selected = PAGE.jsonData.castingCall.auditionSH.getFocus();
+	        		}
+	        	}
+				if (!selected.id) {
+	        		selected = SNAPPI.Auditions.get(selected);
+	        	}
+	        	
+    			var newUuid = selected.id;
+    			SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected);
+
+				/*
+				 * navFilmstrip
+				 */
+    			var view, navFilmstrip, shotGallery;
+    			if (PAGE.jsonData.castingCall.auditionSH.count() > 1) {
+    				// // more than 1 audition, show navFilmstrip, determine view
+    				// navFilmstrip = SNAPPI.Gallery.find['nav-']; 
+    				// try {
+						// view = navFilmstrip.view || 'minimize';
+					// } catch (e) {
+						// view = 'minimize';		// default
+						// // view = 'filmstrip';		// default
+					// } 
+    				// if (!navFilmstrip) {
+	    				// // create/init navFilmstrip, default minimized
+	    				// var filmstripCfg = {
+							// type: 'NavFilmstrip',
+							// castingCall: PAGE.jsonData.castingCall,
+							// uuid: PAGE.jsonData.controller.xhrFrom.uuid,	// sets .focus
+							// render: (view != 'minimize'),		// do NOT render on init
+						// };
+	    				// navFilmstrip = new SNAPPI.Gallery(filmstripCfg);
+	    			// }
+	    			// // filmstrip might not be rendered yet;
+					// SNAPPI.Factory.Gallery.actions.setView(navFilmstrip, view);
+    			} else {
+    				// skip navFilmstrip
+    			}
+    			
+    			
+	        	/*
+	        	 * shotGallery
+	        	 */
+	        	var shotGallery = SNAPPI.Gallery.find['shot-'];
+	        	if (shotGallery) {
+	        		try {
+	        			view = shotGallery.view || 'minimize';
+	        		} catch(e) {
+	        			view = 'minimize';
+	        		}
+	        		SNAPPI.Factory.Gallery.actions.setView(shotGallery, view);
+	        		if (selected.Audition.Shot.id) {
+	        			shotGallery.showShotGallery(selected);
+		        	} else {
+		        		shotGallery.container.all('.FigureBox').addClass('hide');
+		        	}
+	        	}
+        	
+        	
+    		} catch (e) {}   
+    		
+
         	
         	
         	

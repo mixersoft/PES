@@ -36,16 +36,61 @@
     		switch(view) {
     			case 'minimize':  
 	        		parent.addClass('minimize');
-	        		// gallery.container.addClass('one-row');
-	        		parent.one('.gallery-header > ul').addClass('hide');      			
+	        		// g.header.one('ul').addClass('hide');      			
 	    			break;
-    			case 'filmstrip': 
+    			case 'one-row': 
 	        		parent.removeClass('minimize');
-	        		// gallery.container.addClass('one-row');
-	        		parent.one('.gallery-header > ul').removeClass('hide');
+	        		g.container.addClass('one-row');
+	        		g.header.one('ul').removeClass('hide');
 	        		break;
-    			case 'maximize':  break;
+    			case 'maximize': 
+    				// from lighbox action.maximize, not tested 
+					var MAX_HEIGHT = window.innerHeight - 120;
+					var count = Math.min(this.Gallery.auditionSH.count(), _LIGHTBOX_LIMIT);
+					var width = this.Gallery.container.one('.FigureBox').get('offsetWidth');
+					var rows = Math.ceil(count*width/940);
+					var height = this.Gallery.container.one('.FigureBox').get('offsetHeight');
+					if (rows*height > MAX_HEIGHT) {
+						rows = Math.floor(MAX_HEIGHT/height);
+						height = (rows*height)+'px';
+					} else {
+						height = 'auto';
+					}
+					this.Gallery.container.setStyles({
+						width: 'auto',
+						height: height	
+					}).removeClass('one-row');;
+					this.Gallery.container.ancestor('.filmstrip-wrap').removeClass('hide');
+					this.Gallery.container.get('parentNode').removeClass('minimize');
+					e.currentTarget.addClass('focus');    			
+	    			break;
     		}
+    		g.view = view;
+    	},
+    	setSize: function(g, size) {
+        	g.renderThumbSize(size);
+        	// check display mode for filmstrip mode, reset width to fit thumbsize
+        	if (g.container.hasClass('one-row')) g.setFilmstripWidth();
+    	},
+    	// called by click event handler, context = Gallery.node, set by listener
+    	setToolbarOption: function(e){
+    		try {
+	    		var action = e.currentTarget.getAttribute('action').split(':');
+	    		switch(action[0]) {
+	    			case 'set-display-view':
+	    				var fn = GalleryFactory[this.Gallery._cfg.type]['handle_setDisplayView'];
+	    				if (fn) {
+	    					fn(this.Gallery, action[1] );
+	    				} else GalleryFactory.actions.setView(this.Gallery, action[1]);
+	    			break;
+	    			case 'set-display-size':
+	    				GalleryFactory.actions.setSize(this.Gallery, action[1]);
+	    			break;	    			
+	    		}
+	    		// set window option button to selected value
+	    		e.currentTarget.get('parentNode').all('li').removeClass('focus');
+	        	e.currentTarget.addClass('focus');	
+        	} catch (e) {}
     	},
     }
     /**
@@ -77,6 +122,7 @@
         gallery.node.Gallery = gallery;				// use to avoid closure bug on SNAPPI.io 
         gallery.container.Gallery = gallery;		// is gallery reference necessary?
 		gallery.node.dom().Gallery = gallery; 		// for firebug introspection	        
+		gallery.header = node.siblings('.gallery-header');
         delete cfg.node;				// use this.container from this point forward    		
     }
     
@@ -89,7 +135,8 @@
 	        			'<div class="container grid_16" />'+
 	        			'</section>',
 			node: 'div.gallery-container > section.gallery.photo',
-			listeners: ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'ThumbsizeClick'],
+			render: true,
+			listeners: ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick'],
 			draggable: true,
 			hideHiddenShotByCSS: true,
 			size: 'lm',
@@ -144,13 +191,6 @@
 			} catch (e) {
 			}                	
 		},
-		handle_ThumbsizeClick: function(e) {
-    		var thumbSize = e.currentTarget.getAttribute('size');
-        	this.Gallery.renderThumbSize(thumbSize);
-        	e.currentTarget.get('parentNode').all('li').removeClass('focus');
-        	e.currentTarget.addClass('focus');			
-		}
-       
 	};
 	
 	LIGHTBOX_PERPAGE_LIMIT = 72;
@@ -164,8 +204,9 @@
 	        			'</section>',
 	        tnType: 'Photo',	// thumbnail Type
 			node: '#lightbox section.gallery.lightbox',
-			// listeners: ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'ThumbsizeClick'],
-			listeners: ['MultiSelect', 'ThumbsizeClick'],
+			render: true,
+			// listeners: ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick'],
+			listeners: ['MultiSelect', 'WindowOptionClick'],
 			draggable: false,
 			hideHiddenShotByCSS: false,
 			size: 'lbx-tiny',
@@ -221,14 +262,6 @@
 			// } catch (e) {
 			// }                	
 		// },
-		handle_ThumbsizeClick: function(e) {
-    		var thumbSize = e.currentTarget.getAttribute('size');
-        	this.Gallery.renderThumbSize(thumbSize);
-        	e.currentTarget.get('parentNode').all('li').removeClass('focus');
-        	e.currentTarget.addClass('focus');	
-        	// check display mode for filmstrip mode
-        	if (this.Gallery.container.hasClass('one-row')) this.Gallery.setFilmstripWidth();
-		}
        
 	};
 	
@@ -238,19 +271,28 @@
 			tnType: 'Photo',	// thumbnail Type
 			ID_PREFIX: 'nav-',
 			PROVIDER_NAME: 'snappi',
+			// TODO: copy from navFilmstrip.ctp
 			MARKUP: '<section class="gallery photo filmstrip container_16">'+
 	        			'<div class="container grid_16" />'+
 	        			'</section>',			
 			node: 'section.filmstrip .gallery.photo.filmstrip',
+			render: true,
 			castingCall: false,
 			size: 'sq',                			
 			uuid: null,	
 			showExtras: true,
 			hideHiddenShotByCSS: true,	
 			draggable: true,
-			listeners: ['Keypress', 'Mouseover', 'MultiSelect', 'Contextmenu', 'FocusClick', 'ThumbsizeClick'],
+			listeners: ['Keypress', 'Mouseover', 'MultiSelect', 'Contextmenu', 'FocusClick', 'WindowOptionClick'],
 		},
 		build: GalleryFactory.Photo.build,
+		
+		
+		
+		
+		
+		
+		
 		/*
 	     * update all components on /photos/home page to match 'selected'
 	     */		
@@ -277,8 +319,24 @@
 			} catch (e) {
 			}                	
 		},
-		handle_ThumbsizeClick: GalleryFactory.Lightbox.handle_ThumbsizeClick,	
+		handle_setDisplayView: function(g, view){
+			GalleryFactory.actions.setView(g, view);
+			// update castingCall if necessary 
+			try {
+				var uuid = SNAPPI.STATE.controller.xhrFrom.uuid;
+			} catch (e) {
+				uuid = null;
+			}
+			// var uri = PAGE.jsonData.castingCall.CastingCall.Request;
+			var uri = '/photos/neighbors/'+ PAGE.jsonData.castingCall.CastingCall.ID + '/.json';
+			// get extended castingCall by cacheRefresh
+			uri = SNAPPI.IO.setNamedParams(uri, {perpage: null, page: null});
+			g.loadCastingCall(uri, {uuid: uuid});
+		}
 	}	
+	
+	
+	
 	GalleryFactory.ShotGallery = {
 		defaultCfg: {
 			type: 'ShotGallery',
@@ -290,6 +348,7 @@
 	        			'</section>',			
 			node: 'section#shot-gallery .gallery.photo.filmstrip',
 			size: 'sq',
+			render: true,
 			castingCall: false,
 			uuid: null,
 			showExtras: true,
@@ -297,39 +356,20 @@
 			hideHiddenShotByCSS: false,	
 			draggable: true,
 			droppable: true,	
-			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick', 'ThumbsizeClick']
+			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick', 'WindowOptionClick']
 		},
 		build: GalleryFactory.Photo.build,
+		
 		handle_focusClick: function(e){
 	    	var gallery = this.Gallery;
 	    	var selected = e.currentTarget.ancestor('.FigureBox').audition;
 	    	var oldUuid = gallery.getFocus().id;
 	    	if (selected.id != oldUuid) {
 	    		gallery.setFocus(selected);
-	    	
-	    		// TODO: rewrite, use GalleryHelper/PreviewHelper
-	    		// SNAPPI.domJsBinder.bindSelected2Page(gallery, selected, oldUuid);
-	    		SNAPPI.domJsBinder.bindSelected2Preview.call(gallery, selected);
+	    		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected);
 	        }
 		},
-		handle_ThumbsizeClick: GalleryFactory.Lightbox.handle_ThumbsizeClick,	
-		// handle_ThumbsizeClick: function(e) {
-        	// var thumbSize = e.currentTarget.getAttribute('size');
-        	// this.Gallery.renderThumbSize(thumbSize);
-        	// e.currentTarget.get('parentNode').all('li').removeClass('focus');
-        	// e.currentTarget.addClass('focus');
-        	// // add renderThumbsize for size='tn'
-		// }		
-
-		
 	}
-	
-	
-            // skip 307	
-	
-	
-	
-	
 	
 	GalleryFactory.DialogHiddenShot = {
 		defaultCfg: {
@@ -360,9 +400,9 @@
 	'								<nav class="window-options"> ' +
 	'									<ul class="thumb-size inline"> ' +
 	'										<li class="label">Size</li> ' +
-	'										<li size="sq" class="btn"><img alt="" src="/css/images/img_1.gif"></li><li size="tn" class="btn "><img alt="" src="/css/images/img_2.gif"></li><li size="lm" class="btn focus"><img alt="" src="/css/images/img_3.gif"></li>	 ' +
+	'										<li class="btn" action="set-display-size:sq"><img alt="" src="/css/images/img_1.gif"></li><li class="btn"  action="set-display-size:tn"><img alt="" src="/css/images/img_2.gif"></li><li class="btn focus" action="set-display-size:lm"><img alt="" src="/css/images/img_3.gif"></li>	 ' +
 	'									</ul><ul class="inline"> ' +
-	'										<li action="filmstrip"><img src="/css/images/img_zoomin.gif"></li><li action="maximize"><img src="/css/images/img_zoomout.gif"></li> ' +
+	'										<li action="set-display-view:one-row"><img src="/css/images/img_zoomin.gif"></li><li action="set-display-view:maximize"><img src="/css/images/img_zoomout.gif"></li> ' +
 	'									</ul> ' +
 	'								</nav> ' +
 	'							</li> ' +
@@ -370,6 +410,7 @@
 	'		</section> ' +
 	'	</section>	 ' +
 	'</div> ',		
+			render: true,
 			node: 'div#dialog-hidden-shot .gallery.photo.filmstrip'	,
 			size: 'lm',
 			castingCall: false,
@@ -378,7 +419,7 @@
 			showHiddenShot: false,
 			hideHiddenShotByCSS: false,	
 			draggable: true,	
-			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick', 'ThumbsizeClick'],			
+			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick', 'WindowOptionClick'],			
 		},
 		build: GalleryFactory.ShotGallery.build,
 		handle_focusClick: function(e) {
@@ -387,7 +428,6 @@
 			gallery.setFocus(selected);
 			SNAPPI.galleryHelper.bindPreview(gallery);
 		},
-		handle_ThumbsizeClick: GalleryFactory.ShotGallery.handle_ThumbsizeClick,
 	}
 	
 	

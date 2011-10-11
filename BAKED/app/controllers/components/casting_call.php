@@ -247,8 +247,9 @@ class CastingCallComponent extends Object {
 		}
 
 		$Auditions = compact('Audition','Bestshot','Total','Perpage','Pages','Page','Baseurl', 'ShotType');
-		$ID = time();
-		$CastingCall = compact('ID','ProviderName','Auditions','Substitutions','Tags','Clusters', 'Request', 'ShowHidden');
+		$Timestamp = time();
+		$ID = empty($cache_key) ? $Timestamp : $cache_key;
+		$CastingCall = compact('ID', 'Timestamp', 'ProviderName','Auditions','Substitutions','Tags','Clusters', 'Request', 'ShowHidden');
 
 		/*
 		 * add Groupings, i.e. Subsitutions, Tags, Clusters
@@ -270,8 +271,8 @@ class CastingCallComponent extends Object {
 		 */
 		$castingCall = compact('CastingCall', 'lookups');
 		if ($cache) {
-			if (empty($cache_key)) $cache_key = $ID;
-			$cache_Entry[$cache_key] = $CastingCall;
+			// if (empty($cache_key)) $cache_key = $ID;
+			$cache_Entry[$ID] = $CastingCall;
 			$this->cache_Push($cache_Entry);
 		}
 		return $castingCall;
@@ -309,16 +310,16 @@ class CastingCallComponent extends Object {
 			$now = time(); 
 			// Comparison function, most recent by castingCall timestamp
 			function mostRecent($a, $b) {
-			    if ($a['ID'] == $b['ID']) {
+			    if ($a['Timestamp'] == $b['Timestamp']) {
 			        return 0;
 			    }
-			    return ($a['ID'] > $b['ID'] ) ? -1 : 1;
+			    return ($a['Timestamp'] > $b['Timestamp'] ) ? -1 : 1;
 			}
 			uasort($cc, 'mostRecent');
 			// max entries
 			$count = 0;
 			foreach ($cc as $key => $CastingCall ) {
-				$timestamp = $CastingCall['ID'];
+				$timestamp = $CastingCall['Timestamp'];
 				if ($timestamp=='Lightbox') continue;
 
 				$age = $now - $timestamp;
@@ -359,52 +360,60 @@ class CastingCallComponent extends Object {
 	}
 	/**
 	 * @params $mixed int or aa, ccid or CastingCall
-	 * @params $perpage int (optional), override perpage defaults to get more rows
-	 * @params $page int (optional)
+	 * @params $options['perpage'] int (optional), override perpage defaults to get more rows
+	 * @params $options['page'] int (optional)
+	 * @params $options['perpage_on_cache_stale'] int (optional)
+	 * @return false if cache miss, otherwise CastingCall
 	 */
-	function cache_Refresh($mixed, $perpage=null, $page=null){
+	function cache_Refresh($mixed, $options = array()){
+		extract($options);	// $perpage, $page, $perpage_on_cache_miss
 		$cacheKey = null;
 		if (is_array($mixed) && isset($mixed['Request'])) {
 			// example: /photos/home/4bbb3976-42b8-4d23-b9c1-11a0f67883f5
 			$request = $mixed['Request'];
 		} else if (is_numeric($mixed)) {
 			$request = Session::read("castingCall.{$mixed}.Request"); 
-			$cacheKey = $mixed;	// reuse this cacheKey, but update ['CastingCall']['ID']/timestamp
+			$cacheKey = $mixed;	// reuse this cacheKey, but update ['CastingCall']['Timestamp']
 		} else {
 			// example: http://git:88/my/photos
 			$request = env('HTTP_REFERER');
+			$strip = "http://".env('HTTP_HOST');
+			$request = str_replace($strip, '', $request);			
 		}
-		if (empty($request)) return false;
+		if (empty($request)) return false;		// cache miss
 
 // debug($request);		
-		$strip = "http://".env('HTTP_HOST');
-		$request = str_replace($strip, '', $request);
 		$route = Router::parse($request);
 // debug($route);		
 		/*
 		 * get a new CastingCall using the $request URL
 		 */
-		// set extended paging, if necessary
+		// test for stale cache entry, compare paging
 		$passedArgs = $route['named'];
-		$passedArgs['page'] = $page;
-		if ($perpage !== null) $passedArgs['perpage'] = $perpage;
-		if ($page !== null) $passedArgs['page'] = $page ? $page : 1;
+		// check for overrides
+		if (!empty($page)) $passedArgs['page'] = $page;
+		if (!empty($perpage)) $passedArgs['perpage'] = $perpage;
 		if ($cacheKey)	 {
+// debug($passedArgs);			
 			// check for cacheHit
 			$cc = Session::read("castingCall.{$mixed}"); 
+// debug(array_diff_key($cc['Auditions'], array('Audition'=>1)));			
 			if (
 				empty($cc['Stale'])
 				&& isset($cc['Auditions']['Perpage']) 
-				&& ($cc['Auditions']['Perpage'] == $passedArgs['perpage'])
-				&& (!$passedArgs['page'] || $cc['Auditions']['Page'] == $passedArgs['page'])
-				&& (time() - $cc['ID'] < CastingCallComponent::$MAX_AGE) 
+				&& (empty($passedArgs['perpage']) || $cc['Auditions']['Perpage'] == $passedArgs['perpage'])
+				&& (empty($passedArgs['page']) || $cc['Auditions']['Page'] == $passedArgs['page'])
+				&& (time() - $cc['Timestamp'] < CastingCallComponent::$MAX_AGE) 
 			) {
-				// debug($cc['Request']);	
+				// debug("cache HIT!!!");
+				// debug(array_diff_key($cc['Auditions'], array('Audition'=>1)));	
+				// debug($passedArgs);
+				// debug($cc['Auditions']['Perpage']);
 				$castingCall['CastingCall'] = $cc; 	// format as CastingCall 
 				return $castingCall;
 			}
 		}
-		
+		if (!empty($perpage_on_cache_stale)) $passedArgs['perpage'] = $perpage_on_cache_stale;		
 		Configure::write('passedArgs.complete', $passedArgs); 
 		
 		$id = isset($route['pass'][0]) ? $route['pass'][0] : null;
@@ -434,6 +443,7 @@ class CastingCallComponent extends Object {
 				$paginateArray = $Model->getPaginatePhotosByUserId($id, $this->controller->paginate[$paginateModel]);
 				$paginateArray['conditions'] = @$Model->appendFilterConditions($passedArgs, $paginateArray['conditions']);
 				$this->controller->paginate[$paginateModel] = $Model->getPageablePaginateArray($this->controller, $paginateArray);
+// debug($this->controller->paginate[$paginateModel]);				
 				$pageData = Set::extract($this->controller->paginate($paginateModel), "{n}.{$paginateModel}");
 				// end paginate
 				break;
@@ -450,7 +460,10 @@ class CastingCallComponent extends Object {
 		}		
 // debug($pageData); exit;
 		$options['cache_key'] = $cacheKey;
-		$options['request'] = $request;
+		// get updated request
+		$route['named'] = array_merge($route['named'], $passedArgs);
+		unset($route['url']['ext']);
+		$options['request'] = Router::reverse($route);;
 		$castingCall = $this->getCastingCall($pageData, true, $options);		// cache=true
 		return $castingCall;
 	}
@@ -459,7 +472,7 @@ class CastingCallComponent extends Object {
 		if (Session::read('castingCall.Lightbox.key', $aids)) {
 			$ccLightbox = Session::read('castingCall.Lightbox.castingCall');
 			$ccLightbox['CastingCall']['Cached'] = true;
-			$timestamp = $ccLightbox['CastingCall']['ID'];
+			$timestamp = $ccLightbox['CastingCall']['Timestamp'];
 			if (time() - $timestamp <= $MAX_AGE) {
 				return $ccLightbox;
 			} 

@@ -1164,10 +1164,12 @@ section.filmstrip section.gallery.lightbox {
 #shot-gallery .gallery-header {
 	clear: both;
 }
-#shot-gallery.minimize .gallery-header {
+
+
+section.filmstrip.minimize .gallery-header {
 	height: 10px;
 }
-#shot-gallery.minimize .filmstrip-wrap {
+section.filmstrip.minimize .filmstrip-wrap {
 	height: 0;
 }
 
@@ -1712,10 +1714,8 @@ aside.related-content.grid_5 > section {
 	display: none;
 }
 
-.preview section {
-	margin-bottom: 20px;
-}
 .preview section.preview-body {
+	margin-bottom: 20px;
 	overflow: hidden;
 }
 

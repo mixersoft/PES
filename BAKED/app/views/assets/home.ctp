@@ -115,14 +115,19 @@ if (empty($this->passedArgs['wide'])) {
 	var initOnce = function() {
 		var Y = SNAPPI.Y;
 		SNAPPI.mergeSessionData();
+		SNAPPI.domJsBinder.bindSelected2Page();
+		
 		var filmstripCfg = {
 			type: 'NavFilmstrip',
 			castingCall: PAGE.jsonData.castingCall,
 			uuid: PAGE.jsonData.controller.xhrFrom.uuid,	// sets .focus
+			render: false,		// do NOT render on init
 		};
 		var fs = new SNAPPI.Gallery(filmstripCfg);
 		
-		SNAPPI.domJsBinder.bindSelected2Page(fs);
+		// init page with navFilmstrip closed
+		var selected = PAGE.jsonData.controller.xhrFrom.uuid;
+		SNAPPI.domJsBinder.bindSelected2Page(fs, selected);
 		SNAPPI.xhrFetch.init(); 
 	
 	};

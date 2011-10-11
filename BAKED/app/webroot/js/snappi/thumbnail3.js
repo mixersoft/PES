@@ -565,9 +565,9 @@
 			// PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
 		},
 		listen_HiddenShotClick: function() {
-			return this.node.one('figcaption .hidden-shot').on('click',
+			return this.node.delegate('click',
 					Factory[this._cfg.type].handle_HiddenShotClick
-            	, this.node)
+            	, 'figcaption .hidden-shot', this.node)
 		},
 		handle_HiddenShotClick: function(e) {
 			var parent = SNAPPI.Y.one('#shot-gallery');
@@ -577,14 +577,10 @@
 				shotGallery = new SNAPPI.Gallery({
 					type: 'ShotGallery'
 				});
-        	}         	
-        	
-        	if (parent.hasClass('minimize')) {
-        		SNAPPI.Factory.Gallery.actions.setView(shotGallery, 'filmstrip');
-        	} else {
-        		SNAPPI.Factory.Gallery.actions.setView(shotGallery, 'minimize');
-        	}
-        	
+        	}   
+        	if (!shotGallery.view || shotGallery.view == 'minimize') {
+        		SNAPPI.Factory.Gallery.actions.setView(shotGallery, 'one-row');
+        	}      	
         	shotGallery.showShotGallery(selected);
 		},
 		listen_ActionsClick: function() {
@@ -593,7 +589,11 @@
             	, this.node)			
 		},
 		handle_ActionsClick: function(e) {
-			console.log("Preview Thumbnail Actions Click;")
+			console.log("Preview Thumbnail Actions Click;");
+			// show navFilmstrip for now
+			var navFilmstrip = SNAPPI.Gallery.find['nav-'];  
+			navFilmstrip.render();
+			SNAPPI.Factory.Gallery.actions.setView(navFilmstrip, 'filmstrip');
 		},
 		listen_RatingClick: function() {
 			var r = this.node.one('.rating');
@@ -662,7 +662,8 @@
 					sizeCfg.showRatings = true;
 					break;
 			}
-			// override for hiddenShot filmstrip
+			// override for shot-, hiddenshot- filmstrip
+			if (/shot-/.test(node.get('id'))) sizeCfg.showHiddenShot = false;
 			
 			// set CSS classNames
 			node.set('className', 'FigureBox Photo').addClass(sizeCfg.size);

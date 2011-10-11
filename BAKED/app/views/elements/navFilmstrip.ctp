@@ -11,7 +11,7 @@ if (isset($this->viewVars['jsonData']['castingCall']['CastingCall']['Auditions']
 		'lm'=>'/css/images/img_3.gif',
 	);
 ?>
-<section id="nav-filmstrip" class="filmstrip">
+<section id="nav-filmstrip" class="filmstrip minimize">
 	<section class="gallery-header grid_16">
 		<ul class="inline">
 			<li><h3>Filmstrip <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li>
@@ -26,12 +26,12 @@ if (isset($this->viewVars['jsonData']['castingCall']['CastingCall']['Auditions']
 						<li class="label">Size</li>
 						<?php 
 							foreach ($sizes as $size => $src ) {
-								echo "<li class='btn ".($thumbSize==$size ? 'focus' : '')."' action='set-display-size' size='{$size}'><img src='{$src}' alt=''></li>";
+								echo "<li class='btn ".($thumbSize==$size ? 'focus' : '')."' action='set-display-size:{$size}'><img src='{$src}' alt=''></li>";
 							}
 						?>
 					</ul>
 					<ul class="inline">
-						<li action='filmstrip'><img src="/css/images/img_zoomin.gif"></li><li action="maximize"><img src="/css/images/img_zoomout.gif"></li>
+						<li action='set-display-view:minimize'><img src="/css/images/img_zoomin.gif"></li><li action="set-display-view:one-row"><img src="/css/images/img_zoomout.gif"></li>
 					</ul>
 				</nav>
 			</li>

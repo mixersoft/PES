@@ -206,19 +206,16 @@
 	        }
 	        if (!this.auditionSH) this.auditionSH = new SNAPPI.SortedHash();
 	        
-	        // move to this.render()
-	        // if (_cfg.selected) {
-	        	// // set focus to selected
-	        	// var selected = this.auditionSH.setFocus(_cfg.selected);
-	        // }
-
 	        if (_cfg.shots) {
 	            this.shots = _cfg.shots;
 	            delete _cfg.shots;
 	        } else if (this.castingCall && this.castingCall.shots) {
 	        	this.shots =  this.castingCall.shots;
 	        }
-
+			
+			var renderOnInit = _cfg.render === false ? false : true;
+			delete _cfg.render;
+			
 	        this._cfg = _cfg;
 	        
 	        /**
@@ -229,21 +226,9 @@
 	            this.auditionSH.sort(SNAPPI.sortConfig.byTime);        	
 	        }
 	        
-	        
-
-	        try {
-		        // add reference to global
-//	        	Gallery[parent.get('id')] = this;
-		        // search for photo-roll header	        	
-	        	var parent = this.container.ancestor('.gallery-container');
-				this.header = parent.one(".gallery-header");
-	        } catch (e) {
-	        	this.header = null;
-	        }; 
-	        
 	        switch (_cfg.ID_PREFIX) {
 	        case 'uuid-':
-	        	this.render(_cfg); 
+	        	if (renderOnInit) this.render(_cfg); 
 	        	var paging = SNAPPI.Paginator.paginate_PhotoGallery(this);
 	        	if (paging === false) {
 	        		// add view All
@@ -254,7 +239,7 @@
 	        	break;	        	
 	        case 'lightbox-':
 	        	this.container.addClass('one-row'); // these are all filmstrips, init in filmstrip mode
-	        	this.render(_cfg);
+	        	if (renderOnInit) this.render(_cfg);
 	        	// this.scrollFocus( cfg.uuid );
 	        	this.container.ancestor('.filmstrip-wrap').removeClass('hidden');
 	        	break;
@@ -263,20 +248,16 @@
 	        case 'hiddenshot-':
 	        	// TODO: set one-row from session, profile
 	        	this.container.addClass('one-row'); // these are all filmstrips, init in filmstrip mode
-	        	this.render(_cfg);
+	        	if (renderOnInit) this.render(_cfg);
 				this.scrollFocus( cfg.uuid );
 				this.container.ancestor('.filmstrip-wrap').removeClass('hidden');
 	        	break;
 	        default:
 	        	break;
 	        }
-	        
+	        if (this._cfg.listeners) this.listen(true, this._cfg.listeners);
 	        if (_cfg.draggable) SNAPPI.DragDrop.pluginDelegatedDrag(this.container, 'img.drag');
 	        if (_cfg.droppable) SNAPPI.DragDrop.pluginDrop(this.node);
-	        // start Gallery listeners
-	        if (this._cfg.listeners) this.listen(true, this._cfg.listeners);
-            // if (SNAPPI.DEBUG_MODE) SNAPPI.debug.showNodes('#content div, .FigureBox');	        
-	        
     	},
         setAudition: function(sh){
             this.auditionSH = sh;
@@ -286,16 +267,33 @@
          */ 
         renderThumbSize: function(thumbSize) {
         	this._cfg.size = thumbSize;	// Gallery._cfg.size
+        	var selected = this.auditionSH.getFocus();
         	this.container.all('.FigureBox').each(function(n,i,l){
         		n.Thumbnail.resize(thumbSize);
+        		if (n.audition == selected) n.addClass('focus');
         	});
+        	
         }, 
         render: function(cfg, shotsSH){
         	cfg = cfg || {};
+        	if (cfg.render === 'false') return;
+        	
         	if (cfg.ID_PREFIX !== undefined && !cfg.ID_PREFIX) {
         		this._cfg.ID_PREFIX = cfg.ID_PREFIX;
         		delete (cfg.ID_PREFIX);
         	}
+        	if (cfg.castingCall) {
+        		this.castingCall = cfg.castingCall;
+        		if (!this.castingCall.auditionSH) {
+					var onDuplicate = function(a,b) {
+						return a; // return original, do not replace
+					};
+					var sh = SNAPPI.Auditions.parseCastingCall(this.castingCall, this._cfg.PROVIDER_NAME, null, onDuplicate);
+        		}
+        		this.auditionSH = this.castingCall.auditionSH;
+        		delete cfg.castingCall;
+        		delete cfg.sh;	// cfg.castingCall takes priority over cfg.sh
+        	}             	
         	if (cfg.sh) {
         		this.auditionSH = cfg.sh;
         		delete (cfg.sh);
@@ -356,7 +354,7 @@
              * reuse or create LIs
              */
             var thumbCfg = {};
-            if (this.node.hasClass('hiddenshots')) thumbCfg = {	showHiddenShot : false	}
+            // if (this.node.hasClass('hiddenshots')) thumbCfg = {	showHiddenShot : false	}
             if (nlist.size()) {
                 // if .FigureBox exist, reuse
             	nlist.each(function(n, i, l){
@@ -448,23 +446,16 @@
         listen: function(status, cfg){
         	if (this.node.listen == undefined) this.node.listen = {};
             status = (status == undefined) ? true : status;
-            var k,v;
+            var k,v,handler, fn;
             if (status) {
             	cfg = cfg || ['Keypress', 'Mouseover', 'Click', 'ThumbsizeClick', 'MultiSelect', 'Contextmenu', 'FsClick'];
             	for ( k in cfg){
-            		switch (cfg[k]) {
-            			case "Keypress": 	this.listenKeypress();	break;
-            			case "Mouseover": 	this.listenMouseover();	break;
-            			case "Click": 	this.listenClick();	break;
-            			case "MultiSelect": 	this.listenMultiSelect();	break;
-            			case "Contextmenu": 	this.listenContextmenu();	break;
-            			case "HiddenShotClick": 	this.listenHiddenShotClick();	break;
-            			case "FocusClick": 	this.listenFocusClick();	break;
-            			case "ThumbsizeClick": 	this.listenThumbsizeClick();	break;
-            		}
+            		listener = 'listen'+cfg[k];
+            		this[listener]();
             	}
             }
             else {
+            	// do we still need status==false to detach?
             	cfg = cfg || this.node.listen;
                 for (k in cfg) {
                 	v = cfg[k];
@@ -511,6 +502,8 @@
 			}
         },
         listenThumbsizeClick : function(action) {
+        	this.listenWindowOptionClick(); return;
+        	
         	action = 'ThumbsizeClick';
             if (this.node.listen[action] == undefined) {
                 // listen thumbnail size
@@ -523,6 +516,24 @@
 	                }, 'li', this.node, action);
 			}
         },
+        /*
+         * Click-Action listener/handlers
+         * 	start 'click' listener for action=
+         * 		set-display-size:[size] 
+         * 		set-display-view:[mode]
+         */
+        listenWindowOptionClick : function() {
+        	var action = 'WindowOptionClick';
+            if (this.node.listen[action] == undefined) {
+            	var delegate_container = this.header.one('.window-options');
+				this.node.listen[action] = delegate_container.delegate('click', 
+	                function(e){
+	                	// action=[set-display-size:[size] | set-display-view:[mode]]
+	                	// context = Gallery.node
+	                	Factory.actions.setToolbarOption.call(this, e);
+	                }, 'li', this.node);
+			}
+        },        
         listenMultiSelect : function () {
         	SNAPPI.multiSelect.listen(this.container, true);
         	// select-all checkbox listener
@@ -1719,6 +1730,82 @@
                 }
             });
         },
+        /**
+         * use PluginIO to render castingCall (JSON response) into Gallery
+         * @params uri string, JSON request for castingCall
+         * @params cfg object
+         * 		cfg.uuid string, UUID of selected audition
+         * 		cfg.successJson function, success handler, should return 'false'
+         */
+        loadCastingCall: function(uri, cfg){
+        	cfg = cfg || {};
+        	if (!uri) {
+        		// use existing CC
+        		var sh = PAGE.jsonData.castingCall.auditionSH;
+                this.render({
+                	sh: sh,
+                	uuid: cfg.uuid || sh.first().id
+                });
+                return;       		
+        	}
+        	
+        	if (!cfg.successJson) {
+        		cfg.successJson = function(e, i,o,args) {
+					var response = o.responseJson.response;
+					// get auditions from raw json castingCall
+                    this.render({
+                    	castingCall: response.castingCall,
+                    	uuid: args.uuid || null,
+                    });
+                    PAGE.jsonData.castingCall = response.castingCall;
+                    return false;
+				}
+        	}
+			// SNAPPI.io GET JSON  
+			var container = this.container;
+			if (!/\.json$/.test(uri)) uri += '/.json'; 
+        	var args = {
+        		uuid : cfg.uuid,
+        		successJson: cfg.successJson,
+        		uri: uri,
+        	};
+        	/*
+    		 * plugin Y.Plugin.IO
+    		 */
+    		if (!container.io) {
+    			var ioCfg = {
+//    					uri: subUri,
+    					parseContent: false,
+    					autoLoad: false,
+    					context: this,
+    					arguments: args, 
+    					on: {
+    						successJson: function(e, i,o,args){
+    							return args.successJson.call(this, e, i,o,args);
+    						}					
+    					}
+    			};
+    			var target = container.get('parentNode');
+    			var loadingmaskHost = this.node.hasClass('filmstrip') ? container.ancestor('.filmstrip') : container;
+    			container.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(ioCfg));
+    			// set loadingmask to parent
+    			container.plug(Y.LoadingMask, {
+    				target: target
+    			});
+    			container.loadingmask._conf.data.value['target'] = target;
+    			container.loadingmask.overlayMask._conf.data.value['target'] = container.loadingmask._conf.data.value['target'];
+    			// container.loadingmask.set('target', target);
+    			// container.loadingmask.overlayMask.set('target', target);
+    			container.loadingmask.set('zIndex', 10);
+    			container.loadingmask.overlayMask.set('zIndex', 10);
+
+    		}
+			// get CC via XHR and render
+			container.io.set('uri', args.uri);
+			container.io.set('arguments', args);
+			container.io.start();			
+        },
+        // called by SNAPPI.Factory.Thumbnail.PhotoPreview.handle_HiddenShotClick()
         showShotGallery : function(selected) {
         	selected = selected || this.auditionSH.getFocus();
         	var container, parent, shots, Y = SNAPPI.Y;
@@ -1736,151 +1823,32 @@
 				this.container.ancestor('.filmstrip-wrap').removeClass('hidden');
 				SNAPPI.DragDrop.pluginDelegatedDrag(this.container, 'img.drag');        		
         	} else {
-				// SNAPPI.io GET JSON  
-				var container = this.container;
-	        	var args = {
-	        		selected : selected
-	        	};	    		/*
-	    		 * plugin Y.Plugin.IO
-	    		 */
-	    		if (!container.io) {
-	    			var cfg = {
-	//    					uri: subUri,
-	    					parseContent: false,
-	    					autoLoad: false,
-	    					context: this,
-	    					arguments: args, 
-	    					on: {
-	    						successJson: function(e, i,o,args) {
-    								var response = o.responseJson.response;
-    								// get auditions from raw json castingCall
-    								var shotCC = response.castingCall;
-    								var onDuplicate = function(a,b) {
-    			                    	return a; 	// return original, do not replace
-    								};
-    								var shotAuditionSH =  SNAPPI.Auditions.parseCastingCall(shotCC, this._cfg.PROVIDER_NAME, null, onDuplicate);
-    			                    
-    			                    var audition = shotAuditionSH.first();
-    			                    var shot = audition.Audition.Substitutions;
-    			                    shot.stale = shot._sh.count() != audition.Audition.Shot.count ;
-    			                    this.render({
-    			                    	sh: shotAuditionSH,
-    			                    	shotType: shot.shotType,
-    			                    	uuid: args.selected.id
-    			                    });
-    			                    return false;
-	    						}					
-	    					}
-	    			};
-	    			var target = container.get('parentNode');
-	    			var loadingmaskHost = this.node.hasClass('filmstrip') ? container.ancestor('.filmstrip') : container;
-	    			container.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(cfg));
-	    			// set loadingmask to parent
-	    			container.plug(Y.LoadingMask, {
-	    				target: target
-	    			});
-	    			container.loadingmask._conf.data.value['target'] = target;
-	    			container.loadingmask.overlayMask._conf.data.value['target'] = container.loadingmask._conf.data.value['target'];
-	    			// container.loadingmask.set('target', target);
-	    			// container.loadingmask.overlayMask.set('target', target);
-	    			container.loadingmask.set('zIndex', 10);
-	    			container.loadingmask.overlayMask.set('zIndex', 10);
-	
-	    		}
-    			// shots are NOT included. get shots via XHR and render
-    			var subUri = '/photos/hiddenShots/'+shot.id+'/'+shot.shotType+'/.json';
-    			container.io.set('uri', subUri );
-    			container.io.set('arguments', args);
-    			container.io.start();			
+        		var uri = '/photos/hiddenShots/'+shot.id+'/'+shot.shotType+'/.json';
+        		var cfg = {
+        			uuid: selected.id,
+		    		successJson : function(e, i,o,args) {
+						var response = o.responseJson.response;
+						// get auditions from raw json castingCall
+						var shotCC = response.castingCall;
+						var onDuplicate = function(a,b) {
+	                    	return a; 	// return original, do not replace
+						};
+						var shotAuditionSH =  SNAPPI.Auditions.parseCastingCall(shotCC, this._cfg.PROVIDER_NAME, null, onDuplicate);
+	                    
+	                    var audition = shotAuditionSH.first();
+	                    var shot = audition.Audition.Substitutions;
+	                    shot.stale = shot._sh.count() != audition.Audition.Shot.count ;
+	                    this.render({
+	                    	sh: shotAuditionSH,
+	                    	shotType: shot.shotType,
+	                    	uuid: args.uuid
+	                    });
+	                    return false;
+					},
+				};
+				this.loadCastingCall(uri, cfg);
         	}
         },
-        // /**
-         // * @deprecated, use showShotGallery instead
-         // * Show HiddenShots as Preview block
-         // * @param selected audition - selected audition containing SubstitutionGroup
-         // * @param shotType string, [Usershot|Groupshot|null], default Usershot
-         // * @param container - container for showing shot gallery
-         // * @return
-         // */    
-        // showHiddenShotsAsPreview : function(selected, container) {    	
-        	// selected = selected || this.auditionSH.getFocus();
-        	// var container, parent, shots, Y = SNAPPI.Y;
-        	// try {
-        		// container = container || Y.one('div#hiddenshots > container');
-        		// // ERROR:  selected.Audition.Shot.id != selected.Audition.Substitutions.id
-        		// shots = selected.Audition.Substitutions;
-        		// shotType = shots.shotType;
-        	// } catch (e) {
-        		// // no hidden shots
-        		// // /photos/home page: no shots, just hide div#hiddenshots on and unbind nodes
-            	// if (container && container.ancestor('div#hiddenshots')) { 
-            		// // hide substitute group, if we are on the /photos/home page
-            		// container.all('li').addClass('hide').each(function(n,i,l){
-    	        		// SNAPPI.Auditions.unbind(n);
-            		// });
-            	// }
-        		// return;
-        	// }
-        	// var closure = {
-        		// photoroll : this,
-        		// selected : selected
-        	// };
-//     		
-    		// /*
-    		 // * plugin Y.Plugin.IO
-    		 // */
-    		// if (!container.io) {
-    			// var cfg = {
-// //    					uri: subUri,
-    					// parseContent: false,
-    					// autoLoad: false,
-    					// context: this,
-    					// arguments: closure, 
-    					// on: {
-    						// successJson: function(e, i,o,args) {
-    							// if (o.responseJson) {
-    								// // get auditions from raw json castingCall
-    								// var shotCC = o.responseJson.castingCall;
-    								// var onDuplicate = function(a,b) {
-    			                    	// return a; 	// return original, do not replace
-    								// };
-    								// var shotAuditionSH =  SNAPPI.Auditions.parseCastingCall(shotCC, this.castingCall.providerName, null, onDuplicate);
-//     			                    
-    			                    // var audition = shotAuditionSH.first();
-    			                    // var shot = audition.Audition.Substitutions;
-    			                    // shot.stale = shot._sh.count() != audition.Audition.Shot.count ;
-    			                    // var shotPr = _showHiddenShots.call(this, container, shot, args.selected);
-    			                    // // start listener
-    			                    // shotPr.listenHiddenShotClick();
-    			                    // return false;
-    							// };
-    						// }					
-    					// }
-    			// };
-    			// container.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(cfg));
-    			// // set loadingmask to parent
-    			// container.plug(Y.LoadingMask, {
-    				// target: container.get('parentNode')
-    			// });
-    			// container.loadingmask._conf.data.value['target'] = container.get('parentNode');
-    			// container.loadingmask.overlayMask._conf.data.value['target'] = container.loadingmask._conf.data.value['target'];
-// 
-    		// }
-//     		
-//     		
-    		// if (shots.stale == false) {
-    			// var gallery = _showHiddenShots.call(this, container, shots, selected);
-    			// gallery.listenHiddenShotClick();
-    		// } else {
-    			// // shots are NOT included. get shots via XHR and render
-    			// var subUri = '/photos/hiddenShots/'+shots.id+'/'+shotType+'/.json';
-    			// container.io.set('uri', subUri );
-    			// var ioCfg = container.io.get('cfg');
-    			// ioCfg.arguments = closure;
-    			// container.io.set('cfg', ioCfg);
-    			// container.io.start();			
-    		// }
-        // },
         /**
          * show hidden shots in Dialog box
          * @param selected audition- selected audition containing SubstitutionGroup
