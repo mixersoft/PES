@@ -115,12 +115,13 @@ if (empty($this->passedArgs['wide'])) {
 	var initOnce = function() {
 		var Y = SNAPPI.Y;
 		SNAPPI.mergeSessionData();
-		SNAPPI.domJsBinder.bindSelected2Page();
+		// SNAPPI.domJsBinder.bindSelected2Page();
 		
+		// NOTE: we must init the gallery to start the 'WindowOptionClick' listners
 		var filmstripCfg = {
 			type: 'NavFilmstrip',
 			castingCall: PAGE.jsonData.castingCall,
-			uuid: PAGE.jsonData.controller.xhrFrom.uuid,	// sets .focus
+			// uuid: PAGE.jsonData.controller.xhrFrom.uuid,	// sets .focus
 			render: false,		// do NOT render on init
 		};
 		var fs = new SNAPPI.Gallery(filmstripCfg);

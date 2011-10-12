@@ -39,30 +39,35 @@
 	        		// g.header.one('ul').addClass('hide');      			
 	    			break;
     			case 'one-row': 
-	        		parent.removeClass('minimize');
-	        		g.container.addClass('one-row');
-	        		g.header.one('ul').removeClass('hide');
+    				if (g.view == 'maximize') {
+    					g.container.addClass('one-row');
+    					g.setFilmstripWidth();
+    				} else {
+    					parent.removeClass('minimize');
+	        			g.container.addClass('one-row');
+	        			g.header.one('ul').removeClass('hide');
+	        		}
 	        		break;
     			case 'maximize': 
     				// from lighbox action.maximize, not tested 
 					var MAX_HEIGHT = window.innerHeight - 120;
-					var count = Math.min(this.Gallery.auditionSH.count(), _LIGHTBOX_LIMIT);
-					var width = this.Gallery.container.one('.FigureBox').get('offsetWidth');
+					var LIMIT = 999;	// add paging if necessary
+					var count = Math.min(g.auditionSH.count(), LIMIT);
+					var width = g.container.one('.FigureBox').get('offsetWidth');
 					var rows = Math.ceil(count*width/940);
-					var height = this.Gallery.container.one('.FigureBox').get('offsetHeight');
+					var height = g.container.one('.FigureBox').get('offsetHeight');
 					if (rows*height > MAX_HEIGHT) {
 						rows = Math.floor(MAX_HEIGHT/height);
 						height = (rows*height)+'px';
 					} else {
 						height = 'auto';
 					}
-					this.Gallery.container.setStyles({
+					g.container.setStyles({
 						width: 'auto',
 						height: height	
 					}).removeClass('one-row');;
-					this.Gallery.container.ancestor('.filmstrip-wrap').removeClass('hide');
-					this.Gallery.container.get('parentNode').removeClass('minimize');
-					e.currentTarget.addClass('focus');    			
+					g.container.ancestor('.filmstrip-wrap').removeClass('hide');
+					g.container.get('parentNode').removeClass('minimize');
 	    			break;
     		}
     		g.view = view;
@@ -259,18 +264,6 @@
 	        Y.fire('snappi:afterGalleryInit', this); 
 	        return gallery;					// return instance of SNAPPI.Gallery
         },
-        // handle_hiddenShotClick : function(e){
-        	// var thumbnail = e.currentTarget.ancestor('.FigureBox');
-			// try {
-				// var audition = thumbnail.audition;
-				// var gallery = this.Gallery;
-				// var shotType = audition.Audition.Substitutions.shotType;
-				// if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
-				// gallery.showHiddenShotsInDialog(audition, shotType);
-			// } catch (e) {
-			// }                	
-		// },
-       
 	};
 	
 	GalleryFactory.NavFilmstrip = {
@@ -291,7 +284,8 @@
 			showExtras: true,
 			hideHiddenShotByCSS: true,	
 			draggable: true,
-			listeners: ['Keypress', 'Mouseover', 'MultiSelect', 'Contextmenu', 'FocusClick', 'WindowOptionClick'],
+			// listeners: ['Keypress', 'Mouseover', 'MultiSelect', 'Contextmenu', 'FocusClick', 'WindowOptionClick'],
+			listeners: ['Keypress', 'Mouseover', 'MultiSelect', 'Contextmenu', 'FocusClick', 'HiddenShotClick', 'WindowOptionClick'],
 		},
 		build: GalleryFactory.Photo.build,
 		/*
@@ -308,35 +302,33 @@
 	    		SNAPPI.domJsBinder.bindSelected2Page(gallery, selected, oldUuid);
 	        }
 		},
-		
-		
-		
-		
-		
-		
-		
-		
-		
-        handle_hiddenShotClick : function(e){
-        	e.stopImmediatePropagation();
-        	var thumbnail = e.currentTarget.ancestor('.FigureBox');
-			try {
-				var audition = thumbnail.audition;
-				var gallery = this.Gallery;
-				
-				
-				// new pattern, reuse Thumbnail.PhotoPreview
-				SNAPPI.Helper.Dialog.bindSelected2DialogHiddenShot(gallery, audition);
-				return;
-				
-				
-				
-				var shotType = audition.Audition.Substitutions.shotType;
-				if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
-				gallery.showHiddenShotsInDialog(audition, shotType);
-			} catch (e) {
-			}                	
-		},
+		handle_hiddenShotClick: function(e){
+			var shotGallery = SNAPPI.Gallery.find['shot-'];
+			// hiddenShot is same as focusClick for navFilmstrip
+			GalleryFactory.NavFilmstrip.handle_focusClick.call(this,e);
+			// set-display-view to 'one-row'
+			SNAPPI.Factory.Thumbnail.PhotoPreview.handle_HiddenShotClick();
+		},	
+        // handle_hiddenShotClick : function(e){
+        	// e.stopImmediatePropagation();
+        	// var thumbnail = e.currentTarget.ancestor('.FigureBox');
+			// try {
+				// var audition = thumbnail.audition;
+				// var gallery = this.Gallery;
+// 				
+// 				
+				// // new pattern, reuse Thumbnail.PhotoPreview
+				// SNAPPI.Helper.Dialog.bindSelected2DialogHiddenShot(gallery, audition);
+				// return;
+// 				
+// 				
+// 				
+				// var shotType = audition.Audition.Substitutions.shotType;
+				// if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
+				// gallery.showHiddenShotsInDialog(audition, shotType);
+			// } catch (e) {
+			// }                	
+		// },
 		handle_setDisplayView: function(g, view){
 			GalleryFactory.actions.setView(g, view);
 			// update castingCall if necessary 

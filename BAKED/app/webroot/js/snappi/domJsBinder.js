@@ -69,36 +69,6 @@
 	        	
     			var newUuid = selected.id;
     			SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected);
-
-				/*
-				 * navFilmstrip
-				 */
-    			// var view, navFilmstrip, shotGallery;
-    			// if (PAGE.jsonData.castingCall.auditionSH.count() > 1) {
-    				// // more than 1 audition, show navFilmstrip, determine view
-    				// navFilmstrip = SNAPPI.Gallery.find['nav-']; 
-    				// try {
-						// view = navFilmstrip.view || 'minimize';
-					// } catch (e) {
-						// view = 'minimize';		// default
-						// // view = 'filmstrip';		// default
-					// } 
-    				// if (!navFilmstrip) {
-	    				// // create/init navFilmstrip, default minimized
-	    				// var filmstripCfg = {
-							// type: 'NavFilmstrip',
-							// castingCall: PAGE.jsonData.castingCall,
-							// uuid: PAGE.jsonData.controller.xhrFrom.uuid,	// sets .focus
-							// render: (view != 'minimize'),		// do NOT render on init
-						// };
-	    				// navFilmstrip = new SNAPPI.Gallery(filmstripCfg);
-	    			// }
-	    			// // filmstrip might not be rendered yet;
-					// SNAPPI.galleryHelper.setView(navFilmstrip, view);
-    			// } else {
-    				// skip navFilmstrip
-    			// }
-    			
     			
 	        	/*
 	        	 * shotGallery

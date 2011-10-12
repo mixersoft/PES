@@ -371,8 +371,9 @@ var DEFAULT_CFG_contextmenu = 	{
 		var thumbnail = menu.get('currentNode');	// target
     	try {
     		var shotId = thumbnail.audition.Audition.Substitutions.id;
-    		if (shotId) menuItem.show();
-    		else menuItem.hide();
+    		if (!shotId) menuItem.hide();
+    		else if (/[nav-|shot-]/.test(thumbnail.Thumbnail._cfg.ID_PREFIX)) menuItem.hide();
+    		else menuItem.show();
 		}catch(e){
 			menuItem.hide();
 		}		
@@ -387,11 +388,6 @@ var DEFAULT_CFG_contextmenu = 	{
 			// new pattern, reuse Thumbnail.PhotoPreview
 			SNAPPI.Helper.Dialog.bindSelected2DialogHiddenShot(g, audition);
 			return;
-			
-			// old pattern
-			var shotType = audition.Audition.Substitutions.shotType;
-			if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
-			g.showHiddenShotsInDialog(audition, shotType);
 		} catch (e) {
 		}		
 	};

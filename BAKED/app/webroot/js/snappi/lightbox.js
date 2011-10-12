@@ -180,16 +180,6 @@
 //	                    this.listen.keypress = Y.on('keypress', this.handleKeypress, document, this);
 	                    //					this.listen.keypress = Y.on('keyup', this.handleKeypress, node, '46', this);
 	                }
-	                if (node.listen['ToolbarClick'] == undefined) {
-	                    // this.listen.toolbar = node.one('ul.toolbar').delegate('click', this.handleClick, 'li.button', this);
-	                	node.listen['ToolbarClick'] = node.one('nav.toolbar').delegate('click', 
-	                		this.handleClick, 
-	                	'ul > li', this);
-	                	// listen clicking on toolbar button's submenu
-	                	node.listen['ThumbsizeClick'] = node.one('nav.window-options').delegate('click', 
-	                		this.handleClick, 
-	                	'ul > li', this);
-	                }
 	            }
 	            else {
 	                for (var i in node.listen) {
@@ -1377,100 +1367,13 @@
 				this.clear.call(this);
 			}
 		},
-		handleClick : function(e) {
-			var action = e.currentTarget.getAttribute('action');
-			if (action) {
-				e.currentTarget.get('parentNode').all('li').removeClass('focus');
-				this.action[action].call(this, e);
-			}
-		},
-		action: {
-			// hide lightbox
-			minimize: function(e){
-				this.Gallery.container.ancestor('.filmstrip-wrap').addClass('hide');
-				e.currentTarget.addClass('focus');
-			},
-			// HScroll thumbnails, 1 row only
-			filmstrip: function(e){
-				// set width in pixels for 1 line
-				var count = Math.min(this.Gallery.auditionSH.count(), _LIGHTBOX_LIMIT);
-				var width = this.Gallery.container.one('.FigureBox').get('offsetWidth');
-				this.Gallery.container.setStyles({
-					width: (width*count)+'px',
-					height: 'auto'	
-				}).addClass('one-row');
-				this.Gallery.container.ancestor('.filmstrip-wrap').removeClass('hide');
-				if (e) e.currentTarget.addClass('focus');
-			},
-			// VScroll thumbnails
-			maximize: function(e) {
-				var MAX_HEIGHT = window.innerHeight - 120;
-				var count = Math.min(this.Gallery.auditionSH.count(), _LIGHTBOX_LIMIT);
-				var width = this.Gallery.container.one('.FigureBox').get('offsetWidth');
-				var rows = Math.ceil(count*width/940);
-				var height = this.Gallery.container.one('.FigureBox').get('offsetHeight');
-				if (rows*height > MAX_HEIGHT) {
-					rows = Math.floor(MAX_HEIGHT/height);
-					height = (rows*height)+'px';
-				} else {
-					height = 'auto';
-				}
-				this.Gallery.container.setStyles({
-					width: 'auto',
-					height: height	
-				}).removeClass('one-row');;
-				this.Gallery.container.ancestor('.filmstrip-wrap').removeClass('hide');
-				e.currentTarget.addClass('focus');
-			},
-			thumbSize : function(e) {
-				var srcSize, displaySize;
-				// displaySize: [lbx-tiny | sq | lm], also "summary"
-				try {
-					displaySize = e.currentTarget.getAttribute('size');	
-				} catch (e) {
-					try {
-						displaySize = SNAPPI.STATE.lightbox.displaySize;
-					} catch (e) {}
-				}
-				displaySize = displaySize || 'lbx-tiny';
-				srcSize = this.Gallery._cfg.size;
-				if (displaySize == 'summary') {
-					// show cover thumbnail only, plus summary description
-				} else { 
-					switch (srcSize+'+'+displaySize) {
-						case "sq+lbx-tiny": 
-						case "sq+sq":
-						case "lm+lm":
-							// do nothing
-							break;
-						case "lm+lbx-tiny":
-						case "lm+sq":
-							// convert thumbnails from lm > sq
-							this.Gallery.renderThumbSize('sq');
-							break;						
-						case "sq+lm":
-							// convert thumbnails from sq > lm
-							this.Gallery.renderThumbSize('lm');
-							break;
-					};
-				}
-				// use class to set displaySize to lbx-tiny
-				if (displaySize == 'lbx-tiny') {
-					this.Gallery.container.all(".FigureBox").addClass('lbx-tiny');
-				} else this.Gallery.container.all(".FigureBox").removeClass('lbx-tiny');
-				
-				// set container to fit new displaySize, i.e. filmstrip mode
-				if ( this.Gallery.container.getStyle('width') == 'auto') {
-					this.action.maximize.apply(this, null);
-				} else {
-					this.action.filmstrip.apply(this, null);
-				};
-				
-				// set focus
-				e.currentTarget.get('parentNode').all('li').removeClass('focus');
-		        e.currentTarget.addClass('focus');
-			}
-		},
+		// handleClick : function(e) {
+			// var action = e.currentTarget.getAttribute('action');
+			// if (action) {
+				// e.currentTarget.get('parentNode').all('li').removeClass('focus');
+				// this.action[action].call(this, e);
+			// }
+		// },
 		plugResizeAndDrag : function(node) {
 			var Y = SNAPPI.Y;
 			var node = node || this.node;

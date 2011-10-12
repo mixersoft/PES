@@ -508,24 +508,27 @@ debug("WARNING: This code path is not tested");
 	function home($id = null) {
 		$FILMSTRIP_LIMIT = 999;
 		$forceXHR = setXHRDebug($this, 0);
-
+	
 		/*
 		 * navFilmstrip processing
 		 */
 		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 		$ccid = (isset($this->params['url']['ccid'])) ? $ccid = $this->params['url']['ccid'] : null;
-		$castingCall = $this->CastingCall->cache_Refresh($ccid, array('perpage_on_cache_stale'=>$FILMSTRIP_LIMIT));
-// debug($ccid);			exit;
-// debug($castingCall['CastingCall']['Request']); 	
-// debug(Session::read('castingCall'));exit;	
-		// if (!$castingCall) {
-			// // no ccid available, cache generic castingCall. redirect to clean url
-			// $this->__cache_genericCastingCall();
-			// $this->redirect($this->here, null, true);
-		// }
-		$this->viewVars['jsonData']['castingCall'] = $castingCall;
-		$done = $this->renderXHRByRequest('json', null, null , 0);
-		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
+		if ($ccid) {
+			$castingCall = $this->CastingCall->cache_Refresh($ccid, array('perpage_on_cache_stale'=>$FILMSTRIP_LIMIT));
+	// debug($ccid);			exit;
+	// debug($castingCall['CastingCall']['Request']); 	
+	// debug(Session::read('castingCall'));exit;	
+			$this->viewVars['jsonData']['castingCall'] = $castingCall;
+			$done = $this->renderXHRByRequest('json', null, null , 0);
+		
+			if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
+			
+			if (!$castingCall) {
+				// handle cacheMiss, drop $ccid from request
+				$this->redirect(Router::url($this->passedArgs));
+			}
+		}
 		/*
 		 * navFilmstrip done
 		 */
@@ -547,14 +550,10 @@ debug("WARNING: This code path is not tested");
 		} else {
 			$shotType = 'Usershot';
 		}
-		$showHidden = !empty($this->passedArgs['showHidden'])? true : false;
-		
-//		debug("$shotType, showHidden=$showHidden");
 		$options = array(
 			'conditions'=>array('Asset.id'=>$id),
 			'contain'=> array('Owner.id', 'Owner.username', 'ProviderAccount.id', 'ProviderAccount.provider_name', 'ProviderAccount.display_name'),
 			'fields'=>'Asset.*',		// MUST ADD 'fields' for  containable+permissionable
-//			'showSubstitutes' => true,
 			'extras'=>array(
 				'show_edits'=>true,
 				'join_shots'=>$shotType, 		// join shots to get shot_count?
@@ -574,7 +573,8 @@ debug("WARNING: This code path is not tested");
 			if (empty($castingCall['CastingCall'])) {
 				// cache miss, build a new castingCall with one photo
 				if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
-				$castingCall = $this->CastingCall->getCastingCall(array($data['Asset']), false); 
+				$castingCall = $this->CastingCall->getCastingCall(array($data['Asset']), false);
+				$this->viewVars['jsonData']['castingCall'] = $castingCall; 
 			} 
 		}
 	}

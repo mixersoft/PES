@@ -523,7 +523,7 @@
 		                	try {
 		                		fn.call(this, e);
 		                	} catch (e) {}
-		                }, 'li.btn', this.node, action);
+		                }, 'ul > li.btn', this.node, action);
 				}
 	        },
 	        /*
@@ -541,7 +541,7 @@
 		                	// action=[set-display-size:[size] | set-display-view:[mode]]
 		                	// context = Gallery.node
 		                	Factory.actions.setToolbarOption.call(this, e);
-		                }, 'li.btn', this.node);
+		                }, 'ul > li', this.node);
 				}
 	        },        
 	        MultiSelect : function () {
@@ -794,7 +794,7 @@
 				var width = parent.one('.FigureBox').get('offsetWidth');
 				var containerWidth = Math.max(width*count, parent.get('clientWidth'));
 				this.container.setStyles({
-					width: (containerWidth)+'px',
+					width: (containerWidth+1000)+'px',	// add a little extra, then clean up on delay
 					height: 'auto'	
 				});         	
 				// recheck thumbnail offsetWidth in case final value not immediately loaded
@@ -802,13 +802,11 @@
 		        	try {
 		        		// set width in pixels to render as 1 row HScroll 
 						var recheck = parent.one('.FigureBox').get('offsetWidth');
-						if (width != recheck) {
-							var containerWidth = Math.max(recheck*count, parent.get('clientWidth'));
-							this.container.setStyles({
-								width: (containerWidth)+'px',
-								height: 'auto'	
-							}); 	
-						}
+						var containerWidth = Math.max(recheck*count, parent.get('clientWidth'));
+						this.container.setStyles({
+							width: (containerWidth)+'px',
+							height: 'auto'	
+						}); 	
 		        	} catch (e) {}								
 				}, this);
 				// executes after XXXms the callback
