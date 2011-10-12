@@ -310,17 +310,17 @@ var DEFAULT_CFG_contextmenu = 	{
 		menu.hide();
 	};	
 	// formerly _getPhotoRoll(), currently unused
-	MenuItems.getPhotoRollFromTarget = function(target){
+	MenuItems.getGalleryFromTarget = function(target){
 		if (target instanceof SNAPPI.Y.OverlayContext) {
 			target = target.get('currentNode');	// contextmenu target
 		}
-		var hasPhotoroll = false, 
-			found = target.ancestor(
+		var g = false; 
+		var n = target.ancestor(
 				function(n){
-					hasPhotoroll = n.Gallery || n.Gallery ||  (n.Lightbox && n.Lightbox.Gallery) || null; 
-					return hasPhotoroll;
+					g = n.Gallery || n.Gallery ||  (n.Lightbox && n.Lightbox.Gallery) || null; 
+					return g;
 				}, true );
-		return hasPhotoroll;
+		return g;
 	};	
 	MenuItems.rating_beforeShow = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
@@ -382,10 +382,16 @@ var DEFAULT_CFG_contextmenu = 	{
 		var thumbnail = menu.get('currentNode');	// target
 		try {
 			var audition = thumbnail.audition;
-			var photoRoll = MenuItems.getPhotoRollFromTarget(menu);
+			var g = MenuItems.getGalleryFromTarget(menu);
+			
+			// new pattern, reuse Thumbnail.PhotoPreview
+			SNAPPI.Helper.Dialog.bindSelected2DialogHiddenShot(g, audition);
+			return;
+			
+			// old pattern
 			var shotType = audition.Audition.Substitutions.shotType;
 			if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
-			photoRoll.showHiddenShotsInDialog(audition, shotType);
+			g.showHiddenShotsInDialog(audition, shotType);
 		} catch (e) {
 		}		
 	};
@@ -394,7 +400,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		var thumbnail = menu.get('currentNode');	// target
 		var show = /^Users|^Groups/.test(SNAPPI.STATE.controller.name);
 		if (show && thumbnail.hasClass('selected')) {
-			var photoRoll = MenuItems.getPhotoRollFromTarget(thumbnail);
+			var photoRoll = MenuItems.getGalleryFromTarget(thumbnail);
 			if (photoRoll.getSelected().count()>1) {
 				menuItem.show();
 				return;
@@ -408,7 +414,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		try {
 			// from thumbnail context-menu
 			var audition = thumbnail.audition;
-			var photoRoll = MenuItems.getPhotoRollFromTarget(menu);
+			var photoRoll = MenuItems.getGalleryFromTarget(menu);
 			var shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
 			photoRoll.groupAsShot(null, {
 				menu: menu,
@@ -444,7 +450,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		var thumbnail = menu.get('currentNode');	// target
 		var show = /^Users|^Groups/.test(SNAPPI.STATE.controller.name);
 		if (show && thumbnail.hasClass('selected')) {
-			var photoRoll = MenuItems.getPhotoRollFromTarget(thumbnail);
+			var photoRoll = MenuItems.getGalleryFromTarget(thumbnail);
 			if (photoRoll.getSelected().count()>=1) {
 				menuItem.show();
 				return;
@@ -456,7 +462,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	MenuItems.removeFromShot_click = function(menuItem, menu){
 		var batch, thumbnail = menu.get('currentNode');	// target
 		var audition = thumbnail.audition;
-		var photoRoll = MenuItems.getPhotoRollFromTarget(menu);
+		var photoRoll = MenuItems.getGalleryFromTarget(menu);
 		var shotType = audition.Audition.Substitutions.shotType;
 		if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
 		batch = photoRoll.getSelected();
@@ -501,7 +507,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	MenuItems.ungroupShot_click = function(menuItem, menu){
 		var batch, thumbnail = menu.get('currentNode');	// target
 		var audition = thumbnail.audition;
-		var photoRoll = MenuItems.getPhotoRollFromTarget(menu);
+		var photoRoll = MenuItems.getGalleryFromTarget(menu);
 		var shotType = audition.Audition.Substitutions.shotType;
 		if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
 		batch = photoRoll.getSelected();
@@ -517,7 +523,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	MenuItems.setBestshot_click = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
 		var audition = thumbnail.audition;
-		var photoRoll = MenuItems.getPhotoRollFromTarget(menu);
+		var photoRoll = MenuItems.getGalleryFromTarget(menu);
 		var shotType = audition.Audition.Substitutions.shotType;
 		if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
 		photoRoll.setBestshot(thumbnail, {
@@ -528,7 +534,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	};	
 	
 	MenuItems.create_pagegallery_click = function(menuItem, menu){
-		var photoRoll = MenuItems.getPhotoRollFromTarget(menu);
+		var photoRoll = MenuItems.getGalleryFromTarget(menu);
 		var batch;	// target
 		var audition = photoRoll.auditionSH.get(0);
 		batch = photoRoll.getSelected();

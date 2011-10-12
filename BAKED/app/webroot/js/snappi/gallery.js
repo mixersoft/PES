@@ -217,7 +217,16 @@
 			delete _cfg.render;
 			
 	        this._cfg = _cfg;
-	        
+            if (this.header) {
+            	// update thumbnailSize
+            	this.header.all('.window-options .thumb-size > li.btn').each(
+            		function(n,i,l){
+            			var action = n.getAttribute('action');
+            			if (action.indexOf(this._cfg.size)>-1) n.addClass('focus');
+            			else n.removeClass('focus'); 
+            		}, this
+            	);
+            }	        
 	        /**
 	         * sort auditions, or are they pre-sorted?
 	         */
@@ -448,10 +457,11 @@
             status = (status == undefined) ? true : status;
             var k,v,handler, fn;
             if (status) {
-            	cfg = cfg || ['Keypress', 'Mouseover', 'Click', 'ThumbsizeClick', 'MultiSelect', 'Contextmenu', 'FsClick'];
+            	cfg = cfg || ['Keypress', 'Mouseover', 'Click', 'WindowOptionClick', 'MultiSelect', 'Contextmenu', 'FsClick'];
             	for ( k in cfg){
-            		listener = 'listen'+cfg[k];
-            		this[listener]();
+            		try {
+            			this.listeners[cfg[k]].call(this); 
+            		} catch(e) {}
             	}
             }
             else {
@@ -468,133 +478,135 @@
                 }
             }
         },
-	    listenFocusClick: function(){
-        	if (this.node.listen['FocusClick'] == undefined) {
-        		this.node.listen['FocusClick'] = this.container.delegate('click', 
-	                	Factory[this._cfg.type].handle_focusClick, 
-	                'img', this.node); 
-	          }	    	
-	    },
-	    listenHiddenShotClick: function(){
-	    	// listen hiddenshot-icon
-        	if (this.node.listen['HiddenShotClick'] == undefined) {
-        		this.node.listen['HiddenShotClick'] = this.container.delegate('click', 
-						Factory[this._cfg.type].handle_hiddenShotClick, 
-	            	'div.hidden-shot', this.node); 
-	          }	    	
-	    },	    
-        listenClick: function(forceStart) {
-            if (this.node.listen['Click'] == undefined || forceStart ) {
-            	// section.gallery.photo or div.filmstrip.photo
-                this.node.listen['Click'] = this.node.delegate('click', function(e){
-                    var next = e.target.getAttribute('linkTo');
-                    if (this.Gallery.castingCall.CastingCall) {
-                    	next += '?ccid=' + this.Gallery.castingCall.CastingCall.ID;
-						try {
-							var shotType = e.currentTarget.ancestor('.FigureBox').audition.Audition.Substitutions.shotType;
-							if (shotType == 'Groupshot'){
-								next += '&shotType=Groupshot';
-							}
-						} catch (e) {}
-                    }
-                    window.location.href = next;
-                }, '.FigureBox > figure > img', this.node);
-			}
-        },
-        listenThumbsizeClick : function(action) {
-        	this.listenWindowOptionClick(); return;
-        	
-        	action = 'ThumbsizeClick';
-            if (this.node.listen[action] == undefined) {
-                // listen thumbnail size
-                this.node.listen[action] = this.node.get('parentNode').one('section.gallery-header .thumb-size').delegate('click', 
-	                function(e, action){
-	                	var fn = Factory[this.Gallery._cfg.type]['handle_'+action];
-	                	try {
-	                		fn.call(this, e);
-	                	} catch (e) {}
-	                }, 'li', this.node, action);
-			}
-        },
-        /*
-         * Click-Action listener/handlers
-         * 	start 'click' listener for action=
-         * 		set-display-size:[size] 
-         * 		set-display-view:[mode]
-         */
-        listenWindowOptionClick : function() {
-        	var action = 'WindowOptionClick';
-            if (this.node.listen[action] == undefined) {
-            	var delegate_container = this.header.one('.window-options');
-				this.node.listen[action] = delegate_container.delegate('click', 
-	                function(e){
-	                	// action=[set-display-size:[size] | set-display-view:[mode]]
-	                	// context = Gallery.node
-	                	Factory.actions.setToolbarOption.call(this, e);
-	                }, 'li', this.node);
-			}
-        },        
-        listenMultiSelect : function () {
-        	SNAPPI.multiSelect.listen(this.container, true);
-        	// select-all checkbox listener
-        	if (this.node.get('parentNode') && !this.node.listen['selectAll']) {
-	        	this.node.listen['selectAll'] = this.node.get('parentNode').delegate('click', 
-	        	function(e){
-	        		var checked = e.currentTarget.get('checked');
-	        		if (checked) this.Gallery.container.all('.FigureBox').addClass('selected');
-	        		else {
-	        			this.Gallery.container.all('.FigureBox').removeClass('selected');
-	        			SNAPPI.STATE.selectAllPages = false;
-	        		}
-	        	},'li.select-all input[type="checkbox"]', this.node);
-        	}
-        	return;
-        },
-        listenMouseover : function(){
-        	if(this.node.listen['Mouseover'] == undefined){
-        		this.node.listen['Mouseover'] = this.container.delegate('mouseover', 
+        listeners : {
+		    FocusClick: function(){
+	        	if (this.node.listen['FocusClick'] == undefined) {
+	        		this.node.listen['FocusClick'] = this.container.delegate('click', 
+		                	Factory[this._cfg.type].handle_focusClick, 
+		                'img', this.node); 
+		          }	    	
+		    },
+		    HiddenShotClick: function(){
+		    	// listen hiddenshot-icon
+	        	if (this.node.listen['HiddenShotClick'] == undefined) {
+	        		this.node.listen['HiddenShotClick'] = this.container.delegate('click', 
+							Factory[this._cfg.type].handle_hiddenShotClick, 
+		            	'div.hidden-shot', this.node); 
+		          }	    	
+		    },	    
+	        Click: function(forceStart) {
+	            if (this.node.listen['Click'] == undefined || forceStart ) {
+	            	// section.gallery.photo or div.filmstrip.photo
+	                this.node.listen['Click'] = this.node.delegate('click', function(e){
+	                    var next = e.target.getAttribute('linkTo');
+	                    if (this.Gallery.castingCall.CastingCall) {
+	                    	next += '?ccid=' + this.Gallery.castingCall.CastingCall.ID;
+							try {
+								var shotType = e.currentTarget.ancestor('.FigureBox').audition.Audition.Substitutions.shotType;
+								if (shotType == 'Groupshot'){
+									next += '&shotType=Groupshot';
+								}
+							} catch (e) {}
+	                    }
+	                    window.location.href = next;
+	                }, '.FigureBox > figure > img', this.node);
+				}
+	        },
+	        ThumbsizeClick : function(action) {
+	        	// for .gallery.photo nav.settings, NOT .filmstrip .window-options
+	        	action = 'ThumbsizeClick';
+	            if (this.node.listen[action] == undefined) {
+	                // listen thumbnail size
+	                this.node.listen[action] = this.node.get('parentNode').one('section.gallery-header .thumb-size').delegate('click', 
+		                function(e, action){
+		                	var fn = Factory[this.Gallery._cfg.type]['handle_'+action];
+		                	try {
+		                		fn.call(this, e);
+		                	} catch (e) {}
+		                }, 'li.btn', this.node, action);
+				}
+	        },
+	        /*
+	         * Click-Action listener/handlers
+	         * 	start 'click' listener for action=
+	         * 		set-display-size:[size] 
+	         * 		set-display-view:[mode]
+	         */
+	        WindowOptionClick : function() {
+	        	var action = 'WindowOptionClick';
+	            if (this.node.listen[action] == undefined) {
+	            	var delegate_container = this.header.one('.window-options');
+					this.node.listen[action] = delegate_container.delegate('click', 
+		                function(e){
+		                	// action=[set-display-size:[size] | set-display-view:[mode]]
+		                	// context = Gallery.node
+		                	Factory.actions.setToolbarOption.call(this, e);
+		                }, 'li.btn', this.node);
+				}
+	        },        
+	        MultiSelect : function () {
+	        	SNAPPI.multiSelect.listen(this.container, true);
+	        	// select-all checkbox listener
+	        	if (this.node.get('parentNode') && !this.node.listen['selectAll']) {
+		        	this.node.listen['selectAll'] = this.node.get('parentNode').delegate('click', 
+		        	function(e){
+		        		var checked = e.currentTarget.get('checked');
+		        		if (checked) this.Gallery.container.all('.FigureBox').addClass('selected');
+		        		else {
+		        			this.Gallery.container.all('.FigureBox').removeClass('selected');
+		        			SNAPPI.STATE.selectAllPages = false;
+		        		}
+		        	},'li.select-all input[type="checkbox"]', this.node);
+	        	}
+	        	return;
+	        },
+	        Mouseover : function(){
+	        	if(this.node.listen['Mouseover'] == undefined){
+	        		this.node.listen['Mouseover'] = this.container.delegate('mouseover', 
+		        		function(e){
+		        			var target = e.currentTarget;
+		            		var gallery = this.Gallery;
+		        			// may need to encapsulate the following code into a function. will refactor later.
+		            		if(gallery.contextMenu && SNAPPI.util.isDOMVisible(gallery.contextMenu.container)) {
+		            			gallery.contextMenu.parent.container = target;
+		            			// context menu is visible
+		            			if(!gallery.contextMenu.getNode().hasClass('hide')){
+		                			gallery.contextMenu.show();
+		                			gallery.stopClickListener();
+		            			}
+		            		}
+		            		// set focus
+		            		gallery.setFocus(target);
+						}, ' > li', this.node
+					);
+	        	}
+	        	
+	        },
+	        stopMouseoverListener : function(){
+	        	if(this.node.listen.mouseover != undefined){
+	        		this.node.listen.mouseover.detach();
+	        		delete this.node.listen.mouseover;
+	        	}
+	        },
+			
+	        Contextmenu : function (){
+	        	if (this.node.listen['Contextmenu'] == undefined){
+	        		this.node.listen['ContextMenuClick'] = this.container.delegate('contextmenu', 
 	        		function(e){
-	        			var target = e.currentTarget;
-	            		var gallery = this.Gallery;
-	        			// may need to encapsulate the following code into a function. will refactor later.
-	            		if(gallery.contextMenu && SNAPPI.util.isDOMVisible(gallery.contextMenu.container)) {
-	            			gallery.contextMenu.parent.container = target;
-	            			// context menu is visible
-	            			if(!gallery.contextMenu.getNode().hasClass('hide')){
-	                			gallery.contextMenu.show();
-	                			gallery.stopClickListener();
-	            			}
-	            		}
-	            		// set focus
-	            		gallery.setFocus(target);
-					}, ' > li', this.node
-				);
-        	}
-        	
+						this.Gallery.toggle_ContextMenu(e);
+	        		}, '.FigureBox', this.node);
+	        		
+	        		// .FigureBox li.context-menu.icon
+	     			this.node.listen['ContextMenuIconClick'] = this.container.delegate('click', 
+	     			function(e){
+						this.Gallery.toggle_ContextMenu(e);
+						e.stopImmediatePropagation();
+	        		}, '.FigureBox  figcaption  li.context-menu', this.node);        		
+				}        	
+	        	return;
+	        },        	
         },
-        stopMouseoverListener : function(){
-        	if(this.node.listen.mouseover != undefined){
-        		this.node.listen.mouseover.detach();
-        		delete this.node.listen.mouseover;
-        	}
-        },
-		
-        listenContextmenu : function (){
-        	if (this.node.listen['Contextmenu'] == undefined){
-        		this.node.listen['ContextMenuClick'] = this.container.delegate('contextmenu', 
-        		function(e){
-					this.Gallery.toggle_ContextMenu(e);
-        		}, '.FigureBox', this.node);
-        		
-        		// .FigureBox li.context-menu.icon
-     			this.node.listen['ContextMenuIconClick'] = this.container.delegate('click', 
-     			function(e){
-					this.Gallery.toggle_ContextMenu(e);
-					e.stopImmediatePropagation();
-        		}, '.FigureBox  figcaption  li.context-menu', this.node);        		
-			}        	
-        	return;
-        },
+
         toggle_ContextMenu : function(e) {
 	        e.preventDefault();
         	
@@ -871,7 +883,7 @@
 		},
 		updateCount: function() {
 			var count;
-			if (this._cfg.pageCount > 1) {
+			if (this._cfg.pageCount > 1 && this.castingCall) {
 				// use Total if the gallery is paged	
 				count = this._cfg.total;
 			} else count = this.auditionSH.count();
@@ -1623,7 +1635,7 @@
 				gallery.setFocus(focus);
 				switch(gallery._cfg.type) {
 					case "DialogHiddenShot":
-						SNAPPI.galleryHelper.bindPreview(gallery);
+						Helper.bindPreview(gallery);
 					break;
 					case "ShotGallery":
 						SNAPPI.domJsBinder.bindSelected2Preview.call(gallery, focus);
@@ -1785,6 +1797,7 @@
     						}					
     					}
     			};
+    			if (cfg.complete) ioCfg.on.complete = cfg.complete;
     			var target = container.get('parentNode');
     			var loadingmaskHost = this.node.hasClass('filmstrip') ? container.ancestor('.filmstrip') : container;
     			container.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(ioCfg));
@@ -1805,8 +1818,9 @@
 			container.io.set('arguments', args);
 			container.io.start();			
         },
-        // called by SNAPPI.Factory.Thumbnail.PhotoPreview.handle_HiddenShotClick()
-        showShotGallery : function(selected) {
+        // called by SNAPPI.Factory.Thumbnail.PhotoPreview.handle_HiddenShotClick(), and 
+        // DialogHelper.bindSelected2DialogHiddenShot() 
+        showShotGallery : function(selected, cfg) {
         	selected = selected || this.auditionSH.getFocus();
         	var container, parent, shots, Y = SNAPPI.Y;
         	var shot = selected.Audition.Substitutions;
@@ -1824,7 +1838,7 @@
 				SNAPPI.DragDrop.pluginDelegatedDrag(this.container, 'img.drag');        		
         	} else {
         		var uri = '/photos/hiddenShots/'+shot.id+'/'+shot.shotType+'/.json';
-        		var cfg = {
+        		var ioCfg = {
         			uuid: selected.id,
 		    		successJson : function(e, i,o,args) {
 						var response = o.responseJson.response;
@@ -1846,131 +1860,10 @@
 	                    return false;
 					},
 				};
-				this.loadCastingCall(uri, cfg);
+				ioCfg = Y.merge(ioCfg, cfg);
+				// skip 1861
+				this.loadCastingCall(uri, ioCfg);
         	}
-        },
-        /**
-         * show hidden shots in Dialog box
-         * @param selected audition- selected audition containing SubstitutionGroup
-         * @param shotType string, [Usershot|Groupshot|null], default Usershot
-         * @return
-         */    
-        showHiddenShotsInDialog : function(selected, shotType) {    	
-        	selected = selected || this.auditionSH.getFocus();
-        	shotType = shotType || 'Usershot';
-    		var shots, 
-    			Y = SNAPPI.Y;
-    		
-            try {
-            	shot = selected.Audition.Substitutions;
-        		if (!shot ) return; 
-            } catch (e) { return; }
-    		
-    		/*
-    		 * create or reuse Dialog
-    		 */
-    		var dialog_ID = 'dialog-photo-roll-hidden-shots';
-    		var dialog = SNAPPI.Dialog.find[dialog_ID];
-        	var args = {
-    			galleryPhoto : this,
-        		selected : selected,
-        		dialog: dialog,
-            };    		
-    		if (!dialog) {
-            	dialog = SNAPPI.Dialog.CFG[dialog_ID].load();
-            	args.dialog = dialog;
-    			var cfg = {
-//    					uri: subUri,
-    					parseContent: false,
-    					autoLoad: false,
-    					context: this,
-    					arguments: args,    					
-    					on: {
-    						successJson: function(e, i,o,args) {
-    							var response = o.responseJson.response;
-								// get auditions from raw json castingCall
-								var shotCC = response.castingCall;
-								var galleryPhotoCC = args.galleryPhoto.castingCall;	// this == galleryPhoto
-								var onDuplicate = function(a,b) {
-			                    	return a; 	// return original, do not replace
-								};
-								var subAuditionSH =  SNAPPI.Auditions.parseCastingCall(shotCC, this.castingCall.providerName, null, onDuplicate);
-			                    
-			                    var audition = subAuditionSH.first();
-			                    var shot = audition.Audition.Substitutions;
-			                    shot.stale = shot._sh.count() != audition.Audition.Shot.count ;
-			                    // render dialog-hidden-shot
-			                    var Y = SNAPPI.Y;
-			                    var filmstripNode, body = args.dialog.get('bodyContent');
-			                    if (!body || (body.get('id') != 'dialog-hidden-shot')) {
-			                    	// get hidden-shot MARKUP
-			                    	body = Y.Node.create(Factory['DialogHiddenShot'].defaultCfg.MARKUP);
-			                    	dialog.setStdModContent('body',body);
-			                    }
-								filmstripNode = body.one('.gallery.photo.filmstrip');
-			                    if (!filmstripNode.Gallery) {
-			                    	var cfg = {
-			                    		type: 'DialogHiddenShot',
-			                    		sh: shot._sh,
-			                    		shots: shot,
-			                    		castingCall: false,
-			                    		uuid: shot.best.id,
-			                    		node: filmstripNode,
-			                    	}			                    	
-			                    	filmstripNode.Gallery = new SNAPPI.Gallery(cfg);
-			                    	// filmstripNode.Dialog = args.dialog;
-			                    	Helper.bindPreview(filmstripNode.Gallery);
-			                    	return body;
-			                    } else {
-			                    	filmstripNode.Gallery.showShotGallery(shot.best);
-			                    	Helper.bindPreview(filmstripNode.Gallery);
-			                    	return body;
-			                    }
-    						}					
-    					}
-    			};
-    			dialog.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(cfg));
-    			// dialog_ID == dialog.get('boundingBox').get('id')
-    			SNAPPI.Dialog.find[dialog_ID] = dialog;
-    		} else {
-				var body = dialog.get('bodyContent');
-				if (!body || (body.get('id') != 'dialog-hidden-shot')) {
-					// get hidden-shota MARKUP
-					body = Y.Node.create(Factory['DialogHiddenShot'].defaultCfg.MARKUP);
-					dialog.setStdModContent('body',body);
-					dialog.io.set('title', 'Hidden Shot Gallery');
-				}    				
-    			if (!dialog.get('visible')) {
-    				dialog.show();
-    			}
-    		}
-    		
-    		
-    		if (shot.stale == false) {
-    			var body = body || dialog.get('bodyContent');
-				var node = body.one('.gallery.photo.filmstrip');    			
-                if (!node.Gallery) {
-                	var cfg = {
-                		type: 'DialogHiddenShot',
-                		sh: shot._sh,
-                		shots: shot,
-                		castingCall: false,
-                		uuid: shot.best.id,
-                		node: node,
-                	}			                    	
-                	node.Gallery = new SNAPPI.Gallery(cfg);
-                } else {
-                	node.Gallery.showShotGallery(shot.best);
-                }				
-    			dialog.setStdModContent('body',body);
-    			Helper.bindPreview(node.Gallery);
-    		} else {
-    			// shot are NOT included. get shot via XHR and render
-    			var subUri = '/photos/hiddenShots/'+shot.id+'/'+shotType+'/.json';
-    			dialog.io.set('uri', subUri );
-    			dialog.io.set('arguments', args);    			
-    			dialog.io.start();			
-    		}
         },
         launchPagemaker: function (node){
         	if (SNAPPI.PM && SNAPPI.PM.performance) {

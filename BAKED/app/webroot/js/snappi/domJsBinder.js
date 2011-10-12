@@ -46,6 +46,7 @@
         },
         
         bindSelected2Page : function(gallery, selected, oldUuid) {
+        	// for castingCall cacheMiss PAGE.jsonData.castingCall = false
     		try {
     			if (!PAGE.jsonData.castingCall.auditionSH) {
 	        		SNAPPI.Auditions.parseCastingCall(PAGE.jsonData.castingCall);
@@ -72,8 +73,8 @@
 				/*
 				 * navFilmstrip
 				 */
-    			var view, navFilmstrip, shotGallery;
-    			if (PAGE.jsonData.castingCall.auditionSH.count() > 1) {
+    			// var view, navFilmstrip, shotGallery;
+    			// if (PAGE.jsonData.castingCall.auditionSH.count() > 1) {
     				// // more than 1 audition, show navFilmstrip, determine view
     				// navFilmstrip = SNAPPI.Gallery.find['nav-']; 
     				// try {
@@ -93,10 +94,10 @@
 	    				// navFilmstrip = new SNAPPI.Gallery(filmstripCfg);
 	    			// }
 	    			// // filmstrip might not be rendered yet;
-					// SNAPPI.Factory.Gallery.actions.setView(navFilmstrip, view);
-    			} else {
+					// SNAPPI.galleryHelper.setView(navFilmstrip, view);
+    			// } else {
     				// skip navFilmstrip
-    			}
+    			// }
     			
     			
 	        	/*
@@ -104,12 +105,12 @@
 	        	 */
 	        	var shotGallery = SNAPPI.Gallery.find['shot-'];
 	        	if (shotGallery) {
-	        		try {
-	        			view = shotGallery.view || 'minimize';
-	        		} catch(e) {
-	        			view = 'minimize';
-	        		}
-	        		SNAPPI.Factory.Gallery.actions.setView(shotGallery, view);
+	        		// try {
+	        			// view = shotGallery.view || 'minimize';
+	        		// } catch(e) {
+	        			// view = 'minimize';
+	        		// }
+	        		// SNAPPI.galleryHelper.setView(shotGallery, view);
 	        		if (selected.Audition.Shot.id) {
 	        			shotGallery.showShotGallery(selected);
 		        	} else {

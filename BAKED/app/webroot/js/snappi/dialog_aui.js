@@ -66,9 +66,21 @@ var DEFAULT_CFG_io = {
 		var dialog = new Y.Dialog(_cfg);
 		dialog.listen = {};
 		dialog.cellOffsets = {
-			boundingBoxOffset: {w:64, h:146}, // +19 px for scrollbar
-			cellSize:{w:145, h:97}
-		}
+			bodyNodeOffset: {w:64, h:64}, // +19 px for scrollbar
+		}		
+		// resize dialog to show .preview-body
+		dialog.refresh = function(previewBody){
+			previewBody = previewBody instanceof Y.Node ? previewBody : dialog.getStdModNode('body').one('.preview-body');
+			if (previewBody) {
+	        	var delayed = new Y.DelayedTask( function() {
+		        	var h = previewBody.get('clientHeight')+ this.cellOffsets.bodyNodeOffset.h;
+					this.set('height', h );	
+					delete delayed;					
+				}, dialog);
+				delayed.delay(100);  // wait 100 ms					
+			}
+		};
+
 		if (cfg.autoLoad !== false) dialog.render();
 		// save reference
 		Dialog.find[CSS_ID] = dialog;
@@ -257,6 +269,117 @@ var DEFAULT_CFG_io = {
 
 	
 	SNAPPI.Dialog = Dialog;
+	
+	
+	/*********************************************************************
+	 * helper methods for Dialogs
+	 */
+	var DialogHelper = function(cfg) {};
+	SNAPPI.namespace('SNAPPI.Helper');
+	SNAPPI.Helper.Dialog = DialogHelper;
+	
+	/**
+	 * @params g SNAPPI.Gallery object
+	 * @params selected obj, audition of selected item
+	 */
+	DialogHelper.bindSelected2DialogHiddenShot = function(g, selected) {
+		// from MenuItems.showHiddenShot_click()
+		var Y = SNAPPI.Y;
+		var shotType = selected.Audition.Substitutions.shotType;
+		
+		var dialog_ID = 'dialog-photo-roll-hidden-shots';
+		var dialog = SNAPPI.Dialog.find[dialog_ID];
+		
+    	var args = {
+    		selected : selected,
+    		uuid: selected.id,
+    		dialog: dialog,
+        }; 
+        var previewBody, previewSize;
+        if (!dialog) {
+        	// create dialog
+        	dialog = SNAPPI.Dialog.CFG[dialog_ID].load();
+        	args.dialog = dialog;
+        	
+        	try {		
+	        	var DEFAULT_THUMBSIZE = 'bm';
+	        	// save in PreviewPhoto.size property for later use
+	        	previewSize = PAGE.jsonData.profile.thumbSize[dialog_ID] || DEFAULT_THUMBSIZE;
+	        } catch (e){
+	        	previewSize = DEFAULT_THUMBSIZE;
+	        } 
+        	previewBody = Y.Node.create('<section class="preview-body" />')
+        	previewBody.setAttribute('size', previewSize);
+        	
+        	dialog.setStdModContent('body', previewBody);
+        	previewBody.Dialog = dialog;
+        	dialog.show();
+        	
+        	var loadingmaskTarget = dialog.getStdModNode('body');
+			// plugin loadingmask
+			previewBody.plug(Y.LoadingMask, {
+				strings: {loading:''}, 	// BUG: A.LoadingMask
+				target: loadingmaskTarget,
+				end: null
+			});
+			// BUG: A.LoadingMask does not set target properly
+			previewBody.loadingmask._conf.data.value['target'] = loadingmaskTarget;
+			previewBody.loadingmask.overlayMask._conf.data.value['target'] = previewBody.loadingmask._conf.data.value['target'];
+        } else {
+        	// update/show dialog 
+			if (!dialog.get('visible')) {
+				dialog.show();
+			}        	
+			previewBody = dialog.getStdModNode('body').one('.preview-body');
+			previewSize = null; // use size from existing Thumbnail.PhotoPreview
+        }
+        // start listeners
+        
+		// add preview markup to Dialog body, set initial preview size
+		previewBody.loadingmask.refreshMask();
+		previewBody.loadingmask.show();
+		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, previewBody, previewSize);
+		
+		// add shotGallery		
+       	var shotGallery = SNAPPI.Gallery.find['hiddenshot-'];
+    	if (!shotGallery) {
+			shotGallery = new SNAPPI.Gallery({
+				type: 'DialogHiddenShot',
+				node: previewBody,
+				// size: 'sq',
+			});
+    	}   
+    	if (!shotGallery.view || shotGallery.view == 'minimize') {
+    		SNAPPI.galleryHelper.setView(shotGallery, 'one-row');
+    	}      	
+    	previewBody.loadingmask.refreshMask();
+    	shotGallery.showShotGallery(selected, {
+    		successJson: function(e, i,o,args) {
+    			// same as Gallery.showShotGallery(), but add dialog.refresh()
+    			// TODO: change to custom event
+					var response = o.responseJson.response;
+					// get auditions from raw json castingCall
+					var shotCC = response.castingCall;
+					var onDuplicate = function(a,b) {
+                    	return a; 	// return original, do not replace
+					};
+					var shotAuditionSH =  SNAPPI.Auditions.parseCastingCall(shotCC, this._cfg.PROVIDER_NAME, null, onDuplicate);
+                    
+                    var audition = shotAuditionSH.first();
+                    var shot = audition.Audition.Substitutions;
+                    shot.stale = shot._sh.count() != audition.Audition.Shot.count ;
+                    this.render({
+                    	sh: shotAuditionSH,
+                    	shotType: shot.shotType,
+                    	uuid: args.uuid
+                    });
+                    previewBody.Dialog.refresh(previewBody);
+                    return false;
+				}
+    		}
+    	);
+		dialog.refresh(); 	// resize Dialog, and again when shotGallery.render() complete
+	};
 })();
 
 
