@@ -81,13 +81,13 @@
     	}
     };    
     Gallery.getFromChild = function(target){
-		var hasPhotoroll = false, 
-			found = target.ancestor(
+		var g = false; 
+		var n = target.ancestor(
 				function(n){
-					hasPhotoroll = n.Photoroll || n.dom().Gallery || null; 
-					return hasPhotoroll;
+					g = n.Gallery || n.Gallery ||  (n.Lightbox && n.Lightbox.Gallery) || null; 
+					return g;
 				}, true );
-		return hasPhotoroll;
+		return g;
 	};	
     /**
      * DEPRECATE???

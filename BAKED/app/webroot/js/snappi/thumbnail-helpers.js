@@ -41,6 +41,10 @@
 		this.selectHandler = function(e) {
 			var target = e.target;
 			if (!e.ctrlKey && !e.shiftKey) {
+				if (target.get('parentNode').hasClass('context-menu')) {
+					// let ContextMenu listner handle this click.
+					return;
+				}
 				// No shift key - remove all selected images,
 				var found = false;
 				target.ancestor('.container').all('.FigureBox.selected').each(function(node) {
@@ -50,12 +54,13 @@
 				});
 				if (found) e.stopImmediatePropagation(); // halt click if necessary
 			} 
+			
+			target = e.currentTarget; 	// .FigureBox
 			if (e.shiftKey) {
-				this.selectContiguousHandler(target.ancestor('.FigureBox'));
+				this.selectContiguousHandler(target);
 				e.stopImmediatePropagation(); 
 			} else if (e.ctrlKey) {
 				// Check if the target is an image and select it.
-				var target = target.ancestor('.FigureBox');
 				target.toggleClass('selected');
 				if (target.Thumbnail && target.Thumbnail.select) target.Thumbnail.select();
 				// save selction to Session for lightbox

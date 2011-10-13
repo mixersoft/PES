@@ -314,13 +314,14 @@ var DEFAULT_CFG_contextmenu = 	{
 		if (target instanceof SNAPPI.Y.OverlayContext) {
 			target = target.get('currentNode');	// contextmenu target
 		}
-		var g = false; 
-		var n = target.ancestor(
-				function(n){
-					g = n.Gallery || n.Gallery ||  (n.Lightbox && n.Lightbox.Gallery) || null; 
-					return g;
-				}, true );
-		return g;
+		return SNAPPI.Gallery.getFromChild(target);
+		// var g = false; 
+		// var n = target.ancestor(
+				// function(n){
+					// g = n.Gallery || n.Gallery ||  (n.Lightbox && n.Lightbox.Gallery) || null; 
+					// return g;
+				// }, true );
+		// return g;
 	};	
 	MenuItems.rating_beforeShow = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target

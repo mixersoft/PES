@@ -1169,7 +1169,7 @@ debug("WARNING: This code path is not tested");
 	 * @params $assetIds string, CSV of asset uuids
 	 * @params $shotId string, uuid of shot, null to create new shot
 	 * @params $shotType string, [Usershot | Groupshot]
-	 * @params $shotUuid string, uuid of Usershot/Groupshot 
+	 * @params $shotUuid string, Usershot=owner_id, Groupshot=group_id 
 	 * @return array('shotId', 'bestshotId') or false
 	 */
 	function __groupAsShot( $assetIds, $shotId = null, $shotType='Usershot', $shotUuid = null, $owner_id = null ){

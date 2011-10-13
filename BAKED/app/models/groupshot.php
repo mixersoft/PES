@@ -145,8 +145,7 @@ class Groupshot extends AppModel {
 			$ret = $this->saveAll($insert, array('validate'=>'first'));
 		}
 //debug($insert); 
-		
-		if ($ret) {
+		if (isset($ret)) {
 			$success = $ret != false;
 			$message[] = 'Groupshot->groupAsShot: OK';
 			$response['groupAsShot']['shotId'] = $this->id;
