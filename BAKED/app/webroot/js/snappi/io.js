@@ -489,7 +489,8 @@
 				var ioRequest = e.target;
 				var context = ioRequest.get('context') || this;				
 				// timeout or no response
-				if (_callback.failure) _callback.failure.call(context, e, id, o, args);
+				if (_callback.failure) return _callback.failure.call(context, e, id, o, args);
+				else return false;
 	        }
 	    };
     	cfg.on = SNAPPI.Y.merge(cfg.on, _json_callbacks);

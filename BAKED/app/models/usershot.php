@@ -105,6 +105,7 @@ class Usershot extends AppModel {
 		foreach ($assetIds as $assetId) {
 			$insert['AssetsUsershot'][]['asset_id'] = $assetId;
 		}		
+// debug($assetIds);
 		if (count($assetIds)) {
 			// set Bestshot for NEW group
 			// set BestShotSystem by sort order, sort=='`SharedEdit`.score DESC, `Asset`.dateTaken ASC',
@@ -121,10 +122,12 @@ class Usershot extends AppModel {
 			}
 			$insert[$bestshotAlias]['asset_id'] = $byRating[0]['Asset']['id'];
 			$insert[$bestshotAlias]['user_id'] = $owner_id;
-		}
-//debug($insert); 
-		$ret = $this->saveAll($insert, array('validate'=>'first'));
-		if ($ret) {
+			
+			// save to AssetsUsershot, BestUsershot, etc.
+			$ret = $this->saveAll($insert, array('validate'=>'first'));
+		} 
+// debug($insert); 
+		if (isset($ret)) {
 			$success = $ret != false;
 			$message[] = 'Usershot->groupAsShot: OK';
 			$response['groupAsShot']['shotId'] = $this->id;

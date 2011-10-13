@@ -238,7 +238,10 @@ class CastingCallComponent extends Object {
 		$Total = (int)@ifed($this->controller->params['paging'][$class]['count'],@ifed($this->controller->params['paging']['total'][$class], count($assets)));
 		$Baseurl = Session::read('stagepath_baseurl');
 		//debug(compact('Audition','Total','Perpage','Pages','Page','Baseurl'));
+		// check permissions for groupAsShot 
 		$ShotType = Configure::read("paginate.Options.Asset.extras.join_shots");
+		$GroupAsShotPerm = Configure::read("paginate.Options.Asset.extras.group_as_shot_permission");
+		//
 
 		$Audition = array(); $Bestshot = array();
 		foreach ($assets as $asset) {
@@ -249,7 +252,7 @@ class CastingCallComponent extends Object {
 		$Auditions = compact('Audition','Bestshot','Total','Perpage','Pages','Page','Baseurl', 'ShotType');
 		$Timestamp = time();
 		$ID = empty($cache_key) ? $Timestamp : $cache_key;
-		$CastingCall = compact('ID', 'Timestamp', 'ProviderName','Auditions','Substitutions','Tags','Clusters', 'Request', 'ShowHidden');
+		$CastingCall = compact('ID', 'Timestamp', 'ProviderName','Auditions','Substitutions','Tags','Clusters', 'Request', 'GroupAsShotPerm', 'ShowHidden');
 
 		/*
 		 * add Groupings, i.e. Subsitutions, Tags, Clusters

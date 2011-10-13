@@ -43,6 +43,34 @@ class Asset extends AppModel {
 		return $query;
 	}
 	
+	/**
+	 * @return string, ['Usershot' | 'Groupshot' | false ]
+	 */
+	public function hasGroupAsShotPerm($class, $uuid) {
+		switch($class){
+			case 'User':
+				if (AppController::$userid == $uuid) return 'Usershot';	// ownership
+				if (in_array(Session::read('Auth.User.role'),array('EDITOR','MANAGER'))) return 'Usershot'; // backoffice editor
+				// TODO: check public
+				break;
+			case 'Group':
+				// if you can see Group Assets, you have permission to groupAsShot
+				return 'Groupshot';
+				break;
+			case 'Tag':
+				// check for context of Group or Owner
+				$context = Session::read('lookup.context');
+				if (!empty($context['keyName'])) {
+					if (in_array($context['keyName'], array('Group','Event','Wedding'))) return 'Groupshot';
+					if (in_array($context['keyName'], array('Me','Person'))) {
+						if (AppController::$userid == $context['uuid']) return 'Usershot';	// person is current user
+						if (in_array(Session::read('Auth.User.role'),array('EDITOR','MANAGER'))) return 'Usershot';
+					}  
+				}
+				break;
+		}
+		return false;
+	}
 	
 	/**
 	 * looks at the following keys from Asset->find() or Asset->paginate()
@@ -241,6 +269,7 @@ class Asset extends AppModel {
 		}
 		if ($primary && !Configure::read('controller.isXhr') && isset($results[0]['Asset']['owner_id'])){
 			if ($results[0]['Asset']['id'] == Configure::read('controller.xhrFrom.uuid')) {
+				// establish ownership of this particular Asset
 				Configure::write('controller.isOwner', $results[0]['Asset']['owner_id'] == AppController::$userid);
 				Configure::write('controller.owner', $results[0]['ProviderAccount']['display_name']);
 				Configure::write('controller.photostream', $results[0]['ProviderAccount']['display_name'].'@'.$results[0]['Asset']['provider_name']);
@@ -635,6 +664,8 @@ class Asset extends AppModel {
 		$paginate['order'] = array('rating'=>'DESC', 'Asset.dateTaken'=>'ASC');
 		$paginate['extras']['join_shots']=$shotType;		// override default 'Usershot'
 		$paginate['extras']['show_hidden_shots']=true;
+		// TODO: can we group/ungroup shots, just because we have read perm???
+		$paginate['extras']['group_as_shot_permission'] = $shotType;
 		return $paginate;
 	}				
 		
@@ -688,6 +719,7 @@ class Asset extends AppModel {
 		if (!empty($joins)) $paginate['joins'] = @mergeAsArray($paginate['joins'], $joins);
 		if (!empty($conditions)) $paginate['conditions'] = @mergeAsArray($paginate['conditions'], $conditions);
 		$paginate['extras']['join_shots']='Groupshot';		// override default 'Usershot'
+		$paginate['extras']['group_as_shot_permission'] = $this->hasGroupAsShotPerm('Group', $groupid);
 		return $paginate;
 	}			
 	
@@ -736,6 +768,8 @@ class Asset extends AppModel {
 		}
 		if (!empty($joins)) $paginate['joins'] = @mergeAsArray($paginate['joins'], $joins);
 		if (!empty($conditions)) $paginate['conditions'] = @mergeAsArray($paginate['conditions'], $conditions);
+		if ($currentUserid == $userid) $paginate['extras']['group_as_shot_permission']='Usershot';
+		$paginate['extras']['group_as_shot_permission'] = $this->hasGroupAsShotPerm('User', $userid);
 		return $paginate;
 	}
 	
@@ -784,6 +818,7 @@ class Asset extends AppModel {
 		}
 		if (!empty($joins)) $paginate['joins'] = @mergeAsArray($paginate['joins'], $joins);
 		if (!empty($conditions)) $paginate['conditions'] = @mergeAsArray($paginate['conditions'], $conditions);
+		$paginate['extras']['group_as_shot_permission'] = $this->hasGroupAsShotPerm('Tag', $tagid);
 		return $paginate;
 	}	
 	
@@ -819,9 +854,11 @@ class Asset extends AppModel {
 			if ($context['keyName']  == 'Person') {
 				//groups/photos
 				$conditions[] = "`Asset`.owner_id='{$context['uuid']}'";
+				$paginate['extras']['group_as_shot_permission'] = $this->hasGroupAsShotPerm('User', $context['uuid']);
 			}
 			if ($context['keyName']  == 'Group') {
 				// skip
+				$paginate['extras']['group_as_shot_permission'] = $this->hasGroupAsShotPerm('Group', $context['uuid']);
 			}
 			if ($context['keyName']  == 'Tag') {
 				$joins[] =	array(
@@ -836,6 +873,7 @@ class Asset extends AppModel {
 							'type'=>'INNER',
 							'conditions'=>array("`Tagged`.`tag_id` = `Tag`.id AND `Tag`.`keyname` = '{$context['uuid']}'"),
 					);
+				$paginate['extras']['group_as_shot_permission'] = $this->hasGroupAsShotPerm('Tag', $context['uuid']);
 			}
 		}
 		$paginate['joins'] = Array();
@@ -843,6 +881,7 @@ class Asset extends AppModel {
 		if (!empty($joins)) $paginate['joins'] = @mergeAsArray($paginate['joins'], $joins);
 		if (!empty($conditions)) $paginate['conditions'] = @mergeAsArray($paginate['conditions'], $conditions);
 		$paginate['extras']['join_shots']=$shotType;		// usually, 'Usershot', not sure how 'Groupshot would work
+		
 		return $paginate;
 	}
 }

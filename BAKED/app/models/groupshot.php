@@ -141,9 +141,11 @@ class Groupshot extends AppModel {
 			$insert[$bestshotAlias]['asset_id'] = $byRating[0]['Asset']['id'];
 			$insert[$bestshotAlias]['user_id'] = $owner_id;
 			
+			// save to DB
+			$ret = $this->saveAll($insert, array('validate'=>'first'));
 		}
 //debug($insert); 
-		$ret = $this->saveAll($insert, array('validate'=>'first'));
+		
 		if ($ret) {
 			$success = $ret != false;
 			$message[] = 'Groupshot->groupAsShot: OK';
@@ -162,18 +164,6 @@ class Groupshot extends AppModel {
 			$resp0 = compact('success', 'message', 'response'); 			
 		}
 		return $resp0;
-		
-//		$ret = $this->saveAll($insert, array('validate'=>'first'));
-//		// after saving NEW shot, delete old shots
-//		if ($ret && !empty($deleteShotIds)) {
-//			// TODO: delete old/orphaned Shots using QUEUE
-//			$ret = $ret && $this->unGroupShot($deleteShotIds);
-//		}
-//		$response = array(
-//			'shotId'=>$this->id, 
-//			'bestshotId'=>$insert[$bestshotAlias]['asset_id']
-//		);
-//		return $ret ? $response : false;
 	}
 
 	

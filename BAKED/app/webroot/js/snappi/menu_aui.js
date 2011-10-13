@@ -394,10 +394,13 @@ var DEFAULT_CFG_contextmenu = 	{
 
 	MenuItems.groupAsShot_beforeShow = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
-		var show = /^Users|^Groups/.test(SNAPPI.STATE.controller.name);
-		if (show && thumbnail.hasClass('selected')) {
-			var photoRoll = MenuItems.getGalleryFromTarget(thumbnail);
-			if (photoRoll.getSelected().count()>1) {
+		var g = MenuItems.getGalleryFromTarget(thumbnail);
+		try {
+			// check if the user has permission to groupAsShot
+			var shotType = g.castingCall.CastingCall.GroupAsShotPerm;
+		} catch (e) {}
+		if (shotType && thumbnail.hasClass('selected')) {
+			if (g.getSelected().count()>1) {
 				menuItem.show();
 				return;
 			}
@@ -410,14 +413,23 @@ var DEFAULT_CFG_contextmenu = 	{
 		try {
 			// from thumbnail context-menu
 			var audition = thumbnail.audition;
-			var photoRoll = MenuItems.getGalleryFromTarget(menu);
-			var shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
-			photoRoll.groupAsShot(null, {
+			var g = MenuItems.getGalleryFromTarget(menu);
+			var shotType = g.castingCall.CastingCall.GroupAsShotPerm;
+			var options = {
 				menu: menu,
 				loadingNode: menuItem,
 				shotType: shotType,
-				uuid: SNAPPI.STATE.controller.xhrFrom.uuid
-			});
+			};
+			// get userid or group_id for shot
+			if (/(User)|(Group)/.test(SNAPPI.STATE.controller['class'])) {
+				options.uuid = SNAPPI.STATE.controller.xhrFrom.uuid;
+			} else {
+				// get uuid from castingCall request
+				var request = g.castingCall.CastingCall.Request.split('/');
+				if (request[1] == 'my') options.uuid = SNAPPI.STATE.controller.userid;
+				else if (request[3]) options.uuid = request[3];
+			}
+			g.groupAsShot(null, options);
 			return;
 		} catch (e) {}	
 	};	
@@ -446,8 +458,8 @@ var DEFAULT_CFG_contextmenu = 	{
 		var thumbnail = menu.get('currentNode');	// target
 		var show = /^Users|^Groups/.test(SNAPPI.STATE.controller.name);
 		if (show && thumbnail.hasClass('selected')) {
-			var photoRoll = MenuItems.getGalleryFromTarget(thumbnail);
-			if (photoRoll.getSelected().count()>=1) {
+			var g = MenuItems.getGalleryFromTarget(thumbnail);
+			if (g.getSelected().count()>=1) {
 				menuItem.show();
 				return;
 			}
@@ -458,15 +470,15 @@ var DEFAULT_CFG_contextmenu = 	{
 	MenuItems.removeFromShot_click = function(menuItem, menu){
 		var batch, thumbnail = menu.get('currentNode');	// target
 		var audition = thumbnail.audition;
-		var photoRoll = MenuItems.getGalleryFromTarget(menu);
+		var g = MenuItems.getGalleryFromTarget(menu);
 		var shotType = audition.Audition.Substitutions.shotType;
 		if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
-		batch = photoRoll.getSelected();
+		batch = g.getSelected();
 		// count remaining assets
 		if (batch.count()==0) batch.add(audition);
-		var remaining = photoRoll.auditionSH.count() - batch.count();
+		var remaining = g.auditionSH.count() - batch.count();
 		if (remaining > 1) {
-			photoRoll.removeFromShot(batch, {
+			g.removeFromShot(batch, {
 				menu: menu,
 				loadingNode: menuItem,
 				shotType: shotType,
@@ -475,7 +487,7 @@ var DEFAULT_CFG_contextmenu = 	{
 			});
 		} else {
 			// TODO: confirm delete
-			photoRoll.unGroupShot(batch, {
+			g.unGroupShot(batch, {
 				menu: menu,
 				loadingNode: menuItem,
 				shotType: shotType,
@@ -503,12 +515,12 @@ var DEFAULT_CFG_contextmenu = 	{
 	MenuItems.ungroupShot_click = function(menuItem, menu){
 		var batch, thumbnail = menu.get('currentNode');	// target
 		var audition = thumbnail.audition;
-		var photoRoll = MenuItems.getGalleryFromTarget(menu);
+		var g = MenuItems.getGalleryFromTarget(menu);
 		var shotType = audition.Audition.Substitutions.shotType;
 		if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
-		batch = photoRoll.getSelected();
+		batch = g.getSelected();
 		if (batch.count()==0) batch.add(audition);
-		photoRoll.unGroupShot(batch, {
+		g.unGroupShot(batch, {
 			menu: menu,
 			loadingNode: menuItem,
 			shotType: shotType,
@@ -519,10 +531,10 @@ var DEFAULT_CFG_contextmenu = 	{
 	MenuItems.setBestshot_click = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
 		var audition = thumbnail.audition;
-		var photoRoll = MenuItems.getGalleryFromTarget(menu);
+		var g = MenuItems.getGalleryFromTarget(menu);
 		var shotType = audition.Audition.Substitutions.shotType;
 		if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
-		photoRoll.setBestshot(thumbnail, {
+		g.setBestshot(thumbnail, {
 			menu: menu,
 			loadingNode: menuItem,
 			shotType: shotType
@@ -530,15 +542,15 @@ var DEFAULT_CFG_contextmenu = 	{
 	};	
 	
 	MenuItems.create_pagegallery_click = function(menuItem, menu){
-		var photoRoll = MenuItems.getGalleryFromTarget(menu);
+		var g = MenuItems.getGalleryFromTarget(menu);
 		var batch;	// target
-		var audition = photoRoll.auditionSH.get(0);
-		batch = photoRoll.getSelected();
+		var audition = g.auditionSH.get(0);
+		batch = g.getSelected();
 		if (batch.count()) {
 			var Y = SNAPPI.PM.Y;
 //			var stage = SNAPPI.PageGalleryPlugin.stage;
 //			var performance = stage ? stage.performance : null;
-			var stage2 = photoRoll.container.create("<div id='stage-2' class='grid_16' style='position:absolute;top:200px;'></div>");
+			var stage2 = g.container.create("<div id='stage-2' class='grid_16' style='position:absolute;top:200px;'></div>");
 			Y.one('#content').append(stage2);
 			var sceneCfg = {
 				roleCount: batch.count(),
