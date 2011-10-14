@@ -75,7 +75,10 @@
     	setSize: function(g, size) {
         	g.renderThumbSize(size);
         	// check display mode for filmstrip mode, reset width to fit thumbsize
-        	if (g.container.hasClass('one-row')) g.setFilmstripWidth();
+        	if (g.container.hasClass('one-row')) {
+        		g.setFilmstripWidth();
+        		g.scrollFocus();
+        	}
     	},
     	// called by click event handler, context = Gallery.node, set by listener
     	setToolbarOption: function(e){
@@ -448,11 +451,33 @@
 			} catch (e) {
 				uuid = null;
 			}
-			// var uri = PAGE.jsonData.castingCall.CastingCall.Request;
-			var uri = '/photos/neighbors/'+ PAGE.jsonData.castingCall.CastingCall.ID + '/.json';
-			// get extended castingCall by cacheRefresh
-			uri = SNAPPI.IO.setNamedParams(uri, {perpage: null, page: null});
-			g.loadCastingCall(uri, {uuid: uuid});
+			// try {
+				// var isExtended = /perpage:999/.test(g.castingCall.CastingCall.Request);
+			// } catch (e) {
+				// isExtended = false;
+			// }
+			
+			/*
+			 * load navFilmstrip if not already loaded
+			 */
+			var load = g.container.all('.FigureBox').size() < g.auditionSH.count();
+			if (uuid && load ){
+				try {
+					// var uri = PAGE.jsonData.castingCall.CastingCall.Request;
+					var uri = '/photos/neighbors/'+ PAGE.jsonData.castingCall.CastingCall.ID + '/.json';
+					// get extended castingCall by cacheRefresh
+					uri = SNAPPI.IO.setNamedParams(uri, {perpage: null, page: null});
+					g.loadCastingCall(uri, {uuid: uuid});				
+				} catch (e) {}	
+				
+				// activate autoScroll for now
+				// TODO: add checkbox to PhotoPreview, default active
+				try {
+					var previewThumbnail = Y.one('.preview-body .FigureBox.PhotoPreview').Thumbnail;
+					SNAPPI.Factory.Thumbnail.PhotoPreview.set_AutoScroll(true, previewThumbnail, g);
+				} catch (e) {}
+				var check;			
+			}
 		}
 	}	
 	
@@ -558,74 +583,4 @@
 			previewBody.Dialog.refresh(previewBody); 
 		}
 	}
-	
-	var GalleryHelper = function(cfg) {	};
-	
-	GalleryHelper.prototype = {
-    	setView: function(g, view) {
-    		var parent = g.node.get('parentNode');
-    		switch(view) {
-    			case 'minimize':  
-	        		parent.addClass('minimize');
-	        		// g.header.one('ul').addClass('hide');      			
-	    			break;
-    			case 'one-row': 
-	        		parent.removeClass('minimize');
-	        		g.container.addClass('one-row');
-	        		g.header.one('ul').removeClass('hide');
-	        		break;
-    			case 'maximize': 
-    				// from lighbox action.maximize, not tested 
-					var MAX_HEIGHT = window.innerHeight - 120;
-					var count = Math.min(this.Gallery.auditionSH.count(), _LIGHTBOX_LIMIT);
-					var width = this.Gallery.container.one('.FigureBox').get('offsetWidth');
-					var rows = Math.ceil(count*width/940);
-					var height = this.Gallery.container.one('.FigureBox').get('offsetHeight');
-					if (rows*height > MAX_HEIGHT) {
-						rows = Math.floor(MAX_HEIGHT/height);
-						height = (rows*height)+'px';
-					} else {
-						height = 'auto';
-					}
-					this.Gallery.container.setStyles({
-						width: 'auto',
-						height: height	
-					}).removeClass('one-row');;
-					this.Gallery.container.ancestor('.filmstrip-wrap').removeClass('hide');
-					this.Gallery.container.get('parentNode').removeClass('minimize');
-					e.currentTarget.addClass('focus');    			
-	    			break;
-    		}
-    		g.view = view;
-    	},
-    	setSize: function(g, size) {
-        	g.renderThumbSize(size);
-        	// check display mode for filmstrip mode, reset width to fit thumbsize
-        	if (g.container.hasClass('one-row')) g.setFilmstripWidth();
-    	},
-    	// called by click event handler, context = Gallery.node, set by listener
-    	setToolbarOption: function(e){
-    		try {
-	    		var action = e.currentTarget.getAttribute('action').split(':');
-	    		switch(action[0]) {
-	    			case 'set-display-view':
-	    				var fn = GalleryFactory[this.Gallery._cfg.type]['handle_setDisplayView'];
-	    				if (fn) {
-	    					fn(this.Gallery, action[1] );
-	    				} else GalleryFactory.actions.setView(this.Gallery, action[1]);
-	    			break;
-	    			case 'set-display-size':
-	    				GalleryFactory.actions.setSize(this.Gallery, action[1]);
-	    			break;	    			
-	    		}
-	    		// set window option button to selected value
-	    		e.currentTarget.get('parentNode').all('li').removeClass('focus');
-	        	e.currentTarget.addClass('focus');	
-        	} catch (e) {}
-    	},		
-	};
-	/*
-	 * make global
-	 */
-	SNAPPI.galleryHelper = new GalleryHelper();
 })();

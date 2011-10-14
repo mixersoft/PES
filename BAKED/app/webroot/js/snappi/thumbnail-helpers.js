@@ -175,7 +175,41 @@
         	}
     	},
     }
-	
+	ThumbnailFactory.listeners = {
+		ThumbsizeClick: function(){
+			return this.node.delegate('click',
+					ThumbnailFactory[this._cfg.type].handle_ThumbsizeClick
+            	, 'figcaption ul.sizes li.btn', this.node)
+		},
+
+		HiddenShotClick: function() {
+			return this.node.delegate('click',
+					ThumbnailFactory[this._cfg.type].handle_HiddenShotClick
+            	, 'figcaption .hidden-shot', this.node)
+		},
+		ActionsClick: function() {
+			return this.node.one('figcaption .context-menu').on('click',
+					ThumbnailFactory[this._cfg.type].handle_ActionsClick
+            	, this.node)			
+		},
+		RatingClick: function() {
+			var r = this.node.one('.rating');
+			return SNAPPI.Rating.startListeners(r);
+		},
+		PreviewImgLoad: function() {
+			// plugin/show loadingmask in SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected()
+			return this.node.one('figure > img').on('load',
+				function(e) {
+					// hide loading indicator
+					if (this.loadingmask) this.loadingmask.hide();
+					else {
+						try {
+							this.ancestor('.preview-body').loadingmask.hide();							
+						} catch (e) {}
+					}
+				}, this.node)			
+		},	
+	};
 	ThumbnailFactory.PhotoPreview = {
 		defaultCfg: {
 			type: 'PhotoPreview',
@@ -186,6 +220,7 @@
     		showSizes: true,
     		draggable: true,
     		queue: false,
+    		listeners: ['ActionsClick', 'ThumbsizeClick', 'HiddenShotClick', 'RatingClick', 'PreviewImgLoad'],
     	},
     	// TODO: update Sizes to use action="set-display-size:[size]" format
 		markup: '<article class="FigureBox PhotoPreview">'+
@@ -350,11 +385,6 @@
 				node.one('ul').addClass('hide');
 			}		
 			
-            // start Thumbnail listeners for preview Thumbnail
-            var listeners = ['ActionsClick', 'ThumbsizeClick', 'HiddenShotClick', 'RatingClick', 'PreviewImgLoad'];
-            for (var i in listeners) {
-            	ThumbnailFactory.actions.listen_action.call(this, listeners[i], this.node);
-            }
 			return this;
 		},
 		bindSelected: function(selected, previewBody, size) {
@@ -403,9 +433,9 @@
     			node.Thumbnail.reuse(selected);
     		}
     		previewBody.loadingmask.show(); 
-    		ThumbnailFactory.PhotoPreview.bindShotGallery2Preview(previewBody, selected);
+    		ThumbnailFactory.PhotoPreview.bindShotGallery2Preview(selected, previewBody);
         },		
-        bindShotGallery2Preview: function(previewBody, selected, gallery) {
+        bindShotGallery2Preview: function(selected, previewBody, gallery) {
         	try {
 	        	gallery = gallery || previewBody.one('.gallery.photo.filmstrip').Gallery;
 	        	if (!gallery) {
@@ -421,7 +451,7 @@
 	        	} 	        	
 			    if (selected.Audition.Shot.id) {
 			    	if (!gallery.view || gallery.view == 'minimize') {
-			    		SNAPPI.galleryHelper.setView(gallery, 'one-row');
+			    		SNAPPI.Factory.Gallery.actions.setView(gallery, 'one-row');
 			    	}   			    	
 	    			gallery.showShotGallery(selected);
 	        	} else {
@@ -429,11 +459,6 @@
 	        	}
         	} catch(e) {}
         },
-		listen_ThumbsizeClick: function(){
-			return this.node.delegate('click',
-					ThumbnailFactory[this._cfg.type].handle_ThumbsizeClick
-            	, 'figcaption ul.sizes li.btn', this.node)
-		},
 		handle_ThumbsizeClick: function(e){
 			var target = e.currentTarget;
 			var size = target.getAttribute('size');
@@ -447,11 +472,6 @@
 			// save preview size to Session
 			// PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
 		},
-		listen_HiddenShotClick: function() {
-			return this.node.delegate('click',
-					ThumbnailFactory[this._cfg.type].handle_HiddenShotClick
-            	, 'figcaption .hidden-shot', this.node)
-		},
 		handle_HiddenShotClick: function(e) {
 			var parent = SNAPPI.Y.one('#shot-gallery');
 			var selected = parent.get('parentNode').one('.FigureBox').audition;
@@ -463,39 +483,40 @@
 				});
         	}   
         	if (!shotGallery.view || shotGallery.view == 'minimize') {
-        		SNAPPI.galleryHelper.setView(shotGallery, 'one-row');
+        		SNAPPI.Factory.Gallery.actions.setView(shotGallery, 'one-row');
         	}      	
         	shotGallery.showShotGallery(selected);
-		},
-		listen_ActionsClick: function() {
-			return this.node.one('figcaption .context-menu').on('click',
-					ThumbnailFactory[this._cfg.type].handle_ActionsClick
-            	, this.node)			
 		},
 		handle_ActionsClick: function(e) {
 			console.log("Preview Thumbnail Actions Click;");
 			// show navFilmstrip for now
 			var navFilmstrip = SNAPPI.Gallery.find['nav-'];  
 			navFilmstrip.render();
-			SNAPPI.galleryHelper.setView(navFilmstrip, 'filmstrip');
+			SNAPPI.Factory.Gallery.actions.setView(navFilmstrip, 'filmstrip');
 		},
-		listen_RatingClick: function() {
-			var r = this.node.one('.rating');
-			return SNAPPI.Rating.startListeners(r);
+		set_AutoScroll: function(value, thumbnail, gallery) {
+			// node == previewThumbnail node, .FigureBox.PreviewPhoto
+			value = value || false;
+			var node = thumbnail.node;
+			var listener = 'AutoScroll';
+			if (value && !node.listen[listener]) {
+				var previewBody = node.ancestor('.preview-body');
+				var g = gallery || SNAPPI.Gallery.find['nav-'];
+				node.listen[listener] = SNAPPI.Y.on('snappi:ratingChanged', 
+					function(r){
+						if (previewBody.contains(r.node)) {
+							// autoScroll
+							if (g) {
+								var selected = g.auditionSH.next();
+								g.scrollFocus(selected);
+								// TODO: debug g.next(), g.prev(), etc.
+								ThumbnailFactory.PhotoPreview.bindSelected(selected, previewBody);
+							} 
+						}
+					});
+			}
+			if (!value) node.listen[listener].detach();		
 		},
-		listen_PreviewImgLoad: function() {
-			// plugin/show loadingmask in SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected()
-			return this.node.one('figure > img').on('load',
-				function(e) {
-					// hide loading indicator
-					if (this.loadingmask) this.loadingmask.hide();
-					else {
-						try {
-							this.ancestor('.preview-body').loadingmask.hide();							
-						} catch (e) {}
-					}
-				}, this.node)			
-		},		
 	};	
 	
 	var Y = SNAPPI.Y;

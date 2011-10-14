@@ -23,7 +23,6 @@
  */
 (function(){
 	var Factory = SNAPPI.Factory.Gallery;
-	var Helper = SNAPPI.galleryHelper;
     /*
      * dependencies
      */
@@ -275,13 +274,14 @@
          *  re-render existing gallery to a new thumbSize;
          */ 
         renderThumbSize: function(thumbSize) {
-        	this._cfg.size = thumbSize;	// Gallery._cfg.size
         	var selected = this.auditionSH.getFocus();
-        	this.container.all('.FigureBox').each(function(n,i,l){
-        		n.Thumbnail.resize(thumbSize);
-        		if (n.audition == selected) n.addClass('focus');
-        	});
-        	
+        	if (this._cfg.size != thumbSize) {
+	        	this._cfg.size = thumbSize;	// Gallery._cfg.size
+	        	this.container.all('.FigureBox').each(function(n,i,l){
+	        		n.Thumbnail.resize(thumbSize);
+	        		if (n.audition == selected) n.addClass('focus');
+	        	});
+        	}
         }, 
         render: function(cfg, shotsSH){
         	cfg = cfg || {};
@@ -642,16 +642,16 @@
         setFocus: function(m){
         	var Y = SNAPPI.Y;
         	var focusNode, o;
-        	if (m.id) {
+        	if (m instanceof Y.Node && m.hasClass('.FigureBox')) {
+				o = m.audition;  
+        		focusNode = m;
+        	} else if (m && m.id) {
         		o = m;
       		} else if (typeof m == 'string') {
         		o = this.auditionSH.get(m);        		
         	} else if (typeof m == 'number') {
         		m = parseInt(m);
         		o = this.auditionSH.get(m);
-			} else if (m instanceof Y.Node && m.hasClass('.FigureBox')) {
-				o = m.audition;  
-        		focusNode = m;
         	} else {
         		return;
         	};
@@ -688,6 +688,7 @@
 							width: (containerWidth)+'px',
 							height: 'auto'	
 						}); 	
+						this.scrollFocus();
 		        	} catch (e) {}								
 				}, this);
 				// executes after XXXms the callback
@@ -699,18 +700,22 @@
          * @params m mixed, Y.Node (.FigureBox), uuid, or index
          */
         scrollFocus: function(m) {
-        	var i, thumbs, parent = this.container.ancestor('.filmstrip');
+        	var i, thumbs, selected, parent = this.container.ancestor('.filmstrip');
         	try {
         		if (m instanceof SNAPPI.Y.Node && m.hasClass('.FigureBox')) {
         			thumbs = this.container.all('.FigureBox');
         			i = thumbs.indexOf(m);
+        		} else if (m && m.id) {
+        			i = this.auditionSH.indexOf(m);        			
         		} else if (typeof m == "string") {
         			i = this.auditionSH.indexOfKey(m);
         		} else if (typeof i == 'number') {
 					i = m;	        		
 	        	}
-        		var selected = this.auditionSH.setFocus(i);
-        		i = this.auditionSH.indexOf(selected);
+				if (typeof i == 'number') {
+					selected = this.auditionSH.setFocus(i);
+	        	}
+	        	i = this.auditionSH.indexOf(this.auditionSH.getFocus());  // use ACTUAL focus
 	        	var width = this.container.one('.FigureBox').get('offsetWidth');
 	        	var center = parent.get('clientWidth')/2 ;
 				var scrollLeft = (i + 0.5) * width - center; 
@@ -1482,7 +1487,9 @@
 				shotGallery.setFocus(bestShot);
 				// render changes
 				shotGallery.render();
-				shotGallery.updateHiddenShotPreview(shotGallery, oldFocus);
+				var previewBody = shotGallery.node.one('.preview-body');
+				SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(bestShot, previewBody);
+				// shotGallery.updateHiddenShotPreview(shotGallery, oldFocus);
 				
 				if (photoGallery) {
 					/*
@@ -1508,13 +1515,15 @@
 			}
 			return false;
 		},
+		// @deprecated use SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected()
 		updateHiddenShotPreview: function(gallery, oldFocus){
 			var focus = gallery.getFocus();
 			if (focus != oldFocus) {
 				gallery.setFocus(focus);
 				switch(gallery._cfg.type) {
 					case "DialogHiddenShot":
-						Helper.bindPreview(gallery);
+						// Helper.bindPreview(gallery);
+						SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected();
 					break;
 					case "ShotGallery":
 						SNAPPI.domJsBinder.bindSelected2Preview.call(gallery, focus);
@@ -1545,7 +1554,7 @@
 			};
 			var loadingNode = cfg.loadingNode;
 			if (loadingNode.io == undefined) {
-				var ioCfg = SNAPPIphotoGallery_PREFIXnIO_RespondAsJson({
+				var ioCfg = SNAPPI.IO.pluginIO_RespondAsJson({
 					uri: uri ,
 					parseContent:true,
 					method: 'POST',

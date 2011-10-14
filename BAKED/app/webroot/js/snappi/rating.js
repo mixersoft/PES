@@ -210,13 +210,14 @@
 		
 		// plugin loading mask then call XHR POST
 		if (!r.node.loadingmask) {
+			var loadingmaskTarget = r.node.get('parentNode');
 			r.node.plug(Y.LoadingMask, {
 				strings: {loading:''}, 	// BUG: A.LoadingMask
-//					target: r.node,
+				target: loadingmaskTarget,
 				end: null
 			});
 			// BUG: A.LoadingMask does not set target properly
-			r.node.loadingmask._conf.data.value['target'] = r.node;
+			r.node.loadingmask._conf.data.value['target'] = loadingmaskTarget;
 			r.node.loadingmask.overlayMask._conf.data.value['target'] = r.node.loadingmask._conf.data.value['target'];
 		}
 		r.node.loadingmask.show();
@@ -248,15 +249,16 @@
 		if (!delegateContainer instanceof Y.Node) {
 			delegateContainer = Y.one(delegateContainer);
 		}
-		var detach = delegateContainer.get('id') + selector;
-		if (!Rating.listen[detach]) {
-			Rating.listen[detach] = delegateContainer.delegate('click', Rating.handleClick, selector);	
+		var id = delegateContainer.get('id') || delegateContainer._yuid;
+		var name = id + '-' + selector;
+		if (!Rating.listen[name]) {
+			Rating.listen[name] = delegateContainer.delegate('click', Rating.handleClick, selector);	
 		}
 		// Y.one(delegateContainer).delegate("mouseover",
 		// Rating.handleMouseOver, selector);
 		// Y.one(delegateContainer).delegate("mouseout",
 		// Rating.handleMouseOut, selector);
-		return Rating.listen[detach];
+		return Rating.listen[name];
 	};
 	Rating.stopListeners = function(delegateContainer) {
 		if (!delegateContainer instanceof Y.Node) {

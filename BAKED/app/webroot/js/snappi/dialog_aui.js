@@ -352,9 +352,9 @@ var DEFAULT_CFG_io = {
 			});
     	}   
     	
-    	// bind shotGallery, move to ThumbnailFactory.PhotoPreview.bindShotGallery2Preview()
+    	// TODO: bind shotGallery, move to ThumbnailFactory.PhotoPreview.bindShotGallery2Preview()
     	if (!shotGallery.view || shotGallery.view == 'minimize') {
-    		SNAPPI.galleryHelper.setView(shotGallery, 'one-row');
+    		SNAPPI.Factory.Gallery.actions.setView(shotGallery, 'one-row');
     	}      	
     	previewBody.loadingmask.refreshMask();
     	shotGallery.showShotGallery(selected, {

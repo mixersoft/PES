@@ -62,8 +62,21 @@
 	 */
 	var Thumbnail = function(audition, cfg) {
 		this.init(cfg);
-		if (audition) this.create(audition, cfg);
-		
+		if (audition) {
+			this.create(audition, cfg);
+			// start listeners
+			if (this._cfg.listeners) {
+				var listeners = this._cfg.listeners;
+				this.node.listen = this.node.listen || {};
+				for (var k in listeners){
+	        		try {
+	        			if (!this.node.listen[listeners[k]]){
+	        				this.node.listen[listeners[k]] = Factory.listeners[listeners[k]].call(this); 
+	        			}
+	        		} catch(e) {}
+	        	}
+			}
+		}
 	};
 	
 	/*
