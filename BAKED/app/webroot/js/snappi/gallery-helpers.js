@@ -428,7 +428,9 @@
 	    	gallery.scrollFocus(selected.id);
 	    	// gallery.filmstrip_SetFocus(selected);
 	    	if (selected.id != oldUuid) {
-	    		SNAPPI.domJsBinder.bindSelected2Page(gallery, selected, oldUuid);
+	    		// SNAPPI.domJsBinder.bindSelected2Page(gallery, selected, oldUuid);
+	    		var previewBody = Y.one('.preview-body');
+	    		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, previewBody);
 	        }
 		},
 		handle_hiddenShotClick: function(e){
@@ -626,50 +628,4 @@
 	 * make global
 	 */
 	SNAPPI.galleryHelper = new GalleryHelper();
-	
-	var PreviewHelper = function(cfg) {	};
-	PreviewHelper.DialogHiddenShot = {
-		/*
-		 * render different preview templates, based on preview size
-		 */
-		renderPreview: function(container, selected, size) {
-			switch (size) {
-				case "tn":
-				case "bs":
-				case "bm":
-					// show photo properties for smaller previews
-				case "bp":
-		    		var img = container.one('img.preview');
-		    		if (!img) {
-		    			container.append('<img class="preview"/>');
-		    			img = container.one('img.preview');
-						if (!container.listen) container.listen = {};
-						container.listen['imgOnLoad'] = img.on('load', function(e){
-							container.loadingmask.hide();
-							Y.fire('snappi:preview-change', container);
-						}); 
-					}		    		
-					var src = selected.getImgSrcBySize(selected.urlbase + selected.src, size);
-					container.loadingmask.show(); 
-					img.set('src', src).set('title', selected.label);
-				break;
-			}
-		},
-		listen: function(filmstrip){
-			if (!filmstrip.node.listen['preview-change']) {
-				filmstrip.node.listen['preview-change'] = Y.on('snappi:preview-change', 
-	            	function(previewBody){
-	            		var dialog_ID = 'dialog-photo-roll-hidden-shots';
-						var dialog = SNAPPI.Dialog.find[dialog_ID];
-	            		var body = dialog.get('boundingBox');
-	            		if (body && (body.get('id') == dialog_ID)) {
-	            			var height = body.one('section.filmstrip').get('clientHeight');
-		                    dialog.set('height', height + 60);
-	                    }
-	        	});
-			}			
-		}
-		
-	}
-
 })();

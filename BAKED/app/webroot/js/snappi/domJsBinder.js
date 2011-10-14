@@ -45,6 +45,7 @@
             this._cfg = Y.merge(defaultCfg, cfg);
         },
         
+        // deprecate, use SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected()
         bindSelected2Page : function(gallery, selected, oldUuid) {
         	// for castingCall cacheMiss PAGE.jsonData.castingCall = false
     		try {
@@ -68,19 +69,14 @@
 	        	}
 	        	
     			var newUuid = selected.id;
-    			SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected);
+    			var previewBody = Y.one('.preview-body');
+    			SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, previewBody);
     			
 	        	/*
 	        	 * shotGallery
 	        	 */
 	        	var shotGallery = SNAPPI.Gallery.find['shot-'];
 	        	if (shotGallery) {
-	        		// try {
-	        			// view = shotGallery.view || 'minimize';
-	        		// } catch(e) {
-	        			// view = 'minimize';
-	        		// }
-	        		// SNAPPI.galleryHelper.setView(shotGallery, view);
 	        		if (selected.Audition.Shot.id) {
 	        			shotGallery.showShotGallery(selected);
 		        	} else {

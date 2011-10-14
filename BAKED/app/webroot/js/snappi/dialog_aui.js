@@ -325,6 +325,8 @@ var DEFAULT_CFG_io = {
 			// BUG: A.LoadingMask does not set target properly
 			previewBody.loadingmask._conf.data.value['target'] = loadingmaskTarget;
 			previewBody.loadingmask.overlayMask._conf.data.value['target'] = previewBody.loadingmask._conf.data.value['target'];
+			previewBody.loadingmask.set('zIndex', 10);
+    		previewBody.loadingmask.overlayMask.set('zIndex', 10);
         } else {
         	// update/show dialog 
 			if (!dialog.get('visible')) {
@@ -349,6 +351,8 @@ var DEFAULT_CFG_io = {
 				// size: 'sq',
 			});
     	}   
+    	
+    	// bind shotGallery, move to ThumbnailFactory.PhotoPreview.bindShotGallery2Preview()
     	if (!shotGallery.view || shotGallery.view == 'minimize') {
     		SNAPPI.galleryHelper.setView(shotGallery, 'one-row');
     	}      	
@@ -356,7 +360,7 @@ var DEFAULT_CFG_io = {
     	shotGallery.showShotGallery(selected, {
     		successJson: function(e, i,o,args) {
     			// same as Gallery.showShotGallery(), but add dialog.refresh()
-    			// TODO: change to custom event
+    			// TODO: use Gallery.showShotGallery() codepath
 					var response = o.responseJson.response;
 					// get auditions from raw json castingCall
 					var shotCC = response.castingCall;

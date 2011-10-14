@@ -452,6 +452,7 @@
         	node.Thumbnail.reuse(audition, node, cfg);
         },
         createThumbnail: function(audition, cfg){
+        	// TODO: do NOT copy ALL cfg attrs to thumbnail. figure out which ones we need
         	cfg = SNAPPI.Y.merge(this._cfg, cfg);	// copy
         	cfg.gallery = this;
         	cfg.type = cfg.tnType || cfg.type;
@@ -1676,24 +1677,25 @@
     					}
     			};
     			if (cfg.complete) ioCfg.on.complete = cfg.complete;
-    			var target = container.get('parentNode');
-    			var loadingmaskHost = this.node.hasClass('filmstrip') ? container.ancestor('.filmstrip') : container;
-    			container.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(ioCfg));
+    			// var loadingmaskTarget = container.get('parentNode');
+    			var loadingmaskTarget = this.node.hasClass('filmstrip') ? container.ancestor('.filmstrip') : container;
     			// set loadingmask to parent
     			container.plug(Y.LoadingMask, {
-    				target: target
-    			});
-    			container.loadingmask._conf.data.value['target'] = target;
+    				target: loadingmaskTarget
+    			});    			
+    			container.loadingmask._conf.data.value['target'] = loadingmaskTarget;
     			container.loadingmask.overlayMask._conf.data.value['target'] = container.loadingmask._conf.data.value['target'];
     			// container.loadingmask.set('target', target);
     			// container.loadingmask.overlayMask.set('target', target);
     			container.loadingmask.set('zIndex', 10);
     			container.loadingmask.overlayMask.set('zIndex', 10);
-
+    			container.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(ioCfg));
     		}
 			// get CC via XHR and render
 			container.io.set('uri', args.uri);
 			container.io.set('arguments', args);
+			// container.loadingmask.refreshMask();
+			container.loadingmask.show();		//DEBUG: loadingmask is NOT showing here
 			container.io.start();			
         },
         // called by SNAPPI.Factory.Thumbnail.PhotoPreview.handle_HiddenShotClick(), and 

@@ -207,7 +207,7 @@
                 },
                 'snappi-thumbnail': {
                     path: 'thumbnail3.js',
-                    requires: ['node', 'substitute', 'stylesheet', 'event', 'overlay', 'gallery-util', 'snappi-rating', 'gallery-group', 'snappi-dragdrop', 'snappi-imageloader']
+                    requires: ['node', 'substitute', 'stylesheet', 'event', 'overlay', 'gallery-util', 'snappi-rating', 'gallery-group', 'snappi-dragdrop', 'snappi-thumbnail-helpers', 'snappi-imageloader']
                     //'gallery-util' SNAPPI.util.hash(bindTo) may be deprecated 
                 },
                 'snappi-thumbnail-helpers': {
@@ -366,6 +366,7 @@
 			// pagemaker_useCombo: true,
 			alloy_useCombo: true,
 			// yui_CDN == true => use "http://yui.yahooapis.com/combo?"
+			// yui_CDN == false => use "/combo/js?"
 			yahoo_CDN: false
 		});
     var Y;

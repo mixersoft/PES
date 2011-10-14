@@ -128,7 +128,9 @@ if (empty($this->passedArgs['wide'])) {
 		
 		// init page with navFilmstrip closed
 		var selected = PAGE.jsonData.controller.xhrFrom.uuid;
-		SNAPPI.domJsBinder.bindSelected2Page(fs, selected);
+		// SNAPPI.domJsBinder.bindSelected2Page(fs, selected);
+		var previewBody = Y.one('.preview-body');
+	    SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, previewBody);
 		SNAPPI.xhrFetch.init(); 
 	
 	};
