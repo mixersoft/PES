@@ -66,7 +66,7 @@
 						width: 'auto',
 						height: height	
 					}).removeClass('one-row');;
-					g.container.ancestor('.filmstrip-wrap').removeClass('hide');
+					g.container.ancestor('.filmstrip-wrap').removeClass('hide').removeClass('hidden');
 					g.container.get('parentNode').removeClass('minimize');
 	    			break;
     		}
@@ -426,15 +426,17 @@
 	    handle_focusClick: function(e){
 	    	var gallery = this.Gallery;
 	    	var selected = e.target.ancestor('.FigureBox').audition;
-	    	var oldUuid = gallery.getFocus().id;
+	    	// var oldUuid = gallery.getFocus().id;
 	    	gallery.auditionSH.setFocus(selected);
-	    	gallery.scrollFocus(selected.id);
-	    	// gallery.filmstrip_SetFocus(selected);
-	    	if (selected.id != oldUuid) {
-	    		// SNAPPI.domJsBinder.bindSelected2Page(gallery, selected, oldUuid);
-	    		var previewBody = Y.one('.preview-body');
-	    		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, previewBody);
-	        }
+	    	gallery.scrollFocus(selected);
+	    	try {
+		    	var previewBody = Y.one('.preview-body');
+		    	var previewUuid = previewBody.one('.FigureBox.PhotoPreview').Thumbnail.id;
+		    	if (selected.id != previewUuid) {
+		    		// SNAPPI.domJsBinder.bindSelected2Page(gallery, selected, oldUuid);
+		    		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, previewBody);
+		        }
+	    	} catch (e) {}
 		},
 		handle_hiddenShotClick: function(e){
 			var shotGallery = SNAPPI.Gallery.find['shot-'];

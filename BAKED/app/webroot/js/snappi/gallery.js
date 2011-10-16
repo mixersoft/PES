@@ -277,8 +277,13 @@
         	var selected = this.auditionSH.getFocus();
         	if (this._cfg.size != thumbSize) {
 	        	this._cfg.size = thumbSize;	// Gallery._cfg.size
+			
+				var isFilmstrip = this.container.ancestor('.filmstrip-wrap');
+				var isHidden = (isFilmstrip && isFilmstrip.hasClass('hidden'));
+	    		// rehide .FigureBoxes in hidden filmstrips
 	        	this.container.all('.FigureBox').each(function(n,i,l){
 	        		n.Thumbnail.resize(thumbSize);
+	        		if (isHidden) n.addClass('hide');
 	        		if (n.audition == selected) n.addClass('focus');
 	        	});
         	}
@@ -312,7 +317,7 @@
         		focusUuid = cfg.uuid || cfg.selected;
         		this.auditionSH.setFocus(focusUuid);
 //        		delete cfg.uuid;	// TODO: filmstrip doesn't work unless we update this._cfg.uuid
-        	}
+        	} else focusUuid = this.auditionSH.getFocus();
         	if (cfg) this._cfg = Y.merge(this._cfg, cfg);
             
             var offset = 0;
@@ -373,18 +378,20 @@
             // if (this.node.hasClass('hiddenshots')) thumbCfg = {	showHiddenShot : false	}
             if (nlist.size()) {
                 // if .FigureBox exist, reuse
+                nlist.removeClass('focus');
             	nlist.each(function(n, i, l){
             		if (i >= perpage  ) {
-            			// hide extras
-            			n.addClass('hide');
+            			// hide extras, unbind and remove extras
+            			n.Thumbnail.remove();
+            			// n.addClass('hide');
             		} else if (Y.Lang.isNumber(this._cfg.start) && this._cfg.end) {
 						var audition = this.auditionSH.get(offset+i);
 						if (audition && offset+i < this._cfg.end) { 
 						    this.reuseThumbnail(audition, n, thumbCfg);
-						    n.removeClass('focus');
 						    if (audition.id == focusUuid) n.addClass('focus');
 						} else {
-							n.addClass('hide');
+							// n.addClass('hide');
+							n.Thumbnail.remove();
 						}
             		}
                 }, this);
@@ -517,10 +524,15 @@
         		this.stopClickListener();
         	} else {
         		var menu = SNAPPI.MenuAUI.toggleEnabled(CSS_ID, e);
-        		if (menu.get('disabled')) {
-        			this.listenClick();
-        		} else {
-        			this.stopClickListener();
+        		if (this._cfg.listeners.indexOf('Click')> -1) {
+        			// toggle Click listener
+	        		if (menu.get('disabled')) {
+	        			// TODO: nav to attribute "linkTo"
+	        			Factory.listeners.Click();
+	        		} else {
+	        			// TODO: ignore "linkTo" click
+	        			this.stopClickListener();
+	        		}
         		}
         	}
         },
@@ -667,32 +679,40 @@
         },
         /*
          * set filmstrip to 1 row tall with HScroll
+         * 	NOTE: calls Gallery.setFocus() after resizing width
          */
         setFilmstripWidth: function() {
         	try {
-	        	var parent = this.container.ancestor('.filmstrip');
+	        	var wrapper = this.container.ancestor('.filmstrip');
+	        	var thumb = this.container.one('.FigureBox');
 	        	var count = this.auditionSH.count();
-				var width = parent.one('.FigureBox').get('offsetWidth');
-				var containerWidth = Math.max(width*count, parent.get('clientWidth'));
-				this.container.setStyles({
-					width: (containerWidth+1000)+'px',	// add a little extra, then clean up on delay
-					height: 'auto'	
-				});         	
-				// recheck thumbnail offsetWidth in case final value not immediately loaded
-	        	var delayed = new Y.DelayedTask( function() {
-		        	try {
-		        		// set width in pixels to render as 1 row HScroll 
-						var recheck = parent.one('.FigureBox').get('offsetWidth');
-						var containerWidth = Math.max(recheck*count, parent.get('clientWidth'));
-						this.container.setStyles({
-							width: (containerWidth)+'px',
-							height: 'auto'	
-						}); 	
-						this.scrollFocus();
-		        	} catch (e) {}								
-				}, this);
-				// executes after XXXms the callback
-				delayed.delay(100);
+	        	count -= this.container.all('.hiddenshot-hide').size(); 
+	        	var lookupWidth = {
+	        		'sq':81,
+	        		'tn':151,
+	        		'lm':151,
+	        	}
+	        	var width = lookupWidth[thumb.Thumbnail._cfg.size];
+	        	var newWidth = Math.max(width*count, wrapper.get('clientWidth'));
+	        	var oldWidth = this.container.get('clientWidth');
+	        	var setWidth = function(w, g) {
+	        		g.container.setStyles({
+						width: (w)+'px',	
+						height: 'auto',
+					}); 
+	        		g.scrollFocus();	
+	        	}
+	        	if (oldWidth > newWidth) {
+	        		// use delay to avoid flash when narrowing 
+					var delay = new Y.DelayedTask( 
+						function() {
+							setWidth(newWidth, this);  
+						}, this);
+					delay.delay(100);	        		
+	        	} else {
+	        		setWidth(newWidth, this);
+	        	}
+	        	return;
 			} catch (e) {}	
         },
         /*
@@ -715,10 +735,26 @@
 				if (typeof i == 'number') {
 					selected = this.auditionSH.setFocus(i);
 	        	}
-	        	i = this.auditionSH.indexOf(this.auditionSH.getFocus());  // use ACTUAL focus
-	        	var width = this.container.one('.FigureBox').get('offsetWidth');
+	        	var offset = 0, focus = this.auditionSH.getFocus();
+	        	i = this.auditionSH.indexOf(focus);  // use index of ACTUAL focus
+	        	// TODO: adjust for hiddenshot-hide, or remove hidden Thumbnails
+	        	// move to end doesn't work, count hiddenshot-hides
+	        	thumbs = thumbs || this.container.all('.FigureBox');
+	        	thumbs.some(function(n){
+	        		if (n.audition == focus) return true;
+	        		else if (n.hasClass('hiddenshot-hide')) {
+	        			offset--;
+	        		}
+	        		return false;
+	        	});
+	        	var lookupWidth = {
+	        		'sq':81,
+	        		'tn':151,
+	        		'lm':151,
+	        	}
+	        	var width = lookupWidth[this._cfg.size];	        	
 	        	var center = parent.get('clientWidth')/2 ;
-				var scrollLeft = (i + 0.5) * width - center; 
+				var scrollLeft = (i+offset + 0.5) * width - center; 
 				parent.set('scrollLeft', scrollLeft);
 				thumbs = thumbs || parent.all('.FigureBox');
 				// set focus
@@ -1486,7 +1522,8 @@
 				bestShot.Audition.Shot.count = bestShot.Audition.Substitutions.count();
 				shotGallery.setFocus(bestShot);
 				// render changes
-				shotGallery.render();
+				// TODO: set {uuid:} to scrollFocus();
+				shotGallery.render();	
 				var previewBody = shotGallery.node.one('.preview-body');
 				SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(bestShot, previewBody);
 				// shotGallery.updateHiddenShotPreview(shotGallery, oldFocus);
@@ -1582,24 +1619,25 @@
 			try {
 				var selected, shotPhotoRoll;
 				selected = args.thumbnail.audition;
-				shotPhotoRoll = args.thumbnail.ancestor('ul.hiddenshots').Gallery;
+				shotPhotoRoll = args.thumbnail.ancestor('.gallery.filmstrip').Gallery;
 				var bestShot = selected.Audition.Substitutions.best;
 				// confirm showHidden bestShot is in main photoroll
-				if (bestShot !== selected) {
-					var photoroll = SNAPPI.Y.one('section.gallery.photo').Gallery;
-					// splice into original location
-					var result = photoroll.auditionSH.replace(bestShot, selected);
+				if (1 || bestShot !== selected) {
+					// var photoroll = SNAPPI.Y.one('section.gallery.photo').Gallery;
+					g = SNAPPI.Gallery.find['uuid-'] || SNAPPI.Gallery.find['nav-'];
+					// splice into original location, nav- or uuid-
+					var result = g.auditionSH.replace(bestShot, selected);
 					if (result) {
 						shotPhotoRoll.selected = selected;
 						selected.Audition.Substitutions.setBest(selected);
-						photoroll.render();	
+						g.render();	
 						bestShot_Substitution = selected.Audition.Substitutions;
-						photoroll.shots[bestShot_Substitution.id]=bestShot_Substitution;
-						for (var i in photoroll.shots) {
-							var shot = photoroll.shots[i]; 
-							photoroll.applyShotCSS(shot);
-						}
-						
+						g.shots[bestShot_Substitution.id]=bestShot_Substitution;
+						g.applyShotCSS(bestShot_Substitution);
+						// for (var i in g.shots) {
+							// var shot = photoroll.shots[i]; 
+							// g.applyShotCSS(shot);
+						// }
 					}
 				}
 			} catch (e) {}		
@@ -1714,17 +1752,24 @@
         	var container, parent, shots, Y = SNAPPI.Y;
         	var shot = selected.Audition.Substitutions;
 			var renderCfg = {
-  				shotType:  shot.shotType     		
+  				shotType:  shot.shotType,  
+  				uuid: selected.id   		
         	}
-
-        	if (shot.stale == false) {
+			if (shot.id) {
+				this.container.ancestor('.filmstrip-wrap').removeClass('hidden');
+				this.container.all('.FigureBox').removeClass('hide');
+			} 
+			if (shot.stale == false && this.Shot == shot) {
+				// skip
+        	} else if (shot.stale == false) {
         		renderCfg.sh = shot._sh;
         		this.render(renderCfg);
         		// fire snappi:after-render-filmstrip
-				this.setFilmstripWidth();
-				this.scrollFocus( shot.best.id );
-				this.container.ancestor('.filmstrip-wrap').removeClass('hidden');
-				SNAPPI.DragDrop.pluginDelegatedDrag(this.container, 'img.drag');        		
+				// this.setFilmstripWidth();		// already called by this.render()
+				// this.scrollFocus( shot.best.id );
+				// redundant?
+				// this.container.ancestor('.filmstrip-wrap').removeClass('hidden');
+				// SNAPPI.DragDrop.pluginDelegatedDrag(this.container, 'img.drag');        		
         	} else {
         		var uri = '/photos/hiddenShots/'+shot.id+'/'+shot.shotType+'/.json';
         		var ioCfg = {
@@ -1746,11 +1791,11 @@
 	                    	shotType: shot.shotType,
 	                    	uuid: args.uuid
 	                    });
+	                    this.Shot = shot;		// track current shot to avoid uneeded JSON request
 	                    return false;
 					},
 				};
 				ioCfg = Y.merge(ioCfg, cfg);
-				// skip 1861
 				this.loadCastingCall(uri, ioCfg);
         	}
         },

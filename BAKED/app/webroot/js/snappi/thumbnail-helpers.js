@@ -46,13 +46,12 @@
 					return;
 				}
 				// No shift key - remove all selected images,
-				var found = false;
-				target.ancestor('.container').all('.FigureBox.selected').each(function(node) {
-					node.removeClass('selected');
-					if (node.Thumbnail && node.Thumbnail.select) node.Thumbnail.select(false);
-					found = true;
-				});
-				if (found) e.stopImmediatePropagation(); // halt click if necessary
+				var selected = target.ancestor('.container').all('.FigureBox.selected');
+				if (selected.size()) {
+					e.stopImmediatePropagation(); // halt click if we are clearing selected
+					selected.removeClass('selected');
+					return;
+				}
 			} 
 			
 			target = e.currentTarget; 	// .FigureBox
@@ -399,20 +398,6 @@
     		cfg = {
     			type: 'PhotoPreview',
     		}
-    		if (!previewBody.loadingmask) {
-    			var loadingmaskTarget = previewBody;
-				// plugin loadingmask to .preview-body
-				previewBody.plug(Y.LoadingMask, {
-					strings: {loading:''}, 	// BUG: A.LoadingMask
-					target: loadingmaskTarget,
-					end: null
-				});
-				// BUG: A.LoadingMask does not set target properly
-				previewBody.loadingmask._conf.data.value['target'] = loadingmaskTarget;
-				previewBody.loadingmask.overlayMask._conf.data.value['target'] = previewBody.loadingmask._conf.data.value['target'];
-				previewBody.loadingmask.set('zIndex', 10);
-	    		previewBody.loadingmask.overlayMask.set('zIndex', 10);    			
-    		}
     		// create/reuse Thumbnail
     		var t, node = previewBody.one('.FigureBox.PhotoPreview');
     		if (!node) {
@@ -428,10 +413,25 @@
     			previewBody.prepend(t.node);
     			node = t.node;
     			
-				previewBody.loadingmask.refreshMask();
+	    		if (!previewBody.loadingmask) {
+	    			var loadingmaskTarget = node;
+					// plugin loadingmask to Thumbnail.PreviewPhoto
+					previewBody.plug(Y.LoadingMask, {
+						strings: {loading:''}, 	// BUG: A.LoadingMask
+						target: loadingmaskTarget,
+						end: null
+					});
+					// BUG: A.LoadingMask does not set target properly
+					previewBody.loadingmask._conf.data.value['target'] = loadingmaskTarget;
+					previewBody.loadingmask.overlayMask._conf.data.value['target'] = previewBody.loadingmask._conf.data.value['target'];
+					previewBody.loadingmask.set('zIndex', 10);
+		    		previewBody.loadingmask.overlayMask.set('zIndex', 10);    			
+	    		}    			
+    			
     		} else {
     			node.Thumbnail.reuse(selected);
     		}
+    		previewBody.loadingmask.refreshMask();
     		previewBody.loadingmask.show(); 
     		ThumbnailFactory.PhotoPreview.bindShotGallery2Preview(selected, previewBody);
         },		
@@ -455,6 +455,7 @@
 			    	}   			    	
 	    			gallery.showShotGallery(selected);
 	        	} else {
+	        		gallery.container.ancestor('.filmstrip-wrap').addClass('hidden');
 	        		gallery.container.all('.FigureBox').addClass('hide');
 	        	}
         	} catch(e) {}
@@ -504,14 +505,11 @@
 				var g = gallery || SNAPPI.Gallery.find['nav-'];
 				node.listen[listener] = SNAPPI.Y.on('snappi:ratingChanged', 
 					function(r){
-						if (previewBody.contains(r.node)) {
-							// autoScroll
-							if (g) {
-								var selected = g.auditionSH.next();
-								g.scrollFocus(selected);
-								// TODO: debug g.next(), g.prev(), etc.
-								ThumbnailFactory.PhotoPreview.bindSelected(selected, previewBody);
-							} 
+						if (g && previewBody.one('.FigureBox.PhotoPreview').contains(r.node)) {
+							var selected = g.auditionSH.next();
+							g.scrollFocus(selected);
+							// TODO: debug g.next(), g.prev(), etc.
+							ThumbnailFactory.PhotoPreview.bindSelected(selected, previewBody);
 						}
 					});
 			}

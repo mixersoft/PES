@@ -165,6 +165,10 @@
         	Factory[this._cfg.type].renderElementsBySize.call(this, this._cfg.size, audition, cfg);				
 			return node;
 		},
+		remove: function() {
+			SNAPPI.Auditions.unbind(this.node);
+			this.node.empty().remove();
+		},
 		setData : function(dataElement) {
 			// replace dataElement for existing Thumbnail
 			// not yet implemented
@@ -182,6 +186,7 @@
 		/**
 		 * select/un-select Thumbnail, adds DOM elements for showing selection
 		 * @param value, toggle if null
+		 * not currently used, use .selected class instead
 		 */
 		select: function(value) {
 			return;
@@ -206,6 +211,8 @@
 				this.node.replaceClass('hiddenshot-hide', 'hiddenshot-show');
 			} else {
 				this.node.replaceClass('hiddenshot-show', 'hiddenshot-hide');
+				// either Thumbnail.remove() or move to back so it doesn't affect scrollFocus 
+				// this.node.get('parentNode').append(this.node);
 			}
 		},
 		/*******************************************************************

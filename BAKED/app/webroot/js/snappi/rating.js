@@ -561,22 +561,22 @@
 				Y.fire('snappi:ratingChanged', r);
 				break;
 			case "photos-home-rating": // rating for IMG.preview
-				try {
-					v = v || r.value;
-					var auditionSH = Y.one('section#nav-filmstrip .gallery.photo.filmstrip').Gallery.auditionSH;
-					var audition = auditionSH.get(r.id);
-					_updateRatingChange(audition, v);
-				} catch (e) {
-				}
+				// try {
+					// v = v || r.value;
+					// var auditionSH = Y.one('section#nav-filmstrip .gallery.photo.filmstrip').Gallery.auditionSH;
+					// var audition = auditionSH.get(r.id);
+					// _updateRatingChange(audition, v);
+				// } catch (e) {
+				// }
 				break;
 			case 'zoom_ratingGrp':
-				try {
-					var audition = r.node.ancestor('#snappi-zoomBox').dom().audition;
-					v = v || r.value;
-					_updateRatingChange(audition, v);
-				} catch (e) {
-				}
-				Y.fire('snappi:ratingChanged', r);
+				// try {
+					// var audition = r.node.ancestor('#snappi-zoomBox').dom().audition;
+					// v = v || r.value;
+					// _updateRatingChange(audition, v);
+				// } catch (e) {
+				// }
+				// Y.fire('snappi:ratingChanged', r);
 				break;
 			case 'menuItem-contextRatingGrp': // right-click over .FigureBox
 				var audition = SNAPPI.Auditions.get(r.id);
