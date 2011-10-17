@@ -8,8 +8,17 @@ echo $this->element('nav/section', array('icon_src'=>$data['Asset']['src_thumbna
 			echo "PAGE.jsonData.castingCall = {$this->Js->object($jsonData['castingCall'])} ; \n";				
 		?>
 			var initOnce = function() {
-				// TODO: bind members to MemberRoll
-				SNAPPI.domJsBinder.bindAuditions2Filmstrip();
+				var Y = SNAPPI.Y;
+				SNAPPI.mergeSessionData();
+				
+				// NOTE: we must init the gallery to start the 'WindowOptionClick' listners
+				var filmstripCfg = {
+					type: 'NavFilmstrip',
+					castingCall: PAGE.jsonData.castingCall,
+					// uuid: PAGE.jsonData.controller.xhrFrom.uuid,	// sets .focus
+					render: true,		
+				};
+				var fs = new SNAPPI.Gallery(filmstripCfg);
 				SNAPPI.xhrFetch.init();
 			};
 			try {SNAPPI.xhrFetch.fetchXhr; initOnce(); }			// run now for XHR request, or

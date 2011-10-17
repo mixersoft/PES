@@ -115,7 +115,6 @@ if (empty($this->passedArgs['wide'])) {
 	var initOnce = function() {
 		var Y = SNAPPI.Y;
 		SNAPPI.mergeSessionData();
-		// SNAPPI.domJsBinder.bindSelected2Page();
 		
 		// NOTE: we must init the gallery to start the 'WindowOptionClick' listners
 		var filmstripCfg = {
