@@ -55,7 +55,17 @@
     Auditions.get = function(id){
     	return Auditions._auditionSH.get(id);
     };
-    
+    Auditions.find = function(uuid){
+    	var found = Auditions._auditionSH._data[uuid];
+    	return found ? found : false;
+    };
+    Auditions.onDuplicate_ORIGINAL = function(a,b) {
+		return a; // return original, do not replace
+	}; 
+    Auditions.onDuplicate_REPLACE = function(a,b) {
+		return b; // return original, do not replace
+	}; 
+	
     /**
      * @param castingCall (by reference)
      * @param providerName string, [snappi | flickr | or castingCall.providerName ]
@@ -64,6 +74,7 @@
      * 			calls o = onDuplicate(old, new) and adds o , Default = NO REPLACE
      */
     Auditions.parseCastingCall = function(castingCall, providerName, sh, onDuplicate){
+    	onDuplicate = onDuplicate || Auditions.onDuplicate_ORIGINAL;
     	sh = sh || new SNAPPI.SortedHash({
             'isDataElement': false		// what does this do?
         });
@@ -92,8 +103,17 @@
 	            		// audition o already exists in master list
 	            		if (onDuplicate)  {
 	            			// get shot_A from raw audition BEFORE onDuplicate
+	            			/*
+	            			 * ???: we need to deal with hanging references
+	            			 * there might be Thumbnails with bindTo audition in master List
+	            			 * but, thumbnails do lookup by uuid, not object id, so maybe we are safe
+	            			 */
 	            			o = onDuplicate(aud_A, aud_B);
-	            			if (o) _auditionSH.add(o);	// replaces duplicate with o
+	            			if (o) _auditionSH.add(o);	// replaces duplicate with new
+	            			else {
+	            				// replace dupe by merging values to old (?)
+	            				// also, update extras for all Thumbnails, if any
+	            			}
 	            		}
 	            		else o = _auditionSH.addIfNew(o);	// add to master copy first
 	            	} else {
@@ -335,9 +355,24 @@
     	if (typeof audition == 'string' && audition.length>10) {	// binary16 or char36
     		audition = Auditions._auditionSH.get(audition);
     	}
-    	if (node.audition == audition) return;	// already set, do nothing
+    	
     	if (node.audition) {
-    		Auditions.unbind(node);
+    		if (node.audition == audition) return;	// already set to SAME object, do nothing
+    		else if (node.audition.id == audition.id) {
+    			// UPDATED audition, migrate existing nodes
+				var j, bound, thumbs = node.audition.bindTo || [];
+				for (j in thumbs) {
+					bound = thumbs[j];
+					try {
+						// NOTE: maybe we should switch to SNAPPI.Auditions.find(bound.Thumbnail.uuid)
+						if (bound.audition) bound.audition = audition;	
+						if (bound.Thumbnail) bound.Thumbnail.audition = audition;
+					} catch (e) {
+					}
+				}    			
+    		} else {
+    			Auditions.unbind(node);
+    		}
     	} 
        	try {
        		audition.bindTo.push(node);

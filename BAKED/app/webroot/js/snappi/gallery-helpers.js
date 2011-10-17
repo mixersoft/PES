@@ -73,12 +73,23 @@
     		g.view = view;
     	},
     	setSize: function(g, size) {
-        	g.renderThumbSize(size);
-        	// check display mode for filmstrip mode, reset width to fit thumbsize
-        	if (g.container.hasClass('one-row')) {
-        		g.setFilmstripWidth();
-        		g.scrollFocus();
-        	}
+    		var refreshCC = g._cfg.size == size;
+         	if (refreshCC && g.castingCall.CastingCall.Request) {
+        		var uri = g.castingCall.CastingCall.Request;
+        		var focus = g.getFocus().id;
+        		g.loadCastingCall(uri, {
+        				uuid: focus,
+        				replace: true,		//refresh SNAPPI.Auditions
+        			});
+        		// also, update extras for all Thumbnails, if any
+        	}  else {
+	        	g.renderThumbSize(size);
+	        	// check display mode for filmstrip mode, reset width to fit thumbsize
+	        	if (g.container.hasClass('one-row')) {
+	        		g.setFilmstripWidth();
+	        		g.scrollFocus();
+	        	}
+        	}  		
     	},
     	// called by click event handler, context = Gallery.node, set by listener
     	setToolbarOption: function(e){

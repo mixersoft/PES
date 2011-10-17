@@ -288,7 +288,7 @@
 	        	});
         	}
         }, 
-        render: function(cfg, shotsSH){
+        render: function(cfg, shot){
         	cfg = cfg || {};
         	if (cfg.render === 'false') return;
         	
@@ -299,9 +299,7 @@
         	if (cfg.castingCall) {
         		this.castingCall = cfg.castingCall;
         		if (!this.castingCall.auditionSH) {
-					var onDuplicate = function(a,b) {
-						return a; // return original, do not replace
-					};
+        			var onDuplicate = cfg.replace ? SNAPPI.Auditions.onDuplicate_REPLACE : SNAPPI.Auditions.onDuplicate_ORIGINAL; 
 					var sh = SNAPPI.Auditions.parseCastingCall(this.castingCall, this._cfg.PROVIDER_NAME, null, onDuplicate);
         		}
         		this.auditionSH = this.castingCall.auditionSH;
@@ -312,6 +310,11 @@
         		this.auditionSH = cfg.sh;
         		delete (cfg.sh);
         	}
+        	if (shot && shot._sh) {
+        		this.auditionSH = shot._sh;	// shot override
+        		this.Shot = shot;
+        	}
+        	
         	var focusUuid = null;
         	if (cfg.uuid || cfg.selected) {
         		focusUuid = cfg.uuid || cfg.selected;
@@ -352,8 +355,8 @@
 	                offset = (page - 1) * perpage;
 	            	break;
 	            case 'hiddenshot-':
-	            case 'nav-':
 	            case 'shot-':
+	            case 'nav-':
 	            	this._cfg.perpage = ccAuditions.Perpage || ccAuditions.Total;
 	            case 'uuid-':
             	default:
@@ -1691,10 +1694,12 @@
         		cfg.successJson = function(e, i,o,args) {
 					var response = o.responseJson.response;
 					// get auditions from raw json castingCall
-                    this.render({
+					var options = {
                     	castingCall: response.castingCall,
                     	uuid: args.uuid || null,
-                    });
+                    	replace: args.replace,
+                    }
+                    this.render(options);
                     PAGE.jsonData.castingCall = response.castingCall;
                     return false;
 				}
@@ -1706,6 +1711,7 @@
         		uuid : cfg.uuid,
         		successJson: cfg.successJson,
         		uri: uri,
+        		replace: cfg.replace,
         	};
         	/*
     		 * plugin Y.Plugin.IO
@@ -1751,25 +1757,18 @@
         	selected = selected || this.auditionSH.getFocus();
         	var container, parent, shots, Y = SNAPPI.Y;
         	var shot = selected.Audition.Substitutions;
-			var renderCfg = {
-  				shotType:  shot.shotType,  
-  				uuid: selected.id   		
-        	}
+        	
+        	// unhide ShotGallery if there is a Shot
 			if (shot.id) {
 				this.container.ancestor('.filmstrip-wrap').removeClass('hidden');
 				this.container.all('.FigureBox').removeClass('hide');
 			} 
+			
+			// render ShotGallery
 			if (shot.stale == false && this.Shot == shot) {
 				// skip
         	} else if (shot.stale == false) {
-        		renderCfg.sh = shot._sh;
-        		this.render(renderCfg);
-        		// fire snappi:after-render-filmstrip
-				// this.setFilmstripWidth();		// already called by this.render()
-				// this.scrollFocus( shot.best.id );
-				// redundant?
-				// this.container.ancestor('.filmstrip-wrap').removeClass('hidden');
-				// SNAPPI.DragDrop.pluginDelegatedDrag(this.container, 'img.drag');        		
+        		this.render({ uuid: selected.id }, shot);		// render shot directly
         	} else {
         		var uri = '/photos/hiddenShots/'+shot.id+'/'+shot.shotType+'/.json';
         		var ioCfg = {
@@ -1778,20 +1777,12 @@
 						var response = o.responseJson.response;
 						// get auditions from raw json castingCall
 						var shotCC = response.castingCall;
-						var onDuplicate = function(a,b) {
-	                    	return a; 	// return original, do not replace
-						};
+						var onDuplicate = SNAPPI.Auditions.onDuplicate_ORIGINAL
 						var shotAuditionSH =  SNAPPI.Auditions.parseCastingCall(shotCC, this._cfg.PROVIDER_NAME, null, onDuplicate);
-	                    
 	                    var audition = shotAuditionSH.first();
 	                    var shot = audition.Audition.Substitutions;
 	                    shot.stale = shot._sh.count() != audition.Audition.Shot.count ;
-	                    this.render({
-	                    	sh: shotAuditionSH,
-	                    	shotType: shot.shotType,
-	                    	uuid: args.uuid
-	                    });
-	                    this.Shot = shot;		// track current shot to avoid uneeded JSON request
+	                    this.render({ uuid: args.uuid }, shot);		// render shot directly
 	                    return false;
 					},
 				};

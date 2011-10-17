@@ -46,7 +46,7 @@
         },
         
         // deprecate, use SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected()
-        bindSelected2Page : function(gallery, selected, oldUuid) {
+        xxxxbindSelected2Page : function(gallery, selected, oldUuid) {
         	// for castingCall cacheMiss PAGE.jsonData.castingCall = false
     		try {
     			if (!PAGE.jsonData.castingCall.auditionSH) {
