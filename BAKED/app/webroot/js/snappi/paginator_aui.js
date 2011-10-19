@@ -23,8 +23,8 @@
 	 * @return [Paginator | 'delayed'], if created, or False if not created
 	 */
 	Paginator.paginate_PhotoGallery = function(gallery){
-			var self = gallery.node.Gallery;	// gallery
-			var target = self.container;
+			var g = gallery.node.Gallery;	// gallery
+			var target = g.container;
 			var NAME = '.gallery.photo';
 			var DELAY = 1000;	// delay_task
 
@@ -54,40 +54,67 @@
 			 * @return 
 			 */
 			var _getPage = function(pageNumber){
+				// g == SNAPPI.Gallery
 				if (pageNumber == SNAPPI.STATE.displayPage.page) return;
-				var uri = self.castingCall.CastingCall.Request+ "/.json";				
+				var uri = g.castingCall.CastingCall.Request+ "/.json";
 				var nameData = {
 					page: pageNumber,
 					perpage: this.Paginator.get('rowsPerPage')
 				};
-				if (target.io) {
-					// already plugged, just reuse
-					uri = SNAPPI.IO.setNamedParams(uri, nameData);
-					target.io.set('arguments', nameData)
-					target.io.set('uri', uri).start();
-					return;
-				}
-				// uses pluginIO_RespondAsJson() with Plugin.IO
-				target.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson({
-					uri: uri ,
-					parseContent:true,
-					nameData: nameData,
-					dataType: 'json',
-					context: self.node,	// test
-					on: {
-						success: function(e, id, o, args) {
-							// gallery = this.Gallery;
-							if (o.responseJson) {
-								PAGE.jsonData = o.responseJson.response;
-								SNAPPI.mergeSessionData();
-								new SNAPPI.Gallery({type:'Photo'});
-								// TODO: update paginateContainer.Paginator.set('total'), etc									
-								return false;	// plugin.IO already rendered
-							}
-						}	
+				uri = SNAPPI.IO.setNamedParams(uri, nameData);
+	        	
+				// render PhotoGallery
+        		var cfg = {
+        			args: {page: pageNumber},
+        			replace: true,
+		    		successJson : function(e, i,o,args) {
+						var response = o.responseJson.response;
+						SNAPPI.mergeSessionData();	// need this for paginate
+						var options = {
+							page: args.page,
+	                    	castingCall: response.castingCall,
+	                    }
+	                    this.render(options);
+	                    PAGE.jsonData.castingCall = response.castingCall;
+	                    return false;								
+					},        			
+        			ioCfg : {
+        				parseContent: true,
+						dataType: 'json',
+						context: g,	// test        				
 					}
-				}));
+				};
+				g.loadCastingCall(uri, cfg);
+				
 				return;
+				// if (!target.io) {
+					// // uses pluginIO_RespondAsJson() with Plugin.IO
+					// target.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson({
+						// uri: uri ,
+						// parseContent:true,
+						// nameData: nameData,
+						// dataType: 'json',
+						// context: g.node,	// test
+						// on: {
+							// success: function(e, id, o, args) {
+								// // gallery = this.Gallery;
+								// if (o.responseJson) {
+									// PAGE.jsonData = o.responseJson.response;
+									// SNAPPI.mergeSessionData();
+									// new SNAPPI.Gallery({type:'Photo'});
+									// // TODO: update paginateContainer.Paginator.set('total'), etc									
+									// return false;	// plugin.IO already rendered
+								// }
+							// }	
+						// }
+					// }));					
+				// } else {
+					// // already plugged, just reuse
+					// uri = SNAPPI.IO.setNamedParams(uri, nameData);
+					// target.io.set('arguments', nameData)
+					// target.io.set('uri', uri).start();
+					// return;
+				// }
 			};
 			
 			
@@ -108,7 +135,7 @@
 					on: {
 						changeRequest: function(e) {
 							// this == Paginator
-							// var self = gallery.node.Gallery;
+							// var g = gallery.node.Gallery;
 							var newState = e.state;
 							var userClicked = newState.before != undefined;
 							if (userClicked) {

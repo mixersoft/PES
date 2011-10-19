@@ -458,11 +458,16 @@
 			} catch (e) {
 				uuid = null;
 			}
-			// try {
-				// var isExtended = /perpage:999/.test(g.castingCall.CastingCall.Request);
-			// } catch (e) {
-				// isExtended = false;
-			// }
+			try {
+				var EXTENDED_PAGE = 999;
+				var i = g.castingCall.auditionSH.indexOfKey(uuid);
+				var offset = (SNAPPI.STATE.displayPage.page-1) *  SNAPPI.STATE.displayPage.perpage;
+				var page = Math.floor( (i+offset)/EXTENDED_PAGE) + 1;
+				var perpage = EXTENDED_PAGE;
+				var isExtended = /perpage:999/.test(g.castingCall.CastingCall.Request);
+			} catch (e) {
+				isExtended = false;
+			}
 			
 			/*
 			 * load navFilmstrip if not already loaded
@@ -473,8 +478,12 @@
 					// var uri = PAGE.jsonData.castingCall.CastingCall.Request;
 					var uri = '/photos/neighbors/'+ PAGE.jsonData.castingCall.CastingCall.ID + '/.json';
 					// get extended castingCall by cacheRefresh
-					uri = SNAPPI.IO.setNamedParams(uri, {perpage: null, page: null});
-					g.loadCastingCall(uri, {uuid: uuid});				
+					var named = {perpage: perpage, page: page};
+					uri = SNAPPI.IO.setNamedParams(uri, named);
+					var options = SNAPPI.Y.merge({
+						uuid: uuid,
+					}, named);
+					g.loadCastingCall(uri, options);				
 				} catch (e) {}	
 				
 				// activate autoScroll for now

@@ -171,7 +171,7 @@
 	ThumbnailFactory.setHiddenShotNode = function(thumbnail, audition){
 			// show hidden shot icons
 			try {
-				var exists = thumbnail.node.one('figcaption .hidden-shot');
+				var exists = thumbnail.node.one('figure .hidden-shot');
 				if (thumbnail._cfg.showHiddenShot) {
 					shotCount = parseInt(audition.Audition.Shot.count);
 					tooltip = shotCount + " Snaps in this Shot.";
@@ -485,6 +485,7 @@
 				shotGallery = new SNAPPI.Gallery({
 					type: 'ShotGallery',
 					node: parent.one('.gallery'),
+					render: false,
 				});
         	}   
         	if (!shotGallery.view || shotGallery.view == 'minimize') {

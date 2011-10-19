@@ -348,6 +348,7 @@ var DEFAULT_CFG_io = {
 			shotGallery = new SNAPPI.Gallery({
 				type: 'DialogHiddenShot',
 				node: previewBody,
+				render: false,
 				// size: 'sq',
 			});
     	}   
@@ -364,21 +365,16 @@ var DEFAULT_CFG_io = {
 					var response = o.responseJson.response;
 					// get auditions from raw json castingCall
 					var shotCC = response.castingCall;
-					var onDuplicate = function(a,b) {
-                    	return a; 	// return original, do not replace
-					};
-					var shotAuditionSH =  SNAPPI.Auditions.parseCastingCall(shotCC, this._cfg.PROVIDER_NAME, null, onDuplicate);
+                    var options = {
+                    	uuid: args.uuid,
+                    	castingCall: shotCC,
+                    	replace: false,			// same as SNAPPI.Auditions.onDuplicate_ORIGINAL
+                    }
+                    this.render( options);		// render shot directly	
                     
-                    var audition = shotAuditionSH.first();
-                    var shot = audition.Audition.Substitutions;
-                    shot.stale = shot._sh.count() != audition.Audition.Shot.count ;
-                    this.render({
-                    	sh: shotAuditionSH,
-                    	shotType: shot.shotType,
-                    	uuid: args.uuid
-                    });
+                    // use custom event here instead?				
                     previewBody.Dialog.refresh(previewBody);
-                    return false;
+                    return false;					
 				}
     		}
     	);

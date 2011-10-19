@@ -100,89 +100,6 @@
     };
     
 
-    // // private helper function (closure)
-	// /*
-	 // * render all shots, including hidden, into a "preview" photoRoll on /photos/home page
-	 // * - depending on how castingCall was created, we either 
-	 // * 	1) render directly from castingCall, or 
-	 // * 	2) if shot.stale==true, use XHR to get substitutionGroup castingCall, then render (async)
-	 // * 
-	 // */ 
-	// var _showHiddenShots = function(node, shot, selected) {
-		// var HIDDENSHOT_PREVIEW_LIMIT = 40;	// substitute roll preview LIMIT
-		// if (shot) {
-            // if (!node && /photos\/home/.test(window.location.href)) {
-            	// // filmstrip not found,  build filmstrip
-            	// // TODO: move to a better place. we cannot assume we are on the /photos/home page here
-            	// var parent = SNAPPI.Y.one('div#hiddenshots');
-            	// // node = parent.create('<section.gallery.photo></section>'); // class='filmstrip' or 'photo-roll'??
-                // // parent.append(node);
-            // }                
-// 
-            // // TODO: should add a more... link to see paging view of shot
-//             
-            // var total = shot.count();
-//             
-			// var oneShotCfg = {};
-			// oneShotCfg[shot.id] = shot;		// format for Gallery constructor
-			// var showHiddenShotsCfg = {
-				// type : 'Photo',
-				// ID_PREFIX : 'hiddenshot-',
-				// size : 'lm',
-				// selected : 1,
-				// start : 0,
-				// end : Math.min(HIDDENSHOT_PREVIEW_LIMIT, total),
-				// total : total,
-				// uri : null,
-            	// node: node,
-            	// sh: shot._sh,
-            	// castingCall: {
-					// providerName: this.castingCall.providerName,
-					// schemaParser: this.castingCall.schemaParser
-				// },
-            	// shots: oneShotCfg					
-			// };            
-//             
-            // /**
-             // * NEW codepath to create Gallery from castingCall
-             // */
-           // var shotPhotoRoll = new SNAPPI.Gallery(showHiddenShotsCfg);	
-           // shotPhotoRoll.node.addClass('hiddenshots').removeClass('container_16');
-           // shotPhotoRoll.container.removeClass('grid_16');
-           // shotPhotoRoll.listen(true, ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'Contextmenu']);
-// 			
-           // shotPhotoRoll.setFocus(shot.indexOfBest());  // show best pic
-           // shotPhotoRoll.selected = selected;
-           // // add shot to selected
-           // selected.Audition.SubstitutionREF = shot.id;
-           // selected.Audition.Substitutions = shot;
-           // selected.substitutes = shot; // DEPRECATE
-           // // skip this line
-//            
-           // // manually show Ratings for Duplicates/shot
-           // shotPhotoRoll.showThumbnailRatings();
-// 
-        // } else {	// no shots returned
-        	// // hide/unbind everything
-	        // try {
-	        	// // no shots, just hide div#hiddenshots and unbind nodes
-	        	// if (node.ancestor('div#hiddenshots')) { 
-	        		// // hide substitute group, if we are on the /photos/home page
-	        		// node.all('li').addClass('hide').each(function(n,i,l){
-		        		// SNAPPI.Auditions.unbind(n);
-	        		// });
-	        	// } else if (node.ancestor('div#snappi-dialog')) { 
-	        		// // hide/unbind shots on selected blur?
-	        		// // detach contextMenu listener
-	        	// } 
-	        // } catch (e) {}	        	
-        // }
-        // // skip this line
-		// SNAPPI.Y.fire('snappi:hideLoadingMask', node);
-		// return shotPhotoRoll;
-	// };	// end _showHiddenShots()    
-	
-	
 	
     Gallery.prototype = {
     	init: function(cfg) {
@@ -312,8 +229,10 @@
         	}
         	if (shot && shot._sh) {
         		this.auditionSH = shot._sh;	// shot override
-        		this.Shot = shot;
-        	}
+        	} else if (this.castingCall && this.castingCall.shots) {
+	        	this.shots =  this.castingCall.shots;
+	        }
+	        
         	
         	var focusUuid = null;
         	if (cfg.uuid || cfg.selected) {
@@ -333,6 +252,7 @@
             try {
             	ccAuditions = this.castingCall.CastingCall.Auditions;
             } catch (e) {
+            	// move to shot/hiddenshot
             	ccAuditions = {
             		Page: 1,
             		Perpage: this.auditionSH.count(),
@@ -356,7 +276,20 @@
 	            	break;
 	            case 'hiddenshot-':
 	            case 'shot-':
+					ccAuditions = {
+	            		Page: 1,
+	            		Perpage: this.auditionSH.count(),
+	            		Total: this.auditionSH.count(),
+	            	}	            
+	            	if (!shot) {
+	            		var audition = this.auditionSH.first();
+	            		shot = audition.Audition.Substitutions;
+	            		shot.stale = shot._sh.count() != audition.Audition.Shot.count;
+	            	}
+	            	this.Shot = shot;
+	            	// continue below	
 	            case 'nav-':
+	            	this._cfg.page = ccAuditions.Page;
 	            	this._cfg.perpage = ccAuditions.Perpage || ccAuditions.Total;
 	            case 'uuid-':
             	default:
@@ -1728,8 +1661,10 @@
         		uuid : cfg.uuid,
         		successJson: cfg.successJson,
         		uri: uri,
-        		replace: cfg.replace,
+        		replace: true,	// replace audition with value in response
         	};
+        	if (cfg.replace !== undefined) args.replace = cfg.replace;
+        	if (cfg.args) args = Y.merge(args, cfg.args);
         	/*
     		 * plugin Y.Plugin.IO
     		 */
@@ -1746,6 +1681,7 @@
     						}					
     					}
     			};
+    			if (cfg.ioCfg) ioCfg = SNAPPI.Y.merge(ioCfg, cfg.ioCfg);
     			if (cfg.complete) ioCfg.on.complete = cfg.complete;
     			// var loadingmaskTarget = container.get('parentNode');
     			var loadingmaskTarget = this.node.hasClass('filmstrip') ? container.ancestor('.filmstrip') : container;
@@ -1794,12 +1730,12 @@
 						var response = o.responseJson.response;
 						// get auditions from raw json castingCall
 						var shotCC = response.castingCall;
-						var onDuplicate = SNAPPI.Auditions.onDuplicate_ORIGINAL
-						var shotAuditionSH =  SNAPPI.Auditions.parseCastingCall(shotCC, this._cfg.PROVIDER_NAME, null, onDuplicate);
-	                    var audition = shotAuditionSH.first();
-	                    var shot = audition.Audition.Substitutions;
-	                    shot.stale = shot._sh.count() != audition.Audition.Shot.count ;
-	                    this.render({ uuid: args.uuid }, shot);		// render shot directly
+	                    var options = {
+	                    	uuid: args.uuid,
+	                    	castingCall: shotCC,
+	                    	replace: false,			// same as SNAPPI.Auditions.onDuplicate_ORIGINAL
+	                    }
+	                    this.render( options);		// render shot directly
 	                    return false;
 					},
 				};

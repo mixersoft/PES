@@ -363,37 +363,8 @@
     	node.uuid = audition.id;
     	if (node.Thumbnail) node.Thumbnail.uuid = audition.id;
     	node.dom().uuid = audition.id;
+    	node.dom().aud = audition;	// for firebug
     	return audition;
-    	
-    	
-    	if (node.uuid) {
-    		if (node.uuid == audition.id) return;	// already set to SAME object, do nothing
-    		else if (node.audition.id == audition.id) {
-    			// UPDATED audition, migrate existing nodes
-				var j, bound, thumbs = node.audition.bindTo || [];
-				for (j in thumbs) {
-					bound = thumbs[j];
-					try {
-						// NOTE: maybe we should switch to SNAPPI.Auditions.find(bound.Thumbnail.uuid)
-						if (bound.audition) bound.audition = audition;	
-						if (bound.Thumbnail) bound.Thumbnail.audition = audition;
-					} catch (e) {
-					}
-				}    			
-    		} else {
-    			Auditions.unbind(node);
-    		}
-    	} 
-       	try {
-       		audition.bindTo.push(node);
-       	} catch (e) {
-       		audition.bindTo = [node];
-       	}
-//       	var shot = audition.Audition.Substitutions;
-//       	if (shot) {
-//       	}
-       	node.audition = audition;			// DEPRECATE, USE audition = Auditions.find(node.uuid)
-       	node.dom().audition = audition;  	// DEPRECATE
     };    
     
     Auditions.mergeGroupings = function(cc){
