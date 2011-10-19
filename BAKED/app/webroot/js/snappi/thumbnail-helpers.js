@@ -151,29 +151,70 @@
 	 * static methods
 	 */
 	// DEFAULT handlers for ThumbnailFactory class.
-	ThumbnailFactory.actions = {
-		listen_action: function(action, node) {
-			// this instanceof Thumbnail
-			if (node.listen == undefined) node.listen = {};
+	ThumbnailFactory.setScoreNode = function(thumbnail, audition ){
+		try {
+			var score, node, exists = thumbnail.node.one('figcaption li.score');
+			if (exists) {
+				score = audition.Audition.Photo.Fix.Score || 0;
+				votes = audition.Audition.Photo.Fix.Votes;
+        		var title = score + ' out of '+ votes +' vote';
+        		title += votes == '1' ? '.' : 's.';		// add plural as appropriate
+        		exists.set('innerHTML', score).setAttribute('title', title);					
+			} else {
+				throw new Error('score markup missing from Thumbnail');
+			}
+		} catch (e) {}
+	};
+	/**
+	 * 
+	 */
+	ThumbnailFactory.setHiddenShotNode = function(thumbnail, audition){
+			// show hidden shot icons
 			try {
-	            if (node.listen[action] == undefined) {
-	                var fn = ThumbnailFactory[this._cfg.type]['listen_'+action];
-	                node.listen[action] = fn.call(this);
+				var exists = thumbnail.node.one('figcaption .hidden-shot');
+				if (thumbnail._cfg.showHiddenShot) {
+					shotCount = parseInt(audition.Audition.Shot.count);
+					tooltip = shotCount + " Snaps in this Shot.";
+					if (exists) {
+						// reuse
+						if (shotCount > 6) {
+							exists.set('className','hidden-shot').setAttribute('title', tooltip);
+						} else if (shotCount > 1) {
+							exists.set('className','hidden-shot').addClass('c'+shotCount).setAttribute('title', tooltip);
+						} else {
+							exists.remove();
+						}
+					} else {
+						// create hiddenShotNode in the right place
+						switch(thumbnail._cfg.type){
+							case 'PhotoPreview':
+								if (shotCount > 6) {
+									exists = '<li><div class="hidden-shot" title="'+tooltip+'"></div></li>';
+									thumbnail.node.one('figure figcaption li.context-menu').insert(exists, 'before');						
+								} else if (shotCount > 1) {
+									exists = '<li><div class="hidden-shot c'+shotCount+'" title="'+tooltip+'"></div></li>';
+									thumbnail.node.one('figure figcaption li.context-menu').insert(exists, 'before');	
+								}							
+								break;
+							case 'Photo':
+								if (shotCount > 6) {
+									exists = '<div class="hidden-shot" title="'+tooltip+'"></div>';
+									thumbnail.node.one('figure figcaption').insert(exists, 'before');						
+								} else if (shotCount > 1) {
+									exists = '<div class="hidden-shot c'+shotCount+'" title="'+tooltip+'"></div>';
+									thumbnail.node.one('figure figcaption').insert(exists, 'before');	
+								}							
+								break;
+						}
+						// skip if we don't have an insertion point
+					}						
+					exists.removeClass('hide');
+				} else {
+					exists.addClass('hide');
 				}
-        	} catch (e) {
-        		if (console) console.error('ThumbnailFactory.listen_action() for action='+action);
-        	}				
-        },		
-		do_action: function(e, action){
-			// this instanceof Thumbnail.node
-        	try {
-        		var fn = ThumbnailFactory[this.Thumbnail._cfg.type]['handle_'+action];
-        		fn.call(this, e);
-        	} catch (e) {
-        		if (console) console.error('ThumbnailFactory.do_action() for action='+action);
-        	}
-    	},
-    }
+			} catch (e) { }			
+			return;
+    };
 	ThumbnailFactory.listeners = {
 		ThumbsizeClick: function(){
 			return this.node.delegate('click',
@@ -242,9 +283,8 @@
 			/*
 			 * set attributes based on thumbnail size
 			 */
-			audition = audition || SNAPPI.Auditions.get(this.id);
+			audition = audition || SNAPPI.Auditions.find(this.id);
 			var node = this.node;
-			node.dom().Thumbnail = this; 		// add for firebug
 			
 			var src, linkTo, title, score, votes, exists, tooltip, shotCount, sizeCfg;
 			SNAPPI.Auditions.bind(node, audition);
@@ -317,34 +357,7 @@
 			}, this);
             			
 			// show hidden shot icons
-			try {
-				exists = node.one("figure .hidden-shot");
-				if (this._cfg.showHiddenShot) {
-					shotCount = parseInt(audition.Audition.Shot.count);
-					tooltip = shotCount + " Snaps in this Shot.";
-					if (exists) {
-						// reuse
-						if (shotCount > 6) {
-							exists.set('className','hidden-shot').setAttribute('title', tooltip);
-						} else if (shotCount > 1) {
-							exists.set('className','hidden-shot').addClass('c'+shotCount).setAttribute('title', tooltip);
-						} else {
-							exists.remove();
-						}
-					} else {
-						if (shotCount > 6) {
-							exists = '<li><div class="hidden-shot" title="'+tooltip+'"></div></li>';
-							node.one('figure figcaption li.context-menu').insert(exists, 'before');						
-						} else if (shotCount > 1) {
-							exists = '<li><div class="hidden-shot c'+shotCount+'" title="'+tooltip+'"></div></li>';
-							node.one('figure figcaption li.context-menu').insert(exists, 'before');	
-						}
-					}						
-					if (exists) exists.removeClass('hide');
-				} else {
-					if (exists) exists.addClass('hide');
-				}
-			} catch (e) { }
+			ThumbnailFactory.setHiddenShotNode(this, audition);
 			
 			// rating
 			exists = node.one('ul li.rating');
@@ -360,7 +373,7 @@
 				} else {
 					// attach Rating
 	            	var gallery = this._cfg.gallery || SNAPPI.Gallery.getFromDom(node);
-	            	SNAPPI.Rating.pluginRating(gallery, node.Thumbnail, node.audition.rating);
+	            	SNAPPI.Rating.pluginRating(gallery, node.Thumbnail, audition.rating);
 	            }
 	            if (exists) exists.removeClass('hide');	  
 	       } else {
@@ -370,15 +383,7 @@
 			// show extras, i.e. rating, score, info, menu
 			if (this._cfg.showExtras) {
 				// update Score, show hide in showExtras
-				exists = node.one('li.score');
-				score = score || '0';
-	    		if (!exists) {
-	    			throw new Error('score markup missing from Thumbnail');
-	    		} else {
-	        		title = score + ' out of '+ votes +' vote';
-	        		title += votes == '1' ? '.' : 's.';		// add plural as appropriate
-	        		exists.set('innerHTML', score).setAttribute('title', title);
-	    		}
+				ThumbnailFactory.setScoreNode(this, audition);
 				node.one('ul').removeClass('hide');
 			} else {
 				node.one('ul').addClass('hide');
@@ -403,7 +408,7 @@
     		if (!node) {
 	    		try {
 	    			// TODO: get initial size, save size as property of Thumbnail object
-	    			cfg.size = size || PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
+	    			cfg.size = size || PAGE.jsonData.profile.thumbSize[cfg.type];
 	    		} catch (e) {
 	    			// default init size
 	    			if ( previewBody.getAttribute('size')) cfg.size = previewBody.getAttribute('size');	
@@ -445,9 +450,8 @@
 		        	return;	// gallery not yet opened, skip
 	        	}
 	        	        		
-	        	selected = selected || previewBody.one('.FigureBox').audition;
 				if (!selected.id) {
-	        		selected = SNAPPI.Auditions.get(selected);
+	        		selected = SNAPPI.Auditions.find(selected) || SNAPPI.Auditions.find(previewBody.one('.FigureBox').uuid);
 	        	} 	        	
 			    if (selected.Audition.Shot.id) {
 			    	if (!gallery.view || gallery.view == 'minimize') {
@@ -475,7 +479,7 @@
 		},
 		handle_HiddenShotClick: function(e) {
 			var parent = SNAPPI.Y.one('#shot-gallery');
-			var selected = parent.get('parentNode').one('.FigureBox').audition;
+			var selected = SNAPPI.Auditions.find(parent.get('parentNode').one('.FigureBox').uuid);
         	var shotGallery = SNAPPI.Gallery.find['shot-'];
         	if (!shotGallery) {
 				shotGallery = new SNAPPI.Gallery({
@@ -625,35 +629,8 @@
 			}
 			
 			// show hidden shot icons
-			try {
-				exists = node.one(".hidden-shot");
-				if (this._cfg.showHiddenShot) {
-					shotCount = parseInt(audition.Audition.Shot.count);
-					tooltip = shotCount + " Snaps in this Shot.";
-					if (exists) {
-						// reuse
-						if (shotCount > 6) {
-							exists.set('className','hidden-shot').setAttribute('title', tooltip);
-						} else if (shotCount > 1) {
-							exists.set('className','hidden-shot').addClass('c'+shotCount).setAttribute('title', tooltip);
-						} else {
-							exists.remove();
-						}
-					} else {
-						if (shotCount > 6) {
-							exists = '<div class="hidden-shot" title="'+tooltip+'"></div>';
-							node.one('figure figcaption').insert(exists, 'before');						
-						} else if (shotCount > 1) {
-							exists = '<div class="hidden-shot c'+shotCount+'" title="'+tooltip+'"></div>';
-							node.one('figure figcaption').insert(exists, 'before');	
-						}
-					}						
-					if (exists) exists.removeClass('hide');
-				} else {
-					if (exists) exists.addClass('hide');
-				}
-			} catch (e) { }
-			
+			ThumbnailFactory.setHiddenShotNode(this, audition);
+
 			// rating
 			exists = node.one('ul li.rating');
 			if (this._cfg.showRatings) {
@@ -668,7 +645,7 @@
 				} else {
 					// attach Rating
 	            	var gallery = this._cfg.gallery || SNAPPI.Gallery.getFromDom(node);
-	            	SNAPPI.Rating.pluginRating(gallery, node.Thumbnail, node.audition.rating);
+	            	SNAPPI.Rating.pluginRating(gallery, node.Thumbnail, audition.rating);
 	            }
 	            if (exists) exists.removeClass('hide');	  
 	       } else {
@@ -678,15 +655,7 @@
 			// show extras, i.e. rating, score, info, menu
 			if (this._cfg.showExtras) {
 				// update Score, show hide in showExtras
-				exists = node.one('li.score');
-				score = score || '0';
-	    		if (!exists) {
-	    			throw new Error('score markup missing from Thumbnail');
-	    		} else {
-	        		title = score + ' out of '+ votes +' vote';
-	        		title += votes == '1' ? '.' : 's.';		// add plural as appropriate
-	        		exists.set('innerHTML', score).setAttribute('title', title);
-	    		}
+				ThumbnailFactory.setScoreNode(this, audition);
 				node.one('ul').removeClass('hide');
 			} else {
 				node.one('ul').addClass('hide');

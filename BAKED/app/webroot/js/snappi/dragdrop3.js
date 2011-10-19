@@ -261,7 +261,7 @@
 	            	}
 	            	
 	            	var currentGroupId = controllerJSONData.xhrFrom.uuid,
-	            		imgId = dragNode.ancestor('li').dom().audition.id;
+	            		imgId = dragNode.ancestor('.FigureBox').uuid;
 	            	
 	
 	            	dropTarget.one('img').setAttribute('src', dragNode.get('src'));
@@ -280,7 +280,7 @@
 	            		return false;
 	            	}
 	            	
-	            	var imgId = dragNode.ancestor('li').dom().audition.id;
+	            	var imgId = dragNode.ancestor('.FigureBox').uuid;
 	            	
 	            	dragNode = nodeList.get('node')[0];
 	            	dropTarget.one('img').setAttribute('src', dragNode.get('src'));

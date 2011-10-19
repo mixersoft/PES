@@ -110,21 +110,20 @@
 		var thumbnail, uuid;
 		if (mixed instanceof SNAPPI.Thumbnail) {
 			parent = mixed.node;
-			uuid = parent.audition.id;
-		} else if (mixed.audition) {
+			uuid = mixed.node.uuid;
+		} else if (mixed.hasClass && mixed.hasClass('.FigureBox')) {
 			parent = mixed;
-			uuid = mixed.audition.id;
+			uuid = mixed.uuid;
 		} else if (mixed.getAttribute('uuid')) {
 			parent = mixed;
 			uuid = mixed.getAttribute('uuid');
 		} else {
 			try {
 				parent = mixed;
-				uuid = mixed.dom().audition.id;
+				uuid = mixed.uuid || (mixed.node && mixed.node.uuid);
 			} catch(e) {
-				// legacy, uuid embedded in id
-				uuid = mixed.get('id') ? mixed.get('id') : mixed._yuid;
-				if (container._cfg && container._cfg.ID_PREFIX) uuid = uuid.replace(container._cfg.ID_PREFIX, '');
+				if (console) console.error('ERROR: cant find uuid for Rating');
+				return false;
 			}
 		}
 		
@@ -175,7 +174,7 @@
 			if (_cfg.setDbValueFn) {
 				r.applyToBatch = null;
 				r.setDbValueFn = _cfg.setDbValueFn;
-			}
+			} 
 			var r = ratingGroup.Rating;
 			r.id = _cfg.uuid;
 			r.render(_cfg.v);
@@ -471,10 +470,10 @@
 						try {
 							var audition, shotPhotoRoll;
 							try {
-								audition = r.node.ancestor('.FigureBox').audition;
+								audition = SNAPPI.Auditions.find(r.node.ancestor('.FigureBox').uuid);
 								shotPhotoRoll = r.node.ancestor('ul.hiddenshots').Gallery;
 							} catch (e) {
-								audition = options.thumbnail.audition;
+								audition = SNAPPI.Auditions.find(options.thumbnail.uuid);
 								shotPhotoRoll = options.thumbnail.ancestor('ul.hiddenshots').Gallery;
 							}
 							var bestShot = audition.Audition.Substitutions.best;
@@ -511,43 +510,61 @@
 		 * @param v new rating value
 		 * @return
 		 */
+		AssetRatingController._updateAuditionRatingScore = function(audition, new_rating){
+			try {
+				// update audition
+				var old_rating, total, score, votes;
+				old_rating = parseInt(audition.Audition.Photo.Fix.Rating) || 0;
+				if (old_rating != new_rating) {
+					score = parseFloat(audition.Audition.Photo.Fix.Score);
+					votes = parseInt(audition.Audition.Photo.Fix.Votes);
+					total = (score * votes) - old_rating + new_rating;
+					if (!old_rating) votes++;
+					score = SNAPPI.util.roundNumber(total/votes,1);
+					// this is done in AssetRatingController.onRatingChanged() _updateRatingChange()
+					audition.Audition.Photo.Fix.Rating = new_rating;	
+					audition.rating = new_rating;
+					audition.Audition.Photo.Fix.Score = score;
+					audition.Audition.Photo.Fix.Votes = votes;
+				}
+			} catch (e) {}
+			return audition;
+		};
+		AssetRatingController._updateRatingChange = function(audition, v) {
+			// update audition rating and score
+			AssetRatingController._updateAuditionRatingScore(audition, v);
+			
+			// update all nodes in audition.bindTo
+			var ul, photoRolls = {}, thumbs = audition.bindTo || [];
+			for ( var j in thumbs) {
+				var n2 = thumbs[j];
+				try {
+					if (n2.Thumbnail) {
+						// TODO: use Thumbnail.setRating()
+						n2.Thumbnail.setRating(v, audition, "silent");
+						n2.Thumbnail.setScore(audition);
+					} else if (n2.Rating) {
+						// TODO: push nodes into audition.bindTo
+						n2.Rating.render(v);
+					}
+					var pr = n2.ancestor('section.gallery.photo').Gallery;
+					photoRolls[pr.get('id')] = pr.Gallery;
+				} catch (e) {
+				}
+			}
+			// resort substitutes and check findBest()
+			if (audition.substitutes) {
+				audition.substitutes.findBest();
+				for ( var i in photoRolls) {
+					if (photoRolls[i]._cfg.hideHiddenShotByCSS) {
+						// WARNING: this is causing a POST group on every rating change. WHY? 
+						photoRolls[i].groupAsShot(audition.substitutes);
+					}
+				}
+			}
+		};
 		AssetRatingController.onRatingChanged = function(r, v) {
 			var Y = SNAPPI.Y;
-
-			var _updateRatingChange = function(audition, v) {
-				// update audition object with new rating
-				audition.rating = v;
-				audition.Audition.Photo.Fix.Rating = v;
-				
-				// update all nodes in audition.bindTo
-				var ul, photoRolls = {}, thumbs = audition.bindTo || [];
-				for ( var j in thumbs) {
-					var n2 = thumbs[j];
-					try {
-						if (n2.Thumbnail) {
-							// TODO: use Thumbnail.setRating()
-							n2.Thumbnail.setRating(v, "silent");
-						} else if (n2.Rating) {
-							// TODO: push nodes into audition.bindTo
-							n2.Rating.render(v);
-						}
-						var pr = n2.ancestor('section.gallery.photo').Gallery;
-						photoRolls[pr.get('id')] = pr.Gallery;
-					} catch (e) {
-					}
-				}
-				// resort substitutes and check findBest()
-				if (audition.substitutes) {
-					audition.substitutes.findBest();
-					for ( var i in photoRolls) {
-						if (photoRolls[i]._cfg.hideHiddenShotByCSS) {
-							// WARNING: this is causing a POST group on every rating change. WHY? 
-							photoRolls[i].groupAsShot(audition.substitutes);
-						}
-					}
-				}
-			};
-
 			// get audition from parent of ratingGroup
 			switch (r.node.get('id')) {
 			case 'lbx-rating-group': // apply rating to lightbox.getSelected()
@@ -555,7 +572,7 @@
 				var batch = SNAPPI.lightbox.getSelected();
 				batch.each(function(audition) {
 					v = v || r.value;
-					_updateRatingChange(audition, v);
+					AssetRatingController._updateRatingChange(audition, v);
 					r.render(v);	// r not listed in audition.bindTo
 				}, this);
 				Y.fire('snappi:ratingChanged', r);
@@ -565,15 +582,15 @@
 					// v = v || r.value;
 					// var auditionSH = Y.one('section#nav-filmstrip .gallery.photo.filmstrip').Gallery.auditionSH;
 					// var audition = auditionSH.get(r.id);
-					// _updateRatingChange(audition, v);
+					// AssetRatingController._updateRatingChange(audition, v);
 				// } catch (e) {
 				// }
 				break;
 			case 'zoom_ratingGrp':
 				// try {
-					// var audition = r.node.ancestor('#snappi-zoomBox').dom().audition;
+					// var audition = SNAPPI.Auditions.find(r.node.ancestor('#snappi-zoomBox').uuid);
 					// v = v || r.value;
-					// _updateRatingChange(audition, v);
+					// AssetRatingController._updateRatingChange(audition, v);
 				// } catch (e) {
 				// }
 				// Y.fire('snappi:ratingChanged', r);
@@ -581,7 +598,7 @@
 			case 'menuItem-contextRatingGrp': // right-click over .FigureBox
 				var audition = SNAPPI.Auditions.get(r.id);
 				v = v || r.value;
-				_updateRatingChange(audition, v);
+				AssetRatingController._updateRatingChange(audition, v);
 				Y.fire('snappi:ratingChanged', r);
 				// hide contextMenu
 				// use aui-delayed-task and/or aui-debounce
@@ -590,9 +607,9 @@
 			default: // photoRoll .FigureBox ratingGroup
 				try {
 					var tn = r.node.ancestor('.FigureBox');
-					var audition = tn.audition;
+					var audition = SNAPPI.Auditions.find(tn.uuid);
 					v = v || r.value;
-					_updateRatingChange(audition, v);
+					AssetRatingController._updateRatingChange(audition, v);
 				} catch (e) {
 				}
 				Y.fire('snappi:ratingChanged', r);

@@ -266,7 +266,7 @@
 				
 				// nodeList of img from drag-drop
 				nodeList.each(function(n, i, l) {
-					var audition = n.ancestor('.FigureBox').audition;
+					var audition = SNAPPI.Auditions.find(n.ancestor('.FigureBox').uuid);
 					this.Gallery.auditionSH.add(audition);
 				}, this);					
 	            var lastLI = this.Gallery.render( {
@@ -316,7 +316,8 @@
 			} else { // this uses visible selected only, probably less common use case
 				auditionSH = new SNAPPI.SortedHash();
 				batch.each(function(node){
-					auditionSH.add(node.audition);
+					var audition = SNAPPI.Auditions.find(node.uuid);
+					auditionSH.add(audition);
 				});
 			}
 			return auditionSH;
@@ -349,14 +350,14 @@
 						overflow = true;
 						return true;
 					}					
-					var assetId = node.dom().audition.id;
-					if (_auditionSH.get(assetId)) return false;	// skip duplicates
+					var audition = SNAPPI.Auditions.find(node.uuid);
+					if (_auditionSH.get(node.uuid)) return false;	// skip duplicates
 					
 					var copy = this.copyThumbnail(node);
 					copy.removeClass('focus').removeClass('selected');
 					// remove all but img in li
 					ul.append(copy);
-					_auditionSH.add(copy.dom().audition);
+					_auditionSH.add(audition);
 
 					return false;  // "continue" for nodeList.some()
 				}, this);
@@ -372,14 +373,14 @@
 						break;
 					}					
 					var node = n[i];
-					var assetId = node.dom().audition.id;
-					if (_auditionSH.get(assetId)) continue;	// skip duplicates
+					var audition = SNAPPI.Auditions.find(node.uuid);
+					if (_auditionSH.get(node.uuid)) continue;	// skip duplicates
 					
 					var copy = this.copyThumbnail(node);
 					copy.removeClass('focus').removeClass('selected');
 					// remove all but img in li
 					ul.append(copy);
-					_auditionSH.add(copy.dom().audition);
+					_auditionSH.add(audition);
 				}
 			}
 			return overflow;
@@ -389,7 +390,8 @@
 				node.remove(); // remove DOM
 				this.removeNodeFromBindTo(node); // update bindTo
 				// remove from lightbox Gallery
-				this.Gallery.auditionSH.remove(node.dom().audition);
+				var audition = SNAPPI.Auditions.find(node.uuid);
+				this.Gallery.auditionSH.remove(audition);
 			} catch (e) {
 			}
 		},
@@ -651,7 +653,8 @@
 		},
 		removeNodeFromBindTo : function(n) {
 			try {
-				var thumbs = n.dom().audition.bindTo || [];
+				var audition = SNAPPI.Auditions.find(n.uuid);
+				var thumbs = audition.bindTo || [];
 				for ( var j in thumbs) {
 					var n2 = thumbs[j];
 					if (n == n2) {
@@ -1453,11 +1456,12 @@
 		},
         showThumbnailRatings : function(node){
 			var pr = node || this.Gallery;
-            var thumbs = pr.container.all('.FigureBox');
+            var audition, thumbs = pr.container.all('.FigureBox');
             thumbs.each(function(n){
             	if (n.hasClass('hide')) return;
                 if (n.Rating == undefined) {
-                	SNAPPI.Rating.pluginRating(this, n.Thumbnail, n.dom().audition.rating);
+                	audition = SNAPPI.Auditions.find(n.Thumbnail.uuid);
+                	SNAPPI.Rating.pluginRating(this, n.Thumbnail, audition.rating);
                 } else {
                 	// rating already exists
                 	n.one('div.ratingGroup').removeClass('hide');

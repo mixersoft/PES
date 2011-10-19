@@ -318,7 +318,24 @@
             }, 
             isDOMVisible: function(n){
                 return n.getComputedStyle('display') != 'none' && n.getComputedStyle('visibility') != 'hidden';
-            }
+            },
+            /**
+			 * Function that could be used to round a number to a given decimal points. Returns the answer
+			 * Arguments :  number - The number that must be rounded
+			 *				decimal_points - The number of decimal points that should appear in the result
+			 */
+			roundNumber: function (number,decimal_points) {
+				if(!decimal_points) return Math.round(number);
+				if(number == 0) {
+					var decimals = "";
+					for(var i=0;i<decimal_points;i++) decimals += "0";
+					return "0."+decimals;
+				}
+			
+				var exponent = Math.pow(10,decimal_points);
+				var num = Math.round((number * exponent)).toString();
+				return num.slice(0,-1*decimal_points) + "." + num.slice(-1*decimal_points)
+			},
         };
     }
     SNAPPI.util = new Util();

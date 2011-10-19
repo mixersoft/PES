@@ -117,7 +117,7 @@
 			// TODO: deprecate. use Factory[cfg.type].defaultCfg instead
 			// override _defaultCfg properties as necessary
 			for (var attr in _defaultCfg) {
-				this._cfg[attr] = (cfg[attr] !== undefined) ? cfg[attr] : _defaultCfg[attr];  
+				if (!this._cfg[attr]) this._cfg[attr] = _defaultCfg[attr];  
 			}
 			var check;
 		},
@@ -134,17 +134,20 @@
 			// this.renderElementsBySize(size);
 		},
 		create : function(audition, cfg) {
-			var markup = Factory[this._cfg.type].markup;
-			var node = Y.Node.create(markup);
 			// node.addClass(this._cfg.type);
-
 			// set id
 			var id = audition.id;
-			this.id = id;
-			this.img = node.one('img');
+			this.id = id;	// deprecate
+			var node = Y.Node.create(Factory[this._cfg.type].markup);
 			this.node = node;
+			// node.uuid = id;
+			// node.dom().uuid = id;	// for firebug			
+			// this.uuid = id;
+			SNAPPI.Auditions.bind(this.node, audition);
+			this.img = this.node.one('img');
 			node.set('id', this._cfg.ID_PREFIX + id);
 			node.Thumbnail = this;
+			node.dom().Thumbnail = this; 		// add for firebug
 			Factory[this._cfg.type].renderElementsBySize.call(this, this._cfg.size, audition, cfg);
 			return node;
 		},
@@ -155,15 +158,19 @@
 		 * @param node
 		 * @return
 		 */
-		reuse : function(audition, node, cfg) {
-			audition = audition || SNAPPI.Auditions.get(this.id);
-			node = node || this.node;
+		reuse : function(audition, cfg) {
+			// this = SNAPPI.Thumbnail
+			audition = audition || SNAPPI.Auditions.find(this.id);
 			// set id
 			var id = audition.id;
-			this.id = id;
-			node.set('id', this._cfg.ID_PREFIX + id);
+			this.id = id;	// deprecate
+			// this.uuid = id;
+			// this.node.uuid = id;
+			// this.node.dom().uuid = id;	// for firebug
+			SNAPPI.Auditions.bind(this.node, audition);
+			this.node.set('id', this._cfg.ID_PREFIX + id);
         	Factory[this._cfg.type].renderElementsBySize.call(this, this._cfg.size, audition, cfg);				
-			return node;
+			return this.node;
 		},
 		remove: function() {
 			SNAPPI.Auditions.unbind(this.node);
@@ -196,16 +203,25 @@
 		 * @param v	int value
 		 * @param silent if TRUE, just render value, do not update the DB or bindTo
 		 */
-		setRating : function(v, silent) {
+		setRating : function(v, audition, silent) {
+			var r = this.node.Rating;
 			if (silent) {
 				if (this._cfg.showSizeByRating) {
-					var oldvalue = this.Rating.value;
-					this.img.replaceClass('rating' + oldvalue, 'rating' + v);
+					var old_v = r.value;
+					this.img.replaceClass('rating' + old_v, 'rating' + v);
 				}
-				this.Rating.render(v);
-			} else
-				this.Rating.onClick(v);
+				r.render(v);
+			} else {
+				// deprecated(?)
+				r.onClick(v, silent);
+			}
 		},	
+		setScore: function(audition){
+			SNAPPI.Factory.Thumbnail.setScoreNode(this, audition);
+		},
+		setHiddenShot: function(audition){
+			SNAPPI.Factory.Thumbnail.setHiddenShotNode(this, audition);
+		},
 		setSubGroupHide: function (hide) {
 			if (hide === false || hide=='show') {
 				this.node.replaceClass('hiddenshot-hide', 'hiddenshot-show');
@@ -215,113 +231,103 @@
 				// this.node.get('parentNode').append(this.node);
 			}
 		},
-		/*******************************************************************
-		 * legacy methods
-		 */
-		makeSubstitutionGroupsDroppable : function(value) {
-			if (console) console.warn("deprecate: makeSubstitutionGroupsDroppable()")
-			Y.all('section.gallery.photo > div').each(function(ul) {
-				if (value) {
-					SNAPPI.DragDrop.pluginDrop(ul);
-				} else {
-					/*
-					 * this is a bug. ul is a node, but it isn't the node
-					 * with the dd property until after this forced
-					 * conversion
-					 */
-					ul.dom().node.unplug('drop'); // have to
-					// TODO: has this bug been fixed in yui???? lookup the _plugin property
-				}
-			});
-		},
-		// TODO: addToSubGroup needs to be updated to use latest SNAPPI.SubstitutionGroup
-		addToSubGroup : function(subGroup, nodeList) {
-			subGroup.dom().subGr.move(nodeList);
-			return;
-		},
-		// TODO: removeFromSubGroup needs to be updated to use latest SNAPPI.SubstitutionGroup			
-		removeFromSubGroup : function(dropTarget, nodeList) {
-			nodeList.each(function(n) {
-				var subGroup = n.ancestor('ul.substitutionGroup');
-				subGroup.dom().subGr.remove(nodeList);
-			});
-			return;
-		},
-		setRating : function(i, silent) {
-			silent = silent || false;
-			if (silent) {
-				if (Thumbnail.showSizeByRating) {
-					var oldvalue = this.Rating.value;
-					this.img
-							.replaceClass('rating' + oldvalue, 'rating' + i);
-				}
-				this.node.Rating.render(i);
-			} else
-				this.node.Rating.onClick(i, silent);
-		},
-		setRatingDbValue : function(value) {
-			var t = Y.one(this).ancestor('.thumb-wrapper');
-			t.dom().data.set( {
-				rating : value
-			});
-		},
-		setTagDbValue : function(value) {
-			var LI;
-			if (this.data && this.data.tags !== undefined) {
-				LI = this;
-			} else {
-				LI = Y.one(this).ancestor('.thumb-wrapper');
-			}
-			if (LI) {
-				var aTags, curTags = LI.data.tags;
-				if (curTags) {
-					aTags = curTags.split(';');
-					for ( var i = 0; i < aTags.length; i++) {
-						if (aTags[i] == value) {
-							return;
-						}
-
-						if (aTags[i] == '') {
-							aTags.splice(i, 1);
-						}
+		legacy : {
+			/*******************************************************************
+			 * legacy methods
+			 */
+			makeSubstitutionGroupsDroppable : function(value) {
+				if (console) console.warn("deprecate: makeSubstitutionGroupsDroppable()")
+				Y.all('section.gallery.photo > div').each(function(ul) {
+					if (value) {
+						SNAPPI.DragDrop.pluginDrop(ul);
+					} else {
+						/*
+						 * this is a bug. ul is a node, but it isn't the node
+						 * with the dd property until after this forced
+						 * conversion
+						 */
+						ul.dom().node.unplug('drop'); // have to
+						// TODO: has this bug been fixed in yui???? lookup the _plugin property
 					}
-				} else {
-					aTags = [];
-				}
-				aTags.push(value.trim());
-				var strTags = aTags.join(';');
-				LI.data.set( {
-					tags : strTags + ';'
 				});
-			}
-		},
-		_styleSubstituteGroup : function() {
-			if (this.data.substitutes) {
-				var subGr = this.parentNode.subGr;
-				if (subGr) {
-					subGr.findBest();
-					SNAPPI.SubstitutionGroup.styleElements(subGr);
+			},
+			// TODO: addToSubGroup needs to be updated to use latest SNAPPI.SubstitutionGroup
+			addToSubGroup : function(subGroup, nodeList) {
+				subGroup.dom().subGr.move(nodeList);
+				return;
+			},
+			// TODO: removeFromSubGroup needs to be updated to use latest SNAPPI.SubstitutionGroup			
+			removeFromSubGroup : function(dropTarget, nodeList) {
+				nodeList.each(function(n) {
+					var subGroup = n.ancestor('ul.substitutionGroup');
+					subGroup.dom().subGr.remove(nodeList);
+				});
+				return;
+			},
+			setRatingDbValue : function(value) {
+				var t = Y.one(this).ancestor('.thumb-wrapper');
+				t.dom().data.set( {
+					rating : value
+				});
+			},
+			setTagDbValue : function(value) {
+				var LI;
+				if (this.data && this.data.tags !== undefined) {
+					LI = this;
 				} else {
-					var subGrData = this.data.substitutes;
-					subGrData.findBest();
-					SNAPPI.SubstitutionGroup.styleElements(subGrData);
+					LI = Y.one(this).ancestor('.thumb-wrapper');
 				}
-
+				if (LI) {
+					var aTags, curTags = LI.data.tags;
+					if (curTags) {
+						aTags = curTags.split(';');
+						for ( var i = 0; i < aTags.length; i++) {
+							if (aTags[i] == value) {
+								return;
+							}
+	
+							if (aTags[i] == '') {
+								aTags.splice(i, 1);
+							}
+						}
+					} else {
+						aTags = [];
+					}
+					aTags.push(value.trim());
+					var strTags = aTags.join(';');
+					LI.data.set( {
+						tags : strTags + ';'
+					});
+				}
+			},
+			_styleSubstituteGroup : function() {
+				if (this.data.substitutes) {
+					var subGr = this.parentNode.subGr;
+					if (subGr) {
+						subGr.findBest();
+						SNAPPI.SubstitutionGroup.styleElements(subGr);
+					} else {
+						var subGrData = this.data.substitutes;
+						subGrData.findBest();
+						SNAPPI.SubstitutionGroup.styleElements(subGrData);
+					}
+	
+				}
+			},
+			syncChanges : function(bindTo, change) {
+				if (change.rating !== undefined) {
+					this.setRating(bindTo.rating, 'silent');
+					var s = SNAPPI.Stack.getStackFromChild(this.dom());
+					if (s._dataElementSH.defaultSortCfg[0].property == 'rating') {
+						// if sort by Rating, do we resort??
+					}
+					this._styleSubstituteGroup(); // mark best after rating
+				}
+				if (change.substitutes !== undefined) {
+					this.data.substitutes = change.substitutes;
+				}
 			}
 		},
-		syncChanges : function(bindTo, change) {
-			if (change.rating !== undefined) {
-				this.setRating(bindTo.rating, 'silent');
-				var s = SNAPPI.Stack.getStackFromChild(this.dom());
-				if (s._dataElementSH.defaultSortCfg[0].property == 'rating') {
-					// if sort by Rating, do we resort??
-				}
-				this._styleSubstituteGroup(); // mark best after rating
-			}
-			if (change.substitutes !== undefined) {
-				this.data.substitutes = change.substitutes;
-			}
-		}
 
 	};
 	SNAPPI.Thumbnail = Thumbnail;

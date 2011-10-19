@@ -74,14 +74,8 @@
     	},
     	setSize: function(g, size) {
     		var refreshCC = g._cfg.size == size;
-         	if (refreshCC && g.castingCall.CastingCall.Request) {
-        		var uri = g.castingCall.CastingCall.Request;
-        		var focus = g.getFocus().id;
-        		g.loadCastingCall(uri, {
-        				uuid: focus,
-        				replace: true,		//refresh SNAPPI.Auditions
-        			});
-        		// also, update extras for all Thumbnails, if any
+         	if (refreshCC) {
+        		g.refresh();
         	}  else {
 	        	g.renderThumbSize(size);
 	        	// check display mode for filmstrip mode, reset width to fit thumbsize
@@ -143,7 +137,7 @@
 	                    if (this.Gallery.castingCall.CastingCall) {
 	                    	next += '?ccid=' + this.Gallery.castingCall.CastingCall.ID;
 							try {
-								var shotType = e.currentTarget.ancestor('.FigureBox').audition.Audition.Substitutions.shotType;
+								var shotType = this.Gallery.castingCall.CastingCall.Auditions.ShotType;
 								if (shotType == 'Groupshot'){
 									next += '&shotType=Groupshot';
 								}
@@ -340,7 +334,7 @@
         handle_hiddenShotClick : function(e){
         	var thumbnail = e.currentTarget.ancestor('.FigureBox');
 			try {
-				var audition = thumbnail.audition;
+				var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 				var gallery = this.Gallery;
 				SNAPPI.Helper.Dialog.bindSelected2DialogHiddenShot(gallery, audition);
 				return;
@@ -436,7 +430,7 @@
 	     */		
 	    handle_focusClick: function(e){
 	    	var gallery = this.Gallery;
-	    	var selected = e.target.ancestor('.FigureBox').audition;
+	    	var selected = SNAPPI.Auditions.find(e.target.ancestor('.FigureBox').uuid);
 	    	// var oldUuid = gallery.getFocus().id;
 	    	gallery.auditionSH.setFocus(selected);
 	    	gallery.scrollFocus(selected);
@@ -521,7 +515,7 @@
 		
 		handle_focusClick: function(e){
 	    	var gallery = this.Gallery;
-	    	var selected = e.currentTarget.ancestor('.FigureBox').audition;
+	    	var selected = SNAPPI.Auditions.find(e.target.ancestor('.FigureBox').uuid);
 	    	var oldUuid = gallery.getFocus().id;
 	    	if (selected.id != oldUuid) {
 	    		gallery.setFocus(selected);
@@ -583,7 +577,7 @@
 		build: GalleryFactory.ShotGallery.build,
 		handle_focusClick: function(e){
 	    	var gallery = this.Gallery;
-	    	var selected = e.currentTarget.ancestor('.FigureBox').audition;
+	    	var selected = SNAPPI.Auditions.find(e.target.ancestor('.FigureBox').uuid);
 	    	var oldUuid = gallery.getFocus().id;
 	    	if (selected.id != oldUuid) {
 	    		gallery.setFocus(selected);

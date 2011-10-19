@@ -56,8 +56,7 @@
     	return Auditions._auditionSH.get(id);
     };
     Auditions.find = function(uuid){
-    	var found = Auditions._auditionSH._data[uuid];
-    	return found ? found : false;
+    	return Auditions._auditionSH._data[uuid];
     };
     Auditions.onDuplicate_ORIGINAL = function(a,b) {
 		return a; // return original, do not replace
@@ -104,16 +103,11 @@
 	            		if (onDuplicate)  {
 	            			// get shot_A from raw audition BEFORE onDuplicate
 	            			/*
-	            			 * ???: we need to deal with hanging references
-	            			 * there might be Thumbnails with bindTo audition in master List
-	            			 * but, thumbnails do lookup by uuid, not object id, so maybe we are safe
+	            			 * which datasourceis more accurate SNAPPI.Auditions, or o.responseJson ???
 	            			 */
 	            			o = onDuplicate(aud_A, aud_B);
-	            			if (o) _auditionSH.add(o);	// replaces duplicate with new
-	            			else {
-	            				// replace dupe by merging values to old (?)
-	            				// also, update extras for all Thumbnails, if any
-	            			}
+	            			if (!o.bindTo && aud_A.bindTo) o.bindTo = aud_A.bindTo;
+	            			_auditionSH.add(o);	
 	            		}
 	            		else o = _auditionSH.addIfNew(o);	// add to master copy first
 	            	} else {
@@ -341,23 +335,39 @@
     
     Auditions.unbind = function(node) { 
        	try {
-    		node.audition.bindTo.splice(node.audition.bindTo.indexOf(node), 1);
-    		delete node.audition;
-    		delete node.dom().audition;
+			var audition = SNAPPI.Auditions.find(node.uuid);
+    		audition.bindTo.splice(audition.bindTo.indexOf(node), 1);
+    		delete node.uuid;
+    		if (node.Thumbnail) delete node.Thumbnail.uuid;
+    		delete node.dom().uuid;
     	} catch(e) {
-	    	try {
-	    		node.dom().audition.bindTo.splice(node.dom().audition.bindTo.indexOf(node), 1);
-	    		delete node.dom().audition;		// 	DEPRECATE
-	    	} catch(e) {}
     	}
     };
+    /*
+     * bind node to audition
+     * NOTE: bind will update node.uuid
+     */
     Auditions.bind = function(node, audition) {
     	if (typeof audition == 'string' && audition.length>10) {	// binary16 or char36
-    		audition = Auditions._auditionSH.get(audition);
+    		audition = Auditions.find(audition);
     	}
+    	if (!audition) return false;
     	
-    	if (node.audition) {
-    		if (node.audition == audition) return;	// already set to SAME object, do nothing
+    	audition.bindTo = audition.bindTo || [];
+    	if (audition.bindTo.indexOf(node) > -1) {
+    		// node is already bound to audition
+    	} else {
+    		Auditions.unbind(node);
+    		audition.bindTo.push(node);
+    	}
+    	node.uuid = audition.id;
+    	if (node.Thumbnail) node.Thumbnail.uuid = audition.id;
+    	node.dom().uuid = audition.id;
+    	return audition;
+    	
+    	
+    	if (node.uuid) {
+    		if (node.uuid == audition.id) return;	// already set to SAME object, do nothing
     		else if (node.audition.id == audition.id) {
     			// UPDATED audition, migrate existing nodes
 				var j, bound, thumbs = node.audition.bindTo || [];
@@ -382,7 +392,7 @@
 //       	var shot = audition.Audition.Substitutions;
 //       	if (shot) {
 //       	}
-       	node.audition = audition;
+       	node.audition = audition;			// DEPRECATE, USE audition = Auditions.find(node.uuid)
        	node.dom().audition = audition;  	// DEPRECATE
     };    
     

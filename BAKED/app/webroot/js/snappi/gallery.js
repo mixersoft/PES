@@ -284,7 +284,7 @@
 	        	this.container.all('.FigureBox').each(function(n,i,l){
 	        		n.Thumbnail.resize(thumbSize);
 	        		if (isHidden) n.addClass('hide');
-	        		if (n.audition == selected) n.addClass('focus');
+	        		if (n.uuid == selected.id) n.addClass('focus');
 	        	});
         	}
         }, 
@@ -430,6 +430,19 @@
             if (this.container.hasClass('one-row')) this.setFilmstripWidth();
             return lastLI;
         },
+        refresh: function(){
+        	try {
+        		var uri = this.castingCall.CastingCall.Request;
+				if (uri) {
+	        		var focus = this.getFocus().id;
+	        		this.loadCastingCall(uri, {
+	        				uuid: focus,
+	        				replace: true,		//refresh SNAPPI.Auditions
+	        			});
+	        		// also, update extras for all Thumbnails, if any
+	        	}        	
+        	} catch (e) {}
+        },
         /**
          * add auditions to photoroll from raw castingCall. usually adding hiddenShots
          * @param castingCall json, raw castingCall from XHR
@@ -459,7 +472,7 @@
         	} else return label;
         }, 
         reuseThumbnail: function(audition, node, cfg){
-        	node.Thumbnail.reuse(audition, node, cfg);
+        	node.Thumbnail.reuse.call(node.Thumbnail, audition, cfg);
         },
         createThumbnail: function(audition, cfg){
         	// TODO: do NOT copy ALL cfg attrs to thumbnail. figure out which ones we need
@@ -658,7 +671,7 @@
         	var Y = SNAPPI.Y;
         	var focusNode, o;
         	if (m instanceof Y.Node && m.hasClass('.FigureBox')) {
-				o = m.audition;  
+				o = SNAPPI.Auditions.find(m.uuid);  
         		focusNode = m;
         	} else if (m && m.id) {
         		o = m;
@@ -744,7 +757,7 @@
 	        	// move to end doesn't work, count hiddenshot-hides
 	        	thumbs = thumbs || this.container.all('.FigureBox');
 	        	thumbs.some(function(n){
-	        		if (n.audition == focus) return true;
+	        		if (n.uuid == focus.id) return true;
 	        		else if (n.hasClass('hiddenshot-hide')) {
 	        			offset--;
 	        		}
@@ -779,7 +792,7 @@
 			
 			// nodeList of img from drag-drop
 			nodeList.each(function(n, i, l) {
-				var audition = n.ancestor('.FigureBox').audition;
+				var audition = SNAPPI.Auditions.find(n.ancestor('.FigureBox').uuid);
 				this.auditionSH.add(audition);
 			}, g);
 			
@@ -1007,7 +1020,7 @@
             		
             		detailNodeParent.one('h5').on('click', function(e){
             			
-            			var photo_audition = Y.one('#neighbors ul li.focus').dom().audition;
+            			var photo_audition = SNAPPI.Auditions.find(Y.one('#neighbors ul li.focus').uuid);
             			
             			SNAPPI.propertyManager.renderDialogInPhotoRoll(photo_audition);
                 	}, this);
@@ -1055,10 +1068,11 @@
 //				// complete				
 //				var check;
 			}else { // this uses visible selected only
-				var batch = this.container.all('.FigureBox.selected');
+				var audition, batch = this.container.all('.FigureBox.selected');
 				auditionSH = new SNAPPI.SortedHash();
 				batch.each(function(node){
-					auditionSH.add(node.audition);
+					audition = SNAPPI.Auditions.find(node.uuid);
+					auditionSH.add(audition);
 				});
 			}
 			return auditionSH;
@@ -1129,11 +1143,12 @@
         showThumbnailRatings : function(node){
 	        // private method
 			var pr = node ? SNAPPI.Gallery.getFromDom(node) : this;
-            var thumbs = pr.container.all('.FigureBox');
+            var audition, thumbs = pr.container.all('.FigureBox');
             thumbs.each(function(n){
             	if (n.hasClass('hide')) return;
                 if (n.Rating == undefined) {
-                	SNAPPI.Rating.pluginRating(this, n.Thumbnail, n.dom().audition.rating);
+                	audition = SNAPPI.Auditions.find(n.uuid);
+                	SNAPPI.Rating.pluginRating(this, n.Thumbnail, audition.rating);
                 } else {
                 	// rating already exists
                 	n.one('div.ratingGroup').removeClass('hide');
@@ -1579,17 +1594,19 @@
 		 */
 		setBestshot: function(selected, cfg){
             var shotId,
-			idPrefix = this._cfg.ID_PREFIX || null;
+			idPrefix = this._cfg.ID_PREFIX || null,
+			audition = SNAPPI.Auditions.find(selected.uuid);
 
 			var data = {
-					'data[Asset][id]' : selected.audition.id,
-					'data[Shot][id]' : selected.audition.Audition.Shot.id,
+					'data[Asset][id]' : audition.id,
+					'data[Shot][id]' : audition.Audition.Shot.id,
 					'data[shotType]' : cfg.shotType,
 					'data[setBestshot]': 1
 			};
 			var uri = '/photos/setprop/.json';	
 			var args = {
 				thumbnail: selected, 
+				audition: audition,
 				success: this._setBestshot_success
 			};
 			var loadingNode = cfg.loadingNode;
@@ -1621,7 +1638,7 @@
 		_setBestshot_success : function(e, id, o, args) {
 			try {
 				var selected, shotPhotoRoll;
-				selected = args.thumbnail.audition;
+				selected = args.audition;
 				shotPhotoRoll = args.thumbnail.ancestor('.gallery.filmstrip').Gallery;
 				var bestShot = selected.Audition.Substitutions.best;
 				// confirm showHidden bestShot is in main photoroll

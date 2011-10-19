@@ -325,17 +325,17 @@ var DEFAULT_CFG_contextmenu = 	{
 	};	
 	MenuItems.rating_beforeShow = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
+		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		if (!menuItem.Rating) {
 			// add new rating group as LI > DIV
-//			menuItem.audition = thumbnail.audition;
-			menuItem.setAttribute('uuid', thumbnail.audition.id);
-			SNAPPI.Rating.pluginRating(menuItem, menuItem, thumbnail.audition.rating);
+			menuItem.setAttribute('uuid', audition.id);
+			SNAPPI.Rating.pluginRating(menuItem, menuItem, audition.rating);
 			SNAPPI.Rating.startListeners(menuItem);
 			menuItem.one('.ratingGroup').setAttribute('id', 'menuItem-contextRatingGrp');
 		} else {
 			var ratingCfg = {
-					v : thumbnail.audition.rating,
-					uuid : thumbnail.audition.id,
+					v : audition.rating,
+					uuid : audition.id,
 					listen : false
 				};
 			var r = SNAPPI.Rating.attach(menuItem, ratingCfg);
@@ -370,8 +370,9 @@ var DEFAULT_CFG_contextmenu = 	{
 	};	
 	MenuItems.showHiddenShot_beforeShow = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
+		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
     	try {
-    		var shotId = thumbnail.audition.Audition.Substitutions.id;
+    		var shotId = audition.Audition.Substitutions.id;
     		if (!shotId) menuItem.hide();
     		else if (/[nav-|shot-]/.test(thumbnail.Thumbnail._cfg.ID_PREFIX)) menuItem.hide();
     		else menuItem.show();
@@ -382,8 +383,8 @@ var DEFAULT_CFG_contextmenu = 	{
 	
 	MenuItems.showHiddenShot_click = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
+		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		try {
-			var audition = thumbnail.audition;
 			var g = MenuItems.getGalleryFromTarget(menu);
 			
 			// new pattern, reuse Thumbnail.PhotoPreview
@@ -411,9 +412,9 @@ var DEFAULT_CFG_contextmenu = 	{
 	
 	MenuItems.groupAsShot_click = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
+		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		try {
 			// from thumbnail context-menu
-			var audition = thumbnail.audition;
 			var g = MenuItems.getGalleryFromTarget(menu);
 			var shotType = g.castingCall.CastingCall.GroupAsShotPerm;
 			var options = {
@@ -470,7 +471,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	
 	MenuItems.removeFromShot_click = function(menuItem, menu){
 		var batch, thumbnail = menu.get('currentNode');	// target
-		var audition = thumbnail.audition;
+		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		var g = MenuItems.getGalleryFromTarget(menu);
 		var shotType = audition.Audition.Substitutions.shotType;
 		if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
@@ -483,7 +484,7 @@ var DEFAULT_CFG_contextmenu = 	{
 				menu: menu,
 				loadingNode: menuItem,
 				shotType: shotType,
-				shotUuid: thumbnail.audition.Audition.Substitutions.id,
+				shotUuid: audition.Audition.Substitutions.id,
 				uuid: SNAPPI.STATE.controller.xhrFrom.uuid
 			});
 		} else {
@@ -499,13 +500,14 @@ var DEFAULT_CFG_contextmenu = 	{
 	
 	MenuItems.ungroupShot_beforeShow = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
+		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		var show = /^Users|^Groups/.test(SNAPPI.STATE.controller.name);
 		if (!show) {
 			menuItem.hide();
 			return;
 		} 
     	try {
-    		var shotId = thumbnail.audition.Audition.Substitutions.id;
+    		var shotId = audition.Audition.Substitutions.id;
     		if (shotId) menuItem.show();
     		else menuItem.hide();
 		}catch(e){
@@ -515,7 +517,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		
 	MenuItems.ungroupShot_click = function(menuItem, menu){
 		var batch, thumbnail = menu.get('currentNode');	// target
-		var audition = thumbnail.audition;
+		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		var g = MenuItems.getGalleryFromTarget(menu);
 		var shotType = audition.Audition.Substitutions.shotType;
 		if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
@@ -531,7 +533,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	
 	MenuItems.setBestshot_click = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
-		var audition = thumbnail.audition;
+		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		var g = MenuItems.getGalleryFromTarget(menu);
 		var shotType = audition.Audition.Substitutions.shotType;
 		if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';

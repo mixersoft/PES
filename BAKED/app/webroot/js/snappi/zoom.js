@@ -22,10 +22,11 @@
 	var _attachImg = function(target){
 
 		var img = this.container.one('img'),
-			_getImgSrcBySize;
+			_getImgSrcBySize,
+			audition = SNAPPI.Auditions.find(target.uuid);
 		
 		try {
-			_getImgSrcBySize = target.dom().audition.getImgSrcBySize;
+			_getImgSrcBySize = audition.getImgSrcBySize;
 		} catch (e) {
 		}
 		
@@ -33,18 +34,17 @@
 			var src = target.one('img').get('src');
 			
 			// unbind this.container from "old" audition 
-            var old = this.container.dom().audition;
+            var old = SNAPPI.Auditions.find(this.container.uuid);
             if (old && old.bindTo && Y.Lang.isArray(old.bindTo)) { 
                 old.bindTo.splice(old.bindTo.indexOf(this.container), 1);
             }        	
             
             // bind this.container to "new" audition
-            var audition = target.dom().audition;
             var src = _getImgSrcBySize(audition.urlbase + audition.src, 'bs');
             img.set('src', src);
             
-            this.container.audition = audition;
-            this.container.dom().audition = this.container.audition;	// deprecate
+            this.container.uuid = audition.id;
+            this.container.dom().uuid = audition.id;	// deprecate
             Y.Lang.isArray(audition.bindTo) ? audition.bindTo.push(this.container) : audition.bindTo = [this.container];
             
             
@@ -54,15 +54,14 @@
 
     		// TODO base on this bindTo, need to refactor this component and Thumbnail.js to make it more easy and logical
     		// can check _applyOneRating() in lightbox.js to learn how to use bindTo properly  
-    		var audition = target.dom().audition;
             var src = _getImgSrcBySize(audition.urlbase + audition.src, 'bs');
             copy.set('src', src);    	
             
     		Y.Lang.isArray(audition.bindTo) ? audition.bindTo.push(this.container) : audition.bindTo = [this.container];
     		
     		var node = this.container;
-    		node.audition = audition
-    		node.dom().audition = node.audition;	// DEPRECATE
+    		node.uuid = audition.id;
+    		node.dom().uuid = node.uuid;	// DEPRECATE
     		
     		node.plug(Y.Plugin.Drag);
     		node.dd.plug(Y.Plugin.DDConstrained, {
@@ -79,7 +78,8 @@
 	};
 	
 	var _attachRating = function(target){
-		var audition = target ? target.dom().audition : this.container.dom().audition;
+		var uuid = target ? target.uuid : this.container.uuid;
+		var audition = SNAPPI.Auditions.find(uuid);
 		var targetId = audition.Audition.id;
 		var _cfg = {
 				v : audition.rating,
@@ -108,8 +108,9 @@
 	};
 	
 	var _getImgInfo = function(target){
-		var audition = target ? target.dom().audition : this.container.dom().audition;
-		var info = this.container.dom().audition.Audition.Photo.DateTaken;
+		var uuid = target ? target.uuid : this.container.uuid;
+		var audition = SNAPPI.Auditions.find(uuid);
+		var info = audition.Audition.Photo.DateTaken;
 
 		return info;
 	};
