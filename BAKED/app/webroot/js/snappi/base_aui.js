@@ -636,6 +636,10 @@
          * filter bar
          */
         SNAPPI.filter.renderBar(SNAPPI.STATE.filters);
+        var ratingFilterNode = Y.one('#filter-rating-parent');
+        if (ratingFilterNode) {
+        	SNAPPI.filter.initRating();
+        }
         
         
         /*

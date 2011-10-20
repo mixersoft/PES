@@ -39,6 +39,8 @@ class PagesController extends AppController {
  */
 	var $name = 'Pages';
 
+	public $layout = 'snappi-guest'; 	
+	
 /**
  * Default helper
  *

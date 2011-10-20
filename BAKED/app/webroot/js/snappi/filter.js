@@ -131,8 +131,11 @@
     		/*
     		 * BUG: have to move ?q=79 into named params 
     		 */
+    		
     		var next = SNAPPI.IO.setNamedParams(window.location.href, {
-    			rating: v
+    			rating: v,
+    			page: null,
+    			perpage: null,
     		});
     		window.location.href = next;
     	},    	

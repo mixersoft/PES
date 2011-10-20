@@ -242,6 +242,8 @@
 	 * startListeners()
 	 * @param delegateContainer Y.Node or CSS selector
 	 * @param selector	CSS selector
+	 * 
+	 * * Note: Filter Rating listener started by SNAPPI.filter.initRating();
 	 */
 	Rating.startListeners = function(delegateContainer, selector) {
 		var selector = selector || 'div.ratingGroup';

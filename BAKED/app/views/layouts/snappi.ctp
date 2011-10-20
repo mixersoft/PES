@@ -153,13 +153,15 @@
 </div>		
 
 <div id="footer" class="container_16">
-	<span style="font-size:0.8em;vertical-align:text-top;">&copy; 2008-2011 Snaphappi</span>
-	<?php echo $this->Html->link(
-			$this->Html->image('cake.power.gif', array('alt'=> __('CakePHP: the rapid development php framework', true), 'border' => '0')),
-			'http://www.cakephp.org/',
-			array('target' => '_blank', 'escape' => false)
-		);
-	?>
+	<div class="grid_16">
+		<span>&copy; 2008-2012 Snaphappi</span>
+		<?php echo $this->Html->link(
+				$this->Html->image('cake.power.gif', array('alt'=> __('CakePHP: the rapid development php framework', true), 'border' => '0')),
+				'http://www.cakephp.org/',
+				array('target' => '_blank', 'escape' => false)
+			);
+		?>		
+	</div>
 </div>
 
 	<?php echo $this->element('sql_dump'); ?>

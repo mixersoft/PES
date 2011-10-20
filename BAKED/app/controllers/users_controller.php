@@ -424,7 +424,7 @@ class UsersController extends UsersPluginController {
 		'CastingCallJson',
 //		'Js' => array('Jquery'),
 	);
-
+	
 //	public $components = array('Auth', 'Session', 'Email', 'Cookie', 'Search.Prg');
 	
 	/*
@@ -626,11 +626,16 @@ $data['User']['primary_group_id'] = 'role-----0123-4567-89ab---------user';
 		}
 		return true;
 	}
-
+	function register() {
+		// $this->layout = 'snappi-aui-960';
+		$this->layout = $layout = 'snappi-guest';
+		parent::register();
+	}
 
 	function login() {
-		$this->layout = 'snappi-aui-960';
-		$forceXHR = setXHRDebug($this, 0);
+		// $this->layout = 'snappi-aui-960';
+		$this->layout = $layout = 'snappi-guest';
+		$forceXHR = setXHRDebug($this, 0);		// xhr login is for AIR desktop uploader
 		$allow_guest_login = Configure::read('AAA.allow_guest_login');
 		/*
 		 * POST method

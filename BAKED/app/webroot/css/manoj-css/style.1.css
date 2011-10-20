@@ -17,9 +17,11 @@ article, aside, figure, footer, header, nav, section {
 	font-style: normal;
 }
 body {
-	font: 1em 'HelveticaNeueRoman',Arial,Helvetica,Verdana,sans-serif;
+	xfont: 1em 'HelveticaNeueRoman',Arial,Helvetica,Verdana,sans-serif;
+	xfont-family: 'HelveticaNeueRoman';
+	font: 1em Arial,Helvetica,Verdana,sans-serif;
+	font-family: Arial;
 	background: url(../images/body_bg.jpg) no-repeat center top;
-	font-family: 'HelveticaNeueRoman';
 }
 a {
 	text-decoration: none;
@@ -51,7 +53,7 @@ ul.inline > li {
 	white-space: nowrap;
 	list-style-type: none;
 }
-ul.inline > li.btn {
+ul > li.btn {
 	margin: 1px 4px;
 	padding: 1px 4px 0;
 	background: #FFF;
@@ -62,7 +64,7 @@ ul.inline > li.btn {
 	xcursor: pointer;
 }
 
-ul.inline > li.btn:hover, ul > li.btn.focus {
+ul > li.btn:hover, ul > li.btn.focus {
 	background: -moz-linear-gradient(bottom, #fca22f, #ffc374) !important;	 
 	background: -webkit-gradient(linear, center bottom, center top, from(#fca22f), to(#ffc374)) !important;	
 	-moz-border-radius: 4px;
@@ -1786,4 +1788,112 @@ section.discussion div.wrap {
     font-size: 12px;
     width: 100%;
     color: #878787;
+}
+/*
+ * global footer 
+ */
+#footer {
+	margin-top: 10px;
+}
+#footer span {
+	font-size: 8pt;
+}
+#footer img {
+	vertical-align: text-bottom;
+}
+
+
+
+
+
+
+/*
+ * PAGE: /users/login, /users/register, user auth pages
+ */
+body.simple .item-header h1 {
+	margin: 20px 10px 0 10px;
+	font-size: 20pt;
+}
+body.simple > #body-container.plain {
+	margin-top: 0;
+	padding: 40px 0;
+}
+
+#body-container.plain h2 {
+	font-size: 16pt;
+	border-bottom: 1px solid #E2E6EB;
+	margin: 10px 0;
+}
+
+#body-container.plain form > div {
+	padding: 4px;
+}
+#body-container.plain form label {
+	margin: 0 4px;
+	font-size: 12pt;	
+}
+#body-container.plain form .input.text > label, #body-container.plain form .input.password > label {
+	width: 140px;
+	display: inline-block;
+	text-align: right;
+}
+#body-container.plain form input {
+	font-size: 1.1em;
+}
+#body-container.plain form div.submit {
+	width: 100%;
+	margin-top: 4px;
+	border-top: 1px solid  #E2E6EB;
+}
+#body-container.plain input[type='submit'].orange {
+	background: -moz-linear-gradient(bottom, #fca22f, #ffc374);	 
+	background: -webkit-gradient(linear, center bottom, center top, from(#fca22f), to(#ffc374));	border: 1px solid #cd7708;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	text-shadow: none;
+	font-size: 1em;
+	font-weight: normal;
+	padding: 4px;
+	color: #000;
+	border: 1px solid #CD7708;	
+}
+#body-container.plain input[type='submit']:hover.orange {
+	font-weight: bold;
+}
+#body-container.plain #UserMagic {
+	margin-top: 40px;
+}
+
+
+/*
+ * PAGE: /pages/downloads page buttons
+ */
+div#download-uploader .center {
+	margin: 20px;
+	width: 600px;
+} 
+ul.btn {
+	font-size: 10pt;
+}
+ul.btn > li {
+	display: inline-block;
+	white-space: nowrap;
+	list-style-type: none;
+}
+ul.btn > li.btn {
+	background: -moz-linear-gradient(bottom, #fca22f, #ffc374) !important;	 
+	background: -webkit-gradient(linear, center bottom, center top, from(#fca22f), to(#ffc374)) !important;		
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	border: 1px solid #CD7708;
+	font-size: 16pt;
+	padding: 4px;
+	margin: 10px 0;
+}
+ul.btn > li.btn a {
+	color: #000;
+	font-weight: normal;
+}
+ul.btn > li.btn:hover a, ul.btn > li.btn.focus a {
+	font-weight: bold;
 }

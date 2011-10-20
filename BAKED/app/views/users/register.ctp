@@ -9,11 +9,21 @@
  * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 ?>
+<?php 	$this->Layout->blockStart('itemHeader');  ?>
+<section class='item-header container_16'>
+	<div class='wrap'>
+		<h1 class='grid_16'>Please Join Us.</h1>
+	</div>
+</section>
+<?php 	$this->Layout->blockEnd();  ?>
+
+<section id="main container_16">
+	<div class="grid_6 prefix_1">
 <?php $openIdAuthData = $this->Session->read('openIdAuthData');?>
 <h2><?php __d('users', 'Account registration'); ?></h2>
 <fieldset>
-	<legend><?php __d('users', 'Details');?></legend>
 	<?php
+	 	$orange = array('class'=>'orange'); 
 		if (!isset($openIdAuthData)) {
 			echo $this->Form->create($model, array('url' => array('action'=>'register')));
 			echo $this->Form->input('User.username', array(
@@ -42,7 +52,8 @@
 						'error' => __d('users', 'You must verify you have read the Terms of Service', true)
 						)
 					);
-			echo $this->Form->end(__d('users', 'Submit',true));
+		 	echo $this->Form->submit(__d('users', 'Submit',true), $orange);		
+			echo $this->Form->end();
 		} else {
 			if(isset($openIdAuthData['openid_claimed_id'])) {
 				$oid = $openIdAuthData['openid_claimed_id'];
@@ -102,3 +113,5 @@
 		}
 ?>
 </fieldset>
+</div>
+</section>

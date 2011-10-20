@@ -11,14 +11,24 @@
 	$passed = array_intersect_key($this->passedArgs, array('sort'=>1, 'direction'=>1, 'page'=>1, 'perpage'=>1));	// copy of array
 	$controllerAttr = Configure::read('controller');
 	$sections = array();
-	$sections['Home']=array('label'=>'Home','href'=>'/my/home');
-	$sections['Circles']=array('label'=>'Circles','href'=>'/my/groups');
-	$sections['Snaps']=array('label'=>'Snaps','href'=>'/my/photos');
-	$sections['People']=array('label'=>'People','href'=>'#');
-	$sections['Explore']=array('label'=>'Explore','href'=>"/{$controllerAttr['alias']}/all");
+	$type = !empty($controllerAttr['alias']) ? $controllerAttr['alias'] : 'photos';
+	if ( AppController::$userid) { 
+		$sections['Home']=array('label'=>'Home','href'=>'/my/home');
+		$sections['Circles']=array('label'=>'Circles','href'=>'/my/groups');
+		$sections['Snaps']=array('label'=>'Snaps','href'=>'/my/photos');
+		$sections['People']=array('label'=>'People','href'=>'#');
+		$sections['Explore']=array('label'=>'Explore','href'=>"/{$type}/all");
+	} else {
+		$sections['Circles']=array('label'=>'Circles','href'=>'/groups/all');
+		$sections['Snaps']=array('label'=>'Snaps','href'=>'/photos/all');
+		$sections['People']=array('label'=>'People','href'=>'/persons/all');		
+		$sections['Explore']=array('label'=>'Explore','href'=>"/photos/all");
+	}
+	
+	
 	$focus = Session::read("nav.primary");
 	// $sections[$focus]['href'] = "javascript:;"; // unset href for section with focus
-	$sections[$focus]['class'] = 'class="focus"';
+	if ($focus) $sections[$focus]['class'] = 'class="focus"';
 ?>
 <!--top header start-->
 <header class="head container_16">
