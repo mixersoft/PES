@@ -437,6 +437,7 @@ section.gallery-display-options.wide ul > li.label {
 section.gallery.wide {
 	background: #5D5D5D;
 	padding-top: 10px;
+	overflow: hidden;
 }
 
 /* thumbnails */

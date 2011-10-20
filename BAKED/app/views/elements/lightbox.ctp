@@ -16,21 +16,26 @@ if (!empty($lightbox['auditions'])) {
 if (isset($this->viewVars['jsonData']['lightbox']) && isset($this->viewVars['jsonData']['lightbox']['castingCall']))  {
 	$count = $this->viewVars['jsonData']['lightbox']['castingCall']['CastingCall']['Auditions']['Total']; 
 } else $count = 0;
+
+
+
+	$PREFIX = 'lightbox-';	// Factory[type.].defaultCfg.ID_PREFIX 
+	$thumbSize = Session::read("thumbSize.{$PREFIX}");
+	
 if (Configure::read('controller.action')=='lightbox') {
 	// full page lightbox
 	$this->viewVars['jsonData']['lightbox']['full_page']=true;
 	$this->viewVars['jsonData']['lightbox']['thumbsize']='tn';
-}
-
-	$focus = 'lbx-tiny';
-	if (isset($this->passedArgs['lbxSize'])) {
-		$focus = $this->passedArgs['lbxSize'];		
-	}
+	if (!$thumbSize) $thumbSize = 'lm';
+} else if (!$thumbSize) $thumbSize = 'lbx-tiny';	
+		
 	$sizes = array(
 		'lbx-tiny'=>'/css/images/img_1.gif',
 		'sq'=>'/css/images/img_2.gif',
 		'lm'=>'/css/images/img_3.gif',
-	);
+	);	
+	
+	
 ?>
 <section class="lightbox drop container_16 hide" id="lightbox">
 	<section class="gallery-header grid_16">
@@ -55,7 +60,7 @@ if (Configure::read('controller.action')=='lightbox') {
 						<li class="label">Size</li>
 						<?php 
 							foreach ($sizes as $size => $src ) {
-								echo "<li class='btn ".($focus==$size ? 'focus' : '')."'  action='set-display-size:{$size}'><img src='{$src}' alt=''></li>";
+								echo "<li class='btn ".($thumbSize==$size ? 'focus' : '')."'  action='set-display-size:{$size}'><img src='{$src}' alt=''></li>";
 							}
 						?>
 					</ul>

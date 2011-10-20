@@ -83,7 +83,8 @@
 	        		g.setFilmstripWidth();
 	        		g.scrollFocus();
 	        	}
-        	}  		
+        	}
+        	// TODO: save thumbSize to Session Session::write("thumbSize.{g._cfg.size}", g._cfg.size);  		
     	},
     	// called by click event handler, context = Gallery.node, set by listener
     	setToolbarOption: function(e){
@@ -286,7 +287,7 @@
 	        			'</section>',
 			node: 'div.gallery-container > section.gallery.photo',
 			render: true,
-			listeners: ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'ThumbSizeClick'],
+			listeners: ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick'],
 			draggable: true,
 			hideHiddenShotByCSS: true,
 			size: 'lm',

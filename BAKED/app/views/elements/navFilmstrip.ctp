@@ -1,7 +1,8 @@
 <?php
-if (isset($this->viewVars['jsonData']['castingCall']['CastingCall']['Auditions']['Total']))  {
-	$count = $this->viewVars['jsonData']['castingCall']['CastingCall']['Auditions']['Total']; 
-} else $count = 0;
+	if (isset($this->viewVars['jsonData']['castingCall']['CastingCall']['Auditions']['Total']))  {
+		$count = $this->viewVars['jsonData']['castingCall']['CastingCall']['Auditions']['Total']; 
+	} else $count = 0;
+
 	$PREFIX = 'nav-';
 	$thumbSize = Session::read("thumbSize.{$PREFIX}");
 	if (!$thumbSize) $thumbSize = 'sq';
