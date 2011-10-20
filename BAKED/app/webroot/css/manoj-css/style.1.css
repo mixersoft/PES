@@ -434,7 +434,7 @@ section.gallery-display-options.wide ul.wide-display-options li {
 section.gallery-display-options.wide ul > li.label {
 	border: none;
 }
-section.gallery.wide {
+#body-container .gallery.wide {
 	background: #5D5D5D;
 	padding-top: 10px;
 	overflow: hidden;
