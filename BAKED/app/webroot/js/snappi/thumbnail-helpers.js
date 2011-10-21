@@ -153,9 +153,17 @@
 	// DEFAULT handlers for ThumbnailFactory class.
 	ThumbnailFactory.setScoreNode = function(thumbnail, audition ){
 		try {
-			var score, node, exists = thumbnail.node.one('figcaption li.score');
+			var score, node, exists;
+			switch (thumbnail._cfg.type) {
+				case 'PhotoPreview':
+					exists = thumbnail.node.one('figcaption li.score');
+				break;
+				case 'Photo':
+				 	exists = thumbnail.node.one('figcaption li.score');
+				break;
+			}
 			if (exists) {
-				score = audition.Audition.Photo.Fix.Score || 0;
+				score = audition.Audition.Photo.Fix.Score || "0.0";
 				votes = audition.Audition.Photo.Fix.Votes;
         		var title = score + ' out of '+ votes +' vote';
         		title += votes == '1' ? '.' : 's.';		// add plural as appropriate

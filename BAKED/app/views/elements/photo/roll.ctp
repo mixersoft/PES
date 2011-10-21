@@ -71,12 +71,22 @@ $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 				if (SNAPPI.STATE.showDisplayOptions) {
 					Y.one('section.gallery-header li.display-option').addClass('open');
 					Y.one('section.gallery-display-options').removeClass('hide');
+			        var ratingFilterNode = Y.one('#filter-rating-parent');
+			        if (ratingFilterNode) {
+			        	SNAPPI.filter.initRating();
+			        }					
 				} else {
 					Y.one('section.gallery-header li.display-option').removeClass('open');
 					Y.one('section.gallery-display-options').addClass('hide');
 				}	
 			} catch (e) {}
 		};
+		PAGE.create_PageGallery = function(e){
+			try {
+				var g = SNAPPI.Y.one('section.gallery.photo').Gallery;
+				if (g.getSelected().count()) g.launchPagemaker();
+			}catch(e){}			
+		}
 		/**
 		 * run after EACH XHR request
 		 */
@@ -86,6 +96,10 @@ $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 				PAGE.setDisplayOptions();
 				new SNAPPI.Gallery({type:'Photo'});
 				// SNAPPI.filter.initRating();
+				
+				// add create listener
+				var create = SNAPPI.Y.one('header.head nav.user li.create');
+				if (create) create.on('click', PAGE.create_PageGallery);
 			} catch (e) {}
 		};
 		try {

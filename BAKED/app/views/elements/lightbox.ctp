@@ -37,7 +37,7 @@ if (Configure::read('controller.action')=='lightbox') {
 	
 	
 ?>
-<section class="lightbox drop container_16 hide" id="lightbox">
+<section class="lightbox filmstrip drop container_16 hide" id="lightbox">
 	<section class="gallery-header grid_16">
 		<ul class="inline">
 			<li><h3>My Lightbox <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li>
@@ -65,7 +65,7 @@ if (Configure::read('controller.action')=='lightbox') {
 						?>
 					</ul>
 					<ul class="inline">
-						<li action='set-display-view:one-row'><img src="/css/images/img_zoomin.gif"></li><li action="set-display-view:maximize"><img src="/css/images/img_zoomout.gif"></li>
+						<li action='set-display-view:minimize'><img src="/css/images/img_zoomin.gif"><li action='set-display-view:one-row'><img src="/css/images/img_zoomin.gif"></li><li action="set-display-view:maximize"><img src="/css/images/img_zoomout.gif"></li>
 					</ul>
 				</nav>
 			</li>

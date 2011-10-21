@@ -79,9 +79,38 @@
 			this.node.removeClass('hide');
 			SNAPPI.Y.one('div.anchor-bottom').append(this.node);	// move to the right location
 			this.node.Lightbox = this;
-			this.node.dom().Lightbox = this;
+			this.node.dom().Lightbox = this;	// for firebug
 			// plugin droppables
 			SNAPPI.DragDrop.pluginDrop(this.node);
+			
+			// init Lightbox.Gallery, do not render
+			// get init size/view
+			try {
+				var size = SNAPPI.STATE.profile.thumbSize['-lightbox'];
+				if (!size) {
+					if (SNAPPI.STATE.controller.action == 'lightbox' || SNAPPI.STATE.controller.action == 'pagemaker'){
+						size = 'lm';
+					}
+				}
+			} catch (e) {}
+			size = size || 'lbx-tiny';
+			try {
+				var view = SNAPPI.STATE.profile.view['-lightbox'];
+    			if (PAGE.jsonData.lightbox.full_page){
+					// deprecate fullpage lightbox, use 'maximize' instead
+    				view = 'maximize';
+    			}					
+			} catch (e) {}
+			view = view || 'minimize';
+			
+			var options = {
+				type: 'Lightbox',
+				render: false,
+				size: size,
+				view: view,
+			}
+			this.Gallery = new SNAPPI.Gallery(options);
+			SNAPPI.Factory.Gallery.actions.setView(this.Gallery, view);				
 			
 			this.restoreLightboxFromJson();	// lightbox.visible, lightbox.regionAsJSON
 //			this.yui2_plugResizeAndDrag.call(this, this.node);	// yui2 lightbox resize and drag	
@@ -477,62 +506,24 @@
    			// NO REPLACE - if duplicate found, use existing audition, DEFAULT
    			return SNAPPI.Auditions.parseCastingCall(castingCall, providerName, null);
         },
-        restoreLightboxFromJson: function() {
-    		try{	// restore lightbox regsion from JSON
-    			if(PAGE.jsonData.lightbox.regionAsJSON){
-    				var region = eval("("+PAGE.jsonData.lightbox.regionAsJSON+")");
-    				if(region){
-    					this.node.setStyles({
-    						'left': region.left,
-    						'top': region.top,
-    						'width': region.width,
-    						'height': region.height
-    						}
-    					);
-    				}
-    			}
-    		}catch(e){}
-    		
-    		try{	// restore lightbox innerHTML from JSON
+        restoreLightboxFromJson: function(view) {
+    		try {	// restore lightbox innerHTML from JSON
     			if (this.Gallery) this.Gallery.node.addClass('hide');
+    			
     			if (PAGE.jsonData.lightbox.castingCall){
 					var castingCall = PAGE.jsonData.lightbox.castingCall;
 					// render castingCall in Lightbox
 					this.renderLightboxFromCC.call(this, castingCall);
-					
-	    			if (PAGE.jsonData.lightbox.full_page){
-	    				// set to full page mode
-	    				this.node.setAttribute('style','');
-	    				this.node.addClass('full-page');
-	    				this.setThumbsize(PAGE.jsonData.lightbox.thumbsize);
-	    			}
+					this.node.get('parentNode').removeClass('minimize');
+					var view = SNAPPI.STATE.profile.view['-lightbox'] || 'one-row';
+					SNAPPI.Factory.Gallery.actions.setView(this.Gallery, view);	
     			};
-    			if (PAGE.jsonData.lightbox.full_page){
-    				// set to full page mode
-					this.node.setAttribute('style','');
-					this.node.addClass('full-page');
-    			}     
     			this.Gallery.node.removeClass('hide');
-    		}catch(e){
+    		} catch(e) {
     			if (this.Gallery) this.Gallery.node.removeClass('hide');
     		}
     		
-//    		if (!waitForCallback) this.Gallery.container.removeClass('hide');
-    		
-    		
-    		// restore lightbox visible from JSON
-    		var show = true;	// default value
-    		var foldButtonNode = Y.one('#lbx-foldBtn');
-    		try{	
-            	if(PAGE.jsonData.lightbox.visible === 'false'){
-
-            		this.node.addClass('hide');	
-            	} else throw("show Lightbox"); 
-    		}catch(e){
-    			// catch "show lightbox" exception. shows lightbox
-        		this.node.removeClass('hide');
-    		}
-
+    		// restore lightbox selected
 			try {
 				var selects = PAGE.jsonData.lightbox.selected;
 				var node, array_selected = selects.split(',');
@@ -541,20 +532,25 @@
 					node = this.node.one('#' + this.addIdPrefix(id));
 					node.addClass('selected');
 		        }, this);
-				
-			}catch(e){}
-			
+			} catch(e) {}
         },
         /*  
          * used by processDrop, 
          */
         renderLightboxFromCC: function(castingCall) {
-        	var LIMIT; 
+        	if (!castingCall) return;
         	try {
         		LIMIT = (PAGE.jsonData.lightbox.full_page) ? _LIGHTBOX_FULL_PAGE_LIMIT : _LIGHTBOX_LIMIT;
         	} catch(e) {
         		LIMIT = _LIGHTBOX_LIMIT;
         	}
+        	
+        	this.Gallery.render({
+        		perpage: LIMIT,
+        		castingCall: castingCall,
+        	});
+        	return;
+        	
         	
 			// get auditions from castingCall
 			var parsedCastingCall_AuditionSH = this.get_auditionSHfromCastingCall(castingCall);

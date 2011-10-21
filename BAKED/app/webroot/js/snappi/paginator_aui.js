@@ -87,34 +87,6 @@
 				g.loadCastingCall(uri, cfg);
 				
 				return;
-				// if (!target.io) {
-					// // uses pluginIO_RespondAsJson() with Plugin.IO
-					// target.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson({
-						// uri: uri ,
-						// parseContent:true,
-						// nameData: nameData,
-						// dataType: 'json',
-						// context: g.node,	// test
-						// on: {
-							// success: function(e, id, o, args) {
-								// // gallery = this.Gallery;
-								// if (o.responseJson) {
-									// PAGE.jsonData = o.responseJson.response;
-									// SNAPPI.mergeSessionData();
-									// new SNAPPI.Gallery({type:'Photo'});
-									// // TODO: update paginateContainer.Paginator.set('total'), etc									
-									// return false;	// plugin.IO already rendered
-								// }
-							// }	
-						// }
-					// }));					
-				// } else {
-					// // already plugged, just reuse
-					// uri = SNAPPI.IO.setNamedParams(uri, nameData);
-					// target.io.set('arguments', nameData)
-					// target.io.set('uri', uri).start();
-					// return;
-				// }
 			};
 			
 			

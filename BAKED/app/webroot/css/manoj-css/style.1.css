@@ -916,7 +916,7 @@ div.yui3-dd-drop-active-valid {
 /*  LIGHTBOX */
 div.anchor-bottom {
 	position: fixed;
-	bottom: 20px;
+	bottom: 0px;
 	width: 100%;
 	
 }
@@ -1168,15 +1168,19 @@ section.filmstrip section.gallery.lightbox {
 	clear: both;
 }
 
+section.item-header.minimize {
+	height: 10px;
+}
 
 section.filmstrip.minimize .gallery-header {
 	height: 10px;
 }
+section.filmstrip.minimize .gallery-header:hover {
+	height: 30px;
+}
 section.filmstrip.minimize .filmstrip-wrap {
 	height: 0;
 }
-
-
 .gallery .filmstrip .FigureBox.Photo.lbx-tiny {
 	width:33px;
 	height:33px;
@@ -1371,7 +1375,7 @@ ul.circle-thumb li.selected {
 	display: inline-block;
 	padding: 2px;
 /*	controls wrap for .extras.description*/
-	width: 215px;	
+	width: 214px;	
 }
 .FigureBox.Group.ll {
 	margin-bottom: 10px;

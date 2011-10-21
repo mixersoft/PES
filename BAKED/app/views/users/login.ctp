@@ -7,7 +7,7 @@
 <?php 	$this->Layout->blockEnd();  ?>
 
 <section class="main container_16">
-	<div class="grid_6 prefix_1 suffix_1">
+	<div class="grid_7 prefix_1 ">
 		<h2>Sign-in</h2>
 		<div >
 		<?php $orange = array('class'=>'orange'); 

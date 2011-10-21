@@ -518,8 +518,8 @@
 				var old_rating, total, score, votes;
 				old_rating = parseInt(audition.Audition.Photo.Fix.Rating) || 0;
 				if (old_rating != new_rating) {
-					score = parseFloat(audition.Audition.Photo.Fix.Score);
-					votes = parseInt(audition.Audition.Photo.Fix.Votes);
+					score = parseFloat(audition.Audition.Photo.Fix.Score)  || 0;
+					votes = parseInt(audition.Audition.Photo.Fix.Votes)  || 0;
 					total = (score * votes) - old_rating + new_rating;
 					if (!old_rating) votes++;
 					score = SNAPPI.util.roundNumber(total/votes,1);

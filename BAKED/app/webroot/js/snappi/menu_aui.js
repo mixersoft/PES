@@ -546,15 +546,20 @@ var DEFAULT_CFG_contextmenu = 	{
 	
 	MenuItems.create_pagegallery_click = function(menuItem, menu){
 		var g = MenuItems.getGalleryFromTarget(menu);
-		var batch;	// target
-		var audition = g.auditionSH.get(0);
-		batch = g.getSelected();
+		var batch = g.getSelected();
+		if (!batch.count() && g._cfg.type=='Lightbox') {
+			// batch = g.getSelected(true);			
+		}		
 		if (batch.count()) {
-			var Y = SNAPPI.PM.Y;
+			var Y = SNAPPI.PM.Y || SNAPPI.Y;
 //			var stage = SNAPPI.PageGalleryPlugin.stage;
 //			var performance = stage ? stage.performance : null;
-			var stage2 = g.container.create("<div id='stage-2' class='grid_16' style='position:absolute;top:200px;'></div>");
-			Y.one('#content').append(stage2);
+			var stage2 = Y.one('#stage-2');
+			if (!stage2) {
+				stage2 = g.container.create("<section class='container_16'><div id='stage-2' class='grid_16' style='position:absolute;top:200px;'></div></section>");
+				Y.one('section#body-container').insert(stage2, 'after');
+				stage2 = Y.one('#stage-2');
+			}
 			var sceneCfg = {
 				roleCount: batch.count(),
 				fnDisplaySize: {h:800},

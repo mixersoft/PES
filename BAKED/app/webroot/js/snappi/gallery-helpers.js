@@ -453,6 +453,19 @@
 		},	
 		handle_setDisplayView: function(g, view){
 			GalleryFactory.actions.setView(g, view);
+			if (view == 'minimize') {
+				// show item-header
+				try {
+					SNAPPI.Y.one('.item-header').removeClass('hide');	
+					SNAPPI.Y.one('.properties').removeClass('hide');
+				} catch (e) {}
+			} else {
+				// hide item-header
+				try {
+					SNAPPI.Y.one('.item-header').addClass('hide');	
+					SNAPPI.Y.one('.properties').addClass('hide');
+				} catch (e) {}
+			}
 			// update castingCall if necessary 
 			try {
 				var uuid = SNAPPI.STATE.controller.xhrFrom.uuid;

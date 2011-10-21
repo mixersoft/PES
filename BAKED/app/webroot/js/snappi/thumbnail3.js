@@ -205,6 +205,7 @@
 		 */
 		setRating : function(v, audition, silent) {
 			var r = this.node.Rating;
+			if (!r) return;
 			if (silent) {
 				if (this._cfg.showSizeByRating) {
 					var old_v = r.value;

@@ -941,7 +941,7 @@ debug("WARNING: This code path is not tested");
 				$ret = true; 
 				//TODO: begin SQL transaction for batch commit
 				$updateBestShot_assetIds = array();
-				$activePerAssetFields = array_intersect(array('rating','tags','chunk','privacy','unshare'), $fields);
+				$activePerAssetFields = array_intersect(array('rating','rotate','tags','chunk','privacy','unshare'), $fields);
 				foreach ($aids as $aid) {
 					if (count($activePerAssetFields)==0) break;	// skip if ther eare not active PerAssset Fields
 					/*
@@ -993,6 +993,42 @@ debug("WARNING: This code path is not tested");
 						if ($return) $updateBestShot_assetIds[] = $aid;
 						$ret = $ret && $return;
 					}
+					if (in_array('rotate', $fields) && !empty($this->data['Asset']['exif_orientation'])) {
+						// update rotate
+						if (!isset($this->Jhead)) $this->Jhead = loadComponent('Jhead', $this);
+						$orientation = $this->data['Asset']['exif_orientation'];
+						if (in_array($orientation, array(3,6,8))) {
+							$base = Session::read('stagepath_baseurl');
+							// goal: set Audition.Photo.Fix.Rotate
+							if (!empty($data['Asset'])) {
+								$json_exif = json_decode($data['Asset']['json_exif'], true);
+								$json_exif['preview']['Orientation'] = $orientation;
+								if (in_array($orientation, array(6,8))) {
+									$temp = $json_exif['preview']['imageWidth'];
+									$json_exif['preview']['imageWidth'] = $json_exif['preview']['imageHeight'];
+									$json_exif['preview']['imageHeight'] = $temp;
+								};
+								// rotate preview
+								$json_src = json_decode($data['Asset']['json_src'], true);
+								$src = $base.$json_src['preview'];
+								$errors =  $this->Jhead->exifRotate($orientation, $src);
+								
+								// save asset data
+								// $data['Asset']['json_src']=json_encode($data['Asset']['json_src']);
+								$data['Asset']['json_exif']=json_encode($data['Asset']['json_exif']);
+								$return = $this->Asset->saveField('json_exif', $data['Asset']['json_exif'], false);
+								// delete other sizes
+								$sizes = array('sq', 'tn', 'lm', 'll', 'bs', 'bm');
+								foreach($sizes as $size) {
+									$delete = getImageSrcBySize($src, $size);
+									@unlink($delete);	
+								}
+								$return = $return && empty($errors);
+							}
+						} else $return = false;
+						$ret = $ret && $return;
+					}					
+					
 					if (in_array('tags', $fields) && !empty($this->data['Asset']['tags'])) {
 						// update tags
 

@@ -978,29 +978,37 @@
             SNAPPI.multiSelect.selectAll(this.container);
             SNAPPI.STATE.selectAllPages = true;
         },
-		getSelected : function() {
+		getSelected : function(allPages) {
 			var auditionSH; 	// return sortedHash, allows auditionSH.each() maintains consistency
-			if (0 && SNAPPI.STATE.selectAllPages){ 
+			if (0 && (SNAPPI.STATE.selectAllPages || allPages)){ 
 				// TODO: get all assetIds for ALL pages in CastingCall
 				// from lightbox.js ProcessDrop
-//				var callback = {
-//					complete: function(id, o, arguments) {
-//						var castingCall = o.responseJson.castingCall;
-//						this.renderLightboxFromCC.call(this, castingCall);
-//						this.save();
-//						onComplete.call(this, nodeList); // clear selected items
-//						SNAPPI.STATE.selectAllPages = false;
-//					}
-//				};
-//				SNAPPI.domJsBinder.fetchCastingCall.call(this, {
-//					perpage : _LIGHTBOX_FULL_PAGE_LIMIT,
-//					page : 1,
-//					skipPaging: true
-//				}, callback);
-//				return false; // don't clear selected until XHR call
-//				// complete				
-//				var check;
-			}else { // this uses visible selected only
+				var callback = {
+					complete: function(id, o, arguments) {
+						var castingCall = o.responseJson.castingCall;
+						this.renderLightboxFromCC.call(this, castingCall);
+						this.save();
+					onComplete.call(this, nodeList); // clear selected items
+						SNAPPI.STATE.selectAllPages = false;
+					}
+				};
+				SNAPPI.domJsBinder.fetchCastingCall.call(this, {
+					perpage : _LIGHTBOX_FULL_PAGE_LIMIT,
+					page : 1,
+					skipPaging: true
+				}, callback);
+				return false; // don't clear selected until XHR call
+				// complete				
+				var check;
+			} else if (allPages) {
+				// TODO: WARNING this only selects all on current page.
+				var audition, batch = this.container.all('.FigureBox');
+				auditionSH = new SNAPPI.SortedHash();
+				batch.each(function(node){
+					audition = SNAPPI.Auditions.find(node.uuid);
+					auditionSH.add(audition);
+				});
+			} else { // this uses visible selected only
 				var audition, batch = this.container.all('.FigureBox.selected');
 				auditionSH = new SNAPPI.SortedHash();
 				batch.each(function(node){
@@ -1751,7 +1759,7 @@
         	
         	var detach = SNAPPI.Y.on('snappi-pm:after-launch', function(e) {
         		detach.detach();
-        		node.ynode().set('innerHTML', 'Create Page');
+        		// node.ynode().set('innerHTML', 'Create Page');
         		var photoRoll = this;
         		photoRoll.createPageGallery(photoRoll);
         	}, this);
