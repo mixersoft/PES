@@ -57,7 +57,7 @@
 	    var defaultCfg, o = {};		
 	    try {
 	        // get host from AIR bootstrap
-	        host = SNAPPI.isAIR ? SNAPPI.AIR.host : window.location.host;
+	        var host = SNAPPI.isAIR ? SNAPPI.AIR.host : window.location.host;
 	    } catch (e) {
 	        host = window.location.host;	// hostname:port number
 	    }
