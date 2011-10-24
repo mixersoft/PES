@@ -122,7 +122,7 @@
 		 * 
 		 * @return boolean === false, wait for XHR response
 		 */
-		setDatasource : function(cfg, fnContinue) { // OK
+		node : function(cfg, fnContinue) { // OK
 			cfg = cfg || {};
 			this.ds = cfg.datasource || this.ds || _flexAPI_UI.datasource;
 		},
@@ -207,19 +207,19 @@
 		},
 		/**
 		 * cancel item(s) in queue, from onclick cancel, or stopUploadPage([clear | pause])
-		 * - if progressContainer == null, cancel everything
-		 * @params progressContainer FileProgress OPTIONAL 
+		 * - if node == null, cancel everything
+		 * @params node FileProgress node OPTIONAL 
 		 * 	
 		 */
-		action_cancel : function(progressContainer) {
+		action_cancel : function(node) {
 			var Y = SNAPPI.Y;
 			var done = false;
-			// cancel selected progressContainer, only
-			if (progressContainer) {
-				var progress = progressContainer.FileProgress;
+			// cancel selected node, only
+			if (node) {
+				var progress = node.FileProgress;
 				progress.setCancelled("Cancelled");
 				_flexAPI_UI.datasource.setUploadStatus(progress.uuid, 'cancelled', this.batchId);
-				progress.row_deprecate.status = 'cancelled';
+				// progress.row_deprecate.status = 'cancelled';	// ???: Why do we need to set this?
 			} else {
 				// if we don't have a cancel target, cancel all active uploads
 				SNAPPI.AIR.UploadManager.activeSH.each(function(um){
@@ -395,28 +395,31 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 				// reset/render new page with array of Progress tiles
 				pageNode.removeClass('hide');
 				for ( var i = 0; i < rows.length; i++) {
-//LOG(rows[i]);
+// LOG(rows[i]);
 					var cfg = {
-							row_deprecate: rows[i],
-							id : rows[i]['id'], // deprecate
+							id : rows[i]['id'], 		// uploadQueue.id
+							rowid : rows[i]['id'], 		// uploadQueue.id
 							label : rows[i]['rel_path'],
 							uuid : rows[i]['photo_id']
 						};
-					var uploadTile = new SNAPPI.AIR.FileProgress( cfg, pageNode);
+					/*
+					 * NOTE: row[i] !== audition. columns: status, id, rel_path, photo_id/uuid
+					 */
+					var thumbnail = new SNAPPI.AIR.FileProgress( cfg, pageNode);
 					switch (rows[i]['status']) {
 					case 'done':
-						uploadTile.setComplete("Upload complete.");
+						thumbnail.setComplete("Upload complete.");
 						break;
 					case 'error':
-						uploadTile.setAlert('Warning: upload failed.');
+						thumbnail.setAlert('Warning: upload failed.');
 						break;
 					case 'cancelled':
-						uploadTile.setCancelled('Upload cancelled.');
+						thumbnail.setCancelled('Upload cancelled.');
 						break;
 					case 'pending':
 					default:
-						if (this.isPaused) {uploadTile.setPaused()}
-						else uploadTile.setReady();
+						if (this.isPaused) {thumbnail.setPaused()}
+						else thumbnail.setReady();
 						break;
 					}
 				}
@@ -529,7 +532,7 @@ LOG("active count="+UploadManager.count());
 				this.isCancelling = true; // stop queue here
 //				this.action_cancel();
 				// mark ALL li.progress for stop
-				this.container.all('li.progress-container').each(function(n,i,l){
+				this.container.all('.FigureBox.PhotoAirUpload').each(function(n,i,l){
 					if (n.hasClass('status-pending')){
 						var progress = n.FileProgress;
 						if (mode == 'clear') {
@@ -600,7 +603,7 @@ LOG("active count="+UploadManager.count());
 						// create new progress Node ONLY IF cfg.page provided
 						cfg.uuid = cfg.photo_id;
 						cfg.label = cfg.label || cfg.rel_path;
-						cfg.row_deprecate = cfg.row_deprecate;
+						cfg.rowid = cfg.id;
 						progress = new SNAPPI.AIR.FileProgress( cfg, cfg.page );
 					} 
 				}
@@ -685,7 +688,7 @@ LOG("active count="+UploadManager.count());
 			 */
 			this.container.delegate('click', function(e) {
 				// click on cancel
-				var target = e.target.ancestor('li.progress-container');
+				var target = e.target.ancestor('.FigureBox.PhotoAirUpload');
 				e.halt();
 				if (target) {
 					try {

@@ -167,7 +167,7 @@
         setBaseurl: function(baseurl){
             this.ds.setConfig({
                 baseurl: baseurl
-            }
+            });
             LOG('Test.setBaseurl(), result=' + this.ds.getConfigs().baseurl);
         },
         /*

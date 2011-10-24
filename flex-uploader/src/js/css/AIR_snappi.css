@@ -2,3 +2,227 @@
 @namespace s "library://ns.adobe.com/flex/spark";
 @namespace mx "library://ns.adobe.com/flex/mx";
 
+
+/* thumbnails */
+
+.FigureBox.PhotoAirUpload {
+	padding: 2px;
+	overflow: hidden;
+	border: 1px solid #e5e5e5;
+	xborder-radius: 5px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	float: left;
+	margin: 0 4px 10px 0;
+	xposition: relative;
+	background-color: #FFF;
+}
+.FigureBox.PhotoAirUpload  figure {
+	overflow: hidden;
+	position: relative;
+}
+.FigureBox.PhotoAirUpload  figure > img {
+	display: block;
+}
+.FigureBox.PhotoAirUpload  figcaption {
+	display: block;
+	overflow: hidden;
+	width: 75px;
+	margin: 0 4px;
+	xline-height: 1.2;
+}
+.FigureBox.PhotoAirUpload  figcaption .progress-wrap {
+	display: inline-block;
+	overflow: hidden;
+}
+.FigureBox.PhotoAirUpload:hover {
+	background: #fff88a;
+}
+.FigureBox.PhotoAirUpload.focus {
+	background: #fff88a;
+}
+
+
+
+/*
+ * .lm landscape/medium
+ */
+/*.FigureBox.lm {
+	width: 145px;		
+	height: 120px;	
+}*/
+.FigureBox.lm > figure > img {
+	width: 144px;
+	height: 96px;
+}
+
+/*
+ * .ll (landscape/large) == .large 
+ */
+
+.FigureBox.ll > figure > img {
+	width: 222px;
+	height: 148px;
+}
+/*
+ * .sq (square) 
+ */
+.FigureBox.sq > figure > img {
+	width: 75px;
+	height: 75px;
+}
+
+/*temp CSS for selected*/
+.FigureBox.PhotoAirUpload.selected {
+	border: 1px solid red;
+	-webkit-box-shadow: 2px 2px 5px #FF0000; /* Safari and Chrome */
+	box-shadow: 2px 2px 5px #FF0000;
+}
+
+
+/* Hidden Shot icons */
+
+
+.FigureBox.PhotoAirUpload figure > img {
+    margin: 4px;
+}
+.FigureBox.PhotoAirUpload.status-pending figure > img {
+	border: 2px solid green;
+	margin: 2px;
+}
+.FigureBox.PhotoAirUpload.status-paused figure > img {
+	border: 2px solid green;
+	margin: 2px;
+}
+.FigureBox.PhotoAirUpload.status-active figure > img{
+	border: 2px solid green;
+	margin: 2px;
+}
+.FigureBox.PhotoAirUpload.status-error {
+    background-color: #FFEBEB;
+}
+.FigureBox.PhotoAirUpload.status-error figure > img {
+	border: 2px solid red;
+	margin: 2px;
+}
+.FigureBox.PhotoAirUpload.status-cancelled figure > img {
+	border: 2px solid #BBB;
+	margin: 2px;
+}
+.FigureBox.PhotoAirUpload.status-done figure > img {
+	border: 1px solid #E8E8E8;
+	margin: 3px;
+}
+
+.FigureBox.PhotoAirUpload.status-done .progress-wrap > div.progress div.border {
+	background-color:green;
+	border: 1px solid green;
+}
+.FigureBox.PhotoAirUpload.status-done .progress-wrap > div.progress div.bar {
+	background-color:green;
+}
+
+.FigureBox.PhotoAirUpload .label {
+	font-size: 8pt;
+	padding-top: 2px;
+	text-align: center;
+}
+
+
+.FigureBox.PhotoAirUpload .progress-wrap {
+	overflow: hidden;
+    height: 8px;
+    padding: 4px;
+    padding-left:0;
+/*    width = 75 - 14 = 57*/
+    width: 57px;
+    display: inline;
+}
+
+.FigureBox.PhotoAirUpload  div.progress-wrap > div.progress {
+	background-color: none;
+	color: black;
+}
+
+.FigureBox.PhotoAirUpload  div.progress-wrap > div.progress div.border {
+	border: 1px solid blue;
+	background-color: white;
+	opacity:1;
+}
+
+.FigureBox.PhotoAirUpload  div.progress-wrap > div.progress div.bar {
+    background-color: blue;
+	opacity:1;
+    width: 0%;
+    height: 6px;
+}
+
+.FigureBox.PhotoAirUpload.status-error  .progress-wrap > div.progress div {
+	 background-color: red !important;
+	 border-color: black !important;
+}
+.FigureBox.PhotoAirUpload.status-cancelled  .progress-wrap > div.progress div {
+	 background-color: #BBB !important;
+	 border-color: black !important;
+}
+
+.FigureBox.PhotoAirUpload  div.cancel {
+    background: url("/img/css/cancelbutton.gif") no-repeat -14px 0;
+    display: inline-block;
+    height: 14px;
+    width: 14px;
+    cursor: pointer;
+	float:right;
+}
+
+.FigureBox.PhotoAirUpload  div.cancel:hover {
+    background-position: 0 0;
+}
+
+
+.FigureBox.PhotoAirUpload ul.extras {
+	list-style-type: none;
+	margin: 0px;
+	padding: 0px;
+}
+.FigureBox.PhotoAirUpload .extras li {
+	float: left;
+	margin: 5px 4px 0 0;
+}
+.FigureBox.PhotoAirUpload .extras li img {
+	float: left;
+}
+
+.FigureBox.PhotoAirUpload .extras li.rating {
+	padding: 2px 0 0 0;
+}
+.FigureBox.PhotoAirUpload .extras li.rating > img {
+	width: 13px;
+	height: 12px;
+}
+.FigureBox.PhotoAirUpload .extras li.score {
+	font-size: 11px;
+	background: -moz-linear-gradient(bottom, #eeeeee, #fff);
+	background: -webkit-gradient(linear, center bottom, center top, from(#eeeeee), to(#fff));
+	border: 1px solid #e2e2e2;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	width: 25px;
+	height: 17px;
+	line-height: 17px;
+	text-align: center;
+	font-family: Arial, Helvetica, sans-serif;
+	cursor: default;
+}
+.FigureBox.PhotoAirUpload .extras li.icon {
+	float: right;
+	cursor: pointer;
+}
+.FigureBox.PhotoAirUpload .extras li.info > img {
+	width: 16px;
+	height: 17px;
+}
+.FigureBox.PhotoAirUpload .extras li.context-menu > img {
+	width: 15px;
+	height: 16px;
+}

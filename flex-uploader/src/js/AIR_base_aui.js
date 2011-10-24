@@ -80,7 +80,7 @@ var onload_complete = function(){
     		/*
     		 * snappi modules
     		 */
-    		'snappi-sortedhash','snappi-io', 'snappi-io-helpers',
+    		'snappi-sortedhash','snappi-io', 'snappi-io-helpers', 'snappi-thumbnail-helpers',
     		/*
     		 * air modules - bootstrap only. add additional modules after init 
     		 */

@@ -502,7 +502,7 @@
         	shotGallery.showShotGallery(selected);
 		},
 		handle_ActionsClick: function(e) {
-			console.log("Preview Thumbnail Actions Click;");
+			// console.log("Preview Thumbnail Actions Click;");
 			// show navFilmstrip for now
 			var navFilmstrip = SNAPPI.Gallery.find['nav-'];  
 			navFilmstrip.render();
@@ -542,7 +542,7 @@
                 '        <li class="score">0.0</li>'+
                 '        <li class="icon context-menu"><img alt="" title="actions" src="/css/images/icon2.png"></li>'+
                 '        <li class="icon info"><img alt="more info" src="/css/images/icon1.png"></li>'+
-				'	</figcaption></ul></figure>'+
+				'	</ul></figcaption></figure>'+
 				'</article>',
 		renderElementsBySize : function (size, audition, cfg){
 			cfg = cfg || {};
@@ -672,6 +672,41 @@
 			return this;
 		}
 	};
+	ThumbnailFactory.PhotoAirUpload = {
+		markup: '<article class="FigureBox PhotoAirUpload">'+
+                '	<figure>'+
+                '		<img src="">' +
+                '   	<figcaption>' + 
+				 		"<div class='progress-wrap'>" +
+				 		"	<div class='progress'>" +
+				 		"	<div class='border'><div class='bar'></div></div>" +
+				 		"	</div></div>" +       
+				 		'<div class="cancel" title="Cancel upload."></div>' +         
+                '		<ul class="hide extras">'+
+                '    		<li class="hide rating"></li>'+
+                '       	<li class="hide score">0.0</li>'+
+                '       	<li class="icon context-menu"><img alt="" title="actions" src="/css/images/icon2.png"></li>'+	
+                '       	<li class="icon info"><img alt="more info" src="/css/images/icon1.png"></li>'+
+				'		</ul></figcaption></figure>'+
+				'</article>',
+		defaultCfg: {
+			type: 'PhotoAirUpload',
+    		ID_PREFIX: 'progress-',
+    		size: 'sq',
+    		uuid: null,
+    		label: null,
+    		showExtras: true,
+    		showRatings: false,
+    		// showSizes: true,
+    		draggable: false,
+    		queue: false,
+    		opacity: 100,
+    		listeners: ['PreviewImgLoad'],
+    	},				
+		renderElementsBySize : function (size, audition, cfg){
+			// cannot use audition here
+		}
+	};	
 	ThumbnailFactory.Group = {
 		markup: '<article class="FigureBox Group">'+
                 '	<figure><a><img alt="" src=""></a>'+

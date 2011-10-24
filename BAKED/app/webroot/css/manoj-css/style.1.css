@@ -460,12 +460,6 @@ section.gallery-display-options.wide ul > li.label {
 	background-color: #FFF;
 }
 
-.FigureBox.Photo .selected {
-	position: absolute;
-	top: 0px;
-	right: 0px;
-	width: auto;
-}
 .FigureBox.Photo:hover {
 	background: #fff88a;
 }
@@ -524,11 +518,11 @@ section.gallery-display-options.wide ul > li.label {
 /*
  * .lm landscape/medium
  */
-.FigureBox.lm {
+/*.FigureBox.lm {
 	width: 145px;		
 	height: 120px;	
-}
-.FigureBox.lm > figure > a > img {
+}*/
+.FigureBox.lm > figure > img {
 	width: 144px;
 	height: 96px;
 }
@@ -537,14 +531,14 @@ section.gallery-display-options.wide ul > li.label {
  * .ll (landscape/large) == .large 
  */
 
-.FigureBox.ll > figure > a > img {
+.FigureBox.ll > figure > img {
 	width: 222px;
 	height: 148px;
 }
 /*
  * .sq (square) 
  */
-.FigureBox.sq > figure > a > img {
+.FigureBox.sq > figure > img {
 	width: 75px;
 	height: 75px;
 }
@@ -553,7 +547,7 @@ section.gallery-display-options.wide ul > li.label {
  * .tiny (lightbox square) 
  * TODO: update lbx-tiny
  */
-.FigureBox.tiny > figure > a > img {
+.FigureBox.tiny > figure > img {
 	width: 33px;
 	height: 33px;
 }

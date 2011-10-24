@@ -44,7 +44,7 @@
 		this.progress = progress;
 		this.uploadQueue = uploadQueue;
 		this.hashcode = function(){
-//			return this.progress.progressContainer.get('id');
+//			return this.progress.node.get('id');
 			return this.row.photo_id;
 		}
 		UploadManager.add(this); // move to domready		
