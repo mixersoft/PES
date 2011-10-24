@@ -9,9 +9,13 @@
 	<div id='bottom'></div>
 </div>
 <div id="paging" class="hidden<?php if ($isPreview) echo " hide"; ?>">
-	<div id="prevPage">&lt Prev</div>
+	<div id="prevPage"></div>
 	<span id="pagenum"></span>
-	<div id="nextPage">Next &gt</div>
+	<div id="nextPage"></div>
+	<div class="hide">
+		<!-- load  these imgs first-->
+		<img src='/img/pageGallery/prevlabel.gif'><img src='/img/pageGallery/nextlabel.gif'>
+	</div>
 </div>
 <div id='content' class='hidden'>
  	<?php foreach ($page_gallery as $row) {
