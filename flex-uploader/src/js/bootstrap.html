@@ -12,25 +12,82 @@
 		<script type="text/javascript" src="/app/air/js/AIR_base_aui.js"></script>		
     </head>
 
-    <body class="yui-skin-sam" style="">
-    
-		
-<!-- INSERT online page here, or just redirect? -->
-		
-	<div id="container">
-		<div id="header">
-			<div id="logo" title="snaphappi"></div>
+    <body>
+<header class="container_x">
+		<div class="grid_x">
+			<h1 class="logo grid_x">
+			<img src="/img/snappi/snappi-top.png" title="Snaphappi" alt="Snaphappi">
+			</h1>	
 		</div>
-		<div id="content">
-			<div id="top">
-				<div id="menu-header" >
-					<ul class='inline'>
-						<li><b>Welcome </b><a id='displayName' href="#"></a></li>
-						<li><a href="#" onclick="return false;">Help</a></li>
-						<li><a href="#" onclick="SNAPPI.AIR.Helpers.show_login(); return false;">Sign in</a></li>
-					</ul>
-				</div>
+		<nav class="user right grid_x">
+			<ul class="inline authenticated hide">
+				<li>
+					<span class="grey">Welcome,</span>
+					<a id="userAccountBtn" class="menu-open" aria-controls="menu-header-markup">Guest</a>
+				</li>
+				<li><a href="/users/logout">Sign out</a></li>
+			</ul>
+			<ul class="inline guest">				
+				<li><a href="/users/login" onclick="SNAPPI.AIR.Helpers.show_login(); return false;">Sign in</a></li>
+				<li><a href="/users/register" target="_blank">Sign up</a></li>
+			</ul>	
+		</nav>	
+</header> <!--top header end-->	
+<section class="item-header container_x">
+	<div class="wrap">
+		<h1 class="grid_x">Snaphappi Desktop Uploader</h1>
+	</div>
+</section>
+<div id="item-body" class="plain container_x">
+	<div class="wrap">
+		<section class="import grid_x">
+			<ul class="inline">
+				<li id='choose-folder' class="alpha grid_x omega"> 
+					<p>	Our desktop uploader allows you to easily upload <b>entire folders</b> of JPG photos from your desktop to your account at Snaphappi.
+						To get started, just click the button to select a folder.
+					</p> 
+					<div class='block center'>
+						<input type='submit' value='Select a Folder' class="orange" onclick='SNAPPI.AIR.Flex_UploadAPI.selectFolder(); return false;'>
+					</div>
+				</li>
+				<li id='drop-target' class='right alpha grid_x omega'>
+					<p>You can also <b>drag-drop</b><br />one or more folders here.</p>
+				</li>
+			</ul>
+		</section>					
+		<div class='import-progress-wrap grid_x alpha omega hide'>
+			<ul class="inline">
+				<li class="label">Scanning Folders for JPG Photos:&nbsp;</li><li id="import-progress" class="progress"><div class="bar"></div><span></span></li>	
+			</ul>
+		</div>		
+	</div>
+</div> <!-- end #item-body --> 
+<section id="gallery-content" class="container_x hide">
+	<div class="wrap">
+    	<div class="grid_x alpha omega">
+			<div id='upload-tabs' class="gallery-header center">
+				<ul class='inline'>
+					<li id='tab-all' onclick="PAGE.uploader_openTab('all');return false;">all</li>
+					<li id='tab-pending' onclick="PAGE.uploader_openTab('pending');return false;">pending</li>
+					<li id='tab-cancelled' onclick="PAGE.uploader_openTab('cancelled');return false;">cancelled</li>
+					<li id='tab-complete' onclick="PAGE.uploader_openTab('done');return false;">complete</li>
+					<li id='tab-failed' onclick="PAGE.uploader_openTab('error');return false;">failed</li>
+				</ul>
+	    		<div id="toolbar" >
+	    			<div class="btns">
+		    			<a id='start-btn' href="#" onclick="PAGE.toggle_upload(this);return false;">Start Upload</a>
+		    			<a href="#" onclick="SNAPPI.AIR.uploadQueue.action_retry();return false;">Retry</a>
+	    				<a href="#" id="btnCancel" onclick="SNAPPI.AIR.uploadQueue.action_clear();return false;">Clear</a>
+	    			</div>
+	    		</div> 						
 			</div>
+    		<div class="gallery"><div class='container'></div></div>
+<!-- rename upload-progress -->
+			<div id="total-progress" class="progress center"><div class="bar"></div><span></span></div>		    		
+    	</div>
+	</div>
+</section>
+		<div id="markup" class="hidden">
 			<div class="one-col">
 				<div id='login' class='hide'>
 				<h2>Sign-in to Snaphappi</h2>
@@ -55,56 +112,12 @@
 						</select>
 					</form>
 				</div>
-				<div class="block right"></div>
 				</div>
-			</div>
-			<div class="one-col">
-				<div id='choose-folder'>
-					<h2>Snaphappi Desktop Uploader</h2>
-					<p>	Our desktop uploader allows you to easily upload <b>entire folders</b> of JPG photos from your desktop to your account at Snaphappi.
-						To get started, just click the button to select a folder.
-					</p> 
-					<div class='block'>
-						<input type='submit' value='Select a Folder' onclick='SNAPPI.AIR.Flex_UploadAPI.selectFolder(); return false;'>
-					</div>
-					<div id='drop-target' class='block'>
-						You can also <b>drag-drop</b> one or more folders here.
-					</div>
-				</div>
-			</div>
-			<div class="one-col">
-    	<div id="uploader" align="center">
-			<div id='upload-tabs'>
-				<ul class='inline' style='color:black;'>
-					<li id='tab-all' onclick="PAGE.uploader_openTab('all');return false;">all</li>
-					<li id='tab-pending' onclick="PAGE.uploader_openTab('pending');return false;">pending</li>
-					<li id='tab-cancelled' onclick="PAGE.uploader_openTab('cancelled');return false;">cancelled</li>
-					<li id='tab-complete' onclick="PAGE.uploader_openTab('done');return false;">complete</li>
-					<li id='tab-failed' onclick="PAGE.uploader_openTab('error');return false;">failed</li>
-				</ul>
-			</div>
-    		<div id="panels" class="panels gallery" align="left"><div class='container'></div></div>
-    		<div id="toolbar">
-    			<div class="btns">
-	    			<a id='start-btn' href="#" onclick="PAGE.toggle_upload(this);return false;">Start Upload</a>
-	    			<a href="#" onclick="SNAPPI.AIR.uploadQueue.action_retry();return false;">Retry</a>
-    				<a href="#" id="btnCancel" onclick="SNAPPI.AIR.uploadQueue.action_clear();return false;">Clear</a>
-    			</div>
-    			<div id="total-progress" class="progress" align="left"><div class="bar"></div><span></span></div>
-    		</div>    		
-    	</div>
-		<div id='import' class='hide'>
-			<span>Scanning Folders for JPG Photos:</span>
-			<div id="import-progress" class="progress" align="left"><div class="bar"></div><span></span></div>
-		</div>
-
-	</div>
-		</div>					
-		<div id="footer">
+			</div>			
+		</div>	<!-- end #markup -->
+		<div id="footer" class="container_x">
 			<span>&copy; 2008-2012 Snaphappi</span>
 			<a href="http://www.cakephp.org/" target="_blank"><img src="/img/cake.power.gif" alt="CakePHP: the rapid development php framework" border="0"></a>		
-			</div>
-</div>	
-	
+		</div> <!-- end #footer -->
     </body>
 </html>

@@ -33,7 +33,7 @@
 			LOG("-----------------------> uploadQueue.load() ");
 			
 			
-			this.container = cfg.container || Y.one('#uploader');
+			this.container = cfg.container || Y.one('#gallery-content');
 			this.ds = cfg.datasource || null;
 			this.isUploading = typeof _flexAPI_UI === "undefined" ? null : _flexAPI_UI.isUploadQueueRunning;
 			this.paginate = this.cakeStylePaginate;
@@ -1065,7 +1065,7 @@ LOG("active count="+UploadManager.count());
 		}
 	}
 	UploadQueue.showImportProgress = function() {
-		var node = SNAPPI.Y.one('#import');
+		var node = SNAPPI.Y.one('#item-body .import-progress-wrap');
 		this.view_setImportTotalProgress();
 		node.removeClass('hide');
 	}

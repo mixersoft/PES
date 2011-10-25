@@ -152,6 +152,7 @@ var onload_complete = function(){
     				_domready1(Y);
     				_domready2(Y);
     				LOG(">>>>>>>>>>>>>>>>>>>>>>>>  YUI/domready COMPLETE <<<<<<<<<<<<<");
+    				Y.one('#gallery-content').removeClass("hide");
     			});
     		}
     );
@@ -416,6 +417,11 @@ var onload_complete = function(){
 			comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl='+air_comboBase,
 	        root: 'js/css',			// base for combo loading, combo load uri = comboBase+root+[module-name]
             modules: {
+            	'960-reset-css': {
+            		path: 'reset.css',
+            		requires: [],
+            		type: 'css'
+            	},
     	    	'snappi-cake-css': {
     		        path: 'cake.generic.css',
     		        requires: [],
@@ -433,12 +439,13 @@ var onload_complete = function(){
     			}, 		    
             	'AIR-upload-ui-css': {
     		        path: 'upload_ui.css',
-    		        requires: ['snappi-cake-css','old-snappi-css','snappi-menu-css'],
+    		        // requires: ['snappi-cake-css','old-snappi-css','snappi-menu-css'],
+    		        requires: [],
     		        type: 'css'
     		    },
     			'AIR-snappi-css': {
     		        path: 'AIR_snappi.css',
-    		        requires: ['AIR-upload-ui-css'],		// load last
+    		        requires: ['960-reset-css', 'AIR-upload-ui-css'],		// load last
     		        type: 'css'
     			},       		     	        
             }

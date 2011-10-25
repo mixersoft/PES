@@ -557,7 +557,7 @@ var DEFAULT_CFG_contextmenu = 	{
 			var stage2 = Y.one('#stage-2');
 			if (!stage2) {
 				stage2 = g.container.create("<section class='container_16'><div id='stage-2' class='grid_16' style='position:absolute;top:200px;'></div></section>");
-				Y.one('section#body-container').insert(stage2, 'after');
+				Y.one('section#item-body').insert(stage2, 'after');
 				stage2 = Y.one('#stage-2');
 			}
 			var sceneCfg = {

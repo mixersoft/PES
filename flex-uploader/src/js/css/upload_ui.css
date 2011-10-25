@@ -140,32 +140,6 @@ div#import{
  	width: 90%;
 	overflow:hidden;	
 }
-div#import-progress {
-	padding:0;
-    width:60%;
-    height: 14px;
-    border: 1px solid #666;
-	position:relative;
-	top : -16px;
-	left: 232px;
-}
-
-div#import-progress > div.bar {
-    background-color: green;
-    height: 100%;
-    width: 0;
-}
-
-div#import-progress span {
-    font-family: arial, verdana;
-	height: 12px;
-    font-size: 12px;
-	position:relative;
-	left:48%;
-	top: -12px;
-	z-index:10;
-	color: white;
-}
 
 
 div#drop-target {

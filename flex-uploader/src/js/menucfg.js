@@ -11,7 +11,7 @@ console.log("load BEGIN: menucfg.js");
 	MenuCfg.prototype = {
 		listenToUploaderRoll : function(){
 			var Y = SNAPPI.Y;
-			var rootNode = Y.one('#uploader div.panels');
+			var rootNode = Y.one('#gallery-content .gallery > .container');
 			if(rootNode){
 				rootNode.delegate('contextmenu', function(e, rootNode){
 		           	e.preventDefault();
@@ -25,7 +25,7 @@ console.log("load BEGIN: menucfg.js");
 		       			rootNodeDOM.contextMenu.parent.container = target;
 		       			rootNodeDOM.contextMenu.show();
 		       		}
-				}, 'ul.page > li', {}, rootNode);
+				}, '.FigureBox', {}, rootNode);
 				LOG("listen to UploaderRoll  STARTED. <<<<<<<<<<<<<<<<<<<<<");
 			}else {
 				LOG("listen to UploaderRoll  NOT STARTED. <<<<<<<<<<<<<<<<<<<<<");

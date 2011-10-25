@@ -44,7 +44,7 @@ _domready1 = function(Y) {
 	SNAPPI.DATASOURCE = datasource;
 	
 	uploader = new SNAPPI.AIR.UploadQueue({
-    	container: Y.one('#uploader'),
+    	container: Y.one('#gallery-content'),
     	datasource: datasource
     });
     SNAPPI.AIR.uploadQueue = uploader;
