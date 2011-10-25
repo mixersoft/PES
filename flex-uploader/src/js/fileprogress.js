@@ -68,8 +68,7 @@ var FileProgress = function (cfg, page){
             page.append(this.node);
         } else {
         	try {
-            	var pageId = "#uq-page-"+page;
-                Y.one(pageId).append(this.node);
+                Y.one('.gallery .container').append(this.node);
         	} catch (e) {
         		alert("page no found for page="+page);
         	}

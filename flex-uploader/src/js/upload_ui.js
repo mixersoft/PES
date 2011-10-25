@@ -260,32 +260,16 @@ LOG("uploader getOpenBatchId has been DEPRECATED");
 		/***********************************************************************
 		 * view methods. move to another object
 		 */
-		/**
-		 * create blank pages, allows for lazy loading of file icons - paginate
-		 * links look for 'div.uq-page-#' TODO: maybe we should move this to the
-		 * render method for each page?
-		 */
-		view_createBlankPages : function(count) { // OK
-			var parent = this.container.one('#panels').set('innerHTML', '');
-			var page_ID_PREFIX = "uq-page-";
-			for ( var i = 1; i <= count; i++) {
-				var pageTemplate = "<ul id='" + page_ID_PREFIX + i
-						+ "' class='page hide'></ul>";
-				var pageNode = this.container.create(pageTemplate);
-				parent.append(pageNode);
-			}
-		},
 		view_getBlankPage : function(i) { // OK
-			var parent = this.container.one('#panels').set('innerHTML', '');
-			var page_ID_PREFIX = "uq-page-";
-			var pageNode = this.container.one('#page_ID_PREFIX' + i);
-			if (!pageNode) {
-				var pageTemplate = "<ul id='" + page_ID_PREFIX + i
-						+ "' class='page hide'></ul>";
-				pageNode = this.container.create(pageTemplate);
-				parent.append(pageNode);
-			} else pageNode.set('innerHTML', '');
-			return pageNode;
+			var selector = '.gallery .container';
+			var pageNode = this.container.one(selector);
+			if (pageNode) {
+				pageNode.setContent('');
+				return pageNode;
+			} else {
+				LOG("ERROR view_getBlankPage(): '.gallery .container' not found");
+				return null;
+			}
 		},
 		
 		
@@ -353,9 +337,12 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 		 * @params page int optional - null to show last visible page, i.e. show/hide uploader
 		 * @params mode string default='show' - [upload | show] 		
 		 */
-		view_showPage : function(page, mode) {
+		view_showPage : function(page, mode, perpage) {
 			// enforce a notion of activePage (for Paginator) and uploadPage (for uploader)
 			page = page || this.page || Math.min(this.count_filterPages, 1);
+			if (perpage) {
+				this.flexUploadAPI.setPerpage(perpage);
+			} else perpage = this.flexUploadAPI.getPerpage();
 			
 			mode = mode || 'show';
 			var Y = SNAPPI.Y;
@@ -376,19 +363,9 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 					+ ", previous page=" + this.activePage + ", status="
 					+ this.status + ", count=" + rows.length);
 
-
-
-			// hide last active page
-			if (page != this.activePage) {
-				try {
-					Y.one('#uq-page-' + this.activePage).addClass('hide');
-				} catch (e) {
-				}
-			}
 			/*
 			 * view add pages
 			 */
-//			this.view_createBlankPages(this.count_filterPages);
 			// render page
 			var pageNode = this.view_getBlankPage(page);
 			if (pageNode) {
@@ -429,8 +406,19 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 			 */
 			this.activePage = page;
 			this.activePageNode = pageNode;
-			var paginateParent = Y.one('#paginator').set('innerHTML', '');
-			this.paginate(paginateParent, this.count_filterPages, this.activePage);
+			
+			if (0) {
+				var paginateParent = Y.one('#paginator').set('innerHTML', '');
+				this.cakeStylePaginate(paginateParent, this.count_filterPages, this.activePage);
+			} else {
+				if (!pageNode.Paginator) {
+					var target = pageNode;
+					target.UploadQueue = this;
+					// use pageNode, paginate is the next sibling
+					SNAPPI.Paginator.paginate_PhotoAirUpload(target, page, perpage, this.count_totalItems);
+				}
+			}
+			
 			/*
 			 * view methods
 			 */			
