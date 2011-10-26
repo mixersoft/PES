@@ -24,7 +24,7 @@
 	<title>
 		<?php echo $title_for_layout; ?>
 	</title>
-	<script id='css-start' type='text/javascript'> 
+<!-- 	<script id='css-start' type='text/javascript'> 
 	    document.createElement("header" );
 	    document.createElement("footer" );
 	    document.createElement("section");
@@ -35,7 +35,7 @@
 	    document.createElement("time"   );
 		PAGE = {jsonData:{STATE:{}, menu:{}}, init:[]}; 	
 		ALLOY_VERSION='alloy-1.0.2';
-	</script>
+	</script> -->
 	<script src="/svc/lib/alloy-1.0.2/build/aui/aui.js" type="text/javascript"></script>
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/reset.css" />
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/960.css" />	

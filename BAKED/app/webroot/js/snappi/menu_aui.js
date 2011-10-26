@@ -107,6 +107,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	    		SNAPPI.MenuAUI.CFG[CSS_ID].load(cfg);
 	    	}			
 		}
+		Y.one('#markup').setStyle('display', 'block');
 	};	
 	/**
 	 * 
@@ -914,7 +915,60 @@ var DEFAULT_CFG_contextmenu = 	{
 		};
 		return Menu.getMarkup(MARKUP , callback);
 	};	
-	
+	var CFG_Menu_SignIn = function(){}; 
+	/**
+	 * load user shortcuts menu
+	 * @param cfg
+	 * @return
+	 */
+	CFG_Menu_SignIn.load = function(cfg){
+		var Y = SNAPPI.Y;
+		var defaultCfg = {
+			showOn: 'click',	
+			align: { points:['tr', 'br'] },
+			init_hidden: true,
+			on: {
+				show: function(e) {
+			    	if (SNAPPI.AIR.debug && Y.one('#login select.postData')) {
+			    		Y.one('#login select.postData').removeClass('hide');
+			    	}					
+					// var menuTarget = e.target;
+					// var contextTarget = menuTarget.get('currentNode');
+// LOG('menu-sign-in-markup: onShow()');						
+// var content = e.target.get('contentBox');
+					e.target.get('contentBox').removeClass('hide');
+					try {
+						SNAPPI.AIR.XhrHelper.resetSignInForm('#login');
+					} catch (e) {}
+				},
+				hide: function(e) {
+// LOG('menu-sign-in-markup: onHide()');						
+// var content = e.target.get('contentBox');
+					e.target.get('contentBox').addClass('hide');
+				},
+			},			
+		};
+		cfg = Y.merge(defaultCfg, cfg);
+		var CSS_ID = 'menu-sign-in-markup';
+		var TRIGGER = '#sign-in';
+		var MARKUP = {
+				id: CSS_ID,
+				selector: '#'+CSS_ID,
+				container: Y.one('#markup'),
+				uri: '/combo/markup/headerMenu',
+				end: null
+		};
+		
+		// reuse, if found
+		if (Menu.find[CSS_ID]) 
+			return Menu.find[CSS_ID];
+
+		var callback = function(){
+			Menu.initContextMenu(MARKUP, TRIGGER, cfg);
+		};
+		return Menu.getMarkup(MARKUP , callback);
+	};	
+		
 	// SNAPPI.MenuAUI
 	Menu.CFG = {
 		'menu-header-markup': CFG_Menu_Header,
@@ -924,6 +978,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		'menu-select-all-markup': CFG_Menu_SelectAll,
 		'menu-lightbox-organize-markup': CFG_Menu_Lightbox_Organize,
 		'menu-lightbox-share-markup': CFG_Menu_Lightbox_Share,
+		'menu-sign-in-markup': CFG_Menu_SignIn,
 		end: null
 	};
 	

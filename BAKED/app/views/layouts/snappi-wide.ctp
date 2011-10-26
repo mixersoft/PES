@@ -97,7 +97,7 @@
 	</script>	
 <?php $this->Layout->blockEnd();?>	
 
-<div id='markup' >
+<div id='markup' style="display:none;">
 	<div id="menu-header-markup" class="menu yui3-aui-overlaycontext-hidden hide">
 		<ul>
 			<li action='home' >

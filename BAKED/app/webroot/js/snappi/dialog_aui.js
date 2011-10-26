@@ -1,11 +1,5 @@
-
-try {
-/*
- * safari seems to crash when initializing this block, 
- * try-catch seems to stop crash
- */
-
 (function(){
+
 var BUTTONS_OK_CANCEL = [{
 			text: 'OK',
 			handler: null
@@ -227,12 +221,52 @@ var DEFAULT_CFG_io = {
 		Dialog.find[CSS_ID] = dialog;
 		return dialog;		
 	}
+
+	var CFG_Dialog_Login = function(){}; 
+	/*
+	 * 
+	 * Currently not working. some problems with CSS?
+	 * user Login, for AIR Uploader
+	 * 
+	 */
+	CFG_Dialog_Login.load = function(cfg){
+		var Y = SNAPPI.Y;
+		var CSS_ID = 'dialog-login';
+		var _cfg = {
+			title: 'Sign In to Snaphappi',
+			id: CSS_ID,
+			height: 300,	// 3 rows
+			destroyOnClose: false,
+			modal: true,
+			buttons: [
+			// {
+				// text: 'Sign in',
+				// handler: function() {
+					// var content = this.get('contentBox');
+				// }
+			// }
+			]			
+		}
+		cfg = cfg || {};
+		_cfg = Y.merge(DEFAULT_CFG_dialog, _cfg, cfg);
+		
+		var dialog = new Y.Dialog(_cfg);
+		dialog.listen = {};
+		
+		if (cfg.autoLoad !== false) dialog.render();
+		// save reference
+		Dialog.find[CSS_ID] = dialog;
+		return dialog;		
+	}	
+	CFG_Dialog_Login.markup = "";
+	
 	
 	// save CFG in static
 	Dialog.CFG = {
 		'dialog-photo-roll-hidden-shots': CFG_Dialog_Hidden_Shots,
 		'dialog-select-circles': CFG_Dialog_Select_Circles,
-		'dialog-select-privacy': CFG_Dialog_Select_Privacy
+		'dialog-select-privacy': CFG_Dialog_Select_Privacy,
+		'dialog-login': CFG_Dialog_Login,
 	};
 		
 	
@@ -259,7 +293,7 @@ var DEFAULT_CFG_io = {
 		return detach;
 	}
 	Dialog.listen_close = function(d) {
-		var detach = d.('closeChange', function(e){
+		var detach = d.get('closeChange', function(e){
 			for (var i in this.listen) {
 				this.listen[i].detach();
 			}
@@ -277,7 +311,6 @@ var DEFAULT_CFG_io = {
 	var DialogHelper = function(cfg) {};
 	SNAPPI.namespace('SNAPPI.Helper');
 	SNAPPI.Helper.Dialog = DialogHelper;
-	
 	/**
 	 * @params g SNAPPI.Gallery object
 	 * @params selected obj, audition of selected item
@@ -380,9 +413,63 @@ var DEFAULT_CFG_io = {
     	);
 		dialog.refresh(); 	// resize Dialog, and again when shotGallery.render() complete
 	};
+	
+	
+	/**
+	 * Login Dialog
+	 * @params g SNAPPI.Gallery object
+	 * @params selected obj, audition of selected item
+	 */
+	DialogHelper.showLogin = function(show) {
+LOG("LOGIN DIALOG begin");		
+		if (show == undefined) show = true; 	// default
+		// from MenuItems.showHiddenShot_click()
+		var Y = SNAPPI.Y;
+		
+		var dialog_ID = 'dialog-login';
+		var dialog = SNAPPI.Dialog.find[dialog_ID];
+        var body;
+        if (!dialog) {
+        	// create dialog
+        	dialog = SNAPPI.Dialog.CFG[dialog_ID].load();
+        	if (SNAPPI.Dialog.CFG[dialog_ID].markup) {
+        		body = Y.Node.create(SNAPPI.Dialog.CFG[dialog_ID].markup);	
+        	} else {
+        		body = Y.one('#login').removeClass('hide');
+        	}
+        	
+        	dialog.setStdModContent('body', body);
+        	body.Dialog = dialog;
+        	dialog.show();
+        	
+        	// var loadingmaskTarget = dialog.getStdModNode('body');
+			// // plugin loadingmask
+			// body.plug(Y.LoadingMask, {
+				// strings: {loading:''}, 	// BUG: A.LoadingMask
+				// target: loadingmaskTarget,
+				// end: null
+			// });
+			// // BUG: A.LoadingMask does not set target properly
+			// body.loadingmask._conf.data.value['target'] = loadingmaskTarget;
+			// body.loadingmask.overlayMask._conf.data.value['target'] = body.loadingmask._conf.data.value['target'];
+			// body.loadingmask.set('zIndex', 10);
+    		// body.loadingmask.overlayMask.set('zIndex', 10);
+        } else {
+        	// update/show dialog 
+       	
+			body = dialog.getStdModNode('body').one('#login');
+        }
+    	if (!dialog.get('visible')) {
+			dialog.show();
+		} 
+		// dialog.refresh();
+        // start listeners
+        
+		// add preview markup to Dialog body, set initial preview size
+		// body.loadingmask.refreshMask();
+		// body.loadingmask.show();
+    	
+    	// body.loadingmask.refreshMask();
+		// body.loadingmask.hide();
+	};	
 })();
-
-
-} catch (e) {
-	var check;
-}

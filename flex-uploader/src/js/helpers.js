@@ -264,7 +264,7 @@ console.log("load BEGIN: helpers.js");
     }
     Helpers.show_login = function() {
     	var Y = SNAPPI.Y;
-    	Y.one('#login').removeClass('hide');
+    	// SNAPPI.Helper.Dialog.showLogin();
     	if (SNAPPI.AIR.debug && Y.one('#login select.postData')) {
     		Y.one('#login select.postData').removeClass('hide');
     	}
@@ -278,31 +278,71 @@ console.log("load BEGIN: helpers.js");
 	 * XhrHelper Static Class
 	 * 		SNAPPI.AIR.XhrHelper = XhrHelper;
 	 */
-	var XhrHelper = function() {
-	}
+	var XhrHelper = function() {}
 	XhrHelper.prototype = {};
+	SNAPPI.AIR.XhrHelper = XhrHelper;
 	
+		
 	/*
 	 * private methods
 	 */
-	var _setUser = function(user) {
+	XhrHelper._setUser = function(user) {
 		var Y = SNAPPI.Y;
-		try {
-			Y.one('#menu-header #displayName').set('innerHTML', user.username);
-//			var datasource = _flexAPI_UI.datasource;
+		SNAPPI.namespace('SNAPPI.STATE');
+		SNAPPI.STATE.user = user;
+		if (user && user.id) {
+			try {
+	//			var datasource = _flexAPI_UI.datasource;
+				var datasource = SNAPPI.DATASOURCE;
+				datasource.setSessionId('data[User][id]=' + user.id);
+	LOG(">>> UPLOAD HOST=" + datasource.getConfigs().uploadHost + ", uuid=" + SNAPPI.DATASOURCE.sessionId);
+	
+				// cleanup actions: hide menu
+				var menu = SNAPPI.MenuAUI.find['menu-sign-in-markup'];
+				menu.hide();
+			} catch (e) {
+			}
+		} else {
 			var datasource = SNAPPI.DATASOURCE;
-			datasource.setSessionId('data[User][id]=' + SNAPPI.STATE.user.id);
-			LOG(">>> UPLOAD HOST=" + datasource.getConfigs().uploadHost + ", uuid=" + SNAPPI.DATASOURCE.sessionId);
-			Y.one('#login').addClass('hide');
-		} catch (e) {
+			datasource.setSessionId('data[User][id]=');
 		}
+		XhrHelper._setHeader(user);
+	}
+	XhrHelper._setHeader = function(user) {
+		var Y = SNAPPI.Y;
+		var userHeader = Y.one('header nav.user');
+		if (user && user.id) {
+			// update 'header nav.user' 
+			userHeader.one('#userAccountBtn').setContent(user.username);
+			userHeader.one('ul.authenticated').removeClass('hide');
+			userHeader.one('ul.guest').addClass('hide');			
+		} else {
+			userHeader.one('#userAccountBtn').setContent('');
+			userHeader.one('ul.authenticated').addClass('hide');
+			userHeader.one('ul.guest').removeClass('hide');			
+		}
+	}
+	XhrHelper.resetSignInForm = function(container) {
+		if (typeof container == "string") container = SNAPPI.Y.one(container);
+		// reset Sign-in dialog
+		try {
+			container.one('.message').setContent('').addClass('hide');
+			container.all('input').each(function(n,i,l){ n.set('value',null ); });
+			container.loadingmask.hide();	
+		} catch (e) {}		
+		
 	}
 	/*
 	 * static methods
 	 */
 	XhrHelper.login_Url = null;
-	XhrHelper.login = function() {
+	
+	/*
+	 * json signIn
+	 */
+	XhrHelper.signIn = function() {
 		var Y = SNAPPI.Y;
+		
 		var postData = {};
 		Y.all('form#UserLoginForm .postData').each(function(n, i, l) {
 			var key = n.getAttribute('name');
@@ -330,23 +370,157 @@ console.log("load BEGIN: helpers.js");
 				break;
 			}
 		});
+		var uri = XhrHelper.login_Url || "http://" + SNAPPI.AIR.host + "/users/login/.json?optional=1";
+LOG(">>> LOGIN, login_Url="+uri+", postdata follows:");
+LOG(postData);
+            
+		// SNAPPI.io GET JSON  
+		var container = Y.one('#menu-sign-in-markup #login');
+		// XhrHelper.resetSignInForm(container);
+		
+    	var args = {
+    		node: container,
+    		uri: uri,
+    	};
+    	/*
+		 * plugin Y.Plugin.IO
+		 */
+		var ioCfg;
+		if (!container.io) {
+			ioCfg = {
+   					// uri: args.uri,
+					parseContent: false,
+					autoLoad: false,
+					context: container,
+					arguments: args, 
+					method: "POST",
+					dataType: 'json',
+					qs: postData,
+					on: {
+						successJson: function(e, i, o,args){
+							var resp = o.responseJson;
+LOG(' >>>>>>>>>>>>>  successJson    ');							
+LOG(resp);
+							var authUser = resp.response.User;
+							XhrHelper._setUser(authUser);
+							this.one('.message').setContent('').addClass('hide');
+							args.loadingmask.hide();
+							return false;
+						}, 
+						complete: function(e, i, o, args) {
+// LOG(' >>>>>>>>>>>>>  complete ');								
+// LOG(o);
+							args.loadingmask.hide();
+						},
+						failure : function (e, i, o, args) {
+							// post failure or timeout
+LOG(' >>>>>>>>>>>>>  LOGIN XHR FAILURE    ');	
+LOG(o);
+							var resp = o.responseJson || o.responseText || o.response;
+							var msg = resp.message || resp;
+							if (msg) {
+								this.one('.message').setContent(msg).removeClass('hide');	
+							}
+							args.loadingmask.hide();
+							return false;
+						},
+					}
+			};
+			// var loadingmaskTarget = container.get('parentNode');
+			var loadingmaskTarget = container.one('div');
+			// set loadingmask to parent
+			container.plug(Y.LoadingMask, {
+				strings: {loading:'One moment...'}, 	// BUG: A.LoadingMask
+				target: loadingmaskTarget,
+			});    			
+			container.loadingmask._conf.data.value['target'] = loadingmaskTarget;
+			container.loadingmask.overlayMask._conf.data.value['target'] = container.loadingmask._conf.data.value['target'];
+			// container.loadingmask.set('target', target);
+			// container.loadingmask.overlayMask.set('target', target);
+			container.loadingmask.set('zIndex', 10);
+			container.loadingmask.overlayMask.set('zIndex', 10);
+			container.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(ioCfg));
+		} else {
+			ioCfg = {
+				arguments: args, 
+				method: "POST",
+				qs: postData,
+			}
+			ioCfg = SNAPPI.IO.pluginIO_RespondAsJson(ioCfg); 
+			container.io.set('data', ioCfg.data);
+LOG(" 2ND TIME AROUND <<<<<<<<<<<<<<<<<<<<<<<<<");			
+LOG(ioCfg.data);			
+		}
+		args.loadingmask = container.loadingmask;
+		// get CC via XHR and render
+		container.io.set('uri', args.uri);
+		container.io.set('arguments', args);
+		container.loadingmask.refreshMask();
+		container.loadingmask.show();		//DEBUG: loadingmask is NOT showing here
+		container.io.start();
+		return;
+		
+					
+		
+		
+    	var body = Y.one('#menu-sign-in-markup #login');
+    	var loadingmaskTarget = body;
+    	if (!body.loadingmask) {
+    		
+			// plugin loadingmask
+			body.plug(Y.LoadingMask, {
+				strings: {loading:'one moment...'}, 	// BUG: A.LoadingMask
+				target: loadingmaskTarget,
+				end: null
+			});
+			// BUG: A.LoadingMask does not set target properly
+			body.loadingmask._conf.data.value['target'] = loadingmaskTarget;
+			body.loadingmask.overlayMask._conf.data.value['target'] = body.loadingmask._conf.data.value['target'];
+			body.loadingmask.set('zIndex', 10);
+    		body.loadingmask.overlayMask.set('zIndex', 10);
+
+    	}		
+		
 		var callback = {
 			complete : function(id, o, args) {
+				args.node.loadingmask.hide();
 				var resp = o.responseJson;
-				LOG(resp);
+LOG(resp);
 				if (resp.success && resp.success !== "false") {
-					SNAPPI.namespace('SNAPPI.STATE');
-					SNAPPI.STATE.user = resp.response.User;
-					_setUser(SNAPPI.STATE.user);
+					var authUser = resp.response.User;
+					XhrHelper._setUser(authUser);
+				} else {
+					// login failed
 				}
+				
+			}, 
+			failure : function (id, o, args) {
+				// post failure or timeout
+LOG(' >>>>>>>>>>>>>  LOGIN XHR FAILURE    ');				
 			}
 		}
 		var url = XhrHelper.login_Url || "http://" + SNAPPI.AIR.host + "/users/login/.json?optional=1";
-		LOG(">>> LOGIN, login_Url="+url);
-		LOG(postData);
-		SNAPPI.io.post.call(this, url, postData, callback);
+LOG(">>> LOGIN, login_Url="+url+", postdata follows:");
+LOG(postData);
+
+		body.loadingmask.show();
+		SNAPPI.io.post.call(body, url, postData, callback, {node: body});
 	}
-	SNAPPI.AIR.XhrHelper = XhrHelper;
+	
+	/*
+	 * sign out, close session
+	 */
+	XhrHelper.signOut = function(){
+		var url = '/users/logout';
+		var callback = {
+			complete : function(id, o, args) {
+				var resp = o.response;
+				XhrHelper._setUser(null);
+			}
+		}		
+		SNAPPI.io.get.call(this, url, callback);
+	}
+	
 	
 	LOG("load complete: helpers.js");	
 }());

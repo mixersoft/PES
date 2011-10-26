@@ -12,7 +12,7 @@
 		<script type="text/javascript" src="/app/air/js/AIR_base_aui.js"></script>		
     </head>
 
-    <body>
+    <body class="yui-skin-sam" >
 <header class="container_x">
 		<div class="grid_x">
 			<h1 class="logo grid_x">
@@ -22,13 +22,13 @@
 		<nav class="user right grid_x">
 			<ul class="inline authenticated hide">
 				<li>
-					<span class="grey">Welcome,</span>
+					<span class="grey">Welcome, </span>
 					<a id="userAccountBtn" class="menu-open" aria-controls="menu-header-markup">Guest</a>
 				</li>
-				<li><a href="/users/logout">Sign out</a></li>
+				<li><a onclick="SNAPPI.AIR.XhrHelper.signOut();return false;">Sign out</a></li>
 			</ul>
 			<ul class="inline guest">				
-				<li><a href="/users/login" onclick="SNAPPI.AIR.Helpers.show_login(); return false;">Sign in</a></li>
+				<li><a id='sign-in'>Sign in</a></li>
 				<li><a href="/users/register" target="_blank">Sign up</a></li>
 			</ul>	
 		</nav>	
@@ -87,33 +87,33 @@
     	</div>
 	</div>
 </section>
-		<div id="markup" class="hidden">
-			<div class="one-col">
-				<div id='login' class='hide'>
-				<h2>Sign-in to Snaphappi</h2>
-				<div class="block">
-					<form id="UserLoginForm" method="post" action="" onsubmit="return false;" accept-charset="utf-8">
-						<div style="display: none;"><input name="_method" value="POST" type="hidden"></div><div class="input text required"><label for="UserUsername">Username</label>
-						<input class='postData' name="data[User][username]" maxlength="45" id="UserUsername" type="text"></div> 
-						<div class="input password"><label for="UserPassword">Password</label>
-						<input class='postData' name="data[User][password]" id="UserPassword" type="password"></div><div class="submit">
-						<input value="Login" type="submit" onclick="SNAPPI.AIR.XhrHelper.login();return false;"></div>
-						<select class='postData hide' name="data[User][magic]" id="UserMagic">
-							<option value="" selected="selected">select test accounts</option>
-							<option class='hr' value=""></option>
-							<option value="4c5f9050-d8bc-4baa-ad2d-03b0f67883f5">2010</option>
-							<option value="12345678-1111-0000-0000-editor------">editor</option>
-							<option value="12345678-1111-0000-0000-newyork-----">newyork</option>
-							<option value="12345678-1111-0000-0000-paris-------">paris</option>
-							<option value="12345678-1111-0000-0000-sardinia----">sardinia</option>
-							<option value="12345678-1111-0000-0000-sfbay-------">sfbay</option>
-							<option value="12345678-1111-0000-0000-123456789abc">snappi</option>
-							<option value="12345678-1111-0000-0000-venice------">venice</option>
-						</select>
-					</form>
+		<div id="markup" class="" style="display:none;">
+			<div id="menu-sign-in-markup" class="menu yui3-aui-overlaycontext-hidden hide">
+				<div id='login'>
+					<div class="grid_x">
+						<div class='message hide'></div>
+							<form id="UserLoginForm" method="post" action="" onsubmit="return false;" accept-charset="utf-8">
+								<div style="display: none;"><input name="_method" value="POST" type="hidden"></div><div class="input text required"><label for="UserUsername">Username</label>
+								<input class='postData' name="data[User][username]" maxlength="45" id="UserUsername" type="text"></div> 
+								<div class="input password"><label for="UserPassword">Password</label>
+								<input class='postData' name="data[User][password]" id="UserPassword" type="password"></div><div class="submit">
+								<input value="Login" type="submit" class="orange" onclick="SNAPPI.AIR.XhrHelper.signIn();return false;"></div>
+								<select class='postData hide' name="data[User][magic]" id="UserMagic">
+									<option value="" selected="selected">select test accounts</option>
+									<option class='hr' value=""></option>
+									<option value="4c5f9050-d8bc-4baa-ad2d-03b0f67883f5">2010</option>
+									<option value="12345678-1111-0000-0000-editor------">editor</option>
+									<option value="12345678-1111-0000-0000-newyork-----">newyork</option>
+									<option value="12345678-1111-0000-0000-paris-------">paris</option>
+									<option value="12345678-1111-0000-0000-sardinia----">sardinia</option>
+									<option value="12345678-1111-0000-0000-sfbay-------">sfbay</option>
+									<option value="12345678-1111-0000-0000-123456789abc">snappi</option>
+									<option value="12345678-1111-0000-0000-venice------">venice</option>
+								</select>
+							</form>
+					</div>
 				</div>
-				</div>
-			</div>			
+			</div>
 		</div>	<!-- end #markup -->
 		<div id="footer" class="container_x">
 			<span>&copy; 2008-2012 Snaphappi</span>

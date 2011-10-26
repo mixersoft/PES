@@ -66,6 +66,9 @@ _domready1 = function(Y) {
 	Helpers.DEV_setRuntimeHost(uploader);		// local or remote
 	
 	
+	// add login menu
+	SNAPPI.MenuAUI.initMenus({'menu-sign-in-markup':1});
+	
 	// show upload queue
 	uploader.initQueue('all', {batchId: '', perpage:24});
 	uploader.show('all');

@@ -348,8 +348,6 @@
 	Paginator._getPageFromAirDs = function(node, pageNumber){
 		var Y = SNAPPI.Y;
 		var target = node.Paginator.target;  // paginateContainer
-LOG(">>> Paginator._getPageFromAirDs(): page="+pageNumber);
-LOG(target);		
 		// if (pageNumber == SNAPPI.STATE.displayPage.page) return;
 		var nameData = {
 			page: pageNumber,

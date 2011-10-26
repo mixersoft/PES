@@ -447,14 +447,23 @@
 				switch (ioRequest.get('dataType')) {
 					case 'json':
 						o.responseJson = ioRequest.get('responseData');
-						if (o.responseJson && o.responseJson.success == 'true') {
-							if (_callback.success){
-								var content = _callback.success.call(context, e, id, o, args);  
-	            				if (content !== false ) ioRequest.setContent(content);
-	            				e.stopImmediatePropagation();	// stopPropagation to prevent extra IORequest.setContent()
+						if (o.responseJson && o.responseJson.success !== undefined) {
+							if (o.responseJson.success && o.responseJson.success != 'false') {
+								// successful XHR+JSON response
+								if (_callback.success){
+									var content = _callback.success.call(context, e, id, o, args);  
+		            				if (content !== false ) ioRequest.setContent(content);
+								}
+							} else {
+								// successful XHR request, failed JSON response
+								if (_callback.failure){
+									var content = _callback.failure.call(context, e, id, o, args);
+									if (content !== false ) ioRequest.setContent(content);
+								} else SNAPPI.flash.flashJsonResponse(o);
 							}
+							e.stopImmediatePropagation();	// stopPropagation to prevent extra IORequest.setContent()
 						} else {
-							if (typeof o.responseJson == "String") {
+							if (typeof o.responseJson == "string") {
 								console.error('Plugin.IO.ParseContent() failed to parse json');
 							}
 							if (_callback.failure){
@@ -494,13 +503,15 @@
 	        }
 	    };
     	cfg.on = SNAPPI.Y.merge(cfg.on, _json_callbacks);
+    	
     	// add named params
     	if (cfg.nameData) {
     		if (cfg.uri) {
 	    		cfg.uri = SNAPPI.IO.setNamedParams(cfg.uri, cfg.nameData);
     		} else console.error('IO.pluginIO_RespondAsJson(): attempt to set named params without providing cfg.uri');
     	};
-    	// add querystring params
+    	
+    	// add querystring params, ok for both GET and POST
         if (cfg.qs) {
             var qs = [];
             // stringify qs params

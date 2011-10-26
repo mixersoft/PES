@@ -176,7 +176,7 @@ section.item-header h1 {
 section.import ul li {
 	width: 45%;
 }
-#item-body.plain input[type='submit'].orange {
+input[type='submit'].orange {
 	background: -moz-linear-gradient(bottom, #fca22f, #ffc374);	 
 	background: -webkit-gradient(linear, center bottom, center top, from(#fca22f), to(#ffc374));	border: 1px solid #cd7708;
 	-moz-border-radius: 4px;
@@ -190,7 +190,7 @@ section.import ul li {
 	margin-left: auto;
 	margin-right: auto;
 }
-#item-body.plain input[type='submit']:hover.orange {
+input[type='submit']:hover.orange {
 	font-weight: bold;
 }
 #choose-folder .block {
@@ -588,4 +588,63 @@ section.import ul li {
 	border: none !important;
 	padding: 0 !important;
 	margin: 2px;
+}
+
+/*
+ * menus
+ */
+#markup > div {
+	display: inline-block;
+	overflow:hidden;
+}
+
+#login {
+	-moz-box-shadow: 0 0 5px #888;
+	-webkit-box-shadow: 0 0 5px #888;
+	box-shadow: 0 0 5px #888;
+	-moz-border-radius-bottomright: 10px;
+	-moz-border-radius-bottomleft: 10px;
+	-webkit-border-bottom-right-radius: 10px;
+	-webkit-border-bottom-left-radius: 10px;
+	background: #FFF;
+	margin: 0 4px 4px;
+	padding: 4px;
+	overflow: hidden;
+	width: 250px;
+}
+
+
+#login  form > div {
+	padding: 4px;
+	font-size: 10pt;
+}
+#login  form label {
+	margin: 0 4px;
+}
+#login  form .input.text > label, #login  form .input.password > label {
+	width: 60px;
+	display: inline-block;
+	text-align: right;
+}
+#login  form input {
+}
+#login form div.submit {
+	xwidth: 100%;
+	margin-top: 4px;
+	border-top: 1px solid  #E2E6EB;
+	padding-left: 77px
+}
+#login  #UserMagic {
+	margin-top: 20px;
+}
+
+#login .message {
+	border: 1px solid darkRed;
+	padding: 4px;
+	font-weight: bold;
+	color: darkRed;
+}
+
+.aui-overlaymask-hidden {
+	visibility:hidden;
 }

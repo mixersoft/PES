@@ -81,11 +81,11 @@ var onload_complete = function(){
     		 * snappi modules
     		 */
     		'snappi-sortedhash','snappi-io', 'snappi-io-helpers', 'snappi-thumbnail-helpers',
-    		'snappi-gallery-helpers', 'snappi-paginator',
+    		'snappi-gallery-helpers', 'snappi-paginator', 'snappi-menu-aui', 'snappi-dialog-aui',
     		/*
     		 * air modules - bootstrap only. add additional modules after init 
     		 */
-        	'AIR-dialog-aui', 'AIR-menu-aui',
+        	// 'AIR-menu-aui',
     		'AIR-api-bridge',  'AIR-upload-ui', 
     		/*
     		 * save for 2nd load
@@ -127,21 +127,25 @@ var onload_complete = function(){
     			try {
     				SNAPPI.AIR.Helpers.add_snappiHoverEvent(Y);
     			} catch (e) {}
-    			
-    			Y.use('AIR-menuCfg',
-					/*
-					 * 
-					 */
-					function(Y, result){
-	    			    if (!result.success) {
-	    					Y.log('Load failure: ' + result.msg, 'warn', 'Example');
-	    				} else {
-	    					try {
-	    						SNAPPI.AIR.MenuCfg.listenToUploaderRoll();
-	    					} catch (e) {}
-	    				}
-	    			}	
-    			);
+    			// Y.use('snappi-dialog-aui', 
+    			// // 'AIR-menuCfg',
+					// /*
+					 // * 
+					 // */
+					// function(Y, result){
+	    			    // if (!result.success) {
+	    					// Y.log('Load failure: ' + result.msg, 'warn', 'Example');
+// LOG(">>>>>>>>  Load failure:  SNAPPI-DIALOG-AUI " + result.msg);    	    					
+	    				// } else {
+// LOG(">>>>>>>>  Load OK:  SNAPPI-DIALOG-AUI " + result.msg); 
+// LOG(result); 	    					
+// LOG(" >>>>>>>>>>>>>>>> " + SNAPPI.Helper);
+// LOG(SNAPPI);
+	    					// try {
+	    					// } catch (e) {}
+	    				// }
+	    			// }	
+    			// );
     			
     			/*********************************************************************************
     			 * domready init
@@ -149,7 +153,7 @@ var onload_complete = function(){
     			Y.on('domready', function(){
     				flex_onYuiDomReady();
     				LOG(">>>>>>>>>>>>>>>>>>>>>>>>  YUI/domready BEGIN <<<<<<<<<<<<<");
-    				_domready1(Y);
+    				_domready1(Y);		// find in init.js
     				_domready2(Y);
     				LOG(">>>>>>>>>>>>>>>>>>>>>>>>  YUI/domready COMPLETE <<<<<<<<<<<<<");
     				Y.one('#gallery-content').removeClass("hide");
@@ -385,15 +389,15 @@ var onload_complete = function(){
 	                path: 'jsDatasource.js',
 	                requires: []                           
 		        },  	        
-        		'AIR-dialog-aui': {
-        			path: 'AIR_dialog_aui.js',
-        			requires:['node', 'aui-aria', 'aui-dialog', 'aui-overlay-manager', 'dd-constrain']
-        		},
         		'AIR-menu-aui': {
         			path: 'AIR_menu_aui.js',
         			// BUG: requires A.Plugin.IO, found in "aui-io", but not available
         			requires:['aui-io', 'aui-aria', 'aui-overlay-context', 'aui-overlay-manager']
         		}, 		        
+        		'AIR-dialog-aui': {
+	    			path: 'dialog_aui.js',
+	    			requires:['node', 'aui-aria', 'aui-dialog', 'aui-overlay-manager', 'dd-constrain']
+	    		},	        
 	        }
 	    };  
 	    return yuiConfig_AIR; 

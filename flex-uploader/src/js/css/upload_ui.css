@@ -16,13 +16,7 @@ div.one-col  div.block {
 	color:white;
 }
 
-#login {
-	border:1px solid red;
-	overflow: hidden;
-}
-#login h2 {
-	cursor:pointer;
-}
+
 #login > div.block {
 	min-width:350px;
 	overflow:auto;
