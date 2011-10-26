@@ -33,7 +33,7 @@
 			LOG("-----------------------> uploadQueue.load() ");
 			
 			
-			this.container = cfg.container || Y.one('#gallery-content');
+			this.container = cfg.container || Y.one('#gallery-container');
 			this.ds = cfg.datasource || null;
 			this.isUploading = typeof _flexAPI_UI === "undefined" ? null : _flexAPI_UI.isUploadQueueRunning;
 			this.paginate = this.cakeStylePaginate;
@@ -367,7 +367,7 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 			 * view add pages
 			 */
 			// render page
-			var pageNode = this.view_getBlankPage(page);
+			var pageNode = this.view_getBlankPage(page);  // '.gallery .container'
 			if (pageNode) {
 				// reset/render new page with array of Progress tiles
 				pageNode.removeClass('hide');
@@ -407,23 +407,18 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 			this.activePage = page;
 			this.activePageNode = pageNode;
 			
-			if (0) {
-				var paginateParent = Y.one('#paginator').set('innerHTML', '');
-				this.cakeStylePaginate(paginateParent, this.count_filterPages, this.activePage);
-			} else {
-				if (!pageNode.Paginator) {
-					var target = pageNode;
-					target.UploadQueue = this;
-					// use pageNode, paginate is the next sibling
-					SNAPPI.Paginator.paginate_PhotoAirUpload(target, page, perpage, this.count_totalItems);
-				}
+			var paginateTarget = pageNode;
+			if (!paginateTarget.Paginator) {
+				paginateTarget.UploadQueue = this;
+				// use pageNode, paginate is the next sibling
+				SNAPPI.Paginator.paginate_PhotoAirUpload(paginateTarget);
 			}
 			
 			/*
 			 * view methods
 			 */			
 			this.view_setUploadTotalProgress();
-			this.container.removeClass('hide'); // just in case
+			this.view_setTotalCount();
 		},		
 		
 		
@@ -624,7 +619,11 @@ LOG("active count="+UploadManager.count());
 			} catch (e) {
 			}
 		},
-		
+		view_setTotalCount : function() {
+			var label = this.count_filterItems || 0;
+			label += this.count_filterItems == 1 ? " Snap" : " Snaps";
+			this.container.one('.gallery-header .toolbar h1.count').setContent(label);
+		},
 		
 		
 		/*****************************************************************************

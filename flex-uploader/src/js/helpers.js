@@ -26,9 +26,11 @@ console.log("load BEGIN: helpers.js");
 	 * Helpers Static Class
 	 * 	SNAPPI.AIR.Helpers = Helpers;
 	 */
-	var Helpers = function() {
-	}
+	var Helpers = function() {}
 	Helpers.prototype = {};
+	SNAPPI.AIR.Helpers = Helpers;
+	
+	
 	Helpers.add_snappiHoverEvent = function(Y) {
 		/*
 		 * add 'snappi:hover' custom event see:
@@ -269,8 +271,49 @@ console.log("load BEGIN: helpers.js");
     		Y.one('#login select.postData').removeClass('hide');
     	}
     }
+    /*
+     * initialize Uploader for the first time
+     * @params page int, page number, defaults to SNAPPI.STATE.displayPage.perpage
+     * @params uploadQueue SNAPPI.AIR.UploadQueue, same as SNAPPI.AIR.uploadQueue
+     */
+	Helpers.initUploadGallery = function(page, perpage, uploadQueue) {
+		SNAPPI.namespace('SNAPPI.STATE.displayPage');
+		if (perpage) SNAPPI.STATE.displayPage.perpage = perpage;
+		else SNAPPI.STATE.displayPage.perpage = SNAPPI.STATE.displayPage.perpage || 24;
+		// init/show upload queue
+		var Y = SNAPPI.Y;
+		uploadQueue.initQueue('all', {batchId: '', perpage: SNAPPI.STATE.displayPage.perpage});
+		
+		// show initial page using Paginator
+		var paginateTarget = Y.one('#gallery-container .gallery.photo .container');
+		Helpers.init_GalleryLoadingMask(paginateTarget);
+			
+			
+		paginateTarget.UploadQueue = uploadQueue;
+		var p = SNAPPI.Paginator.paginate_PhotoAirUpload(paginateTarget, page, SNAPPI.STATE.displayPage.perpage, uploadQueue.count_totalItems);
+		SNAPPI.Paginator._getPageFromAirDs(p.container, page);
+	}
 	
-	SNAPPI.AIR.Helpers = Helpers;
+	
+	Helpers.init_GalleryLoadingMask = function(target){
+		var Y = SNAPPI.Y;
+		// show initial page using Paginator, doesn't work
+		var target = target || Y.one('#gallery-container .gallery.photo .container');
+		if (!target.loadingmask) {				// add loadingmask ASAP
+			var loadingmaskTarget = target.get('parentNode');
+			// set loadingmask to parent
+			target.plug(Y.LoadingMask, {
+				target: loadingmaskTarget
+			});    			
+			target.loadingmask._conf.data.value['target'] = loadingmaskTarget;
+			target.loadingmask.overlayMask._conf.data.value['target'] = target.loadingmask._conf.data.value['target'];
+			// target.loadingmask.set('target', target);
+			// target.loadingmask.overlayMask.set('target', target);
+			target.loadingmask.set('zIndex', 10);
+			target.loadingmask.overlayMask.set('zIndex', 10);
+			target.loadingmask.show();
+		} 		
+	}
 }());
 
 (function() {

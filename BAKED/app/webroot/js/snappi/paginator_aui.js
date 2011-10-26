@@ -93,14 +93,16 @@
 				delayed.delay(DELAY);
 				return "delayed";
 			} else {
-				var P = new Y.Paginator(pageCfg);
-				paginateContainer.Paginator = P;
+				var p = new Y.Paginator(pageCfg);
+				p.target = target;
+				p.container = paginateContainer;
+				paginateContainer.Paginator = p;
+				
 				paginateContainer.Gallery = g;
-				paginateContainer.dom().Paginator = P;
-				P.target = target;
-				Paginator.find[NAME] = P;
-				P.render();			
-				return P;
+				paginateContainer.dom().Paginator = p;
+				Paginator.find[NAME] = p;
+				p.render();			
+				return ;
 			}
 	};
 
@@ -188,31 +190,30 @@
 	/**
 	 * add aui paginator to for Air PhotoUpload , 
 	 * @params CSS selector to Gallery node, i.e. section.gallery.person
+	 * @params paginateTarget '#gallery-container .gallery.photo .container'
 	 */
-	Paginator.paginate_PhotoAirUpload = function(node, page, perpage, total){
+	Paginator.paginate_PhotoAirUpload = function(paginateTarget, page, perpage, total){
 			var Y = SNAPPI.Y;
-			var target, baseurl, 
+			var g, baseurl, 
 				type = 'Snaps',
-				NAME = node.get('id') || node._yuid;	
-			target = node;	// XHR response is child of Y.one(NAME);
-				
+				NAME = paginateTarget.get('id') || paginateTarget._yuid;	
+			g = paginateTarget.ancestor('.gallery');	// XHR response is child of Y.one(NAME);
 			if (Paginator.find[NAME]) {
 				// already created, just reuse
 				return Paginator.find[NAME];
 			} 
 			
 			// set param defaults
-			page = page || node.UploadQueue.activePage;
-			total = total || node.UploadQueue.count_totalItems;
-			perpage = perpage || node.UploadQueue.perpage;
+			page = page || paginateTarget.UploadQueue.activePage;
+			total = total || paginateTarget.UploadQueue.count_totalItems;
+			perpage = perpage || paginateTarget.UploadQueue.perpage;
 			
-			var paginateContainer = target.siblings('div.paging-numbers');
+			var paginateContainer = g.siblings('div.paging-numbers');
 			if (paginateContainer.size() == 0) {
 					// auto-create paging DIV
-					paginateContainer = target.create("<div class='paging-control paging-numbers grid_16' />");
-					target.insert(paginateContainer,'after');
+					paginateContainer = paginateTarget.create("<div class='paging-control paging-numbers grid_16' />");
+					g.insert(paginateContainer,'after');
 			} else paginateContainer = paginateContainer.shift();	
-			
 			var pageCfg = {
 					page: page,
 					total: total,  
@@ -241,15 +242,17 @@
 							if (e.newVal == e.prevVal) return;
 							SNAPPI.STATE.displayPage.perpage = parseInt(e.newVal);
 							SNAPPI.STATE.displayPage.page = null;
+							this.target.UploadQueue.flexUploadAPI.setPerpage(SNAPPI.STATE.displayPage.perpage);
 						}
 					}
 			};
 			// no delay necessary in Air
-			paginateContainer.Paginator = new Y.Paginator(pageCfg).render();
-			paginateContainer.dom().Paginator = paginateContainer.Paginator;
-			paginateContainer.Paginator.target = target;
-			Paginator.find[NAME] = paginateContainer.Paginator;
-			return paginateContainer.Paginator;
+			var p = new Y.Paginator(pageCfg).render();
+			p.target = paginateTarget;
+			p.container = paginateContainer;
+			paginateContainer.Paginator = p;
+			Paginator.find[NAME] = p;
+			return p;
 	};	
 	
 	/**
@@ -334,27 +337,26 @@
 			}
 		};
 		g.loadCastingCall(uri, cfg);
-		
 		return;
 	};
 	
 	/**
 	 * get requested page from AIR datasource
 	 * @access private 
-	 * @param node, PaginateContainer node, defines node.Paginator
+	 * @param node, PaginatorContainer node, defines node.Paginator
 	 * @param pageNumber
 	 * @return 
 	 */
 	Paginator._getPageFromAirDs = function(node, pageNumber){
 		var Y = SNAPPI.Y;
-		var target = node.Paginator.target;  // paginateContainer
+		var target = node.Paginator.target;  // paginateTarget
 		// if (pageNumber == SNAPPI.STATE.displayPage.page) return;
 		var nameData = {
 			page: pageNumber,
 			perpage: node.Paginator.get('rowsPerPage')
 		};
 		if (!target.loadingmask) {
-			var loadingmaskTarget = target;
+			var loadingmaskTarget = target.get('parentNode');
 			// set loadingmask to parent
 			target.plug(Y.LoadingMask, {
 				target: loadingmaskTarget
@@ -368,6 +370,7 @@
 		}
 		target.loadingmask.refreshMask();
 		target.loadingmask.show();
+		
 		// get new page content
 		target.UploadQueue.view_showPage(pageNumber, null, null);
 		

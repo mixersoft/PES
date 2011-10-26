@@ -81,7 +81,8 @@ var onload_complete = function(){
     		 * snappi modules
     		 */
     		'snappi-sortedhash','snappi-io', 'snappi-io-helpers', 'snappi-thumbnail-helpers',
-    		'snappi-gallery-helpers', 'snappi-paginator', 'snappi-menu-aui', 'snappi-dialog-aui',
+    		'snappi-paginator', 'snappi-menu-aui', 'snappi-ui-helpers', 
+    		// 'snappi-dialog-aui', 'snappi-gallery-helpers', 
     		/*
     		 * air modules - bootstrap only. add additional modules after init 
     		 */
@@ -151,12 +152,12 @@ var onload_complete = function(){
     			 * domready init
     			 */
     			Y.on('domready', function(){
+   					SNAPPI.AIR.Helpers.init_GalleryLoadingMask();	// DOESN'T WORK IN AIR
     				flex_onYuiDomReady();
     				LOG(">>>>>>>>>>>>>>>>>>>>>>>>  YUI/domready BEGIN <<<<<<<<<<<<<");
     				_domready1(Y);		// find in init.js
     				_domready2(Y);
     				LOG(">>>>>>>>>>>>>>>>>>>>>>>>  YUI/domready COMPLETE <<<<<<<<<<<<<");
-    				Y.one('#gallery-content').removeClass("hide");
     			});
     		}
     );
@@ -588,10 +589,14 @@ var onload_complete = function(){
                     path: 'helper_session.js',
                     requires: ['snappi-io']
                 },
+                'snappi-ui-helpers': {
+                    path: 'ui-helpers.js',
+                    requires: [],
+                },                
                 'snappi-filter': {
                     path: 'filter.js',
                     requires: ['node', 'snappi-rating']
-                }
+                },
             }
         };
 	    return yuiConfig_snappi;

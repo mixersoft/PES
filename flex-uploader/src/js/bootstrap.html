@@ -12,7 +12,7 @@
 		<script type="text/javascript" src="/app/air/js/AIR_base_aui.js"></script>		
     </head>
 
-    <body class="yui-skin-sam" >
+    <body xxstyle="visibility:hidden;">
 <header class="container_x">
 		<div class="grid_x">
 			<h1 class="logo grid_x">
@@ -62,17 +62,50 @@
 		</div>		
 	</div>
 </div> <!-- end #item-body --> 
-<section id="gallery-content" class="container_x hide">
+<section id="gallery-container" class="container_x">
 	<div class="wrap">
     	<div class="grid_x alpha omega">
+    		
+<section class="gallery-header container_x" >
+	<ul class="toolbar inline grid_3">
+		<li class="select-all"><input type="checkbox" name="" value=""><a class="menu-open" aria-controls="menu-select-all-markup"> </a></li>
+		<li><h1 class="count">0  Snaps</h1></li>
+	</ul>
+    <nav class="settings window-options grid_7 right">
+		<ul class="inline right">
+			<li onclick="SNAPPI.UIHelper.nav.toggleDisplayOptions();" class="display-option focus" >
+    			<a class="menu-open">Display Options</a>
+    		</li>
+    	</ul><ul class="thumb-size inline right">
+			<li class="label">Size</li>
+			<li action="set-display-size:sq" class="btn focus"><img alt="" src="/css/images/img_1.gif"></li><li action="set-display-size:lm" class="btn"><img alt="" src="/css/images/img_2.gif"></li><li action="set-display-size:ll" class="btn "><img alt="" src="/css/images/img_3.gif"></li>
+		</ul>
+	</nav>      
+</section> 
+      	
+<section class="gallery-display-options container_x hide" >
+	<nav class="settings">
+	    	<ul class="filter inline">
+	    		<li class="label">Filter</li>
+				<li class='btn focus' title='All imported photos' id='tab-all' onclick="PAGE.uploader_openTab('all');return false;">all</li>
+				<li class='btn' id='tab-pending' onclick="PAGE.uploader_openTab('pending');return false;">pending</li>
+				<li class='btn' id='tab-cancelled' onclick="PAGE.uploader_openTab('cancelled');return false;">cancelled</li>
+				<li class='btn' id='tab-complete' onclick="PAGE.uploader_openTab('done');return false;">complete</li>
+				<li class='btn' id='tab-failed' onclick="PAGE.uploader_openTab('error');return false;">failed</li>
+			</ul>
+	        <ul class="sort inline right">
+	        	<li class="label">Sort</li>
+	            <li class="btn ">
+	             	<select onchange="PAGE.orderBy(this);">
+						<option class="asc" value="" selected="selected">Date Taken</option>
+	             		<option class="desc" value="" >Date Imported</option>
+	             	</select>
+	            </li>
+	      	</ul>	
+	</nav>
+</section>    		
+    		
 			<div id='upload-tabs' class="gallery-header center">
-				<ul class='inline'>
-					<li id='tab-all' onclick="PAGE.uploader_openTab('all');return false;">all</li>
-					<li id='tab-pending' onclick="PAGE.uploader_openTab('pending');return false;">pending</li>
-					<li id='tab-cancelled' onclick="PAGE.uploader_openTab('cancelled');return false;">cancelled</li>
-					<li id='tab-complete' onclick="PAGE.uploader_openTab('done');return false;">complete</li>
-					<li id='tab-failed' onclick="PAGE.uploader_openTab('error');return false;">failed</li>
-				</ul>
 	    		<div id="toolbar" >
 	    			<div class="btns">
 		    			<a id='start-btn' href="#" onclick="PAGE.toggle_upload(this);return false;">Start Upload</a>
@@ -81,7 +114,7 @@
 	    			</div>
 	    		</div> 						
 			</div>
-    		<div class="gallery"><div class='container'></div></div>
+    		<div class="gallery photo"><div class='container'></div></div>
 <!-- rename upload-progress -->
 			<div id="total-progress" class="progress center"><div class="bar"></div><span></span></div>		    		
     	</div>

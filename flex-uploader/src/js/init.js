@@ -44,7 +44,7 @@ _domready1 = function(Y) {
 	SNAPPI.DATASOURCE = datasource;
 	
 	uploader = new SNAPPI.AIR.UploadQueue({
-    	container: Y.one('#gallery-content'),
+    	container: Y.one('#gallery-container'),
     	datasource: datasource
     });
     SNAPPI.AIR.uploadQueue = uploader;
@@ -69,10 +69,8 @@ _domready1 = function(Y) {
 	// add login menu
 	SNAPPI.MenuAUI.initMenus({'menu-sign-in-markup':1});
 	
-	// show upload queue
-	uploader.initQueue('all', {batchId: '', perpage:24});
-	uploader.show('all');
-
+	Helpers.initUploadGallery(1, null, uploader);
+LOG(">>>>>>>>> DONE");	
 }
     
     
