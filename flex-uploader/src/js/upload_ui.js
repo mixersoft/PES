@@ -133,6 +133,13 @@
 //			this.useMore();
 			tab = tab || 'all';
 			this.container.removeClass('hide');
+			// set filter li.btn focus
+			SNAPPI.Y.all('.gallery-display-options nav.settings .filter li.btn').each(
+				function(n,i,l){
+					if (n.get('id').indexOf(tab)>-1) n.addClass('focus');
+					else  n.removeClass('focus');
+				}
+			)
 			if (tab == 'reload') {
 				// add to import queue
 				tab = this.status || 'all';

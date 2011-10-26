@@ -76,7 +76,7 @@ var onload_complete = function(){
     		 * aui modules
     		 * 
     		 */
-    		// dialog, paginator, menu
+    		'AIR-firebug-1.2',
     		/*
     		 * snappi modules
     		 */
