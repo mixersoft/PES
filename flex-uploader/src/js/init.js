@@ -70,6 +70,8 @@ _domready1 = function(Y) {
 	SNAPPI.MenuAUI.initMenus({'menu-sign-in-markup':1});
 	
 	Helpers.initUploadGallery(1, null, uploader);
+	
+	Helpers.hide_StartupLoadingMask();
 LOG(">>>>>>>>> DONE");	
 }
     

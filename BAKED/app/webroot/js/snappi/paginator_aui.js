@@ -217,7 +217,7 @@
 			var pageCfg = {
 					page: page,
 					total: total,  
-					maxPageLinks: 10,
+					maxPageLinks: 7,
 					rowsPerPage: perpage,
 					rowsPerPageOptions: [perpage, 12,24,48,96],
 					alwaysVisible: false,
@@ -355,26 +355,19 @@
 			page: pageNumber,
 			perpage: node.Paginator.get('rowsPerPage')
 		};
-		if (!target.loadingmask) {
-			var loadingmaskTarget = target.get('parentNode');
-			// set loadingmask to parent
-			target.plug(Y.LoadingMask, {
-				target: loadingmaskTarget
-			});    			
-			target.loadingmask._conf.data.value['target'] = loadingmaskTarget;
-			target.loadingmask.overlayMask._conf.data.value['target'] = target.loadingmask._conf.data.value['target'];
-			// target.loadingmask.set('target', target);
-			// target.loadingmask.overlayMask.set('target', target);
-			target.loadingmask.set('zIndex', 10);
-			target.loadingmask.overlayMask.set('zIndex', 10);
-		}
-		target.loadingmask.refreshMask();
-		target.loadingmask.show();
+		var pluginNode = target.ancestor('.gallery.photo');
+		if (!pluginNode.loadingmask) SNAPPI.AIR.Helpers.init_GalleryLoadingMask(pluginNode);
+		pluginNode.loadingmask.refreshMask();
+		pluginNode.loadingmask.show();
 		
 		// get new page content
 		target.UploadQueue.view_showPage(pageNumber, null, null);
-		
-		target.loadingmask.hide();
+		var delay = new Y.DelayedTask( 
+			function() {
+				pluginNode.loadingmask.hide();
+				delay.destroy();
+			}, this);
+		delay.delay(200);   		
 		return;
 	};	
 	

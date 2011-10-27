@@ -286,7 +286,8 @@ console.log("load BEGIN: helpers.js");
 		
 		// show initial page using Paginator
 		var paginateTarget = Y.one('#gallery-container .gallery.photo .container');
-		Helpers.init_GalleryLoadingMask(paginateTarget);
+		var node = Y.one('#gallery-container .gallery.photo');
+		Helpers.init_GalleryLoadingMask(node);
 			
 			
 		paginateTarget.UploadQueue = uploadQueue;
@@ -294,26 +295,44 @@ console.log("load BEGIN: helpers.js");
 		SNAPPI.Paginator._getPageFromAirDs(p.container, page);
 	}
 	
+	/*
+	 * use HTML5 startup loading mask to show before JS is ready
+	 */
+	Helpers.hide_StartupLoadingMask = function(){
+		var Y = SNAPPI.Y;
+		var mask = Y.one('#startup-loading-mask');
+		mask.get('parentNode').append(mask.one('*'));
+		mask.empty().destroy();
+	}
 	
-	Helpers.init_GalleryLoadingMask = function(target){
+	
+	Helpers.init_GalleryLoadingMask = function(pluginNode, target){
 		var Y = SNAPPI.Y;
 		// show initial page using Paginator, doesn't work
-		var target = target || Y.one('#gallery-container .gallery.photo .container');
-		if (!target.loadingmask) {				// add loadingmask ASAP
-			var loadingmaskTarget = target.get('parentNode');
+		pluginNode = pluginNode || Y.one('#gallery-container .gallery.photo');
+		target = target || pluginNode;
+		if (target.ancestor('.gallery.photo')) target = target.ancestor('.gallery.photo');
+		
+		if (!pluginNode.loadingmask) {				// add loadingmask ASAP
+			var loadingmaskTarget = target;
 			// set loadingmask to parent
-			target.plug(Y.LoadingMask, {
-				target: loadingmaskTarget
+			pluginNode.plug(Y.LoadingMask, {
+				pluginNode: loadingmaskTarget
 			});    			
-			target.loadingmask._conf.data.value['target'] = loadingmaskTarget;
-			target.loadingmask.overlayMask._conf.data.value['target'] = target.loadingmask._conf.data.value['target'];
-			// target.loadingmask.set('target', target);
-			// target.loadingmask.overlayMask.set('target', target);
-			target.loadingmask.set('zIndex', 10);
-			target.loadingmask.overlayMask.set('zIndex', 10);
-			target.loadingmask.show();
-		} 		
+			pluginNode.loadingmask._conf.data.value['pluginNode'] = loadingmaskTarget;
+			pluginNode.loadingmask.overlayMask._conf.data.value['pluginNode'] = pluginNode.loadingmask._conf.data.value['pluginNode'];
+			// pluginNode.loadingmask.set('pluginNode', pluginNode);
+			// pluginNode.loadingmask.overlayMask.set('pluginNode', pluginNode);
+			pluginNode.loadingmask.set('zIndex', 10);
+			pluginNode.loadingmask.overlayMask.set('zIndex', 10);
+			pluginNode.loadingmask.show();
+		} else {
+			pluginNode.loadingmask.refreshMask();
+			pluginNode.loadingmask.show();
+		}		
+		return pluginNode;
 	}
+	
 }());
 
 (function() {
@@ -491,8 +510,6 @@ LOG(o);
 			}
 			ioCfg = SNAPPI.IO.pluginIO_RespondAsJson(ioCfg); 
 			container.io.set('data', ioCfg.data);
-LOG(" 2ND TIME AROUND <<<<<<<<<<<<<<<<<<<<<<<<<");			
-LOG(ioCfg.data);			
 		}
 		args.loadingmask = container.loadingmask;
 		// get CC via XHR and render

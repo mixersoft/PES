@@ -73,10 +73,9 @@ var onload_complete = function(){
     		'node', 'event', 'event-delegate', 'event-custom', "event-mouseenter",
     		'node-event-simulate',
     		/*
-    		 * aui modules
-    		 * 
+    		 * early load modules
     		 */
-    		'AIR-firebug-1.2',
+    		// 'AIR-firebug-1.2',
     		/*
     		 * snappi modules
     		 */
@@ -152,7 +151,7 @@ var onload_complete = function(){
     			 * domready init
     			 */
     			Y.on('domready', function(){
-   					SNAPPI.AIR.Helpers.init_GalleryLoadingMask();	// DOESN'T WORK IN AIR
+   					var node = SNAPPI.AIR.Helpers.init_GalleryLoadingMask();
     				flex_onYuiDomReady();
     				LOG(">>>>>>>>>>>>>>>>>>>>>>>>  YUI/domready BEGIN <<<<<<<<<<<<<");
     				_domready1(Y);		// find in init.js

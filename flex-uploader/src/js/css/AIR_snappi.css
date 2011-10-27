@@ -265,6 +265,14 @@ input[type='submit']:hover.orange {
 	margin: 0 auto;
 }
 
+/* used on application startup only */
+#startup-loading-mask {
+	background: url("/css/gallery/rel_interstitial_loading.gif") no-repeat scroll center center #000;
+	overflow:hidden;
+	opacity: 0.5;
+	-webkit-border-radius: 5px;
+}
+
 /*
  * global footer 
  */
@@ -479,6 +487,8 @@ section.gallery-display-options nav.settings > * {
 	xmargin-right: auto;
 	xdisplay:inline-block;
 }
+
+
 .FigureBox.PhotoAirUpload {
 	padding: 2px;
 	overflow: hidden;

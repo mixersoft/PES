@@ -272,6 +272,7 @@ LOG("uploader getOpenBatchId has been DEPRECATED");
 			var pageNode = this.container.one(selector);
 			if (pageNode) {
 				pageNode.setContent('');
+				// pageNode.UploadQueue = this;
 				return pageNode;
 			} else {
 				LOG("ERROR view_getBlankPage(): '.gallery .container' not found");
@@ -408,22 +409,26 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 					}
 				}
 			}
+			
+			/*
+			 * view methods
+			 */				
+			
 			/*
 			 * update Paginator
 			 */
 			this.activePage = page;
-			this.activePageNode = pageNode;
-			
-			var paginateTarget = pageNode;
-			if (!paginateTarget.Paginator) {
-				paginateTarget.UploadQueue = this;
+			this.activePageNode = pageNode;	// deprecate. reusing (blank) page node every time
+			var p = pageNode.Paginator;
+			if (!p) {
+				// initialize Paginator
+				pageNode.UploadQueue = this;
 				// use pageNode, paginate is the next sibling
-				SNAPPI.Paginator.paginate_PhotoAirUpload(paginateTarget);
+				pageNode.Paginator = SNAPPI.Paginator.paginate_PhotoAirUpload(pageNode);
+			} else {
+				// update Paginator page
+				if (p.get('state.page') != page) p.set('state.page', page);
 			}
-			
-			/*
-			 * view methods
-			 */			
 			this.view_setUploadTotalProgress();
 			this.view_setTotalCount();
 		},		
