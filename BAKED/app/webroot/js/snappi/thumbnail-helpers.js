@@ -112,9 +112,11 @@
 			container = container || 'section.gallery.photo > div';
 			if (status) {
 				// listen
-				Y.all(container).each( function(n) {
-						if (!n.listener_multiSelect) {
-							n.listener_multiSelect = n.delegate('click',
+				Y.all(container).each( 
+					function(n) {
+						n.listen = n.listen || {};
+						if (!n.listen['MultiSelect']) {
+							n.listen['MultiSelect'] = n.delegate('click',
 								this.selectHandler, '.FigureBox',
 								this
 							);
@@ -125,9 +127,10 @@
 			} else {
 				// stop listening
 				Y.all(container).each(function(n) {
-						if (n.listener_multiSelect) {
+						if (n.listen['MultiSelect']) {
 							try {
-								n.listener_multiSelect.detach();
+								n.listen['MultiSelect'].detach();
+								delete (n.listen['MultiSelect']);
 							} catch (e) {}
 						}
 					}, this

@@ -48,7 +48,6 @@ _domready1 = function(Y) {
     	datasource: datasource
     });
     SNAPPI.AIR.uploadQueue = uploader;
-    
     /*
      * DEV/Testing config
      */
@@ -56,23 +55,29 @@ _domready1 = function(Y) {
 		Helpers.DEV_runTestSuite();
 	}
 	
-	
 	// magic login for AIR Test user
 	Helpers.DEV_addProviderKeyAsTestUser(datasource.getConfigs().provider_key);
-    
 	// add all photos to uploadQueue
 //	Helpers.addToUploader(uploader, '');
 	// var host = SNAPPI.AIR.host=='dev2.snaphappi.com' ? 'remote' : 'local' ;
 	Helpers.DEV_setRuntimeHost(uploader);		// local or remote
 	
-	
 	// add login menu
-	SNAPPI.MenuAUI.initMenus({'menu-sign-in-markup':1});
-	
-	Helpers.initUploadGallery(1, null, uploader);
-	
+	SNAPPI.MenuAUI.initMenus({
+		'menu-sign-in-markup':1,
+		'menu-uploader-batch-markup':1
+	});
+	Helpers.initUploadGallery(uploader, 1);
 	Helpers.hide_StartupLoadingMask();
 LOG(">>>>>>>>> DONE");	
+
+
+	var detach = SNAPPI.Y.on('snappi-air:begin-import', function(){
+		SNAPPI.Y.one('#item-body .import-progress-wrap').removeClass('hide');		
+	});
+	
+	
+	
 }
     
     
@@ -82,7 +87,7 @@ LOG(">>>>>>>>> DONE");
 _domready2 = function(Y) {
 	var util = SNAPPI.coreutil;
 	SNAPPI.namespace('PAGE');
-	PAGE.uploader_openTab = function (tab){
+	PAGE.uploader_openTab = function (tab){	// deprecate
 		// check if uploader.isPaused == true
 		var btn = SNAPPI.Y.one('#start-btn').set('innerHTML', 'Start');					
 		SNAPPI.AIR.uploadQueue.show(tab);

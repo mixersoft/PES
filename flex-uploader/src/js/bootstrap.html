@@ -7,7 +7,7 @@
 		<title>Snaphappi Desktop Uploader</title>
 		<base :BASE-ATTRIBUTES: /> <!-- :BASE-ATTRIBUTES: set in bootstrap_html()  --> 
 		<link rel="stylesheet" type="text/css" media="all" href="/app/air/js/css/reset.css" />
-		<link rel="stylesheet" type="text/css" media="all" href="/app/air/js/css/AIR_snappi.css" />
+		<link id="css-start" rel="stylesheet" type="text/css" media="all" href="/app/air/js/css/AIR_snappi.css" />
 		<!-- Combo-handled YUI 3 CORE + Loader JS files: -->
 		<script type="text/javascript" src="/app/air/js/firebug-lite-compressed.1.2.3.1.js"></script>
 		<script src="/svc/lib/alloy-1.0.2/build/aui/aui.js" type="text/javascript"></script>
@@ -69,19 +69,24 @@
     	<div class="grid_x alpha omega">
     		
 <section class="gallery-header container_x" >
-	<ul class="toolbar inline grid_3">
-		<li class="select-all"><input type="checkbox" name="" value=""><a class="menu-open" aria-controls="menu-select-all-markup"> </a></li>
-		<li><h1 class="count">0  Snaps</h1></li>
+	<ul class="title inline grid_3">
+		<li class="label" title="Photos you have imported into the Snaphappi Desktop Uploader.">
+			Upload Queue</li>
+			<li class="select-all"><a class="menu-open" aria-controls="menu-select-all-markup"><input type="checkbox" name="" value=""></a></li>
+		<li class="label count">0 Snaps</li>
+	</ul>
+	<ul class='toolbar upload-toolbar inline'>		
+		<li class="btn" onclick="PAGE.toggle_upload(this);return false;">Start Upload</li>
+		<li class="btn" onclick="SNAPPI.AIR.uploadQueue.action_retry();return false;">Retry</li>
+		<li class="btn" onclick="SNAPPI.AIR.uploadQueue.action_clear();return false;">Clear</li>
+		<li id="upload-progress" class="progress center"><div class="bar"></div><span></span></li>
 	</ul>
     <nav class="settings window-options grid_7 right">
 		<ul class="inline right">
-			<li onclick="SNAPPI.UIHelper.nav.toggleDisplayOptions();" class="display-option focus" >
+			<li onclick="SNAPPI.AIR.UIHelper.actions.toggleDisplayOptions();" class="display-option focus" >
     			<a class="menu-open">Display Options</a>
     		</li>
-    	</ul><ul class="thumb-size inline right">
-			<li class="label">Size</li>
-			<li action="set-display-size:sq" class="btn focus"><img alt="" src="/css/images/img_1.gif"></li><li action="set-display-size:lm" class="btn"><img alt="" src="/css/images/img_2.gif"></li><li action="set-display-size:ll" class="btn "><img alt="" src="/css/images/img_3.gif"></li>
-		</ul>
+    	</ul>
 	</nav>      
 </section> 
       	
@@ -89,12 +94,17 @@
 	<nav class="settings">
 	    	<ul class="filter inline">
 	    		<li class="label">Filter</li>
-				<li class='btn focus' title='All imported photos' id='tab-all' onclick="PAGE.uploader_openTab('all');return false;">all</li>
-				<li class='btn' id='tab-pending' onclick="PAGE.uploader_openTab('pending');return false;">pending</li>
-				<li class='btn' id='tab-cancelled' onclick="PAGE.uploader_openTab('cancelled');return false;">cancelled</li>
-				<li class='btn' id='tab-complete' onclick="PAGE.uploader_openTab('done');return false;">complete</li>
-				<li class='btn' id='tab-failed' onclick="PAGE.uploader_openTab('error');return false;">failed</li>
+				<li class='btn focus' action="filter:all">all</li>
+				<li class='btn' action="filter:pending">pending</li>
+				<li class='btn' action="filter:cancelled">cancelled</li>
+				<li class='btn' action="filter:done">uploaded</li>
+				<li class='btn' action="filter:failed">failed</li>
+	            <li class="btn choose-folder" ><a class="menu-open">Folder</a></li>				
 			</ul>
+	    	<ul class="thumb-size inline">
+				<li class="label">Size</li>
+				<li action="set-display-size:sq" class="btn focus"><img alt="" src="/css/images/img_1.gif"></li><li action="set-display-size:lm" class="btn"><img alt="" src="/css/images/img_2.gif"></li><li action="set-display-size:ll" class="btn "><img alt="" src="/css/images/img_3.gif"></li>
+			</ul>			
 	        <ul class="sort inline right">
 	        	<li class="label">Sort</li>
 	            <li class="btn ">
@@ -107,22 +117,12 @@
 	</nav>
 </section>    		
     		
-			<div id='upload-tabs' class="gallery-header center">
-	    		<div id="toolbar" >
-	    			<div class="btns">
-		    			<a id='start-btn' href="#" onclick="PAGE.toggle_upload(this);return false;">Start Upload</a>
-		    			<a href="#" onclick="SNAPPI.AIR.uploadQueue.action_retry();return false;">Retry</a>
-	    				<a href="#" id="btnCancel" onclick="SNAPPI.AIR.uploadQueue.action_clear();return false;">Clear</a>
-	    			</div>
-	    		</div> 						
-			</div>
-    		<div class="gallery photo">
-    			<div id='startup-loading-mask'>
-	    			<div class='container'></div>
-	    			</div>
-    			</div>
-<!-- rename upload-progress -->
-			<div id="total-progress" class="progress center"><div class="bar"></div><span></span></div>		    		
+<section class="gallery photo">
+	<div id='startup-loading-mask'>
+		<div class='container'></div>
+	</div>
+</section>
+			
     	</div>
 	</div>
 </section>
@@ -153,6 +153,12 @@
 					</div>
 				</div>
 			</div>
+			<div id="menu-uploader-folder-markup" class="menu yui3-aui-overlaycontext-hidden hide">
+				<ul class='select'></ul>
+			</div>
+			<div id="menu-uploader-batch-markup" class="menu yui3-aui-overlaycontext-hidden hide">
+				<ul class='select'></ul>
+			</div>			
 		</div>	<!-- end #markup -->
 		<div id="footer" class="container_x">
 			<span>&copy; 2008-2012 Snaphappi</span>

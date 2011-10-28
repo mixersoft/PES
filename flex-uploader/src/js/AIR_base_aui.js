@@ -34,7 +34,7 @@ var onload_complete = function(){
 			alloy_useCombo: true,
 			// yui_CDN == true => use "http://yui.yahooapis.com/combo?"
 			// yui_CDN == false => use "/combo/js?"
-			yahoo_CDN: true,
+			yahoo_CDN: false,
 		});
     var Y;
 	var yuiConfig = { // GLOBAL
@@ -48,7 +48,7 @@ var onload_complete = function(){
 //      filter: "MIN",		// ['MIN','DEBUG','RAW'], default='RAW'        
 //		filter: "DEBUG",
         filter: hostCfg.alloy_useCombo ? 'MIN' : "RAW",
-        // insertBefore: 'css-start',
+        insertBefore: 'css-start',
 		groups: {
     		alloy: Config.addModule_alloy(hostCfg),
     		snappi: Config.addModule_snappi(hostCfg),
@@ -67,6 +67,8 @@ var onload_complete = function(){
  LOG(yuiConfig);     
     SNAPPI.yuiConfig = yuiConfig;		// make global	
     YUI(SNAPPI.yuiConfig).use(
+    		// css
+    		'AIR-upload-ui-css',
     		/*
     		 * required
     		 */
@@ -80,7 +82,7 @@ var onload_complete = function(){
     		 * snappi modules
     		 */
     		'snappi-sortedhash','snappi-io', 'snappi-io-helpers', 'snappi-thumbnail-helpers',
-    		'snappi-paginator', 'snappi-menu-aui', 'snappi-ui-helpers', 
+    		'snappi-paginator', 'snappi-menu-aui', 
     		// 'snappi-dialog-aui', 'snappi-gallery-helpers', 
     		/*
     		 * air modules - bootstrap only. add additional modules after init 
@@ -127,25 +129,6 @@ var onload_complete = function(){
     			try {
     				SNAPPI.AIR.Helpers.add_snappiHoverEvent(Y);
     			} catch (e) {}
-    			// Y.use('snappi-dialog-aui', 
-    			// // 'AIR-menuCfg',
-					// /*
-					 // * 
-					 // */
-					// function(Y, result){
-	    			    // if (!result.success) {
-	    					// Y.log('Load failure: ' + result.msg, 'warn', 'Example');
-// LOG(">>>>>>>>  Load failure:  SNAPPI-DIALOG-AUI " + result.msg);    	    					
-	    				// } else {
-// LOG(">>>>>>>>  Load OK:  SNAPPI-DIALOG-AUI " + result.msg); 
-// LOG(result); 	    					
-// LOG(" >>>>>>>>>>>>>>>> " + SNAPPI.Helper);
-// LOG(SNAPPI);
-	    					// try {
-	    					// } catch (e) {}
-	    				// }
-	    			// }	
-    			// );
     			
     			/*********************************************************************************
     			 * domready init
@@ -347,9 +330,13 @@ var onload_complete = function(){
 			comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl='+air_comboBase,
 	        root: 'js/',			// base for combo loading, combo load uri = comboBase+root+[module-name]
 	        modules: {
+	            'AIR-ui-helpers': {
+	                path: 'ui-helpers.js',
+	                requires: [] 
+			    },		        	
 	            'AIR-helpers': {
 	                path: 'helpers.js',
-	                requires: [] 
+	                requires: ['AIR-ui-helpers'],
 			    },			    
 	            'AIR-init': {
 	                path: 'init.js',
@@ -367,13 +354,14 @@ var onload_complete = function(){
 	                path: 'testapi.js',
 	                requires: ['AIR-api-bridge']                           
 		        },    	
-	            'AIR-upload-manager': {
+	            'AIR-upload-manager': {		// wrapper for SNAPPI.DATASOURCE/'AIR-api-bridge'
 	                path: 'upload_manager.js',
 	                requires: ['snappi-sortedhash', 'AIR-api-bridge', 'AIR-file-progress']
 			    },		    
 	            'AIR-upload-ui': {
 	                path: 'upload_ui.js',
-	                requires: ['AIR-upload-ui-css', 'AIR-snappi-css', 'AIR-api-bridge', 'AIR-file-progress']
+	                // 'AIR-snappi-css' loaded in HTML head
+	                requires: ['AIR-upload-ui-css', 'AIR-api-bridge', 'AIR-file-progress', 'AIR-ui-helpers']
 			    },
 		        'AIR-firebug-1.3': {	// not supported in AIR/webkit browser
 		            path: 'debug/firebug-lite.1.3.2.js#startOpened',
@@ -421,22 +409,22 @@ var onload_complete = function(){
 			comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl='+air_comboBase,
 	        root: 'js/css',			// base for combo loading, combo load uri = comboBase+root+[module-name]
             modules: {
-            	'960-reset-css': {
+            	'960-reset-css': { 	// load manually in HTML HEAD
             		path: 'reset.css',
             		requires: [],
             		type: 'css'
             	},
-    	    	'snappi-cake-css': {
+    	    	'snappi-cake-css': {			// deprecate
     		        path: 'cake.generic.css',
     		        requires: [],
     		        type: 'css'
     			},	    	
-    			'old-snappi-css': {
+    			'old-snappi-css': {			// deprecate
     		        path: 'snappi.css',
     		        requires: ['snappi-cake-css'],
     		        type: 'css'
     			},    	
-    			'snappi-menu-css': {
+    			'snappi-menu-css': {			// deprecate
     		        path: 'menu-skin.css',
     		        requires: ['snappi-cake-css','old-snappi-css'],
     		        type: 'css'
@@ -447,9 +435,9 @@ var onload_complete = function(){
     		        requires: [],
     		        type: 'css'
     		    },
-    			'AIR-snappi-css': {
+    			'AIR-snappi-css': {		// load manually in HTML HEAD
     		        path: 'AIR_snappi.css',
-    		        requires: ['960-reset-css', 'AIR-upload-ui-css'],		// load last
+    		        requires: ['960-reset-css', 'AIR-upload-ui-css'],		
     		        type: 'css'
     			},       		     	        
             }

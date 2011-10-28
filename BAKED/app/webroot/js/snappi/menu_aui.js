@@ -675,7 +675,12 @@ var DEFAULT_CFG_contextmenu = 	{
 			// dialog.io.set('arguments', args );
 			dialog.io.start();			
 	};	
-	
+	MenuItems.uploader_setFolder_click = function(menuItem, menu){
+		if (menuItem.getAttribute('batch')) {
+			SNAPPI.AIR.UIHelper.actions.set_UploadBatchid(menuItem);
+		} else SNAPPI.AIR.UIHelper.actions.set_Folder(menuItem);
+		menu.hide();
+	};	
 	
 	
 	
@@ -915,12 +920,13 @@ var DEFAULT_CFG_contextmenu = 	{
 		};
 		return Menu.getMarkup(MARKUP , callback);
 	};	
-	var CFG_Menu_SignIn = function(){}; 
+	
 	/**
 	 * load user shortcuts menu
 	 * @param cfg
 	 * @return
 	 */
+	var CFG_Menu_SignIn = function(){}; 
 	CFG_Menu_SignIn.load = function(cfg){
 		var Y = SNAPPI.Y;
 		var defaultCfg = {
@@ -968,7 +974,53 @@ var DEFAULT_CFG_contextmenu = 	{
 		};
 		return Menu.getMarkup(MARKUP , callback);
 	};	
+	 
+	/**
+	 * load menu for choosing Uploader batchid or baseurls
+	 * @param cfg
+	 * @return
+	 */
+	var CFG_Menu_Uploader_Folders = function(){};
+	CFG_Menu_Uploader_Folders.load = function(cfg){
+		var Y = SNAPPI.Y;
+		var defaultCfg = {
+			showOn: 'click',	
+			align: { points:['tl', 'bl'] },
+			init_hidden: true,
+			on: {
+				show: function(e) {
+					var content = e.target.get('contentBox');
+					try {
+						// SNAPPI.AIR.UIHelper.menu.load_folders(content);
+						SNAPPI.AIR.UIHelper.menu.load_batches(content);
+					} catch (e) {}
+					content.removeClass('hide');
+				},
+				hide: function(e) {
+					e.target.get('contentBox').addClass('hide');
+				},
+			},			
+		};
+		cfg = Y.merge(defaultCfg, cfg);
+		var CSS_ID = 'menu-uploader-folder-markup';
+		var TRIGGER = '.gallery-display-options li.btn.choose-folder';
+		var MARKUP = {
+				id: CSS_ID,
+				selector: '#'+CSS_ID,
+				container: Y.one('#markup'),
+				uri: '/combo/markup/headerMenu',
+				end: null
+		};
 		
+		// reuse, if found
+		if (Menu.find[CSS_ID]) 
+			return Menu.find[CSS_ID];
+
+		var callback = function(){
+			Menu.initContextMenu(MARKUP, TRIGGER, cfg);
+		};
+		return Menu.getMarkup(MARKUP , callback);
+	};			
 	// SNAPPI.MenuAUI
 	Menu.CFG = {
 		'menu-header-markup': CFG_Menu_Header,
@@ -979,7 +1031,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		'menu-lightbox-organize-markup': CFG_Menu_Lightbox_Organize,
 		'menu-lightbox-share-markup': CFG_Menu_Lightbox_Share,
 		'menu-sign-in-markup': CFG_Menu_SignIn,
-		end: null
+		'menu-uploader-folder-markup': CFG_Menu_Uploader_Folders,
 	};
 	
 })();

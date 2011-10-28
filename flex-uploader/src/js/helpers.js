@@ -29,7 +29,7 @@ console.log("load BEGIN: helpers.js");
 	var Helpers = function() {}
 	Helpers.prototype = {};
 	SNAPPI.AIR.Helpers = Helpers;
-	
+	SNAPPI.namespace('SNAPPI.STATE.displayPage');
 	
 	Helpers.add_snappiHoverEvent = function(Y) {
 		/*
@@ -239,6 +239,7 @@ console.log("load BEGIN: helpers.js");
 		datasource.importPhotos(folderpath, importPhoto_callback);		            
 	}
 	/**
+	 * add imported photos (by baseurl) to uploadQueue, creates a new batchid
 	 *	@params uploader OPTIONAL, uses global SNAPPI.AIR.UploadQueue
 	 *	@params baseurl string OPTIONAL, add all baseurls if null 
 	 *	@return int - count of photos added
@@ -262,6 +263,7 @@ console.log("load BEGIN: helpers.js");
             LOG("added to uploadQueue, count="+added+", open batchId="+batchId);			                
             uploader.show("reload");
         }, datasource, false);
+        Helpers.set_Filter_FolderSelect();
         return added;
     }
     Helpers.show_login = function() {
@@ -276,23 +278,39 @@ console.log("load BEGIN: helpers.js");
      * @params page int, page number, defaults to SNAPPI.STATE.displayPage.perpage
      * @params uploadQueue SNAPPI.AIR.UploadQueue, same as SNAPPI.AIR.uploadQueue
      */
-	Helpers.initUploadGallery = function(page, perpage, uploadQueue) {
-		SNAPPI.namespace('SNAPPI.STATE.displayPage');
-		if (perpage) SNAPPI.STATE.displayPage.perpage = perpage;
-		else SNAPPI.STATE.displayPage.perpage = SNAPPI.STATE.displayPage.perpage || 24;
+	Helpers.initUploadGallery = function(uploadQueue, page, perpage, batchId) {
+LOG("Helpers.initUploadGallery, BATCHID="+batchId);		
+		uploadQueue = uploadQueue || SNAPPI.AIR.uploadQueue;
+		page = page || 1;
+		perpage = perpage || SNAPPI.STATE.displayPage.perpage || 24;
+		SNAPPI.STATE.displayPage.page = page;
+		SNAPPI.STATE.displayPage.perpage = perpage;
+		
 		// init/show upload queue
 		var Y = SNAPPI.Y;
-		uploadQueue.initQueue('all', {batchId: '', perpage: SNAPPI.STATE.displayPage.perpage});
 		
+		
+		// check .filter for current focus
+		var filter;
+		var hasFocus = uploadQueue.container.one('.gallery-display-options .settings .filter li.btn.focus');
+		if (hasFocus) {
+			filter = hasFocus.getAttribute('action').split(':').pop();
+		} else filter = 'all';
+LOG(filter);		
+		
+		uploadQueue.initQueue(filter, {batchId: batchId, perpage: perpage});
 		// show initial page using Paginator
 		var paginateTarget = Y.one('#gallery-container .gallery.photo .container');
 		var node = Y.one('#gallery-container .gallery.photo');
+		// init gallery listeners
 		Helpers.init_GalleryLoadingMask(node);
-			
-			
 		paginateTarget.UploadQueue = uploadQueue;
 		var p = SNAPPI.Paginator.paginate_PhotoAirUpload(paginateTarget, page, SNAPPI.STATE.displayPage.perpage, uploadQueue.count_totalItems);
 		SNAPPI.Paginator._getPageFromAirDs(p.container, page);
+		// other init steps
+		// Helpers.set_Filter_FolderSelect();
+		SNAPPI.AIR.UIHelper.listeners.DisplayOptionClick(null);
+		SNAPPI.multiSelect.listen();
 	}
 	
 	/*
@@ -301,8 +319,10 @@ console.log("load BEGIN: helpers.js");
 	Helpers.hide_StartupLoadingMask = function(){
 		var Y = SNAPPI.Y;
 		var mask = Y.one('#startup-loading-mask');
-		mask.get('parentNode').append(mask.one('*'));
-		mask.empty().destroy();
+		if (mask) {
+			mask.get('parentNode').append(mask.one('*'));
+			mask.empty().destroy();
+		}
 	}
 	
 	

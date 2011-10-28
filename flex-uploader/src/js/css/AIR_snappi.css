@@ -49,6 +49,7 @@ ul > li.btn {
 	-moz-border-radius: 5px;
 	-webkit-border-radius: 5px;	
 	color: #494949;
+	cursor: default;
 }
 
 ul > li.btn:hover, ul > li.btn.focus {
@@ -254,7 +255,7 @@ input[type='submit']:hover.orange {
 
 #gallery-container > .wrap, #item-body > .wrap {
     overflow: hidden;
-    padding: 0 10px;
+    padding: 0 10px 4px;
 }
 
 #gallery-container > .wrap > div, #item-body > .wrap > div {
@@ -295,22 +296,62 @@ input[type='submit']:hover.orange {
  */
 
 
+#upload-progress {
+    width: 200px;
+    height: 9px;
+    border: 1px solid #666;
+	overflow:hidden;
+}
+
+#upload-progress > div.bar {
+    background-color: blue;
+    height: 100%;
+    width: 0;
+}
+
+#upload-progress span {
+    font-family: arial, verdana;
+	height: 12px;
+    font-size: 12px;
+	position:relative;
+	left:48%;
+	top: -12px;
+	z-index:10;
+	color: white;
+}
 
 /* gallery toolbars */
 section.gallery-header {
-	line-height: 28px;
+	xborder: 1px solid red;
+	overflow: hidden;
+	padding-top: 3px;
+}
+section.gallery-header > * {
+	line-height: 1.5;
 	font-size: 10pt;
 	overflow: hidden;	
+	display: inline-block;
+	height: 28px;
 }
-section.gallery-header h1 {
+section.gallery-header > ul > li.label {
 	font-size: 1.1em;
-	line-height: 28px;
+	font-weight: bold;
+	line-height: 20px;
+	xborder: 1px solid gray;
+	margin: 3px 0;
 }
-section.gallery-header ul > li {
+section.gallery-header .menu-open {
+	padding-right: 8px;
 }
-.gallery-container section.gallery-header ul {
-	line-height: 1.5;
+
+section.gallery-header ul.title {
+	margin-right: 20px;
 }
+section.gallery-header ul.upload-toolbar li.btn {
+	margin: 1px 0;
+}
+
+
 section.gallery-header li.display-option {
 /*	background: -moz-linear-gradient(bottom, #E2E6EB, #ffffff);
 	background: -webkit-gradient(linear, center bottom, center top, from(#E2E6EB), to(#ffffff));*/
@@ -341,14 +382,14 @@ section.gallery-header li.display-option.open {
 	height: 24px;	
 }
 
-section.gallery-header ul.thumb-size li {
+ul.thumb-size li.btn {
 	border: 1px solid #fff;
 	-moz-border-radius: 4px;
 	-webkit-border-radius: 4px;
-	margin-left: 4px;
+	margin-left: 2px;
 	padding: 2px;
 }
-section.gallery-header ul.thumb-size li.btn:hover, section.gallery-header ul.thumb-size li.btn.focus {
+ul.thumb-size li.btn:hover, ul.thumb-size li.btn.focus {
 	background: -moz-linear-gradient(bottom, #fca22f, #ffc374);	 
 	background: -webkit-gradient(linear, center bottom, center top, from(#fca22f), to(#ffc374));	border: 1px solid #cd7708;
 	-moz-border-radius: 4px;
@@ -357,11 +398,11 @@ section.gallery-header ul.thumb-size li.btn:hover, section.gallery-header ul.thu
 	border: 1px solid #CD7708;
 }
 
-section.gallery-header ul.thumb-size li.btn.focus {
+ul.thumb-size li.btn.focus {
 	cursor: default !important;
 }
 
-section.gallery-header ul.thumb-size li.btn {
+ul.thumb-size li.btn {
 	border-color: #D8D5D5;
 }
 
@@ -852,4 +893,39 @@ section.gallery-display-options nav.settings > * {
 
 .aui-overlaymask-hidden {
 	visibility:hidden;
+}
+
+
+/*
+ * menu CSS
+ */
+
+.menu {
+	position: absolute;
+	xwidth: 150px;
+	background: #FFFFFF;
+	border-color: #DEDEDE #BFBFBF #BFBFBF #DEDEDE;
+	border-style: solid;
+	border-width: 1px;
+}
+
+.menu ul, .menu li {
+	margin: 0;
+}
+
+.menu li {
+	border-bottom: 1px solid #DEDEDE;
+	display: block;
+	padding: 2px 5px;
+	text-decoration: none;
+	color: #336699;
+}
+
+.menu li:hover, .menu ul.select > li.focus {
+	background: #DDD;
+}
+
+.disabled-trigger {
+	opacity: 0.5;
+	color: #333;
 }

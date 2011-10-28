@@ -290,7 +290,6 @@ LOG("uploader getOpenBatchId has been DEPRECATED");
 		 * @params cfg
 		 */
 		// this.initQueue = function(pages, perpage, total){
-		// TODO: should separate into initQueue and showQueue
 		initQueue : function(filter, cfg) { // OK
 			var Y = SNAPPI.Y;
 			cfg = cfg || {};
@@ -312,8 +311,8 @@ LOG("uploader getOpenBatchId has been DEPRECATED");
 				this.batchId = this.flexUploadAPI.getOpenBatchId();
 			} else {
 				this.batchId = cfg.batchId; 
-				this.flexUploadAPI.setBatchId(this.batchId);
 			}
+			this.flexUploadAPI.setBatchId(this.batchId);
 LOG("initQueue, batchId="+this.batchId+", getconfig() batchId="+this.flexUploadAPI.getBatchId());			
 /*
  * uploadQueue should not care about batchId if null
@@ -428,6 +427,7 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 			} else {
 				// update Paginator page
 				if (p.get('state.page') != page) p.set('state.page', page);
+				if (p.get('state.total') != this.count_filterItems) p.set('state.total', this.count_filterItems);
 			}
 			this.view_setUploadTotalProgress();
 			this.view_setTotalCount();
@@ -624,9 +624,9 @@ LOG("active count="+UploadManager.count());
 					: 100;
 			var color = (percent > 50) ? 'white' : 'black';
 			try {
-				this.container.one('#total-progress .bar').setStyle('width',
+				this.container.one('#upload-progress .bar').setStyle('width',
 						percent + '%');
-				this.container.one('#total-progress .span').set('innerHTML',
+				this.container.one('#upload-progress .span').set('innerHTML',
 						percent + '%').set('color', color);
 			} catch (e) {
 			}
@@ -634,7 +634,7 @@ LOG("active count="+UploadManager.count());
 		view_setTotalCount : function() {
 			var label = this.count_filterItems || 0;
 			label += this.count_filterItems == 1 ? " Snap" : " Snaps";
-			this.container.one('.gallery-header .toolbar h1.count').setContent(label);
+			this.container.one('.gallery-header .count').setContent(label);
 		},
 		
 		
@@ -698,7 +698,7 @@ LOG("active count="+UploadManager.count());
 				}
 			}, 'div.cancel', this);
 		},
-		
+		// called from FlexAPI(?)
 		onDrop : function(droppedFolder){
 	        var cb = {
 	            success: function(e, params){
@@ -716,13 +716,19 @@ LOG("active count="+UploadManager.count());
 	        setTimeout(function(){
 	        	_flexAPI_UI.importPhotos(droppedFolder, cb);
 	        }, 50);
-	        // Y.fire('snappi-air:begin-import');
+	        SNAPPI.Y.fire('snappi-air:begin-import');
 	    },
+	    // called from FlexAPI(?)
 	    onImportComplete : function(baseurl) {
 	    	baseurl = baseurl || '';
             // ADD TO uploadQueue
 	    	LOG("UPLOADER.onImportComplete");
+            
+            // add new baseurl to uploadQueue
+            //TODO: move to 'snappi-air:import-complete' event
             SNAPPI.AIR.Helpers.addToUploader(this, baseurl);
+            
+            SNAPPI.Y.fire('snappi-air:import-complete');
 	    },
 		cakeStylePaginate : function(parent, total, current) {
 			var Y = SNAPPI.Y;
