@@ -295,7 +295,7 @@ LOG("Helpers.initUploadGallery, BATCHID="+batchId+", baseurl="+baseurl);
 		var hasFocus = uploadQueue.container.one('.gallery-display-options .settings .filter li.btn.focus');
 		if (hasFocus) {
 			filter = hasFocus.getAttribute('action').split(':').pop();
-		} else filter = 'all';
+		} else filter = 'pending';	// Ready for upload
 		
 		uploadQueue.initQueue(filter, {
 			batchId: batchId,

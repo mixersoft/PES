@@ -902,7 +902,6 @@ section.gallery-display-options nav.settings > * {
 
 .menu {
 	position: absolute;
-	xwidth: 150px;
 	background: #FFFFFF;
 	border-color: #DEDEDE #BFBFBF #BFBFBF #DEDEDE;
 	border-style: solid;
@@ -929,3 +928,11 @@ section.gallery-display-options nav.settings > * {
 	opacity: 0.5;
 	color: #333;
 }
+
+
+ul li.btn.disabled, ul li.btn.disabled:hover {
+	background: #DDD !important;
+	cursor: default !important;
+	color: #888 !important;
+	border: 1px solid #D8D5D5 !important;
+} 

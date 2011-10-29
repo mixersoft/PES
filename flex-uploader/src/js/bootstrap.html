@@ -76,8 +76,8 @@
 	</ul>
 	<ul class='toolbar upload-toolbar inline'>		
 		<li class="btn" onclick="PAGE.toggle_upload(this);return false;">Start Upload</li>
-		<li class="btn" onclick="SNAPPI.AIR.uploadQueue.action_retry();return false;">Retry</li>
-		<li class="btn" onclick="SNAPPI.AIR.uploadQueue.action_clear();return false;">Clear</li>
+		<li class="btn retry disabled " onclick="SNAPPI.AIR.uploadQueue.action_retry();return false;">Retry</li>
+		<li class="btn hide" onclick="SNAPPI.AIR.uploadQueue.action_clear();return false;">Clear</li>
 		<li id="upload-progress" class="progress center"><div class="bar"></div><span></span></li>
 	</ul>
     <nav class="settings window-options grid_7 right">
@@ -93,11 +93,11 @@
 	<nav class="settings">
 	    	<ul class="filter inline">
 	    		<li class="label">Filter</li>
-				<li class='btn focus' action="filter:all">all</li>
-				<li class='btn' action="filter:pending">pending</li>
-				<li class='btn' action="filter:cancelled">cancelled</li>
-				<li class='btn' action="filter:done">uploaded</li>
-				<li class='btn' action="filter:failed">failed</li>
+				<li class='btn' action="filter:all">All</li>
+				<li class='btn  focus' action="filter:pending">Ready</li>
+				<li class='btn' action="filter:cancelled">Cancelled</li>
+				<li class='btn' action="filter:done">Done</li>
+				<li class='btn' action="filter:failed">Errors</li>
 	            <li class="btn choose-folder" ><a class="menu-open">Folder</a></li>				
 			</ul>
 	    	<ul class="thumb-size inline">
@@ -126,7 +126,7 @@
 	</div>
 </section>
 		<div id="markup" class="" style="display:none;">
-			<div id="menu-sign-in-markup" class="menu yui3-aui-overlaycontext-hidden hide">
+			<div id="menu-sign-in-markup" class="xxmenu yui3-aui-overlaycontext-hidden hide">
 				<div id='login'>
 					<div class="grid_x">
 						<div class='message hide'></div>

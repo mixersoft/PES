@@ -185,7 +185,7 @@
 		 * pauseQueue called the doPause ui function to update the UI
 		 */
 		action_pause : function() {
-//			htmlctrl.pauseQueue();
+//			this.flexUploadAPI.pauseQueue();
 			this.doPause();
 		},
 		/*
@@ -194,7 +194,7 @@
 		 * fires the doRetry function to update the error items in UI
 		 */
 		action_retry : function() {
-			htmlctrl.retryUpload();
+			this.flexUploadAPI.retryUpload();
 		},
 		/*
 		 * cancel all action handler runs when user do the clear action it stop
@@ -206,7 +206,7 @@
 			LOG("clearing for status=" + status + ', batch='
 					+ this.batchId);
 			this.stopUploadPage();
-			htmlctrl.clear(status, this.batchId);
+			this.flexUploadAPI.clear(status, this.batchId);
 			if (status == 'all' || status == '' || status == undefined) {
 				this.batchId = null;
 				LOG("cleared for status=" + status + ', batch='
@@ -235,7 +235,7 @@
 					SNAPPI.AIR.UploadManager.remove(um);
 				});
 			}
-			// htmlctrl.removePhotoFromQueueById(fileId);
+			// this.flexUploadAPI.removePhotoFromQueueById(fileId);
 		},
 		/*
 		 * close action handler when user clicked on close button
@@ -262,7 +262,7 @@
 		 * @return string batchId, or false
 		 */
 		getOpenBatchId : function() { // OK
-LOG("uploader getOpenBatchId has been DEPRECATED");
+LOG("****************************  uploader getOpenBatchId has been DEPRECATED");
 			return this.flexUploadAPI.getOpenBatchId();
 		},
 		/***********************************************************************

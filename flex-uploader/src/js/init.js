@@ -97,18 +97,18 @@ _domready2 = function(Y) {
 	}
 	PAGE.toggle_upload = function(el) {
 		if (SNAPPI.AIR.Helpers.isAuthorized()) {
-			var n = SNAPPI.Y.one(el);
-			var state = n.get('innerHTML');
-			if (state == 'Pause') {
-				n.set('innerHTML', 'Resume Upload');
+			var state = el.innerHTML;
+			if (state == 'Pause Upload') {
+				// n.set('innerHTML', 'Resume Upload');
+				el.innerHTML = "Resume Upload";
 				SNAPPI.AIR.uploadQueue.action_pause();
 			} else {
-				n.set('innerHTML', 'Pause');
+				el.innerHTML = "Pause Upload";
 				SNAPPI.AIR.uploadQueue.action_start();
 			}
 		} else {
-			// show login screen
-			SNAPPI.Y.one('#login').removeClass('hide');
+			// show login screen by menu click
+			SNAPPI.MenuAUI.find['menu-sign-in-markup'].show();
 		}
 	}
 }

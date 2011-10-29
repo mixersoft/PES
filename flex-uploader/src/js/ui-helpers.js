@@ -89,6 +89,10 @@ console.log("load BEGIN: ui-helpers.js");
 		},		
 		filter : function(node, value) {
 			SNAPPI.AIR.uploadQueue.show(value);
+			var Y = SNAPPI.Y;
+			if (value=='failed') {
+				Y.one('section.gallery-header .upload-toolbar li.btn.retry').removeClass('disabled');
+			} else Y.one('section.gallery-header .upload-toolbar li.btn.retry').addClass('disabled');
 			node.siblings('li.btn').removeClass('focus');
 			node.addClass('focus');
 		},
