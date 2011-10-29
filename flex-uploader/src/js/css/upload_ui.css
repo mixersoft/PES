@@ -21,9 +21,6 @@ div.one-col  div.block {
 	min-width:350px;
 	overflow:auto;
 }
-#choose-folder .block input {
-	margin-left:20%;
-}
 #uploader {
 	margin: 10px auto;
     width: 90%;

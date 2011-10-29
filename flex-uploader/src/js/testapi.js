@@ -426,8 +426,8 @@
          * 										tags : ''
          * 									},.......]
          * */
-        getPageItems: function(page, status, batch_id){
-            var items = this.uploadQueue.getPageItems(page, status, batch_id);
+        getPageItems: function(page, status, batch_id, baseurl){
+            var items = this.uploadQueue.getPageItems(page, status, batch_id, baseurl);
             LOG("Total Page Items ", items.length, "Of Page", page);
             return items;
         },
@@ -491,8 +491,8 @@
          * 			3. operator as string e.g. =,!= default is =
          * return - return number as total count
          * */
-        getCountByStatus: function(status, batch_id, op){
-            var count = this.uploadQueue.getCountByStatus(status, batch_id, op);
+        getCountByStatus: function(status, batch_id, baseurl, op){
+            var count = this.uploadQueue.getCountByStatus(status, batch_id, baseurl, op);
             LOG("getCountByStatus = ", count);
             return count;
         },

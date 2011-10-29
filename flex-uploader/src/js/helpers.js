@@ -278,8 +278,8 @@ console.log("load BEGIN: helpers.js");
      * @params page int, page number, defaults to SNAPPI.STATE.displayPage.perpage
      * @params uploadQueue SNAPPI.AIR.UploadQueue, same as SNAPPI.AIR.uploadQueue
      */
-	Helpers.initUploadGallery = function(uploadQueue, page, perpage, batchId) {
-LOG("Helpers.initUploadGallery, BATCHID="+batchId);		
+	Helpers.initUploadGallery = function(uploadQueue, page, perpage, batchId, baseurl) {
+LOG("Helpers.initUploadGallery, BATCHID="+batchId+", baseurl="+baseurl);		
 		uploadQueue = uploadQueue || SNAPPI.AIR.uploadQueue;
 		page = page || 1;
 		perpage = perpage || SNAPPI.STATE.displayPage.perpage || 24;
@@ -296,9 +296,12 @@ LOG("Helpers.initUploadGallery, BATCHID="+batchId);
 		if (hasFocus) {
 			filter = hasFocus.getAttribute('action').split(':').pop();
 		} else filter = 'all';
-LOG(filter);		
 		
-		uploadQueue.initQueue(filter, {batchId: batchId, perpage: perpage});
+		uploadQueue.initQueue(filter, {
+			batchId: batchId,
+			baseurl: baseurl, 
+			perpage: perpage,
+		});
 		// show initial page using Paginator
 		var paginateTarget = Y.one('#gallery-container .gallery.photo .container');
 		var node = Y.one('#gallery-container .gallery.photo');

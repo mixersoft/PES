@@ -67,7 +67,8 @@ _domready1 = function(Y) {
 		'menu-sign-in-markup':1,
 		'menu-uploader-batch-markup':1
 	});
-	Helpers.initUploadGallery(uploader, 1);
+	// use batchid==null on startup
+	Helpers.initUploadGallery(uploader, 1, null, null);	
 	Helpers.hide_StartupLoadingMask();
 LOG(">>>>>>>>> DONE");	
 

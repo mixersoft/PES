@@ -95,12 +95,12 @@ console.log("load BEGIN: ui-helpers.js");
 		set_Folder : function(node){
 			// node == selected li/menuItem
 			var Y = SNAPPI.Y;
-			var folder = node.get('innerHTML');			
+			var folder = node.hasAttribute('baseurl') ? node.getAttribute('baseurl') : node.get('innerHTML');			
 			
 			// TODO: set baseurl does not currently filter photos in uploadQueue
 			SNAPPI.DATASOURCE.setBaseurl(folder);
 			
-			SNAPPI.AIR.Helpers.initUploadGallery(null, 1, null, '');		// reload gallery with new baseurl
+			SNAPPI.AIR.Helpers.initUploadGallery(null, 1, null, null, folder);		// reload gallery with new baseurl
 			node.siblings('li').removeClass('focus');
 			node.addClass('focus');		
 		},
@@ -171,7 +171,6 @@ console.log("load BEGIN: ui-helpers.js");
 		/**
 		 * load baseurls into menu
 		 * 	NOTE: uploadQueue.initQueue() filters on batchid, not baseurl
-		 * 	TODO: add SQL condition to filter on baseurl 
 		 * @params node, menu contentBox
 		 * @reload boolean, default false. rebuild menu if true
 		 */
@@ -184,12 +183,14 @@ console.log("load BEGIN: ui-helpers.js");
 				// folders = baseurls	
 				var folders =  SNAPPI.DATASOURCE.getBaseurls(),
 				selected = SNAPPI.DATASOURCE.getBaseurl();					
+LOG('>>>>>>> BASEURL='+selected);				
 				var li, longname;
 				folders.unshift('All imported folders');		// for All imported folders
 				for (var i in folders) {
 					longname = folders[i];
 					li = node.create("<li></li>");
 					li.setContent(longname).setAttribute('action', 'uploader_setFolder');
+					if (longname == 'All imported folders') li.setAttribute('baseurl', '');
 					if (longname == selected) li.addClass('focus');
 					if (!selected && longname=='All imported folders') li.addClass('focus');
 					node.append(li);	

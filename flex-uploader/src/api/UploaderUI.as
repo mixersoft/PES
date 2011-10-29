@@ -364,13 +364,19 @@ package api
 			return this.datasource.cfg;
 		}
 		
-		public function getCountByStatus(status:String, batch_id:String='', op:String='='):int {
-			status = status || 'all';
+		public function getCountByStatus(status:String='all', batch_id:String='null', baseurl:String='null', op:String='='):int {
 			var count:int = 0;
 			try{
-				var query:String = "SELECT count(*) as tot_items FROM uploadQueues WHERE 1=1";
-				var batch_id:String = this.datasource.cfg.batch_id || '';
+				//				SELECT count(*) as tot_items 
+				//				FROM uploadQueues as uq ,photos as p 
+				//				WHERE  p.id=uq.photo_id
+				//				and p.base_url='C:\Users\michael\Pictures\importTest\Oregon'				
+				var query:String = "SELECT count(*) as tot_items " +
+					"FROM uploadQueues as uq, photos as p " +
+					"WHERE  p.id=uq.photo_id ";
+				if (batch_id == 'null')batch_id = this.datasource.cfg.batch_id || '';
 				if (batch_id) query += " AND batch_id='" + batch_id + "'"; 
+				if (baseurl && baseurl!=='null') query += " AND p.base_url='" + baseurl + "'"; 
 				
 				if(status!='all'){
 					query = query + " AND status" + op + "'" + status + "'";
@@ -386,7 +392,7 @@ package api
 		}
 		
 		
-		public function getPageItems(page:int,status:String='all',batch_id:String=''):Array{
+		public function getPageItems(page:int,status:String='all',batch_id:String='',baseurl:String=''):Array{
 			var pageitems:Array = [];
 			try{
 				var batch_id:String = this.datasource.cfg.batch_id || '';
@@ -398,6 +404,7 @@ package api
 					" FROM uploadQueues as uq ,photos as p " + 
 					" WHERE p.id=uq.photo_id";
 				if (batch_id) query += " AND batch_id='" + batch_id + "'"; 
+				if (baseurl) query += " AND p.base_url='" + baseurl + "'"; 
 				if(StringUtil.trim(status).length>0 && status!='all'){
 					query += " AND status='" + status + "'";
 				}				   

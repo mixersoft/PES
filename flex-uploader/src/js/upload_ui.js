@@ -43,6 +43,7 @@
 			 * set to initialized batchId
 			 */
 			this.batchId = null; // should be static
+			this.baseurl = null;
 
 			/*
 			 * uploader items perpage
@@ -306,26 +307,34 @@ LOG("uploader getOpenBatchId has been DEPRECATED");
 				this.perpage = cfg.perpage;
 				this.flexUploadAPI.setPerpage(cfg.perpage);
 			} else this.perpage = this.flexUploadAPI.getPerpage();
-//			this.batch = cfg.batchId || cfg.batch || this.batch || this.flexUploadAPI.getOpenBatchId();
+
+			// set current batchId
 			if (util.isUndefined(cfg.batchId)) {
 				this.batchId = this.flexUploadAPI.getOpenBatchId();
 			} else {
 				this.batchId = cfg.batchId; 
 			}
 			this.flexUploadAPI.setBatchId(this.batchId);
-LOG("initQueue, batchId="+this.batchId+", getconfig() batchId="+this.flexUploadAPI.getBatchId());			
+			
+			// set current baseurl
+			this.baseurl = cfg.baseurl || null;
+			this.flexUploadAPI.setBaseurl(this.baseurl);
+			// SNAPPI.DATASOURCE.setBaseurl(this.baseurl);
+// LOG("this.baseurl="+this.baseurl+", datasource.baseurl="+SNAPPI.DATASOURCE.getBaseurl());			
 /*
  * uploadQueue should not care about batchId if null
- */			
-			this.count_filterItems = this.flexUploadAPI.getCountByStatus(filter, this.batchId, '=');
+ */
+			this.count_filterItems = this.flexUploadAPI.getCountByStatus(filter, this.batchId, this.baseurl, '=');
 			this.count_filterPages = Math.ceil(this.count_filterItems / this.perpage);
+
+LOG("initQueue, batchId="+this.batchId+", baseurl="+this.baseurl);
 LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPages);			
 			
 			// for Total Progress only, move to View
 			if (filter == 'all') {
 				this.count_totalItems = this.count_filterItems;
 			} else {
-				this.count_totalItems = this.flexUploadAPI.getCountByStatus('all',this.batchId, '=');
+				this.count_totalItems = this.flexUploadAPI.getCountByStatus('all',this.batchId, this.baseurl, '=');
 			}
 			this.count_totalPages = Math.ceil(this.count_totalItems / this.perpage);
 
@@ -361,10 +370,10 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 			if (mode == 'upload') {
 				this.status = 'all';	// forces tab change to 'all' on next page
 				this.uploadPage = page;
-				rows = this.flexUploadAPI.getPageItems(this.uploadPage, this.status);
+				rows = this.flexUploadAPI.getPageItems(this.uploadPage, this.status, this.batchId, this.baseurl);
 				this.uploadRows = rows;
 			} else {
-				rows = this.flexUploadAPI.getPageItems(page, this.status);
+				rows = this.flexUploadAPI.getPageItems(page, this.status, this.batchId, this.baseurl);
 			}
 			LOG(">>> uploadQueue.getPageItems(), page=" + page
 					+ ", previous page=" + this.activePage + ", status="
@@ -617,7 +626,7 @@ LOG("active count="+UploadManager.count());
 			 * NOTE: importPhotos can change the total/remaining count. 
 			 * update in the correct place
 			 */
-			this.count_totalItems = this.count_totalItems || this.flexUploadAPI.getCountByStatus('all',this.batchId, '=');
+			this.count_totalItems = this.count_totalItems || this.flexUploadAPI.getCountByStatus('all',this.batchId, this.baseurl, '=');
 			this.count_totalPages = Math.ceil(this.count_totalItems / this.perpage);
 		
 			var percent = this.count_totalItems ? Math.ceil((done / this.count_totalItems) * 100)
@@ -1270,11 +1279,11 @@ LOG("active count="+UploadManager.count());
          * 										tags : ''
          * 									},.......]
          * */
-        getPageItems: function(page, status, batch_id){
+        getPageItems: function(page, status, batch_id, baseurl){
             status = status || 'all';
             batch_id = batch_id || '';
             try {
-            	var rows = _flexAPI_UI.getPageItems(page, status, batch_id);
+            	var rows = _flexAPI_UI.getPageItems(page, status, batch_id, baseurl);
             } catch (e) {
             	LOG("js test: getPageItems()");
             	rows = SNAPPI.AIR.Helpers.testDs.getPageItems;
@@ -1311,14 +1320,17 @@ LOG("active count="+UploadManager.count());
          * @params operator string - e.g. '=','!=' default is '='
          * @return - return number as total count
          * */
-        getCountByStatus: function(status, batch_id, op){
+        getCountByStatus: function(status, batch_id, baseurl, op){
             status = status || 'all';
             batch_id = batch_id || '';
             op = op || '=';
-            var count = _flexAPI_UI.getCountByStatus(status, batch_id, op);
+            var count = _flexAPI_UI.getCountByStatus(status, batch_id, baseurl, op);
             return count;
         },
-        
+        setBaseurl: function(baseurl) {
+        	_flexAPI_UI.datasource.setConfig({baseurl: baseurl});
+        	// _flexAPI_UI.saveConfigs('baseurl',baseurl);
+        },
         /**
          * set batch_id for upload queue
          * @params batch_id string - string batch_id e.g. ABC99EUI09DSKJKS
