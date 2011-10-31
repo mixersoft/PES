@@ -189,15 +189,28 @@
 			this.doPause();
 		},
 		/*
-		 * retry action handler fired when user do the retry action it requeue
+		 * retry action handler 
+		 * fired when user do the retry action it requeue
 		 * the error flagged items. and after requeue the retryUpload function
 		 * fires the doRetry function to update the error items in UI
 		 */
 		action_retry : function() {
-			this.flexUploadAPI.retryUpload();
+			try {
+				var oldStatus = SNAPPI.Y.one('.gallery-display-options .settings .filter li.btn.focus').getAttribute('action');
+				oldStatus = oldStatus.split(':').pop();
+			} catch (e) {
+				oldStatus='failure';
+			}
+			var newStatus = 'pending';
+LOG(">>>>>>> action_retry: FOR old STATUS="+oldStatus);			
+			var ret = this.flexUploadAPI.retryUpload(newStatus, oldStatus, this.batchId, this.baseurl);
+			// redraw page from page 1 of cancelled
+			this.view_showPage(1);
+			// SNAPPI.AIR.Helpers.initUploadGallery(null, 1, null, null, null );	
 		},
 		/*
-		 * cancel all action handler runs when user do the clear action it stop
+		 * cancel all action handler 
+		 * runs when user do the clear action it stop
 		 * the current uploadpage if any and clear upload queue clear( [all |''
 		 * |undefined) closes batch
 		 */
@@ -308,16 +321,19 @@ LOG("****************************  uploader getOpenBatchId has been DEPRECATED")
 				this.flexUploadAPI.setPerpage(cfg.perpage);
 			} else this.perpage = this.flexUploadAPI.getPerpage();
 
-			// set current batchId
-			if (util.isUndefined(cfg.batchId)) {
-				this.batchId = this.flexUploadAPI.getOpenBatchId();
-			} else {
-				this.batchId = cfg.batchId; 
-			}
+			/*
+			 * NOTE: currently not using uploadQueue.batchId for filtering
+			 */
+			// if (util.isUndefined(cfg.batchId)) {
+				// this.batchId = this.flexUploadAPI.getOpenBatchId();
+			// } else {
+				// this.batchId = cfg.batchId; 
+			// }
+			this.batchId = cfg.batchId || null; 
 			this.flexUploadAPI.setBatchId(this.batchId);
 			
 			// set current baseurl
-			this.baseurl = cfg.baseurl || null;
+			this.baseurl = cfg.baseurl || this.flexUploadAPI.getBaseurl();
 			this.flexUploadAPI.setBaseurl(this.baseurl);
 			// SNAPPI.DATASOURCE.setBaseurl(this.baseurl);
 // LOG("this.baseurl="+this.baseurl+", datasource.baseurl="+SNAPPI.DATASOURCE.getBaseurl());			
@@ -327,7 +343,7 @@ LOG("****************************  uploader getOpenBatchId has been DEPRECATED")
 			this.count_filterItems = this.flexUploadAPI.getCountByStatus(filter, this.batchId, this.baseurl, '=');
 			this.count_filterPages = Math.ceil(this.count_filterItems / this.perpage);
 
-LOG("initQueue, batchId="+this.batchId+", baseurl="+this.baseurl);
+LOG("============> initQueue: batchId="+this.batchId+", baseurl="+this.baseurl);
 LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPages);			
 			
 			// for Total Progress only, move to View
@@ -440,6 +456,7 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 			}
 			this.view_setUploadTotalProgress();
 			this.view_setTotalCount();
+			pageNode.ancestor('.gallery.photo').loadingmask.hide();
 		},		
 		
 		
@@ -621,7 +638,7 @@ LOG("active count="+UploadManager.count());
 		 */
 		view_setUploadTotalProgress : function(offset) {
 			// TODO: get total progress value in 1 SQL stmt using GROUP BY
-			var done = this.flexUploadAPI.getCountByStatus('pending',this.batchId, '!=');
+			var done = this.flexUploadAPI.getCountByStatus('pending',this.batchId, this.baseurl,'!=');
 			/*
 			 * NOTE: importPhotos can change the total/remaining count. 
 			 * update in the correct place
@@ -1148,7 +1165,7 @@ LOG("active count="+UploadManager.count());
     		_flexAPI_UI = _JS_UI;
     		LOG(">>>>>>>>>>>>>>>>>>>>>>>>> using FAKE JAVASCRIPT DATASOURCE FOR JS TESTING ");
     	} else {
-    		_flexAPI_UI = flexAPI_UI;
+    		_flexAPI_UI = flexAPI_UI;		// Flex UploaderUI.as
     		htmlctrl = flexAPI_UI;
     		LOG(">>>>>>>>>>>>>>>>>>>>>>>>> JAVASCRIPT FLEX BRIDGE");
     		LOG(_flexAPI_UI);
@@ -1228,8 +1245,9 @@ LOG("active count="+UploadManager.count());
          * sends error(not uploaded due to some reason) while uploading set back to running queue
          * @return - bool return/false
          * */
-        retryUpload: function(){
-            return _flexAPI_UI.retryUpload();
+        retryUpload: function(newStatus, oldStatus, batchid, baseurl){
+LOG("retryUpload: batchid="+batchid+", baseurl="+baseurl) ;     	
+            return _flexAPI_UI.setUploadQueueStatus(newStatus, oldStatus, batchid, baseurl);
         },
         
         /**
@@ -1331,6 +1349,9 @@ LOG("active count="+UploadManager.count());
         	_flexAPI_UI.datasource.setConfig({baseurl: baseurl});
         	// _flexAPI_UI.saveConfigs('baseurl',baseurl);
         },
+        getBaseurl: function() {
+        	return _flexAPI_UI.datasource.cfg.baseurl;
+        },        
         /**
          * set batch_id for upload queue
          * @params batch_id string - string batch_id e.g. ABC99EUI09DSKJKS

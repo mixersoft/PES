@@ -88,13 +88,6 @@ LOG(">>>>>>>>> DONE");
 _domready2 = function(Y) {
 	var util = SNAPPI.coreutil;
 	SNAPPI.namespace('PAGE');
-	PAGE.uploader_openTab = function (tab){	// deprecate
-		// check if uploader.isPaused == true
-		var btn = SNAPPI.Y.one('#start-btn').set('innerHTML', 'Start');					
-		SNAPPI.AIR.uploadQueue.show(tab);
-//			SNAPPI.AIR.uploadQueue.view_showPage();
-		var check;
-	}
 	PAGE.toggle_upload = function(el) {
 		if (SNAPPI.AIR.Helpers.isAuthorized()) {
 			var state = el.innerHTML;

@@ -75,8 +75,7 @@
 		<li class="label count">0 Snaps</li>
 	</ul>
 	<ul class='toolbar upload-toolbar inline'>		
-		<li class="btn" onclick="PAGE.toggle_upload(this);return false;">Start Upload</li>
-		<li class="btn retry disabled " onclick="SNAPPI.AIR.uploadQueue.action_retry();return false;">Retry</li>
+		<li class="btn start" status="pause" onclick="PAGE.toggle_upload(this);return false;">Start Upload</li>
 		<li class="btn hide" onclick="SNAPPI.AIR.uploadQueue.action_clear();return false;">Clear</li>
 		<li id="upload-progress" class="progress center"><div class="bar"></div><span></span></li>
 	</ul>
@@ -92,7 +91,7 @@
 <section class="gallery-display-options container_x hide" >
 	<nav class="settings">
 	    	<ul class="filter inline">
-	    		<li class="label">Filter</li>
+	    		<li class="label">Filters</li>
 				<li class='btn' action="filter:all">All</li>
 				<li class='btn  focus' action="filter:pending">Ready</li>
 				<li class='btn' action="filter:cancelled">Cancelled</li>
@@ -100,6 +99,10 @@
 				<li class='btn' action="filter:failed">Errors</li>
 	            <li class="btn choose-folder" ><a class="menu-open">Folder</a></li>				
 			</ul>
+	    	<ul class="actions inline">
+	    		<li class="label">Actions</li>
+				<li class="btn retry" onclick="SNAPPI.AIR.uploadQueue.action_retry();return false;">Retry</li>
+			</ul>			
 	    	<ul class="thumb-size inline">
 				<li class="label">Size</li>
 				<li action="set-display-size:sq" class="btn focus"><img alt="" src="/css/images/img_1.gif"></li><li action="set-display-size:lm" class="btn"><img alt="" src="/css/images/img_2.gif"></li><li action="set-display-size:ll" class="btn "><img alt="" src="/css/images/img_3.gif"></li>

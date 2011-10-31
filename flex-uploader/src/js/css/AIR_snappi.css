@@ -936,3 +936,7 @@ ul li.btn.disabled, ul li.btn.disabled:hover {
 	color: #888 !important;
 	border: 1px solid #D8D5D5 !important;
 } 
+
+.upload-toolbar li.btn.start {
+	border-color: #00AA00;
+} 

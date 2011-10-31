@@ -88,11 +88,16 @@ console.log("load BEGIN: ui-helpers.js");
 			} catch (e) {}
 		},		
 		filter : function(node, value) {
+			try {
+				var pluginNode = node.ancestor('#gallery-container').one('.gallery.photo');			
+				pluginNode.loadingmask.refreshMask();
+				pluginNode.loadingmask.show();
+			} catch(e) {}
 			SNAPPI.AIR.uploadQueue.show(value);
 			var Y = SNAPPI.Y;
-			if (value=='failed') {
-				Y.one('section.gallery-header .upload-toolbar li.btn.retry').removeClass('disabled');
-			} else Y.one('section.gallery-header .upload-toolbar li.btn.retry').addClass('disabled');
+			// if (value=='failed') {
+				// Y.one('section.gallery-header .upload-toolbar li.btn.retry').removeClass('disabled');
+			// } else Y.one('section.gallery-header .upload-toolbar li.btn.retry').addClass('disabled');
 			node.siblings('li.btn').removeClass('focus');
 			node.addClass('focus');
 		},
