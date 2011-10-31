@@ -103,8 +103,8 @@ var DEFAULT_CFG_contextmenu = 	{
 		for (var i in menus) {
 			var CSS_ID = menus[i] ? i : null; 
 			var cfg = Y.Lang.isObject(menus[i]) ? menus[i] : null;
-	    	if (CSS_ID && !SNAPPI.MenuAUI.find[CSS_ID]) {
-	    		SNAPPI.MenuAUI.CFG[CSS_ID].load(cfg);
+	    	if (CSS_ID && !Menu.find[CSS_ID]) {
+	    		Menu.CFG[CSS_ID].load(cfg);
 	    	}			
 		}
 		Y.one('#markup').setStyle('display', 'block');
@@ -331,6 +331,7 @@ var DEFAULT_CFG_contextmenu = 	{
 			// add new rating group as LI > DIV
 			menuItem.setAttribute('uuid', audition.id);
 			SNAPPI.Rating.pluginRating(menuItem, menuItem, audition.rating);
+			// rating handler: Rating.postRatingChangeAndCleanup()
 			SNAPPI.Rating.startListeners(menuItem);
 			menuItem.one('.ratingGroup').setAttribute('id', 'menuItem-contextRatingGrp');
 		} else {
@@ -369,13 +370,56 @@ var DEFAULT_CFG_contextmenu = 	{
 			input.set('value', 'Enter tags').addClass('help');
 		}
 	};	
+	
+	MenuItems.rotate_click = function(menuItem, menu){
+		var rotate = menuItem.getAttribute('rotate');
+		var thumbnail = menu.get('currentNode');
+		var options = {
+			ids: thumbnail.uuid,	// id or array of ids
+			properties: {'rotate': rotate},
+			actions: null,
+			callbacks: {
+				successJson: function(e, i, o,args){
+					var resp = o.responseJson;
+					var uuid = resp.response.uuid;
+					// reset all .FigureBoxes
+					try {
+						var img, src, audition = SNAPPI.Auditions.find(uuid);
+						for (var i in audition.bindTo) {
+							if (audition.bindTo[i].hasClass('FigureBox')) {
+								img = audition.bindTo[i].one('figure > img');
+								src = img.get('src');
+								img.set('src', src + '?rand=' + Math.random());
+							}
+						}
+					} catch (e) {}
+					args.loadingmask.hide();
+					return false;
+				}, 
+				complete: function(e, i, o, args) {
+					args.loadingmask.hide();
+				},
+				failure : function (e, i, o, args) {
+					// post failure or timeout
+					var resp = o.responseJson || o.responseText || o.response;
+					var msg = resp.message || resp;
+					// TODO: flash error message
+					if (console) console.error("ERROR: setProp() - "+msg);
+					args.loadingmask.hide();
+					return false;
+				},
+			},
+		}
+		SNAPPI.AssetRatingController.setProp(menuItem, options);
+	},
+	// deprecated. use click on hiddenshot icon instead
 	MenuItems.showHiddenShot_beforeShow = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
     	try {
     		var shotId = audition.Audition.Substitutions.id;
     		if (!shotId) menuItem.hide();
-    		else if (/[nav-|shot-]/.test(thumbnail.Thumbnail._cfg.ID_PREFIX)) menuItem.hide();
+    		else if (/(nav-)|(shot-)/.test(thumbnail.Thumbnail._cfg.ID_PREFIX)) menuItem.hide();
     		else menuItem.show();
 		}catch(e){
 			menuItem.hide();
@@ -1063,7 +1107,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		return Menu.getMarkup(MARKUP , callback);
 	};		
 	
-	
+		
 	// SNAPPI.MenuAUI
 	Menu.CFG = {
 		'menu-header-markup': CFG_Menu_Header,
@@ -1077,5 +1121,4 @@ var DEFAULT_CFG_contextmenu = 	{
 		'menu-uploader-batch-markup': CFG_Menu_Uploader_Batch,		
 		'menu-uploader-folder-markup': CFG_Menu_Uploader_Folder,
 	};
-	
 })();

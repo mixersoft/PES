@@ -152,14 +152,16 @@ class JheadComponent extends Object
 		/*
 		 * don't use shell.
 		 */
-		$errors[] = JheadComponent::$Exec->exec($cmd, $options);
+		$ret = JheadComponent::$Exec->exec($cmd, $options);
+		if ($ret) $errors[] = $ret;
+	
 		// --copy all does not touch the exif_orient tag, 
 		// since Fotofix rotate values are all based on autoRotated/exif_orient=1 photos, 
 		// we must make sure the original is also auto-rotated 
-		if ($autoRotate) $errors[] = $this->autoRotate($dest);
-		else  $errors[] = $this->noRotate($dest);
-		
-		if ($errors) return $errors;
+		if ($autoRotate) $ret = $this->autoRotate($dest);
+		else  $ret = $this->noRotate($dest);
+		if ($ret) $errors[] = $ret;
+		if (!empty($errors)) return $errors;
 		
 	}
 	

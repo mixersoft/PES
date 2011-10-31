@@ -469,6 +469,7 @@ LOG(postData);
     	};
     	/*
 		 * plugin Y.Plugin.IO
+		 * TODO: refactor. pattern also used in AssetRatingController.setProp()
 		 */
 		var ioCfg;
 		if (!container.io) {
@@ -484,8 +485,8 @@ LOG(postData);
 					on: {
 						successJson: function(e, i, o,args){
 							var resp = o.responseJson;
-LOG(' >>>>>>>>>>>>>  successJson    ');							
-LOG(resp);
+// LOG(' >>>>>>>>>>>>>  successJson    ');							
+// LOG(resp);
 							var authUser = resp.response.User;
 							XhrHelper._setUser(authUser);
 							this.one('.message').setContent('').addClass('hide');
@@ -499,8 +500,8 @@ LOG(resp);
 						},
 						failure : function (e, i, o, args) {
 							// post failure or timeout
-LOG(' >>>>>>>>>>>>>  LOGIN XHR FAILURE    ');	
-LOG(o);
+// LOG(' >>>>>>>>>>>>>  LOGIN XHR FAILURE    ');	
+// LOG(o);
 							var resp = o.responseJson || o.responseText || o.response;
 							var msg = resp.message || resp;
 							if (msg) {

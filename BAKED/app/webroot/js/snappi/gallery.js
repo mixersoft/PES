@@ -477,7 +477,7 @@
         			// toggle Click listener
 	        		if (menu.get('disabled')) {
 	        			// TODO: nav to attribute "linkTo"
-	        			Factory.listeners.Click();
+	        			Factory.listeners.Click.call(this);
 	        		} else {
 	        			// TODO: ignore "linkTo" click
 	        			this.stopClickListener();

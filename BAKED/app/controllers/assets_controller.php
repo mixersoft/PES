@@ -993,36 +993,60 @@ debug("WARNING: This code path is not tested");
 						if ($return) $updateBestShot_assetIds[] = $aid;
 						$ret = $ret && $return;
 					}
-					if (in_array('rotate', $fields) && !empty($this->data['Asset']['exif_orientation'])) {
-						// update rotate
-						if (!isset($this->Jhead)) $this->Jhead = loadComponent('Jhead', $this);
-						$orientation = $this->data['Asset']['exif_orientation'];
-						if (in_array($orientation, array(3,6,8))) {
-							$base = Session::read('stagepath_baseurl');
+					if (in_array('rotate', $fields) && !empty($this->data['Asset']['rotate'])) {
+						// get exif data from DB
+						$options = array(
+							'conditions'=>array('Asset.id'=>$this->data['Asset']['id']), 
+							'fields'=>array('id', 'json_exif', 'json_src'),
+							'extras' => array(
+								'join_shots'=>false,	// get ALL photos
+								'show_edits' => false,
+							),							
+						);
+						$data = $this->Asset->find('first', $options);
+						$rotate = $this->data['Asset']['rotate'];
+						if (in_array($rotate, array(3,6,8))) {
+							$base = Configure::read('path.stageroot.basepath');
 							// goal: set Audition.Photo.Fix.Rotate
 							if (!empty($data['Asset'])) {
 								$json_exif = json_decode($data['Asset']['json_exif'], true);
-								$json_exif['preview']['Orientation'] = $orientation;
-								if (in_array($orientation, array(6,8))) {
+								// if (!is_array($json_exif)) $json_exif = json_decode($json_exif, true);
+// debug($json_exif);								
+								// 8 = ccw, 6 = cw
+								// 8=> 1, 8, 3, 6, 1
+								// 6=> 1, 6, 3, 8, 1
+								$rotate_lookup = array(8=>array(1=>8,8=>3,3=>6,6=>1), 6=>array(1=>6,6=>3,3=>8,8=>1));
+								$old_rotate = !empty($json_exif['preview']['Orientation']) ? $json_exif['preview']['Orientation'] : 1;
+								$new_rotate = $rotate_lookup[$rotate][$old_rotate];
+								$json_exif['preview']['Orientation'] = $new_rotate;
+								$response['rotate'] = $new_rotate;
+								$repsonse['uuid'] = $data['Asset']['id'];
+// debug("new rotate = $new_rotate");								
+								if (in_array($rotate, array(6,8)) && isset($json_exif['preview']['imageWidth'])) {
 									$temp = $json_exif['preview']['imageWidth'];
 									$json_exif['preview']['imageWidth'] = $json_exif['preview']['imageHeight'];
 									$json_exif['preview']['imageHeight'] = $temp;
 								};
-								// rotate preview
+								// get src for preview derived asset
 								$json_src = json_decode($data['Asset']['json_src'], true);
-								$src = $base.$json_src['preview'];
-								$errors =  $this->Jhead->exifRotate($orientation, $src);
-								
+								$src = $base.'/'.preg_replace('/\//', '/.thumbs/', $json_src['preview'], 1);
+// debug($src);								
+								// update rotate
+								if (!isset($this->Jhead)) $this->Jhead = loadComponent('Jhead', $this);
+								$errors =  $this->Jhead->exifRotate($rotate, $src);
 								// save asset data
-								// $data['Asset']['json_src']=json_encode($data['Asset']['json_src']);
-								$data['Asset']['json_exif']=json_encode($data['Asset']['json_exif']);
+								$data['Asset']['json_exif']=json_encode($json_exif);
+								$this->Asset->id = $data['Asset']['id'];
 								$return = $this->Asset->saveField('json_exif', $data['Asset']['json_exif'], false);
 								// delete other sizes
 								$sizes = array('sq', 'tn', 'lm', 'll', 'bs', 'bm');
 								foreach($sizes as $size) {
 									$delete = getImageSrcBySize($src, $size);
-									@unlink($delete);	
+// debug("deleting file={$delete}");									
+									$r = @unlink($delete);	
 								}
+								$response['rotate'] = $new_rotate;
+								$response['uuid'] = $data['Asset']['id'];
 								$return = $return && empty($errors);
 							}
 						} else $return = false;

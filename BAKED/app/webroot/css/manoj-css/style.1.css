@@ -83,6 +83,9 @@ nav ul.menu-trigger > li , nav  ul.menu-trigger > li > a {
 .menu > ul > li , .menu > ul > li > a {
 	cursor: pointer;
 }
+.menu ul > hr {
+	border-top: 1px dotted #AAAAAA;
+}
 ul > li.label {
 	cursor: default !important;
 }

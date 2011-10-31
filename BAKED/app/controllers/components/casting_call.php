@@ -141,7 +141,7 @@ class CastingCallComponent extends Object {
 		if (isset($exif['preview'])) {
 			// $exif['preview'] set in controllers/import.php
 			$Src['Orientation']  = isset($exif['preview']->Orientation) ? $exif['preview']->Orientation : 1;
-			$Src['isRGB']  = $exif['preview']->isRGB;
+			if ( isset($exif['preview']->isRGB)) $Src['isRGB']  = $exif['preview']->isRGB;
 		}
 //		$origSrc = $src['orig'];
 		// TODO: deprecate. legacy, for compatibility with flickr datasource???
