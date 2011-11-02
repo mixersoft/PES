@@ -720,9 +720,10 @@ var DEFAULT_CFG_contextmenu = 	{
 			dialog.io.start();			
 	};	
 	MenuItems.uploader_setFolder_click = function(menuItem, menu){
+		var target = menu.get('currentNode');
 		if (menuItem.hasAttribute('batch')) {
-			SNAPPI.AIR.UIHelper.actions.set_UploadBatchid(menuItem);
-		} else SNAPPI.AIR.UIHelper.actions.set_Folder(menuItem);
+			SNAPPI.AIR.UIHelper.set_UploadBatchid(menuItem, target);
+		} else SNAPPI.AIR.UIHelper.set_Folder(menuItem, target);
 		menu.hide();
 	};	
 	

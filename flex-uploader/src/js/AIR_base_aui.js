@@ -77,6 +77,7 @@ var onload_complete = function(){
     		/*
     		 * early load modules
     		 */
+    		// 'AIR-firebug-stable',
     		// 'AIR-firebug-1.2',
     		/*
     		 * snappi modules
@@ -135,10 +136,10 @@ var onload_complete = function(){
     			 */
     			Y.on('domready', function(){
    					var node = SNAPPI.AIR.Helpers.init_GalleryLoadingMask();
+   					// flex_onYuiDomReady: js global defined in snaphappi.mxml,
     				flex_onYuiDomReady();
     				LOG(">>>>>>>>>>>>>>>>>>>>>>>>  YUI/domready BEGIN <<<<<<<<<<<<<");
     				_domready1(Y);		// find in init.js
-    				_domready2(Y);
     				LOG(">>>>>>>>>>>>>>>>>>>>>>>>  YUI/domready COMPLETE <<<<<<<<<<<<<");
     			});
     		}
@@ -363,6 +364,9 @@ var onload_complete = function(){
 	                // 'AIR-snappi-css' loaded in HTML head
 	                requires: ['AIR-upload-ui-css', 'AIR-api-bridge', 'AIR-file-progress', 'AIR-ui-helpers']
 			    },
+		        'AIR-firebug-stable': {	// not supported in AIR/webkit browser
+		            path: 'https://getfirebug.com/firebug-lite.js#startOpened',
+		        },  			    
 		        'AIR-firebug-1.3': {	// not supported in AIR/webkit browser
 		            path: 'debug/firebug-lite.1.3.2.js#startOpened',
 		        },    	

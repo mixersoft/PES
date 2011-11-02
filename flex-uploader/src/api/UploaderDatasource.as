@@ -54,7 +54,7 @@ package api
 				this.saveConfig("provider_key",UUID.genUUID());	
 			}
 			this.saveConfig("MAX_CONCURRENT_UPLOADS",Config.MAX_CONCURRENT_UPLOADS);			
-			this.setBaseUrl();	// restore last select baseurl
+			this.setBaseurlToLastSelected();	// restore last select baseurl
 		}
 		/**
 		 * save key=value pair to cfg
@@ -95,7 +95,9 @@ package api
 			this.setConfig(json);
 		}
 		
-		public function setBaseUrl():void{
+		public function setBaseurlToLastSelected():void{
+			if (this.cfg.baseurl) return;		
+			// only set to last_selected if null
 			var query:String = "SELECT * FROM local_stores WHERE last_selected=1";
 			var dt:Array = Config.sql.execQuery(query);
 			if(dt && dt.length){

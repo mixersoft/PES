@@ -20,19 +20,90 @@
  * 
  * 
  */
-console.log("load BEGIN: ui-helpers.js");	
+// console.log("load BEGIN: ui-helpers.js");	
 (function() {
 	
 	SNAPPI.namespace('SNAPPI.STATE');
-		
+			
 	/***************************************************************************
 	 * UIHelpers Static Class
 	 * 	SNAPPI.AIR.UIHelpers = UIHelpers;
 	 */
-	var UIHelper = function() {}
+	var UIHelper = function(){
+	}
 	UIHelper.prototype = {};
 	SNAPPI.AIR.UIHelper = UIHelper;
 	
+	UIHelper.set_Folder = function(node, target){
+		// node == selected li/menuItem
+		// target = menu trigger
+		SNAPPI.AIR.Helpers.init_GalleryLoadingMask();
+					
+		var Y = SNAPPI.Y;
+		var folder = node.hasAttribute('baseurl') ? node.getAttribute('baseurl') : node.get('innerHTML');			
+		
+		// pause upload.\
+		// TODO: this does not work. missing the loadingmask.hide() event;
+		if (SNAPPI.AIR.uploadQueue.isUploading) {
+			UIHelper.toggle_upload();
+		}
+			
+		var delayed = new Y.DelayedTask( function() {
+			node.siblings('li').removeClass('focus');
+			node.addClass('focus');	
+							
+			// SNAPPI.AIR.Helpers.initUploadGallery(null, 1, null, null, folder);		// reload gallery with new baseurl
+			var uploader = SNAPPI.AIR.uploadQueue,
+				page = 1;
+			uploader.initQueue(uploader.status, {
+				folder: folder, 				// folder='all' => baseurl=''
+				page: page,
+			});
+			var p = SNAPPI.Paginator.find['PhotoAirUpload'];
+			SNAPPI.Paginator._getPageFromAirDs(p.container, page);
+			delete delayed;		
+		});
+		delayed.delay(100);  // wait 100 ms					
+	};
+	UIHelper.set_UploadBatchid = function(node){
+		// node == selected li/menuItem
+		// target = menu trigger
+		try {
+			var pluginNode = target.ancestor('#gallery-container').one('.gallery.photo');			
+			pluginNode.loadingmask.refreshMask();
+			pluginNode.loadingmask.show();
+		} catch(e) {
+		}
+		var delayed = new Y.DelayedTask( function() {
+			var batchid = node.getAttribute('batch');
+			SNAPPI.AIR.Helpers.initUploadGallery(null, 1, null, batchid);		// reload gallery with new baseurl
+			
+			node.siblings('li').removeClass('focus');
+			node.addClass('focus');	
+			delete delayed;		
+		});
+		delayed.delay(100);  // wait 100 ms				
+	};
+	UIHelper.toggle_upload = function(el) {
+		if (SNAPPI.AIR.Helpers.isAuthorized()) {
+			if (!el) {
+				var n = SNAPPI.Y.one('.gallery-header .upload-toolbar li.btn.start');
+				el = n.getDOMNode();
+			}
+			var state = el.innerHTML;
+			if (state == 'Pause Upload') {
+				// n.set('innerHTML', 'Resume Upload');
+				el.innerHTML = "Resume Upload";
+				SNAPPI.AIR.uploadQueue.action_pause();
+			} else {
+				el.innerHTML = "Pause Upload";
+				SNAPPI.AIR.uploadQueue.action_start();
+			}
+		} else {
+			// show login screen by menu click
+			SNAPPI.MenuAUI.find['menu-sign-in-markup'].show();
+		}
+	};	
 	/*
 	 * manage all UI listeners
 	 */
@@ -53,12 +124,14 @@ console.log("load BEGIN: ui-helpers.js");
 	            if (node.listen[action] == undefined) {
 					node.listen[action] = node.delegate('click', 
 		                function(e){
-		                	// action=[set-display-size:[size] | set-display-view:[mode]]
-		                	// context = Gallery.node
 		                	var action = e.currentTarget.getAttribute('action').split(':');
 				    		switch(action[0]) {
 				    			case 'filter':
 				    				UIHelper.actions['filter'](e.currentTarget, action[1]);
+				    			break;
+				    			case 'folder':
+				    				// uses MenuItems.uploader_setFolder_click()
+				    				// to call set_UploadBatchid(menuItem) or set_Folder(menuItem)
 				    			break;
 				    		}		                	
 		                }, 'ul > li.btn', UIHelper);
@@ -66,8 +139,38 @@ console.log("load BEGIN: ui-helpers.js");
 				// back reference
 				UIHelper.listen[action] = node.listen[action];
 	        },  		
+	        WindowOptionClick : function(node) {
+	        	var Y = SNAPPI.Y;
+	        	node = node || Y.one('.item-header nav.window-options');
+	        	var action = 'WindowOptionClick';
+	        	node.listen = node.listen || {};
+	            if (node.listen[action] == undefined) {
+					node.listen[action] = node.delegate('click', 
+		                function(e){
+		                	// action=[set-display-size:[size] | set-display-view:[mode]]
+		                	// context = UIHelper
+		                	var action = e.currentTarget.getAttribute('action').split(':');
+				    		switch(action[0]) {
+				    			case 'set-display-view':
+				    				UIHelper.actions.setDisplayView(action[1]);
+				    			break;
+				    		}		                	
+		                }, 'ul > li', UIHelper);
+				}
+				// back reference
+				UIHelper.listen[action] = node.listen[action];
+	        },
 	}
+	// for lister getAttribute('action') handlers
 	UIHelper.actions = {
+		setDisplayView : function(view) {
+			// show/hide body
+			var body = SNAPPI.Y.one('#item-body');
+			if (view=='minimize') body.addClass('hide');
+			else body.removeClass('hide');
+			// flex_setDropTarget: js global defined in snaphappi.mxml,
+			flex_setDropTarget();		 // reset dropTarget in Flex
+		},
 		toggleDisplayOptions  : function(o){
 			var Y = SNAPPI.Y;
 			try {
@@ -88,39 +191,24 @@ console.log("load BEGIN: ui-helpers.js");
 			} catch (e) {}
 		},		
 		filter : function(node, value) {
-			try {
-				var pluginNode = node.ancestor('#gallery-container').one('.gallery.photo');			
-				pluginNode.loadingmask.refreshMask();
-				pluginNode.loadingmask.show();
-			} catch(e) {}
-			SNAPPI.AIR.uploadQueue.show(value);
+			// try {
+				// var pluginNode = node.ancestor('#gallery-container').one('.gallery.photo');			
+				// pluginNode.loadingmask.refreshMask();
+				// pluginNode.loadingmask.show();
+			// } catch(e) {}
+			SNAPPI.AIR.Helpers.init_GalleryLoadingMask();
 			var Y = SNAPPI.Y;
-			// if (value=='failed') {
-				// Y.one('section.gallery-header .upload-toolbar li.btn.retry').removeClass('disabled');
-			// } else Y.one('section.gallery-header .upload-toolbar li.btn.retry').addClass('disabled');
-			node.siblings('li.btn').removeClass('focus');
-			node.addClass('focus');
+			var delayed = new Y.DelayedTask( function() {
+				SNAPPI.AIR.uploadQueue.show(value);
+				// if (value=='failed') {
+					// Y.one('section.gallery-header .upload-toolbar li.btn.retry').removeClass('disabled');
+				// } else Y.one('section.gallery-header .upload-toolbar li.btn.retry').addClass('disabled');
+				node.siblings('li.btn').removeClass('focus');
+				node.addClass('focus');
+				delete delayed;
+			});
+			delayed.delay(100);  // wait 100 ms		
 		},
-		set_Folder : function(node){
-			// node == selected li/menuItem
-			var Y = SNAPPI.Y;
-			var folder = node.hasAttribute('baseurl') ? node.getAttribute('baseurl') : node.get('innerHTML');			
-			
-			// TODO: set baseurl does not currently filter photos in uploadQueue
-			SNAPPI.DATASOURCE.setBaseurl(folder);
-			
-			SNAPPI.AIR.Helpers.initUploadGallery(null, 1, null, null, folder);		// reload gallery with new baseurl
-			node.siblings('li').removeClass('focus');
-			node.addClass('focus');		
-		},
-		set_UploadBatchid : function(node){
-			// node == selected li/menuItem
-			var batchid = node.getAttribute('batch');
-			SNAPPI.AIR.Helpers.initUploadGallery(null, 1, null, batchid);		// reload gallery with new baseurl
-			
-			node.siblings('li').removeClass('focus');
-			node.addClass('focus');		
-		},		
 	}	
 	
 	UIHelper.menu = {
@@ -190,8 +278,8 @@ console.log("load BEGIN: ui-helpers.js");
 				
 				var Y = SNAPPI.Y;
 				// folders = baseurls	
-				var folders =  SNAPPI.DATASOURCE.getBaseurls(),
-				selected = SNAPPI.DATASOURCE.getBaseurl();					
+				var folders =  SNAPPI.AIR.uploadQueue.ds.getBaseurls(),
+				selected = SNAPPI.AIR.uploadQueue.baseurl;					
 LOG('>>>>>>> BASEURL='+selected);				
 				var li, longname;
 				folders.unshift('All imported folders');		// for All imported folders
@@ -199,7 +287,7 @@ LOG('>>>>>>> BASEURL='+selected);
 					longname = folders[i];
 					li = node.create("<li></li>");
 					li.setContent(longname).setAttribute('action', 'uploader_setFolder');
-					if (longname == 'All imported folders') li.setAttribute('baseurl', '');
+					if (longname == 'All imported folders') li.setAttribute('baseurl', 'all');
 					if (longname == selected) li.addClass('focus');
 					if (!selected && longname=='All imported folders') li.addClass('focus');
 					node.append(li);	

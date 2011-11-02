@@ -172,6 +172,7 @@ FileProgress.prototype = {
     setCancelled: function(msg){
     	this.node.replaceClass('status-pending', "status-cancelled");
     	this.node.replaceClass('status-active', "status-cancelled");
+    	this.node.replaceClass('status-paused', "status-cancelled");
         if (msg) 
             this.setStatus(msg);
         this.showCancelBtn(false, null);
@@ -184,6 +185,7 @@ FileProgress.prototype = {
     },    
     setReady: function(msg){
         this.node.addClass('status-pending');
+        this.node.removeClass("status-paused");
         this.node.one('div.bar').setStyle('width', "0%");
         if (msg) 
             this.setStatus(msg);

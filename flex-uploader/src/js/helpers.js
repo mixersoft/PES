@@ -278,8 +278,8 @@ console.log("load BEGIN: helpers.js");
      * @params page int, page number, defaults to SNAPPI.STATE.displayPage.perpage
      * @params uploadQueue SNAPPI.AIR.UploadQueue, same as SNAPPI.AIR.uploadQueue
      */
-	Helpers.initUploadGallery = function(uploadQueue, page, perpage, batchId, baseurl) {
-LOG("Helpers.initUploadGallery, BATCHID="+batchId+", baseurl="+baseurl);		
+	Helpers.initUploadGallery = function(uploadQueue, page, perpage, batchId, folder, filter) {
+LOG("Helpers.initUploadGallery, BATCHID="+batchId+", folder="+folder+", page="+page);		
 		uploadQueue = uploadQueue || SNAPPI.AIR.uploadQueue;
 		page = page || 1;
 		perpage = perpage || SNAPPI.STATE.displayPage.perpage || 24;
@@ -291,7 +291,15 @@ LOG("Helpers.initUploadGallery, BATCHID="+batchId+", baseurl="+baseurl);
 		
 		
 		// check .filter for current focus
-		var filter;
+		if (filter) {
+			// set filter focus
+			var filterBtns = uploadQueue.container.all('.gallery-display-options .settings .filter li.btn');
+			filterBtns.each(function(n,i,l){
+				var action = n.getAttribute('action').split(':').pop();
+				if (action == filter) n.addClass('focus'); 
+				else n.removeClass('focus');
+			});
+		}
 		var hasFocus = uploadQueue.container.one('.gallery-display-options .settings .filter li.btn.focus');
 		if (hasFocus) {
 			filter = hasFocus.getAttribute('action').split(':').pop();
@@ -299,16 +307,21 @@ LOG("Helpers.initUploadGallery, BATCHID="+batchId+", baseurl="+baseurl);
 		
 		uploadQueue.initQueue(filter, {
 			batchId: batchId,
-			baseurl: baseurl, 
+			folder: folder, 				// folder='all' => baseurl=''
 			perpage: perpage,
+			page: page,
 		});
 		// show initial page using Paginator
-		var paginateTarget = Y.one('#gallery-container .gallery.photo .container');
+		
 		var node = Y.one('#gallery-container .gallery.photo');
 		// init gallery listeners
 		Helpers.init_GalleryLoadingMask(node);
-		paginateTarget.UploadQueue = uploadQueue;
-		var p = SNAPPI.Paginator.paginate_PhotoAirUpload(paginateTarget, page, SNAPPI.STATE.displayPage.perpage, uploadQueue.count_totalItems);
+		var p = SNAPPI.Paginator.find['PhotoAirUpload'];
+		if (!p) {
+			var paginateTarget = Y.one('#gallery-container .gallery.photo .container');
+			paginateTarget.UploadQueue = uploadQueue;
+			p = SNAPPI.Paginator.paginate_PhotoAirUpload(paginateTarget, page, SNAPPI.STATE.displayPage.perpage, uploadQueue.count_totalItems);
+		}
 		SNAPPI.Paginator._getPageFromAirDs(p.container, page);
 		// other init steps
 		// Helpers.set_Filter_FolderSelect();

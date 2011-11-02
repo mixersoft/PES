@@ -107,10 +107,12 @@ package api
 			selector = selector || '#drop-target';
 			try {
 				var domUploader:Object = Config.jsGlobal.SNAPPI.Y.one(selector);
-				this.dropTarget.x = domUploader.get('offsetLeft');
-				this.dropTarget.y = domUploader.get('offsetTop');
+				this.dropTarget.x = domUploader.getX();
+				this.dropTarget.y = domUploader.getY();
 				this.dropTarget.width = domUploader.get('offsetWidth');
 				this.dropTarget.height = domUploader.get('offsetHeight');
+//				Config.jsGlobal.firebugLog("dropTarget >>> ");				
+//				Config.jsGlobal.firebugLog("X="+this.dropTarget.x+", Y="+this.dropTarget.y+", W="+this.dropTarget.width+", H="+this.dropTarget.height);				
 			} catch (e:Error) {
 			}						
 		}
@@ -253,17 +255,10 @@ package api
 			try {
 				var baseurl:String = params ? params.baseurl : '';
 				var uploader:Object = Config.jsGlobal.SNAPPI.AIR.uploadQueue;
-				uploader.onImportComplete(baseurl);
+				if (baseurl) uploader.onImportComplete(baseurl);
 			} catch (e:Error) {
 				trace("Error: onScanFoldersComplete");
 			}
-			
-			/* 
-			stop by sam as per requirement no need of this now after scan 
-			var pq:PostQueue = new PostQueue(this.getUpdateServerUrl());
-			pq.sql = this.sql;
-			pq.startPost();
-			*/ 
 		}		
 		
 		/**

@@ -196,12 +196,12 @@
 			var Y = SNAPPI.Y;
 			var g, baseurl, 
 				type = 'Snaps',
-				NAME = paginateTarget.get('id') || paginateTarget._yuid;	
-			g = paginateTarget.ancestor('.gallery');	// XHR response is child of Y.one(NAME);
+				NAME = 'PhotoAirUpload';	
 			if (Paginator.find[NAME]) {
 				// already created, just reuse
 				return Paginator.find[NAME];
 			} 
+			g = paginateTarget.ancestor('.gallery');	// XHR response is child of Y.one(NAME);
 			
 			// set param defaults
 			page = page || paginateTarget.UploadQueue.activePage;

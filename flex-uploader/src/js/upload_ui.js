@@ -28,7 +28,7 @@
 	 */
 	var UploadQueue = function(cfg) {
 		var Y = SNAPPI.Y;
-		
+		if ( UploadQueue.instance ) return UploadQueue.instance;		// singleton instance
 		this.load = function(cfg) {
 			LOG("-----------------------> uploadQueue.load() ");
 			
@@ -95,7 +95,7 @@
 		
 		this.load(cfg);
 		this.init(cfg);
-		
+		UploadQueue.instance = this; 
 		
 		/*
 		 * when ui working and in progress and someone add more photos to upload
@@ -103,7 +103,7 @@
 		 */
 		this.addToQueue = function(pages, perpage, rows) {
 		};
-
+		
 	};
 
 	UploadQueue.prototype = {
@@ -166,14 +166,9 @@
 		action_start : function() {
 			
 			// UI.startUploadPage > UI.view_showPage > UI.doUpload > ui.nextUploadPage() > ui.startUploadPage
-			if (this.isUploading || this.count_totalPages == 0) {
+			if (this.isUploading) {
 				return;
 			}
-			// switch to 'all' tab for uploading, upload paging does not work with filtered tabs
-//			this.status = 'all';
-//			this.pausedPage = 0;
-//			this.isPaused = false;
-//			this.uploadPage = (this.isPaused) ? this.pausedPage : 1;
 			var page = (this.isPaused) ? this.pausedPage : 1;
 			this.isUploading = true;
 			this.isCancelling = false;
@@ -186,7 +181,14 @@
 		 */
 		action_pause : function() {
 //			this.flexUploadAPI.pauseQueue();
-			this.doPause();
+			// this.doPause();
+			if (this.uploadPage != 0) {
+				this.pausedPage = this.uploadPage;
+				this.isUploading = false;
+				this.isPaused = true;
+				
+				this.stopUploadPage('pause');
+			}
 		},
 		/*
 		 * retry action handler 
@@ -203,9 +205,24 @@
 			}
 			var newStatus = 'pending';
 LOG(">>>>>>> action_retry: FOR old STATUS="+oldStatus);			
+			// calls retryUpload() > UploaderUI.setUploadQueueStatus() 
 			var ret = this.flexUploadAPI.retryUpload(newStatus, oldStatus, this.batchId, this.baseurl);
 			// redraw page from page 1 of cancelled
 			this.view_showPage(1);
+			if (SNAPPI.AIR.uploadQueue.isUploading) {
+				this.action_pause();
+				
+				this.isPaused = false;
+				this.isUploading = false;
+				this.action_start();
+			}
+			if (SNAPPI.AIR.uploadQueue.isPaused ) {
+				this.pausedPage = 1;
+			}
+				// this.uploadPage = 1;
+				// this.isUploading = true;
+				// this.isCancelling = false;
+				// this.startUploadPage(1);
 			// SNAPPI.AIR.Helpers.initUploadGallery(null, 1, null, null, null );	
 		},
 		/*
@@ -242,6 +259,7 @@ LOG(">>>>>>> action_retry: FOR old STATUS="+oldStatus);
 				_flexAPI_UI.datasource.setUploadStatus(progress.uuid, 'cancelled', this.batchId);
 				// progress.row_deprecate.status = 'cancelled';	// ???: Why do we need to set this?
 			} else {
+				// ???: is cancel == pause in the UI?
 				// if we don't have a cancel target, cancel all active uploads
 				SNAPPI.AIR.UploadManager.activeSH.each(function(um){
 					um.cancel();
@@ -332,18 +350,20 @@ LOG("****************************  uploader getOpenBatchId has been DEPRECATED")
 			this.batchId = cfg.batchId || null; 
 			this.flexUploadAPI.setBatchId(this.batchId);
 			
-			// set current baseurl
-			this.baseurl = cfg.baseurl || this.flexUploadAPI.getBaseurl();
+			// set baseurl from folder
+			if (cfg.folder == 'all') this.baseurl = '';
+			else if (!cfg.folder) this.baseurl = this.flexUploadAPI.getBaseurl();	// last setting
+			else this.baseurl = cfg.folder || '';  
 			this.flexUploadAPI.setBaseurl(this.baseurl);
-			// SNAPPI.DATASOURCE.setBaseurl(this.baseurl);
-// LOG("this.baseurl="+this.baseurl+", datasource.baseurl="+SNAPPI.DATASOURCE.getBaseurl());			
+			SNAPPI.DATASOURCE.setConfig({'baseurl':this.baseurl});
+			
 /*
  * uploadQueue should not care about batchId if null
  */
 			this.count_filterItems = this.flexUploadAPI.getCountByStatus(filter, this.batchId, this.baseurl, '=');
 			this.count_filterPages = Math.ceil(this.count_filterItems / this.perpage);
 
-LOG("============> initQueue: batchId="+this.batchId+", baseurl="+this.baseurl);
+LOG("============> initQueue: batchId="+this.batchId+", filter="+this.filter+", folder="+(this.baseurl||'ALL') );
 LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPages);			
 			
 			// for Total Progress only, move to View
@@ -367,7 +387,8 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 		/**
 		 * show page
 		 * @params page int optional - null to show last visible page, i.e. show/hide uploader
-		 * @params mode string default='show' - [upload | show] 		
+		 * @params mode string default='show' - [upload | show] 	
+		 * @params perpage int optional		
 		 */
 		view_showPage : function(page, mode, perpage) {
 			// enforce a notion of activePage (for Paginator) and uploadPage (for uploader)
@@ -379,19 +400,16 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 			mode = mode || 'show';
 			var Y = SNAPPI.Y;
 			var rows;
-			// row keys: id, photo_id, batch_id, rel_path, status
-			// rows = this.flexUploadAPI.getItemsByStatus(this.status, this.batch);
-			// rows = rows.slice(this.perpage*(page-1),this.perpage*page);
-			
 			if (mode == 'upload') {
-				this.status = 'all';	// forces tab change to 'all' on next page
-				this.uploadPage = page;
-				rows = this.flexUploadAPI.getPageItems(this.uploadPage, this.status, this.batchId, this.baseurl);
-				this.uploadRows = rows;
+				// mode=upload: save rows separately, does not overwrite view rows 
+				this.uploadPage = page;		// filter='all', batchiId=null, baseurl=''
+				this.uploadRows = this.flexUploadAPI.getPageItems(this.uploadPage, 'all', null, '');
+				rows = this.uploadRows;
 			} else {
 				rows = this.flexUploadAPI.getPageItems(page, this.status, this.batchId, this.baseurl);
 			}
-			LOG(">>> uploadQueue.getPageItems(), page=" + page
+			
+			LOG(">>> uploadQueue.getPageItems(), mode="+mode+", page=" + page
 					+ ", previous page=" + this.activePage + ", status="
 					+ this.status + ", count=" + rows.length);
 
@@ -470,22 +488,26 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 		 * @param page int optional - if null, continue from last upload page, or from beginning 
 		 */
 		startUploadPage : function(page) {
-			if (page && page === this.uploadPage && this.isUploading && this.status=='all') {
-LOG("startUploadPage DUPLICATE CALL");				
-				// duplicate call to start same page
-			} else {
-				// start new page or continue
-				page = page || this.uploadPage || 1;
-				this.pausedPage = 0;
+				if (this.isPaused ) {
+					// continue
+LOG(">>>>>>>>>>>>  CONTINUE UPLOADING  ============================");							
+					page = this.uploadPage || page || 1;
+					// set to filter='pending', baseurl='all'
+				} else {
+LOG(">>>>>>>>>>>>  RESET startUploadPage  ============================");						
+					// reset 'pending' and start from page 1
+					page = page || this.uploadPage || 1;
+					this.pausedPage = 0;
+					this.uploadRows = [];
+					this.uploadItemIndex = -1;
+					// set to filter='all', baseurl=''
+					SNAPPI.AIR.Helpers.initUploadGallery(null, page, null, null, 'all', 'all');	
+				}
+				this.uploadPage = page;	
+LOG(">>>>>>>>>>>>  startUploadPage  ============================ page="+page);						
+				this.view_showPage(page, 'upload');
 				this.isPaused = false;
-				this.uploadPage = page;		
-				
-				// now begin uploading
-				this.uploadRows = [];
-				this.uploadItemIndex = -1;
-				this.view_showPage(this.uploadPage, 'upload');
 				this.doUpload();
-			}
 		},
 
 		/*
@@ -574,6 +596,7 @@ LOG("active count="+UploadManager.count());
 		
 
 		/*
+		 * deprecate, moved to action_pause()
 		 * this function called by pauseQueue internally to update the ui
 		 */
 		doPause : function() {
@@ -585,8 +608,7 @@ LOG("active count="+UploadManager.count());
 			}
 		},
 		/*
-		 * it is fired by retryUpload method to update the error items status in
-		 * UI
+		 * it is fired by retryUpload() snaphappi.mxml to update the FileProgress UI
 		 */
 		doRetry : function(rows) {
 			var Y = SNAPPI.Y;
@@ -1085,7 +1107,8 @@ LOG("active count="+UploadManager.count());
 	
 	
 
-	SNAPPI.AIR.UploadQueue = UploadQueue;
+	SNAPPI.AIR.UploadQueue = UploadQueue;		// class reference
+	// use SNAPPI.AIR.UploadQueue.instance for singleton object reference
 	
 	/*
 	 * static methods
@@ -1165,6 +1188,7 @@ LOG("active count="+UploadManager.count());
     		_flexAPI_UI = _JS_UI;
     		LOG(">>>>>>>>>>>>>>>>>>>>>>>>> using FAKE JAVASCRIPT DATASOURCE FOR JS TESTING ");
     	} else {
+    		// flexAPI_UI: js global defined in snaphappi.mxml,
     		_flexAPI_UI = flexAPI_UI;		// Flex UploaderUI.as
     		htmlctrl = flexAPI_UI;
     		LOG(">>>>>>>>>>>>>>>>>>>>>>>>> JAVASCRIPT FLEX BRIDGE");

@@ -38,6 +38,11 @@
 <section class="item-header container_x">
 	<div class="wrap">
 		<h1 class="grid_x">Snaphappi Desktop Uploader</h1>
+		<nav class="window-options">
+			<ul class="inline right">
+				<li action="set-display-view:minimize"><img src="/css/images/img_zoomin.gif"></li><li action="set-display-view:maximize"><img src="/css/images/img_zoomout.gif"></li>
+			</ul>
+		</nav>		
 	</div>
 </section>
 <div id="item-body" class="plain container_x">
@@ -75,7 +80,7 @@
 		<li class="label count">0 Snaps</li>
 	</ul>
 	<ul class='toolbar upload-toolbar inline'>		
-		<li class="btn start" status="pause" onclick="PAGE.toggle_upload(this);return false;">Start Upload</li>
+		<li class="btn start" status="pause" onclick="SNAPPI.AIR.UIHelper.toggle_upload(this);return false;">Start Upload</li>
 		<li class="btn hide" onclick="SNAPPI.AIR.uploadQueue.action_clear();return false;">Clear</li>
 		<li id="upload-progress" class="progress center"><div class="bar"></div><span></span></li>
 	</ul>

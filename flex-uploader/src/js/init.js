@@ -48,6 +48,20 @@ _domready1 = function(Y) {
     	datasource: datasource
     });
     SNAPPI.AIR.uploadQueue = uploader;
+    
+    
+    /*
+     * globals
+     * 
+     SNAPPI.AIR.uploadQueue = SNAPPI.AIR.UploadQueue.instance
+     SNAPPI.AIR.uploadQueue.ds = SNAPPI.DATASOURCE
+     NOTE: SNAPPI.AIR.uploadQueue.flexUploadAPI bypasses SNAPPI.DATASOURCE, 
+     	access global _flexAPI_UI directly Flex UploaderUI.as
+     * 
+     */
+    
+    
+    
     /*
      * DEV/Testing config
      */
@@ -61,6 +75,9 @@ _domready1 = function(Y) {
 //	Helpers.addToUploader(uploader, '');
 	// var host = SNAPPI.AIR.host=='dev2.snaphappi.com' ? 'remote' : 'local' ;
 	Helpers.DEV_setRuntimeHost(uploader);		// local or remote
+	
+	// start listeners, as necessary
+	SNAPPI.AIR.UIHelper.listeners.WindowOptionClick(null);
 	
 	// add login menu
 	SNAPPI.MenuAUI.initMenus({
@@ -81,28 +98,4 @@ LOG(">>>>>>>>> DONE");
 	
 }
     
-    
-/**************
- * PAGE globals
- */
-_domready2 = function(Y) {
-	var util = SNAPPI.coreutil;
-	SNAPPI.namespace('PAGE');
-	PAGE.toggle_upload = function(el) {
-		if (SNAPPI.AIR.Helpers.isAuthorized()) {
-			var state = el.innerHTML;
-			if (state == 'Pause Upload') {
-				// n.set('innerHTML', 'Resume Upload');
-				el.innerHTML = "Resume Upload";
-				SNAPPI.AIR.uploadQueue.action_pause();
-			} else {
-				el.innerHTML = "Pause Upload";
-				SNAPPI.AIR.uploadQueue.action_start();
-			}
-		} else {
-			// show login screen by menu click
-			SNAPPI.MenuAUI.find['menu-sign-in-markup'].show();
-		}
-	}
-}
 LOG("load complete: init.js");
