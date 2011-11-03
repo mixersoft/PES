@@ -40,9 +40,9 @@
 		 * 		.start
 		 * 
 		 */
-		this.row = row;
-		this.progress = progress;
-		this.uploadQueue = uploadQueue;
+		this.row = row;					// db row
+		this.progress = progress;		// FileProgress
+		this.uploadQueue = uploadQueue;	// back reference
 		this.hashcode = function(){
 //			return this.progress.node.get('id');
 			return this.row.photo_id;
@@ -186,12 +186,15 @@
 		},
 		/*
 		 * cancel in progress item
+		 * context: SNAPPI.AIR.UploadManager.activeSH object
+		 * self.flexUploadObj == UploadFile.as
 		 */
-		cancel : function() {
-			var uploader = this.uploadQueue;
-			if (this.flexUploadObj) {
-				this.flexUploadObj.cancel();
-				this.flexUploadObj = null;
+		cancel : function(o) {
+			var self = o || this; 		// deprecate, should use o
+			var uploader = self.uploadQueue;
+			if (self.flexUploadObj) {
+				self.flexUploadObj.cancel();
+				self.flexUploadObj = null;
 			}
 		}
 		

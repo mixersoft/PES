@@ -182,7 +182,6 @@ package api
 						var deletePhotos:String = "DELETE FROM photos WHERE photo.id=@uuid";
 						// TODO: if photos.upload_status==1, should we delete from server, too?
 						// TODO: what if the photo has been used/shared? cascade delete?
-						// TODO: should we also delete from photos table?
 						for(var j:int=0;j<photos.length;j++){
 							try {
 								// delete row from uploadQueue
@@ -259,7 +258,7 @@ package api
 		/**
 		 * update methods for photos and uploadQueue
 		 * */
-		public function setUploadStatus(uuid:String,status:String,batch_id:String=''):Boolean{
+		public function setUploadStatus(uuid:String,status:String,batch_id:String='',baseurl:String='null'):Boolean{
 			var flag:Boolean = false;
 			try{
 				var query:String = "UPDATE uploadQueues SET status=@status,updated_on=@updated_on " +
@@ -278,6 +277,10 @@ package api
 				if (batch_id) {
 					query += " AND batch_id=@batch_id"; 
 					params.push({name:"@batch_id",value:batch_id});	
+				}
+				if (baseurl && baseurl!=='null') {
+					query += " AND photo_id IN (SELECT id FROM photos WHERE base_url='@baseurl')";
+					params.push({name:"@baseurl",value:baseurl});	
 				}
 				Config.sql.executeNonSQLParams(query,params);
 				

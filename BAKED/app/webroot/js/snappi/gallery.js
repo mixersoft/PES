@@ -466,10 +466,12 @@
         	
         	// load/toggle contextmenu
         	if (!SNAPPI.MenuAUI.find[CSS_ID]) {
-        		SNAPPI.MenuAUI.CFG[CSS_ID].load({
+        		var contextMenuCfg = {
         			currentTarget:e.currentTarget,
-        			triggerRoot: this.container
-				});
+        			triggerRoot: this.container,
+        			init_hidden: false,
+				}; 
+        		SNAPPI.MenuAUI.CFG[CSS_ID].load(contextMenuCfg);        		
         		this.stopClickListener();
         	} else {
         		var menu = SNAPPI.MenuAUI.toggleEnabled(CSS_ID, e);

@@ -529,12 +529,12 @@ package api
 		* set status in upload queue
 		* @params batchid, baseurl
 		*/
-		public function setUploadQueueStatus(newStatus:String='pending', oldStatus:String='failure', batchId:String=null, baseurl:String=null):Boolean{
+		public function setUploadQueueStatus(newStatus:String='pending', oldStatus:String='failure', batchId:String=null, baseurl:String='null'):Boolean{
 			try{
 				// still to be done
 				var query:String = "UPDATE uploadQueues	SET status='"+newStatus+"' WHERE 1=1 ";
 				if (oldStatus) query += " AND status='"+oldStatus+"'";
-				if (baseurl) query += " AND uploadQueues.photo_id IN (SELECT id FROM photos WHERE base_url='"+baseurl+"')";
+				if (baseurl && baseurl!=='null') query += " AND uploadQueues.photo_id IN (SELECT id FROM photos WHERE base_url='"+baseurl+"')";
 				if (batchId) query += " AND batch_id = '"+batchId+"'";				
 				var dt:Array = Config.sql.execNonQuery(query);
 			}catch(e:Error){

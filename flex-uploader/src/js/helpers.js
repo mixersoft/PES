@@ -325,8 +325,9 @@ LOG("Helpers.initUploadGallery, BATCHID="+batchId+", folder="+folder+", page="+p
 		SNAPPI.Paginator._getPageFromAirDs(p.container, page);
 		// other init steps
 		// Helpers.set_Filter_FolderSelect();
-		SNAPPI.AIR.UIHelper.listeners.DisplayOptionClick(null);
-		SNAPPI.multiSelect.listen();
+// c = paginateTarget;
+// LOG("CHECK MULTISELECT LISTEN")
+// LOG(c);
 	}
 	
 	/*

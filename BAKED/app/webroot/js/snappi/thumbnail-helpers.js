@@ -109,7 +109,7 @@
 		listen : function(container, status) {
 			var Y = SNAPPI.Y;
 			status = (status == undefined) ? true : status;
-			container = container || 'section.gallery.photo > div';
+			container = container || 'section.gallery.photo .container';
 			if (status) {
 				// listen
 				Y.all(container).each( 
@@ -118,7 +118,7 @@
 						if (!n.listen['MultiSelect']) {
 							n.listen['MultiSelect'] = n.delegate('click',
 								this.selectHandler, '.FigureBox',
-								this
+								this	// context
 							);
 						}
 					}, this

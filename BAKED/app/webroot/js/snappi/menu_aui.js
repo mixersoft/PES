@@ -149,7 +149,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	 */
 	Menu.toggleEnabled = function(menu_ID, e) {
 		var menu = Menu.find[menu_ID];
-		if (menu.get('disabled')) {
+		if (e && menu.get('disabled')) {
 			menu.enable();
 			var trigger = e.currentTarget.hasClass('FigureBox') ? e.currentTarget : e.currentTarget.ancestor('.FigureBox');
 			menu.set('trigger', trigger);			// 'startup/disabled' trigger
@@ -264,8 +264,13 @@ var DEFAULT_CFG_contextmenu = 	{
 		var cb = target.previous('input[type="checkbox"]');
 		if (cb) {
 			cb.set('checked', true);
-			var gallery = cb.ancestor('section').next('section.gallery');
-			gallery.Gallery.container.all('.FigureBox').addClass('selected');
+			var container, gallery = cb.ancestor('section').next('section.gallery');
+			try {
+				container  = gallery.Gallery.container;	
+			} catch (e) {
+				container = gallery;	// TODO: uploader does not use SNAPPI.Gallery yet
+			}
+			container.all('.FigureBox').addClass('selected');
 		}
 		try {
 			target.ancestor('section#lightbox').Lightbox.save();
@@ -277,8 +282,13 @@ var DEFAULT_CFG_contextmenu = 	{
 		var cb = target.previous('input[type="checkbox"]');
 		if (cb) {
 			cb.set('checked', false);
-			var gallery = cb.ancestor('section').next('section.gallery');
-			gallery.Gallery.container.all('.FigureBox').removeClass('selected');
+			var container, gallery = cb.ancestor('section').next('section.gallery');
+			try {
+				container  = gallery.Gallery.container;	
+			} catch (e) {
+				container = gallery;	// TODO: uploader does not use SNAPPI.Gallery yet
+			}
+			container.all('.FigureBox').removeClass('selected');
 		}		
 		SNAPPI.STATE.selectAllPages = false;
 		try {
@@ -307,6 +317,116 @@ var DEFAULT_CFG_contextmenu = 	{
 			lightbox.clear();
 			lightbox.save();
 			lightbox.updateCount();
+		} catch (e) {}
+		menu.hide();
+	};
+	MenuItems.retry_selected_beforeShow = function(menuItem, menu){
+		try {
+			var target = menu.get('currentNode');	// target
+			// used by SNAPPI.uploader to retry in uploadQueue
+			if (menuItem.ancestor('#contextmenu-photoroll-markup')) { 
+				if (target.hasClass('status-cancelled') || target.hasClass('status-error')){
+					menuItem.removeClass('disabled');
+				} else menuItem.addClass('disabled');
+				menuItem.removeClass('hide');
+				return;
+			}			
+			var isSelected, container, 
+				gallery = target.ancestor('section').next('section.gallery');
+			container = gallery;	// TODO: uploader does not use SNAPPI.Gallery yet
+			isSelected = container.all('.FigureBox.selected');
+			var label = isSelected.size() ? 'Retry Selected Snaps': 'Retry All Snaps';
+			menuItem.set('innerHTML', label);
+			menuItem.removeClass('hide');
+			return;
+		} catch (e) {	}
+		menuItem.addClass('hide');
+	};	
+	MenuItems.retry_selected_click = function(menuItem, menu){
+		try {
+			// used by SNAPPI.uploader to retry in uploadQueue
+			var isSelected, target = menu.get('currentNode');	// cancel target only
+			if (menuItem.ancestor('#contextmenu-photoroll-markup')) { 
+				isSelected = SNAPPI.Y.all(target);
+			} else {
+				var gallery, container;
+				gallery = target.ancestor('section').next('section.gallery');
+				container = gallery;	// TODO: uploader does not use SNAPPI.Gallery yet			
+				isSelected = container.all('.FigureBox.selected');
+			}	
+			var uploader = SNAPPI.AIR.uploadQueue;
+			isSelected.each(function(n,i,l){
+				uploader.action_retry(n);
+				n.removeClass('selected');
+			});
+		} catch (e) {}
+		menu.hide();
+	};	
+	MenuItems.cancel_selected_beforeShow = function(menuItem, menu){
+		try {
+			// used by SNAPPI.uploader to retry in uploadQueue
+			var isSelected, target = menu.get('currentNode');
+			if (menuItem.ancestor('#contextmenu-photoroll-markup')) { 
+				// enabled for 'status-pending' 'status-paused'
+				if (target.hasClass('status-pending') || target.hasClass('status-active')) {
+					menuItem.removeClass('disabled');
+				} else menuItem.addClass('disabled');
+				menuItem.removeClass('hide');
+				return;
+			}					
+			var isSelected, container, 
+				gallery = target.ancestor('section').next('section.gallery');
+			container = gallery;	// TODO: uploader does not use SNAPPI.Gallery yet
+			isSelected = container.all('.FigureBox.selected');
+			var label = isSelected.size() ? 'Cancel Selected Snaps': 'Cancel All Snaps';
+			menuItem.set('innerHTML', label);
+			menuItem.removeClass('hide');
+			return;
+		} catch (e) {	}
+		menuItem.addClass('hide');
+	};	
+	MenuItems.cancel_selected_click = function(menuItem, menu){
+		try {
+			// used by SNAPPI.uploader to retry in uploadQueue
+			var isSelected, target = menu.get('currentNode');	// cancel target only
+			if (menuItem.ancestor('#contextmenu-photoroll-markup')) { 
+				// if status allows cancel, then
+				isSelected = SNAPPI.Y.all(target);
+			} else {
+				var gallery, container;
+				gallery = target.ancestor('section').next('section.gallery');
+				container = gallery;	// TODO: uploader does not use SNAPPI.Gallery yet			
+				isSelected = container.all('.FigureBox.selected');
+			}	
+			var uploader = SNAPPI.AIR.uploadQueue;
+			isSelected.each(function(n,i,l){
+				uploader.action_cancel(n);
+				n.removeClass('selected');
+			});
+		} catch (e) {}
+		menu.hide();
+	};	
+	MenuItems.remove_from_uploader_selected_click = function(menuItem, menu){
+		try {
+			// used by SNAPPI.uploader to remove from uploadQueue
+			var isSelected, response, target = menu.get('currentNode');	// cancel target only
+			if (menuItem.ancestor('#contextmenu-photoroll-markup')) { 
+				// if status allows cancel, then
+				isSelected = SNAPPI.Y.all(target);
+				response = confirm('Are you sure you want to remove this Snap?');
+			} else {
+				// selected
+				gallery = target.ancestor('section').next('section.gallery');
+				container = gallery;	// TODO: uploader does not use SNAPPI.Gallery yet			
+				isSelected = container.all('.FigureBox.selected');
+				response = confirm('Are you sure you want to remove all selected Snaps?');
+			}	
+			if (!response) {
+				// Cancel remove:  remove .selected
+				isSelected.removeClass('selected');
+			} else {
+				SNAPPI.AIR.uploadQueue.action_remove(isSelected);
+			}
 		} catch (e) {}
 		menu.hide();
 	};	
@@ -804,7 +924,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	
 	var CFG_Context_Photoroll = function(){}; 
 	/**
-	 * load Header menu 
+	 * load .gallery.photo > .FigureBox contextmenu 
 	 * @param cfg
 	 * @return
 	 */

@@ -141,6 +141,7 @@
 //            this._cfg.baseurl = cfg.baseurl || lastCfg.baseurl || this.getBaseurls().shift();
 //            LOG("setting baseurl=" + this._cfg.baseurl);
 //            this.setBaseurl(this._cfg.baseurl);
+LOG(this.getConfigs());
             LOG("datasource> baseurl=" + this.getConfigs().baseurl);
             LOG('AIRCastingCallDataSource.init() complete');
         },

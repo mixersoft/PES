@@ -129,6 +129,7 @@
 		},
 		/***********************************************************************
 		 * uploader actions
+		 * NOTE: UIHelper.actions.filter calls uploadQueue.initQueue().view_showPage() instead
 		 */
 		show : function(tab) {
 //			this.useMore();
@@ -196,34 +197,42 @@
 		 * the error flagged items. and after requeue the retryUpload function
 		 * fires the doRetry function to update the error items in UI
 		 */
-		action_retry : function() {
-			try {
-				var oldStatus = SNAPPI.Y.one('.gallery-display-options .settings .filter li.btn.focus').getAttribute('action');
-				oldStatus = oldStatus.split(':').pop();
-			} catch (e) {
-				oldStatus='failure';
-			}
+		action_retry : function(node) {
 			var newStatus = 'pending';
-LOG(">>>>>>> action_retry: FOR old STATUS="+oldStatus);			
-			// calls retryUpload() > UploaderUI.setUploadQueueStatus() 
-			var ret = this.flexUploadAPI.retryUpload(newStatus, oldStatus, this.batchId, this.baseurl);
-			// redraw page from page 1 of cancelled
-			this.view_showPage(1);
-			if (SNAPPI.AIR.uploadQueue.isUploading) {
-				this.action_pause();
+			if (node) {
+				if (node.hasClass('status-cancelled') || node.hasClass('status-error')){
+					this.flexUploadAPI.setUploadStatus(node.uuid, 'pending');
+					node.FileProgress.setReady();
+					if (this.isUploading || this.isPaused) {
+						// TODO: put retry node back in uploadQueue	
+						// TODO: need method to append row to this.uploadRows
+					}
+				}				
+			} else {
+				try {
+					var oldStatus = SNAPPI.Y.one('.gallery-display-options .settings .filter li.btn.focus').getAttribute('action');
+					oldStatus = oldStatus.split(':').pop();
+				} catch (e) {
+					oldStatus='failure';
+				}
+	LOG(">>>>>>> action_retry: FOR old STATUS="+oldStatus);			
+				// calls retryUpload() > UploaderUI.setUploadQueueStatus() 
+				var ret = this.flexUploadAPI.retryUpload(newStatus, oldStatus, this.batchId, this.baseurl);
+				// redraw page from page 1 of cancelled
+				this.view_showPage(1);
 				
-				this.isPaused = false;
-				this.isUploading = false;
-				this.action_start();
+				// reset uploadQueue, if necessary
+				if (SNAPPI.AIR.uploadQueue.isUploading) {
+					this.action_pause();
+					
+					this.isPaused = false;
+					this.isUploading = false;
+					this.action_start();	// goto page 1
+				}
+				if (SNAPPI.AIR.uploadQueue.isPaused ) {
+					this.pausedPage = 1;
+				}					
 			}
-			if (SNAPPI.AIR.uploadQueue.isPaused ) {
-				this.pausedPage = 1;
-			}
-				// this.uploadPage = 1;
-				// this.isUploading = true;
-				// this.isCancelling = false;
-				// this.startUploadPage(1);
-			// SNAPPI.AIR.Helpers.initUploadGallery(null, 1, null, null, null );	
 		},
 		/*
 		 * cancel all action handler 
@@ -245,28 +254,38 @@ LOG(">>>>>>> action_retry: FOR old STATUS="+oldStatus);
 		},
 		/**
 		 * cancel item(s) in queue, from onclick cancel, or stopUploadPage([clear | pause])
-		 * - if node == null, cancel everything
+		 * - if node == null, cancel active uploads, NOT all pending uploads
 		 * @params node FileProgress node OPTIONAL 
 		 * 	
 		 */
 		action_cancel : function(node) {
 			var Y = SNAPPI.Y;
-			var done = false;
+			var o, um = SNAPPI.AIR.UploadManager;
 			// cancel selected node, only
 			if (node) {
-				var progress = node.FileProgress;
-				progress.setCancelled("Cancelled");
-				_flexAPI_UI.datasource.setUploadStatus(progress.uuid, 'cancelled', this.batchId);
-				// progress.row_deprecate.status = 'cancelled';	// ???: Why do we need to set this?
+				if (node.hasClass('status-active')){
+LOG("*****  DEBUG: action_cancel() FOR STATUS-ACTIVE");					
+					o = um.activeSH.get(n.uuid);
+					if (o) {
+						um.cancel(o);					
+LOG(12);						
+						um.remove(o);
+					}
+LOG(13);					
+				}				
+				if (node.hasClass('status-pending') || node.hasClass('status-paused') || node.hasClass('status-active')){
+					this.flexUploadAPI.setUploadStatus(node.uuid, 'cancelled');
+					node.FileProgress.setCancelled("Cancelled");
+				}
 			} else {
-				// ???: is cancel == pause in the UI?
-				// if we don't have a cancel target, cancel all active uploads
-				SNAPPI.AIR.UploadManager.activeSH.each(function(um){
-					um.cancel();
-					SNAPPI.AIR.UploadManager.remove(um);
+				// if we don't have a cancel target, cancel all active uploads (UploadManager)
+				um.activeSH.each(function(o){
+					um.cancel(o);
+					um.remove(o);
 				});
+				// cancel all 'pending' > 'cancelled'
+				var ret = this.flexUploadAPI.retryUpload('cancelled', 'pending', this.batchId, this.baseurl);
 			}
-			// this.flexUploadAPI.removePhotoFromQueueById(fileId);
 		},
 		/*
 		 * close action handler when user clicked on close button
@@ -276,11 +295,37 @@ LOG(">>>>>>> action_retry: FOR old STATUS="+oldStatus);
 			this.hide();
 		},
 		/**
-		 * @params uuids string, CDL of asset Ids
+		 * @params nodeList, from MenuItems.remove_from_uploader_selected_click()
 		 */
-		action_remove : function(uuids) {
-			if (util.isString(uuids)) uuids = uuids.split(',');
-			var result = _flexAPI_UI.datasource.deletePhoto(uuids);
+		action_remove : function(nodeList) {
+			if (!nodeList) return;
+			var uuids = [];
+			// TODO: this does not work. missing the loadingmask.hide() event;
+			// if (SNAPPI.AIR.uploadQueue.isUploading) {
+				// UIHelper.toggle_upload(null, false);
+			// }
+			
+			// reset uploadQueue, if necessary
+			if (this.isUploading) {
+				this.action_pause();
+				
+				this.isPaused = false;
+				this.isUploading = false;
+				this.action_start();	// goto page 1
+			}
+			if (this.isPaused ) {
+				this.pausedPage = 1;
+			}
+							
+			nodeList.each(function(n,i,l){
+				uuids.push(n.uuid);
+				// n.removeClass('selected');
+			});
+// LOG(uuids);
+// LOG("action_remove");			
+			var result = this.flexUploadAPI.deletePhoto(uuids);		
+			// also deletes from uploadQueue table and deletes Files
+// LOG(result);			
 			if (result) {
 				this.view_showPage();  	// refresh
 			}
@@ -379,6 +424,7 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 					+ ", filter=" + this.count_filterItems + ", total=" + this.count_totalItems);
 
 			LOG("initQueue OK");
+			return this;
 		},
 		
 		/***********************************************************************
@@ -475,6 +521,7 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 			this.view_setUploadTotalProgress();
 			this.view_setTotalCount();
 			pageNode.ancestor('.gallery.photo').loadingmask.hide();
+			return this;
 		},		
 		
 		
@@ -582,7 +629,7 @@ LOG("active count="+UploadManager.count());
 							progress.setCancelled("Cancelled.");
 						} else {
 							progress.setPaused("Paused");
-					}						
+						}						
 					}
 				}, this);
 
@@ -1223,6 +1270,14 @@ LOG("active count="+UploadManager.count());
             return _flexAPI_UI.removeFromUploadQueue(photos);
         },
         /**
+         * remove Photo from both photos and uploadQueue table
+         * 	also deletes photo files 
+         * @params uuids, array of uuids
+         */
+        deletePhoto: function(uuids) {
+        	return _flexAPI_UI.datasource.deletePhoto(uuids);
+        }, 
+        /**
          * clear all record from upload queue based on status
          * @params status string [pending|error|cancelled|done|all]. default status is 'all'
          * @params batchId string - optional DISABLED. use batch from set/getBatchId()
@@ -1273,7 +1328,6 @@ LOG("active count="+UploadManager.count());
 LOG("retryUpload: batchid="+batchid+", baseurl="+baseurl) ;     	
             return _flexAPI_UI.setUploadQueueStatus(newStatus, oldStatus, batchid, baseurl);
         },
-        
         /**
          * set upload host server for current upload queue
          * @params host string - a host e.g. http://localhost:8080/test/upload.php

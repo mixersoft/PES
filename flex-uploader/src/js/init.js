@@ -76,16 +76,26 @@ _domready1 = function(Y) {
 	// var host = SNAPPI.AIR.host=='dev2.snaphappi.com' ? 'remote' : 'local' ;
 	Helpers.DEV_setRuntimeHost(uploader);		// local or remote
 	
-	// start listeners, as necessary
-	SNAPPI.AIR.UIHelper.listeners.WindowOptionClick(null);
 	
 	// add login menu
 	SNAPPI.MenuAUI.initMenus({
 		'menu-sign-in-markup':1,
-		'menu-uploader-batch-markup':1
+		'menu-uploader-batch-markup':1,
+		'menu-select-all-markup':1,
+		// 'contextmenu-photoroll-markup':1,	// init from UIHelper.toggle_ContextMenu()
 	});
 	// use batchid==null on startup
 	Helpers.initUploadGallery(uploader, 1, null, null);	
+	// start listeners, as necessary
+	var listeners = {
+		'WindowOptionClick':1, 
+		'DisplayOptionClick':1,
+		'ContextMenuClick':1, 
+		'MultiSelect':1,
+	};
+	for (var listen in listeners) {
+		SNAPPI.AIR.UIHelper.listeners[listen](null);
+	}	
 	Helpers.hide_StartupLoadingMask();
 LOG(">>>>>>>>> DONE");	
 

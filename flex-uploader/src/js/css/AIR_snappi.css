@@ -893,7 +893,9 @@ section.gallery-display-options nav.settings > * {
 .aui-overlaymask-hidden {
 	visibility:hidden;
 }
-
+.aui-overlaycontext-hidden {
+	visibility: hidden;
+}
 
 /*
  * menu CSS
@@ -909,6 +911,7 @@ section.gallery-display-options nav.settings > * {
 
 .menu ul, .menu li {
 	margin: 0;
+	width: auto  !important;
 }
 
 .menu li {
@@ -918,11 +921,15 @@ section.gallery-display-options nav.settings > * {
 	text-decoration: none;
 	color: #336699;
 }
-
+.menu li.disabled {
+	color: #DDD;
+}
 .menu li:hover, .menu ul.select > li.focus {
 	background: #DDD;
 }
-
+.menu ul > hr {
+	border-top: 1px dotted #AAAAAA;
+}
 .disabled-trigger {
 	opacity: 0.5;
 	color: #333;

@@ -226,7 +226,7 @@
 	        },
 			
 	        Contextmenu : function (){
-	        	if (this.node.listen['Contextmenu'] == undefined){
+	        	if (this.node.listen['ContextMenuClick'] == undefined){
 	        		this.node.listen['ContextMenuClick'] = this.container.delegate('contextmenu', 
 	        		function(e){
 						this.Gallery.toggle_ContextMenu(e);
@@ -613,4 +613,62 @@
 			previewBody.Dialog.refresh(previewBody); 
 		}
 	}
+	// TODO: currently unused!!!
+	GalleryFactory.PhotoAirUpload = {
+    	defaultCfg : {
+    		type: 'PhotoAirUpload',
+			ID_PREFIX: 'uuid-',
+			PROVIDER_NAME: 'snappi',
+			MARKUP: '<section class="gallery photo container_16">'+
+	        			'<div class="container grid_16" />'+
+	        			'</section>',
+			node: 'div.gallery-container > section.gallery.photo',
+			render: true,
+			listeners: ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick'],
+			draggable: true,
+			hideHiddenShotByCSS: true,
+			size: 'lm',
+			start: null,
+			end: null
+	    },
+        /*
+         * build 
+         * - scan for a cfg.node or defaultCfg.node, 
+		 * - bind to JS auditions
+         * - call AFTER SNAPPI.mergeSessionData(), important for XHR JSON request
+         * @params gallery instance of SNAPPI.Gallery
+         * @params cfg object, cfg object
+         */
+    	build: function(gallery, cfg){
+            var Y = SNAPPI.Y;
+            // var self = gallery;		// instance of SNAPPI.Gallery
+            cfg = cfg || {};
+            // inherit javascript state information from current page, 
+            // called AFTER SNAPPI.mergeSessionData();
+            // TODO: only merge SNAPPI.STATE.displayPage for "primary" gallery, with paging
+            cfg = Y.merge(GalleryFactory[cfg.type].defaultCfg, SNAPPI.STATE.displayPage, cfg);	
+            try {
+            	cfg.size = PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
+            } catch (e){}
+            try {
+            	if (!cfg.castingCall && cfg.castingCall !== false) cfg.castingCall = PAGE.jsonData.castingCall;
+            } catch (e){}
+	        
+	        // .gallery.photo BEFORE init
+	        gallery.auditionSH = null;
+	        gallery.shots = null; 	
+	        
+	        // generic gallery BEFORE init
+			gallery.providerName = cfg.PROVIDER_NAME;	// deprecate: use this.cfg.providerName
+			GalleryFactory._attachNodes(gallery, cfg);
+	        gallery.init(cfg);
+	        
+	        // .gallery.photo AFTER init methods
+	        SNAPPI.Gallery.find[cfg.ID_PREFIX] = gallery;		// add to gallery lookup
+	        SNAPPI.Rating.startListeners(gallery.container);
+	        Y.fire('snappi:afterGalleryInit', this); 
+	        return gallery;					// return instance of SNAPPI.Gallery
+        },
+	};
+	
 })();

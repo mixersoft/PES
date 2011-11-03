@@ -76,7 +76,7 @@
 	<ul class="title inline grid_3">
 		<li class="label" title="Photos you have imported into the Snaphappi Desktop Uploader.">
 			Upload Queue</li>
-			<li class="select-all"><a class="menu-open" aria-controls="menu-select-all-markup"><input type="checkbox" name="" value=""></a></li>
+			<li class="select-all"><input type="checkbox" name="" value=""><a class="menu-open" aria-controls="menu-select-all-markup"></a></li>
 		<li class="label count">0 Snaps</li>
 	</ul>
 	<ul class='toolbar upload-toolbar inline'>		
@@ -97,8 +97,8 @@
 	<nav class="settings">
 	    	<ul class="filter inline">
 	    		<li class="label">Filters</li>
-				<li class='btn' action="filter:all">All</li>
-				<li class='btn  focus' action="filter:pending">Ready</li>
+				<li class='btn focus' action="filter:all">All</li>
+				<li class='btn  ' action="filter:pending">Ready</li>
 				<li class='btn' action="filter:cancelled">Cancelled</li>
 				<li class='btn' action="filter:done">Done</li>
 				<li class='btn' action="filter:failed">Errors</li>
@@ -133,7 +133,7 @@
     	</div>
 	</div>
 </section>
-		<div id="markup" class="" style="display:none;">
+		<div id="markup" class="uploader-menu" style="display:none;">
 			<div id="menu-sign-in-markup" class="xxmenu yui3-aui-overlaycontext-hidden hide">
 				<div id='login'>
 					<div class="grid_x">
@@ -166,6 +166,26 @@
 			<div id="menu-uploader-batch-markup" class="menu yui3-aui-overlaycontext-hidden hide">
 				<ul class='select'></ul>
 			</div>			
+			<div id="contextmenu-photoroll-markup" class="menu yui3-aui-overlaycontext-hidden hide">
+				<ul>
+					<li action='cancel_selected' class='before-show'>Cancel Upload</li>
+					<li action='retry_selected' class='before-show'>Retry Upload</li>
+					<hr>
+					<li action='remove_from_uploader_selected'>Remove Snap</li>
+				</ul>
+			</div>
+			<div id="menu-select-all-markup" class="menu yui3-aui-overlaycontext-hidden hide">
+				<ul>
+					<li action='select_all'>Select All</li>
+					<li action='select_all_pages' class='before-show'>Select All Pages</li>
+					<li action='clear_all'>Clear All</li>
+					<hr>
+					<li action='retry_selected' class='before-show'>Retry Selected</li>
+					<li action='cancel_selected' class='before-show'>Cancel Selected</li>
+					<hr>
+					<li action='remove_from_uploader_selected' >Remove Selected</li>
+				</ul>
+			</div>				
 		</div>	<!-- end #markup -->
 		<div id="footer" class="container_x">
 			<span>&copy; 2008-2012 Snaphappi</span>
