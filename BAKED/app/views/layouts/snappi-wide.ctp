@@ -129,6 +129,7 @@
 			<li action='select_all_pages' class='before-show'>Select All Pages</li>
 			<li action='clear_all'>Clear All</li>
 			<li action='remove_selected' class='before-show'>Remove Selected Snaps</li>
+			<li action='delete' class='before-show'>Delete Selected Snaps</li>
 		</ul>
 	</div>	
 	<div id="menu-lightbox-organize-markup" class="menu yui3-aui-overlaycontext-hidden hide">

@@ -302,41 +302,18 @@
 	 * @param node, PaginateContainer node, defines node.Paginator, node.Gallery
 	 * @param g SNAPPI.Gallery, type = photo
 	 * @param pageNumber
+	 * @param force boolean, force page refresh
 	 * @return 
 	 */	
-	Paginator._getPageFromCastingCall = function(node, pageNumber){
+	Paginator._getPageFromCastingCall = function(node, pageNumber, force){
 		// context = paginateContainer node
-		if (pageNumber == SNAPPI.STATE.displayPage.page) return;
+		pageNumber = pageNumber || node.Paginator.get('page') || SNAPPI.STATE.displayPage.page;  
+		if (!force && pageNumber == SNAPPI.STATE.displayPage.page) return;
 		var g = node.Gallery;
-		var uri = g.castingCall.CastingCall.Request+ "/.json";
-		var nameData = {
-			page: pageNumber,
-			perpage: node.Paginator.get('rowsPerPage')
-		};
-		uri = SNAPPI.IO.setNamedParams(uri, nameData);
-    	
-		// render PhotoGallery
-		var cfg = {
-			args: {page: pageNumber},
-			replace: true,
-    		successJson : function(e, i,o,args) {
-				var response = o.responseJson.response;
-				SNAPPI.mergeSessionData();	// need this for paginate
-				var options = {
-					page: args.page,
-                	castingCall: response.castingCall,
-                }
-                this.render(options);
-                PAGE.jsonData.castingCall = response.castingCall;
-                return false;								
-			},        			
-			ioCfg : {
-				parseContent: true,
-				dataType: 'json',
-				context: g,	// test        				
-			}
-		};
-		g.loadCastingCall(uri, cfg);
+		var cfg = {};
+		cfg.page = pageNumber;
+		cfg.perpage = node.Paginator.get('rowsPerPage');
+		g.refresh(cfg, force);
 		return;
 	};
 	

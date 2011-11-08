@@ -903,33 +903,59 @@ section.gallery-display-options nav.settings > * {
 
 .menu {
 	position: absolute;
-	background: #FFFFFF;
+	width: 150px;
+	background: #E2E6EB;
 	border-color: #DEDEDE #BFBFBF #BFBFBF #DEDEDE;
 	border-style: solid;
 	border-width: 1px;
+	font-size: 13px;
 }
 
+.menu > ul > li , .menu > ul > li > a {
+	cursor: pointer;
+}
+.menu ul > hr {
+	border-top: 1px solid #888;
+}
 .menu ul, .menu li {
 	margin: 0;
+	background-color: #FFF;
 	width: auto  !important;
 }
 
 .menu li {
 	border-bottom: 1px solid #DEDEDE;
 	display: block;
-	padding: 2px 5px;
+	color: #000;
+	padding: 2px;
+}
+
+.menu li a {
+	display: block;
+	padding: 0 5px;
 	text-decoration: none;
-	color: #336699;
+	color: #000;
 }
+
+.menu li:hover, .menu li a:hover {
+	background: #CCC;
+}
+
+
 .menu li.disabled {
-	color: #DDD;
+	cursor: default;
+	color: #888;
+	background-color: #EEE;
 }
-.menu li:hover, .menu ul.select > li.focus {
-	background: #DDD;
+
+.menu li.selected {
+	background: url(../images/arrow.png) no-repeat left center;
+	padding-left: 10px;
 }
-.menu ul > hr {
-	border-top: 1px dotted #AAAAAA;
+.menu ul.select > li.focus {
+	background: #CCC;
 }
+
 .disabled-trigger {
 	opacity: 0.5;
 	color: #333;

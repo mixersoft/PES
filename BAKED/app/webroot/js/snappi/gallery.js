@@ -363,18 +363,38 @@
             if (this.container.hasClass('one-row')) this.setFilmstripWidth();
             return lastLI;
         },
-        refresh: function(){
-        	try {
-        		var uri = this.castingCall.CastingCall.Request;
-				if (uri) {
-	        		var focus = this.getFocus().id;
-	        		this.loadCastingCall(uri, {
-	        				uuid: focus,
-	        				replace: true,		//refresh SNAPPI.Auditions
-	        			});
-	        		// also, update extras for all Thumbnails, if any
-	        	}        	
-        	} catch (e) {}
+        refresh: function(cfg, force){
+        	cfg = cfg || {};
+        	var page = cfg.page || cfg.nameData && cfg.nameData.page || SNAPPI.STATE.displayPage.page;  
+        	var perpage = cfg.perpage || cfg.nameData && cfg.nameData.perpage || SNAPPI.STATE.displayPage.perpage;
+			if (!force && page == SNAPPI.STATE.displayPage.page) return;
+        	
+        	var uri = cfg.uri || this.castingCall.CastingCall.Request;
+        	cfg.nameData = SNAPPI.Y.merge(cfg.nameData, {page:page, perpage:perpage});
+        	
+        	// cfg.qs -> cfg.data as querystring
+	 		if (force) cfg.qs = SNAPPI.Y.merge(cfg.qs, {
+				refresh: 1,
+				ccid: this.castingCall.CastingCall.ID,
+			});       	
+	        cfg.ioCfg = {
+				parseContent: true,
+				dataType: 'json',
+			}
+			cfg.args = SNAPPI.Y.merge(cfg.args,{page: page});
+			cfg.successJson = function(e, i,o,args) {
+					var response = o.responseJson.response;
+					PAGE.jsonData.castingCall = response.castingCall;
+					SNAPPI.mergeSessionData(response.castingCall);	// need this for paginate
+					var options = {
+						page: args.page,
+	                	castingCall: response.castingCall,
+	                }
+	                this.render(options);
+	                return false;								
+			};
+	        this.loadCastingCall(uri, cfg);
+	        return;
         },
         /**
          * add auditions to photoroll from raw castingCall. usually adding hiddenShots
@@ -1514,21 +1534,21 @@
 			return false;
 		},
 		// @deprecated use SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected()
-		updateHiddenShotPreview: function(gallery, oldFocus){
-			var focus = gallery.getFocus();
-			if (focus != oldFocus) {
-				gallery.setFocus(focus);
-				switch(gallery._cfg.type) {
-					case "DialogHiddenShot":
-						// Helper.bindPreview(gallery);
-						SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected();
-					break;
-					case "ShotGallery":
-						SNAPPI.domJsBinder.bindSelected2Preview.call(gallery, focus);
-					break;
-				}
-			}			
-		},
+		// updateHiddenShotPreview: function(gallery, oldFocus){
+			// var focus = gallery.getFocus();
+			// if (focus != oldFocus) {
+				// gallery.setFocus(focus);
+				// switch(gallery._cfg.type) {
+					// case "DialogHiddenShot":
+						// // Helper.bindPreview(gallery);
+						// SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected();
+					// break;
+					// case "ShotGallery":
+						// SNAPPI.domJsBinder.bindSelected2Preview.call(gallery, focus);
+					// break;
+				// }
+			// }			
+		// },
 		/**
 		 * 
 		 * @param selected  .FigureBox of selected shot
@@ -1606,6 +1626,34 @@
 			} catch (e) {}		
 			return false;	// reset loadingNode
 		},
+		/**
+		 * delete Thumbnail, .FigureBox, and refresh gallery page
+		 * @params node Y.Node .FigureBox, or null for getSelected()
+		 * @params loadingmask Y.Node, node for loading mask. NOTE: uses node for now.
+		 */
+		deleteThumbnail: function(node, loadingmask) {
+			var sh, aids = [], gids=[];
+			if (node && node.uuid) {
+				aids = [node.uuid];
+			} else {
+				this.getSelected().each(function(o){
+					aids.push(o.id);
+				});
+			}
+			// get gids, if any
+			SNAPPI.AssetRatingController.deleteByUuid(loadingmask || node, {
+				ids: aids.join(','), 
+				actions: {'delete':1},
+				context: this,
+				callbacks: {
+					successJson: function(e, i, o,args){
+						var resp = o.responseJson;
+						this.refresh(null, true);
+						return false;
+					}
+				}
+			});
+		},		
         applyShotCSS: function(shot){
             shot.each(function(audition){
                 if (shot.isBest(audition)) {
@@ -1639,6 +1687,7 @@
          * 		cfg.successJson function, success handler, should return 'false'
          */
         loadCastingCall: function(uri, cfg){
+        	var Y = SNAPPI.Y;
         	cfg = cfg || {};
         	if (!uri) {
         		// use existing CC
@@ -1665,25 +1714,44 @@
 				}
         	}
 			// SNAPPI.io GET JSON  
-			var container = this.container;
-			if (!/\.json$/.test(uri)) uri += '/.json'; 
-        	var args = {
+			// force json request in cakephp
+			var isJson = /(\/\.json$|\/\.json\?\b)/i;
+			if (!uri.match(isJson)) {
+				uri = uri.replace(/(\?)/i, '/.json$1');
+				if (!uri.match(isJson)) uri = uri.replace(/(\b$|\/$)/i, '/.json');
+			}
+			if (cfg.nameData) uri = SNAPPI.IO.setNamedParams(uri, cfg.nameData);
+	    	// add querystring params, ok for both GET and POST
+	        if (cfg.qs) {
+	            var qs = [];
+	            // stringify qs params
+	            for (var i in cfg.qs) {
+	                qs.push(i + '=' + cfg.qs[i]);
+	            }            
+	            uri += '?'+qs.join('&');
+	            delete cfg.qs;
+	        }  
+	          
+            var args = {
         		uuid : cfg.uuid,
         		successJson: cfg.successJson,
         		uri: uri,
-        		replace: true,	// replace audition with value in response
         	};
-        	if (cfg.replace !== undefined) args.replace = cfg.replace;
+        	if (cfg.replace == undefined) args.replace = true;	// replace audition with value in response, default true
         	if (cfg.args) args = Y.merge(args, cfg.args);
+        	
+        	
+        	var pluginNode = this.node;	// plugin to node seems to work better
         	/*
     		 * plugin Y.Plugin.IO
     		 */
-    		if (!container.io) {
+    		if (0 || !pluginNode.io) {
+    			if (pluginNode.io) pluginNode.unplug(Y.Plugin.IO);
     			var ioCfg = {
 //    					uri: subUri,
     					parseContent: false,
     					autoLoad: false,
-    					context: this,
+    					context: cfg.context || this,
     					arguments: args, 
     					on: {
     						successJson: function(e, i,o,args){
@@ -1691,28 +1759,33 @@
     						}					
     					}
     			};
-    			if (cfg.ioCfg) ioCfg = SNAPPI.Y.merge(ioCfg, cfg.ioCfg);
+    			if (cfg.ioCfg) ioCfg = Y.merge(ioCfg, cfg.ioCfg);
     			if (cfg.complete) ioCfg.on.complete = cfg.complete;
-    			// var loadingmaskTarget = container.get('parentNode');
-    			var loadingmaskTarget = this.node.hasClass('filmstrip') ? container.ancestor('.filmstrip') : container;
-    			// set loadingmask to parent
-    			container.plug(Y.LoadingMask, {
+    			pluginNode.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(ioCfg));
+    		}
+         	
+         	
+    		if (0 || !pluginNode.loadingmask) {
+    			// loadingmask doesn't seem to be reusable, even with delay
+    			if (!pluginNode.loadingmask) pluginNode.unplug(Y.LoadingMask);
+    			
+    			var loadingmaskTarget = this.node.hasClass('filmstrip') ? this.container.ancestor('.filmstrip') : this.container;
+    			pluginNode.plug(Y.LoadingMask, {
     				target: loadingmaskTarget
     			});    			
-    			container.loadingmask._conf.data.value['target'] = loadingmaskTarget;
-    			container.loadingmask.overlayMask._conf.data.value['target'] = container.loadingmask._conf.data.value['target'];
-    			// container.loadingmask.set('target', target);
-    			// container.loadingmask.overlayMask.set('target', target);
-    			container.loadingmask.set('zIndex', 10);
-    			container.loadingmask.overlayMask.set('zIndex', 10);
-    			container.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(ioCfg));
-    		}
+    			pluginNode.loadingmask._conf.data.value['target'] = loadingmaskTarget;
+    			pluginNode.loadingmask.overlayMask._conf.data.value['target'] = pluginNode.loadingmask._conf.data.value['target'];
+    			// pluginNode.loadingmask.set('target', target);
+    			// pluginNode.loadingmask.overlayMask.set('target', target);
+    			pluginNode.loadingmask.set('zIndex', 10);
+    			pluginNode.loadingmask.overlayMask.set('zIndex', 10);   			
+    		}   
+    		   			
 			// get CC via XHR and render
-			container.io.set('uri', args.uri);
-			container.io.set('arguments', args);
-			// container.loadingmask.refreshMask();
-			container.loadingmask.show();		//DEBUG: loadingmask is NOT showing here
-			container.io.start();			
+			pluginNode.io.set('uri', args.uri);
+			pluginNode.io.set('arguments', args);
+			pluginNode.loadingmask.show();		
+			pluginNode.io.start();
         },
         // called by SNAPPI.Factory.Thumbnail.PhotoPreview.handle_HiddenShotClick(), and 
         // DialogHelper.bindSelected2DialogHiddenShot() 

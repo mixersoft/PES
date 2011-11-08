@@ -8,5 +8,10 @@
 		<hr>
 		<li action='rotate' rotate='8'>Rotate CCW</li>		
 		<li action='rotate' rotate='6'>Rotate CW</li>
+		<hr>
+		<li action='sharing' class='disabled before-show'>Sharing...</li>
+		<li action='privacy' class='disabled before-show'>Privacy...</li>
+		<hr>
+		<li action='delete' class='before-show'>Delete Snap</li>
 	</ul>
 </div>

@@ -452,6 +452,81 @@
 	 * @params properties obj, {rating:, rotate:, }
 	 * @params actions obj, {updateBestshot:1, }
 	 */
+	AssetRatingController.deleteByUuid = function(container, cfg){
+		var Y = SNAPPI.Y;
+		var uri = "/photos/delete/.json";
+		var postData = {
+			'data[Asset][id]' : cfg.ids,
+		};	
+		var postKey;	
+		for (var k in cfg.properties) {
+			postKey = 'data[Asset]['+k+']';
+			postData[postKey] = cfg.properties[k];
+		}		
+		for (var k in cfg.actions) {
+			postKey = 'data['+k+']';
+			postData[postKey] = cfg.actions[k];
+		}
+		
+    	/*
+		 * plugin Y.Plugin.IO
+		 */
+		var ioCfg;
+    	var args = {
+    		node: container,
+    		uri: uri,
+    	};			
+		if (!container.io) {
+			ioCfg = {
+   					// uri: args.uri,
+					parseContent: false,
+					autoLoad: false,
+					context: cfg.context || container,
+					arguments: args, 
+					method: "POST",
+					dataType: 'json',
+					qs: postData,
+					on: cfg.callbacks,
+			};
+			// var loadingmaskTarget = container.get('parentNode');
+			var loadingmaskTarget = container;
+			// set loadingmask to parent
+			container.plug(Y.LoadingMask, {
+				strings: {loading:''}, 	// BUG: A.LoadingMask
+				target: loadingmaskTarget,
+			});    			
+			container.loadingmask._conf.data.value['target'] = loadingmaskTarget;
+			container.loadingmask.overlayMask._conf.data.value['target'] = container.loadingmask._conf.data.value['target'];
+			// container.loadingmask.set('target', target);
+			// container.loadingmask.overlayMask.set('target', target);
+			container.loadingmask.set('zIndex', 10);
+			container.loadingmask.overlayMask.set('zIndex', 10);
+			container.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(ioCfg));
+		} else {
+			ioCfg = {
+				arguments: args, 
+				method: "POST",
+				qs: postData,
+			}
+			ioCfg = SNAPPI.IO.pluginIO_RespondAsJson(ioCfg); 
+			container.io.set('data', ioCfg.data);
+		}
+		args.loadingmask = container.loadingmask;
+		// get CC via XHR and render
+		container.io.set('uri', args.uri);
+		container.io.set('arguments', args);
+		container.loadingmask.refreshMask();
+		container.loadingmask.show();		//DEBUG: loadingmask is NOT showing here
+		container.io.start();			
+	}	
+	/**
+	 * 
+	 * TODO: move to differnt class, io_helpers(?)
+	 * @params container Y.Node, container for loadingmask 
+	 * @params ids Array, asset UUIDs
+	 * @params properties obj, {rating:, rotate:, }
+	 * @params actions obj, {updateBestshot:1, }
+	 */
 	AssetRatingController.setProp = function(container, cfg){
 		var Y = SNAPPI.Y;
 		var uri = "/photos/setprop/.json";

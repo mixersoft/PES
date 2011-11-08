@@ -238,13 +238,11 @@ final class PermissionableBehavior extends ModelBehavior {
 	 * @return boolean
 	 */
 	public function afterSave(&$Model, $created) {
-
 		if ($this->_disabled) {
 
 			return true;
 
 		}
-		
 		extract($this->settings[$Model->alias]);
 
 		$user_id	= Permissionable::getUserId();
@@ -333,9 +331,16 @@ final class PermissionableBehavior extends ModelBehavior {
 			return true;
 
 		}
-
-		return $this->hasPermission($Model, 'delete');
-
+		$ret = $this->hasPermission($Model, 'delete');
+		/*
+		 * NOTE: [conditions][0] on _bind() prevents deleting Permission
+		 * */
+// debug($this->getPermissionAlias($Model));		
+		if ($ret) {
+			unset($Model->hasOne[$this->getPermissionAlias($Model)]['conditions'][0]);
+		}
+// debug($Model->hasOne[$this->getPermissionAlias($Model)]);		
+		return true;
 	}
 	
 	

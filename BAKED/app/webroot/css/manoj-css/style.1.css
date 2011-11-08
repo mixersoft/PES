@@ -80,12 +80,7 @@ nav > ul > li, nav > ul > li > a {
 nav ul.menu-trigger > li , nav  ul.menu-trigger > li > a {
 	cursor: pointer;
 }
-.menu > ul > li , .menu > ul > li > a {
-	cursor: pointer;
-}
-.menu ul > hr {
-	border-top: 1px dotted #AAAAAA;
-}
+
 ul > li.label {
 	cursor: default !important;
 }
@@ -868,8 +863,16 @@ aside.related-content .body section > h1 {
 	font-size: 13px;
 }
 
+.menu > ul > li , .menu > ul > li > a {
+	cursor: pointer;
+}
+.menu ul > hr {
+	border-top: 1px solid #888;
+}
 .menu ul, .menu li {
 	margin: 0;
+	background-color: #FFF;
+	xwidth: auto  !important;
 }
 
 .menu li {
@@ -887,8 +890,24 @@ aside.related-content .body section > h1 {
 }
 
 .menu li:hover, .menu li a:hover {
-	background: #ccc;
+	background: #CCC;
 }
+
+
+.menu li.disabled {
+	cursor: default;
+	color: #888;
+	background-color: #EEE;
+}
+
+.menu li.selected {
+	background: url(../images/arrow.png) no-repeat left center;
+	padding-left: 10px;
+}
+.menu ul.select > li.focus {
+	background: #CCC;
+}
+
 
 /*
  * drag-drop
@@ -1228,19 +1247,6 @@ form input[type='text'].help {
 }
 .gallery-header .toolbar input[type='checkbox'] {
 	vertical-align: text-top;
-}
-/*
- * menus
- */
-.menu li.disabled {
-	cursor: default;
-	color: gray;
-	background-color: lightgray;
-}
-
-.menu li.selected {
-	background: url(../images/arrow.png) no-repeat left center;
-	padding-left: 10px;
 }
 
 /*

@@ -143,6 +143,21 @@ var DEFAULT_CFG_contextmenu = 	{
 		Menu.find[MARKUP.id] = menu;
 		return menu;
 	};
+	/*
+	 * add offset to menu alignment positioning
+	 * 	NOTES: must use cfg.constrain = false for A.OverlayContext
+	 * @params overlay, A.OverlayContext
+	 * @params newXY, array [x,y] (optional), target XY location BEFORE constrain
+	 * @params offset, {x:, y:}
+	 */
+	Menu.moveIfUnconstrained = function(overlay, newXY, offset) {
+		if (!offset) return;
+		newXY = newXY || overlay.get('xy');
+		var constrainedXY = overlay.getConstrainedXY(newXY);
+		newXY[0] = (newXY[0] == constrainedXY[0]) ? newXY[0]+offset.x : constrainedXY[0];
+		newXY[1] = (newXY[1] == constrainedXY[1]) ? newXY[1]+offset.y : constrainedXY[1];
+		return newXY;		
+	}
 	
 	/*
 	 * toggle menu enable/disable by changing trigger
@@ -158,7 +173,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		} else {
 			menu.disable();
 			menu.hide();
-			menu.set('trigger', 'disabled');
+			menu.set('trigger', '#blackhole');
 		}
 		return menu;
 	};
@@ -170,6 +185,7 @@ var DEFAULT_CFG_contextmenu = 	{
 			menu.listen['delegate_click'] = parent.delegate('click', function(e){
 				var menuItem = e.currentTarget;
 				if (menuItem.hasClass('disabled')) {
+					// check for disabled
 					e.preventDefault();
 					return;
 				} 
@@ -297,6 +313,11 @@ var DEFAULT_CFG_contextmenu = 	{
 		} catch (e) {}
 		menu.hide();
 	};
+	/*
+	 * remove from Lightbox
+	 * NOTE: see also MenuItems.remove_from_uploader_selected_click()
+	 * 		MenuItems.delete
+	 */
 	MenuItems.remove_selected_beforeShow = function(menuItem, menu){
 		try {
 			var target = menu.get('currentNode');	// target
@@ -320,6 +341,9 @@ var DEFAULT_CFG_contextmenu = 	{
 		} catch (e) {}
 		menu.hide();
 	};
+	/**
+	 * for SNAPPI AIR Uploader
+	 */	
 	MenuItems.retry_selected_beforeShow = function(menuItem, menu){
 		try {
 			var target = menu.get('currentNode');	// target
@@ -362,13 +386,16 @@ var DEFAULT_CFG_contextmenu = 	{
 		} catch (e) {}
 		menu.hide();
 	};	
+	/**
+	 * for SNAPPI AIR Uploader
+	 */
 	MenuItems.cancel_selected_beforeShow = function(menuItem, menu){
 		try {
 			// used by SNAPPI.uploader to retry in uploadQueue
 			var isSelected, target = menu.get('currentNode');
 			if (menuItem.ancestor('#contextmenu-photoroll-markup')) { 
 				// enabled for 'status-pending' 'status-paused'
-				if (target.hasClass('status-pending') || target.hasClass('status-active')) {
+				if (target.hasClass('status-pending') || target.hasClass('status-paused') || target.hasClass('status-active')) {
 					menuItem.removeClass('disabled');
 				} else menuItem.addClass('disabled');
 				menuItem.removeClass('hide');
@@ -406,6 +433,9 @@ var DEFAULT_CFG_contextmenu = 	{
 		} catch (e) {}
 		menu.hide();
 	};	
+	/**
+	 * for SNAPPI AIR Uploader
+	 */	
 	MenuItems.remove_from_uploader_selected_click = function(menuItem, menu){
 		try {
 			// used by SNAPPI.uploader to remove from uploadQueue
@@ -429,6 +459,50 @@ var DEFAULT_CFG_contextmenu = 	{
 			}
 		} catch (e) {}
 		menu.hide();
+	};	
+	MenuItems.delete_beforeShow = function(menuItem, menu){
+		try {
+			var target = menu.get('currentNode'),	// target
+				enabled = true;
+			if (menuItem.ancestor('#contextmenu-photoroll-markup')) {
+				// context menu
+			} else {
+				var g = target.ancestor('section').next('section.gallery').Gallery;
+				enabled = g.getSelected().size();
+			} 			
+			// check if we have write permission
+			if (SNAPPI.STATE.controller.alias == 'my' ) {
+				switch (SNAPPI.STATE.controller.action) {
+					case 'home':
+					case 'photos':
+						menuItem.removeClass('hide');
+						if (enabled) menuItem.removeClass('disabled');
+						else menuItem.addClass('disabled');
+						return;
+				}
+			}
+			menuItem.addClass('hide');
+		} catch (e) {
+			menuItem.addClass('hide');
+		}
+	};	
+	MenuItems.delete_click = function(menuItem, menu){
+		try {
+			var g, response, isSelected, thumbnail = menu.get('currentNode');	// target
+			if (menuItem.ancestor('#contextmenu-photoroll-markup')) { 
+				// from context menu
+				g = MenuItems.getGalleryFromTarget(thumbnail);
+				response = confirm('Are you sure you want to remove this Snap from your account?');
+				if (response)  g.deleteThumbnail(thumbnail, thumbnail);
+				menu.hide();
+			} else {
+				// from selectAll
+				g = thumbnail.ancestor('section').next('section.gallery').Gallery;
+				response = confirm('Are you sure you want to remove ALL selected Snaps from your account?');
+				if (response)  g.deleteThumbnail(null, menuItem);
+				// menu.hide();
+			}			
+		} catch (e) {}		
 	};	
 	// formerly _getPhotoRoll(), currently unused
 	MenuItems.getGalleryFromTarget = function(target){
@@ -568,11 +642,11 @@ var DEFAULT_CFG_contextmenu = 	{
 		} catch (e) {}
 		if (shotType && thumbnail.hasClass('selected')) {
 			if (g.getSelected().count()>1) {
-				menuItem.show();
+				menuItem.removeClass('disabled');
 				return;
 			}
 		}
-		menuItem.hide();
+		menuItem.addClass('disabled');
 	};	
 	
 	MenuItems.groupAsShot_click = function(menuItem, menu){
@@ -605,11 +679,14 @@ var DEFAULT_CFG_contextmenu = 	{
 		try {
 			// from lightbox menuItem
 			var lightbox = menu.get('currentNode').ancestor('#lightbox').Lightbox;
-			var shotType = 'unknown';		// lightbox photos can be from group or user 
-			shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
+			try {
+				var shotType = 'unknown';		// lightbox photos can be from group or user 
+				// check if the user has permission to groupAsShot
+				shotType = g.castingCall.CastingCall.GroupAsShotPerm;
+			} catch (e) {}				
+			// shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
 			var batch = lightbox.getSelected();
-			// TODO: ??? lightbox.groupAsShot() or 
-			// 		lightbox.Gallery.groupAsShot()??? 
+			// TODO: ??? lightbox.groupAsShot() or lightbox.Gallery.groupAsShot()??? 
 			lightbox.Gallery.groupAsShot(batch, {
 				menu: menu,
 				loadingNode: menuItem,
@@ -623,15 +700,19 @@ var DEFAULT_CFG_contextmenu = 	{
 	
 	MenuItems.removeFromShot_beforeShow = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
-		var show = /^Users|^Groups/.test(SNAPPI.STATE.controller.name);
-		if (show && thumbnail.hasClass('selected')) {
+		try {
+			// check if the user has permission to groupAsShot
+			var shotType = g.castingCall.CastingCall.GroupAsShotPerm;
+		} catch (e) {}		
+		// var show = /^Users|^Groups/.test(SNAPPI.STATE.controller.name);
+		if (shotType && thumbnail.hasClass('selected')) {
 			var g = MenuItems.getGalleryFromTarget(thumbnail);
 			if (g.getSelected().count()>=1) {
-				menuItem.show();
+				menuItem.removeClass('disabled');
 				return;
 			}
 		}
-		menuItem.hide();
+		menuItem.addClass('disabled');
 	};	
 	
 	MenuItems.removeFromShot_click = function(menuItem, menu){
@@ -639,7 +720,11 @@ var DEFAULT_CFG_contextmenu = 	{
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		var g = MenuItems.getGalleryFromTarget(menu);
 		var shotType = audition.Audition.Substitutions.shotType;
-		if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
+		// if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
+		if (!shotType) {
+			if (console) console.error("ERROR: shotType unknown in MenuItems.setBestshot_click()");
+			return;
+		}			
 		batch = g.getSelected();
 		// count remaining assets
 		if (batch.count()==0) batch.add(audition);
@@ -666,17 +751,21 @@ var DEFAULT_CFG_contextmenu = 	{
 	MenuItems.ungroupShot_beforeShow = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
-		var show = /^Users|^Groups/.test(SNAPPI.STATE.controller.name);
-		if (!show) {
-			menuItem.hide();
+		try {
+			// check if the user has permission to groupAsShot
+			var shotType = g.castingCall.CastingCall.GroupAsShotPerm;
+		} catch (e) {}	
+		// var show = /^Users|^Groups/.test(SNAPPI.STATE.controller.name);
+		if (!shotType) {
+			menuItem.addClass('disabled');
 			return;
 		} 
     	try {
     		var shotId = audition.Audition.Substitutions.id;
-    		if (shotId) menuItem.show();
-    		else menuItem.hide();
+    		if (shotId) menuItem.removeClass('disabled');
+    		else menuItem.addClass('disabled');
 		}catch(e){
-			menuItem.hide();
+			menuItem.addClass('disabled');
 		}		
 	};
 		
@@ -685,7 +774,11 @@ var DEFAULT_CFG_contextmenu = 	{
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		var g = MenuItems.getGalleryFromTarget(menu);
 		var shotType = audition.Audition.Substitutions.shotType;
-		if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
+		// if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
+		if (!shotType) {
+			if (console) console.error("ERROR: shotType unknown in MenuItems.setBestshot_click()");
+			return;
+		}			
 		batch = g.getSelected();
 		if (batch.count()==0) batch.add(audition);
 		g.unGroupShot(batch, {
@@ -701,7 +794,11 @@ var DEFAULT_CFG_contextmenu = 	{
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		var g = MenuItems.getGalleryFromTarget(menu);
 		var shotType = audition.Audition.Substitutions.shotType;
-		if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
+		// if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
+		if (!shotType) {
+			if (console) console.error("ERROR: shotType unknown in MenuItems.setBestshot_click()");
+			return;
+		}
 		g.setBestshot(thumbnail, {
 			menu: menu,
 			loadingNode: menuItem,
@@ -932,13 +1029,17 @@ var DEFAULT_CFG_contextmenu = 	{
 		var Y = SNAPPI.Y;
 		var CSS_ID = 'contextmenu-photoroll-markup';
 		var TRIGGER = ' .FigureBox';
+		var defaultCfg = {
+				// constrain: true,
+		}
+		cfg = Y.merge(defaultCfg, cfg);
+
 		var MARKUP = {
 				id: CSS_ID,
 				selector: '#'+CSS_ID,
 				container: Y.one('#markup'),
-				uri: '/combo/markup/photoRollContextMenu'
+				uri: '/combo/markup/photoRollContextMenu',
 		};
-		
 		// reuse, if found
 		if (Menu.find[CSS_ID]) 
 			return Menu.find[CSS_ID];
@@ -948,7 +1049,13 @@ var DEFAULT_CFG_contextmenu = 	{
 
 
 		var callback = function(){
-			Menu.initContextMenu(MARKUP, TRIGGER, cfg);
+			var menu = Menu.initContextMenu(MARKUP, TRIGGER, cfg);
+			var offset = {x:-20, y:20};
+			menu.set('xy', Menu.moveIfUnconstrained(menu, null, offset));
+			menu.on('xyChange', function(e){
+					e.newVal = Menu.moveIfUnconstrained(this, e.newVal, offset);
+				}
+			)
 		};
 		return Menu.getMarkup(MARKUP , callback);
 	};
@@ -963,6 +1070,11 @@ var DEFAULT_CFG_contextmenu = 	{
 	 */
 	CFG_Context_HiddenShot.load = function(cfg){
 		var Y = SNAPPI.Y;
+		var defaultCfg = {
+				constrain: true,
+		}
+		cfg = Y.merge(defaultCfg, cfg);
+				
 		var CSS_ID = 'contextmenu-hiddenshot-markup';
 		var TRIGGER = ' .FigureBox.Photo';
 		var MARKUP = {
@@ -977,7 +1089,13 @@ var DEFAULT_CFG_contextmenu = 	{
 			return Menu.find[CSS_ID];
 
 		var callback = function(){
-			Menu.initContextMenu(MARKUP, TRIGGER, cfg);
+			var menu = Menu.initContextMenu(MARKUP, TRIGGER, cfg);
+			var offset = {x:-20, y:20};
+			menu.set('xy', Menu.moveIfUnconstrained(menu, null, offset));
+			menu.on('xyChange', function(e){
+					e.newVal = Menu.moveIfUnconstrained(this, e.newVal, offset);
+				}
+			)			
 		};
 		return Menu.getMarkup(MARKUP , callback);
 	};
@@ -1160,6 +1278,7 @@ var DEFAULT_CFG_contextmenu = 	{
 						SNAPPI.AIR.UIHelper.menu.load_batches(content);
 					} catch (e) {}
 					content.removeClass('hide');
+					SNAPPI.AIR.UIHelper.toggle_ContextMenu(false);	// hide contextmenu
 				},
 				hide: function(e) {
 					e.target.get('contentBox').addClass('hide');
@@ -1201,6 +1320,7 @@ var DEFAULT_CFG_contextmenu = 	{
 						SNAPPI.AIR.UIHelper.menu.load_folders(content);
 					} catch (e) {}
 					content.removeClass('hide');
+					SNAPPI.AIR.UIHelper.toggle_ContextMenu(false);	// hide contextmenu
 				},
 				hide: function(e) {
 					e.target.get('contentBox').addClass('hide');

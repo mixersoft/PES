@@ -174,7 +174,7 @@ WHERE `Shot`.owner_id = '{$owner_id}' AND `Shot`.id IN ";
 	
 	/**
 	 * remove Asset from Shot, but keep shot
-	 * @param array $assetIds 
+	 * @param array $assetIds, uuids should belong to shot 
 	 * @param uuid $shotId
 	 * @return aa array('success','bestShot')
 	 */
@@ -500,11 +500,28 @@ SET `Shot`.assets_usershot_count = `Count`.assets_usershot_count;";
 	//$this->log($INSERT_best_groupshots, LOG_DEBUG);
 		}		
 		
-		$this->updateCounter($groupId);
+		$this->updateGroupshotCounterByGroupId($groupId);
 		return 1;
 	}
+
+	/*
+	 * returned data in the form of $data['Shot']['shot_id], $data['Shot']['count'], $data['AssetsShot']['asset_id]
+	 * @params $aids, array of uuids
+	 * */
+	public function findShotsByAssetId($aids){
+		$in_aids = implode("','", $aids);
+		$SQL = "
+SELECT Shot.id AS shot_id, Shot.assets_usershot_count AS count, `AssetsShot`.asset_id
+FROM usershots as Shot
+JOIN assets_usershots as `AssetsShot` ON Shot.id = `AssetsShot`.usershot_id
+WHERE `AssetsShot`.asset_id IN ('{$in_aids}')
+-- ORDER BY Shot.id
+;";
+		$shot_data = $this->query($SQL);
+		return $shot_data;
+	}
 	
-	function updateCounter($groupId) {
+	function updateGroupshotCounterByGroupId($groupId) {
 		$UPDATE = "
 UPDATE `groupshots`
 LEFT JOIN (

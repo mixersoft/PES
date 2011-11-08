@@ -181,6 +181,10 @@ class AssetsController extends AppController {
 					$ret = $ret && $this->deleteFromGroupsProviderAccount($providerAccountId, $gid);
 				}
 				// TODO: remove from groupShots
+				// not done
+				if ($shotId) $this->__removeFromShot($aid, $shotId, 'Groupshot');
+				// update counterCache 
+				$this->Asset->Group->updateCounter($gid);
 			}
 		}
 		return $ret != false;
@@ -732,7 +736,12 @@ debug("WARNING: This code path is not tested");
 		$this->set('asset', $data);
 	}
 
-	function delete($id = null) {
+	function deleteXXX($id = null) {
+		// check for controller='assets' or delete by JSON POST 
+		// __removeFromShot, update count
+		// __unshare, update count
+		// __delete
+		
 		if (!$id) {
 			$this->Session->setFlash(sprintf(__('Invalid id for %s', true), 'asset'));
 			$this->redirectSafe();
@@ -750,11 +759,97 @@ debug("WARNING: This code path is not tested");
 				}
 				$next = "/my/home";
 				$this->redirect($next, null, true);
+				// TODO: cleanup BestShot
 			}
 			$this->Session->setFlash(sprintf(__('%s was not deleted', true), 'Asset'));
 		}
 		$this->redirectSafe();
 
+	}
+	function delete ($id = null) {
+		$forceXHR = 0;
+		if ($forceXHR) {
+			if (isset($this->params['url']['data'])) $this->data = $this->params['url']['data'];
+		}
+		if (!empty($this->data)) {
+			$errors = $response = $jsonResp = array();
+			// POST: typically XHR+JSON
+			if ($forceXHR || $this->RequestHandler->isAjax()) {
+			
+				$gids = isset($this->data['Group']['gids']) ? (array)@explode(',', $this->data['Group']['gids']) : null;
+				$aids = (array)@explode(',', $this->data['Asset']['id']);
+				$usershots = $this->__findShots($aids, 'Usershot');
+				$shotsByAssetId = Set::combine($usershots, '/AssetsShot/asset_id', '/Shot');
+// debug($shotsByAssetId);				
+				$retval = true;
+				/*
+				 * NOTE: must delete assets individually to cleanup User/Groupshots properly
+				 * 	update counterCache at end
+				 */ 
+				foreach ($aids as $aid) {
+					if ($this->Asset->hasPermission('delete',$aid) == false) {
+						$errors[] = "WARNING: no delete permissions on uuid={$aid}";
+						$retval = false;
+						continue;
+					}
+					// _unshare() -> remove from AssetsGroup, remove from GroupShots, update GroupCount 
+					if (empty($gids)){
+						// get all gids to updateCount
+						$options = array('conditions'=>array('asset_id'=>$aid), 'fields'=>'group_id', 'recursive'=>-1);
+						$result = ClassRegistry::init('AssetsGroup')->find('all',$options);
+						$gids_1 = Set::extract('/AssetsGroup/group_id', $result);					
+					} else {
+						// TODO: send gids as param
+						$gids_1 = $gids;
+					}					
+					if (!empty($gids_1)) {		// unshare
+						// TODO: test unshare  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+						$retval = $retval && $this->__unshare($aid, $gids_1, true, true);
+					}
+					
+					// remove from UserShots
+					if (isset($shotsByAssetId[$aid])) {
+						$shot = $shotsByAssetId[$aid]['Shot'];
+// debug($shot);						
+						if ($shot['count'] > 2 ) {
+							$response = $this->__removeFromShot(array($aid), $shot['shot_id'], 'Usershot');
+							$jsonResp['message']['removeFromShot'] = @mergeAsArray($jsonResp['message']['removeFromShot'], $response['message']);
+							$jsonResp['response']['removeFromShot']  = @mergeAsArray($jsonResp['response']['removeFromShot'] , $response['response']);
+						} else {
+							$response = $this->__ungroupShot(array($shot['shot_id']), 'Usershot');
+							$jsonResp['message']['ungroupShot'] = @mergeAsArray($jsonResp['message']['ungroupShot'], $response['message']);
+							$jsonResp['response']['ungroupShot'] = @mergeAsArray($jsonResp['response']['ungroupShot'], $response['response']);
+						}
+						$retval = $retval && ($response['success'] && $response['success']!=='false');
+						
+						/*
+						 * If we remove from Shot, then we just reload for now
+						 * TODO: add new bestshot back into castingCall/gallery, mark castingCall as Stale
+						 */
+						
+					}
+					// remove from Assets	
+					$retval = $retval && ($delete_retval = @$this->Asset->delete($aid, true));
+					$jsonResp['response']['aids'][$aid] = $delete_retval;
+
+				}
+				$jsonResp['success'] = $retval ? 'true' : 'false';
+				$jsonResp['message'][] = $retval ? "Delete Asset successful." : "Delete Asset Failed";
+// debug($jsonResp);				
+				$this->viewVars['jsonData'] = $jsonResp;
+				// update owner counterCache 			
+				$done = $this->renderXHRByRequest('json', null, null, $forceXHR);
+				if ($done) return;
+			}
+// $this->layout = false;
+// $this->render('/elements/sqldump');
+		} else {
+			// GET: no XHR, no JSON
+			if (!$id) {
+				$this->Session->setFlash(sprintf(__('Invalid id for %s', true), 'asset'));
+				$this->redirectSafe();
+			}			
+		}
 	}
 
 	function unshare ($id) {
@@ -1314,7 +1409,21 @@ debug("WARNING: This code path is not tested");
 		$castingCall = $this->CastingCall->getCastingCall($pageData);
 		return $castingCall;		
 	}	
-	
+	/*
+	 * @params $aids, array of uuids
+	 * */
+	function __findShots($aids, $shotType='Usershot'){
+		switch ($shotType) {
+			case 'Usershot':
+				if (!isset($this->Asset->Usershot)) $this->Asset->Usershot = ClassRegistry::init('Usershot');
+				$shot_data = $this->Asset->Usershot->findShotsByAssetId($aids);
+				return $shot_data;
+			case 'Groupshot':				
+				if (!isset($this->Asset->Groupshot)) $this->Asset->Groupshot = ClassRegistry::init('Groupshot');
+				$shot_data = $this->Asset->Groupshot->findShotsByAssetId($aids);
+				return $shot_data;				
+		}
+	}
 	function __addChunks($chunk_uuid, $assetIds) {
 		$ids = explode(',',$assetIds);
 		$errors=array();

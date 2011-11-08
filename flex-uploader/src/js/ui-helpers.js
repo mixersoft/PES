@@ -121,8 +121,9 @@ LOG("+++ EXCEPTION: loadingmask.hide()");
 	
 	UIHelper.toggle_ContextMenu = function(e) {
 		// copied from SNAPPI.Gallery
-        if (e) e.preventDefault();
     	var CSS_ID = 'contextmenu-photoroll-markup';
+    	if (e==false && !SNAPPI.MenuAUI.find[CSS_ID]) return;
+    	if (e) e.preventDefault();
     	// load/toggle contextmenu
     	if (!SNAPPI.MenuAUI.find[CSS_ID]) {
     		var contextMenuCfg = {
@@ -132,6 +133,7 @@ LOG("+++ EXCEPTION: loadingmask.hide()");
 			}; 
     		SNAPPI.MenuAUI.CFG[CSS_ID].load(contextMenuCfg);
     	} else {
+LOG("toggle CONTEXT MENU, E="+e);		    		
     		var menu = SNAPPI.MenuAUI.toggleEnabled(CSS_ID, e);
     	}		
 	}
@@ -146,6 +148,31 @@ LOG("+++ EXCEPTION: loadingmask.hide()");
 	         * 		set-display-size:[size] 
 	         * 		set-display-view:[mode]
 	         */
+	        WindowOptionClick : function(node) {
+	        	var Y = SNAPPI.Y;
+	        	node = node || Y.one('body');
+	        	var action = 'WindowOptionClick';
+	        	node.listen = node.listen || {};
+	            if (node.listen[action] == undefined) {
+					node.listen[action] = node.delegate('click', 
+		                function(e){
+		                	// action=[set-display-size:[size] | set-display-view:[mode]]
+		                	// context = UIHelper
+		                	UIHelper.toggle_ContextMenu(false);	// hide contextmenu
+		                	var action = e.currentTarget.getAttribute('action').split(':');
+				    		switch(action[0]) {
+				    			case 'set-display-view':
+				    				UIHelper.actions.setDisplayView(action[1]);
+				    				break;
+				    			case 'toggle-display-options':
+				    				UIHelper.actions.toggleDisplayOptions();
+				    				break;
+				    		}		                	
+		                }, 'nav.window-options > ul > li', UIHelper);
+				}
+				// back reference
+				UIHelper.listen[action] = node.listen[action];
+	        },	        
 	        DisplayOptionClick : function(node) {
 	        	var Y = SNAPPI.Y;
 	        	node = node || Y.one('.gallery-display-options');
@@ -160,38 +187,20 @@ LOG("+++ EXCEPTION: loadingmask.hide()");
 				    		switch(action[0]) {
 				    			case 'filter':
 				    				UIHelper.actions['filter'](e.currentTarget, action[1]);
-				    			break;
+				    				break;
 				    			case 'folder':
 				    				// uses MenuItems.uploader_setFolder_click()
 				    				// to call set_UploadBatchid(menuItem) or set_Folder(menuItem)
-				    			break;
+				    				break;
+				    			case 'retry':
+				    				SNAPPI.AIR.uploadQueue.action_retry();
+				    				break;
 				    		}		                	
 		                }, 'ul > li.btn', UIHelper);
 				}
 				// back reference
 				UIHelper.listen[action] = node.listen[action];
 	        },  		
-	        WindowOptionClick : function(node) {
-	        	var Y = SNAPPI.Y;
-	        	node = node || Y.one('.item-header nav.window-options');
-	        	var action = 'WindowOptionClick';
-	        	node.listen = node.listen || {};
-	            if (node.listen[action] == undefined) {
-					node.listen[action] = node.delegate('click', 
-		                function(e){
-		                	// action=[set-display-size:[size] | set-display-view:[mode]]
-		                	// context = UIHelper
-		                	var action = e.currentTarget.getAttribute('action').split(':');
-				    		switch(action[0]) {
-				    			case 'set-display-view':
-				    				UIHelper.actions.setDisplayView(action[1]);
-				    			break;
-				    		}		                	
-		                }, 'ul > li', UIHelper);
-				}
-				// back reference
-				UIHelper.listen[action] = node.listen[action];
-	        },
 	        ContextMenuClick : function(node) {
 	        	var Y = SNAPPI.Y;
 	        	node = node || Y.one('.gallery.photo .container');
@@ -249,6 +258,7 @@ LOG("+++ EXCEPTION: loadingmask.hide()");
 		},
 		toggleDisplayOptions  : function(o){
 			var Y = SNAPPI.Y;
+			SNAPPI.AIR.UIHelper.toggle_ContextMenu(false);	// hide contextmenu
 			try {
 				SNAPPI.STATE.showDisplayOptions = SNAPPI.STATE.showDisplayOptions ? 0 : 1;
 				UIHelper.actions.setDisplayOptions();

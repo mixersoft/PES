@@ -536,7 +536,7 @@
 	 * 	use PAGE.jsonData.STATE (global) to pass default session/state data via HTTP GET/XHR
 	 *  use SNAPPI.STATE (global) to store local session/state across XHR gets
 	 */    
-    SNAPPI.mergeSessionData = function(){
+    SNAPPI.mergeSessionData = function(castingCall){
     	var Y = SNAPPI.Y;
         try {
             SNAPPI.STATE = SNAPPI.STATE  || {}; // stores session data across XHR calls
@@ -544,7 +544,8 @@
         	PAGE.jsonData.STATE = {};
     		// merge PAGE into SNAPPI.STATE
     		try {
-	    		var ccPage = PAGE.jsonData.castingCall.CastingCall.Auditions;
+    			castingCall = castingCall || PAGE.jsonData.castingCall;
+	    		var ccPage = castingCall.CastingCall.Auditions;
 	    		SNAPPI.STATE.displayPage = {
 	    				page: ccPage.Page,
 	    				perpage: ccPage.Perpage,    				

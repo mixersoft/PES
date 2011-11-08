@@ -384,6 +384,25 @@ ON DUPLICATE KEY UPDATE `asset_id`=VALUES(`asset_id`),  `modified`=VALUES(`modif
 		return 1;
 	}	
 	
+	
+	/*
+	 * returned data in the form of $data['Shot']['shot_id], $data['Shot']['count'], $data['AssetsShot']['asset_id]
+	 * @params $aids, array of uuids
+	 * */
+	public function findShotsByAssetId($aids){
+		$in_aids = implode("','", $aids);
+		$SQL = "
+SELECT Shot.id AS shot_id, Shot.assets_groupshot_count AS count, `AssetsShot`.asset_id
+FROM groupshots as Shot
+JOIN assets_groupshots as `AssetsShot` ON Shot.id = `AssetsShot`.groupshot_id
+WHERE `AssetsShot`.asset_id IN ('{$in_aids}')
+-- ORDER BY Shot.id
+;";
+		$shot_data = $this->query($SQL);
+		return $shot_data;
+	}
+		
+	
 	/**
 	 * updates counterCache for groupshots
 	 * @param mixed array of uuids or string uuid, 1 shotId
