@@ -445,7 +445,7 @@
 	AssetRatingController.prototype = {
 	};
 	/**
-	 * 
+	 * called by Gallery.deleteThumbnail()
 	 * TODO: move to differnt class, io_helpers(?)
 	 * @params container Y.Node, container for loadingmask 
 	 * @params ids Array, asset UUIDs

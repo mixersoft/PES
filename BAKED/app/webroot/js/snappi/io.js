@@ -404,7 +404,14 @@
         }
     	return uri;
     };    
-    
+    IO.object2querystring = function(o) {
+            var qs = [];
+            // stringify qs params
+            for (var i in o) {
+                qs.push(i + '=' + o[i]);
+            }            
+            return qs.join('&');    	
+    };
     IO.debug_ParseContent = function(plugin) {
     	plugin.io.afterHostMethod('insert', function(e){
     		console.warn("After Plugin.IO.ParseContent(), target="+plugin);
@@ -428,6 +435,7 @@
     	var _json_callbacks = {
             complete: function(e, id, o, args){
 				console.warn('IO.pluginIO_RespondAsJson() io:complete');
+				document.body.style.cursor = '';
 				var ioRequest = e.target;
 				var context = ioRequest.get('context') || this;
 				if (!ioRequest.get('dataType')) {
@@ -507,18 +515,14 @@
     	// add named params
     	if (cfg.nameData) {
     		if (cfg.uri) {
-	    		cfg.uri = SNAPPI.IO.setNamedParams(cfg.uri, cfg.nameData);
+	    		cfg.uri = IO.setNamedParams(cfg.uri, cfg.nameData);
     		} else console.error('IO.pluginIO_RespondAsJson(): attempt to set named params without providing cfg.uri');
     	};
     	
     	// add querystring params, ok for both GET and POST
         if (cfg.qs) {
-            var qs = [];
-            // stringify qs params
-            for (var i in cfg.qs) {
-                qs.push(i + '=' + cfg.qs[i]);
-            }            
-            cfg.data = qs.join('&');
+			cfg.data = IO.object2querystring(cfg.qs);
+			delete cfg.qs;
         }    	
         // add Json dataType
     	if (!cfg.dataType) cfg.dataType = 'json';

@@ -227,7 +227,7 @@ WHERE `Shot`.id = '{$shotId}' AND `Shot`.owner_id = '{$owner_id}'";
 	public function updateBestShotSystem($shotIds = array()) {
 		$success = false; $message=array(); $response=array();
 		$options = array(
-			'fields'=>array('`Asset`.id','`BestShotSystem`.`id`','`BestShotSystem`.`asset_id`'),
+			'fields'=>array('`Asset`.id','`BestShotSystem`.`id`','`BestShotSystem`.`asset_id`','`BestShotSystem`.`id`'),
 			'conditions'=>array('`Shot`.id'=>$shotIds),
 			'order'=>'`SharedEdit`.score DESC, `Asset`.dateTaken ASC',	
 //			'showEdits'=>true,
@@ -264,7 +264,9 @@ WHERE `Shot`.id = '{$shotId}' AND `Shot`.owner_id = '{$owner_id}'";
 			// see if we should update bestShotSystem based on new top score
 			if ($topScoreAsset['BestShotSystem']['asset_id'] != $topScoreAsset['Asset']['id']) {
 				// new top score, update bestShotSystem
-				$this->{$model}->id = $topScoreAsset['BestShotSystem']['id'];
+				// WARNING: not sure this code path is used.
+				// removeFromShot>unShare seems to follow: Usershot->updateBestShotSystem: OK. bestShotSystem changed
+				$this->{$model}->id = $topScoreAsset['BestShotSystem']['id'] ;
 				$ret = $this->{$model}->savefield('asset_id', $topScoreAsset['Asset']['id']);
 				if ($ret) {
 					$response['updateBestShotSystem']['asset_id'] = $topScoreAsset['Asset']['id'];

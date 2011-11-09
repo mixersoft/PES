@@ -116,8 +116,10 @@
 	            	}
 	            	// audition o has now been added to master list, we can now use audition for shots
 	            	
-	            	var shotId = aud_B.Audition.SubstitutionREF;		// set by castingCall JSON
+	            	var shotId = o.Audition.SubstitutionREF;		// set by castingCall JSON
 	        		if (shotId){
+	        			// TODO: need to match up ShotType somehow. 
+	        			// 		lightbox messes things up because shotType is not determinate
 	        			// case of aud_A...SubstitutionREF == null, but aud_B...SubstitutionREF == shotId 
 	        			var s = Auditions.addAuditionToShot(o, shotId, shotType, stale);
 	        			castingCall.shots[s.id] = s;
@@ -125,7 +127,7 @@
 	            	sh.add(o);		// subset of auditions in master copy, SNAPPI.Auditions._auditionSH
 	            }
 	            // if bestshot is available, set
-	            if (castingCall.CastingCall.Auditions.Bestshot) {
+	            if (castingCall.CastingCall.Auditions.Bestshot.length) {
 	            	var bestshot = castingCall.CastingCall.Auditions.Bestshot;
 	            	for (var shotId in bestshot) {
 	            		var bestshot_audition = sh.get(bestshot[shotId]);

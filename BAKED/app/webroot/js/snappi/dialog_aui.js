@@ -398,13 +398,14 @@ var DEFAULT_CFG_io = {
 					var response = o.responseJson.response;
 					// get auditions from raw json castingCall
 					var shotCC = response.castingCall;
-                    var options = {
-                    	uuid: args.uuid,
-                    	castingCall: shotCC,
-                    	replace: false,			// same as SNAPPI.Auditions.onDuplicate_ORIGINAL
-                    }
-                    this.render( options);		// render shot directly	
-                    
+					if (shotCC.CastingCall.Auditions.Total) {
+	                    var options = {
+	                    	uuid: args.uuid,
+	                    	castingCall: shotCC,
+	                    	replace: true,			// same as SNAPPI.Auditions.onDuplicate_ORIGINAL
+	                    }
+	                    this.render( options);		// render shot directly	
+					}
                     // use custom event here instead?				
                     previewBody.Dialog.refresh(previewBody);
                     return false;					

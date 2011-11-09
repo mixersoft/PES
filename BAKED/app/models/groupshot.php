@@ -217,17 +217,19 @@ WHERE `Shot`.id = '{$shotId}'";
 			$message[] = 'Groupshot->removeFromShot: OK';
 			$success = true;
 			$resp0 = compact('success', 'message', 'response');
+// debug($resp0);			
 			/*
 			 *  update Shot.assets_groupshot_count
 			 */
 			$resp1 = $this->updateShotCounterCache($shotId);
 			$success = $success && $resp1['success'];
+// debug($resp1);			
 			/*
 			 *  update Best, if best was removed
 			 */
 			$resp2 = $this->updateBestShotSystem($shotId);
 			$success = $success && $resp2['success'];
-			
+// debug($resp2);			
 			$resp0 = Set::merge(compact('success', 'message', 'response'), $resp1, $resp2);
 			$resp0['success'] = $success;
 		} else {
@@ -246,7 +248,7 @@ WHERE `Shot`.id = '{$shotId}'";
 	public function updateBestShotSystem($shotIds = array()) {
 		$success = false; $message=array(); $response=array();
 		$options = array(
-			'fields'=>array('`Asset`.id','`BestShotSystem`.`asset_id`'),
+			'fields'=>array('`Asset`.id','`BestShotSystem`.`asset_id`','`BestShotSystem`.`id`'),
 			'conditions'=>array('`Shot`.id'=>$shotIds),
 			'order'=>'`SharedEdit`.score DESC, `Asset`.dateTaken ASC',	
 //			'showEdits'=>true,
@@ -260,10 +262,11 @@ WHERE `Shot`.id = '{$shotId}'";
 		$Asset = $this->AssetsGroupshot->Asset;
 		$Asset->Behaviors->detach('Taggable');
 		$data = $Asset->find('all',$options);
+// debug($data);		
 		$topScoreAsset = $data[0];
+		$model = 'BestGroupshotSystem';
 		if (empty($topScoreAsset['BestShotSystem']['asset_id'])) {
 			// set new BestShotSystem
-			$model = 'BestGroupshotSystem';
 			$insert[$model] = array(
 				'groupshot_id'=>$topScoreAsset['Shot']['shot_id'],
 				'asset_id' => $topScoreAsset['Asset']['id']
@@ -283,7 +286,11 @@ WHERE `Shot`.id = '{$shotId}'";
 			// see if we should update bestShotSystem based on new top score
 			if ($topScoreAsset['BestShotSystem']['asset_id'] != $topScoreAsset['Asset']['id']) {
 				// new top score, update bestShotSystem
-				$this->{$model}->id = $topScoreAsset['BestShotSystem']['id'];
+				// WARNING: not sure this code path is used.
+				// removeFromShot>unShare seems to follow: Groupshot->updateBestShotSystem: OK. bestShotSystem changed
+// debug($topScoreAsset);					
+// debug("update bestShotSystem");				
+				$this->{$model}->id = $topScoreAsset['BestShotSystem']['id'] ;
 				$ret = $this->{$model}->savefield('asset_id', $topScoreAsset['Asset']['id']);
 				if ($ret) {
 					$response['updateBestShotSystem']['asset_id'] = $topScoreAsset['Asset']['id'];

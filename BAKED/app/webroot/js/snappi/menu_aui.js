@@ -757,6 +757,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		try {
 			// check if the user has permission to groupAsShot
+			var g = MenuItems.getGalleryFromTarget(menu);
 			var shotType = g.castingCall.CastingCall.GroupAsShotPerm;
 		} catch (e) {}	
 		// var show = /^Users|^Groups/.test(SNAPPI.STATE.controller.name);
@@ -798,7 +799,6 @@ var DEFAULT_CFG_contextmenu = 	{
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		var g = MenuItems.getGalleryFromTarget(menu);
 		var shotType = audition.Audition.Substitutions.shotType;
-		// if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
 		if (!shotType) {
 			if (console) console.error("ERROR: shotType unknown in MenuItems.setBestshot_click()");
 			return;
@@ -844,7 +844,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	MenuItems.share_with_this_circle_click = function(menuItem, menu){
 		try {
 			var gid = SNAPPI.STATE.controller.xhrFrom.uuid;	
-			SNAPPI.lightbox.applyShareInBatch(gid);
+			SNAPPI.lightbox.applyShareInBatch(gid, menuItem);
 		} catch (e) {}
 	};	
 	MenuItems.share_with_circle_click = function(menuItem, menu){
@@ -870,6 +870,7 @@ var DEFAULT_CFG_contextmenu = 	{
 					on: {
 						success: function(e, i,o,args) {
 							args.menu.hide();
+							document.body.style.cursor = '';
 							return o.responseText;
 						}					
 					}
@@ -890,6 +891,7 @@ var DEFAULT_CFG_contextmenu = 	{
 			var subUri = '/my/groups';
 			dialog.io.set('uri', subUri );
 			// dialog.io.set('arguments', args );    			
+			document.body.style.cursor = 'wait';
 			dialog.io.start();			
 	};	
 	MenuItems.photo_privacy_click = function(menuItem, menu){

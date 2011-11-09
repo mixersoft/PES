@@ -110,6 +110,7 @@ class AssetsController extends AppController {
 	}
 
 	function __unshare($aid, $gids, $checkAuth = true, $updateCount = false) {
+		$message = $response = $resp1 = $resp2 = array();
 		if ($checkAuth) {
 			// check for write perm on Asset 
 			// for admin/moderator perm on Group use something like groups/unshare/[photo id]
@@ -137,7 +138,10 @@ class AssetsController extends AppController {
 		/*
 		 * end debug
 		 */
+// debug($conditions);		
 		$ret = $AssetsGroup->deleteAll($conditions, false);
+		// $ret = 1;
+// debug($ret);		
 		if ($updateCount && $ret) {
 			foreach ($gids as $gid) {
 				ClassRegistry::init('group')->updateCounter($gid);
@@ -156,11 +160,10 @@ class AssetsController extends AppController {
 			);
 			$data = $this->Asset->find('first', $pa_options );
 			$providerAccountId = $data['Asset']['provider_account_id'];
-			 			
 			foreach ($gids as $gid) {
 				// check if an asset with the same provider_account_id exists in this group
 				$same_provider_account_options = array(
-					'conditions' => array('Asset.provider_account_id' => $providerAccountId+1),
+					'conditions' => array('Asset.provider_account_id' => $providerAccountId),
 					'permissionable'=>false,				
 					'joins' => array(
 						array('table' => 'assets_groups',
@@ -176,18 +179,43 @@ class AssetsController extends AppController {
 				    )
 				);
 				$count = $this->Asset->find('count', $same_provider_account_options);
+// debug($count);				
 				if($count == 0){
 					// provider_account_id not found, so delete from GroupsProviderAccount
-					$ret = $ret && $this->deleteFromGroupsProviderAccount($providerAccountId, $gid);
+					$resp1['success'] = $this->deleteFromGroupsProviderAccount($providerAccountId, $gid);
+					$resp1['message'] = "deleteFromGroupsProviderAccount, ret={$ret}";
+					$resp1['response'] = array('provider_account_id'=>$providerAccountId);						
+					$ret = $ret && ($resp1['success'] && $resp1['success']!=='false');
 				}
-				// TODO: remove from groupShots
-				// not done
-				if ($shotId) $this->__removeFromShot($aid, $shotId, 'Groupshot');
-				// update counterCache 
-				$this->Asset->Group->updateCounter($gid);
+				// remove from groupShots
+				// check for Shots
+				$groupshots = $this->__findShots($aid, 'Groupshot');
+				$shotsByAssetId = Set::combine($groupshots, '/AssetsShot/asset_id', '/Shot');
+// debug($shotsByAssetId);
+				// remove from Groupshots
+				if (isset($shotsByAssetId[$aid])) {
+					$shot = $shotsByAssetId[$aid]['Shot'];
+// debug($shot);						
+					if ($shot['count'] > 2 ) {
+						$resp2 = $this->__removeFromShot(array($aid), $shot['shot_id'], 'Groupshot');
+					} else {
+						$resp2 = $this->__ungroupShot(array($shot['shot_id']), 'Groupshot');
+					}
+					$ret = $ret && ($resp2['success'] && $resp2['success']!=='false');
+					/*
+					 * on Delete, we just reload/render "refreshed" castingCall for updates
+					 */
+// debug($resp2);
+				}
 			}
 		}
-		return $ret != false;
+		$success = $ret ? 'true' : 'false';
+		$message = $ret ? "Unshare Asset successful." : "Unshare Asset Failed";
+		$response = array('asset_id'=>$aid, 'group_ids'=>$gids);
+		$resp0 = compact('success', 'message', 'response');
+		$resp = Set::merge($resp0, $resp1, $resp2);		
+// debug($resp);		
+		return $resp;
 	}
 	
 	function deleteFromGroupsProviderAccount($providerAccountId, $gid){
@@ -772,7 +800,9 @@ debug("WARNING: This code path is not tested");
 			if (isset($this->params['url']['data'])) $this->data = $this->params['url']['data'];
 		}
 		if (!empty($this->data)) {
-			$errors = $response = $jsonResp = array();
+// debug($this->data);			
+// exit;
+			$errors = $response = $message = $resp0 = $resp1 = $resp2 = array();
 			// POST: typically XHR+JSON
 			if ($forceXHR || $this->RequestHandler->isAjax()) {
 			
@@ -801,43 +831,42 @@ debug("WARNING: This code path is not tested");
 					} else {
 						// TODO: send gids as param
 						$gids_1 = $gids;
-					}					
-					if (!empty($gids_1)) {		// unshare
-						// TODO: test unshare  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-						$retval = $retval && $this->__unshare($aid, $gids_1, true, true);
 					}
-					
+// debug($gids_1);	
+					if (!empty($gids_1)) {		// unshare
+						$resp1 = $this->__unshare($aid, $gids_1, true, true);
+						$retval = $retval && ($resp1['success'] && $resp1['success']!=='false');
+					}
 					// remove from UserShots
 					if (isset($shotsByAssetId[$aid])) {
 						$shot = $shotsByAssetId[$aid]['Shot'];
 // debug($shot);						
 						if ($shot['count'] > 2 ) {
-							$response = $this->__removeFromShot(array($aid), $shot['shot_id'], 'Usershot');
-							$jsonResp['message']['removeFromShot'] = @mergeAsArray($jsonResp['message']['removeFromShot'], $response['message']);
-							$jsonResp['response']['removeFromShot']  = @mergeAsArray($jsonResp['response']['removeFromShot'] , $response['response']);
+							$resp2 = $this->__removeFromShot(array($aid), $shot['shot_id'], 'Usershot');
 						} else {
-							$response = $this->__ungroupShot(array($shot['shot_id']), 'Usershot');
-							$jsonResp['message']['ungroupShot'] = @mergeAsArray($jsonResp['message']['ungroupShot'], $response['message']);
-							$jsonResp['response']['ungroupShot'] = @mergeAsArray($jsonResp['response']['ungroupShot'], $response['response']);
+							$resp2 = $this->__ungroupShot(array($shot['shot_id']), 'Usershot');
 						}
-						$retval = $retval && ($response['success'] && $response['success']!=='false');
-						
+						$retval = $retval && ($resp2['success'] && $resp2['success']!=='false');
 						/*
-						 * If we remove from Shot, then we just reload for now
-						 * TODO: add new bestshot back into castingCall/gallery, mark castingCall as Stale
+						 * on Delete, we just reload/render "refreshed" castingCall for updates
 						 */
-						
 					}
 					// remove from Assets	
-					$retval = $retval && ($delete_retval = @$this->Asset->delete($aid, true));
+					$delete_retval = @$this->Asset->delete($aid, true);
+					$retval = $retval && $delete_retval;
 					$jsonResp['response']['aids'][$aid] = $delete_retval;
 
 				}
-				$jsonResp['success'] = $retval ? 'true' : 'false';
-				$jsonResp['message'][] = $retval ? "Delete Asset successful." : "Delete Asset Failed";
-// debug($jsonResp);				
-				$this->viewVars['jsonData'] = $jsonResp;
+				$success = $retval ? 'true' : 'false';
+				$message = $retval ? "Delete Asset successful." : "Delete Asset Failed";
+				$response = array('delete_asset_ids'=>$aids);
+				$resp0 = compact('success', 'message', 'response');
+				$this->viewVars['jsonData'] = Set::merge($resp0, $resp1, $resp2);
+// debug($this->viewVars['jsonData']);				
 				// update owner counterCache 			
+// Configure::write('debug',2);
+// $this->layout = false;
+// $this->render('/elements/sqldump'); 				
 				$done = $this->renderXHRByRequest('json', null, null, $forceXHR);
 				if ($done) return;
 			}
@@ -865,7 +894,8 @@ debug("WARNING: This code path is not tested");
 			if ($this->data) {
 				$gids = $this->data['Group']['gids'];
 				$aid = $this->data['Asset']['id'];
-				$retval = $this->__unshare($aid, $gids, true, true);
+				$response = $this->__unshare($aid, $gids, true, true);
+				$retval = ($response['success'] && $response['success']!=='false');
 			} else $retval = 0;
 		}
 
@@ -1167,9 +1197,8 @@ debug("WARNING: This code path is not tested");
 					}
 					// unshare Asset from Group(s)			
 					if (in_array('unshare', $fields) && !empty($this->data['Group']['id']) ) {
-						$ret = $ret && $this->__unshare($aid, $this->data['Group']['id'], true, false);
-						// update counterCache 
-						ClassRegistry::init('Group')->updateCounter($this->data['Group']['id']);
+						$response = $this->__unshare($aid, $this->data['Group']['id'], true, true);
+						$ret = $ret && ($response['success'] && $response['success']!=='false');
 					}
 					
 				}	// end foreach
@@ -1218,7 +1247,7 @@ debug("WARNING: This code path is not tested");
 	
 	function shot(){
 		$forceXHR = setXHRDebug($this, 0);
-		$success = true; $message=array(); $response=array();
+		$success = true; $message=$response=array();
 		$resp0 = compact('success', 'message', 'response'); 
 		if ($this->RequestHandler->isAjax() || $forceXHR) {		
 			$this->layout='ajax';
@@ -1413,6 +1442,7 @@ debug("WARNING: This code path is not tested");
 	 * @params $aids, array of uuids
 	 * */
 	function __findShots($aids, $shotType='Usershot'){
+		if (!is_array($aids)) $aids = @explode(',', $aids);
 		switch ($shotType) {
 			case 'Usershot':
 				if (!isset($this->Asset->Usershot)) $this->Asset->Usershot = ClassRegistry::init('Usershot');

@@ -262,7 +262,8 @@ class Asset extends AppModel {
 	}
 	
 	public function afterFind($results, $primary){
-		if ($primary) {
+// debug($results);		
+		if ($primary && isset($results[0]['Asset'])) {
 //			$start = microtime(1);				
 			array_walk($results, 'Asset::mergeResults');
 //			debug("elapsed=".(microtime(1) - $start));		
@@ -285,20 +286,20 @@ class Asset extends AppModel {
 	 * @param $options array [mergeEdits,mergeShots]
 	 * @return unknown_type
 	 */
-	private function mergeResults(& $result, $i) {
+	private function mergeResults(& $results, $i) {
 		$merged = array();
-		if (!empty($result['SharedEdit']))  {
-			array_push($merged, $result['SharedEdit']);
+		if (!empty($results['SharedEdit']))  {
+			array_push($merged, $results['SharedEdit']);
 		}
-		if (!empty($result['Shot']))  {
-			array_push($merged, $result['Shot']);
+		if (!empty($results['Shot']))  {
+			array_push($merged, $results['Shot']);
 		}
-		if (!empty($result['0'])) {
-			array_push($merged, $result['0']);
+		if (!empty($results['0'])) {
+			array_push($merged, $results['0']);
 		}
  		if (count($merged)) {
- 			array_unshift($merged, $result['Asset']);	//merge into 'Asset'
- 			$result['Asset'] = call_user_func_array('array_merge', $merged);
+ 			array_unshift($merged, $results['Asset']);	//merge into 'Asset'
+ 			$results['Asset'] = call_user_func_array('array_merge', $merged);
  		}
 	}	
 		

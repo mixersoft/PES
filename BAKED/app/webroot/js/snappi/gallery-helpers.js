@@ -363,7 +363,8 @@
 			size: 'lbx-tiny',
 			perpage: LIGHTBOX_PERPAGE_LIMIT, 
 			start: null,
-			end: null
+			end: null,
+			replace: false,		// do NOT replace with lightbox auditions. causes problems between Group/Usershot parsing
 	    },
         /*
          * build 

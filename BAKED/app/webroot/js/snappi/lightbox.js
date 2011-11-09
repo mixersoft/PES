@@ -965,7 +965,7 @@
             node.append(nShare);
         },
         applyShareInBatch : function(gid, loading, options) {
-        	var self;
+        	var self, options = options || {};
 			if (this instanceof SNAPPI.Lightbox) self = this;
 			else self = SNAPPI.lightbox;
 			
@@ -976,7 +976,7 @@
 				asset_ids.push(audition.id);
 			});
 						
-			var uri = "/groups/contributePhoto/.json";
+			var uri = options.uri || "/groups/contributePhoto/.json";
 			var data = {
 				'data[Group][id]' : gid,
 				'data[Asset][id]' : asset_ids
@@ -985,20 +985,21 @@
 			/*
 			 * adjustments for 'remove from group'
 			 */
-			if (options && options.uri) uri = options.uri;	// for unshare link
-			if (options && options.data) data = SNAPPI.Y.merge(data, options.data);
+			if (options.data) data = SNAPPI.Y.merge(data, options.data);
+			data = SNAPPI.IO.object2querystring(data);
 			
 			var args = {
 				gid: gid
 			};
 			// use Plugin to add io request and loadingmask
 			var loadingNode = loading;
-			if (loadingNode.io == undefined) {
+			if (!loadingNode.io) {
 				var ioCfg = SNAPPI.IO.pluginIO_RespondAsJson({
 					uri: uri ,
 					parseContent:true,
 					method: 'POST',
-					qs: data,
+					autoLoad: false,
+					// qs: data,
 					dataType: 'json',
 					context: self,	
 					arguments: args, 
@@ -1006,17 +1007,17 @@
 						successJson:  function(e, id, o, args) {
 							SNAPPI.Y.fire('snappi:share-complete', this, loadingNode);
 							this.onShareGroupComplete(args.gid, o.responseJson.message);
+							return false;
 						}
 					}
 				});
 	            loadingNode.plug(Y.Plugin.IO, ioCfg );
-			} else {
-				loadingNode.io.set('data', data);
-				loadingNode.io.set('context', self);
-				loadingNode.io.set('uri', uri);
-				loadingNode.io.set('arguments', args);
-				loadingNode.io.start();
-	        }			
+			} 
+			loadingNode.io.set('data', data);
+			loadingNode.io.set('context', self);
+			loadingNode.io.set('uri', uri);
+			loadingNode.io.set('arguments', args);
+			loadingNode.io.start();
         },
 		onShareGroupComplete : function(gid, flash) {
 			// go to group

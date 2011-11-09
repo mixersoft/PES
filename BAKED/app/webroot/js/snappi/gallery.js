@@ -117,7 +117,8 @@
 	        	if (_cfg.sh) {	// reusing provided sh
 	        		delete _cfg.sh;
 	        	} else { 		// build auditionSH from castingCall
-	        		this.auditionSH = SNAPPI.Auditions.parseCastingCall(this.castingCall, this.providerName, this.auditionSH);
+	        		var onDuplicate = cfg.replace ? SNAPPI.Auditions.onDuplicate_REPLACE : SNAPPI.Auditions.onDuplicate_ORIGINAL;
+	        		this.auditionSH = SNAPPI.Auditions.parseCastingCall(this.castingCall, this.providerName, this.auditionSH, onDuplicate);
 	        	}
 	        }
 	        if (!this.auditionSH) this.auditionSH = new SNAPPI.SortedHash();
@@ -389,6 +390,7 @@
 					var options = {
 						page: args.page,
 	                	castingCall: response.castingCall,
+	                	replace: args.replace,
 	                }
 	                this.render(options);
 	                return false;								
@@ -1421,7 +1423,8 @@
 					arguments: args,
 					on: {
 						successJson:  function(e, id, o, args) {
-							return args.success.apply(this, arguments);
+							args.success.apply(this, arguments);
+							return false;
 						}
 					}
 				});
@@ -1556,13 +1559,14 @@
 		 * @return
 		 */
 		setBestshot: function(selected, cfg){
-            var shotId,
-			idPrefix = this._cfg.ID_PREFIX || null,
-			audition = SNAPPI.Auditions.find(selected.uuid);
+            var shotId, 
+				idPrefix = this._cfg.ID_PREFIX || null,
+				audition = SNAPPI.Auditions.find(selected.uuid);
+			shotId = audition.Audition.Shot.id || audition.Audition.Substitutions.id;
 
 			var data = {
 					'data[Asset][id]' : audition.id,
-					'data[Shot][id]' : audition.Audition.Shot.id,
+					'data[Shot][id]' : shotId,
 					'data[shotType]' : cfg.shotType,
 					'data[setBestshot]': 1
 			};
@@ -1828,7 +1832,7 @@
 	                    var options = {
 	                    	uuid: args.uuid,
 	                    	castingCall: shotCC,
-	                    	replace: false,			// same as SNAPPI.Auditions.onDuplicate_ORIGINAL
+	                    	replace: true,			// same as SNAPPI.Auditions.onDuplicate_ORIGINAL
 	                    }
 	                    this.render( options);		// render shot directly
 	                    return false;
