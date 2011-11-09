@@ -1648,6 +1648,18 @@
 				callbacks: {
 					successJson: function(e, i, o,args){
 						var resp = o.responseJson;
+						// remove deleted auditions
+						var aud,  
+							auditions = SNAPPI.Auditions._auditionSH,
+							shots = SNAPPI.Auditions._shotsSH;
+						for (var i in aids) {
+							aud = SNAPPI.Auditions.find(aids[i]);
+							SNAPPI.Auditions.unbind(aud);
+							auditions.remove(aud);
+							try {
+								shots.remove(aud.Audition.Shot.id);	
+							} catch(e) {}
+						}
 						this.refresh(null, true);
 						return false;
 					}

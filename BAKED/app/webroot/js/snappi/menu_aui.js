@@ -74,8 +74,12 @@ var DEFAULT_CFG_contextmenu = 	{
 			// BUG: container.one('#menu-header') does NOT work in chrome
 			var markupNode = Y.Node.create("<div />");
 			container.append(markupNode);
+			document.body.style.cursor = 'wait';
 			markupNode.plug(Y.Plugin.IO, ioCfg);	
-			markupNode.io.afterHostMethod('insert', callback);
+			markupNode.io.afterHostMethod('insert', function(){
+				document.body.style.cursor = null;
+				callback.apply(this, arguments);
+			});
 			return false;
 		} else {
 			return callback();
