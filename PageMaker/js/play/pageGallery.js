@@ -144,7 +144,7 @@
 				|| SNAPPI.PM.Player.bootstrap == false;
 
 		// content
-		this.listeners = {}; // detach handlers for active listener
+		this.listen = {}; // detach handlers for active listener
 		this.init = function(e) {
 			var containerH = 0 - this.cfg.FOOTER_H, containerW = 0 - this.cfg.MARGIN_W;
 			if (this.container.get('tagName') == 'BODY') {
@@ -245,22 +245,22 @@
 				var Y = SNAPPI.PM.Y;
 				if (!this.isPreview) {
 					// page nav
-					this.listeners.nextPageClick = this.container.one(
+					if (!this.listen['nextPageClick']) this.listen['nextPageClick'] = this.container.one(
 							'#nextPage').on('click', this.nextPageClick, this);
-					this.listeners.prevPageClick = this.container.one(
+					if (!this.listen['prevPageClick']) this.listen['prevPageClick'] = this.container.one(
 							'#prevPage').on('click', this.prevPageClick, this);
 					// photo nav
-					this.listeners.lightbox = this.container.one('#glass')
+					if (!this.listen['lightbox']) this.listen['lightbox'] = this.container.one('#glass')
 							.delegate('click', this.handleLightboxClick,
 									'div, span', this);
 					// TODO: use custom-hover to subscribe to keypress
-					this.listeners.keypress = Y.on('keypress', this.keyAccelerate,
+					if (!this.listen['keypress']) this.listen['keypress'] = Y.on('keypress', this.keyAccelerate,
 							document, this);
-					this.listeners.activateLightBox = this.content.delegate(
+					if (!this.listen['activateLightBox']) this.listen['activateLightBox'] = this.content.delegate(
 							"click", this.activateLightBox,
 							'div.pageGallery > img', this);					
 				}
-				this.listeners.winResize = Y.on('resize', this.winResize,
+				this.listen.winResize = Y.on('resize', this.winResize,
 						window, this);
 			}
 		};
@@ -268,12 +268,12 @@
 		this.stopListeners = function(name) {
 			if (name) {
 				try {
-					this.listeners[name].detach();
+					this.listen[name].detach();
 				} catch (e) {
 				}
 			} else {
-				for ( var name in this.listeners) {
-					this.listeners[name].detach();
+				for ( var name in this.listen) {
+					this.listen[name].detach();
 				}
 			}
 		};
@@ -719,9 +719,12 @@
 					};
 				} catch (e) {
 				}
+				var player = new SNAPPI.PM.Player();
+				Y.on('contentready', function(e){
+					player.init();
+				},'#content > div:first-child', this )
 
 				Y.on("domready", function() {
-					var player = new SNAPPI.PM.Player();
 					player.init();
 				});
 			}

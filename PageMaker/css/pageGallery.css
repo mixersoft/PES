@@ -73,10 +73,39 @@ body {
     right: 0;
 }
 
-#nextPhoto:hover {
+#nextPhoto:hover{
     background: transparent url('/img/pageGallery/nextlabel.gif') no-repeat 100% 15%;
 }
 
+#prevPage {
+    
+    display: inline;
+    
+}
+
+#prevPage, #nextPage {
+	cursor: pointer;
+	display: inline-block;
+	line-height: 28px;
+	width: 63px;
+	height: 28px;
+} 
+#prevPage.disabled, #nextPage.disabled {
+		opacity: 0.5;
+		cursor: default;
+}
+#prevPage {
+	-webkit-border-radius: 5px 0 0 5px ;
+	-moz-border-radius: 5px 0 0 5px ;
+	padding: 0 20px 0 50px;
+	background: transparent url('/img/pageGallery/prevlabel.gif') no-repeat left;	
+}
+#nextPage {
+	padding: 0 50px 0 20px;
+	-webkit-border-radius: 0 5px 5px 0;
+	-moz-border-radius: 0 5px 5px 0;
+	background: transparent url('/img/pageGallery/nextlabel.gif') no-repeat right;	
+} 
 #closeBox {
     height: 30px;
     width: 100%;
@@ -94,6 +123,7 @@ body {
 div {
     color: white;
     text-align: center;
+    vertical-align:middle;
     font-family: arial;
     margin: 3px;
     display: block;
@@ -105,7 +135,7 @@ a:link, a:visited {
 }
 
 div#paging {
-    margin: 20px;
+    margin: 15px 0 7px 0;
 }
 
 div#content {
@@ -143,18 +173,6 @@ a#share-link:link, a#share-link:visited {
     color: yellow;
     text-decoration: none;
     cursor: pointer;
-}
-
-#prevPage {
-    cursor: pointer;
-    display: inline;
-    padding: 0 20px 0 50px;
-}
-
-#nextPage {
-    cursor: pointer;
-    display: inline;
-    padding: 0 50px 0 20px;
 }
 
 .error-page-gallery {
