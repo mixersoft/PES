@@ -25,7 +25,10 @@ package api
 		public var datasource:UploaderDatasource;
 		private var dropTarget:Canvas;
 		private var photoScanner:ImageScanner;
-		public var isUploadQueueRunning:Boolean = false;
+		
+		public function isUploading():Boolean {
+			return UploadFile.isUploading();
+		}
 		
 		public function UploaderUI(datasource:UploaderDatasource, dropTarget:Canvas)
 		{
@@ -631,7 +634,7 @@ package api
 				var post_id:String = params.photo_id;
 				handlers.uploadError_Callback.call(handlers,null, e);
 			}catch(e:Error){
-				handlers.uploadError_Callback.call(handlers,null, e.message);
+				handlers.uploadError_Callback.call(handlers,null, e);
 			}	
 		}
 

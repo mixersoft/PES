@@ -20,7 +20,7 @@
  *
  *
  */
-(function() {
+// (function() {
 	var util = SNAPPI.coreutil;
 	/*
 	 * this class only used to generate and manage upload queue UI part e.g.
@@ -35,7 +35,6 @@
 			
 			this.container = cfg.container || Y.one('#gallery-container');
 			this.ds = cfg.datasource || null;
-			this.isUploading = typeof _flexAPI_UI === "undefined" ? null : _flexAPI_UI.isUploadQueueRunning;
 			this.paginate = this.cakeStylePaginate;
 			this.XXXsnapshot = {};  		// snapshot of active upload rows
 			
@@ -70,13 +69,17 @@
 			this.uploadRows = null;		// upload page total items
 			this.uploadItemIndex = -1;	// upload page items index
 			this.isCancelling = false;	// cancel at the next good moment
-			/*
-			 * flag to tell that is upload running it is checked by start function
-			 * to ignore the extra click on start link option
-			 */
-			this.isUploading = null;			
+			
 			this.isPaused = false;	// pause upload at next chance
 			this.flexUploadAPI = new SNAPPI.AIR.Flex_UploadAPI();
+			/*
+			 * bind passthru function with FLEX source
+			 */
+			this.isUploading = this.flexUploadAPI.isUploading;	// bind function
+			
+			var detach = Y.on('snappi-air:upload-status-changed', function(isUploading){
+				if (!isUploading) document.body.style.cursor = '';
+			});			
 		}
 		
 		/*
@@ -167,13 +170,14 @@
 		action_start : function() {
 			
 			// UI.startUploadPage > UI.view_showPage > UI.doUpload > ui.nextUploadPage() > ui.startUploadPage
-			if (this.isUploading) {
+			if (this.isUploading()) {
 				return;
 			}
 			var page = (this.isPaused) ? this.pausedPage : 1;
-			this.isUploading = true;
+			// this.isUploading = true;
 			this.isCancelling = false;
 			this.startUploadPage(page);
+			document.body.style.cursor = '';
 		},
 		/*
 		 * pause action handler fired when user clicks on pause link option it
@@ -185,7 +189,8 @@
 			// this.doPause();
 			if (this.uploadPage != 0) {
 				this.pausedPage = this.uploadPage;
-				this.isUploading = false;
+				// TODO: add listener to change isUploading
+				// this.isUploading = false;
 				this.isPaused = true;
 				
 				this.stopUploadPage('pause');
@@ -203,7 +208,7 @@
 				if (node.hasClass('status-cancelled') || node.hasClass('status-error')){
 					this.flexUploadAPI.setUploadStatus(node.uuid, 'pending');
 					node.FileProgress.setReady();
-					if (this.isUploading || this.isPaused) {
+					if (this.isUploading() || this.isPaused) {
 						// TODO: put retry node back in uploadQueue	
 						// TODO: need method to append row to this.uploadRows
 					}
@@ -221,14 +226,6 @@
 				// redraw page from page 1 of cancelled
 				this.view_showPage(1);
 				
-				// reset uploadQueue, if necessary
-				if (SNAPPI.AIR.uploadQueue.isUploading) {
-					this.action_pause();
-					
-					this.isPaused = false;
-					this.isUploading = false;
-					this.action_start();	// goto page 1
-				}
 				if (SNAPPI.AIR.uploadQueue.isPaused ) {
 					this.pausedPage = 1;
 				}					
@@ -264,14 +261,13 @@
 			// cancel selected node, only
 			if (node) {
 				if (node.hasClass('status-active')){
-LOG("*****  DEBUG: action_cancel() FOR STATUS-ACTIVE");					
-					o = um.activeSH.get(n.uuid);
+					o = um.get(node.uuid);
 					if (o) {
-						um.cancel(o);					
-LOG(12);						
+LOG(o);						
+LOG("CANCELLING ACTIVE UPLOAD for "+node.uuid);						
+						o.cancel();					
 						um.remove(o);
 					}
-LOG(13);					
 				}				
 				if (node.hasClass('status-pending') || node.hasClass('status-paused') || node.hasClass('status-active')){
 					this.flexUploadAPI.setUploadStatus(node.uuid, 'cancelled');
@@ -301,16 +297,16 @@ LOG(13);
 			if (!nodeList) return;
 			var uuids = [];
 			// TODO: this does not work. missing the loadingmask.hide() event;
-			// if (SNAPPI.AIR.uploadQueue.isUploading) {
+			// if (SNAPPI.AIR.uploadQueue.isUploading()) {
 				// UIHelper.toggle_upload(null, false);
 			// }
 			
 			// reset uploadQueue, if necessary
-			if (this.isUploading) {
+			if (this.isUploading()) {
 				this.action_pause();
 				
 				this.isPaused = false;
-				this.isUploading = false;
+				// this.isUploading = false;
 				this.action_start();	// goto page 1
 			}
 			if (this.isPaused ) {
@@ -604,7 +600,7 @@ LOG("active count="+UploadManager.count());
 						// auto page change to next upload page on 'all' tab
 						this.startUploadPage(page);
 					} else {
-						this.isUploading = false;
+						// this.isUploading = false;
 					}
 					break;
 				}
@@ -616,12 +612,24 @@ LOG("active count="+UploadManager.count());
 		 */
 		stopUploadPage : function(mode) {
 			var Y = SNAPPI.Y;
-			mode = mode || 'clear';
+			mode = mode || 'clear'; // clear or pause
+			if (this.isUploading()) {
+				var detach = Y.on('snappi-air:upload-status-changed', function(isUploading){
+					if(!isUploading && mode=='clear'){
+						detach.detach();
+						this.uploadPage = 0;
+						this.uploadRows = [];
+						this.uploadItemIndex = -1;
+					};						
+				}, this);
+			}
+		
 			if (this.uploadPage != 0
 					&& this.uploadItemIndex < this.uploadRows.length) {
 				this.isCancelling = true; // stop queue here
-//				this.action_cancel();
+				
 				// mark ALL li.progress for stop
+				var o, um = SNAPPI.AIR.UploadManager;
 				this.container.all('.FigureBox.PhotoAirUpload').each(function(n,i,l){
 					if (n.hasClass('status-pending')){
 						var progress = n.FileProgress;
@@ -630,14 +638,20 @@ LOG("active count="+UploadManager.count());
 						} else {
 							progress.setPaused("Paused");
 						}						
+					} else if (n.hasClass('status-active')){
+						
+						var progress = n.FileProgress;
+						o = um.get(progress.uuid);
+						if (mode == 'clear') {
+							progress.setCancelled("Cancelled.");
+							o.cancel();
+						} else {
+							progress.setPaused("Paused");
+							o.cancel('pause');
+						}						
+						um.remove(o);
 					}
 				}, this);
-
-				// if(mode=='clear'){
-				this.uploadPage = 0;
-				this.uploadRows = [];
-				this.uploadItemIndex = -1;
-				// }
 			}
 		},		
 		
@@ -649,7 +663,7 @@ LOG("active count="+UploadManager.count());
 		doPause : function() {
 			if (this.uploadPage != 0) {
 				this.pausedPage = this.uploadPage;
-				this.isUploading = false;
+				// this.isUploading = false;
 				this.isPaused = true;
 				this.stopUploadPage('pause');
 			}
@@ -787,6 +801,10 @@ LOG("active count="+UploadManager.count());
 				if (target) {
 					try {
 						this.action_cancel(target);
+// var o, um = SNAPPI.AIR.UploadManager;
+						// o = um.get(progress.uuid);
+						// um.cancel(o);
+						// um.remove(o);       						
 					} catch (ex) {
 					}
 					return false;
@@ -1198,11 +1216,11 @@ LOG("active count="+UploadManager.count());
 	
 //	firebugLog(SNAPPI);
 //	LOG("load complete: upload_ui.js");	
-}());
+// }());
 
 
 
-(function(){
+// (function(){
 /**********************************************************************************
  * helper methods
  */	
@@ -1303,6 +1321,9 @@ LOG("active count="+UploadManager.count());
         pauseQueue: function(){
             return _flexAPI_UI.pauseQueue();
         },
+        isUploading: function(){
+        	return _flexAPI_UI.isUploading();
+        },
         /**
          * to get photos from current active upload batch
          * based on status e.g. pending/error/done/all. default status is 'all'
@@ -1316,6 +1337,7 @@ LOG("active count="+UploadManager.count());
          * 										 ]
          *
          * */
+        // TODO: rename getCurrentUploadByStatus()
         getCurrentUploadStatus: function(status){
             status = status || 'all';
             return _flexAPI_UI.getCurrentUploadStatus(status);
@@ -1535,4 +1557,4 @@ LOG("retryUpload: batchid="+batchid+", baseurl="+baseurl) ;
     
     
     LOG("load complete: api_bridge.js : Flex_UploadAPI");	
-}());
+// }());

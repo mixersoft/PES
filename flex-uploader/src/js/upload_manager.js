@@ -20,7 +20,7 @@
  *
  *
  */
-(function() {
+// (function() {
 	var util = SNAPPI.coreutil;
 	/*
 	 * callback object for managing all async uploads
@@ -66,7 +66,15 @@
 	UploadManager.count = function(){
 		return UploadManager.activeSH.count();
 	}
-	
+	UploadManager.fire_upload_status_changed = function(isUploading){
+		SNAPPI.Y.fire('snappi-air:upload-status-changed', isUploading);
+	}
+	/*
+	 * READ ONLY: this value is set to 
+	 * 		UploadFile.as:UploadFile.isUploading on first upload
+	 * 		SNAPPI.AIR.UploadQueue.isUploading
+	 * 
+	 */
 	
 	UploadManager.prototype = {
 		setProgress : function (o) {
@@ -86,7 +94,8 @@
 			} catch (ex) {
 			}
 		},
-		/** checked
+		/** 
+		 * called by UploadFile.handlers.uploadError_Callback()
 		 * when any error occured in upload process then it is fired do whatever
 		 * you want to do when upload error comes
 		 * 
@@ -103,6 +112,11 @@
 					_flexAPI_UI.datasource.setUploadStatus(row.photo_id, 'cancelled', uploader.batch);
 //					uploader.uploadRows[uploader.uploadItemIndex].status = 'cancelled';
 					this.row.status = 'cancelled';
+				} else if (msg == "File Upload Paused.") {
+					this.progress.setPaused(msg);
+					_flexAPI_UI.datasource.setUploadStatus(row.photo_id, 'pending', uploader.batch);
+//					uploader.uploadRows[uploader.uploadItemIndex].status = 'cancelled';
+					this.row.status = 'pending';
 				} else {
 					this.progress.setAlert("Warning: upload failed. " + msg);
 					_flexAPI_UI.datasource.setUploadStatus(row.photo_id, 'error', uploader.batch);
@@ -189,12 +203,14 @@
 		 * context: SNAPPI.AIR.UploadManager.activeSH object
 		 * self.flexUploadObj == UploadFile.as
 		 */
-		cancel : function(o) {
-			var self = o || this; 		// deprecate, should use o
+		cancel : function(pause) {
+			pause = pause ? true : false;
+// LOG(this);			
+LOG("upload manager: cancel, pause="+pause);
 			var uploader = self.uploadQueue;
-			if (self.flexUploadObj) {
-				self.flexUploadObj.cancel();
-				self.flexUploadObj = null;
+			if (this.flexUploadObj) {
+				this.flexUploadObj.cancel(pause);
+				this.flexUploadObj = null;
 			}
 		}
 		
@@ -202,4 +218,4 @@
 	SNAPPI.AIR.UploadManager = UploadManager;
 	
 	LOG("load complete: uploadmanager.js");	
-}());
+// }());

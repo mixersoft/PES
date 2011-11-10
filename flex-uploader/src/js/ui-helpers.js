@@ -21,7 +21,7 @@
  * 
  */
 // console.log("load BEGIN: ui-helpers.js");	
-(function() {
+// (function() {
 	
 	SNAPPI.namespace('SNAPPI.STATE');
 			
@@ -29,12 +29,22 @@
 	 * UIHelpers Static Class
 	 * 	SNAPPI.AIR.UIHelpers = UIHelpers;
 	 */
-	var UIHelper = function(){
-	}
+	var UIHelper = function(){	}
 	UIHelper.prototype = {};
 	SNAPPI.AIR.UIHelper = UIHelper;
+
 	
 	UIHelper.set_Folder = function(node, target){
+		if (SNAPPI.AIR.uploadQueue.isUploading()) {
+			var detach = Y.on('snappi-air:upload-status-changed', function(isUploading){
+				if(!isUploading){
+					detach.detach();
+					UIHelper.set_Folder(node, target);
+				};						
+			}, this);			
+			SNAPPI.AIR.UIHelper.toggle_upload(null, false);	// force pause 
+			return;
+		}
 		// node == selected li/menuItem
 		// target = menu trigger
 		SNAPPI.AIR.Helpers.init_GalleryLoadingMask();
@@ -42,12 +52,6 @@
 		var Y = SNAPPI.Y;
 		var folder = node.hasAttribute('baseurl') ? node.getAttribute('baseurl') : node.get('innerHTML');			
 LOG("+++ set folder, folder="+folder);		
-		// pause upload.\
-		// TODO: this does not work. missing the loadingmask.hide() event;
-		if (SNAPPI.AIR.uploadQueue.isUploading) {
-			UIHelper.toggle_upload(null, false);
-		}
-			
 		var delayed = new Y.DelayedTask( function() {
 			node.siblings('li').removeClass('focus');
 			node.addClass('focus');	
@@ -63,6 +67,7 @@ LOG("+++ set folder, folder="+folder);
 			// var p = SNAPPI.Paginator.find['PhotoAirUpload'];
 			// SNAPPI.Paginator._getPageFromAirDs(p.container, page);
 			delete delayed;		
+			document.body.style.cursor = '';
 		});
 		delayed.delay(100);  // wait 100 ms					
 	};
@@ -86,6 +91,7 @@ LOG("+++ set folder, folder="+folder);
 		delayed.delay(100);  // wait 100 ms				
 	};
 	UIHelper.toggle_upload = function(el, force) {
+		document.body.style.cursor = 'wait';
 		if (SNAPPI.AIR.Helpers.isAuthorized()) {
 			if (!el) {
 				var n = SNAPPI.Y.one('.gallery-header .upload-toolbar li.btn.start');
@@ -116,6 +122,7 @@ LOG("+++ EXCEPTION: loadingmask.hide()");
 		} else {
 			// show login screen by menu click
 			SNAPPI.MenuAUI.find['menu-sign-in-markup'].show();
+			document.body.style.cursor = '';
 		}
 	};	
 	
@@ -193,7 +200,7 @@ LOG("toggle CONTEXT MENU, E="+e);
 				    				// to call set_UploadBatchid(menuItem) or set_Folder(menuItem)
 				    				break;
 				    			case 'retry':
-				    				SNAPPI.AIR.uploadQueue.action_retry();
+				    				UIHelper.actions['retry'](e.currentTarget, action[1]);
 				    				break;
 				    		}		                	
 		                }, 'ul > li.btn', UIHelper);
@@ -276,7 +283,20 @@ LOG("toggle CONTEXT MENU, E="+e);
 				}	
 			} catch (e) {}
 		},		
+		/*
+		 * NOTE: ok to change filter while SNAPPI.AIR.UploadManager.isUploading 
+		 */
 		filter : function(node, value) {
+			if (SNAPPI.AIR.uploadQueue.isUploading()) {
+				var detach = Y.on('snappi-air:upload-status-changed', function(isUploading){
+					if(!isUploading){
+						detach.detach();
+						this.filter(node, value);
+					};						
+				}, this);			
+				SNAPPI.AIR.UIHelper.toggle_upload(null, false);	// force pause 
+				return;
+			}				
 			// try {
 				// var pluginNode = node.ancestor('#gallery-container').one('.gallery.photo');			
 				// pluginNode.loadingmask.refreshMask();
@@ -297,8 +317,23 @@ LOG("+++ set filter, status="+value);
 				node.siblings('li.btn').removeClass('focus');
 				node.addClass('focus');
 				delete delayed;
+				document.body.style.cursor = '';
 			});
 			delayed.delay(100);  // wait 100 ms		
+		},
+		retry : function() {
+			if (SNAPPI.AIR.uploadQueue.isUploading()) {
+				var detach = Y.on('snappi-air:upload-status-changed', function(isUploading){
+					if(!isUploading){
+						detach.detach();
+						SNAPPI.AIR.uploadQueue.action_retry();
+						document.body.style.cursor = '';
+					};						
+				}, this);			
+				SNAPPI.AIR.UIHelper.toggle_upload(null, false);	// force pause 
+				return;
+			}				
+			SNAPPI.AIR.uploadQueue.action_retry();
 		},
 	}	
 	
@@ -389,4 +424,4 @@ LOG('>>>>>>> BASEURL='+selected);
 	
 	
 	LOG("load complete: ui-helpers.js");	
-}());
+// }());

@@ -131,10 +131,14 @@ FileProgress.prototype = {
     getTimer: function(timer){
         return this.node.dom().FP_TIMER || null;
     },
+    /*
+     * deprecated, see uploadQueue.listen_cancel() instead
+     */
     onCancel: function(e){
         var dom = e.target && e.target.dom() || null;
         if (dom && dom.uploadId && dom.uploadQueue) {
             try {
+LOG('DEPRECATED: FileProgress.onCancel: CANCELLING UPLOAD FOR ID='+dom.uploadId );            	
                 dom.uploadQueue.cancel(dom.uploadId);
             } 
             catch (ex) {
@@ -147,46 +151,56 @@ FileProgress.prototype = {
         this.node.one('div.bar').setStyle('width', "0%");
         this.appear();
     },
-    
+    setCssStatus : function(CssStatus){
+    	var replaceClass = this.node.getAttribute('status');
+    	this.node.setAttribute('status', CssStatus);
+    	this.node.replaceClass(replaceClass, CssStatus);
+    },
     setProgress: function(percentage, msg){
-        this.node.replaceClass('status-pending', "status-active");
+        // this.node.replaceClass('status-pending', "status-active");
+        this.setCssStatus("status-active");
         this.node.one('div.bar').setStyle('width', percentage + "%");
         if (msg) 
             this.setStatus(msg);
         this.appear();
     },
     setComplete: function(msg){
-        this.node.replaceClass('status-active', "status-done");
+        // this.node.replaceClass('status-active', "status-done");
+        this.setCssStatus("status-done");
         this.node.one('div.bar').setStyle('width', "100%");
         if (msg) 
             this.setStatus(msg);
         this.showCancelBtn(false, null);
     },
     setAlert: function(msg){
-        this.node.replaceClass('status-active', "status-error");
+        // this.node.replaceClass('status-active', "status-error");
+        this.setCssStatus("status-error");
         this.node.one('div.bar').setStyle('width', "100%");
         if (msg) 
             this.setStatus(msg);
         this.showCancelBtn(false, null);
     },
     setCancelled: function(msg){
-    	this.node.replaceClass('status-pending', "status-cancelled");
-    	this.node.replaceClass('status-active', "status-cancelled");
-    	this.node.replaceClass('status-paused', "status-cancelled");
+    	// this.node.replaceClass('status-pending', "status-cancelled");
+    	// this.node.replaceClass('status-active', "status-cancelled");
+    	// this.node.replaceClass('status-paused', "status-cancelled");
+    	this.setCssStatus("status-cancelled");
         if (msg) 
             this.setStatus(msg);
         this.showCancelBtn(false, null);
     },
     setPaused: function(msg){
-    	this.node.replaceClass('status-pending', "status-paused");
+    	// this.node.replaceClass('status-pending', "status-paused");
+    	this.setCssStatus("status-paused");
         if (msg) 
             this.setStatus(msg);
         this.showCancelBtn(true, null);
     },    
     setReady: function(msg){
-    	this.node.replaceClass('status-cancelled', "status-pending");
-    	this.node.replaceClass('status-error', "status-pending");
-    	this.node.replaceClass('status-paused', "status-pending");        
+    	// this.node.replaceClass('status-cancelled', "status-pending");
+    	// this.node.replaceClass('status-error', "status-pending");
+    	// this.node.replaceClass('status-paused', "status-pending");        
+    	this.setCssStatus("status-pending");
         this.node.one('div.bar').setStyle('width', "0%");
         if (msg) 
             this.setStatus(msg);

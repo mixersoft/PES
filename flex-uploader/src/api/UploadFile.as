@@ -29,20 +29,31 @@ package api
 		
 		private static var UploadFileManager:Array = [];
 		private static var uploadsSinceLastGC:int = 0;
+		public static function isUploading():Boolean {
+			// check if all uploads are done
+			var allDone:Boolean = true;
+			var uf:UploadFile = null;
+			for (var i:int = 0; i<UploadFile.UploadFileManager.length; i++){
+				uf = UploadFile.UploadFileManager[i];
+				allDone = allDone && (uf.done || (!uf.done && uf.status == 'queued'));
+			}			
+			return !allDone;
+		}
+		
 		public static var getUploadFile:Function = function (file:File, postparams:String, handlers:Object, filePostName:String='file'):UploadFile {
 			var uf:UploadFile = null;
 			for (var i:int = 0; i<UploadFile.UploadFileManager.length; i++){
 				uf = UploadFile.UploadFileManager[i];
-				if (uf.done===true) {
+				if (uf.done===true && uf.status != 'queued') {
 					break;
 				}
 			}
-			if (uf && uf.done===true) {
+			if (uf && uf.done===true) {	// reuse slot
 				uf.file = file;
 				uf.postparams = postparams;
 				uf.handlers = handlers;
 				uf.filePostName = filePostName;
-				uf.status = '';		
+				uf.status = 'queued';		
 				uf.done = false;
 			} else uf = new UploadFile(file,postparams,handlers,filePostName); 
 			// check if we should run gc
@@ -60,7 +71,7 @@ package api
 			this.postparams = postparams;
 			this.handlers = handlers;
 			this.filePostName = filePostName;
-			this.status = '';
+			this.status = 'queued';
 			this.done = false;
 			UploadFile.UploadFileManager.push(this);
 		}
@@ -68,6 +79,7 @@ package api
 			try{
 				if(this.file.exists){
 					this.file.addEventListener(Event.OPEN, this.Open_Handler);
+					this.file.addEventListener(Event.CANCEL, this.Cancel_Handler);					
 					this.file.addEventListener(ProgressEvent.PROGRESS, this.FileProgress_Handler);
 					this.file.addEventListener(IOErrorEvent.IO_ERROR, this.IOError_Handler);
 					this.file.addEventListener(SecurityErrorEvent.SECURITY_ERROR, this.SecurityError_Handler);
@@ -79,6 +91,8 @@ package api
 //Config.jsGlobal.firebugLog(this.postparams);
 					req.method = 'POST';
 					req.data = this.postparams;
+					this.status = 'uploading';
+//					UploadFile.isUploading = true;
 					this.file.upload(req, this.filePostName, false);
 					this.handlers.uploadStart_Callback.call(this.handlers,this);
 				}else{
@@ -218,6 +232,7 @@ package api
 				this.current_file_item.file_status = FileItem.FILE_STATUS_QUEUED;
 				this.file_queue.unshift(this.current_file_item);
 			}*/
+			
 
 			//this.current_file_item = null;
 			
@@ -225,26 +240,44 @@ package api
 			//ExternalCall.UploadComplete(this.uploadComplete_Callback, jsFileObj);
 			this.handlers.uploadComplete_Callback.call(this.handlers,this.file);
 			this.done = true;
-		}
-		private function removeFileReferenceEventListeners():void {
-			if (file!= null) {
-				file.removeEventListener(Event.OPEN, this.Open_Handler);
-				file.removeEventListener(ProgressEvent.PROGRESS, this.FileProgress_Handler);
-				file.removeEventListener(IOErrorEvent.IO_ERROR, this.IOError_Handler);
-				file.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, this.SecurityError_Handler);
-				file.removeEventListener(HTTPStatusEvent.HTTP_STATUS, this.HTTPError_Handler);
-				file.removeEventListener(DataEvent.UPLOAD_COMPLETE_DATA, this.ServerData_Handler);
+			this.status = this.status=='queued' ? null : this.status;
+			
+			var isUploading:Boolean = UploadFile.isUploading();
+			if ( isUploading == false) {
+				// fire JS event
+				Config.jsGlobal.SNAPPI.AIR.UploadManager.fire_upload_status_changed(isUploading);
 			}
 		}
-		public function cancel():void{
+		private function removeFileReferenceEventListeners():void {
+			if (this.file!= null) {
+				this.file.removeEventListener(Event.OPEN, this.Open_Handler);
+				this.file.removeEventListener(Event.CANCEL, this.Cancel_Handler);
+				this.file.removeEventListener(ProgressEvent.PROGRESS, this.FileProgress_Handler);
+				this.file.removeEventListener(IOErrorEvent.IO_ERROR, this.IOError_Handler);
+				this.file.removeEventListener(SecurityErrorEvent.SECURITY_ERROR, this.SecurityError_Handler);
+				this.file.removeEventListener(HTTPStatusEvent.HTTP_STATUS, this.HTTPError_Handler);
+				this.file.removeEventListener(DataEvent.UPLOAD_COMPLETE_DATA, this.ServerData_Handler);
+			}
+		}
+		public function Cancel_Handler():void {
+			var pause:Boolean = (this.status == "pause") 
+			var msg:String = pause ? "File Upload Paused." : "File Upload Cancelled.";
+			this.handlers.uploadError_Callback.call(this.handlers, this.file, msg);
+			this.UploadComplete(pause);			
+		}
+		public function cancel(pause:Boolean=false):void{
 			try{
 				if(this.file){
-					this.file.cancel();
-					this.handlers.uploadError_Callback.call(this.handlers,this.file, "File Upload Cancelled.");
-					this.UploadComplete(false);
+					this.status = pause ? "pause" : "cancelling";
+					this.file.cancel();		// cancel this.file.upload()
+Config.jsGlobal.firebugLog("WARNING: Cancelling active upload manually. Event.CANCEL not caught");	
+					/*
+					* TODO: cancel handler is not fired. why?
+					*/
+					this.Cancel_Handler();
 				}
 			}catch(e:Error){
-				this.handlers.uploadError_Callback.call(this.handlers,this.file, "File Upload Cancelled.");
+				this.handlers.uploadError_Callback.call(this.handlers, this.file, "File Upload Cancelled.");
 			}	
 		}
 		
