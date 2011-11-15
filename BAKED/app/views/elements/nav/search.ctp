@@ -94,7 +94,7 @@
 				break;
 			case 'home':
 				// pass search to XHR divs as named param
-				$label = Session::read("lookup.trail.{$controllerAttrs['keyName']}.label");
+				$label = Session::read("lookup.trail.{$controllerAttrs['label']}.label");
 				if ($controllerAttrs['alias']=='my') {
 					$defaultString = "search my items";
 				} else $defaultString = "search this {$controllerAttrs['class']}";	

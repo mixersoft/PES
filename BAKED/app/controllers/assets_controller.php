@@ -81,8 +81,8 @@ class AssetsController extends AppController {
 		Configure::write('js.bootstrap_snappi', true);
 		if (!($this->RequestHandler->isAjax() || $this->RequestHandler->ext == 'json') && AppController::$uuid) {
 			$label = !empty($this->viewVars['data']['Asset']['caption']) ? $this->viewVars['data']['Asset']['caption'] : '';
-			if (Session::read("lookup.trail.{$this->keyName}.uuid") == AppController::$uuid) {
-				Session::write("lookup.trail.{$this->keyName}.label", $label);	
+			if (Session::read("lookup.trail.{$this->displayName}.uuid") == AppController::$uuid) {
+				Session::write("lookup.trail.{$this->displayName}.label", $label);	
 			}
 		}
 		parent::beforeRender();
@@ -919,7 +919,7 @@ debug("WARNING: This code path is not tested");
 		$src = $this->Asset->field('src_thumbnail');
 		$User = ClassRegistry::init('User');
 		$User->id = Session::read('Auth.User.id');
-		$ret = $User->saveField('src_thumbnail', getImageSrcBySize($src, 'sq'));
+		$ret = $User->saveField('src_thumbnail', Stagehand::getImageSrcBySize($src, 'sq'));
 		if ($ret) $this->Session->setFlash('Your photo was successfully set to this photo');
 		else $this->Session->setFlash('There was an error setting your photo. Please try again.');
 		$next = env('HTTP_REFERER');
@@ -941,7 +941,7 @@ debug("WARNING: This code path is not tested");
 		$this->Asset->id = $id;
 		$src = $this->Asset->field('src_thumbnail');
 		$Group->id = $gid;
-		$ret = $Group->saveField('src_thumbnail', getImageSrcBySize($src, 'tn'));
+		$ret = $Group->saveField('src_thumbnail', Stagehand::getImageSrcBySize($src, 'tn'));
 		if ($ret) {
 			$this->Session->setFlash('The group cover photo was successfully set.');
 			$this->redirect($next, null, true);
@@ -1131,7 +1131,7 @@ debug("WARNING: This code path is not tested");
 						$data = $this->Asset->find('first', $options);
 						$rotate = $this->data['Asset']['rotate'];
 						if (in_array($rotate, array(3,6,8))) {
-							$base = Configure::read('path.stageroot.basepath');
+							$basepath = Configure::read('path.stageroot.basepath');
 							// goal: set Audition.Photo.Fix.Rotate
 							if (!empty($data['Asset'])) {
 								$json_exif = json_decode($data['Asset']['json_exif'], true);
@@ -1154,22 +1154,25 @@ debug("WARNING: This code path is not tested");
 								};
 								// get src for preview derived asset
 								$json_src = json_decode($data['Asset']['json_src'], true);
-								$src = $base.'/'.preg_replace('/\//', '/.thumbs/', $json_src['preview'], 1);
-// debug($src);								
-								// update rotate
+								$thumb_src = $basepath.'/'.preg_replace('/\//', '/.thumbs/', $json_src['preview'], 1); 
+								
+								// update rotate preview
+								$previewSrc = Stagehand::getImageSrcBySize($thumb_src, 'bp');
 								if (!isset($this->Jhead)) $this->Jhead = loadComponent('Jhead', $this);
-								$errors =  $this->Jhead->exifRotate($rotate, $src);
+								$errors =  $this->Jhead->exifRotate($rotate, $previewSrc);
+								
 								// save asset data
 								$data['Asset']['json_exif']=json_encode($json_exif);
 								$this->Asset->id = $data['Asset']['id'];
 								$return = $this->Asset->saveField('json_exif', $data['Asset']['json_exif'], false);
-								// delete other sizes
-								$sizes = array('sq', 'tn', 'lm', 'll', 'bs', 'bm');
+								
+								// delete other derived sizes
+								$sizes = array('tn', 'sq', 'lm', 'll', 'bm', 'bs');
 								foreach($sizes as $size) {
-									$delete = getImageSrcBySize($src, $size);
-// debug("deleting file={$delete}");									
+									$delete = Stagehand::getImageSrcBySize($thumb_src, $size);
 									$r = @unlink($delete);	
 								}
+								
 								$response['rotate'] = $new_rotate;
 								$response['uuid'] = $data['Asset']['id'];
 								$return = $return && empty($errors);

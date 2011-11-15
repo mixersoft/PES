@@ -1,17 +1,16 @@
 <?php
-$DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
-$ICON_SIZE = 'sq~';
-// Session::read('stagepath_baseurl').
-$src = isset($icon_src) ? getImageSrcBySize(Session::read('stagepath_baseurl').$icon_src, $ICON_SIZE)
-: $DEFAULT_SRC_ICON;
 
 //debug(Configure::read('controller'));
 $controllerAttrs = Configure::read('controller');
 if (AppController::$uuid) {
-	$trail = Session::read("lookup.trail.".$controllerAttrs['keyName']);
+	$trail = Session::read("lookup.trail.".$controllerAttrs['label']);
+// debug("lookup.trail.".$controllerAttrs['label']);	
+// debug($controllerAttrs);
 	$label = !empty($label) ?  $label : $trail['label'];
 	$classLabel =  !empty($classLabel) ?  $classLabel : $trail['classLabel']; // AppController::cacheClickStream(): $this->displayName for current context
-} else {
+} 
+if (empty($classLabel)){
+debug(Session::read("lookup.trail"));	
 	// /controller/all pages
 	$classLabel = !empty($classLabel) ?  $classLabel : $this->name;
 	$label = !empty($label) ?  $label : 'Discover';
@@ -20,6 +19,7 @@ $context = Session::read('lookup.context');
 $contextKeyName = $context['keyName'];
 $actions = array();
 $passed = array_diff_key($this->passedArgs, array('sort'=>1, 'direction'=>1, 'page'=>1, 'perpage'=>1));	// copy of array
+$badgeType = null;
 // remove sort,direction, page, perpage from passed
 switch ($classLabel) {
 	case 'person': // $controller->keyName,
@@ -31,6 +31,7 @@ switch ($classLabel) {
 		$actions['Most Groups'] = array('action'=>'most_groups');
 		$actions['Most Contributions'] = '#';
 		$classLabel = 'People';
+		$badgeType = 'person';
 		break;
 	case 'Groups':
 //	case 'events':
@@ -41,6 +42,7 @@ switch ($classLabel) {
 		$actions['Most Photos'] = array('action'=>'most_photos');
 		$actions['Public Groups'] = array('action'=>'open');
 		$actions['Create'] = array('action'=>'create');
+		if (!empty($data['Group']['type'])) $badgeType = $data['Group']['type'];
 		break;
 	case 'Assets':
 		$home = array('action'=>'all');
@@ -62,7 +64,7 @@ switch ($classLabel) {
 	case 'Person': // $controller->displayName, custom attribute;
 		$home = array('action'=>'home');
 		if ($classLabel == 'Person') $home[0]= $passed[0];
-//		$actions['Pin'] = $this->passedArgs + array('context'=>$controllerAttrs['keyName']);
+//		$actions['Pin'] = $this->passedArgs + array('context'=>$controllerAttrs['label']);
 		$actions['Photos'] = array('action'=>'photos');
 		$actions['Groups'] = array('action'=>'groups');
 		$actions['Trends'] = $this->action=='home' ? '#trends' : array('action'=>'trends');  //array('action'=>'home', 0=>null, 1=>'#trends');
@@ -74,12 +76,12 @@ switch ($classLabel) {
 			$moreActions['Upload Photos from My Desktop'] = array('action'=>'upload');
 			$moreActions['Settings'] = array('action'=>'settings');
 		}
-		
+		$badgeType = 'person';
 		break;
 	case 'Group':
 	case 'Event':
 		$home = array('action'=>'home', $passed[0]);
-//		$actions['Pin'] = $this->passedArgs + array('context'=>$controllerAttrs['keyName']);
+//		$actions['Pin'] = $this->passedArgs + array('context'=>$controllerAttrs['label']);
 		$actions['Photos'] = array('action'=>'photos');
 		$actions['Members'] = array('action'=>'members');
 		$actions['Discussion'] = $this->action=='home' ? '#discussion' : array('action'=>'discussion', 0=>null);
@@ -102,6 +104,7 @@ switch ($classLabel) {
 			// TODO: add a better confirmation dialog for delete
 			$moreActions['Delete'] = array('action'=>'delete', 'confirm'=>'Are you sure you want to DELETE this group?');
 		}
+		if (!empty($data['Group']['type'])) $badgeType = $data['Group']['type'];
 		break;
 	case 'Photo':
 		$home = array('action'=>'home', $passed[0]);
@@ -139,22 +142,29 @@ switch ($classLabel) {
 		break;
 	case 'Tag': // $controller->displayName, custom attribute;
 		$home = array('action'=>'home', $passed[0]);
-//		$actions['Pin'] = $this->passedArgs + array('context'=>$controllerAttrs['keyName']);
+//		$actions['Pin'] = $this->passedArgs + array('context'=>$controllerAttrs['label']);
 		$actions['Photos'] = array('action'=>'photos');
 		$actions['Groups'] = array('action'=>'groups');
 		$actions['Trends'] = $this->action=='home' ? '#trends' : array('action'=>'trends');  // array('action'=>'home', 0=>null, 1=>'#trends');
 		$actions['Discussion'] =  $this->action=='home' ? '#discussion' : array('action'=>'discussion', 0=>null);
 		break;
 }
+
+if (isset($icon_src)) {
+	$ICON_SIZE = 'sq~';
+	$src = Stagehand::getSrc($icon_src, $ICON_SIZE, $badgeType);
+}
 ?>
 <section class='item-header container_16'>
 	<div class='wrap'>
 		<ul class="inline grid_16">
 			<li class='thumbnail sq'><?php 
-				$img = $this->Html->image($src, array('width'=>75, 'height'=>75));
-				$uuid = AppController::$userid  == AppController::$uuid ? array() : array(AppController::$uuid);
-				echo $this->Html->link($img, array('action'=>'home')+$uuid , array('escape'=>false)); 
-				?></li>
+				if (isset($icon_src)) {
+					$img = $this->Html->image($src, array('width'=>75, 'height'=>75));
+					$uuid = AppController::$userid  == AppController::$uuid ? array() : array(AppController::$uuid);
+					echo $this->Html->link($img, array('action'=>'home')+$uuid , array('escape'=>false)); 
+				} ?>
+				</li>
 			<li>
 				<div class='item-class'><?php echo $classLabel; ?></div>
 				<h1 class='label'>

@@ -20,10 +20,9 @@
 		<?php echo $this->Form->input('lname', array('label'=>'Last Name'));?> 
 		<h4>Your Personal Information</h4> 
 		<?php 
-			$DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
 			$fields = array();
 			//$fields['title'] = $this->Form->value('User.username');
-			$fields['src_icon'] =  $this->Form->value('User.src_thumbnail') ? Session::read('stagepath_baseurl').getImageSrcBySize($this->Form->value('User.src_thumbnail'), 'sq') :$DEFAULT_SRC_ICON;
+			$fields['src_icon'] = Stagehand::getSrc( $this->Form->value('User.src_thumbnail') , 'sq', 'person');
 			$options = array('url'=>array_merge(array('plugin'=>'','controller'=>'users', 'action'=>'home', $this->Form->value('User.id')))); 
 		    echo $this->Html->image($fields['src_icon'] , null) ?>
 		   

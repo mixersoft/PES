@@ -27,13 +27,12 @@
 
 	$_userLink = $comment[$userModel]['username'];
 	
-	$DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
 	$SHORT = 12;
 	$options = array();
 	$fields = array();
 	$fields['owner'] = $comment[$userModel]['username'];
 	$fields['trim_owner'] = $this->Text->truncate($comment[$userModel]['username'], $SHORT-4);	
-	$fields['src_icon'] =  $DEFAULT_SRC_ICON;
+	$fields['src_icon'] =  Stagehand::getSrc($comment[$userModel]['src_thumbnail'], 'sq','person');
 	$fields['ownerLink'] = $this->Html->link($fields['trim_owner'], array('plugin'=>'','controller'=>'users', 'action'=>'home', $comment[$userModel]['id']), $options );
 	$fields['new'] = ($this->Time->wasWithinLast('3 day', $comment['Comment']['created'])) ? "<span class='new'>New! </span>" : '';
 	//print_r($comment[$userModel]);

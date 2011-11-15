@@ -97,8 +97,8 @@ class AppController extends Controller {
 		if (!empty($this->viewVars['title_for_layout'])) return;
 		
 		if (AppController::$uuid) {
-			if (isset($this->keyName)) {
-				$label = Session::read("lookup.trail.{$this->keyName}.label");
+			if (isset($this->displayName)) {
+				$label = Session::read("lookup.trail.{$this->displayName}.label");
 			}  
 			$title = !empty($label) ? "{$label} ({$this->displayName})" : $this->titleName ;
 		} else {
@@ -345,9 +345,6 @@ class AppController extends Controller {
 		Stagehand::$default_badges = Configure::read('path.default_badges');
 		Stagehand::$stage_baseurl =  '/'.Configure::read('path.stageroot.httpAlias').'/';
 		
-		// TODO: deprecate Session::read('stagepath_baseurl'), use Stagehand::getSrc()
-		if (!$this->Session->check('stagepath_baseurl')) Session::write('stagepath_baseurl', Stagehand::$stage_baseurl);
-		
 		// $this->viewVars['jsonData']['named'] = $this->params['named'];
 		$this->helpers[] = 'Layout';
 	}
@@ -417,7 +414,6 @@ class AppController extends Controller {
 			$controllerAttr = array_merge($controllerAttr, $extras);
 			
 			Configure::write('controller', $controllerAttr);	
-			$this->keyName = $controllerAttr['label'];	 
 //			$this->viewVars['jsonData']['controller'] = $controllerAttr;	// moved to layout		
 		}	
 	}
@@ -440,18 +436,18 @@ class AppController extends Controller {
 		$controllerAttr = Configure::read('controller');
 		
 		if (in_array($controllerAttr['name'], array('Users', 'Groups', 'Assets', 'Tags', 'Collections'))){
-			$trail_uuid = Session::read("lookup.trail.{$this->keyName}.uuid");
+			$trail_uuid = Session::read("lookup.trail.{$this->displayName}.uuid");
 			if ($trail_uuid !== AppController::$uuid) 
 			{
 				// update trail with new breadcrumb
 				$newCrumb = array('uuid'=>AppController::$uuid, 'classLabel'=>$controllerAttr['label']);
-				Session::write("lookup.trail.{$this->keyName}", $newCrumb);
+				Session::write("lookup.trail.{$this->displayName}", $newCrumb);
 			}
 		}
 		// cache nav location in session
 		// displayName == $controllerAttr['label'] == Me, Person, Group, Photo/Snap, Tag (section header)
 		// titleName = Me, People, Groups, Tags
-		$navPrimary = ($controllerAttr['action'] != 'all') ? $this->keyName : 'Explore';
+		$navPrimary = ($controllerAttr['action'] != 'all') ? $this->displayName : 'Explore';
 		if ($navPrimary == "Tag") {
 			if ($context = Session::read("lookup.context")) {
 debug($context);				

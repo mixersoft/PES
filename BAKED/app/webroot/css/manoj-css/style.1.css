@@ -1309,7 +1309,7 @@ ul.circle-thumb li.selected {
 	xheight: 83px;
 }
 
-.FigureBox.Group figure > a > img {
+.FigureBox.Group figure > img, .FigureBox.Group figure > a > img {
 	border: 4px solid #fff;
 	-webkit-border-radius: 4px;
 	-moz-border-radius: 4px;

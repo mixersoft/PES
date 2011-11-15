@@ -1,7 +1,7 @@
 <div class="groups view main-div placeholder">
 	<h2><?php  __('Group');?></h2>
 	<h2><?php echo $this->Html->link( $data['Group']['title'], '/groups/view/'.$data['Owner']['id']); ?> </h2>
-	<?php echo $this->Html->image(Session::read('stagepath_baseurl').$data['Group']['src_thumbnail'], array('url'=>"/groups/photos/{$data['Group']['id']}"));?>
+	<?php echo $this->Html->image( Stagehand::getSrc($data['Group']['src_thumbnail'], 'lm',$data['Group']['type'] ), array('url'=>"/groups/photos/{$data['Group']['id']}"));?>
 	
 	<div class="clear_div"></div>
 	<div class="float-right"><?php echo $this->Html->link( 'Edit Group', '/groups/edit/'.$data['Group']['id']); ?> </div>
@@ -66,13 +66,12 @@
 	<ul>
 		<li><?php
 				// only show join button if user is NOT a member of this group 
-				$isMember = in_array($data['Group']['id'], Permissionable::getGroupIds());
-				echo !$isMember
+				echo (!$data['Group']['isMember'])
 				? $this->Html->link(__('Join', true), array('action' => 'join', $data['Group']['id']))
 				: null; ?></li>
 		<li><?php 
 				// only show "contribute" button if user is a member of this group
-				echo $isMember
+				echo ($data['Group']['isMember'])
 				? $this->Html->link(__('Contribute Photos', true), array('action' => 'contribute', $data['Group']['id']))
 				: null; ?></li>
 		<li><hr></hr></li>
@@ -174,7 +173,7 @@
 			}
 		?>
 		<tr<?php echo $class;?>>
-			<td><?php echo $this->Html->image(Session::read('stagepath_baseurl').$data['src_thumbnail'], array('url'=>"/assets/view/{$data['id']}"));?></td>
+			<td><?php echo $this->Html->image( Stagehand::getSrc($data['src_thumbnail'], 'sq'), array('url'=>"/assets/view/{$data['id']}"));?></td>
 			<td><?php echo $data['provider_name'];?></td>
 			<td><?php echo $data['provider_key'];?></td>
 			<td><?php echo $data['batchId'];?></td>

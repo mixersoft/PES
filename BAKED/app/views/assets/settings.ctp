@@ -32,7 +32,7 @@ echo $this->element('nav/section', array('icon_src'=>$data['Asset']['src_thumbna
 			?>
 		</ul>
 		<?php $size = isset($this->params['named']['size'])  ? $this->params['named']['size'] : 'bm';
-				$src = getImageSrcBySize(Session::read('stagepath_baseurl').$data['Asset']['src_thumbnail'], $size);
+				$src = Stagehand::getSrc($data['Asset']['src_thumbnail'], $size);
 				echo $this->Html->image($src);
 			?>
 	</div>	

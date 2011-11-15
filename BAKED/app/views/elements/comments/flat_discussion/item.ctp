@@ -27,7 +27,6 @@
 
 	$_userLink = $comment[$userModel]['username'];
 	$User = $comment[$userModel];
-	$DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
 	$THUMBSIZE = 'sq';
 	$SHORT = 12;
 	$options = array();
@@ -35,8 +34,7 @@
 	$ownerUrl = Router::url(array('plugin'=>'','controller'=>'person', 'action'=>'home', $User['id']));
 	$fields['owner'] = $User['username'];
 	$fields['trim_owner'] = $this->Text->truncate($User['username'], $SHORT-4);	
-	$fields['src_icon'] =  $DEFAULT_SRC_ICON;
-	$fields['src_icon'] =  $User['src_thumbnail'] ? Session::read('stagepath_baseurl').getImageSrcBySize($User['src_thumbnail'], $THUMBSIZE) : $DEFAULT_SRC_ICON;
+	$fields['src_icon'] =  Stagehand::getSrc($User['src_thumbnail'], $THUMBSIZE, 'person');
 	$fields['ownerLink'] = $this->Html->link($fields['trim_owner'], $ownerUrl, $options );
 	$fields['new'] = ($this->Time->wasWithinLast('3 day', $comment['Comment']['created'])) ? "<span class='new'>New! </span>" : '';
 	// debug($User);

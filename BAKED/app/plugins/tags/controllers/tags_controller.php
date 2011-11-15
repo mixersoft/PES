@@ -225,8 +225,8 @@ class TagsController extends TagsAppController {
 		Configure::write('js.bootstrap_snappi', true);
 		if (!$this->RequestHandler->isAjax() && AppController::$uuid) {
 			$label = @ifed($this->viewVars['data']['Tag']['name'], null);
-			if (Session::read("lookup.trail.{$this->keyName}.uuid") == AppController::$uuid) {
-				Session::write("lookup.trail.{$this->keyName}.label", $label);	
+			if (Session::read("lookup.trail.{$this->displayName}.uuid") == AppController::$uuid) {
+				Session::write("lookup.trail.{$this->displayName}.label", $label);	
 			}
 		}
 		parent::beforeRender(); 		

@@ -1,6 +1,5 @@
 <?php
 // $isOwner = in_array($data['User']['id'], AppController::$iserid);
-$DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');	 
 if (empty($this->passedArgs['wide'])) {
 	$this->Layout->blockStart('itemHeader');
 		echo $this->element('nav/section', array('icon_src'=>$data['User']['src_thumbnail'])); 

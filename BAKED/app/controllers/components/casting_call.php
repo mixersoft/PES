@@ -236,7 +236,7 @@ class CastingCallComponent extends Object {
 		$Pages = @ifed($this->controller->params['paging'][$class]['pageCount'], 1);
 		$Perpage = @ifed($this->controller->params['paging'][$class]['options']['limit'], @ifed($this->controller->params['paging'][$class]['defaults']['limit'], null));
 		$Total = (int)@ifed($this->controller->params['paging'][$class]['count'],@ifed($this->controller->params['paging']['total'][$class], count($assets)));
-		$Baseurl = Session::read('stagepath_baseurl');
+		$Baseurl = Stagehand::$stage_baseurl;
 		//debug(compact('Audition','Total','Perpage','Pages','Page','Baseurl'));
 		// check permissions for groupAsShot 
 		$ShotType = Configure::read("paginate.Options.Asset.extras.join_shots");

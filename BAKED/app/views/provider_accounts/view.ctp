@@ -94,7 +94,7 @@
 			}
 		?>
 		<tr<?php echo $class;?>>
-			<td><?php echo $this->Html->image(Session::read('stagepath_baseurl').$data['src_thumbnail'], array('url'=>"/assets/view/{$data['id']}"));?></td>
+			<td><?php echo $this->Html->image(Stagehand::getSrc($data['src_thumbnail']), array('url'=>"/assets/view/{$data['id']}"));?></td>
 			<td><?php echo $data['provider_name'];?></td>
 			<td><?php echo $data['provider_key'];?></td>
 			<td><?php echo $data['provider_account_id'];?></td>

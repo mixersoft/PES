@@ -1,5 +1,4 @@
 <?php
-$isMember = in_array($data['Group']['id'], Permissionable::getGroupIds());
 if (empty($this->passedArgs['wide'])) {
 	$this->Layout->blockStart('itemHeader');
 		echo $this->element('nav/section', array('icon_src'=>$data['Group']['src_thumbnail'])); 

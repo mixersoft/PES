@@ -47,7 +47,7 @@ if (isset($limit) && $limit) {
 			<div class='thumb'>
 				<?php $options = array('url'=>array_merge(array('plugin'=>'','controller'=>'photos', 'action'=>'home', $photo['id']))); 
 					if (isset($fields['title'])) $options['title'] = $fields['title'];
-					echo $this->Html->image( Session::read('stagepath_baseurl').getImageSrcBySize($photo['src_thumbnail'], 'sq') , $options) ?>
+					echo $this->Html->image( Stagehand::getSrc($photo['src_thumbnail'], 'sq') , $options) ?>
 			</div>
 			<div class='thumb-label'>
 				<?php

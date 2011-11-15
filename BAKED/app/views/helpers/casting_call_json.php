@@ -184,7 +184,7 @@ class CastingCallJsonHelper extends Helper {
 		$Perpage = @ifed($this->params['paging'][$class]['options']['limit'], @ifed($this->params['paging'][$class]['defaults']['limit'], null));
 //debug($Perpage);		
 		$Total = (int)@ifed($this->params['paging'][$class]['count'],@ifed($this->params['paging']['total'][$class], count($assets['Asset'])));
-		$Baseurl = Session::read('stagepath_baseurl');
+		$Baseurl = Stagehand::$stage_baseurl;
 		//debug(compact('Audition','Total','Perpage','Pages','Page','Baseurl'));
 
 		$Audition = array();

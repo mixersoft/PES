@@ -228,7 +228,7 @@ class MyController extends PersonController {
 			$dest = cleanpath($UPLOAD_FOLDER.$userid.DS.$name);
 			if (!file_exists(dirname($dest))) mkdir(dirname($dest), 2775, true);
 			if( !move_uploaded_file($file_url, $dest) ){
-				unlink($file_url);
+				@unlink($file_url);
 				// return error
 				$response['success'] = 'false';
 				$response['message'] = 'Error moving uploaded file';
@@ -295,6 +295,9 @@ class MyController extends PersonController {
 			$this->__upload_javascript($userid);
 			exit(0);
 		} else if ($this->data){
+			$this->log($this->data, LOG_DEBUG);
+			echo "1";
+			return;
 			/*
 			 *  bad cakephp POST from somewhere else
 			 */			
@@ -333,18 +336,19 @@ class MyController extends PersonController {
 		);
 		$data = $this->User->Asset->find('all', $options);
 		$jsonSrc = Set::extract($data, '/Asset/json_src');
-		$baseurl = Configure::read('path.stageroot.basepath');
+		$basepath = Configure::read('path.stageroot.basepath');
 		foreach ($jsonSrc as $json) {
 			$src = json_decode($json, true);
-			$root = cleanpath($baseurl.DS.$src['root']);
-			$preview = str_replace('bp~', '.thumbs/bp~', getImageSrcBySize($root, 'bp'));
-			$tn = getImageSrcBySize($preview, 'tn');
-			$sq = getImageSrcBySize($preview, 'sq');
-//			debug($sq);
-			unlink($root);
-			unlink($preview);
-			unlink($tn);
-			unlink($sq);
+			$root = $basepath.DS.cleanpath($src['root']);
+			$root = $basepath.DS.cleanpath($src['preview']);
+			@unlink($root);
+			@unlink($preview);
+			$thumb_src = $basepath.'/'.preg_replace('/\//', '/.thumbs/', $src['root'], 1);
+			$sizes = array('bp', 'tn', 'sq', 'lm', 'll', 'bm', 'bs');
+			foreach ($sizes as $size) {
+				$path = Stagehand::getImageSrcBySize($thumb_src, $size);
+				@unlink($path);
+			}
 		}	
 		debug("done");
 		$this->autoRender=false;		

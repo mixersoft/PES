@@ -8,7 +8,7 @@
 // debug($data['Group']);	
 
 	$controllerAlias = Configure::read('controller.alias');
-	$previewSrc = Session::read('stagepath_baseurl').getImageSrcBySize($data['Group']['src_thumbnail'], 'bp');
+	$previewSrc =  Stagehand::getSrc($data['Group']['src_thumbnail'], 'bp');
 	$options = array('linkTo'=>Router::url(array('plugin'=>'','controller'=>$controllerAlias, 'action'=>'home', $data['Group']['id']))); 
 	// if (isset($fields['title'])) $options['title'] = $fields['trim_caption'];
 	

@@ -22,7 +22,6 @@ switch ($THUMBSIZE) {
 		break;
 }
 $PREVIEW_LIMIT = $isPreview ? 6 : false;
-$DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
 ?>
 <section class="<?php if ($isWide) echo "wide "; ?>gallery person">
 <?php if ($isPreview) { ?>	
@@ -54,7 +53,7 @@ $DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
 				$fields['last_login'] = "last visit: {$this->Time->timeAgoInWords($member['last_login'])}";
 				$link_options['title'] = $fields['title'];
 				// $fields['ownerLink'] = $this->Html->link($fields['trim_owner'], "/person/home/{$member['id']}", $link_options );
-				$fields['src_icon'] =  $member['src_thumbnail'] ? Session::read('stagepath_baseurl').getImageSrcBySize($member['src_thumbnail'], $THUMBSIZE) : $DEFAULT_SRC_ICON;
+				$fields['src_icon'] =  Stagehand::getSrc($member['src_thumbnail'], $THUMBSIZE, 'person');
 				$controllerAlias = Configure::read('controller.action');
 				
 				$options = array('plugin'=>'','controller'=>'person', $member['id']);

@@ -27,8 +27,7 @@
 		<td><?php foreach($photostream['Asset']['previews'] as $src=>$caption){
 			$options['url'] = "/assets/view/{$photostream['ProviderAccount']['id']}";
 			$options['title'] = $caption;
-			$src = getImageSrcBySize($src, 'sq');
-			echo $this->Html->image(Session::read('stagepath_baseurl').$src, $options);
+			echo $this->Html->image( Stagehand::getSrc($src, 'sq'), $options);
 		} ?>&nbsp;</td>
 	</tr>
 <?php endforeach; ?>

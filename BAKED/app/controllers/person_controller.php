@@ -109,8 +109,8 @@ class PersonController extends UsersController {
 		try {
 			if (!($this->RequestHandler->isAjax() || $this->RequestHandler->ext=='json') && AppController::$uuid) {
 				$label = $this->viewVars['data']['User']['username'];
-				if (Session::read("lookup.trail.{$this->keyName}.uuid") == AppController::$uuid) {
-					Session::write("lookup.trail.{$this->keyName}.label", $label);	
+				if (Session::read("lookup.trail.{$this->displayName}.uuid") == AppController::$uuid) {
+					Session::write("lookup.trail.{$this->displayName}.label", $label);	
 				}
 			}
 		} catch (Exception $e) {}
@@ -152,6 +152,7 @@ class PersonController extends UsersController {
 		// paginate 
 		$paginateModel = 'User';
 		$Model = $this->User;
+		$this->helpers[] = 'Time';
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $this->paginate[$paginateModel];
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);

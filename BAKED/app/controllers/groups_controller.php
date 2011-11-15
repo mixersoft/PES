@@ -96,8 +96,8 @@ class GroupsController extends AppController {
 		Configure::write('js.bootstrap_snappi', true);
 		if (!$this->RequestHandler->isAjax() && AppController::$uuid) {
 			$label = @ifed($this->viewVars['data']['Group']['title'], null);
-			if (Session::read("lookup.trail.{$this->keyName}.uuid") == AppController::$uuid) {
-				Session::write("lookup.trail.{$this->keyName}.label", $label);	
+			if (Session::read("lookup.trail.{$this->displayName}.uuid") == AppController::$uuid) {
+				Session::write("lookup.trail.{$this->displayName}.label", $label);	
 			}
 		}
 		parent::beforeRender(); 
@@ -206,7 +206,7 @@ LIMIT 5;";
 	 * GET action, shows invitation to VISITORS/GUESTS/USERS and allow user to respond
 	 * POSTS to /groups/join
 	 */
-	function invitation($id=null) {
+	function invitation ($id=null) {
 		$this->layout = 'snappi-guest';
 		if (!empty($this->params['url']['register'])) {
 			$this->Session->setFlash('Please Sign-up or Sign-in before you join this Circle.');
@@ -228,7 +228,7 @@ LIMIT 5;";
 	 * POST response only, from /groups/invitation
 	 * - requires Auth Session
 	 */
-	function join($redirect=null) {
+	function join ($redirect=null) {
 		$this->layout = 'snappi';
 		$forceXHR = setXHRDebug($this, 0);		// xhr login is for AIR desktop uploader
 		if ($forceXHR && !empty($this->params['url']['data'])) {

@@ -23,7 +23,6 @@ switch ($THUMBSIZE) {
 		break;
 }
 $PREVIEW_LIMIT = $isPreview ? 8 : false;
-$DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
 ?>
 <section class="<?php if ($isWide) echo "wide "; ?>gallery group">
 <?php if ($isPreview) { ?>	
@@ -53,7 +52,7 @@ $DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
 				$fields['trim_caption'] = $this->Text->truncate($fields['caption'], $LONG);
 				$fields['new'] = ($this->Time->wasWithinLast('3 day', $group['created'])) ? "<span class='new'>New! </span>" : '';
 				$fields['title'] = $this->Text->truncate("{$group['title']}", $SHORT);
-				$fields['src_icon'] =  $group['src_thumbnail'] ? Session::read('stagepath_baseurl').getImageSrcBySize($group['src_thumbnail'], $THUMBSIZE) : $DEFAULT_SRC_ICON;
+				$fields['src_icon'] =  Stagehand::getSrc($group['src_thumbnail'], $THUMBSIZE, $group['type']);
 				$controllerAlias = Configure::read('controller.action');
 				if ($controllerAlias == 'all') $controllerAlias = Configure::read('controller.alias');
 				

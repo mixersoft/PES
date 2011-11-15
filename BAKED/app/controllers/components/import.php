@@ -223,7 +223,7 @@ $this->log(">> exif_Orientation={$exif['Orientation']}", LOG_DEBUG);
 	}
 
 	function getImageSrcBySize($relpath, $size){
-		return getImageSrcBySize($relpath, $size); // from php_lib.php
+		return Stagehand::getImageSrcBySize($relpath, $size); // from php_lib.php
 
 	}
 
