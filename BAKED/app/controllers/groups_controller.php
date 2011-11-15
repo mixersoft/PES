@@ -66,6 +66,10 @@ class GroupsController extends AppController {
 
 	function beforeFilter() {
 		// only for snaphappi user login, not rpxnow
+		if (in_array($this->action, array('join'))) {
+			Configure::write('AAA.allow_guest_login', false);
+			$this->Auth->loginAction = '/users/register';
+		} 
 		parent::beforeFilter();
 		/*
 		 *	These actions are allowed for all users
@@ -80,7 +84,8 @@ class GroupsController extends AppController {
 			 */'index', 'all', 'open', 'most_active', 'most_recent','most_members','most_photos',
 			/*
 			 * experimental 
-			 */'setRandomGroupCoverPhoto', 'test', 'load', 'addACL'		
+			 */'setRandomGroupCoverPhoto', 'test', 'load', 'addACL', 
+			 'invitation'		// 'join' requires user signin		
 		);
 		AppController::$writeOk = $this->Group->hasPermission('write',AppController::$uuid);
 		// TODO: why can't I just attach Taggable on the fly??
@@ -187,44 +192,82 @@ LIMIT 5;";
 		return $ret;
 	}
 
-	function join($id) {
-		$forcePOST = 0;		// for debugging POST in debugger using GET 
-		if ($forcePOST && !empty($this->params['url']['data'])) {
+
+	/**
+	 * show invite link for cut/paste to email, etc.
+	 */
+	function invite ($id) {
+		$this->layout = 'snappi-guest';
+		$this->Group->recursive = 0;
+		$data = $this->Group->read(null,$id);
+		$this->set('data', $data);
+	}
+	/**
+	 * GET action, shows invitation to VISITORS/GUESTS/USERS and allow user to respond
+	 * POSTS to /groups/join
+	 */
+	function invitation($id=null) {
+		$this->layout = 'snappi-guest';
+		if (!empty($this->params['url']['register'])) {
+			$this->Session->setFlash('Please Sign-up or Sign-in before you join this Circle.');
+			$this->redirect('/users/register', null, true);
+		}		
+		$options = array('conditions'=>array('Group.id'=>$id));
+		$data = $this->Group->find('first', $options);
+		
+		// invitation from:
+		if (isset($this->params['url']['uuid'])) {
+			$badges = ClassRegistry::init('User')->getBadges($this->params['url']['uuid']);
+		}
+		$this->set('title_for_layout', "An Invitation to Join {$data['Group']['type']} {$data['Group']['title']}");
+		$this->set(compact('id', 'owner_name', 'data', 'badges'));	
+		$this->render('invitation');		
+		// debug(Session::read('Auth.redirect'));
+	}
+	/**
+	 * POST response only, from /groups/invitation
+	 * - requires Auth Session
+	 */
+	function join($redirect=null) {
+		$this->layout = 'snappi';
+		$forceXHR = setXHRDebug($this, 0);		// xhr login is for AIR desktop uploader
+		if ($forceXHR && !empty($this->params['url']['data'])) {
 			$this->data = $this->params['url']['data'];
 		}
-		if ($this->data) {
-			if (isset($this->data['Group'])) {
+
+		if (empty($this->data)) $this->redirectSafe();
+				
+		
+		$role = Session::read('Auth.User.role');
+		if ($role == 'GUEST') {
+			$this->Session->setFlash('You cannot join a Circle when browsing with a Guest pass. To upgrade your Guest pass, please sign up now.');
+			$this->redirectSafe();
+		}		
+		if ($role == 'USER') {
+			$isMember = in_array($this->data['Group']['id'], Permissionable::getGroupIds());
+			if ($isMember) {
+				$this->Session->setFlash('You are already a member of this group.');
+				$this->redirect(array('action'=>'home', $this->data['Group']['id']), null, true);
+			}		
+		}
+		// POST
+		if (isset($this->data['Group'])) {
+			$action = $this->data['Group']['action'];
+			if ($action == 'Ignore') {
+				// TODO: cancel invitation from "recent activity" ticker
+				$this->redirectSafe();
+			} else {	// action = "Accept Invitation"
 				$join = $this->data['Group'];
-				if (!isset($join['id']) || $join['id']!=$id ) {
-					$this->Session->setFlash('Warning: There was some kind of mistake. Please try again');
+				$ret = $this->__joinGroup($join['id'], Session::read('Auth.User.id'));
+				if ($ret) {
+					$this->Session->setFlash("Welcome! You are now a member of group <b>{$join['title']}</b>.");
+					$this->redirect(array('action'=>'home', $id), null, true);
 				} else {
-					$ret = $this->__joinGroup($join['id'], Session::read('Auth.User.id'));
-					if ($ret) {
-						$this->Session->setFlash("Welcome! You are now a member of group <b>{$join['title']}</b>.");
-						$this->redirect(array('action'=>'home', $id), null, true);
-					} else {
-						$this->Session->setFlash('Error: there was a problem joining this group. Please try again.');
-					}
+					$this->Session->setFlash('Error: there was a problem joining this group. Please try again.');
 				}
 			}
 		}
-
-		$options = array('conditions'=>array('Group.id'=>$id));
-		$this->Group->contain(null);
-		$data = @$this->Group->find('first', $options);
-		
-		$isMember = in_array(AppController::$uuid, Permissionable::getGroupIds());
-		$isOwner = $data['Group']['owner_id'] == AppController::$userid;
-		if ($isMember || $isOwner ) {
-			$this->Session->setFlash('You are already a member of this group.');
-			$this->redirect(array('action'=>'home', $id));
-		}  else {
-			$owner_name = Session::read('lookup.owner_names.'.$data['Group']['owner_id']);
-			if (empty($owner_name)) $owner_name = $data['Group']['owner_id'];
-			$this->set(compact('id', 'owner_name', 'data', 'isMember'));
-		}
-	}
-	
+	}	
 	// push this method into Model
 	function __contributePhotostream($groupId, $providerAccountId, $batchId=null){
 		// TODO:  check permission to write to group before adding
@@ -526,7 +569,8 @@ VALUES :chunk: ";
 	}
 	
 	function all(){
-		
+		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';		
 		// paginate 
 		$paginateModel = 'Group';
 		$Model = $this->Group;
@@ -1109,30 +1153,6 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 			}
 		}
 		$this->redirectSafe();
-	}
-	
-	function invite ($id) {
-		$host = env('HTTP_HOST');
-		$referer = env('HTTP_REFERER');
-
-		$this->Group->recursive = 0;
-		$data = $this->Group->read(null,$id);
-		$this->set('data', $data);
-				
-		if (strpos($referer, $host) > 0) {
-			// from site, show invitation form
-			$invitation = Router::url(array('action'=>'join', AppController::$uuid), true);
-			$this->set('invitation', $invitation);
-			
-		} else {
-			// from off-site, show jump page to accept invitation
-			// TODO: should we link back to /groups/inivite, or /groups/join
-			$isMember = in_array(AppController::$uuid, Permissionable::getGroupIds());
-			if ($isMember ) {
-				$this->Session->setFlash('You are already a member of this group.');
-			}	
-			$this->set('isMember', $isMember);		
-		}
 	}
 	
 	/**

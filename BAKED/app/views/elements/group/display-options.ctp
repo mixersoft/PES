@@ -48,9 +48,9 @@
 	$this->Layout->blockStart('inner_DisplayOptions'); ?> 
 	    	<ul class="filter inline">
 	    		<li class='label'>Filter</li>
-	    		<li class="btn <?php if ($btn_active['filter-me']) echo "selected" ?>" onclick="PAGE.myGroups(this);">My Circles</li>
+	    		<li class="btn <?php if ($btn_active['filter-me']) echo "selected" ?>" onclick="SNAPPI.UIHelper.groups.myGroups(this);">My Circles</li>
 	    		<li class="btn <?php if ($btn_active['filter-type']) echo "selected" ?>">Type
-	             	<select onchange="PAGE.goto(this);">
+	             	<select onchange="SNAPPI.UIHelper.nav.goto(this);">
 	             		<?php 
 							foreach ($filterBy_options as $id => $option) {
 								$html = str_replace($needle, $replace, $option['A_markup']);
@@ -65,7 +65,7 @@
 	        <ul class="sort inline right">
 	        	<li class='label'>Sort</li>
 	            <li class='btn <?php if ($btn_active['orderBy']) echo "selected" ?>'>
-	             	<select onchange="PAGE.goto(this);">
+	             	<select onchange="SNAPPI.UIHelper.nav.goto(this);">
 	             		<?php 
 							foreach ($orderBy_options as $id => $option) {
 								$html = str_replace($needle, $replace, $option['A_markup']);

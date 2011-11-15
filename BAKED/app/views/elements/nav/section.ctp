@@ -9,12 +9,12 @@ $src = isset($icon_src) ? getImageSrcBySize(Session::read('stagepath_baseurl').$
 $controllerAttrs = Configure::read('controller');
 if (AppController::$uuid) {
 	$trail = Session::read("lookup.trail.".$controllerAttrs['keyName']);
-	$label = $trail['label'];
-	$classLabel = $trail['classLabel']; // AppController::cacheClickStream(): $this->displayName for current context
+	$label = !empty($label) ?  $label : $trail['label'];
+	$classLabel =  !empty($classLabel) ?  $classLabel : $trail['classLabel']; // AppController::cacheClickStream(): $this->displayName for current context
 } else {
 	// /controller/all pages
-	$classLabel = $this->name;
-	$label = 'Discover';
+	$classLabel = !empty($classLabel) ?  $classLabel : $this->name;
+	$label = !empty($label) ?  $label : 'Discover';
 }
 $context = Session::read('lookup.context');
 $contextKeyName = $context['keyName'];

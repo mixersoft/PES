@@ -41,7 +41,15 @@ switch ($config['Config.os']) {
 				'preview'=>array('basepath'=>$wwwroot.'/svc/PREVIEWS', 'httpAlias'=>'svc/PREVIEWS'),
 			),
 			'stageroot'=>array('basepath'=>$wwwroot.'/svc/STAGING', 'httpAlias'=>'svc/STAGING'),
-			'blank_user_photo'=>'/img/providers/snappi.png',
+			
+			'blank_user_photo'=> '/img/providers/snappi.png', 	// deprecate, use Stagehand::getSrc()
+			'default_badges'=>array(
+				'person'=>'/img/providers/snappi.png',
+				'group'=>'/img/providers/snappi.png',
+				'event'=>'/img/providers/snappi.png',
+				'wedding'=>'/img/providers/snappi.png',
+			),
+
 //			'meanshift_tmp'=>'W:/usr/bin/meanshift/tmp',
 			'pageGalleryPrefix'=>'/svc/pages',
 			'pagemaker'=>array('catalog'=>$wwwroot.'\PAGEMAKER\arrangements'),
@@ -88,7 +96,13 @@ switch (env('SERVER_NAME')) {
 				'preview'=>array('basepath'=>$wwwroot.'/svc/PREVIEWS', 'httpAlias'=>'svc/PREVIEWS'),
 			),
 			'stageroot'=>array('basepath'=>$wwwroot.'/svc/STAGING', 'httpAlias'=>'svc/STAGING'),
-			'blank_user_photo'=>'/img/providers/snappi.png',
+			'blank_user_photo'=> '/img/providers/snappi.png', 	// deprecate, use Stagehand::getSrc()
+			'default_badges'=>array(
+				'person'=>'/img/providers/snappi.png',
+				'group'=>'/img/providers/snappi.png',
+				'event'=>'/img/providers/snappi.png',
+				'wedding'=>'/img/providers/snappi.png',
+			),
 			'pageGalleryPrefix'=>'/svc/pages',
 			'pagemaker'=>array('catalog'=>$wwwroot.'/PAGEMAKER/arrangements'),
 		);

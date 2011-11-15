@@ -1005,7 +1005,7 @@
 					arguments: args, 
 					on: {
 						successJson:  function(e, id, o, args) {
-							SNAPPI.Y.fire('snappi:share-complete', this, loadingNode);
+							SNAPPI.Y.fire('snappi:share-complete', this, loadingNode, o.responseJson);
 							this.onShareGroupComplete(args.gid, o.responseJson.message);
 							return false;
 						}

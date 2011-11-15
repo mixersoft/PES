@@ -37,39 +37,62 @@
 		found = found && _isDOMVisible(n);
 		return found;
 	};
-	var MultiSelect2 = function(cfg) {
-		this.selectHandler = function(e) {
-			var target = e.target;
-			if (!e.ctrlKey && !e.shiftKey) {
-				if (target.get('parentNode').hasClass('context-menu')) {
-					// let ContextMenu listner handle this click.
-					return;
-				}
-				// No shift key - remove all selected images,
-				var selected = target.ancestor('.container').all('.FigureBox.selected');
-				if (selected.size()) {
-					e.stopImmediatePropagation(); // halt click if we are clearing selected
-					selected.removeClass('selected');
-					return;
-				}
-			} 
-			
-			target = e.currentTarget; 	// .FigureBox
-			if (e.shiftKey) {
-				this.selectContiguousHandler(target);
-				e.stopImmediatePropagation(); 
-			} else if (e.ctrlKey) {
-				// Check if the target is an image and select it.
-				target.toggleClass('selected');
-				if (target.Thumbnail && target.Thumbnail.select) target.Thumbnail.select();
-				// save selction to Session for lightbox
-				if (target.ancestor('#lightbox')) SNAPPI.lightbox.save();
-				e.stopImmediatePropagation(); 
-			}
-		};
+	var MultiSelect = function(cfg) {
+		if (MultiSelect.instance) return MultiSelect.instance;		// singleton
+		MultiSelect.instance = this;
 	};
 	
-	MultiSelect2.prototype = {
+	/*
+	 * static methods
+	 * 	choose select handler for listen
+	 */
+	MultiSelect.singleSelectHandler = function(e) {
+		var target = e.target;
+		if (target.get('parentNode').hasClass('context-menu')) {
+			// let ContextMenu listner handle this click.
+			return;
+		}
+		
+		target = e.currentTarget; 	// .FigureBox
+		var selected = target.hasClass('selected');
+		// Check if the target is an image and select it.
+		this.clearAll(target.ancestor('.container'));
+		if (selected) target.removeClass('selected');
+		else target.addClass('selected');
+		e.stopImmediatePropagation(); 
+	};
+	MultiSelect.multiSelectHandler = function(e) {
+		var target = e.target;
+		if (!e.ctrlKey && !e.shiftKey) {
+			if (target.get('parentNode').hasClass('context-menu')) {
+				// let ContextMenu listner handle this click.
+				return;
+			}
+			// No shift key - remove all selected images,
+			var selected = target.ancestor('.container').all('.FigureBox.selected');
+			if (selected.size()) {
+				e.stopImmediatePropagation(); // halt click if we are clearing selected
+				selected.removeClass('selected');
+				return;
+			}
+		} 
+		
+		target = e.currentTarget; 	// .FigureBox
+		if (e.shiftKey) {
+			this.selectContiguousHandler(target);
+			e.stopImmediatePropagation(); 
+		} else if (e.ctrlKey) {
+			// Check if the target is an image and select it.
+			target.toggleClass('selected');
+			// save selction to Session for lightbox
+			if (target.ancestor('#lightbox')) SNAPPI.lightbox.save();
+			e.stopImmediatePropagation(); 
+		}
+	};
+	
+	
+	MultiSelect.prototype = {
+				
 		selectContiguousHandler : function(n) {
 			// select target regardless
 			n.addClass('selected');
@@ -92,22 +115,17 @@
 				} while (node && node != end);
 			}
 		},
-		selectAll : function(nodeUL) {
-			nodeUL.all('> .FigureBox').each(function(n, i, l) {
-				// select
-					n.addClass('selected');
-					if (n.Thumbnail && n.Thumbnail.select) n.Thumbnail.select(true);
-				});
+		selectAll : function(node) {
+			node = node || SNAPPI.Y.one('section.gallery .container');
+			node.all('.FigureBox').addClass('selected');
 		},
-		clearAll : function(nodeUL) {
-			nodeUL.all('> .FigureBox').each(function(n, i, l) {
-				// select
-					n.removeClass('selected');
-					if (n.Thumbnail  && n.Thumbnail.select) n.Thumbnail.select(false);
-				});
+		clearAll : function(node) {
+			node = node || SNAPPI.Y.one('section.gallery .container');
+			node.all('.FigureBox').removeClass('selected');
 		},
-		listen : function(container, status) {
+		listen : function(container, status, handler) {
 			var Y = SNAPPI.Y;
+			handler = handler || MultiSelect.multiSelectHandler
 			status = (status == undefined) ? true : status;
 			container = container || 'section.gallery.photo .container';
 			if (status) {
@@ -117,7 +135,8 @@
 						n.listen = n.listen || {};
 						if (!n.listen['MultiSelect']) {
 							n.listen['MultiSelect'] = n.delegate('click',
-								this.selectHandler, '.FigureBox',
+								handler, 		// default: this.multiSelectHandler		 
+								'.FigureBox',
 								this	// context
 							);
 						}
@@ -141,8 +160,10 @@
 	/*
 	 * make global
 	 */
-	SNAPPI.MultiSelect2 = MultiSelect2;
-	SNAPPI.multiSelect = new MultiSelect2();
+	SNAPPI.MultiSelect = MultiSelect;
+	SNAPPI.multiSelect = new MultiSelect();
+	
+	var SingleSelect
 
 	/**
 	 * factory class for creating instance of Thumbnail, i.e. Photo Group or Person
@@ -800,6 +821,96 @@
 			return this;
 		}
 	};
+	ThumbnailFactory.GroupCoverPreview = {
+		markup: '<article class="FigureBox Group">'+
+                '	<figure><a><img alt="" src=""></a>'+
+                '		<figcaption>'+
+                '		 <div class="label"></div>'+
+                '		 <ul class="inline extras">'+
+                '		 	<li class="privacy"></li>'+
+                '		 	<li class="members"><a></a></li>'+
+                '		 	<li class="snaps"><a></a></li>'+
+				'		</ul></figcaption>'+
+				'</figure></article>',
+		renderElementsBySize: function(size, o) {
+			/*
+			 * set attributes based on thumbnail size
+			 */
+			size = size;
+			var node = this.node;
+			
+			var src, linkTo, title, privacy, memberCount, snapCount, exists, tooltip, sizeCfg;
+			src = o.getImgSrcBySize(o.urlbase + o.src, size);
+			linkTo = '/groups/home/' + o.id;
+			title = o.label;
+			privacy = 'admin';
+			memberCount = ' Members';
+			snapCount = ' Snaps';
+			size = 'sq';
+			
+			sizeCfg = {
+				size: size,
+			};			
+			switch (size) {
+				case 'sq':
+				case 'lm':
+					sizeCfg.showLabel = true;
+					sizeCfg.showExtras = true;
+					break;
+				case 'll':
+					sizeCfg.showLabel = true;
+					sizeCfg.showExtras = true;
+					break;
+			}
+			this._cfg = Y.merge(this._cfg, sizeCfg);
+			
+			// set CSS classNames
+			node.set('className', 'FigureBox').addClass(this._cfg.type).addClass(sizeCfg.size);
+			if (this._cfg.addClass) node.addClass(this._cfg.addClass);
+			
+			// set src to the correct size
+			var img = node.one('figure > img');
+			if (this._cfg.queue && SNAPPI.imageloader.QUEUE_IMAGES) {
+				img.qSrc = src;
+				// SNAPPI.util3.ImageLoader.queueOneImg(img); // defer,
+				// queue by selector
+			} else {
+				img.set('src', src);
+			}		
+			
+			// set draggable	
+			if (this._cfg.draggable) {
+				img.addClass('drag');
+			} else {
+				img.removeClass('drag');
+			}
+			
+			// show caption, 
+			exists = node.one('figcaption > .label');
+			if (this._cfg.showLabel) {
+				if (!exists) {
+					node.one('.extras').insert('<div class="label">' + this.trimLabel(title) + '</div>', 'before');
+				} else {
+					exists.set('innerHTML', this.trimLabel(title));
+					exists.removeClass('hide');
+				}
+			} else {
+				node.one('figure > img').set('title', title);
+				if (exists) exists.addClass('hide');
+			}
+			
+			// show extras
+			if (this._cfg.showExtras) {
+				node.one('.extras .privacy').addClass(privacy);
+				node.one('.extras .members a').set('innerHTML', memberCount);
+				node.one('.extras .snap a').set('innerHTML', snapCount);
+				node.one('.extras').removeClass('hide');
+			} else {
+				node.one('.extras').addClass('hide');
+			}				
+			return this;
+		}
+	};	
 	ThumbnailFactory.Person = {
 		markup: '<article class="FigureBox Person">'+
                 '	<figure><a><img alt="" src=""></a>'+

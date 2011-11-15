@@ -55,6 +55,7 @@ $DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
 				$fields['title'] = $this->Text->truncate("{$group['title']}", $SHORT);
 				$fields['src_icon'] =  $group['src_thumbnail'] ? Session::read('stagepath_baseurl').getImageSrcBySize($group['src_thumbnail'], $THUMBSIZE) : $DEFAULT_SRC_ICON;
 				$controllerAlias = Configure::read('controller.action');
+				if ($controllerAlias == 'all') $controllerAlias = Configure::read('controller.alias');
 				
 				$options = array('plugin'=>'','controller'=>$controllerAlias, $group['id']);
 				$group_members['href'] = Router::url($options+array('action'=>'members'));
@@ -75,7 +76,7 @@ $DEFAULT_SRC_ICON = Configure::read('path.blank_user_photo');
 				?>
 		<article class='FigureBox Group <?php  echo $THUMBSIZE; ?>' id='<?php echo $group['id'] ?>'>
 			<figure>
-				<?php $options = array('url'=>array('plugin'=>'','controller'=>$controllerAlias, 'action'=>'home', $group['id'])); 
+				<?php $options = array('linkTo'=>Router::url(array('plugin'=>'','controller'=>$controllerAlias, 'action'=>'home', $group['id']))); 
 					if (isset($fields['title'])) $options['title'] = $fields['trim_caption'];
 					echo $this->Html->image( $fields['src_icon'] , $options); ?>
 				<figcaption>

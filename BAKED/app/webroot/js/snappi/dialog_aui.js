@@ -134,11 +134,13 @@ var DEFAULT_CFG_io = {
 					var content = this.get('contentBox');
 					var selected = content.one('.selected');
 					var gid = selected.get('id');
-					var detach = SNAPPI.Y.on('snappi:share-complete', function(lightbox, loading){
+					var detach = SNAPPI.Y.on('snappi:share-complete', function(lightbox, loading, response){
+						// TODO: show response in msg
 						loading.loadingmask.hide();
+						SNAPPI.multiSelect.clearAll(this.get('contentBox'));
 						// update asset count in dialog
 						detach.detach();
-					});
+					}, this);
 					var options = {
 						data: {
 							'data[Asset][unshare]': 1
@@ -155,11 +157,13 @@ var DEFAULT_CFG_io = {
 					var content = this.get('contentBox');
 					var selected = content.one('.selected');
 					var gid = selected.get('id');
-					var detach = SNAPPI.Y.on('snappi:share-complete', function(lightbox, loading){
+					var detach = SNAPPI.Y.on('snappi:share-complete', function(lightbox, loading, response){
 						loading.loadingmask.hide();
+						SNAPPI.multiSelect.clearAll(this.get('contentBox').one('.container'));
+						// TODO: show response in msg
 						// update asset count in dialog
 						detach.detach();
-					});
+					}, this);
 					SNAPPI.lightbox.applyShareInBatch(gid, selected);
 				}
 			}

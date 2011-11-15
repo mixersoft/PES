@@ -11,13 +11,16 @@
 	$passed = array_intersect_key($this->passedArgs, array('sort'=>1, 'direction'=>1, 'page'=>1, 'perpage'=>1));	// copy of array
 	$controllerAttr = Configure::read('controller');
 	$sections = array();
-	$type = !empty($controllerAttr['alias']) ? $controllerAttr['alias'] : 'photos';
 	if ( AppController::$userid) { 
 		$sections['Home']=array('label'=>'Home','href'=>'/my/home');
 		$sections['Circles']=array('label'=>'Circles','href'=>'/my/groups');
 		$sections['Snaps']=array('label'=>'Snaps','href'=>'/my/photos');
-		$sections['People']=array('label'=>'People','href'=>'#');
-		$sections['Explore']=array('label'=>'Explore','href'=>"/{$type}/all");
+		$sections['People']=array('label'=>'People','href'=>'/my/friends');
+		
+		// explore action
+		$exploreAction = ($controllerAttr['alias'] == 'my') ? $controllerAttr['action'] : $controllerAttr['alias'] ;
+		if ( $exploreAction == 'home' ) $exploreAction = 'photos';
+		$sections['Explore']=array('label'=>'Explore','href'=>"/{$exploreAction}/all");
 	} else {
 		$sections['Circles']=array('label'=>'Circles','href'=>'/groups/all');
 		$sections['Snaps']=array('label'=>'Snaps','href'=>'/photos/all');

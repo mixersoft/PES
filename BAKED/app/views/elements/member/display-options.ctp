@@ -38,7 +38,7 @@
 	        <ul class="sort inline right">
 	        	<li class='label'>Sort</li>
 	            <li class='btn <?php if ($btn_active['orderBy']) echo "selected" ?>'>
-	             	<select onchange="PAGE.goto(this);">
+	             	<select onchange="SNAPPI.UIHelper.nav.goto(this);">
 	             		<?php 
 							foreach ($orderBy_options as $id => $option) {
 								$html = str_replace($needle, $replace, $option['A_markup']);

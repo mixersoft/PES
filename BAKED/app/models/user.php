@@ -939,6 +939,31 @@ SET `User`.asset_count = t.asset_count, `User`.groups_user_count = t.groups_user
 		$result = $this->query($sql);
 		return true;
 	}
+	/**
+	 * @params array of User ids
+	 * @return aa of user badge data, indexed by uuid
+	 */
+	function getBadges($uuid) {
+		if (!is_array($uuid)) $uuid = array($uuid);
+		$options = array(
+			'contain'=>'Profile',
+			'conditions'=>array('User.id'=>$uuid),
+			'fields'=>'User.id, User.username, Profile.fname, Profile.lname, User.slug, User.src_thumbnail, User.asset_count, User.groups_user_count'
+		);		
+		$data = $this->find('all', $options);
+		$formatted = array();
+		foreach ($data as & $row) {
+			$row[0]['linkTo'] = Router::url(array('controller'=>'person', 'action'=>'home' , $row['User']['id']));	
+			$row[0]['src'] =   Stagehand::getSrc($row['User']['src_thumbnail'], null, 'person');
+			if (empty($row['Profile']['fname']) && empty($row['Profile']['lname'])) {
+				$row[0]['fullname'] = '';
+			} else {
+				$row[0]['fullname'] = ucFirst("{$row['Profile']['fname']} {$row['Profile']['lname']}");
+			}
+			$formatted[$row['User']['id']] = $row;
+		}
+		return $formatted;
+	}
 	
 }
 ?>

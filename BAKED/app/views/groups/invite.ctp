@@ -1,32 +1,36 @@
 <?php
-echo $this->element('nav/section', array('icon_src'=>$data['Group']['src_thumbnail']));
-?>
-<?php  if (isset($invitation)) { // invite ?>
-<div class="groups invite">
-<div class='placeholder'>
-<h2>Invite your friends to join this group.</h2>
-<div></div>
-<blockquote>(add a "Share this:" block for sharing by email, facebook,
-twitter, etc)
-<p /><?php echo $this->Html->link($invitation); ?>
+	$this->Layout->blockStart('itemHeader');
+	echo $this->element('nav/section', array('icon_src'=>$data['Group']['src_thumbnail'], 
+		'classLabel'=>$data['Group']['type'],
+		'label'=>$data['Group']['title'],
+		)); 
+	$this->Layout->blockEnd();
+// debug($data['Group']);	
 
-</blockquote>
-<br />
-</div>
-</div>
-<?php } else { // accept, jump page ?>
-<div class="groups invite">
-<div class='placeholder'>
-<h2>Accept Invitation to Join this Group.</h2>
-<div></div>
-<blockquote>
-<p />
-(jump page for accepting invitation)
-<p />
-<?php echo $this->Html->link('continue to join link', array('action'=>'join',AppController::$uuid)); ?>
-<p />
-</blockquote>
-<br />
-</div>
-</div>
-<?php } ?>
+	$controllerAlias = Configure::read('controller.alias');
+	$previewSrc = Session::read('stagepath_baseurl').getImageSrcBySize($data['Group']['src_thumbnail'], 'bp');
+	$options = array('linkTo'=>Router::url(array('plugin'=>'','controller'=>$controllerAlias, 'action'=>'home', $data['Group']['id']))); 
+	// if (isset($fields['title'])) $options['title'] = $fields['trim_caption'];
+	
+	$tokens['src'] = Stagehand::getSrc($data['Group']['src_thumbnail'], 'lm', $data['Group']['type']); 
+	$tokens['group_type'] = ucFirst($data['Group']['type']);
+	$tokens['linkTo'] = Router::url(array('plugin'=>'','controller'=>$controllerAlias, 
+		'action'=>'invitation', 
+		$data['Group']['id'],
+		'?'=>array('uuid'=>AppController::$userid),
+	), true);
+	
+?>
+<section class='invitation prefix_1 grid_14 suffix_1'>
+	<h2 ><?php echo String::insert("Invite your friends & family to join this :group_type.", $tokens); ?></h2>
+	<div class='wrap grid_14'>
+		<div class="alpha grid_2">
+			<div class="right">
+				<?php echo $this->Html->image($tokens['src']); ?>	
+			</div></div>
+		<div class="grid_12 omega">
+			<p><?php echo String::insert("To send an invitation to join this :group_type, just share this link by email, facebook, etc.", $tokens); ?></p>
+			<div class="wrap"><?php echo  String::insert("<a href=':linkTo' target='_blank'>:linkTo</a>", $tokens) ?>	</div>
+		</div>,
+	</div>
+</section>

@@ -15,7 +15,7 @@
 	</ul>
     <nav class="settings push_6 grid_7">
 		<ul class="inline right">
-			<li class="display-option" onclick='PAGE.toggleDisplayOptions();'>
+			<li class="display-option" onclick='SNAPPI.UIHelper.nav.toggleDisplayOptions();'>
     			<a class='menu-open'>Display Options</a>
     		</li>
     	</ul><ul class="thumb-size inline right">
@@ -25,7 +25,7 @@
 					echo "<li class='btn ".($focus==$size ? 'focus' : '')."' size='{$size}'><img src='{$src}' alt=''></li>";
 				}
 			?>
-			<li class='btn' onclick="PAGE.toggle_fullscreen(true);">Fullscreen</li>
+			<li class='btn' onclick="SNAPPI.UIHelper.nav.toggle_fullscreen(true);">Fullscreen</li>
 		</ul>
 	</nav>      
 </section> 

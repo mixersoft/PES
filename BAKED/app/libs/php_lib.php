@@ -353,22 +353,50 @@ function indexRename($fileOrFolder) {
 	return true;
 }
 
-
-/*
- * uses size prefixing via autorender
- */
-function getImageSrcBySize($relpath, $prefix) {
-	if (strlen($prefix)==2) $prefix .= '~';
-	$regexp = '/^(sq|br|bp|cr|ax|bs|bx|ap|as|ar|tn|bm|am)~/';
-	$path_parts = pathinfo($relpath);
-	// replace existing prefix, if any, and then prepend
-	if (preg_match($regexp, $path_parts['basename'])) {
-		$asset_basename = preg_replace($regexp, $prefix, $path_parts['basename'], 1);
-	} else {
-		$asset_basename = $prefix.$path_parts['basename'];
+class Stagehand {
+	public static $default_badges =  null;	// set to Configure::read('path.default_badges')
+	public static $stage_baseurl = null;
+	/*
+	 * uses size prefixing via autorender
+	 */
+	public static function getImageSrcBySize($relpath, $prefix) {
+		if (strlen($prefix)==2) $prefix .= '~';
+		$regexp = '/^(sq|br|bp|cr|ax|bs|bx|ap|as|ar|tn|bm|am)~/';
+		$path_parts = pathinfo($relpath);
+		// replace existing prefix, if any, and then prepend
+		if (preg_match($regexp, $path_parts['basename'])) {
+			$asset_basename = preg_replace($regexp, $prefix, $path_parts['basename'], 1);
+		} else {
+			$asset_basename = $prefix.$path_parts['basename'];
+		}
+		return cleanPath($path_parts['dirname'].'/'.$asset_basename, 'http'); //only forward-slash
 	}
-	return cleanPath($path_parts['dirname'].'/'.$asset_basename, 'http'); //only forward-slash
+	/**
+	 * @params badgeType String [person, group, event, wedding];
+	 */
+	public static function getSrc($relpath, $prefix = null, $badgeType = null) {
+		if ($badgeType && empty($relpath)) {
+			return Stagehand::$default_badges[$badgeType];
+		} else if ($prefix) {
+			$relpath = Stagehand::getImageSrcBySize($relpath, $prefix);
+		}
+		return Stagehand::$stage_baseurl.$relpath;
+	} 
 }
+
+	// deprecate: use Stagehand::getImageSrcBySize(), or Stagehand::getSrc()
+	function getImageSrcBySize($relpath, $prefix) {
+		if (strlen($prefix)==2) $prefix .= '~';
+		$regexp = '/^(sq|br|bp|cr|ax|bs|bx|ap|as|ar|tn|bm|am)~/';
+		$path_parts = pathinfo($relpath);
+		// replace existing prefix, if any, and then prepend
+		if (preg_match($regexp, $path_parts['basename'])) {
+			$asset_basename = preg_replace($regexp, $prefix, $path_parts['basename'], 1);
+		} else {
+			$asset_basename = $prefix.$path_parts['basename'];
+		}
+		return cleanPath($path_parts['dirname'].'/'.$asset_basename, 'http'); //only forward-slash
+	}
 
 
 function trimImagePrefix($url) {

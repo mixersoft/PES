@@ -53,12 +53,17 @@ class Group extends AppModel {
 	}
 	
 	public function afterFind($results, $primary) {
+		$model = $this->alias;
+		$permAlias = $this->getPermissionAlias();
 		// merge permissions
 		try {
-			if ($primary) {
-				$alias = $this->alias;
+			if ($primary && isset($results[0][$model])) {
+				$member_owner_group_ids = Permissionable::getGroupIds();
 				foreach ($results as $i => & $data) {
-					if (isset($data["{$alias}Permission"]['perms'])) $data[$alias]['perms'] = $data["{$alias}Permission"]['perms'];
+					if (isset($data[$permAlias]['perms'])) $data[$model]['perms'] = $data[$permAlias]['perms'];
+					// add isOwner, isMember
+					$data[$model]['isMember'] = in_array($data[$model]['id'], $member_owner_group_ids );  
+					if (!empty($data[$model]['owner_id'])) $data[$model]['isOwner'] = $data[$model]['owner_id'] == AppController::$userid;
 				}
 			}
 		} catch (Exception $e) {}

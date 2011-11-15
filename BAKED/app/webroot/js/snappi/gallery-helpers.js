@@ -130,21 +130,26 @@
 		            	'div.hidden-shot', this.node); 
 		          }	    	
 		    },	    
-	        Click: function(forceStart) {
-	            if (this.node.listen['Click'] == undefined || forceStart ) {
+		    // TODO: rename LinkToClick
+	        LinkToClick: function(forceStart) {
+	            if (this.node.listen['LinkToClick'] == undefined || forceStart ) {
 	            	// section.gallery.photo or div.filmstrip.photo
-	                this.node.listen['Click'] = this.node.delegate('click', function(e){
-	                    var next = e.target.getAttribute('linkTo');
-	                    if (this.Gallery.castingCall.CastingCall) {
-	                    	next += '?ccid=' + this.Gallery.castingCall.CastingCall.ID;
-							try {
-								var shotType = this.Gallery.castingCall.CastingCall.Auditions.ShotType;
-								if (shotType == 'Groupshot'){
-									next += '&shotType=Groupshot';
-								}
-							} catch (e) {}
-	                    }
-	                    window.location.href = next;
+	                this.node.listen['LinkToClick'] = this.node.delegate('click', function(e){
+	            		var linkTo = e.currentTarget.getAttribute('linkTo');
+	            		if (linkTo) {
+		                    if (this.Gallery.castingCall.CastingCall) {
+		                    	linkTo += '?ccid=' + this.Gallery.castingCall.CastingCall.ID;
+								try {
+									var shotType = this.Gallery.castingCall.CastingCall.Auditions.ShotType;
+									if (shotType == 'Groupshot'){
+										linkTo += '&shotType=Groupshot';
+									}
+								} catch (e) {}
+		                    }		            			
+	            			if (e.ctrlKey) window.open(linkTo, '_blank') 
+	            			else window.location.href = linkTo;
+	            			e.stopImmediatePropagation();
+	            		} 	                	
 	                }, '.FigureBox > figure > img', this.node);
 				}
 	        },
@@ -287,7 +292,7 @@
 	        			'</section>',
 			node: 'div.gallery-container > section.gallery.photo',
 			render: true,
-			listeners: ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick'],
+			listeners: ['Keypress', 'Mouseover', 'LinkToClick', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick'],
 			draggable: true,
 			hideHiddenShotByCSS: true,
 			size: 'lm',
@@ -356,7 +361,7 @@
 	        tnType: 'Photo',	// thumbnail Type
 			node: '#lightbox section.gallery.lightbox',
 			render: true,
-			// listeners: ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick'],
+			// listeners: ['Keypress', 'Mouseover', 'LinkToClick', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick'],
 			listeners: ['MultiSelect', 'WindowOptionClick'],
 			draggable: false,
 			hideHiddenShotByCSS: false,
@@ -625,7 +630,7 @@
 	        			'</section>',
 			node: 'div.gallery-container > section.gallery.photo',
 			render: true,
-			listeners: ['Keypress', 'Mouseover', 'Click', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick'],
+			listeners: ['Keypress', 'Mouseover', 'LinkToClick', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick'],
 			draggable: true,
 			hideHiddenShotByCSS: true,
 			size: 'lm',

@@ -38,7 +38,7 @@ class AppController extends Controller {
 		//Set the default redirect for users who login
 		$this->Auth->loginRedirect = '/my/home';
 		// login page
-		$this->Auth->loginAction = '/users/login' . (Configure::read('AAA.allow_guest_login') ? '?optional' : '');
+		if (empty($this->Auth->loginAction)) $this->Auth->loginAction = '/users/login' . (Configure::read('AAA.allow_guest_login') ? '?optional' : '');
 		//Extend auth component to include authorisation via isAuthorized action
 		$this->Auth->authorize = 'controller';
 		//Restrict access to only users with an active account
@@ -47,7 +47,6 @@ class AppController extends Controller {
 		$this->set('Auth', $this->Auth->user());		// deprecate
 		// call login() after auth for additional processing
 		$this->Auth->autoRedirect = false;
-			
 		// assume $this->Auth->user has been set
 		$this->prepareRequest();
 		
@@ -95,7 +94,8 @@ class AppController extends Controller {
 		if ($this->RequestHandler->isAjax() || $this->RequestHandler->ext=='json') {
 			return; // skip page titles for AJAX requests.
 		}
-		 
+		if (!empty($this->viewVars['title_for_layout'])) return;
+		
 		if (AppController::$uuid) {
 			if (isset($this->keyName)) {
 				$label = Session::read("lookup.trail.{$this->keyName}.label");
@@ -341,7 +341,13 @@ class AppController extends Controller {
 		if (!empty($this->passedArgs['debug'])) Configure::write('debug' , $this->passedArgs['debug']);
 		Configure::write('passedArgs.complete', $this->passedArgs);
 		Configure::write('passedArgs.min', array_diff_key($this->passedArgs, array_flip(array('perpage', 'page', 'sort', 'direction', 'filter'))));
-		if (!$this->Session->check('stagepath_baseurl')) Session::write('stagepath_baseurl', '/'.Configure::read('path.stageroot.httpAlias').'/');
+		// use Stagehand Static class to manage staged content and object badges
+		Stagehand::$default_badges = Configure::read('path.default_badges');
+		Stagehand::$stage_baseurl =  '/'.Configure::read('path.stageroot.httpAlias').'/';
+		
+		// TODO: deprecate Session::read('stagepath_baseurl'), use Stagehand::getSrc()
+		if (!$this->Session->check('stagepath_baseurl')) Session::write('stagepath_baseurl', Stagehand::$stage_baseurl);
+		
 		// $this->viewVars['jsonData']['named'] = $this->params['named'];
 		$this->helpers[] = 'Layout';
 	}
@@ -447,7 +453,12 @@ class AppController extends Controller {
 		// titleName = Me, People, Groups, Tags
 		$navPrimary = ($controllerAttr['action'] != 'all') ? $this->keyName : 'Explore';
 		if ($navPrimary == "Tag") {
-			$context = array_shift(Session::read("lookup.context"));
+			if ($context = Session::read("lookup.context")) {
+debug($context);				
+				$context = array_shift($context);
+			} else {
+				$context = array();
+			}
 			$navPrimary = isset($context['classLabel']) ? $context['classLabel'] : 'Tag';	
 		}
 		switch ($navPrimary) {

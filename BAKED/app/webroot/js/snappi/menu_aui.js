@@ -74,7 +74,7 @@ var DEFAULT_CFG_contextmenu = 	{
 			// BUG: container.one('#menu-header') does NOT work in chrome
 			var markupNode = Y.Node.create("<div />");
 			container.append(markupNode);
-			document.body.style.cursor = 'wait';
+			document.body.style.cursor = 'wait !important';	// doesn't seem to work here
 			markupNode.plug(Y.Plugin.IO, ioCfg);	
 			markupNode.io.afterHostMethod('insert', function(){
 				document.body.style.cursor = null;
@@ -140,7 +140,7 @@ var DEFAULT_CFG_contextmenu = 	{
 			menu.set('trigger', TRIGGER);	// 'enabled' trigger
 			menu._stashTrigger = TRIGGER;
 		}
-		Menu.startListener(menu);
+		Menu.startListener(menu, cfg.handle_click);
 		
 		// lookup reference
 		
@@ -182,31 +182,33 @@ var DEFAULT_CFG_contextmenu = 	{
 		return menu;
 	};
 	
-	Menu.startListener = function(menu){
+	Menu.startListener = function(menu, handle_click){
 		var parent = menu.get('contentBox');
+		handle_click = handle_click || function(e){
+			var menuItem = e.currentTarget;
+			if (menuItem.hasClass('disabled')) {
+				// check for disabled
+				e.preventDefault();
+				return;
+			} 
+			var methodName = menuItem.getAttribute('action')+'_click';
+			if (MenuItems[methodName]) {
+				e.preventDefault();
+				MenuItems[methodName](menuItem, this);
+			} else {
+				// default
+				// no special clickhandler, so just find a.href
+//					window.location.href = menuItem.one('a').getAttribute('href');
+			}
+		};
+			
 		menu.listen = menu.listen || {};
 		if (!menu.listen['delegate_click']) {
-			menu.listen['delegate_click'] = parent.delegate('click', function(e){
-				var menuItem = e.currentTarget;
-				if (menuItem.hasClass('disabled')) {
-					// check for disabled
-					e.preventDefault();
-					return;
-				} 
-				var methodName = menuItem.getAttribute('action')+'_click';
-				if (MenuItems[methodName]) {
-					e.preventDefault();
-					MenuItems[methodName](menuItem, this);
-				} else {
-					// default
-					// no special clickhandler, so just find a.href
-//					window.location.href = menuItem.one('a').getAttribute('href');
-				}
-			}, 'ul > li',  menu);
+			menu.listen['delegate_click'] = parent.delegate('click', handle_click, 'ul > li',  menu);
 		}
 	};
 	
-	Menu.menuItem_beforeShow = function(menu){
+	Menu.menuItem_beforeShow = function(menu, o){
 		var content = menu.get('contentBox');
 		if (content) content.all('ul > li.before-show').each(function(n,i,l){
 			// call beforeShow for each menuItem
@@ -214,7 +216,7 @@ var DEFAULT_CFG_contextmenu = 	{
 				var methodName = n.getAttribute('action')+'_beforeShow';
 				if (MenuItems[methodName]) {
 					try {
-						MenuItems[methodName](n, menu);	
+						MenuItems[methodName](n, menu, o);	
 					} catch (e) {}
 				}
 			}
@@ -871,7 +873,13 @@ var DEFAULT_CFG_contextmenu = 	{
 						success: function(e, i,o,args) {
 							args.menu.hide();
 							document.body.style.cursor = '';
-							return o.responseText;
+							// add content
+							var parent = args.dialog.getStdModNode('body');
+							parent.setContent(o.responseText);
+							// start multi-select listener
+							var container = parent.one('.gallery.group .container');
+							SNAPPI.multiSelect.listen(container, true, SNAPPI.MultiSelect.singleSelectHandler);
+							return false;
 						}					
 					}
     			};
@@ -950,7 +958,38 @@ var DEFAULT_CFG_contextmenu = 	{
 		menu.hide();
 	};	
 	
-	
+	/*
+	 * Group .FigureBox
+	 */
+	MenuItems.join_beforeShow = function(menuItem, menu, properties){
+		var target = menu.get('currentNode');
+		// TODO: check privacy/membership settings
+		if (!properties.isMember && properties.membership_policy == 1) menuItem.show();
+		else menuItem.hide();
+	};		
+	MenuItems.join_click = function(menuItem, menu, properties){
+		var target = menu.get('currentNode');
+		menu.hide();
+		window.location.href = '/groups/join/'+properties.id;
+	};		
+	MenuItems.invite_beforeShow = function(menuItem, menu, properties){
+		var target = menu.get('currentNode');
+		if (properties.isOwner || properties.invitation_policy == 1) menuItem.removeClass('disabled');
+		else if (properties.isMember && properties.invitation_policy == 2) menuItem.removeClass('disabled');
+		else menuItem.addClass('disabled');
+	};		
+	MenuItems.invite_click = function(menuItem, menu, properties){
+		var target = menu.get('currentNode');
+		menu.hide();
+		window.location.href = '/groups/invite/'+properties.id;
+	};		
+	MenuItems.unshare_from_group_beforeShow = function(menuItem, menu, properties){
+		var target = menu.get('currentNode');
+	};		
+	MenuItems.unshare_from_group_click = function(menuItem, menu, properties){
+		var target = menu.get('currentNode');
+		menu.hide();
+	};	
 	
 	
 	/*
@@ -1331,7 +1370,7 @@ var DEFAULT_CFG_contextmenu = 	{
 				hide: function(e) {
 					e.target.get('contentBox').addClass('hide');
 				},
-			},			
+			},
 		};
 		cfg = Y.merge(defaultCfg, cfg);
 		var CSS_ID = 'menu-uploader-folder-markup';
@@ -1354,8 +1393,91 @@ var DEFAULT_CFG_contextmenu = 	{
 		return Menu.getMarkup(MARKUP , callback);
 	};		
 	
+	var CFG_Context_FigureBox = function(){}; 
+	/**
+	 * load .FigureBox contextmenu .gallery.[type] > .FigureBox contextmenu 
+	 * @param cfg. cfg.triggerType = [group, person, etc.]
+	 * @return
+	 */
+	CFG_Context_FigureBox.load = function(cfg){
+		var Y = SNAPPI.Y;
+		var TRIGGER = ' .FigureBox';
+		var TYPE_LOOKUP = {
+			'photo': {
+				CSS_ID: 'contextmenu-photo-markup',	
+				uri: '/combo/markup/photoContextMenu',				
+			},
+			'group': {
+				CSS_ID: 'contextmenu-group-markup',	
+				uri: '/combo/markup/groupContextMenu',
+			},
+			'person': {
+				CSS_ID: 'contextmenu-person-markup',	
+				uri: '/combo/markup/personContextMenu',
+			}, 
+		}		
+		var typeDefaults = TYPE_LOOKUP[ cfg.triggerType ];
+if (!typeDefaults && console) console.error("ERROR: missing contextmenu type for CFG_Context_FigureBox.load()"); 
+
+		var CSS_ID = typeDefaults.CSS_ID;
+		var defaultCfg = {
+				// constrain: true,
+			on: {
+				show: function(e) {
+					 // console.warn('contextmenu: on show', e);
+					 var menu = e.target;
+					 var target = menu.get('currentNode');
+					 var jsonProperties = SNAPPI.UIHelper.groups.getProperties(cfg.triggerType ,target); 
+					 Menu.menuItem_beforeShow(menu, jsonProperties);
+				},
+			},
+			handle_click : function(e){
+				var menuItem = e.currentTarget;
+				var target = this.get('currentNode');
+				if (menuItem.hasClass('disabled')) {
+					// check for disabled
+					e.preventDefault();
+					return;
+				} 
+				var jsonProperties = SNAPPI.UIHelper.groups.getProperties(cfg.triggerType ,target);
+				var methodName = menuItem.getAttribute('action')+'_click';
+				if (MenuItems[methodName]) {
+					e.preventDefault();
+					MenuItems[methodName](menuItem, this, jsonProperties);
+				}
+			},	
+		}
+		cfg = Y.merge(defaultCfg, cfg);
+
+		var MARKUP = {
+				id: CSS_ID,
+				selector: '#'+CSS_ID,
+				container: Y.one('#markup'),
+				uri: typeDefaults.uri,
+		};
+		// reuse, if found
+		if (Menu.find[CSS_ID]) 
+			return Menu.find[CSS_ID];
+		
+		
+		Menu.classInit(); 
+
+
+		var callback = function(){
+			var menu = Menu.initContextMenu(MARKUP, TRIGGER, cfg);
+			var offset = {x:-20, y:20};
+			menu.set('xy', Menu.moveIfUnconstrained(menu, null, offset));
+			menu.on('xyChange', function(e){
+					e.newVal = Menu.moveIfUnconstrained(this, e.newVal, offset);
+				}
+			)
+		};
+		return Menu.getMarkup(MARKUP , callback);
+	};		
+	
 		
 	// SNAPPI.MenuAUI
+	// global lookup by CSS ID
 	Menu.CFG = {
 		'menu-header-markup': CFG_Menu_Header,
 		'contextmenu-photoroll-markup': CFG_Context_Photoroll,
@@ -1367,5 +1489,8 @@ var DEFAULT_CFG_contextmenu = 	{
 		'menu-sign-in-markup': CFG_Menu_SignIn,
 		'menu-uploader-batch-markup': CFG_Menu_Uploader_Batch,		
 		'menu-uploader-folder-markup': CFG_Menu_Uploader_Folder,
+		// context menus
+		'contextmenu-group-markup': CFG_Context_FigureBox,		
+		'contextmenu-person-markup': CFG_Context_FigureBox,
 	};
 })();

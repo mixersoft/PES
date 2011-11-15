@@ -515,11 +515,7 @@ section.gallery-display-options.wide ul > li.label {
 /*
  * .lm landscape/medium
  */
-/*.FigureBox.lm {
-	width: 145px;		
-	height: 120px;	
-}*/
-.FigureBox.lm > figure > img {
+.FigureBox.lm > figure > img , .FigureBox.lm > figure > a > img {
 	width: 144px;
 	height: 96px;
 }
@@ -528,14 +524,14 @@ section.gallery-display-options.wide ul > li.label {
  * .ll (landscape/large) == .large 
  */
 
-.FigureBox.ll > figure > img {
+.FigureBox.ll > figure > img, .FigureBox.ll > figure > a > img {
 	width: 222px;
 	height: 148px;
 }
 /*
  * .sq (square) 
  */
-.FigureBox.sq > figure > img {
+.FigureBox.sq > figure > img, .FigureBox.sq > figure > a > img {
 	width: 75px;
 	height: 75px;
 }
@@ -933,6 +929,7 @@ div.anchor-bottom {
 	position: fixed;
 	bottom: 0px;
 	width: 100%;
+	z-index:90;
 	
 }
 section#lightbox {
@@ -1397,7 +1394,14 @@ ul.circle-thumb li.selected {
 	font-weight: bold;
 	font-size: 1.1em;
 }
-
+.FigureBox.Group.bp {
+    background-color: #FFFFFF;
+    border: 1px solid #E5E5E5;
+    border-radius: 5px 5px 5px 5px;
+    overflow: hidden;
+    padding: 10px;
+    position: relative;	
+}
 
 /* Circles home page */
 section.item-header > div.wrap {
@@ -1846,12 +1850,13 @@ body.simple > #body-container.plain {
 	font-size: 1.1em;
 }
 #body-container.plain form div.submit {
-	width: 100%;
+	xwidth: 100%;
 	margin-top: 4px;
 	border-top: 1px solid  #E2E6EB;
 	padding-left: 151px;
 }
-#body-container.plain input[type='submit'].orange {
+/*#body-container.plain input[type='submit'].orange {*/
+input[type='submit'].orange, button[type='submit'].orange{	
 	background: -moz-linear-gradient(bottom, #fca22f, #ffc374);	 
 	background: -webkit-gradient(linear, center bottom, center top, from(#fca22f), to(#ffc374));	border: 1px solid #cd7708;
 	-moz-border-radius: 4px;
@@ -1863,11 +1868,20 @@ body.simple > #body-container.plain {
 	color: #000;
 	border: 1px solid #CD7708;	
 }
-#body-container.plain input[type='submit']:hover.orange {
+/*#body-container.plain input[type='submit']:hover.orange {*/
+input[type='submit']:hover.orange, button[type='submit']:hover.orange {	
 	font-weight: bold;
 }
 #body-container.plain #UserMagic {
 	margin-top: 40px;
+}
+
+/*
+ * /groups/invitation CSS
+ */
+#body-container.plain div.wrap {
+	margin-top: 10px;
+	margin-bottom: 10px;
 }
 
 
@@ -1903,3 +1917,9 @@ ul.btn > li.btn a {
 ul.btn > li.btn:hover a, ul.btn > li.btn.focus a {
 	font-weight: bold;
 }
+
+
+	
+/*
+ * /groups/invitation CSS
+ */

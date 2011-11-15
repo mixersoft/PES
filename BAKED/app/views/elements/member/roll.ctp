@@ -44,32 +44,20 @@ $this->viewVars['jsonData']['STATE'] = $state;
 
 <?php $this->Layout->blockStart('javascript'); ?>
 	<script type="text/javascript">		
-		PAGE.goto = function (o) {
-			window.location.href = o.options[o.selectedIndex].value;
-		}; 
-		PAGE.toggleDisplayOptions  = function(o){
-			var Y = SNAPPI.Y;
-			try {
-				SNAPPI.STATE.showDisplayOptions = SNAPPI.STATE.showDisplayOptions ? 0 : 1;
-				PAGE.setDisplayOptions();
-			} catch (e) {}
-		};
-		PAGE.setDisplayOptions = function(){
-			var Y = SNAPPI.Y;
-			try {
-				if (SNAPPI.STATE.showDisplayOptions) {
-					Y.one('section.gallery-header li.display-option').addClass('open');
-					Y.one('section.gallery-display-options').removeClass('hide');
-				} else {
-					Y.one('section.gallery-header li.display-option').removeClass('open');
-					Y.one('section.gallery-display-options').addClass('hide');
-				}	
-			} catch (e) {}
-		};
 		var initOnce = function() {
 			try {
 				SNAPPI.mergeSessionData();
-				PAGE.setDisplayOptions();
+				SNAPPI.UIHelper.nav.setDisplayOptions();
+				var listeners = {
+					// 'WindowOptionClick':1, 
+					'DisplayOptionClick':1,
+					'ContextMenuClick':1, 
+					'MultiSelect':1,
+				};
+				for (var listen in listeners) {
+					SNAPPI.UIHelper.markupGallery[listen](null);
+				}					
+
 				SNAPPI.Paginator.paginate_CircleMemberGallery('.gallery.person');
 			} catch (e) {}
 		};

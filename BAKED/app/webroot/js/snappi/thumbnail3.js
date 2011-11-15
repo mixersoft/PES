@@ -196,7 +196,9 @@
 		 * not currently used, use .selected class instead
 		 */
 		select: function(value) {
-			return;
+			if (value == undefined) this.node.toggleClass('selected');
+			else if (value) this.node.addClass('selected');
+			else if (!value) this.node.removeClass('selected');
 		},
 		/**
 		 * setRating()

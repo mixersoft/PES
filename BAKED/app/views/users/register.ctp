@@ -12,13 +12,13 @@
 <?php 	$this->Layout->blockStart('itemHeader');  ?>
 <section class='item-header container_16'>
 	<div class='wrap'>
-		<h1 class='grid_16'>Please Join Us.</h1>
+		<h1 class='grid_16'>Sign Up and Become a Member!</h1>
 	</div>
 </section>
 <?php 	$this->Layout->blockEnd();  ?>
 
 <section id="main container_16">
-	<div class="grid_6 prefix_1">
+	<div class="grid_7 prefix_1">
 <?php $openIdAuthData = $this->Session->read('openIdAuthData');?>
 <h2><?php __d('users', 'Account registration'); ?></h2>
 <fieldset>
@@ -113,5 +113,9 @@
 		}
 ?>
 </fieldset>
+</div>
+<div class="grid_7 prefix_1">
+	<h2>Already a member?</h2>
+	<p><?php echo "Click here to ".$this->Html->link('Sign in now', array('action'=>'login'));  ?>.</p>
 </div>
 </section>

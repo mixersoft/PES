@@ -256,6 +256,10 @@
                     path: 'helper_session.js',
                     requires: ['snappi-io']
                 },
+                'snappi-ui-helpers': {
+                    path: 'ui-helpers.js',
+                    requires: [],
+                },                  
                 'snappi-filter': {
                     path: 'filter.js',
                     requires: ['node', 'snappi-rating']
@@ -478,7 +482,7 @@
         		 * util scripts
         		 */
         		'snappi-imageloader', 'snappi-utils', 'snappi-io',  'snappi-io-helpers',  'snappi-session',
-        		'snappi-property', 
+        		'snappi-ui-helpers', 'snappi-property', 
         		// deprecated
         		// 'snappi-menucfg', 'snappi-toolbutton', 'snappi-menu', 'snappi-menuitem', 'snappi-dialogboxCfg','snappi-dialogbox', 'snappi-zoom', 
         		/*

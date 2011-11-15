@@ -443,7 +443,7 @@
             status = (status == undefined) ? true : status;
             var k,v,handler, fn;
             if (status) {
-            	cfg = cfg || ['Keypress', 'Mouseover', 'Click', 'WindowOptionClick', 'MultiSelect', 'Contextmenu', 'FsClick'];
+            	cfg = cfg || ['Keypress', 'Mouseover', 'LinkToClick', 'WindowOptionClick', 'MultiSelect', 'Contextmenu', 'FsClick'];
             	for ( k in cfg){
             		try {
             			Factory.listeners[cfg[k]].call(this); 
@@ -497,11 +497,11 @@
         		this.stopClickListener();
         	} else {
         		var menu = SNAPPI.MenuAUI.toggleEnabled(CSS_ID, e);
-        		if (this._cfg.listeners.indexOf('Click')> -1) {
-        			// toggle Click listener
+        		if (this._cfg.listeners.indexOf('LinkToClick')> -1) {
+        			// toggle LinkToClick listener
 	        		if (menu.get('disabled')) {
 	        			// TODO: nav to attribute "linkTo"
-	        			Factory.listeners.Click.call(this);
+	        			Factory.listeners.LinkToClick.call(this);
 	        		} else {
 	        			// TODO: ignore "linkTo" click
 	        			this.stopClickListener();
