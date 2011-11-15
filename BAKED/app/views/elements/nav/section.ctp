@@ -10,7 +10,6 @@ if (AppController::$uuid) {
 	$classLabel =  !empty($classLabel) ?  $classLabel : $trail['classLabel']; // AppController::cacheClickStream(): $this->displayName for current context
 } 
 if (empty($classLabel)){
-debug(Session::read("lookup.trail"));	
 	// /controller/all pages
 	$classLabel = !empty($classLabel) ?  $classLabel : $this->name;
 	$label = !empty($label) ?  $label : 'Discover';

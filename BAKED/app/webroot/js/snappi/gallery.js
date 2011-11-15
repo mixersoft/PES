@@ -1734,7 +1734,7 @@
 			var isJson = /(\/\.json$|\/\.json\?\b)/i;
 			if (!uri.match(isJson)) {
 				uri = uri.replace(/(\?)/i, '/.json$1');
-				if (!uri.match(isJson)) uri = uri.replace(/(\b$|\/$)/i, '/.json');
+				if (!uri.match(isJson)) uri = uri.replace(/(\b$|\W$|\/$)/i, '/.json');
 			}
 			if (cfg.nameData) uri = SNAPPI.IO.setNamedParams(uri, cfg.nameData);
 	    	// add querystring params, ok for both GET and POST
