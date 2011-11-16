@@ -157,7 +157,11 @@ final class PermissionableBehavior extends ModelBehavior {
 		if(!empty($gids)) {
 			if($Model->name == $groupModel) {
 				$query[] = array(
-					"$alias.perms & {$this->_getPermissionBit('MEMBER_' . $action)} <> 0",
+					// "$alias.perms & {$this->_getPermissionBit('MEMBER_' . $action)} <> 0",
+					'OR' => array(
+							"$alias.perms & {$this->_getPermissionBit('MEMBER_' . $action)} <> 0",
+							"$alias.perms & {$this->_getPermissionBit('OTHER_' . $action)} <> 0",
+						),
 					"$alias.foreignId" => $gids
 				);
 
@@ -168,8 +172,12 @@ final class PermissionableBehavior extends ModelBehavior {
 				if (is_array($gids)) {
 					// array_push($gids, 'member---0123-4567-89ab-000000000001'); // global add public group to gids. 
 					$subSelect = "SELECT DISTINCT `_ag`.`asset_id` FROM `assets_groups` AS `_ag` WHERE `_ag`.`group_id` IN ('".implode("','",$gids)."')";
-					$query[] = array(
-						"$alias.perms & {$this->_getPermissionBit('MEMBER_' . $action)} <> 0",
+					$query[] = array( 
+						// "$alias.perms & {$this->_getPermissionBit('MEMBER_' . $action)} <> 0",
+						'OR' => array(
+							"$alias.perms & {$this->_getPermissionBit('MEMBER_' . $action)} <> 0",
+							"$alias.perms & {$this->_getPermissionBit('OTHER_' . $action)} <> 0",
+						),
 						$Model->getDataSource()->expression("`{$alias}`.`foreignId` IN ({$subSelect})")		
 					);	
 				}

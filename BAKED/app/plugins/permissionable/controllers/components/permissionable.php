@@ -88,7 +88,7 @@ class PermissionableComponent extends Object {
 					$systemGroups = array_unique(@Set::extract($data, '/Membership[title=/^[^__]/]/title'));
 					$controller->Session->write('Auth.Permissions.actions', $systemGroups);
 				}
-				if (isset($auth['Permissions']['group_ids'])&& !empty($auth['Permissions']['group_ids'])){
+				if (isset($auth['Permissions']['group_ids']) && $auth['Permissions']['group_ids'][0] !=='none' ){
 					Permissionable::setGroupIds($auth['Permissions']['group_ids']);
 				} else {
 					/*
@@ -114,15 +114,14 @@ class PermissionableComponent extends Object {
   		AND `GroupsUser`.`isActive`=1 )
   INNER JOIN permissions AS `GroupPermission` ON (`GroupPermission`.`model` = 'Group' AND `GroupPermission`.`foreignId` = `Membership`.`id` AND ( 
   	1=0
-/*  OR (`GroupPermission`.`perms` & 512 <> 0) -- NOTE: only include in groupIds if user is a member or owner, public assets require Asset World=READ  */
-    OR (((`GroupPermission`.`perms` & 64 <> 0) AND (`GroupPermission`.`foreignId` = `GroupsUser`.`group_id` )))
+/*  OR (`GroupPermission`.`perms` & 512 <> 0) -- NOTE: only include in groupIds if user is a member or owner, non-member public assets require Asset World=READ  */
+    OR ((((`GroupPermission`.`perms` & 512 <> 0) OR (`GroupPermission`.`perms` & 64 <> 0)) AND (`GroupPermission`.`foreignId` = `GroupsUser`.`group_id` )))
     OR (((`GroupPermission`.`perms` & 8 <> 0) AND (`GroupPermission`.`foreignId` = `GroupsUser`.`group_id` AND `GroupsUser`.`role`='admin')))
 /*  OR (((`GroupPermission`.`perms` & 1 <> 0) AND (`GroupPermission`.`oid` = '{$userId}'))) -- add owned groups separately  */
    ) )
   WHERE `Membership`.`isSystem` = 0;"; 
 					$data = $User->query($membershipSQL);
 //TODO: make sure groupIds are updated when permissions on Group is changed
-//TODO: make sure groupIds are updated when user memberships change					
 					$membership_group_ids = (array)@Set::extract('/Membership/id', $data);
 /*
  * add owned groups to membership_group_ids so we can have permissions on assets shared by other group members
@@ -136,7 +135,6 @@ class PermissionableComponent extends Object {
 
 					$membership_group_ids = array_unique(array_merge($membership_group_ids, $owner_group_ids));
 //debug($membership_group_ids);					
-
 					if ($user['User']['primary_group_id']=='role-----0123-4567-89ab-------editor') array_push($membership_group_ids, $user['User']['primary_group_id']);
 					// TODO: optimize. should we change 'none' to array(null), or even exclude condition from Permissionable join?
 					if (empty($membership_group_ids)) $membership_group_ids = array('none'); // permissionable fails if empty(Permissionable::$group_ids) 

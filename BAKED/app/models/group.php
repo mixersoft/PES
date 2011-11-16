@@ -380,16 +380,18 @@ ORDER BY photos DESC;";
 			if ($userid == Permissionable::getRootUserId() ) $conditions[] = array();
 			else {
 				$permissionableAlias = $this->Behaviors->Permissionable->getPermissionAlias($this);
-				$conditions[] = array("`{$permissionableAlias}`.`perms` <> 567",
-					'OR'=>array("`{$paginateModel}`.`owner_id`" => $userid ,
-						"`HABTM`.`user_id`"=>$userid)
+				$conditions[] = array(
+					"`{$permissionableAlias}`.`perms` <> 567",
+					'OR'=>array(
+						"`{$paginateModel}`.`owner_id`" => $userid ,
+						"`HABTM`.`user_id`"=>$userid
+					)
 				);
 			}
 			
 			$paginate['fields'] ='DISTINCT '.$paginate['fields'];
 		} else {
-			// disable permissionable check on world/other bit for next query only
-			$this->disablePermissionable(false, true);  
+			$conditions[] = array("`{$paginateModel}`.`id`" => Permissionable::getGroupIds());
 		}	
 		
 		// check of context == controller
