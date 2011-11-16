@@ -65,7 +65,7 @@ if (Configure::read('controller.action')=='lightbox') {
 						?>
 					</ul>
 					<ul class="inline">
-						<li action='set-display-view:minimize'><img src="/css/images/img_zoomin.gif"><li action='set-display-view:one-row'><img src="/css/images/img_zoomin.gif"></li><li action="set-display-view:maximize"><img src="/css/images/img_zoomout.gif"></li>
+						<li action='set-display-view:minimize'><img src="/css/images/img_zoomin.gif"><li action='set-display-view:one-row'><img src="/css/images/img_zoomout.gif"></li><li action="set-display-view:maximize"><img src="/css/images/img_zoomout.gif"></li>
 					</ul>
 				</nav>
 			</li>

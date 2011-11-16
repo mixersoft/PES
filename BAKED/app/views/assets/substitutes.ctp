@@ -1,6 +1,11 @@
 <?php 
 // use $asset for PRIMARY asset in substitute view, NOT $data
-echo $this->element('nav/section', array('icon_src'=>$asset['Asset']['src_thumbnail']));
+if (empty($this->passedArgs['wide'])) {
+	$this->Layout->blockStart('itemHeader');
+		$badge_src = Stagehand::getSrc($data['Asset']['src_thumbnail'], 'sq');
+		echo $this->element('nav/section', array('badge_src'=>$badge_src));
+	$this->Layout->blockEnd();
+}
 ?>
 <?php echo $this->element('/assets/substitutes');?>
 <script type="text/javascript">

@@ -45,6 +45,9 @@
 				UIHelper.nav.setDisplayOptions();
 			} catch (e) {}
 		},
+		/*
+		 * restore open/closed state for Gallery display options
+		 */
 		setDisplayOptions : function(){
 			var Y = SNAPPI.Y;
 			try {
@@ -69,21 +72,29 @@
 				'group': 'contextmenu-group-markup',
 				'person': 'contextmenu-person-markup',
 			}
-			var type = UIHelper.markupGallery.getGalleryType(e.currentTarget);
+			var type = UIHelper.listeners.getGalleryType(e.currentTarget);
 	    	var CSS_ID = ID_LOOKUP[ type ];
 	    	if (e==false && !SNAPPI.MenuAUI.find[CSS_ID]) return;
-	    	if (e) e.preventDefault();
+	    	
 	    	// load/toggle contextmenu
+	    	var listenerNode = e.currentTarget.ancestor('.container');
 	    	if (!SNAPPI.MenuAUI.find[CSS_ID]) {
 	    		var contextMenuCfg = {
 	    			triggerType: type,		// group, person, photo, etc. 
 	    			currentTarget: e.currentTarget,
-	    			triggerRoot:  SNAPPI.Y.one('.gallery.photo .container'),
+	    			// triggerRoot:  SNAPPI.Y.one('.gallery .container'),
 	    			init_hidden: false,
 				}; 
 	    		SNAPPI.MenuAUI.CFG[CSS_ID].load(contextMenuCfg);
+	    		// stop LinkToClickListener
+	    		listenerNode.listen['disable_LinkToClick'] = true;
 	    	} else {
 	    		var menu = SNAPPI.MenuAUI.toggleEnabled(CSS_ID, e);
+	    		if (menu.get('disabled')) {
+        			listenerNode.listen['disable_LinkToClick'] = false;
+        		} else {
+        			listenerNode.listen['disable_LinkToClick'] = true;
+        		}
 	    	}		
 		}		
 	};
@@ -112,7 +123,19 @@
 			return null;
 		}
 	}
-	UIHelper.markupGallery = {
+	UIHelper.markup = {
+		set_ItemHeader_WindowOptions: function(){
+			try {
+				var found = SNAPPI.Y.one('div.properties.hide');
+				if (found) {
+					var itemHeader = SNAPPI.Y.one('.item-header');
+					SNAPPI.UIHelper.listeners['WindowOptionClick'](itemHeader);
+					itemHeader.one('.window-options').removeClass('hide');
+				}
+			} catch (e) {}
+		}
+	}
+	UIHelper.listeners = {
 		/*
 		 * markup "gallery" helpers, migrates to SNAPPI.Gallery when ready
 		 * compares to GalleryFactory.listeners{}
@@ -120,14 +143,14 @@
 		getGalleryType : function(node) {
 			var Y = SNAPPI.Y;
 			node = node || Y.one('.gallery-container section.gallery');
-			node = node.ancestor('.gallery-container section.gallery', true);
+			node = node.ancestor('section.gallery', true);
 			if (node.hasClass('group')) return 'group';
 			if (node.hasClass('person')) return 'person';
 			return null;
 		},
-        LinkToClick : function(node) {
+        LinkToClick : function(cfg) {
         	var Y = SNAPPI.Y;
-        	node = node || Y.one('.gallery .container');
+        	var node = cfg.node || Y.one('.gallery .container');
         	var action = 'LinkToClick';
         	
         	node.listen = node.listen || {};
@@ -136,27 +159,36 @@
 	                function(e){
 	            		var linkTo = e.currentTarget.getAttribute('linkTo');
 	            		if (linkTo) {
-	            			if (e.ctrlKey) window.open(linkTo, '_blank') 
-	            			else window.location.href = linkTo;
-	            			e.stopImmediatePropagation();
+	            			e.halt();	// intercepts A.click action
+		                	if (this.listen['disable_LinkToClick']) {
+		                		UIHelper.nav.toggle_ContextMenu(e);	// hide contextmenu
+		                		return;		// allows temp disabling of listener
+		                	}	            			
+	            			window.location.href = linkTo;
 	            		} 
-	                }, '.FigureBox > figure > img', UIHelper);
+	                }, '.FigureBox > figure > img, figure > a > img', node);
 			}
 			// back reference
 			UIHelper.listen[action] = node.listen[action];
         },        
-        ContextMenuClick : function(node) {
+        /**
+         * @params cfg object, cfg.node, cfg.type = [group, photo, person], 
+         * 		i.e. .FigureBox.Group
+         */
+        ContextMenuClick : function(cfg) {
         	var Y = SNAPPI.Y;
-        	node = node || Y.one('.gallery .container');
+        	var node = cfg.node || Y.one('.gallery .container');
         	var action = 'ContextMenuClick';
+        	var selector = '.FigureBox';
+        	if (cfg.type) selector += '.'+cfg.type ;
         	
         	node.listen = node.listen || {};
             if (node.listen[action] == undefined) {
 				node.listen[action] = node.delegate('contextmenu', 
 	                function(e){
+	                	e.halt();
 	                	UIHelper.nav.toggle_ContextMenu(e);
-	                	e.stopImmediatePropagation();
-	                }, '.FigureBox', UIHelper);
+	                }, selector, UIHelper);
 			}
 			// back reference
 			UIHelper.listen[action] = node.listen[action];
@@ -198,7 +230,8 @@
             if (node.listen[action] == undefined) {
 				node.listen[action] = node.delegate('click', 
 	                function(e){
-	                	UIHelper.nav.toggle_ContextMenu(false);	// hide contextmenu
+	                	// hide contextmenu when opening display option menus
+	                	UIHelper.nav.toggle_ContextMenu(false);	
 	                	var action = e.currentTarget.getAttribute('action').split(':');
 			    		switch(action[0]) {
 			    			case 'filter':
@@ -210,7 +243,40 @@
 			}
 			// back reference
 			UIHelper.listen[action] = node.listen[action];  
-		}      
+		},
+        /*
+         * Click-Action listener/handlers
+         * 	start 'click' listener for action=
+         * 		set-display-size:[size] 
+         * 		set-display-view:[mode]
+         */
+        WindowOptionClick : function(node) {
+			var Y = SNAPPI.Y;
+        	node = node || Y.one('.item-header');        	
+        	var action = 'WindowOptionClick';
+        	node.listen = node.listen || {};
+            if (node.listen[action] == undefined) {
+            	var delegate_container = node.one('.window-options');
+				node.listen[action] = delegate_container.delegate('click', 
+	                function(e){
+	                	// action=[set-display-size:[size] | set-display-view:[mode]]
+	                	// context = node
+	                	if (this.hasClass('item-header')) {
+	                		// show/hide properties
+	                		var properties = this.next('.properties');
+	                		var action = e.currentTarget.getAttribute('action').split(':');
+	                		switch(action[0]) {
+				    			case 'set-display-view':
+				    				if (action[1]=='minimize') properties.addClass('hide');
+				    				else properties.removeClass('hide');
+				    				break;
+			    			}	
+	                	}
+	                }, 'ul > li', node);
+			}
+			// back reference
+			UIHelper.listen[action] = node.listen[action]; 
+        },
 	}
 	
 })();

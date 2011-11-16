@@ -1,5 +1,8 @@
 <?php
-	echo $this->element('nav/section', array('icon_src'=>$data['Group']['src_thumbnail']));
+	$this->Layout->blockStart('itemHeader');
+		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
+		echo $this->element('nav/section', array('badge_src'=>$badge_src));
+	$this->Layout->blockEnd();	
 ?>
 <div class="groups join">
 <h2><?php  echo sprintf(__('Contribute Photostreams to Group <b>%s</b>', true), __($title, true)); ?></h2>

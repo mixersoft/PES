@@ -1,5 +1,8 @@
 <?php 
-	echo $this->element('nav/section', array('icon_src'=>$data['Asset']['src_thumbnail']));
+	$this->Layout->blockStart('itemHeader');
+		$badge_src = Stagehand::getSrc($data['Asset']['src_thumbnail'], 'sq');
+		echo $this->element('nav/section', array('badge_src'=>$badge_src));
+	$this->Layout->blockEnd();	
 ?>
 <div class="assets groups">
 	<div id='paging-groups' class='paging-content'  xhrTarget='paging-groups-inner'>

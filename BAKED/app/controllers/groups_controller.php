@@ -182,12 +182,12 @@ LIMIT 5;";
 		$ret =  @$GroupUsers->save($data);
 		if ($ret) {
 			// reinitialize Permissionable::group_ids
-//			$this->Session->delete('Auth.Permissions.group_ids');
-//			$this->Permissionable->initialize($this);
-			$groupIds = Permissionable::getGroupIds();
-			array_push($groupIds, $groupId);
-			Permissionable::setGroupIds($groupIds);
-			$this->Session->write('Auth.Permissions.group_ids', Permissionable::$group_ids);
+			$this->Session->delete('Auth.Permissions.group_ids');
+			$this->Permissionable->initialize($this);
+			// $groupIds = Permissionable::getGroupIds();
+			// array_push($groupIds, $groupId);
+			// Permissionable::setGroupIds($groupIds);
+			// $this->Session->write('Auth.Permissions.group_ids', Permissionable::$group_ids);
 		}
 		return $ret;
 	}
@@ -258,7 +258,7 @@ LIMIT 5;";
 				$this->redirectSafe();
 			} else {	// action = "Accept Invitation"
 				$join = $this->data['Group'];
-				$ret = $this->__joinGroup($join['id'], Session::read('Auth.User.id'));
+				$ret = $this->__joinGroup($join['id'], AppController::$userid);
 				if ($ret) {
 					$this->Session->setFlash("Welcome! You are now a member of group <b>{$join['title']}</b>.");
 					$this->redirect(array('action'=>'home', $id), null, true);

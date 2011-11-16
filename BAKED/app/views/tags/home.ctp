@@ -1,10 +1,9 @@
 <?php
 if (empty($this->passedArgs['wide'])) {
 	$this->Layout->blockStart('itemHeader');
-		// echo $this->element('nav/section', array('icon_src'=>$data['Asset']['src_thumbnail'])); 
-		echo $this->element('nav/section'); 
+		echo $this->element('nav/section', array('badge_src'=>null)); 
 ?>
-<div class="properties container_16">
+<div class="properties hide container_16">
 	<dl class="grid_16">
 		<?php $i = 0;
 			$dtClass = 'grid_2 alpha';

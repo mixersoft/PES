@@ -862,7 +862,7 @@ aside.related-content .body section > h1 {
 .menu > ul > li , .menu > ul > li > a {
 	cursor: pointer;
 }
-.menu ul > hr {
+.menu ul .menuItem-group, .menu ul > hr {
 	border-top: 1px solid #888;
 }
 .menu ul, .menu li {
@@ -876,6 +876,7 @@ aside.related-content .body section > h1 {
 	display: block;
 	color: #000;
 	padding: 2px;
+	cursor: default;
 }
 
 .menu li a {
@@ -891,7 +892,6 @@ aside.related-content .body section > h1 {
 
 
 .menu li.disabled {
-	cursor: default;
 	color: #888;
 	background-color: #EEE;
 }
@@ -1432,7 +1432,10 @@ section.item-header .label {
 section.item-header .item-class {
 	font-weight: 700;
 }
-
+section.item-header .window-options ul {
+	height: auto;
+	padding-top: 30px;
+}
 
 /*
  * Person/Circle thumbnails

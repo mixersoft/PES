@@ -11,7 +11,9 @@
  */
 ?>
 <?php 
-	echo $this->element('nav/section');
+	$this->Layout->blockStart('itemHeader');
+		echo $this->element('nav/section', array('badge_src'=>null)); 
+	$this->Layout->blockEnd();	
 ?>
 <div id='paging-tags' class='paging-content'  xhrTarget='paging-tags-inner'>
 <?php 

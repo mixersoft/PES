@@ -1,7 +1,8 @@
 <?php
 if (empty($this->passedArgs['wide'])) {
 	$this->Layout->blockStart('itemHeader');
-		echo $this->element('nav/section', array('icon_src'=>$data['User']['src_thumbnail']));
+		$badge_src = Stagehand::getSrc($data['User']['src_thumbnail'], 'sq', 'person');
+		echo $this->element('nav/section', array('badge_src'=>$badge_src)); 
 	$this->Layout->blockEnd();	
 }
 ?>

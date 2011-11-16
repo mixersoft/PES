@@ -1,10 +1,13 @@
 <?php
 	$this->Layout->blockStart('itemHeader');
-	echo $this->element('nav/section', array('icon_src'=>$data['Group']['src_thumbnail'], 
-		'classLabel'=>$data['Group']['type'],
-		'label'=>$data['Group']['title'],
-		)); 
-	$this->Layout->blockEnd();
+		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
+		echo $this->element('nav/section', 
+			array('badge_src'=>$badge_src,
+				'classLabel'=>$data['Group']['type'],
+				'label'=>$data['Group']['title'],
+		));
+	$this->Layout->blockEnd();	
+		
 // debug($data['Group']);	
 
 	$controllerAlias = Configure::read('controller.alias');
@@ -34,18 +37,27 @@
 	<div class='wrap grid_14'>
 		<div class="alpha grid_2">
 			<div class="right">
-				<?php echo $this->Html->image($invitation['from_src'], array('url'=>$from[0]['linkTo'])) ?>	
+				<?php if (isset($from)) echo $this->Html->image($invitation['from_src'], array('url'=>$from[0]['linkTo'])) ?>	
 			</div></div>
 		<div class="grid_12 omega">
 			<p>
-				<?php echo String::insert(":from has invited you to join the <b>:circle</b> :group_type at Snaphappi.
-				As a member, you will be able share Snaps and connect with other members of this :group_type.", $invitation); ?>
+<?php 
+	if (isset($from)) {
+		echo String::insert(":from has invited you to join the <b>:circle</b> :group_type at Snaphappi. As a member, you will be able share Snaps and connect with other members of this :group_type.", $invitation); 
+	} else {
+		echo String::insert("This is an invitation to join the <b>:circle</b> :group_type at Snaphappi. As a member, you will be able share Snaps and connect with other members of this :group_type.", $invitation);
+	}
+?>
 				</p>
 			<div class="response wrap prefix_1">
 				<?php  
 					if (isset($signin_redirect)) {
 						echo $this->Form->create('Group', array('url'=>$signin_redirect, 'type'=>'get'));
-						echo $this->Form->button("Accept Invitation", array('value'=>"Accept Invitation", 'name'=>'register', 'class'=>'orange'));
+						$options = array('value'=>"Accept Invitation", 'name'=>'register', 'class'=>'orange',
+							// 'onclick'=>'showLoginDialog(); return false;',
+							// 'type'=>'button',
+						);
+						echo $this->Form->button("Accept Invitation", $options);
 						echo $this->Form->end();
 					} else {
 						echo $this->Form->create('Group', array('action'=>'join'));
@@ -73,3 +85,71 @@
 		</article>
 	</div>
 </section>
+<!-- <?php $this->Layout->blockStart('javascript'); ?>
+	<script type="text/javascript">	
+		/**
+		 * NOTE: key issues for xhr login are
+		 *  - click for SignIn screen without leaving page
+		 *  - openId support. it might be bundled in Users plugin
+		 */
+		showLoginDialog = function(){
+    		/*
+    		 * create or reuse Dialog
+    		 */
+    		var dialog_ID = 'dialog-login';
+    		var uri = '/users/register';	// placeholder
+    		var dialog = SNAPPI.Dialog.find[dialog_ID];
+    		if (!dialog) {
+            	dialog = SNAPPI.Dialog.CFG[dialog_ID].load();
+            	SNAPPI.Dialog.find[dialog_ID] = dialog;
+            }
+            if (dialog.io) dialog.unplug(SNAPPI.Y.Plugin.IO);
+        	var args = {
+        		dialog: dialog,
+        	}
+        	// content for dialog contentBox
+			var ioCfg = {
+				uri: uri,
+				parseContent: true,
+				autoLoad: true,
+				modal: false,
+				context: dialog,
+				dataType: 'html',
+				arguments: args,    					
+				on: {
+					success: function(i,o,args) {
+						var check;
+						var container = SNAPPI.Y.Node.create(o.responseText); 
+						return container.one('#body-container');
+					}					
+				}
+			};
+			ioCfg = SNAPPI.IO.getIORequestCfg(uri, ioCfg.on, ioCfg);
+			dialog.plug(SNAPPI.Y.Plugin.IO, ioCfg);
+		}
+	
+		var initOnce = function() {
+			try {
+				var listeners = {
+					// 'WindowOptionClick':1, 
+					// 'DisplayOptionClick':1,
+					// 'ContextMenuClick':1, 
+					// 'LinkToClick': 1,
+					// 'MultiSelect':1,
+				};
+				for (var listen in listeners) {
+					SNAPPI.UIHelper.listeners[listen](null);
+				}			
+				
+					
+						
+			} catch (e) {}
+		};
+		try {
+			SNAPPI.xhrFetch.fetchXhr; 
+			initOnce(); 
+		} catch (e) {
+			PAGE.init.push(initOnce); 
+		}	// run from Y.on('domready') for HTTP request	
+	</script>	
+<?php $this->Layout->blockEnd(); ?> 	 -->

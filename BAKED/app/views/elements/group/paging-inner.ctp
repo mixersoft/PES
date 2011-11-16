@@ -75,7 +75,9 @@ $PREVIEW_LIMIT = $isPreview ? 8 : false;
 				?>
 		<article class='FigureBox Group <?php  echo $THUMBSIZE; ?>' id='<?php echo $group['id'] ?>'>
 			<figure>
-				<?php $options = array('linkTo'=>Router::url(array('plugin'=>'','controller'=>$controllerAlias, 'action'=>'home', $group['id']))); 
+				<?php
+					$linkTo =  Router::url(array('plugin'=>'','controller'=>$controllerAlias, 'action'=>'home', $group['id']));
+					$options = array('linkTo'=>$linkTo, 'url'=>$linkTo); 
 					if (isset($fields['title'])) $options['title'] = $fields['trim_caption'];
 					echo $this->Html->image( $fields['src_icon'] , $options); ?>
 				<figcaption>

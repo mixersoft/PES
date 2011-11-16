@@ -14,6 +14,14 @@
 ?> 
 	<script type="text/javascript">
 		SNAPPI.mergeSessionData();
+		var parent = SNAPPI.Y.one('.gallery.group .container');
+		var listeners = {
+			'ContextMenuClick':{node:parent, type:'Group'}, 
+			'LinkToClick': {node:parent},
+		};
+		for (var listen in listeners) {
+			if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
+		}				
 	</script>
 <?php 
 		$this->Layout->blockEnd();	
@@ -48,15 +56,16 @@
 			try {
 				SNAPPI.mergeSessionData();
 				SNAPPI.UIHelper.nav.setDisplayOptions();
+				var parent = SNAPPI.Y.one('.gallery.group .container');
 				var listeners = {
 					// 'WindowOptionClick':1, 
-					'DisplayOptionClick':1,
-					'ContextMenuClick':1, 
-					'LinkToClick': 1,
-					'MultiSelect':1,
+					'DisplayOptionClick':null,
+					'ContextMenuClick':{node:parent, type:'Group'}, 
+					'LinkToClick': {node:parent},					
+					'MultiSelect':null,
 				};
 				for (var listen in listeners) {
-					SNAPPI.UIHelper.markupGallery[listen](null);
+					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
 				}					
 				SNAPPI.Paginator.paginate_CircleMemberGallery('.gallery.group');				
 			} catch (e) {}

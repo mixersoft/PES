@@ -1,5 +1,10 @@
 <?php
-echo $this->element('nav/section', array('icon_src'=>$data['Asset']['src_thumbnail']));
+if (empty($this->passedArgs['wide'])) {
+	$this->Layout->blockStart('itemHeader');
+		$badge_src = Stagehand::getSrc($data['Asset']['src_thumbnail'], 'sq');
+		echo $this->element('nav/section', array('badge_src'=>$badge_src));
+	$this->Layout->blockEnd();
+}	
 ?>
 <div id='neighbors' class='photo filmstrip placeholder' >
 	<script type='text/javascript' >

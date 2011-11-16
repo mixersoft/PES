@@ -59,7 +59,7 @@
 		this.clearAll(target.ancestor('.container'));
 		if (selected) target.removeClass('selected');
 		else target.addClass('selected');
-		e.stopImmediatePropagation(); 
+		e.halt();	// intercepts/stops A.click action
 	};
 	MultiSelect.multiSelectHandler = function(e) {
 		var target = e.target;
@@ -71,7 +71,7 @@
 			// No shift key - remove all selected images,
 			var selected = target.ancestor('.container').all('.FigureBox.selected');
 			if (selected.size()) {
-				e.stopImmediatePropagation(); // halt click if we are clearing selected
+				e.halt();	// intercepts/stops A.click action
 				selected.removeClass('selected');
 				return;
 			}

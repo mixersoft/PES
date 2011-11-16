@@ -611,7 +611,11 @@
              * 	- fired by: new Gallery.init(),
              */
             once.detach();
-            SNAPPI.lightbox = new SNAPPI.Lightbox();
+            var delayed = new Y.DelayedTask( function() {
+				SNAPPI.lightbox = new SNAPPI.Lightbox();
+			});
+			delayed.delay(2000);
+			SNAPPI.UIHelper.markup.set_ItemHeader_WindowOptions();
         });
         Y.on('snappi:afterLightboxInit', function(){
             /**
@@ -619,6 +623,12 @@
              */
         });        
         Y.on('snappi:afterMain', function(){
+			var listeners = {
+			};
+			for (var listen in listeners) {
+				if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
+			}        	
+        	SNAPPI.DragDrop.pluginDrop(Y.all('.droppable'));
             SNAPPI.DragDrop.startListeners(); // singleton 
             var check;
         });       
@@ -651,7 +661,7 @@
          * embedded PAGE.init scripts
          */ 
         pageInit(); 
-        SNAPPI.xhrFetch.fetchXhr();
+        SNAPPI.xhrFetch.fetchXhr(null, {delay:2000});
 
         
         /*

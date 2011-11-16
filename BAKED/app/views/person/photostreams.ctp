@@ -1,5 +1,8 @@
-<?php 
-	echo $this->element('nav/section', array('icon_src'=>$data['User']['src_thumbnail']));
+<?php
+	$this->Layout->blockStart('itemHeader');
+		$badge_src = Stagehand::getSrc($data['User']['src_thumbnail'], 'sq', 'person');
+		echo $this->element('nav/section', array('badge_src'=>$badge_src)); 
+	$this->Layout->blockEnd();	
 ?>
 <div class="users photostream">
 	<?php echo $this->element('context')?>

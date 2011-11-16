@@ -2,9 +2,10 @@
 // $isOwner = in_array($data['User']['id'], AppController::$iserid);
 if (empty($this->passedArgs['wide'])) {
 	$this->Layout->blockStart('itemHeader');
-		echo $this->element('nav/section', array('icon_src'=>$data['User']['src_thumbnail'])); 
+		$badge_src = Stagehand::getSrc($data['User']['src_thumbnail'], 'sq', 'person');
+		echo $this->element('nav/section', array('badge_src'=>$badge_src)); 
 ?>
-	<div class='properties placehoder container_16'>
+	<div class='properties hide container_16'>
 		<dl class="grid_16">
 		<?php $i = 0;
 			$dtClass = 'grid_2 alpha';

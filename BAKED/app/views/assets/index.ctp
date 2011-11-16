@@ -6,7 +6,11 @@ var initOnce = function() {
 PAGE.init.push(initOnce);
 </script>
 <?php 
-	echo $this->element('nav/section'); 
+if (empty($this->passedArgs['wide'])) {
+	$this->Layout->blockStart('itemHeader');
+		echo $this->element('nav/section', array('badge_src'=>null));
+	$this->Layout->blockEnd();
+}
 ?>
 <div class="photos all ">
 	<div id='paging-photos' class='paging-content' xhrTarget='paging-photos-inner'>

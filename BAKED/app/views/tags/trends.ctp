@@ -1,5 +1,7 @@
 <?php 
-	echo $this->element('nav/section', array('icon_src'=>null));
+	$this->Layout->blockStart('itemHeader');
+		echo $this->element('nav/section', array('badge_src'=>null)); 
+	$this->Layout->blockEnd();		
 ?>
 <?php	// tagCloud
 	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show_more');

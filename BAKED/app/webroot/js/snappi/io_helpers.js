@@ -137,7 +137,7 @@
 				this.requestFragment(n);
 			} else {
 				// searches page for xhr-gets, add delay as necessary
-				var wait = this.XHR_PAGE_INIT_DELAY;
+				var wait = cfg.delay || this.XHR_PAGE_INIT_DELAY;
 				var fragments = Y.all('.'+TRIGGER);
 				if (fragments) {
 					fragments.each(function(n,i,l) {

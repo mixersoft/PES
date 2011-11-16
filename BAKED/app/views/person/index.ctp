@@ -1,5 +1,9 @@
 <?php 
-	echo $this->element('nav/section'); 
+if (empty($this->passedArgs['wide'])) {
+	$this->Layout->blockStart('itemHeader');
+		echo $this->element('nav/section', array('badge_src'=>null)); 
+	$this->Layout->blockEnd();
+}
 ?>
 <div class="users all">
 	<div id='paging-members' class='paging-content'  xhrTarget='paging-members-inner'>

@@ -123,7 +123,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	Menu.initContextMenu = function(MARKUP, TRIGGER, cfg){
 		var Y = SNAPPI.Y;
 		cfg = cfg || {};	// closure
-		if (cfg.triggerRoot) TRIGGER = '#'+cfg.triggerRoot.get('id')+' '+ TRIGGER;
+		// if (cfg.triggerRoot) TRIGGER = '#'+cfg.triggerRoot.get('id')+' '+ TRIGGER;
 		var _cfg = {
 				trigger: TRIGGER,
 				contentBox: MARKUP.selector,
@@ -204,13 +204,13 @@ var DEFAULT_CFG_contextmenu = 	{
 			
 		menu.listen = menu.listen || {};
 		if (!menu.listen['delegate_click']) {
-			menu.listen['delegate_click'] = parent.delegate('click', handle_click, 'ul > li',  menu);
+			menu.listen['delegate_click'] = parent.delegate('click', handle_click, 'ul  li',  menu);
 		}
 	};
 	
 	Menu.menuItem_beforeShow = function(menu, o){
 		var content = menu.get('contentBox');
-		if (content) content.all('ul > li.before-show').each(function(n,i,l){
+		if (content) content.all('ul  li.before-show').each(function(n,i,l){
 			// call beforeShow for each menuItem
 			if (n.hasClass('before-show')) {
 				var methodName = n.getAttribute('action')+'_beforeShow';
@@ -970,7 +970,8 @@ var DEFAULT_CFG_contextmenu = 	{
 	MenuItems.join_click = function(menuItem, menu, properties){
 		var target = menu.get('currentNode');
 		menu.hide();
-		window.location.href = '/groups/join/'+properties.id;
+		// POST to /groups/join
+		window.location.href = '/groups/invitation/'+properties.id;
 	};		
 	MenuItems.invite_beforeShow = function(menuItem, menu, properties){
 		var target = menu.get('currentNode');
@@ -985,12 +986,28 @@ var DEFAULT_CFG_contextmenu = 	{
 	};		
 	MenuItems.unshare_from_group_beforeShow = function(menuItem, menu, properties){
 		var target = menu.get('currentNode');
+		if (target.ancestor('#related-content') && SNAPPI.STATE.controller.name == 'Assets') {
+			menuItem.ancestor('.menu-item-group').removeClass('hide');
+			menuItem.removeClass('disabled');
+		} else {
+			menuItem.ancestor('.menu-item-group').addClass('hide');
+			menuItem.addClass('disabled');
+		}
 	};		
 	MenuItems.unshare_from_group_click = function(menuItem, menu, properties){
 		var target = menu.get('currentNode');
 		menu.hide();
 	};	
-	
+	MenuItems.leave_beforeShow = function(menuItem, menu, properties){
+		var target = menu.get('currentNode');
+		// TODO: check privacy/membership settings
+		if (properties.isMember && !properties.isOwner) menuItem.show();
+		else menuItem.hide();
+	};	
+	MenuItems.leave_click= function(menuItem, menu, properties){
+		var target = menu.get('currentNode');
+		// TODO:
+	};	
 	
 	/*
 	 * MenuCfgs
@@ -1402,6 +1419,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	CFG_Context_FigureBox.load = function(cfg){
 		var Y = SNAPPI.Y;
 		var TRIGGER = ' .FigureBox';
+		if (cfg.triggerType) TRIGGER = '.gallery.'+cfg.triggerType + TRIGGER;
 		var TYPE_LOOKUP = {
 			'photo': {
 				CSS_ID: 'contextmenu-photo-markup',	

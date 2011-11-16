@@ -1,10 +1,13 @@
 <?php
 	$this->Layout->blockStart('itemHeader');
-	echo $this->element('nav/section', array('icon_src'=>$data['Group']['src_thumbnail'], 
-		'classLabel'=>$data['Group']['type'],
-		'label'=>$data['Group']['title'],
-		)); 
+		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
+		echo $this->element('nav/section', 
+			array('badge_src'=>$badge_src,
+				'classLabel'=>$data['Group']['type'],
+				'label'=>$data['Group']['title'],
+		));
 	$this->Layout->blockEnd();
+	
 // debug($data['Group']);	
 
 	$controllerAlias = Configure::read('controller.alias');

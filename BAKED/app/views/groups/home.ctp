@@ -1,9 +1,10 @@
 <?php
 if (empty($this->passedArgs['wide'])) {
 	$this->Layout->blockStart('itemHeader');
-		echo $this->element('nav/section', array('icon_src'=>$data['Group']['src_thumbnail'])); 
+		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
+		echo $this->element('nav/section', array('badge_src'=>$badge_src));
 ?>
-<div class="properties placeholder container_16">	
+<div class="properties hide container_16">	
 	<dl class="grid_16">
 		<?php $i = 0;
 			$dtClass = 'grid_3 alpha';

@@ -148,21 +148,15 @@ switch ($classLabel) {
 		$actions['Discussion'] =  $this->action=='home' ? '#discussion' : array('action'=>'discussion', 0=>null);
 		break;
 }
-
-if (isset($icon_src)) {
-	$ICON_SIZE = 'sq~';
-	$src = Stagehand::getSrc($icon_src, $ICON_SIZE, $badgeType);
-}
 ?>
 <section class='item-header container_16'>
 	<div class='wrap'>
-		<ul class="inline grid_16">
-			<li class='thumbnail sq'><?php 
-				if (isset($icon_src)) {
-					$img = $this->Html->image($src, array('width'=>75, 'height'=>75));
+		<ul class="inline grid_14">
+			<li class='thumbnail sq droppable'><?php 
+					$img = $this->Html->image($badge_src, array('width'=>75, 'height'=>75));
 					$uuid = AppController::$userid  == AppController::$uuid ? array() : array(AppController::$uuid);
 					echo $this->Html->link($img, array('action'=>'home')+$uuid , array('escape'=>false)); 
-				} ?>
+				?>
 				</li>
 			<li>
 				<div class='item-class'><?php echo $classLabel; ?></div>
@@ -173,7 +167,12 @@ if (isset($icon_src)) {
 					echo ucwords($label);
 					?>
 				</h1>
-			</li>
+				</li>
 		</ul>
+		<nav class="window-options grid_2 omega hide">
+			<ul class="inline right">
+				<li action="set-display-view:minimize"><img src="/css/images/img_zoomin.gif"></li><li action="set-display-view:maximize"><img src="/css/images/img_zoomout.gif"></li>
+			</ul>
+		</nav>	
 	</div>
 </section>

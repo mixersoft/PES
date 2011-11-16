@@ -1,5 +1,10 @@
 <?php 
-	// echo $this->element('nav/section', array('icon_src'=>$data['Group']['src_thumbnail']));
+if (empty($this->passedArgs['wide'])) {
+	$this->Layout->blockStart('itemHeader');
+		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
+		echo $this->element('nav/section', array('badge_src'=>$badge_src)); 
+	$this->Layout->blockEnd();	
+}	
 ?>
 <div class="groups photos">
 	<p>Show as <?php echo $this->Html->link('Photostream', $this->passedArgs + array('action'=>'photostreams'))?>

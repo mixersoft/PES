@@ -1,5 +1,7 @@
 <?php 
-	echo $this->element('nav/section'); 
+	$this->Layout->blockStart('itemHeader');
+		echo $this->element('nav/section', array('badge_src'=>null));
+	$this->Layout->blockEnd();		
 ?>
 <div class="groups all">
 	<div id='paging-groups' class='paging-content'  xhrTarget='paging-groups-inner'>

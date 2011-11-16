@@ -1,9 +1,9 @@
 <?php
-if (empty($this->passedArgs['wide'])) {
 	$this->Layout->blockStart('itemHeader');
-		echo $this->element('nav/section', array('icon_src'=>$data['Asset']['src_thumbnail'])); 
+		$badge_src = Stagehand::getSrc($data['Asset']['src_thumbnail'], 'sq');
+		echo $this->element('nav/section', array('badge_src'=>$badge_src));
 ?>
-	<div class='properties container_16'>
+	<div class='properties hide container_16'>
 		<dl class="grid_16">
 		<?php $i = 0;
 			$dtClass = 'grid_2 alpha';
@@ -49,7 +49,7 @@ if (empty($this->passedArgs['wide'])) {
 	&nbsp;</span>
 		</dl>
 	</div>
-<?php	$this->Layout->blockEnd();	} ?>	
+<?php	$this->Layout->blockEnd(); ?>	
 <?php echo $this->element('navFilmstrip') ?>
 <section class="photo">
 	<div class="preview grid_11">

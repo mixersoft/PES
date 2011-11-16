@@ -494,25 +494,26 @@
         			init_hidden: false,
 				}; 
         		SNAPPI.MenuAUI.CFG[CSS_ID].load(contextMenuCfg);        		
-        		this.stopClickListener();
+        		this.node.listen['disable_LinkToClick'] = true;
         	} else {
         		var menu = SNAPPI.MenuAUI.toggleEnabled(CSS_ID, e);
         		if (this._cfg.listeners.indexOf('LinkToClick')> -1) {
         			// toggle LinkToClick listener
 	        		if (menu.get('disabled')) {
 	        			// TODO: nav to attribute "linkTo"
-	        			Factory.listeners.LinkToClick.call(this);
+	        			// Factory.listeners.LinkToClick.call(this);
+	        			this.node.listen['disable_LinkToClick'] = false;
 	        		} else {
-	        			// TODO: ignore "linkTo" click
-	        			this.stopClickListener();
+	        			// this.stopLinkToClickListener();
+	        			this.node.listen['disable_LinkToClick'] = true;
 	        		}
         		}
         	}
         },
-        stopClickListener : function(){
-        	if(this.node.listen.click != undefined){
-        		this.node.listen.click.detach();
-        	}
+        stopLinkToClickListener : function(){
+        	try {
+        		this.node.listen['LinkToClick'].detach();
+        	} catch(e) {}
         },
         listenKeypress: function(){
             if (this.node.listen['Keypress'] == undefined) {

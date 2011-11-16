@@ -141,7 +141,7 @@
         },	
         processDrop : function(nodeList, dropTarget){
             // note: nodeList ".FigureBox.selected > figure > img" , dropTarget is .drop
-            var done = true,
+            var done = false,
             	dragNode, lastLI;
             var _clearSelected = function(nodeList){
                 nodeList.each(function(n, i, l){
@@ -244,11 +244,11 @@
      * drop thumbnail on section-header badge photo, sets cover photo for current item
      */
     Helpers.sectionBadge_ProcessDrop = function(dropTarget, nodeList) {
-    	if (dropTarget.ancestor('.section-header') && dropTarget.hasClass('thumbnail')) {
+    	if (dropTarget.ancestor('.item-header') && dropTarget.hasClass('thumbnail')) {
 	      	dragNode = nodeList.get('node')[0];
 	    	try {
-	        	var controllerJSONData = PAGE.jsonData.controller;
-	        	if (controllerJSONData.keyName == 'group') {
+	        	var controllerJSONData = SNAPPI.STATE.controller;
+	        	if (controllerJSONData.name == 'Groups') {
 	        		 
 	            	if(nodeList.size() > 1){  // check if user drags more than one img.
 	            		alert("please drag one picture to set your icon. use ctrl to un-select photo");

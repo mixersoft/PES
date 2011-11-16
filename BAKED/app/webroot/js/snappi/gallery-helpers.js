@@ -130,13 +130,16 @@
 		            	'div.hidden-shot', this.node); 
 		          }	    	
 		    },	    
-		    // TODO: rename LinkToClick
 	        LinkToClick: function(forceStart) {
 	            if (this.node.listen['LinkToClick'] == undefined || forceStart ) {
 	            	// section.gallery.photo or div.filmstrip.photo
 	                this.node.listen['LinkToClick'] = this.node.delegate('click', function(e){
 	            		var linkTo = e.currentTarget.getAttribute('linkTo');
 	            		if (linkTo) {
+	            			if (this.listen['disable_LinkToClick']) {
+	            				this.Gallery.toggle_ContextMenu(e);
+		                		return;		// allows temp disabling of listener
+		                	}
 		                    if (this.Gallery.castingCall.CastingCall) {
 		                    	linkTo += '?ccid=' + this.Gallery.castingCall.CastingCall.ID;
 								try {
@@ -145,10 +148,9 @@
 										linkTo += '&shotType=Groupshot';
 									}
 								} catch (e) {}
-		                    }		            			
-	            			if (e.ctrlKey) window.open(linkTo, '_blank') 
-	            			else window.location.href = linkTo;
-	            			e.stopImmediatePropagation();
+		                    }
+		                    e.halt();		            			
+	            			window.location.href = linkTo;
 	            		} 	                	
 	                }, '.FigureBox > figure > img', this.node);
 				}
@@ -213,7 +215,7 @@
 		            			// context menu is visible
 		            			if(!gallery.contextMenu.getNode().hasClass('hide')){
 		                			gallery.contextMenu.show();
-		                			gallery.stopClickListener();
+		                			gallery.stopLinkToClickListener();
 		            			}
 		            		}
 		            		// set focus
