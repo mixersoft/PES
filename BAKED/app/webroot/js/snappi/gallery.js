@@ -465,10 +465,12 @@
             }
         },
 
-
+		// deprecate: use GalleryFactory.nav.toggle_ContextMenu(this, e); instead
         toggle_ContextMenu : function(e) {
-	        e.preventDefault();
+        	SNAPPI.Factory.Gallery.nav.toggle_ContextMenu(this, e);
+        	return;
         	
+	        e.preventDefault();
         	var CSS_ID, TRIGGER;
         	switch(this._cfg.type){
         		case 'Photo':
@@ -489,8 +491,9 @@
         	// load/toggle contextmenu
         	if (!SNAPPI.MenuAUI.find[CSS_ID]) {
         		var contextMenuCfg = {
-        			currentTarget:e.currentTarget,
+        			// triggerType: 'photo',				// .gallery.photo
         			triggerRoot: this.container,
+        			currentTarget:e.currentTarget,
         			init_hidden: false,
 				}; 
         		SNAPPI.MenuAUI.CFG[CSS_ID].load(contextMenuCfg);        		

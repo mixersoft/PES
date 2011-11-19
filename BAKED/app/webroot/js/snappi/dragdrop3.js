@@ -76,7 +76,16 @@
 		                	return;
 		                default: // thumbnail
 		                	try {
+		                		
 				                target.ancestor('.FigureBox').addClass('selected');
+				                
+				                // try {
+				                	// var CSSID = 'contextmenu-photoroll-markup';
+				                	// var cmenu = SNAPPI.MenuAUI.find[CSSID];
+				                	// if (cmenu.get('disabled')==false) SNAPPI.MenuAUI.toggleEnabled(CSSID, false)
+				                // } catch(e) {
+				                // }
+				                
 				                
 				                //How many items are selected
 				                var g, count;

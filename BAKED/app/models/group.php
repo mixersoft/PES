@@ -129,7 +129,7 @@ WHERE g.id='{$gid}'
 		;";
 		$result = $this->query($sql);
 		if ($result) {
-			$data['Group'] = array_shift(array_shift($result));
+			$data[$this->alias] = array_shift(array_shift($result));
 			$this->id = $gid;
 			$this->disablePermissionable(true);
 			$ret = $this->save($data, false, array('assets_group_count','groups_user_count'));
@@ -532,5 +532,100 @@ ORDER BY photos DESC;";
 		$this->Asset->disablePermissionable(false);	
 		return $paginate;
 	}
+	function submissionPolicy($id) {
+		$this->id=$id;
+		$submission_policy = $this->field('submission_policy');
+		return $submission_policy;		
+	}
+
+	function canPublish($id) {
+		$submission_policy = (int)$this->submissionPolicy($id);
+		return $submission_policy === 1;		// 1=publish, 2=queue for Admin approval
+	}
+	
+	function canSubmit($id) {
+		return $this->hasPermission('read', $id);		// for now, assume if we have READ access, we have SHARE/CONTRIBUTE permission		
+	}
+	function membershipPolicy($id) {
+		$this->id=$id;
+		$policy = $this->field('membership_policy');
+		// TODO: use placeholder for Group membershipPolicy for now.
+		return true;
+	}
+	/**
+	 * add array of asset_ids to group using assets_groups 
+	 * @params $groupId, Group uuid
+	 * @params $assets mixed, array or comma delim string of Asset uuids
+	 * @params $isApproved boolean, optional initial approved status
+	 * @params $providerAccountId, optional, avoids extra lookup query if provided
+	 */
+	function contributePhoto($groupId, $assets, $isApproved=null, $providerAccountId=null) {
+		if ($isApproved === null) $isApproved = $this->canPublish($groupId);
+		if (is_string($assets))  $assets = explode(',', $assets );
+		$userid = Session::read('Auth.User.id');
+		$saveAll_assets = array();
+		foreach($assets as $asset) {
+			$VALUES_assets_groups[] = "( UUID(), '{$asset}', '{$groupId}', '{$isApproved}', '{$userid}', null, now() )";
+		}		
+		$INSERT_assets_groups = "INSERT INTO `assets_groups` (id, asset_id, group_id, isApproved, user_id, dateTaken_offset, modified ) 
+VALUES  :chunk:
+ON DUPLICATE KEY UPDATE `user_id`=VALUES(`user_id`), `dateTaken_offset`=VALUES(`dateTaken_offset`), `modified`=VALUES(`modified`);
+";
+		$VALUES = insertByChunks($INSERT_assets_groups, $VALUES_assets_groups);		
+		$AssetGroup = ClassRegistry::init('AssetsGroup');
+		foreach ($VALUES as $chunk) {
+			$INSERT = str_replace(':chunk:', $chunk, $INSERT_assets_groups);
+			$AssetGroup->query($INSERT);	
+		}	
+		
+		// add ProviderAccount to GroupsProviderAccount for photostreams
+		if ($providerAccountId) {
+			$this->insertIntoGroupsProviderAccount($groupId, null, $providerAccountId);
+		} else {
+			$this->insertIntoGroupsProviderAccount($groupId, $assets);
+		}
+		// copy any Usershots to Groupshots
+		ClassRegistry::init('Usershot')->copyToGroupshots($groupId, $assets);
+		// update Counts
+		
+		$resp2 = $this->updateCounter($groupId);
+		// $response['shared'] = count($VALUES_assets_groups);
+		// $response['count'] = 
+		return count($VALUES_assets_groups);	
+	}
+	/**
+	 * add ProviderAccount to GroupsProviderAccount for photostreams
+	 * @params $groupId, Group uuid
+	 * @params $assets mixed, array or comma delim string of Asset uuids
+	 * @params $providerAccountIds mixed, Array or Comma delim String of uuids, optional
+	 */
+	function insertIntoGroupsProviderAccount($groupId, $assets, $providerAccountIds=null){
+		if ($providerAccountIds === null) {
+			$Asset = ClassRegistry::init('Asset');
+			$GroupsProviderAccount = ClassRegistry::init('GroupsProviderAccount');
+			if (is_string($assets))  $assets = explode(',', $assets );
+			
+			$options = array(
+				'fields' => array('DISTINCT Asset.provider_account_id'), 
+				'conditions' => array('Asset.id' => $assets),
+				'permissionable' => false, 
+			); 
+			$data = $Asset->find('all', $options);
+			$providerAccountIds = Set::extract('/Asset/provider_account_id', $data);
+		} else if (is_string($providerAccountIds)) $providerAccountIds = explode(',',$providerAccountIds);
+		
+		foreach ($providerAccountIds as $pa_id) {
+			$VALUES[]= "( UUID(), '{$groupId}', '{$pa_id}', now() )";
+		}		
+		$INSERT_paids = "INSERT IGNORE INTO `groups_provider_accounts` (`id`, `group_id`, `provider_account_id`, `created`) 
+VALUES :chunk: ";
+		$VALUES = insertByChunks($INSERT_paids, $VALUES);		
+		foreach ($VALUES as $chunk) {
+			$INSERT = str_replace(':chunk:', $chunk, $INSERT_paids);
+			$GroupsProviderAccount->query($INSERT);	
+		}			
+		return true;
+	}
+	
 }
 ?>

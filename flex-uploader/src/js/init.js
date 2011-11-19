@@ -88,13 +88,13 @@ _domready1 = function(Y) {
 	Helpers.initUploadGallery(uploader, 1, null, null);	
 	// start listeners, as necessary
 	var listeners = {
-		'WindowOptionClick':1, 
-		'DisplayOptionClick':1,
-		'ContextMenuClick':1, 
-		'MultiSelect':1,
+		'WindowOptionClick':null, 
+		'DisplayOptionClick':null,
+		'ContextMenuClick':null, 
+		'MultiSelect':null,
 	};
 	for (var listen in listeners) {
-		SNAPPI.AIR.UIHelper.listeners[listen](null);
+		if (listeners[listen]!==false) SNAPPI.AIR.UIHelper.listeners[listen](listeners[listen]);
 	}	
 	Helpers.hide_StartupLoadingMask();
 LOG(">>>>>>>>> DONE");	

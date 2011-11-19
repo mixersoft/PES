@@ -78,7 +78,7 @@ var onload_complete = function(){
     		 * early load modules
     		 */
     		// 'AIR-firebug-stable',
-    		// 'AIR-firebug-1.2',
+    		'AIR-firebug-1.2',
     		/*
     		 * snappi modules
     		 */
@@ -125,6 +125,12 @@ var onload_complete = function(){
     			
     			
     			SNAPPI.Y = Y;
+    			SNAPPI.setPageLoading = function (value) {
+		        	if (value == undefined) return Y.one('body').hasClass('wait');
+		        	if (value) Y.one('body').addClass('wait');
+		        	else Y.one('body').removeClass('wait');
+		        	return value ? true : false;
+		        }
     			LOG(" *********** base.js:  SNAPPI.Y = " + SNAPPI.Y.version);
     			LOG(SNAPPI.AIR);
     			try {
@@ -335,7 +341,7 @@ var onload_complete = function(){
 	                path: 'ui-helpers.js',
 	                requires: [] 
 			    },		        	
-	            'AIR-helpers': {
+	            'AIR-helpers': {	//TODO: deprecate. move to ui-helpers.js
 	                path: 'helpers.js',
 	                requires: ['AIR-ui-helpers'],
 			    },			    
@@ -373,23 +379,23 @@ var onload_complete = function(){
 		        'AIR-firebug-1.2': {
 		            path: 'debug/firebug-lite-compressed.1.2.3.1.js',	            
 		        },
-	    		'AIR-menuCfg': {
-	    			path: 'menucfg.js',
-	    			requires:['snappi-menu', 'snappi-menuitem', 'node-event-simulate']
-	    		},	        
+	    		// 'AIR-menuCfg': {
+	    			// path: 'menucfg.js',
+	    			// requires:['snappi-menu', 'snappi-menuitem', 'node-event-simulate']
+	    		// },	        
 	            'AIR-js-datasource': {
 	                path: 'jsDatasource.js',
 	                requires: []                           
 		        },  	        
-        		'AIR-menu-aui': {
-        			path: 'AIR_menu_aui.js',
-        			// BUG: requires A.Plugin.IO, found in "aui-io", but not available
-        			requires:['aui-io', 'aui-aria', 'aui-overlay-context', 'aui-overlay-manager']
-        		}, 		        
-        		'AIR-dialog-aui': {
-	    			path: 'dialog_aui.js',
-	    			requires:['node', 'aui-aria', 'aui-dialog', 'aui-overlay-manager', 'dd-constrain']
-	    		},	        
+        		// 'AIR-menu-aui': {
+        			// path: 'AIR_menu_aui.js',
+        			// // BUG: requires A.Plugin.IO, found in "aui-io", but not available
+        			// requires:['aui-io', 'aui-aria', 'aui-overlay-context', 'aui-overlay-manager']
+        		// }, 		        
+        		// 'AIR-dialog-aui': {
+	    			// path: 'dialog_aui.js',
+	    			// requires:['node', 'aui-aria', 'aui-dialog', 'aui-overlay-manager', 'dd-constrain']
+	    		// },	        
 	        }
 	    };  
 	    return yuiConfig_AIR; 
@@ -481,7 +487,9 @@ var onload_complete = function(){
         		'snappi-menu-aui': {
         			path: 'menu_aui.js',
         			// BUG: requires A.Plugin.IO, found in "aui-io", but not available
-        			requires:['aui-io', 'aui-aria', 'aui-overlay-context', 'aui-overlay-manager']
+        			requires:['aui-io', 'aui-aria', 'aui-overlay-context', 'aui-overlay-manager',
+        			'AIR-ui-helpers',
+        			]
         		},        		
         		'snappi-paginator': {
         			path: 'paginator_aui.js',

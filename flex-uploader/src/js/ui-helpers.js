@@ -67,7 +67,7 @@ LOG("+++ set folder, folder="+folder);
 			// var p = SNAPPI.Paginator.find['PhotoAirUpload'];
 			// SNAPPI.Paginator._getPageFromAirDs(p.container, page);
 			delete delayed;		
-			document.body.style.cursor = '';
+			Y.one('body').removeClass('wait');
 		});
 		delayed.delay(100);  // wait 100 ms					
 	};
@@ -91,7 +91,7 @@ LOG("+++ set folder, folder="+folder);
 		delayed.delay(100);  // wait 100 ms				
 	};
 	UIHelper.toggle_upload = function(el, force) {
-		document.body.style.cursor = 'wait';
+		SNAPPI.setPageLoading(true);
 		if (SNAPPI.AIR.Helpers.isAuthorized()) {
 			if (!el) {
 				var n = SNAPPI.Y.one('.gallery-header .upload-toolbar li.btn.start');
@@ -122,7 +122,7 @@ LOG("+++ EXCEPTION: loadingmask.hide()");
 		} else {
 			// show login screen by menu click
 			SNAPPI.MenuAUI.find['menu-sign-in-markup'].show();
-			document.body.style.cursor = '';
+			SNAPPI.setPageLoading(false);
 		}
 	};	
 	
@@ -317,7 +317,7 @@ LOG("+++ set filter, status="+value);
 				node.siblings('li.btn').removeClass('focus');
 				node.addClass('focus');
 				delete delayed;
-				document.body.style.cursor = '';
+				SNAPPI.setPageLoading(false);
 			});
 			delayed.delay(100);  // wait 100 ms		
 		},
@@ -327,7 +327,7 @@ LOG("+++ set filter, status="+value);
 					if(!isUploading){
 						detach.detach();
 						SNAPPI.AIR.uploadQueue.action_retry();
-						document.body.style.cursor = '';
+						SNAPPI.setPageLoading(false);
 					};						
 				}, this);			
 				SNAPPI.AIR.UIHelper.toggle_upload(null, false);	// force pause 
@@ -424,4 +424,259 @@ LOG('>>>>>>> BASEURL='+selected);
 	
 	
 	LOG("load complete: ui-helpers.js");	
+// }());
+
+
+
+// (function() {
+	/***************************************************************************
+	 * XhrHelper Static Class
+	 * 		SNAPPI.AIR.XhrHelper = XhrHelper;
+	 * 	WARNING: 
+	 */
+	var XhrHelper = function() {}
+	XhrHelper.prototype = {};
+	SNAPPI.AIR.XhrHelper = XhrHelper;
+	
+		
+	/*
+	 * private methods
+	 */
+	XhrHelper._setUser = function(user) {
+		var Y = SNAPPI.Y;
+		SNAPPI.namespace('SNAPPI.STATE');
+		SNAPPI.STATE.user = user;
+		var expressNode = Y.one('#gallery-container .express-upload-container');
+		if (user && user.id) {
+			try {
+	//			var datasource = _flexAPI_UI.datasource;
+				var datasource = SNAPPI.DATASOURCE;
+				datasource.setSessionId('data[User][id]=' + user.id);
+	LOG(">>> UPLOAD HOST=" + datasource.getConfigs().uploadHost + ", uuid=" + SNAPPI.DATASOURCE.sessionId);
+	
+				// cleanup actions: hide menu
+				var menu = SNAPPI.MenuAUI.find['menu-sign-in-markup'];
+				menu.hide();
+				
+				// add express Upload section
+				XhrHelper.insertExpressUpload(expressNode);	
+			} catch (e) {
+			}
+		} else {
+			var datasource = SNAPPI.DATASOURCE;
+			datasource.setSessionId('data[User][id]=');
+			XhrHelper.insertExpressUpload(expressNode, true);
+			SNAPPI.setPageLoading(false);
+		}
+		XhrHelper._setHeader(user);
+	}
+	XhrHelper._setHeader = function(user) {
+		var Y = SNAPPI.Y;
+		var userHeader = Y.one('header nav.user');
+		if (user && user.id) {
+			// update 'header nav.user' 
+			userHeader.one('#userAccountBtn').setContent(user.username);
+			userHeader.one('ul.authenticated').removeClass('hide');
+			userHeader.one('ul.guest').addClass('hide');			
+		} else {
+			userHeader.one('#userAccountBtn').setContent('');
+			userHeader.one('ul.authenticated').addClass('hide');
+			userHeader.one('ul.guest').removeClass('hide');			
+		}
+	}
+	XhrHelper.resetSignInForm = function(container) {
+		if (typeof container == "string") container = SNAPPI.Y.one(container);
+		// reset Sign-in dialog
+		try {
+			container.one('.message').setContent('').addClass('hide');
+			container.all('input').each(function(n,i,l){ n.set('value',null ); });
+			container.loadingmask.hide();	
+		} catch (e) {}		
+		
+	}
+	/*
+	 * static methods
+	 */
+	XhrHelper.login_Url = null;
+	
+	/*
+	 * json signIn
+	 */
+	XhrHelper.signIn = function() {
+		var Y = SNAPPI.Y;
+		SNAPPI.setPageLoading(true);
+		var postData = {};
+		Y.all('form#UserLoginForm .postData').each(function(n, i, l) {
+			var key = n.getAttribute('name');
+			switch (key) {
+			case 'data[User][username]':
+			case 'data[User][password]':
+			case 'UserUsername':
+			case 'UserPassword':
+				postData[key] = n.get('value');
+				break;
+			case 'data[User][magic]':
+			case 'UserMagic':
+				n.get("options").some(function(n, i, l) {
+					// this = option from the select
+						if (n.get('selected')) {
+							postData[key] = n.getAttribute('value') || '';
+							return true;
+						}
+						;
+						return false;
+					});
+				break;
+			default:
+				// skip
+				break;
+			}
+		});
+		var uri = XhrHelper.login_Url || "http://" + SNAPPI.AIR.host + "/users/login/.json?optional=1";
+LOG(">>> LOGIN, login_Url="+uri+", postdata follows:");
+LOG(postData);
+            
+		// SNAPPI.io GET JSON  
+		var container = Y.one('#menu-sign-in-markup #login');
+		// XhrHelper.resetSignInForm(container);
+		
+    	var args = {
+    		node: container,
+    		uri: uri,
+    	};
+    	/*
+		 * plugin Y.Plugin.IO
+		 * TODO: refactor. pattern also used in AssetRatingController.setProp()
+		 */
+		var ioCfg;
+		if (!container.io) {
+			ioCfg = {
+   					// uri: args.uri,
+					parseContent: false,
+					autoLoad: false,
+					context: container,
+					arguments: args, 
+					method: "POST",
+					dataType: 'json',
+					qs: postData,
+					on: {
+						successJson: function(e, i, o,args){
+							var resp = o.responseJson;
+// LOG(' >>>>>>>>>>>>>  successJson    ');							
+// LOG(resp);
+							var authUser = resp.response.User;
+							XhrHelper._setUser(authUser);
+							this.one('.message').setContent('').addClass('hide');
+							args.loadingmask.hide();
+							return false;
+						}, 
+						complete: function(e, i, o, args) {
+// LOG(' >>>>>>>>>>>>>  complete ');								
+// LOG(o);
+							args.loadingmask.hide();
+						},
+						failure : function (e, i, o, args) {
+							// post failure or timeout
+// LOG(' >>>>>>>>>>>>>  LOGIN XHR FAILURE    ');	
+// LOG(o);
+							var resp = o.responseJson || o.responseText || o.response;
+							var msg = resp.message || resp;
+							if (msg) {
+								this.one('.message').setContent(msg).removeClass('hide');	
+							}
+							args.loadingmask.hide();
+							SNAPPI.setPageLoading(false);
+							return false;
+						},
+					}
+			};
+			// var loadingmaskTarget = container.get('parentNode');
+			var loadingmaskTarget = container.one('div');
+			// set loadingmask to parent
+			container.plug(Y.LoadingMask, {
+				strings: {loading:'One moment...'}, 	// BUG: A.LoadingMask
+				target: loadingmaskTarget,
+			});    			
+			container.loadingmask._conf.data.value['target'] = loadingmaskTarget;
+			container.loadingmask.overlayMask._conf.data.value['target'] = container.loadingmask._conf.data.value['target'];
+			// container.loadingmask.set('target', target);
+			// container.loadingmask.overlayMask.set('target', target);
+			container.loadingmask.set('zIndex', 10);
+			container.loadingmask.overlayMask.set('zIndex', 10);
+			container.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(ioCfg));
+		} else {
+			ioCfg = {
+				arguments: args, 
+				method: "POST",
+				qs: postData,
+			}
+			ioCfg = SNAPPI.IO.pluginIO_RespondAsJson(ioCfg); 
+			container.io.set('data', ioCfg.data);
+		}
+		args.loadingmask = container.loadingmask;
+		// get CC via XHR and render
+		container.io.set('uri', args.uri);
+		container.io.set('arguments', args);
+		container.loadingmask.refreshMask();
+		container.loadingmask.show();		
+		container.io.start();
+		return;
+	}
+
+	/*
+	 * sign out, close session
+	 */
+	XhrHelper.signOut = function(){
+		XhrHelper._setUser(null);
+		var url = '/users/logout';
+		var callback = {
+			complete : function(id, o, args) {
+				var resp = o.response;
+			}
+		}		
+		SNAPPI.io.get.call(this, url, callback);
+	}
+	
+	XhrHelper.insertExpressUpload = function(node, clear) {
+		var Y = SNAPPI.Y;
+		node = node || Y.one('#gallery-container .express-upload-container');
+		// reset content before use
+		if (clear) {
+			node.setContent('');
+			if (node.io) node.unplug(Y.Plugin.IO);	
+		} else {
+			var ioCfg = {
+				uri:  '/my/express_uploads',
+				parseContent: true,
+				autoLoad: true,
+				modal: false,
+				context: node,
+				dataType: 'html',
+				on: {
+					success: function(e,i,o,args){
+						SNAPPI.setPageLoading(false);
+						var body = this.create(o.responseText);
+						var found = body.one('ul li input[type=checkbox]');
+						return (found)? body : false;
+					},
+					failure: function(e,i,o,args) {
+						return this.create('<aside id="express-upload-options"  class="related-content blue">').setContent(o.responseText);
+					}
+					
+				}
+			};
+			ioCfg = SNAPPI.IO.getIORequestCfg(ioCfg.uri, ioCfg.on, ioCfg);
+			SNAPPI.setPageLoading(true);
+			node.plug(Y.Plugin.IO, ioCfg);	
+		}
+	}	
+	XhrHelper.getExpressUploads = function(){
+		var Y = SNAPPI.Y;
+		var gids = [];
+		Y.all('#express-upload-options input[type=checkbox]').each(function(n,i,l){
+			if (n.get('checked')) gids.push(n.getAttribute('uuid'));
+		});
+		return gids.join(',');
+	}
+	LOG("load complete: XhrHelpers.js");	
 // }());

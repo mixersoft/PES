@@ -84,6 +84,7 @@
 				MagickUtils.init();
 				var MODE:String = 'prod';	// dev2.snaphappi.com
 //				MODE = 'dev';				// git.3:88
+				// see: bootstrap_html() for actual host values
 				
 				this.checkDebug();			// set app root folder inside project folder if DEBUG
 				
@@ -110,6 +111,7 @@
 				domParent.domWindow.flexAPI_UI = Config.UI;
 				domParent.domWindow.flexAPI_Datasource = Config.Datasource;	
 				domParent.domWindow.flex_onYuiDomReady = onYuiDomReady;
+				domParent.domWindow.flex_setDropTarget = Config.UI.setDropTarget;
 				// create javascript namespace as early as possible
 				
 				domParent.addEventListener("complete", onYuiDomReadyComplete);
@@ -128,11 +130,12 @@
 				switch (location) {
 					case 'prod':
 						Config.HOST = "dev2.snaphappi.com";
+						Config.HOST = "aws.snaphappi.com";
 						break;
 					case 'dev':
 					default:				
 						if (Config.DEBUG) Config.HOST = "git3:88"
-						else Config.HOST = "10.1.2.207";
+						else Config.HOST = "10.1.2.206";
 						break;
 				}
 				var request:URLRequest = new URLRequest("http://"+Config.HOST+"/app/air/js/bootstrap.html");
@@ -524,6 +527,7 @@
 		     	return arr;
 		     }
 		     /*
+			* deprecated. use UploaderUI.setUploadQueueStatus() instead
 		      * sends error(not uploaded due to some reason) while uploading set back to running queue
 		      * params - no param
 		      * return - bool return/false

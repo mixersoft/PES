@@ -24,93 +24,82 @@
 	<title>
 		<?php echo $title_for_layout; ?>
 	</title>
-	<link rel="stylesheet" type="text/css" media="all" href="/css/960css/reset.css" />
-	<link rel="stylesheet" type="text/css" media="all" href="/css/960css/text.css" />
-	<link rel="stylesheet" type="text/css" media="all" href="/css/960css/960.css" />	
-	<script id='css-start' type='text/javascript'> PAGE = {jsonData:{STATE:{}, menu:{}}, init:[]}; 	ALLOY_VERSION='alloy-1.0.2';</script>
+	<script id='css-start' type='text/javascript'> 
+		PAGE = {jsonData:{STATE:{}, menu:{}}, init:[]}; 	
+		ALLOY_VERSION='alloy-1.0.2';
+	</script>
 	<script src="/svc/lib/alloy-1.0.2/build/aui/aui.js" type="text/javascript"></script>
+	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/reset.css" />
+	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/960.css" />	
+	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/style.css" />
+	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/style.1.css" />
 	<?php
 		echo $this->Html->meta('favicon.ico', '/img/favicon.ico', array('type' => 'icon') );
-		echo $this->Html->css('cake.generic', null);
-		
-//		echo $this->Html->script('http://yui.yahooapis.com/combo?3.3.0/build/yui/yui-min.js&3.3.0/build/loader/loader-min.js');
-
-		echo $this->Html->css('snappi-aui-960');
-		echo $this->Html->css('menu-skin');
-		
 		$basepath = Configure::read('path.fileUploader.basepath');
 		echo $this->Html->css($basepath.'/client/fileuploader.css');
-		echo $this->Html->script($basepath.'/client/fileuploader.js');
-				
+		echo $this->Html->script($basepath.'/client/fileuploader.js');		
 	?>
 </head>
-<body class="yui3-skin-sam">
-	<div id="container">
-		<div id="header" class="container_16">
-			<div id='logo' class='grid_4' title='snaphappi' onclick='window.location.href="/photos/all";'></div>
-			<?php echo $this->element('/nav/header')?>
-			<?php echo $this->element('nav/search')?>
-			<!-- 
-			<div id="search"><input type='text' value=' search' title='not ready yet' > </input><a href='#'>Search</a> | <a href='#'>Discover</a></div>
-			 -->
-		</div>
-		<div id="content" class="container_16">
+<body class='simple'>
+	<?php echo $this->element('/nav/primary'); ?>
+	<?php $this->Layout->output($this->viewVars['itemHeader_for_layout']); ?>	
+<section id="body-container" class='plain container_16'><!--body container start-->
+	<div id="content">
+		<div id="message" class="messages container_16">
 			<?php echo $this->Session->flash(); ?>
-			<?php echo $content_for_layout; ?>
-			<?php if (Configure::read('js.render_lightbox')) {echo $this->element('/lightbox'); }?>
-<?php if (!empty($this->viewVars['jsonData'])) {  // debug($this->viewVars['jsonData']); ?>
-<script type="text/javascript">
-<?php foreach ($this->viewVars['jsonData'] as $key=>$value) {
-		echo "PAGE.jsonData.{$key}=".json_encode($value).";\n"; 
-} ?>
-</script>
-<?php } ?>
-			
+			<?php echo $this->Session->flash('email'); ?>
 		</div>
-		<div id='markup' >
-			<div id="menu-header" class="menu yui3-aui-overlaycontext-hidden hide">
-				<ul>
-					<li id='home' >
-						<a href="/my/home">My Home</a>
-					</li>
-					<li id='photos' >
-						<a href="/my/photos">My Photos</a>
-					</li>
-					<li id='photostreams' >
-						<a href="/my/photostreams">My Photostreams</a>
-					</li>		
-					<li id='groups' >
-						<a href="/my/groups">My Groups</a>
-					</li>			
-					<li id='trends' >
-						<a href="/my/home#trends">My Trends</a>
-					</li>
-					<li id='upload' >
-						<a href="/my/upload">Upload Photos</a>
-					</li>
-					<li id='settings' >
-						<a href="/my/settings">My Settings</a>
-					</li>
-					<li id='lightbox' class='before-show'>
-						<a href="javascript:;">Hide Lightbox</a>
-					</li>
-				</ul>
-			</div>		
-		</div>		
-		<div id="footer">
-			<span style="font-size:0.8em;vertical-align:text-top;">&copy; 2008-2010 Snaphappi</span>
-			<?php echo $this->Html->link(
-					$this->Html->image('cake.power.gif', array('alt'=> __('CakePHP: the rapid development php framework', true), 'border' => '0')),
-					'http://www.cakephp.org/',
-					array('target' => '_blank', 'escape' => false)
-				);
-			?>
-		</div>
+		<?php echo $content_for_layout; ?>
 	</div>
-	<?php echo $this->element('sql_dump'); ?>
-	<?php
-		if (Configure::read('js.bootstrap_snappi')) echo $this->Html->script('/js/snappi/base_aui.js');		
-		echo $scripts_for_layout;
-	?>	
+</section><!--body container ends-->
+<?php $this->Layout->output($relatedContent_for_layout); ?>
+
+<?php $this->Layout->blockStart('javascript');?> 
+	<script type="text/javascript">
+		<?php 	
+			$this->viewVars['jsonData']['controller'] = Configure::read('controller');
+			foreach ($this->viewVars['jsonData'] as $key=>$value) {
+				echo "PAGE.jsonData.{$key}=".json_encode($value).";\n"; 
+			} 
+		?>
+		PAGE.goSearch = function() {
+			var value = SNAPPI.Y.one('#search input').get('value');
+			if (value) {
+				if (value.length>2) {
+					var here = window.location.href;
+					var namedData = {q:value, page: null};
+					window.location.href = SNAPPI.IO.setNamedParams(here, namedData);
+					return true;
+				} else {
+					alert('please enter at least 3 chars in your search');
+				}
+			}  
+			return false;
+		}; 
+	</script>	
+<?php $this->Layout->blockEnd();?>	
+<div class="anchor-bottom"></div>
+<div id='markup'>
+	<?php $this->Layout->output($this->viewVars['menuMarkup_for_layout']); ?>
+</div>		
+
+<div id="footer" class="container_16">
+	<div class="grid_16">
+		<span>&copy; 2008-2012 Snaphappi</span>
+		<?php echo $this->Html->link(
+				$this->Html->image('cake.power.gif', array('alt'=> __('CakePHP: the rapid development php framework', true), 'border' => '0')),
+				'http://www.cakephp.org/',
+				array('target' => '_blank', 'escape' => false)
+			);
+		?>		
+	</div>
+</div>
+<?php // echo $this->element('sql_dump'); ?>
 </body>
 </html>
+	<?php
+		// TODO: use 'light' init, not main()
+		echo $this->Html->script('/js/snappi/base_aui.js');		
+		echo $scripts_for_layout;
+		$this->Layout->output($this->viewVars['javascript_for_layout']);
+	?>

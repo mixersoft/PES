@@ -620,6 +620,9 @@ package api
 					+ '&data[Asset][height]=' + asset[0]['height'] 
 					+ "&data[Asset][json_exif]=" + escape(json_exif);
 				var filePostName:String = 'Filedata';
+				// get express Upload groups
+				var gids:String = Config.SNAPPI.AIR.XhrHelper.getExpressUploads();
+				if (gids) postparams += "&data[groupIds]=" + gids;
 				var f:File = new File(furl);
 				// var uq:UploadFile = new UploadFile(f,postparams,handlers,filePostName);
 				var uq:UploadFile = UploadFile.getUploadFile(f,postparams,handlers,filePostName);

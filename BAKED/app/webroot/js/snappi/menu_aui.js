@@ -74,10 +74,10 @@ var DEFAULT_CFG_contextmenu = 	{
 			// BUG: container.one('#menu-header') does NOT work in chrome
 			var markupNode = Y.Node.create("<div />");
 			container.append(markupNode);
-			document.body.style.cursor = 'wait !important';	// doesn't seem to work here
+			SNAPPI.setPageLoading(true);
 			markupNode.plug(Y.Plugin.IO, ioCfg);	
 			markupNode.io.afterHostMethod('insert', function(){
-				document.body.style.cursor = null;
+				SNAPPI.setPageLoading(false);
 				callback.apply(this, arguments);
 			});
 			return false;
@@ -118,12 +118,16 @@ var DEFAULT_CFG_contextmenu = 	{
 	 * @param MARKUP
 	 * @param TRIGGER
 	 * @param cfg {}, additional config for Y.OverlayContext
+	 * 		cfg.host: adds cfg.host.ContextMenu backreference
+	 * 		cfg.triggerType	.gallery.[triggerType]
+	 * 		cfg.triggerRoot '#'+cfg.triggerRoot.get('id')
 	 * @return
 	 */
 	Menu.initContextMenu = function(MARKUP, TRIGGER, cfg){
 		var Y = SNAPPI.Y;
 		cfg = cfg || {};	// closure
-		// if (cfg.triggerRoot) TRIGGER = '#'+cfg.triggerRoot.get('id')+' '+ TRIGGER;
+		if (cfg.triggerType) TRIGGER = '.gallery.'+cfg.triggerType + TRIGGER;
+		if (cfg.triggerRoot) TRIGGER = '#'+cfg.triggerRoot.get('id')+' '+ TRIGGER;
 		var _cfg = {
 				trigger: TRIGGER,
 				contentBox: MARKUP.selector,
@@ -145,6 +149,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		// lookup reference
 		
 		Menu.find[MARKUP.id] = menu;
+		if (cfg.host) cfg.host.ContextMenu = menu; 		// add back reference
 		return menu;
 	};
 	/*
@@ -872,7 +877,7 @@ var DEFAULT_CFG_contextmenu = 	{
 					on: {
 						success: function(e, i,o,args) {
 							args.menu.hide();
-							document.body.style.cursor = '';
+							SNAPPI.setPageLoading(false);
 							// add content
 							var parent = args.dialog.getStdModNode('body');
 							parent.setContent(o.responseText);
@@ -1419,7 +1424,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	CFG_Context_FigureBox.load = function(cfg){
 		var Y = SNAPPI.Y;
 		var TRIGGER = ' .FigureBox';
-		if (cfg.triggerType) TRIGGER = '.gallery.'+cfg.triggerType + TRIGGER;
+		// if (cfg.triggerType) TRIGGER = '.gallery.'+cfg.triggerType + TRIGGER;
 		var TYPE_LOOKUP = {
 			'photo': {
 				CSS_ID: 'contextmenu-photo-markup',	

@@ -291,6 +291,9 @@ class AssetsController extends AppController {
 	}
 	
 	function all(){
+		$this->layout = 'snappi';
+		// $this->helpers[] = 'Time';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';	
 		// paginate 
 		$paginateModel = 'Asset';
 		$Model = $this->Asset;

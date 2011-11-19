@@ -78,7 +78,7 @@
 			this.isUploading = this.flexUploadAPI.isUploading;	// bind function
 			
 			var detach = Y.on('snappi-air:upload-status-changed', function(isUploading){
-				if (!isUploading) document.body.style.cursor = '';
+				if (!isUploading) SNAPPI.setPageLoading(false);
 			});			
 		}
 		
@@ -177,7 +177,7 @@
 			// this.isUploading = true;
 			this.isCancelling = false;
 			this.startUploadPage(page);
-			document.body.style.cursor = '';
+			SNAPPI.setPageLoading(false);
 		},
 		/*
 		 * pause action handler fired when user clicks on pause link option it

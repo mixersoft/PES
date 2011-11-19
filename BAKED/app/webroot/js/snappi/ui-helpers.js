@@ -80,7 +80,7 @@
 	    	var listenerNode = e.currentTarget.ancestor('.container');
 	    	if (!SNAPPI.MenuAUI.find[CSS_ID]) {
 	    		var contextMenuCfg = {
-	    			triggerType: type,		// group, person, photo, etc. 
+	    			triggerType: type,		// .gallery.group, .person, .photo, etc. 
 	    			currentTarget: e.currentTarget,
 	    			// triggerRoot:  SNAPPI.Y.one('.gallery .container'),
 	    			init_hidden: false,
@@ -277,6 +277,10 @@
 			// back reference
 			UIHelper.listen[action] = node.listen[action]; 
         },
+        DragDrop : function(){
+        	SNAPPI.DragDrop.pluginDrop(SNAPPI.Y.all('.droppable'));
+        	SNAPPI.DragDrop.startListeners();
+        }
 	}
 	
 })();

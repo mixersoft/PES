@@ -249,7 +249,8 @@ var DEFAULT_CFG_io = {
 					// var content = this.get('contentBox');
 				// }
 			// }
-			]			
+			],
+			resizble: true,			
 		}
 		cfg = cfg || {};
 		_cfg = Y.merge(DEFAULT_CFG_dialog, _cfg, cfg);
@@ -426,7 +427,6 @@ var DEFAULT_CFG_io = {
 	 * @params selected obj, audition of selected item
 	 */
 	DialogHelper.showLogin = function(show) {
-LOG("LOGIN DIALOG begin");		
 		if (show == undefined) show = true; 	// default
 		// from MenuItems.showHiddenShot_click()
 		var Y = SNAPPI.Y;

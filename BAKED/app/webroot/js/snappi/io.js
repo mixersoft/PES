@@ -268,6 +268,8 @@
     IO.getIORequestCfg = function(uri, callback, cfg){
     	// qsData, namedData, args
 		cfg = cfg || {};
+		uri = uri || cfg.uri;
+		callback = callback || cfg.on;
     	
         var ioCfg = {
             method: "GET",
@@ -296,34 +298,27 @@
 	    						console.error('Plugin.IO.ParseContent() failed to parse json');
 	    					}
 	    					if (callback.successJson){
-	    						var content = callback.successJson.call(context, id, o, args);  
-		            			if (ioRequest instanceof SNAPPI.Y.Plugin.IO) {
-		            				if (content !== false ) ioRequest.setContent(content);
-		            				e.stopImmediatePropagation();	// stopPropagation to prevent extra IORequest.setContent()
-		            				return;
-		            			}
-	    					}
+	    						return callback.successJson.call(context, e, id, o, args); 
+	    						// return callback.successJson.call(context, id, o, args); 
+	    					} else return o.responseText;
 	    					break;
 	    				case 'xml':
 	    				case 'html':	
 	    				case 'text':
 	    				default:
 	    					if (callback.success){
-		            			var content = callback.success.call(context, id, o, args);  
-			        			if (content && ioRequest instanceof SNAPPI.Y.Plugin.IO) {
-			        				// check pareseContent?
-			        				ioRequest.setContent(content.outerHTML());
-			        				e.stopImmediatePropagation();
-			        				return;
-			        			}	    		
-	    					}
+	    						return callback.success.call(context, e, id, o, args); 
+	    						// return callback.success.call(context, id, o, args); 
+	    					} else return o.responseText;
 	    				break;
 	    			}	
         		},
-                failure: callback.failure || function(e, id, o, args){
+                failure: function(e, id, o, args){
         			console.warn('io:failure');
-        			// timeout or no response
-                    var check;
+        			if (callback.failure){
+						return callback.failure.call(context, e, id, o, args); 
+						// return callback.success.call(context, id, o, args); 
+					} else return o.responseText;
                 }
             }
         };
@@ -435,7 +430,7 @@
     	var _json_callbacks = {
             complete: function(e, id, o, args){
 				console.warn('IO.pluginIO_RespondAsJson() io:complete');
-				document.body.style.cursor = '';
+				SNAPPI.setPageLoading(false);
 				var ioRequest = e.target;
 				var context = ioRequest.get('context') || this;
 				if (!ioRequest.get('dataType')) {
@@ -462,6 +457,9 @@
 									var content = _callback.success.call(context, e, id, o, args);  
 		            				if (content !== false ) ioRequest.setContent(content);
 								}
+								// if (_callback.success){
+		    						// return _callback.success.call(context, e, id, o, args); 
+		    					// } else return o.responseText;
 							} else {
 								// successful XHR request, failed JSON response
 								if (_callback.failure){
@@ -481,21 +479,14 @@
 						break;
 					case 'xml':
 						if (_callback.success){
-	            			var content = _callback.success.call(context, e, id, o, args);  
-		        			if (content && ioRequest instanceof SNAPPI.Y.Plugin.IO) {
-		        				// check pareseContent?
-		        				ioRequest.setContent(content);
-		        				e.stopImmediatePropagation();
-		        			}	    		
-						}
+    						return _callback.success.call(context, e, id, o, args); 
+    					} else return o.responseText;
 						break;
 					case 'html':	
 					case 'text':	
 						if (_callback.success){
-							var content = _callback.success.call(context, e, id, o, args); 
-            				if (content !== false ) ioRequest.setContent(content);
-            				e.stopImmediatePropagation();	// stopPropagation to prevent extra IORequest.setContent()
-						}				
+    						return _callback.success.call(context, e, id, o, args); 
+    					} else return o.responseText;
 					default:
 						console.error("Plugin.JsonIO: call to Plugin.JsonIO with no dataType set");
 						break;

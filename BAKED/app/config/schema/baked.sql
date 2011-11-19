@@ -558,6 +558,8 @@ ALTER TABLE `best_groupshots` DROP INDEX `shot_idx`,
  
 ALTER TABLE `groups` 
 	ADD COLUMN `type` VARCHAR(10) DEFAULT 'Group' AFTER `isSystem`;
+	
+ALTER TABLE `groups_users` ADD COLUMN `isExpress` TINYINT(1) DEFAULT 0 AFTER `isActive`;
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;

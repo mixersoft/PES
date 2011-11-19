@@ -22,15 +22,10 @@
 		$invitation['from_src'] =  $from[0]['src'];
 		$invitation['from'] = $from[0]['fullname'] ? "<b>{$from[0]['fullname']}<b> ({$invitation['from_usernameLinkTo']})" : "<b>{$invitation['from_usernameLinkTo']}</b>";
 	}
-	$invitation['circle'] = $data['Group']['title'];
+	$invitation['circle'] = ucfirst($data['Group']['title']);
 	$invitation['group_type'] = $data['Group']['type'];
-// debug($from);	
-
-	$role = Session::read('Auth.User.role');
-	if (!$role || $role == 'GUEST') {
-		Session::write('Auth.redirect', env('REQUEST_URI')); 
-		$signin_redirect = Router::url('/groups/invitation?register=1');
-	}
+	// debug($from);	
+	// debug($signin_redirect);
 ?>
 <section class='invitation prefix_1 grid_14 suffix_1'>
 	<h2 class="alpha">Welcome to Snaphappi</h2>
@@ -42,7 +37,10 @@
 		<div class="grid_12 omega">
 			<p>
 <?php 
-	if (isset($from)) {
+	if (isset($from) && $this->params['url']['express']) {
+		echo String::insert(":from has invited you to upload and share your Snaps with the <b>:circle</b> :group_type at Snaphappi. 
+				Your Snaps are needed to tell the whole story of this :group_type, and an express upload option will be provided to help you upload Snaps directly into this :group_type.", $invitation);
+	} else if (isset($from)) {
 		echo String::insert(":from has invited you to join the <b>:circle</b> :group_type at Snaphappi. As a member, you will be able share Snaps and connect with other members of this :group_type.", $invitation); 
 	} else {
 		echo String::insert("This is an invitation to join the <b>:circle</b> :group_type at Snaphappi. As a member, you will be able share Snaps and connect with other members of this :group_type.", $invitation);
@@ -63,6 +61,9 @@
 						echo $this->Form->create('Group', array('action'=>'join'));
 						echo $this->Form->hidden('id', array('value'=>$id)); 
 						echo $this->Form->hidden('title', array('value'=>$data['Group']['title'])); 
+						if (!empty($this->params['url']['express'])) {
+							echo $this->Form->hidden('express', array('value'=>1)); 
+						}
 						echo $this->Form->button("Accept Invitation", array('value'=>"Accept Invitation", 'name'=>'data[Group][action]', 'class'=>'orange'));	
 						if ($role == 'USER') echo $this->Form->button("Ignore", array('value'=>"Ignore", 'name'=>'data[Group][action]'));	
 						echo $this->Form->end();
@@ -117,7 +118,7 @@
 				dataType: 'html',
 				arguments: args,    					
 				on: {
-					success: function(i,o,args) {
+					success: function(e, i,o,args) {
 						var check;
 						var container = SNAPPI.Y.Node.create(o.responseText); 
 						return container.one('#body-container');

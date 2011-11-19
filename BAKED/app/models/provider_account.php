@@ -67,9 +67,11 @@ class ProviderAccount extends AppModel {
 			'className' => 'Group',
 		),
 	);
-	
+	/**
+	 * @params $conditions, conditions to find existing provider_account by userid-provider_name
+	 */
 	function addIfNew($providerAccount, $conditions, & $response){
-		$providerAccount['id'] = isset($providerAccount['id']) ? $providerAccount['id'] : String::uuid();
+		$providerAccount['id'] = isset($providerAccount['id']) ? $providerAccount['id'] : null;
 		$ret = true;
 		$options['recursive'] = -1;
 		$options['conditions'] = $conditions ? $conditions : array('ProviderAccount.id'=>$providerAccount['id']);
@@ -77,6 +79,7 @@ class ProviderAccount extends AppModel {
 		if (empty($data['ProviderAccount']['id'])) {
 			// create providerAccount for provider='snappi'
 			$this->create();
+			if (empty($providerAccount['id'])) $providerAccount['id'] = String::uuid();
 			$providerAccount['provider_key'] = $providerAccount['id'];
 			$providerAccount['user_id'] = AppController::$userid;
 			$providerAccount['display_name'] = Session::read('Auth.User.displayname');

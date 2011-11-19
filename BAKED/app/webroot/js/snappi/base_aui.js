@@ -17,23 +17,19 @@
         }
         return o;
     };
+    // define global namespaces
+    namespace('SNAPPI');
+    namespace('PAGE');
     
+   
     /*
      * init *GLOBAL* SNAPPI as root for namespace
      */
-    if (typeof SNAPPI == "undefined" || !SNAPPI) {
-        SNAPPI = {
-            id: "SNAPPI",
-            name: 'Snaphappi',
-            namespace: namespace
-        };
+    if (!SNAPPI.id) {
+        SNAPPI.id = 'SNAPPI';
+		SNAPPI.name = 'Snaphappi';
+		SNAPPI.namespace = namespace
     }
-    
-
-    /*
-     * LEGACY init handler, DEPRECATE
-     * 	- CHANGED TO PAGE.init array
-     */
     PAGE.init = PAGE.init || [];
     
 	/*
@@ -433,7 +429,7 @@
 			Y.log('Load failure: ' + result.msg, 'warn', 'Example');
 			
 		}    	
-	    
+	    Y.one('body').addClass('wait');
 	    Y.on("domready", function() {
 //console.log('domready 1 fired');	    	
 	    	SNAPPI.domready = true;
@@ -457,10 +453,14 @@
 	        };
         } catch(e) {}
         
-   
-
         // make global
         SNAPPI.Y = Y;
+        SNAPPI.setPageLoading = function (value) {
+        	if (value == undefined) return Y.one('body').hasClass('wait');
+        	if (value) Y.one('body').addClass('wait');
+        	else Y.one('body').removeClass('wait');
+        	return value ? true : false;
+        }
         YAHOO = SNAPPI.Y.YUI2; // YUI2 deprecate when possible	
         /*
          * ADD modules to existing Y instance
@@ -616,22 +616,13 @@
 			});
 			delayed.delay(2000);
 			SNAPPI.UIHelper.markup.set_ItemHeader_WindowOptions();
+			SNAPPI.setPageLoading(false);
         });
         Y.on('snappi:afterLightboxInit', function(){
             /**
              * 	- fired by: new Lightbox.init(),
              */
         });        
-        Y.on('snappi:afterMain', function(){
-			var listeners = {
-			};
-			for (var listen in listeners) {
-				if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
-			}        	
-        	SNAPPI.DragDrop.pluginDrop(Y.all('.droppable'));
-            SNAPPI.DragDrop.startListeners(); // singleton 
-            var check;
-        });       
         
         /****************************************************************************
          * init singletons AFTER ALL SCRIPTS HAVE BEEN LOADED
@@ -663,23 +654,17 @@
         pageInit(); 
         SNAPPI.xhrFetch.fetchXhr(null, {delay:2000});
 
+		// start document UI listeners
+		var listeners = {
+			'DragDrop': 1,
+		};
+		for (var listen in listeners) {
+			if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
+		}        	
+    	
         
-        /*
-         * initialize SNAPPI.TabNav 
-         * 		- checks PAGE.section global
-         */
-        try {
-            // set tab, if any are defined
-            if (PAGE.section) SNAPPI.TabNav.selectByName(PAGE);
-        } 
-        catch (e) {
-        }
-        
-//        SNAPPI.dialogbox.init(SNAPPI.dialogbox.cfg);
-//        SNAPPI.cfg.MenuCfg.renderHeaderMenus();
-        
-        var check;
-        
+        // ready now, or after Gallery init   
+        if (!Y.one('#body-container .xhr-get')) SNAPPI.setPageLoading(false);                   
         /**********************************************************
          * optional inits
          * - there should be room to optimize what we init for each page

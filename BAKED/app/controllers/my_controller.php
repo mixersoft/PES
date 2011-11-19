@@ -16,7 +16,7 @@ class MyController extends PersonController {
 	public $titleName = 'Me';
 	public $displayName = 'Me';	// section header
 	
-	public $layout = 'snappi-aui-960';
+	public $layout = 'snappi';
 	
 	
 	public static $userid = null;
@@ -35,11 +35,11 @@ class MyController extends PersonController {
 			 * main
 			 */
 			// add to ACLs
-			'upload', 'lightbox', 'settings',
+			'upload', 'lightbox', 'settings', 'express_uploads',
 			/*
 			 * experimental
 			 */
-			'pagemaker'
+			'pagemaker',
 		);
 		$this->Auth->allow( array_merge($this->Auth->allowedActions , $myAllowedActions));
 	
@@ -108,9 +108,9 @@ class MyController extends PersonController {
 		/*
 		 * create ProviderAccount, if missing
 		 */
-		$conditions = array('id'=>$data['ProviderAccount']['id'],'provider_name'=>$data['ProviderAccount']['provider_name'], 'user_id'=>AppController::$userid);
+		$conditions = array('provider_name'=>$data['ProviderAccount']['provider_name'], 'user_id'=>AppController::$userid);
+		if (!empty($data['ProviderAccount']['id']) ) $conditions['id'] = $data['ProviderAccount']['id'];
 		$paData = $this->ProviderAccount->addIfNew($data['ProviderAccount'], $conditions,  $response);
-
 		/****************************************************
 		 * setup data['Asset'] to create new Asset
 		 */
@@ -130,7 +130,7 @@ class MyController extends PersonController {
 	 	$ret = $ret && $ret3;
 
 	 	$response['success'] = $ret ? 'true' : 'false';
-		$response['response'] = json_encode($assetData);
+		$response['response'] = $assetData;
 		return $response;
 	}
 	/**
@@ -182,11 +182,29 @@ class MyController extends PersonController {
 //$this->log("MyController::__upload_javascript() BEGIN VALUMS/JAVASCRIPT IMPORT", LOG_DEBUG);
 //		$this->log($data, LOG_DEBUG);
 		$response = $this->__importPhoto($data, $UPLOAD_FOLDER, $photoPath);
+		if ($response['success'] && isset($response['response']['Asset']['id'])) {
+			/*
+			 * share via express uploads, as necessary
+			 */ 
+			$groupIds = (array)explode(',',$_GET['groupIds']);
+			$resp1 = array();
+			foreach($groupIds as $gid){
+				$asset_id = $response['response']['Asset']['id'];
+				$paid = $response['response']['Asset']['provider_account_id'];
+				$count = $this->User->Membership->contributePhoto($gid, $asset_id, $paid);
+				if ($count) {
+					$resp1['message'][] = "Express Upload: shared with Group id={$gid}";
+					$resp1['response']['Group'][]['id'] = $gid;
+				}
+			}
+			$response = Set::merge($response, $resp1);
+		}
 //$this->log($response, LOG_DEBUG);
 		
 		// to pass data through iframe you will need to encode all html tags
-		Configure::write('debug', 0);
-		echo htmlspecialchars(json_encode($response), ENT_NOQUOTES);	
+		// Configure::write('debug', 0);
+		// echo htmlspecialchars(json_encode($response), ENT_NOQUOTES);	
+		echo json_encode($response);
 		exit(0);
 	}
 	
@@ -253,6 +271,21 @@ class MyController extends PersonController {
 		 */
 //		$this->log($this->data, LOG_DEBUG);
 		$response = $this->__importPhoto($this->data, $UPLOAD_FOLDER, $dest);
+		/*
+		 * share via express uploads, as necessary
+		 */ 
+		$groupIds = (array)explode(',',$this->data['groupIds']);
+		$resp1 = array();
+		foreach($groupIds as $gid){
+			$asset_id = $response['response']['Asset']['id'];
+			$paid = $response['response']['Asset']['provider_account_id'];
+			$count = $this->User->Membership->contributePhoto($gid, $asset_id, $paid);
+			if ($count) {
+				$resp1['message'][] = "Express Upload: shared with Group id={$gid}";
+				$resp1['response']['Group'][]['id'] = $gid;
+			}
+		}
+		$response = Set::merge($response, $resp1);		
 //		$this->log($response, LOG_DEBUG);
 		/*
 		 * return response
@@ -262,14 +295,48 @@ class MyController extends PersonController {
 	    echo json_encode($response);
 	    exit(0);
 	}
+
+	function __getExpressUploads($userid) {
+				// paginate 
+		$paginateModel = 'Membership';
+		$Model = $this->User->{$paginateModel};
+		$Model->Behaviors->attach('Pageable');
+		$paginateArray = $Model->getPaginateGroupsByUserId($userid, $this->paginate[$paginateModel]);
+			$joins[] = array(
+				'table'=>'groups_users',
+				'alias'=>'HABTM',
+				'type'=>'INNER',
+				'conditions'=>array("`HABTM`.group_id =`{$paginateModel}`.id", 
+					"`HABTM`.user_id" => $userid,
+					"`HABTM`.isActive" => 1,
+					"`HABTM`.isExpress" => 1,),
+			);		
+		$paginateArray['joins'] = @mergeAsArray($paginateArray['joins'], $joins);
+		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
+		$expressUploadGroups = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
+		return $expressUploadGroups;
+	}
 	
+	function express_uploads(){
+		$forceXHR = setXHRDebug($this, 0);
+		if (!$this->RequestHandler->isAjax() && !$forceXHR) return;
+		
+		Configure::write('debug', $forceXHR);
+		$this->autoRender = false;
+		$userid = AppController::$userid;
+		$expressUploadGroups =$this->__getExpressUploads($userid);  	// sets  viewVars['expressUploadGroups']		
+		$this->set(compact('expressUploadGroups'));
+		$done = $this->renderXHRByRequest('json', '/elements/group/express-upload', null, $forceXHR);
+		if ($done) return;
+	}
 	/*
-	 * valums uploader ONLY
+	 * AIR or valums upload
 	 */
 	function upload () {
 //		$this->log($this->data, LOG_DEBUG);
 		$forceXHR = setXHRDebug($this);
 		$userid = AppController::$userid;
+		
 		if (!empty($this->data['isAIR'])) {
 			/*
 			 *  POST from snappi AIR desktop uploader
@@ -316,6 +383,11 @@ class MyController extends PersonController {
 		$this->User->contain();
 		$options = array('conditions'=>array('User.id'=>$userid));
 		$data = $this->User->find('first', $options);
+		
+		// set for '/elements/group/express-upload'
+		$expressUploadGroups = $this->__getExpressUploads($userid);
+		$this->set(compact('expressUploadGroups'));
+				
 		if (empty($data)) {
 			/*
 			 * handle no permission to view record

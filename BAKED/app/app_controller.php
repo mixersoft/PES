@@ -15,6 +15,7 @@ class AppController extends Controller {
 
 	static $uuid = null;
 	static $userid = null;
+	static $role = null;
 	static $writeOk = false;
 
 	/**
@@ -191,6 +192,7 @@ class AppController extends Controller {
 	 * allows easy rendering of json/xml requests in browser for debugging
 	 */
 	function renderXHRByRequest($json=null, $xhr=null, $xml=null, $forceXHR = 0){
+		// TODO: use Configure::read('debugXhr');
 		$forceXHR = setXHRDebug($this, $forceXHR);
 		$renderComplete = false;
 		if ($this->RequestHandler->isAjax() || $forceXHR) {
@@ -218,6 +220,7 @@ class AppController extends Controller {
 				if (!$forceXHR) header('Content-Type: text/html');
 				$this->render($xhr, 'ajax');
 				$renderComplete = true;
+				
 			}
 			if ($forceXHR) 	$this->render('/elements/sqldump', false);
 			
@@ -373,6 +376,7 @@ class AppController extends Controller {
 			$this->Session->write('Auth.User.role', $role);
 			// TODO: refactor to use AppController::$userid instead of Session::read('Auth.User.id');
 			AppController::$userid = $auth['User']['id'];	
+			AppController::$role = $role;
 		}
 	}
 	

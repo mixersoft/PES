@@ -10,6 +10,12 @@ body {
 	background: url(/css/images/body_bg.jpg) no-repeat center top;
 	color: #000;
 }
+
+body.wait, body.wait a {
+	cursor: wait;
+}
+
+
 a {
 	text-decoration: none;
 	outline: none;
@@ -972,3 +978,34 @@ ul li.btn.disabled, ul li.btn.disabled:hover {
 .upload-toolbar li.btn.start {
 	border-color: #00AA00;
 } 
+
+/*
+ * used in /my/upload for #express-upload-options 
+ */
+.related-content.blue {
+	background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0, rgb(197,232,250)),color-stop(1, rgb(232,246,253))	);
+	background-image: -moz-linear-gradient(center bottom,rgb(197,232,250) 0%,rgb(232,246,253) 100%);
+	border: 1px solid #8fb9d0;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-box-shadow: 0px 0px 7px #fff inset;
+	-moz-box-shadow: 0px 0px 7px #fff inset;
+	overflow: hidden;
+	font-size: 10pt;
+	padding: 0 5px;
+}
+
+.related-content h1 {
+    border-bottom: 1px solid #8fb9d0;
+    font-size: 16pt;
+    margin: 10px 0;
+}
+img.tiny {
+	width:33px;
+	height:33px;
+}
+
+.related-content.blue {
+	margin: 10px 0;
+	padding: 5px;
+}

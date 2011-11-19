@@ -68,10 +68,19 @@
 				// let ContextMenu listner handle this click.
 				return;
 			}
+			
+			try {
+				// if contextMenu is open, close it first
+				var g = target.ancestor('section.gallery').Gallery;
+				if (g.ContextMenu.get('disabled')==false) return;	
+			} catch(e) {}
+			
+			
 			// No shift key - remove all selected images,
 			var selected = target.ancestor('.container').all('.FigureBox.selected');
 			if (selected.size()) {
 				e.halt();	// intercepts/stops A.click action
+				e.stopImmediatePropagation();
 				selected.removeClass('selected');
 				return;
 			}

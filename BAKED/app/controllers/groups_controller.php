@@ -85,7 +85,8 @@ class GroupsController extends AppController {
 			/*
 			 * experimental 
 			 */'setRandomGroupCoverPhoto', 'test', 'load', 'addACL', 
-			 'invitation'		// 'join' requires user signin		
+			 'invitation',		
+			 'join' // show require role='USER' but handle in controller for proper Flash msgs		
 		);
 		AppController::$writeOk = $this->Group->hasPermission('write',AppController::$uuid);
 		// TODO: why can't I just attach Taggable on the fly??
@@ -146,18 +147,21 @@ LIMIT 5;";
 		$this->autoRender = false;
 	}
 	function __submissionPolicy($id) {
-		$this->Group->id=$id;
-		$submission_policy = $this->Group->field('submission_policy');
-		return $submission_policy;		
+		return $this->Group->submissionPolicy($id);
+		// $this->Group->id=$id;
+		// $submission_policy = $this->Group->field('submission_policy');
+		// return $submission_policy;		
 	}
 
 	function __canPublish($id) {
-		$submission_policy = (int)$this->__submissionPolicy($id);
-		return $submission_policy === 1;		// 1=publish, 2=queue for Admin approval
+		return $this->Group->canPublish($id);
+		// $submission_policy = (int)$this->__submissionPolicy($id);
+		// return $submission_policy === 1;		// 1=publish, 2=queue for Admin approval
 	}
 	
 	function __canSubmit($id) {
-		return $this->Group->hasPermission('read', $id);		// for now, assume if we have READ access, we have SHARE/CONTRIBUTE permission		
+		return $this->Group->canSubmit($id);
+		// return $this->Group->hasPermission('read', $id);		// for now, assume if we have READ access, we have SHARE/CONTRIBUTE permission		
 	}
 
 	function __membershipPolicy($id) {
@@ -166,8 +170,11 @@ LIMIT 5;";
 		// use placeholder for now.
 		return true;
 	}
-
-	function __joinGroup($groupId, $userId){
+	
+	/**
+	 * @params isExpress boolean, uploader should check this status to offer express uploading into these Group(s)
+	 */
+	function __joinGroup($groupId, $userId, $isExpress=false){
 		// TODO:  check permission to write to group before adding
 		$isApproved = $this->__membershipPolicy($groupId);
 
@@ -176,6 +183,7 @@ LIMIT 5;";
 		$data['isApproved'] = $isApproved;
 		$data['role'] = 'member';
 		$data['isActive'] = $isApproved;
+		$data['isExpress'] = $isExpress;
 		$data['lastVisit'] = time();
 		$GroupUsers = ClassRegistry::init('GroupsUser');
 		$GroupUsers->create();
@@ -200,11 +208,15 @@ LIMIT 5;";
 		$this->layout = 'snappi-guest';
 		$this->Group->recursive = 0;
 		$data = $this->Group->read(null,$id);
-		$this->set('data', $data);
+		$badges = ClassRegistry::init('User')->getBadges(AppController::$userid);
+		$this->set(compact('data', 'badges'));
 	}
 	/**
 	 * GET action, shows invitation to VISITORS/GUESTS/USERS and allow user to respond
-	 * POSTS to /groups/join
+	 * 
+	 * NOTE: 
+	 * - redirects to $signin_redirect if $role != USER
+	 * - POSTS to /groups/join if user is logged in
 	 */
 	function invitation ($id=null) {
 		$this->layout = 'snappi-guest';
@@ -219,14 +231,24 @@ LIMIT 5;";
 		if (isset($this->params['url']['uuid'])) {
 			$badges = ClassRegistry::init('User')->getBadges($this->params['url']['uuid']);
 		}
+		
+		$role = Session::read('Auth.User.role');
+		if (!$role || $role == 'GUEST') {
+			Session::write('Auth.redirect', env('REQUEST_URI')); 
+			$signin_redirect = Router::url('/groups/invitation?register=1');
+		}
+		$isExpress =  (!empty($this->params['url']['express'])) ?  $id : null;
+		Session::write('join.express_upload_gid', $isExpress);
+		
 		$this->set('title_for_layout', "An Invitation to Join {$data['Group']['type']} {$data['Group']['title']}");
-		$this->set(compact('id', 'owner_name', 'data', 'badges'));	
+		$this->set(compact('id', 'owner_name', 'data', 'badges', 'signin_redirect', 'role'));	
 		$this->render('invitation');		
 		// debug(Session::read('Auth.redirect'));
+		// 
 	}
 	/**
 	 * POST response only, from /groups/invitation
-	 * - requires Auth Session
+	 * - requires Auth Session, role=USER
 	 */
 	function join ($redirect=null) {
 		$this->layout = 'snappi';
@@ -234,14 +256,14 @@ LIMIT 5;";
 		if ($forceXHR && !empty($this->params['url']['data'])) {
 			$this->data = $this->params['url']['data'];
 		}
-
 		if (empty($this->data)) $this->redirectSafe();
 				
 		
 		$role = Session::read('Auth.User.role');
 		if ($role == 'GUEST') {
-			$this->Session->setFlash('You cannot join a Circle when browsing with a Guest pass. To upgrade your Guest pass, please sign up now.');
-			$this->redirectSafe();
+			// should not hit this line
+			$this->Session->setFlash('You must upgrade your Guest pass to a full user account to join a group. To upgrade your Guest pass, please sign up now.');
+			$this->Session->write('Auth.redirect', $this->here);
 		}		
 		if ($role == 'USER') {
 			$isMember = in_array($this->data['Group']['id'], Permissionable::getGroupIds());
@@ -257,11 +279,13 @@ LIMIT 5;";
 				// TODO: cancel invitation from "recent activity" ticker
 				$this->redirectSafe();
 			} else {	// action = "Accept Invitation"
+				$isExpress = Session::read('join.express_upload_gid') == $this->data['Group']['id'];
 				$join = $this->data['Group'];
-				$ret = $this->__joinGroup($join['id'], AppController::$userid);
+				$ret = $this->__joinGroup($join['id'], AppController::$userid, $isExpress);
 				if ($ret) {
 					$this->Session->setFlash("Welcome! You are now a member of group <b>{$join['title']}</b>.");
-					$this->redirect(array('action'=>'home', $id), null, true);
+					Session::delete('join.express_upload_gid');
+					$this->redirect(array('action'=>'home', $join['id']), null, true);
 				} else {
 					$this->Session->setFlash('Error: there was a problem joining this group. Please try again.');
 				}
@@ -272,7 +296,7 @@ LIMIT 5;";
 	function __contributePhotostream($groupId, $providerAccountId, $batchId=null){
 		// TODO:  check permission to write to group before adding
 
-		$isApproved = $this->__submissionPolicy($groupId);
+		$isApproved = $this->Group->submissionPolicy($groupId);
 		$userid = Session::read('Auth.User.id');
 		$options = array(
 			'conditions'=>array('Asset.provider_account_id'=>$providerAccountId, 
@@ -295,115 +319,61 @@ LIMIT 5;";
 		$debug = Configure::read('debug');
 		$aids = $assets;
 		if ($checkAuth) {
-			if (!$this->__canSubmit($groupId)) return false;
+			if (!$this->Group->canSubmit($groupId)) return false;
 		}
-		$isApproved = $this->__canPublish($groupId);
-		if (is_string($assets))  $assets = explode(',', $assets );
-
-		// format assets for saveAll
-		$saveAll_assets = array();
-		$userid = Session::read('Auth.User.id');
-		foreach($assets as $asset) {
-			$VALUES_assets_groups[] = "( UUID(), '{$asset}', '{$groupId}', '{$isApproved}', '{$userid}', null, now() )";
-		}		
-		$INSERT_assets_groups = "INSERT INTO `assets_groups` (id, asset_id, group_id, isApproved, user_id, dateTaken_offset, modified ) 
-VALUES  :chunk:
-ON DUPLICATE KEY UPDATE `user_id`=VALUES(`user_id`), `dateTaken_offset`=VALUES(`dateTaken_offset`), `modified`=VALUES(`modified`);
-";
-		$VALUES = insertByChunks($INSERT_assets_groups, $VALUES_assets_groups);		
-		$AssetGroup = ClassRegistry::init('AssetsGroup');
-		foreach ($VALUES as $chunk) {
-			$INSERT = str_replace(':chunk:', $chunk, $INSERT_assets_groups);
-			$AssetGroup->query($INSERT);	
-		}
-		$result = $this->insertIntoGroupsProviderAccount($groupId, $assets);
-		ClassRegistry::init('Usershot')->copyToGroupshots($groupId, $assets);
-		return count($VALUES_assets_groups);
 		
-//		foreach($assets as $asset) {
-//			// TODO: check for group Write to allow non-owner to contribute photos
-//			$saveAll_assets[] = array('asset_id'=>$asset, 'group_id'=>$groupId, 'user_id'=>Session::read('Auth.User.id'), 'isApproved'=>$isApproved);
-//		}
-//		$AssetsGroup = ClassRegistry::init('AssetsGroup');
-//		Configure::write('debug', 0);	// supress mysql duplicate key warnings
-//		$ret =  $AssetsGroup->saveAll($saveAll_assets);
-//		if ($ret) {
-//			$result = $this->insertIntoGroupsProviderAccount($groupId, $assets);
-//			if ($result) {
-//				Configure::write('debug', $debug);	
-//				ClassRegistry::init('Usershot')->copyToGroupshots($groupId, $assets);
-//				return count($saveAll_assets);
-//			}else{
-//				return $result;
-//			}
-//		} else {
-//			// try to save assets one by one
-//			$ret=array(0=>0,1=>0);
-//			Configure::write('debug', 0);	// supress mysql duplicate key warnings
-//			foreach($saveAll_assets as & $asset) {
-//				$data['AssetsGroup'] = $asset;
-//				$AssetsGroup->create();
-//				$retval = $AssetsGroup->save($data);
-//				if ($retval) $ret[1]++;
-//				else $ret[0]++;
-//			}
-//			Configure::write('debug', $debug);				
-//			$result = $this->insertIntoGroupsProviderAccount($groupId, $assets);
-//			if ($result) {
-//				ClassRegistry::init('Usershot')->copyToGroupshots($groupId, $assets);
-//				return $ret[1];		// return number of items added
-//			}else{
-//				return $result;
-//			}
-//		}
+		
+		$isApproved = $this->Group->canPublish($groupId);
+		return $this->Group->contributePhoto($groupId, $assets, $isApproved);
+		
+		// if (is_string($assets))  $assets = explode(',', $assets );
+		// // format assets for saveAll
+		// $saveAll_assets = array();
+		// foreach($assets as $asset) {
+			// $VALUES_assets_groups[] = "( UUID(), '{$asset}', '{$groupId}', '{$isApproved}', '{$userid}', null, now() )";
+		// }		
+		// $INSERT_assets_groups = "INSERT INTO `assets_groups` (id, asset_id, group_id, isApproved, user_id, dateTaken_offset, modified ) 
+// VALUES  :chunk:
+// ON DUPLICATE KEY UPDATE `user_id`=VALUES(`user_id`), `dateTaken_offset`=VALUES(`dateTaken_offset`), `modified`=VALUES(`modified`);
+// ";
+		// $VALUES = insertByChunks($INSERT_assets_groups, $VALUES_assets_groups);		
+		// $AssetGroup = ClassRegistry::init('AssetsGroup');
+		// foreach ($VALUES as $chunk) {
+			// $INSERT = str_replace(':chunk:', $chunk, $INSERT_assets_groups);
+			// $AssetGroup->query($INSERT);	
+		// }
+// 		
+		// $result = $this->__insertIntoGroupsProviderAccount($groupId, $assets);
+		// ClassRegistry::init('Usershot')->copyToGroupshots($groupId, $assets);
+		// return count($VALUES_assets_groups);
 	}	
 	
-	function insertIntoGroupsProviderAccount($groupId, $assets){
-		$ret = 1;
-		$Asset = ClassRegistry::init('Asset');
-		$GroupsProviderAccount = ClassRegistry::init('GroupsProviderAccount');
-		if (is_string($assets))  $assets = explode(',', $assets );
-		
-		$options = array(
-			'fields' => array('DISTINCT Asset.provider_account_id'), 
-			'conditions' => array('Asset.id' => $assets),
-			'permissionable' => false, 
-		); 
-		$data = $Asset->find('all', $options);
-		$providerAccountIds = Set::extract('/Asset/provider_account_id', $data);
-		
-		foreach ($providerAccountIds as $pa_id) {
-			$VALUES[]= "( UUID(), '{$groupId}', '{$pa_id}', now() )";
-		}		
-		$INSERT_paids = "INSERT IGNORE INTO `groups_provider_accounts` (`id`, `group_id`, `provider_account_id`, `created`) 
-VALUES :chunk: ";
-		$VALUES = insertByChunks($INSERT_paids, $VALUES);		
-		foreach ($VALUES as $chunk) {
-			$INSERT = str_replace(':chunk:', $chunk, $INSERT_paids);
-			$GroupsProviderAccount->query($INSERT);	
-		}			
-		return 1;
-		
-// 		$distinct_new_provider_ids = array_keys(array_flip(Set::extract($providerAccountIds , '/Asset/provider_account_id')));
-// 				
-// 		// $existingProviderAccountIds is distinct/unique because of table index
-// 		$options = array(
-//	 		'fields' => array('GroupsProviderAccount.provider_account_id'), 
-//	 		'conditions' => array('GroupsProviderAccount.group_id' => $groupId)
-// 		);
-//		$existingProviderAccountIds = $GroupsProviderAccount->find('all', $options);
-//		$new_pa_ids = array_diff($distinct_new_provider_ids, Set::extract($existingProviderAccountIds , '/GroupsProviderAccount/provider_account_id'));
-//		
-//		// insert new providerAccounts into GroupsProviderAccounts
-//		$groupsProviderAccounts = array();
-//		foreach($new_pa_ids as $new_pa_id) {
-//			$groupsProviderAccounts[] = array('group_id'=>$groupId, 'provider_account_id'=>$new_pa_id, 'created'=>date("Y-m-d H:i:s"));
-//		}
-//		if (!empty($groupsProviderAccounts)){
-//			$ret =  $GroupsProviderAccount->saveAll($groupsProviderAccounts);
-//		}
-//		return $ret;
-	}
+	// function __insertIntoGroupsProviderAccount($groupId, $assets){
+		// $ret = 1;
+		// $Asset = ClassRegistry::init('Asset');
+		// $GroupsProviderAccount = ClassRegistry::init('GroupsProviderAccount');
+		// if (is_string($assets))  $assets = explode(',', $assets );
+// 		
+		// $options = array(
+			// 'fields' => array('DISTINCT Asset.provider_account_id'), 
+			// 'conditions' => array('Asset.id' => $assets),
+			// 'permissionable' => false, 
+		// ); 
+		// $data = $Asset->find('all', $options);
+		// $providerAccountIds = Set::extract('/Asset/provider_account_id', $data);
+// 		
+		// foreach ($providerAccountIds as $pa_id) {
+			// $VALUES[]= "( UUID(), '{$groupId}', '{$pa_id}', now() )";
+		// }		
+		// $INSERT_paids = "INSERT IGNORE INTO `groups_provider_accounts` (`id`, `group_id`, `provider_account_id`, `created`) 
+// VALUES :chunk: ";
+		// $VALUES = insertByChunks($INSERT_paids, $VALUES);		
+		// foreach ($VALUES as $chunk) {
+			// $INSERT = str_replace(':chunk:', $chunk, $INSERT_paids);
+			// $GroupsProviderAccount->query($INSERT);	
+		// }			
+		// return 1;
+	// }
 	
 	//TODO: update response to standard json format
 	function contributePhoto(){

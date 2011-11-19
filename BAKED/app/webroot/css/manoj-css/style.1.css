@@ -22,6 +22,11 @@ body {
 	font-family: Arial;
 	background: url(../images/body_bg.jpg) no-repeat center top;
 }
+
+body.wait, body.wait a {
+	cursor: wait;
+}
+
 a {
 	text-decoration: none;
 	outline: none;
@@ -60,10 +65,9 @@ ul > li.btn {
 	-moz-border-radius: 5px;
 	-webkit-border-radius: 5px;	
 	color: #494949;
-	xcursor: pointer;
 }
 
-ul > li.btn:hover, ul > li.btn.focus {
+ul > li.btn:hover:not(.disabled), ul > li.btn.focus {
 	background: -moz-linear-gradient(bottom, #fca22f, #ffc374) !important;	 
 	background: -webkit-gradient(linear, center bottom, center top, from(#fca22f), to(#ffc374)) !important;	
 	-moz-border-radius: 4px;
@@ -74,7 +78,7 @@ ul > li.btn:hover, ul > li.btn.focus {
 nav > ul {
 	cursor: default;
 }
-nav > ul > li, nav > ul > li > a {
+nav > ul > li, nav > ul > li > a, li.btn {
 	cursor: pointer;
 }
 nav ul.menu-trigger > li , nav  ul.menu-trigger > li > a {
@@ -1882,7 +1886,7 @@ input[type='submit']:hover.orange, button[type='submit']:hover.orange {
 /*
  * /groups/invitation CSS
  */
-#body-container.plain div.wrap {
+#body-container.plain div.wrap, div.wrap-v {
 	margin-top: 10px;
 	margin-bottom: 10px;
 }
@@ -1926,3 +1930,47 @@ ul.btn > li.btn:hover a, ul.btn > li.btn.focus a {
 /*
  * /groups/invitation CSS
  */
+div.link {
+	background: none repeat scroll 0 0 #E2E2E2;
+    margin: 10px 0;
+    padding: 4px;
+    cursor: text;
+}
+.invite-copy h3 {
+	border-bottom: 1px solid #e2e2e2;
+}
+.invite-copy blockquote {
+	margin: 4px 0;
+	padding: 4px;
+	background-color: #FFFFC3;
+}
+div.link input.copy-paste {
+	font-family: monospace;
+	font-size: 8pt;
+	width: 580px;
+}
+
+/*
+ * used in /my/upload for #express-upload-options 
+ */
+.related-content.blue {
+	background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0, rgb(197,232,250)),color-stop(1, rgb(232,246,253))	);
+	background-image: -moz-linear-gradient(center bottom,rgb(197,232,250) 0%,rgb(232,246,253) 100%);
+	border: 1px solid #8fb9d0;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-box-shadow: 0px 0px 7px #fff inset;
+	-moz-box-shadow: 0px 0px 7px #fff inset;
+	overflow: hidden;
+	font-size: 10pt;
+	padding: 0 5px;
+}
+.related-content h1 {
+    border-bottom: 1px solid #8fb9d0;
+    font-size: 16pt;
+    margin: 10px 0;
+}
+img.tiny {
+	width:33px;
+	height:33px;
+}

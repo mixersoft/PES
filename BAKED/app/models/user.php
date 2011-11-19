@@ -362,10 +362,11 @@ abstract class UserPlugin extends AppModel {
  */
 	public function register($postData = array(), $useEmailVerification = true) {
 		// move these fields to Profile table
+		$defaultActive = !empty($postData[$this->alias]['active']) ? 1 : 0;
 		if ($useEmailVerification == true) {
 			$postData['Profile']['email_token'] = $this->generateToken();
 			$postData['Profile']['email_token_expires'] = date('Y-m-d H:i:s', time() + 86400);
-			$postData[$this->alias]['active'] = 0;	// set active in /validate/email/[token]?
+			$postData[$this->alias]['active'] = $defaultActive;	// set active in /validate/email/[token]?
 		} else {
 			$postData['Profile']['email_authenticated'] = 1;
 			$postData[$this->alias]['active'] = 1;	

@@ -32,7 +32,7 @@ class PersonController extends UsersController {
 		),
 		'Asset'=>array(
 			'limit' => 16,
-			'big_limit' =>48,
+			'big_limit' =>24,
 			'photostream_limit' => 4,
 			'order' => array('Asset.dateTaken'=>'ASC'),
 //			'contain' => array('Owner.id', 'Owner.username'), 
@@ -357,7 +357,6 @@ class PersonController extends UsersController {
 			$this->redirect(array('action' => 'index'));
 		}
 
-		
 		// paginate 
 		$paginateModel = 'Membership';
 		$Model = $this->User->{$paginateModel};

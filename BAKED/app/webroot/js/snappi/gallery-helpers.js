@@ -113,7 +113,58 @@
         	} catch (e) {}
     	},
     }
-    
+    GalleryFactory.nav = {
+    	/**
+    	 * @params g SNAPPI.Gallery
+    	 * @params e event, needs e.currentTarget
+    	 */
+    	toggle_ContextMenu : function(g, e) {
+	        e.preventDefault();
+        	
+        	var CSS_ID, TRIGGER;
+        	switch(g._cfg.type){
+        		case 'Photo':
+        		case 'NavFilmstrip': 
+        			CSS_ID = 'contextmenu-photoroll-markup';
+        			break;
+        		case 'DialogHiddenShot': 
+        		case 'ShotGallery': 
+        			CSS_ID = 'contextmenu-hiddenshot-markup';	
+        			break;
+				default:
+					return;        			
+        	}
+        	if (g.node.hasClass('hiddenshots') || g.node.hasClass('hidden-shot')) {
+        		CSS_ID = 'contextmenu-hiddenshot-markup';
+        	} 
+        	
+        	// load/toggle contextmenu
+        	if (!SNAPPI.MenuAUI.find[CSS_ID]) {
+        		var contextMenuCfg = {
+        			// triggerType: 'photo',				// .gallery.photo
+        			triggerRoot: g.container,
+        			currentTarget:e.currentTarget,
+        			init_hidden: false,
+        			host: g,			// add Gallery.ContextMenu backreference
+				}; 
+        		var menu = SNAPPI.MenuAUI.CFG[CSS_ID].load(contextMenuCfg);
+        		g.node.listen['disable_LinkToClick'] = true;
+        	} else {
+        		var menu = SNAPPI.MenuAUI.toggleEnabled(CSS_ID, e);
+        		// if (g._cfg.listeners.indexOf('LinkToClick')> -1) {
+        			// toggle LinkToClick listener
+	        		if (menu.get('disabled')) {
+	        			// TODO: nav to attribute "linkTo"
+	        			// Factory.listeners.LinkToClick.call(this);
+	        			g.node.listen['disable_LinkToClick'] = false;
+	        		} else {
+	        			// g.stopLinkToClickListener();
+	        			g.node.listen['disable_LinkToClick'] = true;
+	        		}
+        		// }
+        	}
+        }
+    }
     GalleryFactory.listeners = {
 		    FocusClick: function(){
 	        	if (this.node.listen['FocusClick'] == undefined) {
@@ -137,7 +188,7 @@
 	            		var linkTo = e.currentTarget.getAttribute('linkTo');
 	            		if (linkTo) {
 	            			if (this.listen['disable_LinkToClick']) {
-	            				this.Gallery.toggle_ContextMenu(e);
+	            				GalleryFactory.nav.toggle_ContextMenu(this.Gallery, e);
 		                		return;		// allows temp disabling of listener
 		                	}
 		                    if (this.Gallery.castingCall.CastingCall) {
@@ -236,15 +287,17 @@
 	        	if (this.node.listen['ContextMenuClick'] == undefined){
 	        		this.node.listen['ContextMenuClick'] = this.container.delegate('contextmenu', 
 	        		function(e){
-						this.Gallery.toggle_ContextMenu(e);
-	        		}, '.FigureBox', this.node);
+						// this.Gallery.toggle_ContextMenu(e);
+						GalleryFactory.nav.toggle_ContextMenu(this.Gallery, e);
+	        		}, '.FigureBox.Photo', this.node);
 	        		
 	        		// .FigureBox li.context-menu.icon
 	     			this.node.listen['ContextMenuIconClick'] = this.container.delegate('click', 
 	     			function(e){
-						this.Gallery.toggle_ContextMenu(e);
+						// this.Gallery.toggle_ContextMenu(e);
+						GalleryFactory.nav.toggle_ContextMenu(this.Gallery, e);
 						e.stopImmediatePropagation();
-	        		}, '.FigureBox  figcaption  li.context-menu', this.node);        		
+	        		}, '.FigureBox.Photo  figcaption  li.context-menu', this.node);        		
 				}        	
 	        	return;
 	        },        	
@@ -439,6 +492,13 @@
 	     */		
 	    handle_focusClick: function(e){
 	    	var gallery = this.Gallery;
+	    	
+			if (gallery.node.listen['disable_LinkToClick']) {
+				// hide contextmenu with this click
+				GalleryFactory.nav.toggle_ContextMenu(gallery, e);
+        		return;		// allows temp disabling of listener
+        	}	    	
+        	
 	    	var selected = SNAPPI.Auditions.find(e.target.ancestor('.FigureBox').uuid);
 	    	// var oldUuid = gallery.getFocus().id;
 	    	gallery.auditionSH.setFocus(selected);
@@ -546,6 +606,12 @@
 		
 		handle_focusClick: function(e){
 	    	var gallery = this.Gallery;
+			if (gallery.node.listen['disable_LinkToClick']) {
+				// hide contextmenu with this click
+				GalleryFactory.nav.toggle_ContextMenu(gallery, e);
+        		return;		// allows temp disabling of listener
+        	}	    	
+	    	
 	    	var selected = SNAPPI.Auditions.find(e.target.ancestor('.FigureBox').uuid);
 	    	var oldUuid = gallery.getFocus().id;
 	    	if (selected.id != oldUuid) {
@@ -608,6 +674,12 @@
 		build: GalleryFactory.ShotGallery.build,
 		handle_focusClick: function(e){
 	    	var gallery = this.Gallery;
+			if (gallery.node.listen['disable_LinkToClick']) {
+				// hide contextmenu with this click
+				GalleryFactory.nav.toggle_ContextMenu(gallery, e);
+        		return;		// allows temp disabling of listener
+        	}	    	
+	    	
 	    	var selected = SNAPPI.Auditions.find(e.target.ancestor('.FigureBox').uuid);
 	    	var oldUuid = gallery.getFocus().id;
 	    	if (selected.id != oldUuid) {

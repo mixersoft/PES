@@ -277,13 +277,15 @@ class UsersPluginController extends AppController {
 			$this->Session->setFlash(__d('users', 'You are already registered and logged in!', true));
 			$this->redirect('/');
 		}
-
+		$msg['success'] = __d('users', 'Your account has been created. You should receive an e-mail shortly to verify your email address. <BR />In the meantime, why not get a jump on things by downloading the Snaphappi Desktop Uploader? ', true);
+		$useEmailVerification = true;
 		if (!empty($this->data)) {
-			$user = $this->User->register($this->data);
+			$this->data['User']['active'] = 1;
+			$user = $this->User->register($this->data, $useEmailVerification);
 			if ($user !== false) {
 				$this->set('user', $user);
 				$this->_sendVerificationEmail($user[$this->modelClass]['email'], $user);
-				$this->Session->setFlash(__d('users', 'Your account has been created. You should receive an e-mail shortly to activate your account. <BR />In the meantime, why not get a jump on things by downloading the Snaphappi Desktop Uploader? ', true));
+				$this->Session->setFlash($msg['success']);
 				$this->redirect(array('controller'=>'pages','action'=> 'downloads'));
 			} else {
 				unset($this->data[$this->modelClass]['password']);
@@ -492,8 +494,8 @@ class UsersController extends UsersPluginController {
 	        'port'=>'465', 
 	        'timeout'=>'30',
 	        'host' => 'ssl://smtp.gmail.com',
-	        'username'=>'swaprat@gmail.com',
-	        'password'=>'snapforg00d',
+	        'username'=>'customerservice@snaphappi.com',
+	        'password'=>'snapsh0t1',
 	   );
 
 		/* Set delivery method */
@@ -503,7 +505,8 @@ class UsersController extends UsersPluginController {
 			$this->Email->delivery = 'smtp';
 			break;
 		default:
-			$this->Email->delivery = 'debug';
+			$this->Email->delivery = 'smtp';
+			// $this->Email->delivery = 'debug';
 			break;		
 	}	   
 		    
@@ -629,7 +632,11 @@ $data['User']['primary_group_id'] = 'role-----0123-4567-89ab---------user';
 	function register() {
 		// $this->layout = 'snappi-aui-960';
 		$this->layout = $layout = 'snappi-guest';
+		$forceXHR = setXHRDebug($this, 0);		// xhr login is for AIR desktop uploader
 		parent::register();
+		$done = $this->renderXHRByRequest('json', 'xhr/register', null, $forceXHR);
+		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
+		
 	}
 
 	function login() {
