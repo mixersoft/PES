@@ -277,16 +277,24 @@ class UsersPluginController extends AppController {
 			$this->Session->setFlash(__d('users', 'You are already registered and logged in!', true));
 			$this->redirect('/');
 		}
-		$msg['success'] = __d('users', 'Your account has been created. You should receive an e-mail shortly to verify your email address. <BR />In the meantime, why not get a jump on things by downloading the Snaphappi Desktop Uploader? ', true);
-		$useEmailVerification = true;
+		$msg['success'] = __d('users', 'Your account has been created. You should receive an e-mail shortly to verify your email address.', true);
+		if (1 || !Session::check('Auth.redirect')){
+			$msg['success'] .= "<BR />Why not get a jump on things by downloading the <a href='/pages/downloads' target='_blank'>Snaphappi Desktop Uploader</a>?";	
+		}
 		if (!empty($this->data)) {
-			$this->data['User']['active'] = 1;
-			$user = $this->User->register($this->data, $useEmailVerification);
+			$register_cfg = Configure::read('register');
+			$this->data['User']['active'] = $register_cfg['active'];
+			
+			$user = $this->User->register($this->data, $register_cfg['email_verify']);
 			if ($user !== false) {
 				$this->set('user', $user);
 				$this->_sendVerificationEmail($user[$this->modelClass]['email'], $user);
 				$this->Session->setFlash($msg['success']);
-				$this->redirect(array('controller'=>'pages','action'=> 'downloads'));
+				if ($register_cfg['auth_on_success'] && $register_cfg['active']) {
+					$this->data['User']['password'] = $this->Auth->password($this->data['User']['password']); 
+					$login_ok = $this->__loginUser($this->data);
+				}
+				$this->__continueToRedirect($register_cfg['success_redirect']);
 			} else {
 				unset($this->data[$this->modelClass]['password']);
 				unset($this->data[$this->modelClass]['temppassword']);
@@ -453,11 +461,9 @@ class UsersController extends UsersPluginController {
 			 */
 			 'addACLs', 'odesk_photos'
 		);
-	
 		// TODO: edit allowed for  'role-----0123-4567-89ab---------user'
 		// TODO: groups allowed for  'role-----0123-4567-89ab--------guest', 'role-----0123-4567-89ab---------user'
-		$authUserid = Session::read('Auth.User.id');
-		AppController::$writeOk = $authUserid == AppController::$uuid || $authUserid == Permissionable::getRootUserId();
+		AppController::$writeOk = AppController::$userid  == AppController::$uuid || AppController::$userid == Permissionable::getRootUserId();
 	}
 	
 	/*
@@ -490,25 +496,19 @@ class UsersController extends UsersPluginController {
 	 */
 	protected function _sendOverSMTP(){
 	   /* SMTP Options */
-	   $this->Email->smtpOptions = array(
-	        'port'=>'465', 
-	        'timeout'=>'30',
-	        'host' => 'ssl://smtp.gmail.com',
-	        'username'=>'customerservice@snaphappi.com',
-	        'password'=>'snapsh0t1',
-	   );
+	   $this->Email->smtpOptions = Configure::read('email.auth');
 
 		/* Set delivery method */
-	switch (env('SERVER_NAME')) {
-		case 'aws.snaphappi.com':
-		case 'dev2.snaphappi.com':
-			$this->Email->delivery = 'smtp';
-			break;
-		default:
-			$this->Email->delivery = 'smtp';
-			// $this->Email->delivery = 'debug';
-			break;		
-	}	   
+		switch (env('SERVER_NAME')) {
+			case 'aws.snaphappi.com':
+			case 'dev2.snaphappi.com':
+				$this->Email->delivery = 'smtp';
+				break;
+			default:
+				$this->Email->delivery = 'smtp';
+				// $this->Email->delivery = 'debug';
+				break;		
+		}	   
 		    
 		/* Do not pass any args to send() */
 		$this->Email->send();
@@ -530,9 +530,10 @@ class UsersController extends UsersPluginController {
 		if ($saveRedirect) $this->Session->write('Auth.redirect', $redirect);
 	}
 
-	function __continueToRedirect() {
-		$redirect = @if_e($this->Session->read('Auth.redirect'), $this->Auth->loginRedirect);
-		$this->Session->write('Auth.redirect', null);
+	function __continueToRedirect($default=null) {
+		if ($default===null) $default = $this->Auth->loginRedirect;
+		$redirect = @if_e($this->Session->read('Auth.redirect'), $default);
+		$this->Session->delete('Auth.redirect');
 		$this->Session->setFlash(null, null, null, 'auth');
 		$this->redirect($redirect, null, true);
 	}
@@ -640,15 +641,22 @@ $data['User']['primary_group_id'] = 'role-----0123-4567-89ab---------user';
 	}
 
 	function login() {
-		// $this->layout = 'snappi-aui-960';
 		$this->layout = $layout = 'snappi-guest';
 		$forceXHR = setXHRDebug($this, 0);		// xhr login is for AIR desktop uploader
+		if($forceXHR) $this->data['User']['password'] = $this->Auth->password($this->data['User']['password']);
 		$allow_guest_login = Configure::read('AAA.allow_guest_login');
 		/*
 		 * POST method
 		 * local user registration not yet implemented
 		 */
 		if (isset($this->data['User'])) {
+if ($this->RequestHandler->isAjax() || $forceXHR) {
+	// $this->log($_COOKIE, LOG_DEBUG);	
+	$this->log("[HTTP_COOKIE]=".$_SERVER['HTTP_COOKIE'], LOG_DEBUG);	
+	// $this->log("[HTTP_USER_AGENT]=".env('HTTP_USER_AGENT'), LOG_DEBUG);		
+	// debug($_COOKIE);
+}
+						
 			$login_ok = false;
 			$response = array();
 			if (empty($this->data['User']['username'])) {
@@ -668,7 +676,7 @@ $this->log("set guest_pass for AIR uploader login, guest_pass={$guest_pass}", LO
 			 * Note: magic logins for DEV overwrite $guest_pass logins
 			 */
 			if (empty($this->data['User']['username']) || !empty($this->data['User']['magic'])) {
-//$this->log("check magic/cookie login for user=", LOG_DEBUG);
+$this->log("check magic/cookie login for user=", LOG_DEBUG);
 //$this->log($this->data['User'], LOG_DEBUG);				
 				$this->User->recursive=0;
 				/*
@@ -726,8 +734,10 @@ $this->log("using Cookie guestpass login for {$guestid}", LOG_DEBUG);
 				 * user, guest or magic login
 				 */
 				// delete existing Auth session before we try to authenticate a new user
-//$this->log("username login for user=", LOG_DEBUG);		
-//$this->log($this->data['User'], LOG_DEBUG);
+// $this->log("after /users/login for user={$this->data['User']['username']}", LOG_DEBUG);		
+// $this->log($this->data['User'], LOG_DEBUG);
+// $this->log($_COOKIE, LOG_DEBUG);	
+// $this->log("response cookie value above. ", LOG_DEBUG);	
 				$this->__reset($saveRedirect = true);
 				$login_ok = $this->__loginUser($this->data);
 				$this->data['User'] = $this->Auth->user();
@@ -751,7 +761,12 @@ $this->log("using Cookie guestpass login for {$guestid}", LOG_DEBUG);
 				$response['success'] = $login_ok ? 'true' : 'false';
 				$response['response'] = $this->data['User'];
 				$this->viewVars['jsonData'] = $response; 
-$this->log($this->viewVars['jsonData'], LOG_DEBUG);				
+				$this->viewVars['jsonData']['Session.Config'] = $_SESSION['Config'];
+// loadComponent('Cookie', $this);
+// $this->Cookie->write('test2', 'SetNewCookie', false, '2 week');				
+				$this->viewVars['jsonData']['Cookie'] = $_COOKIE;
+// debug($_COOKIE);
+// $this->log($this->viewVars['jsonData'], LOG_DEBUG);				
 			}
 			
 			/*
@@ -759,7 +774,7 @@ $this->log($this->viewVars['jsonData'], LOG_DEBUG);
 			 */
 			$done = $this->renderXHRByRequest('json', 'xhr_login_view', null, $forceXHR);
 			if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
-			if ($login_ok) $this->__continueToRedirect();
+			// if ($login_ok) $this->__continueToRedirect();
 			// else try login again
 		}
 
@@ -952,7 +967,7 @@ $this->log($this->viewVars['jsonData'], LOG_DEBUG);
 			unset($this->data['Profile']['setting']);
 			// check role permissions
 			$allowed = array('ADMIN');
-			$userid = Session::read('Auth.User.id');
+			$userid = AppController::$userid;
 			if ( $userid== $id || in_array(Session::read('Auth.User.role'), $allowed)) {
 				if (empty($this->data['User']['password'])) unset($this->data['User']['password']);
 				if (@empty($this->data['User'])) {

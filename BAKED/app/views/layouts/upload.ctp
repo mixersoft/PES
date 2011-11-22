@@ -62,25 +62,11 @@
 				echo "PAGE.jsonData.{$key}=".json_encode($value).";\n"; 
 			} 
 		?>
-		PAGE.goSearch = function() {
-			var value = SNAPPI.Y.one('#search input').get('value');
-			if (value) {
-				if (value.length>2) {
-					var here = window.location.href;
-					var namedData = {q:value, page: null};
-					window.location.href = SNAPPI.IO.setNamedParams(here, namedData);
-					return true;
-				} else {
-					alert('please enter at least 3 chars in your search');
-				}
-			}  
-			return false;
-		}; 
 	</script>	
 <?php $this->Layout->blockEnd();?>	
 <div class="anchor-bottom"></div>
 <div id='markup'>
-	<?php $this->Layout->output($this->viewVars['menuMarkup_for_layout']); ?>
+	<?php $this->Layout->output($this->viewVars['markup_for_layout']); ?>
 </div>		
 
 <div id="footer" class="container_16">

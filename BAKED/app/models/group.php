@@ -357,7 +357,6 @@ ORDER BY photos DESC;";
 	 * @return unknown_type
 	 */
 	function getPaginateGroupsByUserId ($userid , $paginate = array(), $paginateModel = null) {
-		// TODO: broken
 		$controllerClass = Configure::read('controller.class');
 		$paginateModel = ($controllerClass == 'User') ? 'Membership' : 'Group';		
 		// add context, refactor

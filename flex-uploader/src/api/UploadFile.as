@@ -11,14 +11,18 @@ package api
 	import flash.events.TimerEvent;
 	import flash.filesystem.File;
 	import flash.net.URLRequest;
+	import flash.net.URLVariables;
+	import flash.net.URLRequestHeader;
+	import flash.net.navigateToURL;
 	import flash.utils.Timer;
+	import com.adobe.serialization.json.JSON;
 	
 	public class UploadFile
 	{
 		
 		private var file:File;
 		private var handlers:Object = null;
-		private var postparams:String = '';
+		private var postparams:Object = null;
 		private var assumeSuccessTimeout:Number = 0;
 		private var filePostName:String = 'file';
 		private var status:String = '';
@@ -40,7 +44,7 @@ package api
 			return !allDone;
 		}
 		
-		public static var getUploadFile:Function = function (file:File, postparams:String, handlers:Object, filePostName:String='file'):UploadFile {
+		public static var getUploadFile:Function = function (file:File, postparams:Object, handlers:Object, filePostName:String='file'):UploadFile {
 			var uf:UploadFile = null;
 			for (var i:int = 0; i<UploadFile.UploadFileManager.length; i++){
 				uf = UploadFile.UploadFileManager[i];
@@ -65,7 +69,7 @@ package api
 		};
 		
 		
-		public function UploadFile(file:File, postparams:String, handlers:Object, filePostName:String='file')
+		public function UploadFile(file:File, postparams:Object, handlers:Object, filePostName:String='file')
 		{
 			this.file = file;
 			this.postparams = postparams;
@@ -90,10 +94,27 @@ package api
 //Config.jsGlobal.firebugLog(req.url);
 //Config.jsGlobal.firebugLog(this.postparams);
 					req.method = 'POST';
-					req.data = this.postparams;
+					var postData:URLVariables = new URLVariables();
+//					var postQueryString:String = 'CAKEPHP='+this.postparams['CAKEPHP'];
+					var postQueryString:String = postQueryString='';					
+					for (var p:String in this.postparams) {
+						postData[p] = this.postparams[p];
+						postQueryString += '&'+p+'='+this.postparams[p];
+					}
+					req.data = postQueryString;
+
+					req.manageCookies = true;
 					this.status = 'uploading';
 //					UploadFile.isUploading = true;
+					
+//					var sid:String = Config.SNAPPI.AIR.XhrHelper.getCookie('CAKEPHP');
+//					Config.SNAPPI.AIR.XhrHelper.setCookies({'CAKEPHP':Config.SNAPPI.DATASOURCE.sessionId});
+//					sid = Config.SNAPPI.AIR.XhrHelper.getCookie('CAKEPHP');
+					
+					// a normal POST keeps the correct Session
+//					navigateToURL(req);
 					this.file.upload(req, this.filePostName, false);
+					
 					this.handlers.uploadStart_Callback.call(this.handlers,this);
 				}else{
 					throw new Error("File not exists");
@@ -173,10 +194,16 @@ package api
 				this.assumeSuccessTimer.stop();
 				this.assumeSuccessTimer = null;
 			}
-			status = 'success';
-
-			//ExternalCall.UploadSuccess(this.uploadSuccess_Callback, file.ToJavaScriptObject(), serverData, responseReceived);
-			this.handlers.uploadSuccess_Callback.call(this.handlers,file, serverData, responseReceived);
+			var response:Object = JSON.decode(serverData);		// error
+			responseReceived = response.success == true;
+			if (response.success == false) {
+				this.status = 'error';
+				this.handlers.uploadError_Callback.call(this.handlers,file, response.message);
+			} else {
+				this.status = 'success';
+				//ExternalCall.UploadSuccess(this.uploadSuccess_Callback, file.ToJavaScriptObject(), serverData, responseReceived);
+				this.handlers.uploadSuccess_Callback.call(this.handlers,file, serverData, responseReceived);
+			}
 
 			this.UploadComplete(false);
 			

@@ -6,7 +6,7 @@
 			<li action='unshare_from_group' class='before-show'>Remove from this Circle</li>
 		</div>
 		<div class="menu-item-group">
-			<li action='sharing' class='disabled before-show'>Sharing...</li>
+			<li action='express_upload' class='before-show selected'>Express Upload</li>
 			<li action='privacy' class='disabled before-show'>Privacy...</li>
 			<li action='setting' class='disabled before-show'>Settings...</li>
 		</div>

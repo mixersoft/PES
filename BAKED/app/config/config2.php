@@ -1,7 +1,7 @@
 <?php
 $config['Config.os']=osName();
 
-$config['AAA']=array('allow_guest_login'=>true);
+$config['AAA']=array('allow_guest_login'=>false);
 
 $config['AAA.Permissionable'] = array('root_user_id'=>'12345678-1111-0000-0000-123456789abc', 'root_group_id'=>'role-----0123-4567-89ab-cdef----root');
 
@@ -9,6 +9,20 @@ $config['Staging.slots'] = 8;
 
 $config['email'] = array(
 	'noreply' => 'noreply@' . array_shift(explode(':',env('HTTP_HOST'))),
+	'auth'=>array(
+		'port'=>'465', 
+        'timeout'=>'30',
+        'host' => 'ssl://smtp.gmail.com',
+		'username'=>'customerservice@snaphappi.com',
+		'password'=>'snapsh0t1',
+	),
+);
+
+$config['register'] = array(
+	'active'=>1,	// default User.active=1
+	'email_verify' => 1,
+	'success_redirect' => '/pages/downloads',	// default redirect on Sucess
+	'auth_on_success' => 1,
 );
 
 

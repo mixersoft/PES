@@ -255,6 +255,12 @@ LOG("toggle CONTEXT MENU, E="+e);
 	}
 	// for lister getAttribute('action') handlers
 	UIHelper.actions = {
+		'goto' : function (o) {
+			window.location.href = o.options[o.selectedIndex].value;
+		}, 
+		'orderBy' : function (o) {
+			window.location.href = o.options[o.selectedIndex].value;
+		},
 		setDisplayView : function(view) {
 			// show/hide body
 			var body = SNAPPI.Y.one('#item-body');
@@ -277,6 +283,7 @@ LOG("toggle CONTEXT MENU, E="+e);
 				if (SNAPPI.STATE.showDisplayOptions) {
 					Y.one('section.gallery-header li.display-option').addClass('open');
 					Y.one('section.gallery-display-options').removeClass('hide');
+					
 				} else {
 					Y.one('section.gallery-header li.display-option').removeClass('open');
 					Y.one('section.gallery-display-options').addClass('hide');
@@ -336,6 +343,7 @@ LOG("+++ set filter, status="+value);
 			SNAPPI.AIR.uploadQueue.action_retry();
 		},
 	}	
+	UIHelper.nav = UIHelper.actions;		// TODO: refactor
 	
 	UIHelper.menu = {
 		/**
@@ -442,16 +450,17 @@ LOG('>>>>>>> BASEURL='+selected);
 	/*
 	 * private methods
 	 */
-	XhrHelper._setUser = function(user) {
+	XhrHelper._setUser = function(user, PHPSESSID) {
 		var Y = SNAPPI.Y;
 		SNAPPI.namespace('SNAPPI.STATE');
 		SNAPPI.STATE.user = user;
 		var expressNode = Y.one('#gallery-container .express-upload-container');
+		
 		if (user && user.id) {
 			try {
 	//			var datasource = _flexAPI_UI.datasource;
 				var datasource = SNAPPI.DATASOURCE;
-				datasource.setSessionId('data[User][id]=' + user.id);
+				datasource.setSessionId(PHPSESSID);
 	LOG(">>> UPLOAD HOST=" + datasource.getConfigs().uploadHost + ", uuid=" + SNAPPI.DATASOURCE.sessionId);
 	
 				// cleanup actions: hide menu
@@ -464,7 +473,8 @@ LOG('>>>>>>> BASEURL='+selected);
 			}
 		} else {
 			var datasource = SNAPPI.DATASOURCE;
-			datasource.setSessionId('data[User][id]=');
+			PHPSESSID = PHPSESSID || 'data[User][id]=null';
+			datasource.setSessionId(PHPSESSID);
 			XhrHelper.insertExpressUpload(expressNode, true);
 			SNAPPI.setPageLoading(false);
 		}
@@ -502,6 +512,35 @@ LOG('>>>>>>> BASEURL='+selected);
 	/*
 	 * json signIn
 	 */
+	XhrHelper.getCookie = function(c_name){
+		var i,x,y,ARRcookies=document.cookie.split(";");
+		for (i=0;i<ARRcookies.length;i++)
+		  {
+		  x=ARRcookies[i].substr(0,ARRcookies[i].indexOf("="));
+		  y=ARRcookies[i].substr(ARRcookies[i].indexOf("=")+1);
+		  x=x.replace(/^\s+|\s+$/g,"");
+		  if (x==c_name)
+		    {
+		    return unescape(y);
+		    }
+		  }
+		};
+	XhrHelper.setCookies = function(data) {
+		var setCookie=function(c_name,value,exdays)
+		{
+			var exdate=new Date();
+			exdate.setDate(exdate.getDate() + exdays);
+			var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
+			document.cookie=c_name + "=" + c_value;
+		};		
+LOG(data);
+LOG("COOKIES TO BE SAVED.");		
+		var cookie = data;
+		for (var p in cookie) {
+			setCookie(p, cookie[p], 14);
+LOG('name='+p+', value='+cookie[p]);			
+		}
+	}
 	XhrHelper.signIn = function() {
 		var Y = SNAPPI.Y;
 		SNAPPI.setPageLoading(true);
@@ -562,10 +601,14 @@ LOG(postData);
 					on: {
 						successJson: function(e, i, o,args){
 							var resp = o.responseJson;
-// LOG(' >>>>>>>>>>>>>  successJson    ');							
-// LOG(resp);
+LOG(' >>>>>>>>>>>>>  successJson    ');							
+LOG(resp);
+							// save Session Cookie
+							XhrHelper.setCookies(o.responseJson.Cookie);
+							
 							var authUser = resp.response.User;
-							XhrHelper._setUser(authUser);
+							var sessionId = resp.Cookie.CAKEPHP;
+							XhrHelper._setUser(authUser, sessionId);
 							this.one('.message').setContent('').addClass('hide');
 							args.loadingmask.hide();
 							return false;
@@ -660,7 +703,7 @@ LOG(postData);
 						return (found)? body : false;
 					},
 					failure: function(e,i,o,args) {
-						return this.create('<aside id="express-upload-options"  class="related-content blue">').setContent(o.responseText);
+						return this.create('<aside id="express-upload-options"  class="related-content blue rounded-5 message">').setContent(o.responseText);
 					}
 					
 				}

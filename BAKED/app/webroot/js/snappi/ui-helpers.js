@@ -38,6 +38,23 @@
 		'goto' : function (o) {
 			window.location.href = o.options[o.selectedIndex].value;
 		}, 
+		'orderBy' : function (o) {
+			window.location.href = o.options[o.selectedIndex].value;
+		},
+		'goSearch' : function() {
+			var value = SNAPPI.Y.one('#search input').get('value');
+			if (value) {
+				if (value.length>2) {
+					var here = window.location.href;
+					var namedData = {q:value, page: null};
+					window.location.href = SNAPPI.IO.setNamedParams(here, namedData);
+					return true;
+				} else {
+					alert('please enter at least 3 chars in your search');
+				}
+			}  
+			return false;
+		},
 		toggleDisplayOptions  : function(o){
 			var Y = SNAPPI.Y;
 			try {
@@ -54,6 +71,14 @@
 				if (SNAPPI.STATE.showDisplayOptions) {
 					Y.one('section.gallery-header li.display-option').addClass('open');
 					Y.one('section.gallery-display-options').removeClass('hide');
+
+					// for /photo/roll.ctp: init rating
+					// TODO: move to a better spot?
+					var ratingFilterNode = Y.one('#filter-rating-parent');
+			        if (ratingFilterNode) {
+			        	SNAPPI.filter.initRating();
+			        }
+			        					
 				} else {
 					Y.one('section.gallery-header li.display-option').removeClass('open');
 					Y.one('section.gallery-display-options').addClass('hide');
@@ -121,6 +146,14 @@
 				}
 			}
 			return null;
+		}
+	}
+	UIHelper.create = {
+		launchPageGallery : function(e){
+			try {
+				var g = SNAPPI.Y.one('section.gallery.photo').Gallery;
+				if (g.getSelected().count()) g.launchPagemaker();
+			}catch(e){}			
 		}
 	}
 	UIHelper.markup = {

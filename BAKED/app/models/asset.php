@@ -849,7 +849,7 @@ class Asset extends AppModel {
 			);
 		}
 		// check of context == controller
-		$skip = $context['keyName']  == $controllerClass;
+		$skip = $context['keyName']  == Configure::read('controller.label');
 		// add context
 		if (!$skip) {
 			if ($context['keyName']  == 'Person') {

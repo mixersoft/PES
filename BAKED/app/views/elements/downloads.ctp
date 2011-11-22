@@ -1,4 +1,4 @@
-			<?php  
+		<?php  
 			$userAgent =  env('HTTP_USER_AGENT');
 			if (isset($this->params['url']['platform']) && $this->params['url']['platform'] == 'all') {
 					$downloads['Windows'] = 'snappi-uploader.exe';
@@ -23,9 +23,9 @@
 	<p>Just click the button below to download, and then open the saved file. </p>
 		<div id="download-uploader" >
 					<div class='center' >
-						<ul class="btn">
+						<ul class='inline'>
 				<?php foreach ($downloads as $platform =>$file) { ?>
-							<li class='btn'>
+							<li class='btn orange rounded-5'>
 								<a href="/files/<?php echo $file ?>" >
 									Snaphappi Desktop Uploader for <b><?php echo $platform ?></b>
 									</a>

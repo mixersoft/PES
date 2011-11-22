@@ -6,13 +6,13 @@
 		<li action='photos' >
 			<a href="/my/photos">My Photos</a>
 		</li>
-		<li action='photostreams' >
+		<li action='photostreams' class='disabled' >
 			<a href="/my/photostreams">My Photostreams</a>
 		</li>		
 		<li action='groups' >
 			<a href="/my/groups">My Groups</a>
 		</li>			
-		<li action='trends' >
+		<li action='trends'  class='disabled'>
 			<a href="/my/home#trends">My Trends</a>
 		</li>
 		<li action='upload' >
@@ -20,9 +20,6 @@
 		</li>
 		<li action='settings' >
 			<a href="/my/settings">My Settings</a>
-		</li>
-		<li action='lightbox' class='before-show'>
-			<a href="javascript:;">Hide Lightbox</a>
 		</li>
 	</ul>
 </div>

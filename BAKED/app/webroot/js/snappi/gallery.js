@@ -152,6 +152,7 @@
 	            this.auditionSH.sort(SNAPPI.sortConfig.byTime);        	
 	        }
 	        
+	        // TODO: switch to _cfg.type
 	        switch (_cfg.ID_PREFIX) {
 	        case 'uuid-':
 	        	if (renderOnInit) this.render(_cfg); 
@@ -166,6 +167,10 @@
 	        case 'lightbox-':
 	        	this.container.addClass('one-row'); // these are all filmstrips, init in filmstrip mode
 	        	if (renderOnInit) this.render(_cfg);
+        		else {
+                	var emptyMsg = SNAPPI.Y.one('#markup .empty-lightbox-gallery-message');
+                	if (emptyMsg) this.container.append(emptyMsg.removeClass('hide'));
+                }	        	
 	        	// this.scrollFocus( cfg.uuid );
 	        	this.container.ancestor('.filmstrip-wrap').removeClass('hidden');
 	        	break;
@@ -305,6 +310,10 @@
 	                perpage = this._cfg.perpage;            
 	                this._cfg.start = 0;
 	                this._cfg.end = perpage;
+	                if (this.auditionSH.size() == 0) {
+	                	var emptyMsg = SNAPPI.Y.one('#markup .empty-photo-gallery-message');
+	                	if (emptyMsg) this.container.append(emptyMsg.removeClass('hide'));
+	                }	                
             		break;
             };
 

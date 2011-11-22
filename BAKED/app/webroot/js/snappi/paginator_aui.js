@@ -342,7 +342,6 @@
 		var delay = new Y.DelayedTask( 
 			function() {
 				pluginNode.loadingmask.hide();
-				delay.destroy();
 			}, this);
 		delay.delay(200);   		
 		return;

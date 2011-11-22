@@ -102,7 +102,7 @@
 				<li class='btn  ' action="filter:pending">Ready</li>
 				<li class='btn' action="filter:cancelled">Cancelled</li>
 				<li class='btn' action="filter:done">Done</li>
-				<li class='btn' action="filter:failed">Errors</li>
+				<li class='btn' action="filter:error">Errors</li>
 	            <li class="btn choose-folder" ><a class="menu-open">Folder</a></li>				
 			</ul>
 	    	<ul class="actions inline">
@@ -116,7 +116,7 @@
 	        <ul class="sort inline right">
 	        	<li class="label">Sort</li>
 	            <li class="btn ">
-	             	<select onchange="PAGE.orderBy(this);">
+	             	<select onchange="SNAPPI.UIHelper.nav.orderBy(this);">
 						<option class="asc" value="" selected="selected">Date Taken</option>
 	             		<option class="desc" value="" >Date Imported</option>
 	             	</select>

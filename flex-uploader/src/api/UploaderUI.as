@@ -592,7 +592,7 @@ package api
 		
 		private function postUploadFile(furl:String, params:Object):void{
 			var handlers:Object = params.handlers;
-			var sessionKey:String = params.sessionId ? params.sessionId : 'PHPSESSID=' + UUID.genUUID();
+//			var sessionKey:String = 'CAKEPHP=' + params.sessionId;
 			try{
 				var query:String = "select p.*, uq.batch_id from photos p JOIN uploadQueues uq on uq.photo_id = p.id where p.id='" + params.photo_id + "'";
 				var asset:Array = Config.sql.execQuery(query);
@@ -605,29 +605,37 @@ package api
 				*/
 				// TODO: rename to provider_account_id
 				var provider_key:String = this.datasource.cfg.provider_key;
-				var postparams:String = sessionKey
-					+ '&data[isAIR]=1'  
-					+ '&data[ProviderAccount][id]=' + provider_key 
-					+ '&data[ProviderAccount][provider_name]=' + 'desktop'
-					+ '&data[ProviderAccount][provider_version]=' + 'v1.0'
-					+ '&data[ProviderAccount][provider_key]=' + provider_key 
-					+ '&data[ProviderAccount][baseurl]=' +asset[0]['base_url'] 
-					+ '&data[Asset][id]=' + asset[0]['id']						
-					+ '&data[Asset][asset_hash]=' + asset[0]['asset_hash']
-					+ '&data[Asset][batchId]=' + asset[0]['batch_id']
-					+ '&data[Asset][rel_path]=' + asset[0]['rel_path']
-					+ '&data[Asset][width]=' + asset[0]['width'] 
-					+ '&data[Asset][height]=' + asset[0]['height'] 
-					+ "&data[Asset][json_exif]=" + escape(json_exif);
+				
+				var postData:Object = {
+					'CAKEPHP':params.sessionId,
+					'data[isAIR]': 1,
+					'data[ProviderAccount][id]': provider_key,
+					'data[ProviderAccount][provider_name]': 'desktop',
+					'data[ProviderAccount][provider_version]': 'v1.0',
+					'data[ProviderAccount][provider_key]': provider_key,
+					'data[ProviderAccount][baseurl]': asset[0]['base_url'],
+					'data[Asset][id]': asset[0]['id'],
+					'data[Asset][asset_hash]': asset[0]['asset_hash'],
+					'data[Asset][batchId]': asset[0]['batch_id'],
+					'data[Asset][rel_path]': asset[0]['rel_path'],
+					'data[Asset][width]': asset[0]['width'] ,
+					'data[Asset][height]': asset[0]['height'] ,
+					'data[Asset][json_exif]': escape(json_exif),
+					// for /my/desktop_upload, $force_UNSECURE_LOGIN=true
+					'data[User][id]': Config.SNAPPI.STATE.user.id
+				}
+				
 				var filePostName:String = 'Filedata';
 				// get express Upload groups
 				var gids:String = Config.SNAPPI.AIR.XhrHelper.getExpressUploads();
-				if (gids) postparams += "&data[groupIds]=" + gids;
+				if (gids) {
+					postData['data[groupIds]'] = gids;
+				}
 				var f:File = new File(furl);
 				// var uq:UploadFile = new UploadFile(f,postparams,handlers,filePostName);
-				var uq:UploadFile = UploadFile.getUploadFile(f,postparams,handlers,filePostName);
+				var uq:UploadFile = UploadFile.getUploadFile(f, postData,handlers,filePostName);
 				uq.startUpload();
-			}catch(e:Error){
+			} catch(e:Error) {
 				handlers.uploadError_Callback.call(handlers,null, e.message);
 			}	
 		}

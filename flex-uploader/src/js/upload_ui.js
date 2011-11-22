@@ -1247,6 +1247,8 @@ LOG("active count="+UploadManager.count());
      * singleton object,
      * 		wrapper for all UploadQueue API calls.
      * 		these methods operate on the AIR.uploadQueues DB table
+     * 
+     * WARNING: _flexAPI_UI.datasource !== SNAPPI.DATASOURCE == new SNAPPI.AIR.CastingCallDataSource()
      */
     var Flex_UploadAPI = function (){
     	if (typeof flexAPI_UI == 'undefined') {

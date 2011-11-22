@@ -45,11 +45,12 @@ class AppController extends Controller {
 		//Restrict access to only users with an active account
 		$this->Auth->userScope = array('User.active = 1');
 		//Pass auth component data over to view files
-		$this->set('Auth', $this->Auth->user());		// deprecate
+		$this->set('Auth', $this->Auth->user());		
 		// call login() after auth for additional processing
 		$this->Auth->autoRedirect = false;
 		// assume $this->Auth->user has been set
 		$this->prepareRequest();
+		
 		
 		// setup for Comments plugin
 		if ($this->action=='discussion' && isset($this->Comments)) {
@@ -57,7 +58,6 @@ class AppController extends Controller {
 			$this->Comments->actionNames = array('discussion');
 			$this->Comments->viewVariable = 'data';
 		}	
-		
 //		ClassRegistry::init('Asset')->disablePermissionable();
 //		ClassRegistry::init('Group')->disablePermissionable();	
 	}
@@ -385,6 +385,15 @@ class AppController extends Controller {
 	 * Controller/Request attributes that need to be available to Model/View classes
 	 */
 	function __cacheControllerAttrs() {
+		// min, required for /nav/header
+		$controllerAttr = array(
+			'name'=>$this->name,
+			'alias'=>$this->getControllerAlias(),
+			'action'=>$this->action,
+			'here'=>$this->here,
+			'userid'=>AppController::$userid,
+			'isXhr'=>$this->RequestHandler->isAjax(),			
+		);		
 		if (in_array($this->name, array('Assets', 'Groups', 'Users', 'Tags'))) {
 			
 			AppController::$uuid = isset($this->passedArgs[0]) ? $this->passedArgs[0] : null;
@@ -394,20 +403,14 @@ class AppController extends Controller {
 //			$slug = isset($this->passedArgs[0]) ? $this->passedArgs[0] : null;
 //			AppController::$uuid = $this->__getFromSlug($slug);
 //			$this->passedArgs[0] = AppController::$uuid;
-			
-			$controllerAttr = array(
-				'name'=>$this->name,
+			$extended_controllerAttr = array(
 				// deprecate keyName, use label/displayName instead 
 				'keyName'=>Configure::read("lookup.keyName.{$this->name}"), 
 				'label'=>$this->displayName, 
-				'alias'=>$this->getControllerAlias(),
 				'titleName'=>isset($this->titleName) ? $this->titleName : '',
-				'action'=>$this->action,
-				'here'=>$this->here,
 //				'uuid'=>AppController::$uuid, // see ['xhrFrom']['uuid'] or PAGE.jsonData.controller.xhrFrom.uuid
-				'userid'=>AppController::$userid,
-				'isXhr'=>$this->RequestHandler->isAjax(),			
 			);
+			$controllerAttr = array_merge( $controllerAttr , $extended_controllerAttr);
 			if (!empty($this->params['url']['forcexhr'])) $controllerAttr['isXhr'] = 1; 
 			
 			$extras = array( 
@@ -417,9 +420,9 @@ class AppController extends Controller {
 			);
 			$controllerAttr = array_merge($controllerAttr, $extras);
 			
-			Configure::write('controller', $controllerAttr);	
 //			$this->viewVars['jsonData']['controller'] = $controllerAttr;	// moved to layout		
 		}	
+		Configure::write('controller', $controllerAttr);	
 	}
 	
 	function __getFromSlug($slug = null) {

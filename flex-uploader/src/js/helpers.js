@@ -135,8 +135,8 @@ console.log("load BEGIN: helpers.js");
 		}
 
 	    var uploadHost = {
-	    		local: "http://"+SNAPPI.AIR.host+"/my/upload",
-	    		remote: "http://dev2.snaphappi.com/my/upload",
+	    		local: "http://"+SNAPPI.AIR.host+"/my/desktop_upload",
+	    		remote: "http://dev2.snaphappi.com/my/desktop_upload",
 	    };		
 		// login
 		var login_Url = "http://" + SNAPPI.AIR.host + "/users/login/.json?optional=1";
@@ -144,7 +144,7 @@ console.log("load BEGIN: helpers.js");
 		LOG("login_Url > "+login_Url);
 		
 		// upload
-		var upload_Url = "http://"+SNAPPI.AIR.host+"/my/upload";
+		var upload_Url = "http://"+SNAPPI.AIR.host+"/my/desktop_upload";
 		LOG("upload_Url > "+upload_Url);
 		uploader.flexUploadAPI.setUploadFilePOSTurl(upload_Url);
 		try {

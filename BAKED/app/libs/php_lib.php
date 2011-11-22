@@ -212,12 +212,16 @@ function setLastModifiedHeader($timestamp) {
  * session utility functions
  */
 function loadComponent($component, &$controller = NULL, $args = '') {
+	if ($controller && isset($controller->{$component})) {
+		return $controller->{$component};
+	}
 	$classNameRoot = Inflector::camelize(basename($component));
 	App::import('Component', $component);
 	$class = $classNameRoot.'Component';
 	$c = & new $class;
 	if (method_exists($c, 'initialize')) $c->initialize($controller, $args);
 	if (method_exists($c, 'startup')) $c->startup($controller, $args);
+	if ($controller) $controller->{$component} = $c;
 	return $c;
 }
 

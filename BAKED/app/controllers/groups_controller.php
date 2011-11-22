@@ -221,7 +221,11 @@ LIMIT 5;";
 	function invitation ($id=null) {
 		$this->layout = 'snappi-guest';
 		if (!empty($this->params['url']['register'])) {
+			/*
+			 * ask Visitor to Sign In before joining group
+			 */
 			$this->Session->setFlash('Please Sign-up or Sign-in before you join this Circle.');
+			Session::write('Auth.redirect', str_replace('&register=1', '', env('REQUEST_URI'))); 
 			$this->redirect('/users/register', null, true);
 		}		
 		$options = array('conditions'=>array('Group.id'=>$id));
@@ -234,8 +238,7 @@ LIMIT 5;";
 		
 		$role = Session::read('Auth.User.role');
 		if (!$role || $role == 'GUEST') {
-			Session::write('Auth.redirect', env('REQUEST_URI')); 
-			$signin_redirect = Router::url('/groups/invitation?register=1');
+			$signin_redirect = Router::url(env('REQUEST_URI').'&register=1');
 		}
 		$isExpress =  (!empty($this->params['url']['express'])) ?  $id : null;
 		Session::write('join.express_upload_gid', $isExpress);

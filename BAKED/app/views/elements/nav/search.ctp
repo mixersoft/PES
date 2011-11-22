@@ -6,27 +6,27 @@
 	 */
 	$items_search[] = array('label' => 'Search My',
 							'href' => '/my/search',
-							'onclick' => 'return PAGE.goSearch(this);'
+							'onclick' => 'return SNAPPI.UIHelper.nav.goSearch(this);'
 						);
 	
 	$items_search[] = array('label' => 'Search Groups',
 							'href' => '/groups/search',
-							'onclick' => 'return PAGE.goSearch(this);'
+							'onclick' => 'return SNAPPI.UIHelper.nav.goSearch(this);'
 						);
 						
 	$items_search[] = array('label' => 'Search People',
 							'href' => '/person/search',
-							'onclick' => 'return PAGE.goSearch(this);'
+							'onclick' => 'return SNAPPI.UIHelper.nav.goSearch(this);'
 						);
 	
 	$items_search[] = array('label' => 'Search Photos',
 								'href' => '/photos/search',
-								'onclick' => 'return PAGE.goSearch(this);'
+								'onclick' => 'return SNAPPI.UIHelper.nav.goSearch(this);'
 						);
 	
 	$items_search[] = array('label' => 'Search Tags',
 							'href' => '/tags/search',
-							'onclick' => 'return PAGE.goSearch(this);'
+							'onclick' => 'return SNAPPI.UIHelper.nav.goSearch(this);'
 	);
 	
 	/*
@@ -111,9 +111,9 @@
 	unset($passedArgs['q']);
 	unset($passedArgs['perpage']);
 ?>
-	<form id='search-form' accept-charset="utf-8" method="get" action="<?php echo Router::url($passedArgs + $next); ?>" onsubmit="PAGE.goSearch(); return false; if (this.value=='') return false;" >
+	<form id='search-form' accept-charset="utf-8" method="get" action="<?php echo Router::url($passedArgs + $next); ?>" onsubmit="SNAPPI.UIHelper.nav.goSearch(this); return false; if (this.value=='') return false;" >
 		<ul class='inline right'>
-			<li><input type='text' name='q' value='<?php echo $defaultString; ?>' maxlength='45' title='' onclick='if(this.style.color!="black"){this.value="";}this.style.color="black";' ></input></li><li><div class="go" onclick="return PAGE.goSearch();"></div></li>
+			<li><input type='text' name='q' value='<?php echo $defaultString; ?>' maxlength='45' title='' onclick='if(this.style.color!="black"){this.value="";}this.style.color="black";' ></input></li><li><div class="go" onclick="return SNAPPI.UIHelper.nav.goSearch(this);"></div></li>
 		</ul>
 	</form>
 </div>

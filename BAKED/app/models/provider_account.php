@@ -100,6 +100,7 @@ class ProviderAccount extends AppModel {
 	}
 	
 	function getPaginateProviderAccountsByUserId ($userid , $paginate = array()) {
+		$controllerClass = Configure::read('controller.class');
 		$paginateModel = 'ProviderAccount';
 //debug($paginateModel);	 
 		// refactor
@@ -113,7 +114,7 @@ class ProviderAccount extends AppModel {
 		$conditions[] = array("`ProviderAccount`.user_id" => $userid);
 		
 		// check of context == controller
-		$skip = $context['keyName']  == $controllerClass;
+		$skip = $context['keyName']  == Configure::read('controller.label');
 		// add context
 		if (!$skip) {
 			if ($context['keyName']  == 'Person') {
@@ -167,7 +168,7 @@ class ProviderAccount extends AppModel {
 		);
 		
 		// check of context == controller
-		$skip = $context['keyName']  == $controllerClass;
+		$skip = $context['keyName']  == Configure::read('controller.label');
 		// add context
 		if (!$skip) {
 			if ($context['keyName']  == 'Person') {

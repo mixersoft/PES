@@ -90,9 +90,6 @@
 					<li action='settings' >
 						<a href="/my/settings">My Settings</a>
 					</li>
-					<li action='lightbox' class='before-show'>
-						<a href="javascript:;">Hide Lightbox</a>
-					</li>
 				</ul>
 			</div>		
 		</div>		

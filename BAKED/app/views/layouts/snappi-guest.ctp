@@ -24,18 +24,10 @@
 	<title>
 		<?php echo $title_for_layout; ?>
 	</title>
-<!-- 	<script id='css-start' type='text/javascript'> 
-	    document.createElement("header" );
-	    document.createElement("footer" );
-	    document.createElement("section");
-	    document.createElement("aside"  );
-	    document.createElement("nav"    );
-	    document.createElement("article");
-	    document.createElement("hgroup" );
-	    document.createElement("time"   );
+ 	<script id='css-start' type='text/javascript'> 
 		PAGE = {jsonData:{STATE:{}, menu:{}}, init:[]}; 	
 		ALLOY_VERSION='alloy-1.0.2';
-	</script> -->
+	</script>
 	<script src="/svc/lib/alloy-1.0.2/build/aui/aui.js" type="text/javascript"></script>
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/reset.css" />
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/960.css" />	
@@ -67,25 +59,11 @@
 				echo "PAGE.jsonData.{$key}=".json_encode($value).";\n"; 
 			} 
 		?>
-		PAGE.goSearch = function() {
-			var value = SNAPPI.Y.one('#search input').get('value');
-			if (value) {
-				if (value.length>2) {
-					var here = window.location.href;
-					var namedData = {q:value, page: null};
-					window.location.href = SNAPPI.IO.setNamedParams(here, namedData);
-					return true;
-				} else {
-					alert('please enter at least 3 chars in your search');
-				}
-			}  
-			return false;
-		}; 
 	</script>	
 <?php $this->Layout->blockEnd();?>	
 <div class="anchor-bottom"></div>
 <div id='markup'>
-	<?php $this->Layout->output($this->viewVars['menuMarkup_for_layout']); ?>
+	<?php $this->Layout->output($this->viewVars['markup_for_layout']); ?>
 </div>		
 
 <div id="footer" class="container_16">

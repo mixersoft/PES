@@ -27,7 +27,7 @@
 	 */
 	var UploadManager = function(uploadQueue, row, progress) {
 		this.flexUploadObj = null;
-		if (!UploadManager.MAX_CONCURRENT_UPLOADS < 2) {
+		if (!UploadManager.MAX_CONCURRENT_UPLOADS) {
 			UploadManager.MAX_CONCURRENT_UPLOADS = _flexAPI_UI.datasource.cfg.MAX_CONCURRENT_UPLOADS;
 		}
 		/*
@@ -52,7 +52,7 @@
 	/*
 	 * static methods
 	 */
-	UploadManager.MAX_CONCURRENT_UPLOADS = 4;
+	UploadManager.MAX_CONCURRENT_UPLOADS = 2;
 	UploadManager.activeSH = new SNAPPI.SortedHash(); //init new SNAPPI.SortedHash() later, not on script load
 	UploadManager.add = function(o){
 		return UploadManager.activeSH.add(o);

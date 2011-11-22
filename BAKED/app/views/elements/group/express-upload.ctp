@@ -1,4 +1,4 @@
-<aside id="express-upload-options"  class="related-content blue">
+<aside id="express-upload-options"  class="related-content blue rounded-5">
 	<h3>Express Upload</h3>
 	<div>Share uploaded Snaps immediately with the Circles marked below.</div>
 	<div class="wrap-v">

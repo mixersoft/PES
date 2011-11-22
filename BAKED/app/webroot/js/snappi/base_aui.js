@@ -642,11 +642,6 @@
          * filter bar
          */
         SNAPPI.filter.renderBar(SNAPPI.STATE.filters);
-        var ratingFilterNode = Y.one('#filter-rating-parent');
-        if (ratingFilterNode) {
-        	SNAPPI.filter.initRating();
-        }
-        
         
         /*
          * embedded PAGE.init scripts
@@ -664,7 +659,9 @@
     	
         
         // ready now, or after Gallery init   
-        if (!Y.one('#body-container .xhr-get')) SNAPPI.setPageLoading(false);                   
+        if (!Y.one('#body-container .xhr-get')) {
+        	SNAPPI.setPageLoading(false);
+        }                   
         /**********************************************************
          * optional inits
          * - there should be room to optimize what we init for each page

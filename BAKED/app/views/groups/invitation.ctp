@@ -50,13 +50,11 @@
 			<div class="response wrap prefix_1">
 				<?php  
 					if (isset($signin_redirect)) {
-						echo $this->Form->create('Group', array('url'=>$signin_redirect, 'type'=>'get'));
 						$options = array('value'=>"Accept Invitation", 'name'=>'register', 'class'=>'orange',
-							// 'onclick'=>'showLoginDialog(); return false;',
+							'onclick'=>"window.location.href='{$signin_redirect}';",
 							// 'type'=>'button',
 						);
 						echo $this->Form->button("Accept Invitation", $options);
-						echo $this->Form->end();
 					} else {
 						echo $this->Form->create('Group', array('action'=>'join'));
 						echo $this->Form->hidden('id', array('value'=>$id)); 

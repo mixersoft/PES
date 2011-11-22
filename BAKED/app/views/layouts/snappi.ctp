@@ -71,26 +71,6 @@
 				echo "PAGE.jsonData.{$key}=".json_encode($value).";\n"; 
 			} 
 		?>
-		PAGE.goSearch = function() {
-			var value = SNAPPI.Y.one('#search input').get('value');
-			if (value) {
-				if (value.length>2) {
-					var here = window.location.href;
-					var namedData = {q:value, page: null};
-					window.location.href = SNAPPI.IO.setNamedParams(here, namedData);
-					return true;
-				} else {
-					alert('please enter at least 3 chars in your search');
-				}
-			}  
-			return false;
-		}; 
-		PAGE.toggle_fullscreen = function(value) {
-			if (value == undefined) value = SNAPPI.STATE.controller.isWide ? false : true;
-			value = value ? 1 : null;
-			var here = SNAPPI.IO.setNamedParams(SNAPPI.STATE.controller.here, {wide: value});
-			window.location.href = here;
-		};
 	</script>	
 <?php $this->Layout->blockEnd();?>	
 <div class="anchor-bottom"></div>
@@ -103,13 +83,13 @@
 			<li action='photos' >
 				<a href="/my/photos">My Photos</a>
 			</li>
-			<li action='photostreams' >
+			<li action='photostreams'  class='disabled'>
 				<a href="/my/photostreams">My Photostreams</a>
 			</li>		
 			<li action='groups' >
 				<a href="/my/groups">My Groups</a>
 			</li>			
-			<li action='trends' >
+			<li action='trends'  class='disabled'>
 				<a href="/my/home#trends">My Trends</a>
 			</li>
 			<li action='upload' >
@@ -150,7 +130,7 @@
 			</li>
 		</ul>
 	</div>	
-	<?php $this->Layout->output($this->viewVars['menuMarkup_for_layout']); ?>
+	<?php $this->Layout->output($this->viewVars['markup_for_layout']); ?>
 </div>		
 
 <div id="footer" class="container_16">

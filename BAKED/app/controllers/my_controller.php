@@ -35,7 +35,7 @@ class MyController extends PersonController {
 			 * main
 			 */
 			// add to ACLs
-			'upload', 'lightbox', 'settings', 'express_uploads',
+			'upload', 'desktop_upload', 'express_uploads', 'lightbox', 'settings',
 			/*
 			 * experimental
 			 */
@@ -69,6 +69,8 @@ class MyController extends PersonController {
 	}	
 		
 	function settings() {
+		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
 		$id = MyController::$userid;
 		if (!empty($this->data)) {
 			/*
@@ -269,23 +271,26 @@ class MyController extends PersonController {
 		/*
 		 * import into DB
 		 */
-//		$this->log($this->data, LOG_DEBUG);
+$this->log($this->data['Asset'], LOG_DEBUG);
 		$response = $this->__importPhoto($this->data, $UPLOAD_FOLDER, $dest);
+$this->log($response, LOG_DEBUG);		
 		/*
 		 * share via express uploads, as necessary
 		 */ 
-		$groupIds = (array)explode(',',$this->data['groupIds']);
-		$resp1 = array();
-		foreach($groupIds as $gid){
-			$asset_id = $response['response']['Asset']['id'];
-			$paid = $response['response']['Asset']['provider_account_id'];
-			$count = $this->User->Membership->contributePhoto($gid, $asset_id, $paid);
-			if ($count) {
-				$resp1['message'][] = "Express Upload: shared with Group id={$gid}";
-				$resp1['response']['Group'][]['id'] = $gid;
+		 if (isset($this->data['groupIds'])) {
+		 	$groupIds = (array)explode(',',$this->data['groupIds']);
+			$resp1 = array();
+			foreach($groupIds as $gid){
+				$asset_id = $response['response']['Asset']['id'];
+				$paid = $response['response']['Asset']['provider_account_id'];
+				$count = $this->User->Membership->contributePhoto($gid, $asset_id, $paid);
+				if ($count) {
+					$resp1['message'][] = "Express Upload: shared with Group id={$gid}";
+					$resp1['response']['Group'][]['id'] = $gid;
+				}
 			}
-		}
-		$response = Set::merge($response, $resp1);		
+			$response = Set::merge($response, $resp1);
+		 }
 //		$this->log($response, LOG_DEBUG);
 		/*
 		 * return response
@@ -316,10 +321,14 @@ class MyController extends PersonController {
 		$expressUploadGroups = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 		return $expressUploadGroups;
 	}
-	
+	/**
+	 * get express upload groups by AJAX for desktop uploader
+	 * for sharing uploaded Snap directly with Express Upload Group
+	 */
 	function express_uploads(){
 		$forceXHR = setXHRDebug($this, 0);
 		if (!$this->RequestHandler->isAjax() && !$forceXHR) return;
+		if (AppController::$role !== 'USER') return;
 		
 		Configure::write('debug', $forceXHR);
 		$this->autoRender = false;
@@ -329,20 +338,27 @@ class MyController extends PersonController {
 		$done = $this->renderXHRByRequest('json', '/elements/group/express-upload', null, $forceXHR);
 		if ($done) return;
 	}
-	/*
-	 * AIR or valums upload
-	 */
-	function upload () {
-//		$this->log($this->data, LOG_DEBUG);
-		$forceXHR = setXHRDebug($this);
-		$userid = AppController::$userid;
-		
-		if (!empty($this->data['isAIR'])) {
+	
+	/**
+	 * upload from AIR desktop uploader
+	 */ 
+	 function desktop_upload(){
+// $this->log($_POST, LOG_DEBUG);
+// $this->log("userid==".AppController::$userid, LOG_DEBUG);
+// $this->log("[HTTP_COOKIE]=".$_SERVER['HTTP_COOKIE'], LOG_DEBUG);
+// $this->log(">>>>>>>>>>>>>>>>>>>>>> AppController::role==".AppController::$role, LOG_DEBUG);		
+// $this->log($this->data, LOG_DEBUG);		
+// debug($_SERVER);
+		// exit(0);
+		$forceXHR = setXHRDebug($this, 0);
+		$force_UNSECURE_LOGIN = true;
+		if (empty($this->data) || AppController::$role != 'USER') {
 			/*
 			 *  POST from snappi AIR desktop uploader
+			 * 	WARNING: json/xhr login DOES NOT transfer Session cookie
 			 */
-//			$this->log(Session::read('Auth.User'), LOG_DEBUG);
-			if (!$this->Auth->user() && Configure::read('debug') && isset($this->data['User']['id'])) {
+// 			$this->log(Session::read('Auth.User'), LOG_DEBUG);
+			if ($force_UNSECURE_LOGIN && !$this->Auth->user() && Configure::read('debug') && isset($this->data['User']['id'])) {
 				// TODO: authorize user by uuid. this is unsafe!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				$userid = $this->data['User']['id'];
 				$data = $this->User->read(null, $userid );
@@ -350,11 +366,32 @@ class MyController extends PersonController {
 				$this->__cacheAuth();
 				$this->Permissionable->initialize($this);
 //				$this->log(Session::read('Auth.User'), LOG_DEBUG);
+			} else {
+	//			$this->log($response, LOG_DEBUG);			
+				$response['success']=false;
+				$response['message']='Session not Authenticated for COOKIE='.$_SERVER['HTTP_COOKIE'];
+	$this->log($response, LOG_DEBUG);			
+				header('Content-Type: application/json');
+			    echo json_encode($response);
+			    exit(0);			
+				return;
 			}
-			
-			$this->__upload_AIRclient();
-			exit(0);
-		} else if (!empty($this->params['url']['qqfile'])) {
+		}
+		
+		$this->autoRender = false;
+		$this->__upload_AIRclient();	
+		exit(0);
+	}
+	
+	/*
+	 * PHP or javascript/valums upload
+	 */
+	function upload () {
+//		$this->log($this->data, LOG_DEBUG);
+		$forceXHR = setXHRDebug($this);
+		$userid = AppController::$userid;
+		
+		if (!empty($this->params['url']['qqfile'])) {
 			/*
 			 * handle javascript POST
 			 */

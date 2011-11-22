@@ -33,7 +33,7 @@ $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 		} else echo $this->element('/photo/header', array('total'=>$total));
 	?>
 	<section class="<?php if ($isWide) echo "wide "; ?>gallery photo container_16">
-		<div class='grid_16'></div>
+		<div class='container grid_16'></div>
 	</section>
 </div>
 	
@@ -44,6 +44,7 @@ $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 		$this->Layout->blockStart('javascript'); ?>
 		<script type="text/javascript">
 			// xhr response
+			SNAPPI.setPageLoading(true);
 			SNAPPI.mergeSessionData();
 			new SNAPPI.Gallery({type:'Photo'});
 			// SNAPPI.filter.initRating();
@@ -54,52 +55,26 @@ $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 		$this->Layout->blockStart('javascript');
 ?> 	
 	<script type="text/javascript">
-		// HTTP GET response
-		PAGE.orderBy = function (o) {
-			window.location.href = o.options[o.selectedIndex].value;
-		} 
-		PAGE.toggleDisplayOptions  = function(o){
-			var Y = SNAPPI.Y;
-			try {
-				SNAPPI.STATE.showDisplayOptions = SNAPPI.STATE.showDisplayOptions ? 0 : 1;
-				PAGE.setDisplayOptions();
-			} catch (e) {}
-		};
-		PAGE.setDisplayOptions = function(){
-			var Y = SNAPPI.Y;
-			try {
-				if (SNAPPI.STATE.showDisplayOptions) {
-					Y.one('section.gallery-header li.display-option').addClass('open');
-					Y.one('section.gallery-display-options').removeClass('hide');
-			        var ratingFilterNode = Y.one('#filter-rating-parent');
-			        if (ratingFilterNode) {
-			        	SNAPPI.filter.initRating();
-			        }					
-				} else {
-					Y.one('section.gallery-header li.display-option').removeClass('open');
-					Y.one('section.gallery-display-options').addClass('hide');
-				}	
-			} catch (e) {}
-		};
-		PAGE.create_PageGallery = function(e){
-			try {
-				var g = SNAPPI.Y.one('section.gallery.photo').Gallery;
-				if (g.getSelected().count()) g.launchPagemaker();
-			}catch(e){}			
-		}
 		/**
 		 * run after EACH XHR request
 		 */
 		var initOnce = function() {
 			try {
+				SNAPPI.setPageLoading(true);
 				SNAPPI.mergeSessionData();
-				PAGE.setDisplayOptions();
+				SNAPPI.UIHelper.nav.setDisplayOptions();
+				var ratingFilterNode = SNAPPI.Y.one('#filter-rating-parent');
+			        if (ratingFilterNode) {
+			        	SNAPPI.filter.initRating();
+			        }				
+			        
+			        
 				new SNAPPI.Gallery({type:'Photo'});
 				// SNAPPI.filter.initRating();
 				
 				// add create listener
 				var create = SNAPPI.Y.one('header.head nav.user li.create');
-				if (create) create.on('click', PAGE.create_PageGallery);
+				if (create) create.on('click', SNAPPI.UIHelper.create.launch_PageGallery);
 			} catch (e) {}
 		};
 		try {

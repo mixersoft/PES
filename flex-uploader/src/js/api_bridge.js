@@ -129,11 +129,12 @@
     		cfg = cfg || {};
             //            this._cfg.perpage = this.getConfigs().photosPerpage || this._cfg.perpage;
 			// manual override
-//			var root = this.getBaseurls();
-//			if(root.length>0){ //at first time there is no record in local_stores then result is empty array
-//				LOG(root);
-//				this.setConfig({baseurl: root[0]});
-//			}
+			var root = this.getBaseurls();
+if(root.length>0){ //at first time there is no record in local_stores then result is empty array
+	var baseurl = root.shift();
+	LOG("AIRCastingCallDataSource.init(): baseurl="+baseurl);
+	this.setBaseurl(baseurl);
+}
 //            var lastCfg = this.getConfigs();
 //            cfg.perpage = cfg.perpage || lastCfg.photosPerpage;
 //            this._cfg = util.merge(this._cfg, cfg);
@@ -141,7 +142,6 @@
 //            this._cfg.baseurl = cfg.baseurl || lastCfg.baseurl || this.getBaseurls().shift();
 //            LOG("setting baseurl=" + this._cfg.baseurl);
 //            this.setBaseurl(this._cfg.baseurl);
-LOG(this.getConfigs());
             LOG("datasource> baseurl=" + this.getConfigs().baseurl);
             LOG('AIRCastingCallDataSource.init() complete');
         },
@@ -149,6 +149,7 @@ LOG(this.getConfigs());
             return this.uri || '';
         },
         setBaseurl : function(url){
+LOG("AIRCastingCallDataSource.setBaseurl(): baseurl="+url);        	
             this.setConfig({
                 baseurl: url
             });
@@ -189,7 +190,7 @@ LOG(this.getConfigs());
         	} catch (e) {
         		baseurls = _JS_DATASOURCE.getBaseurls();
         	}
-        	LOG(baseurls);
+LOG(baseurls);
             return baseurls;
         },
         
@@ -201,9 +202,9 @@ LOG(this.getConfigs());
         setConfig : function(json){
             json = json || {};
             try {
-            	_flexAPI_UI.datasource.setConfig(json);
+            	flexAPI_Datasource.setConfig(json);
             } catch (e) {
-            	LOG("EXCEPTION: tried _flexAPI_UI.datasource.setConfig();");
+            	LOG("EXCEPTION: tried flexAPI_Datasource.setConfig();");
             }
         },
         /*
@@ -878,6 +879,6 @@ LOG(">>>>>>>>>>   SESSIONID="+sessionId);
     SNAPPI.AIR.CastingCallDataSource = AIRCastingCallDataSource;    
     
 //    LOG(SNAPPI.AIR);
-//    LOG("load complete: api_bridge.js : CastingCallDataSource");
+   LOG("load complete: api_bridge.js : CastingCallDataSource");
 }());
 

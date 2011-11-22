@@ -287,6 +287,9 @@ class PersonController extends UsersController {
 	}
 	
 	function photostreams($id=null){
+		// TODO: move #tags-preview-xhr to .related-content
+		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
 		$this->autoRender = false;
 
 		// paginate 
@@ -366,6 +369,14 @@ class PersonController extends UsersController {
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 		// end paginate
+		
+		// add express uploads to PAGE.jsonData.expressUploadGroups
+		if (Configure::read('controller.alias') == 'my') {
+			$expressUploadGroups = Set::extract($this->__getExpressUploads(AppController::$userid),'/id');
+			$expressUploadGroups = array_flip($expressUploadGroups);
+			$this->viewVars['jsonData']['expressUploadGroups'] = $expressUploadGroups;
+		}
+		
 		$this->viewVars['jsonData'][$paginateModel] = $pageData;
 		$done = $this->renderXHRByRequest('json', '/elements/group/roll');
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	

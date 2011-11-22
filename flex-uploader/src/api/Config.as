@@ -53,7 +53,7 @@ package api
 		// UploaderUI
 		public static var JPG_COMPRESSION:Number = 80;
 		public static var USE_IMAGEMAGICK_RESIZE:Boolean = true;
-		public static var MAX_CONCURRENT_UPLOADS:int = 3;
+		public static var MAX_CONCURRENT_UPLOADS:int = 1;
 		
 		// MagickUtils, imagemagick
 		public static var MAX_CONCURRENT_PROCESSES:int = 4;

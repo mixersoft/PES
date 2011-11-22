@@ -98,7 +98,6 @@ var DEFAULT_CFG_contextmenu = 	{
 		try {
 			defaultMenus = {
 				'menu-header-markup': SNAPPI.STATE.controller.userid,	// authenticated
-				end: 0
 			};
 		} catch (e) {
 			defaultMenus = {};		// catch race condition
@@ -842,6 +841,24 @@ var DEFAULT_CFG_contextmenu = 	{
 			};			
 			SNAPPI.PM.node.onPageGalleryReady(sceneCfg);
 		}
+	};	
+	MenuItems.express_upload_beforeShow = function(menuItem, menu, properties){
+		// if this group is marked for express-upload, add .selected
+		if (!PAGE.jsonData.expressUploadGroups) {
+			menuItem.hide();
+		} else {
+			var isExpress = PAGE.jsonData.expressUploadGroups[properties.id] !== undefined;
+			if (isExpress) menuItem.addClass('selected');
+			else menuItem.removeClass('selected');
+			menuItem.show();
+		} 			 
+	};	
+	MenuItems.express_upload_click = function(menuItem, menu, properties){
+		var isExpress = menuItem.hasClass('selected');
+		isExpress = !isExpress
+		// TODO: POST isExpress to set GroupsUser.isExpress
+		if (isExpress) menuItem.addClass('selected');
+		else menuItem.removeClass('selected');
 	};	
 	MenuItems.share_with_this_circle_beforeShow = function(menuItem, menu){
 		if (/^Groups/.test(SNAPPI.STATE.controller.name)==false) {

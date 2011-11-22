@@ -54,7 +54,7 @@
 		<nav class='user grid_7'>
 			<ul class="right rightlink">
 				<li class="bg-grey">
-					<a onclick="PAGE.toggle_fullscreen();">Normal View</a>
+					<a onclick="SNAPPI.UIHelper.nav.toggle_fullscreen();">Normal View</a>
 				</li>
 			<?php if ( AppController::$userid) { ?>
 				<li class="bg-grey"><img src="/css/images/plus-grey.png" alt="" align="absmiddle" class="add">

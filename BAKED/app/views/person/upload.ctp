@@ -35,7 +35,7 @@ h1 {
 		</div>
 	</section>	
 	<div class="grid_8 omega">
-		<aside class="related-content blue">
+		<aside class="related-content blue rounded-5">
 			<h1>Upload a LOT of Photos</h1>
 			<?php echo $this->element('downloads')?>
 		</aside>		
