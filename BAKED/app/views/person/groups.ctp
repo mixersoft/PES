@@ -59,3 +59,15 @@ if (empty($this->passedArgs['wide'])) {
 <?php 
 	$this->Layout->blockEnd();
 ?>	
+
+
+<?php  $this->Layout->blockStart('markup');
+		if (Configure::read('controller.alias') == 'my') {	?>
+			<div class='empty-circle-gallery-message hide'><div class='related-content message blue rounded-5 wrap-v'>
+				<h1>Circle Gallery</h1>
+				<p>This is where you find your Circles - the Groups or Events you have joined.</p>
+				<p>Join a Circle and share Snaps and Stories with other members. If you can't find one you like, create a new one now.</p>
+				<ul class='inline' ><li class='btn orange rounded-5'><a href='/groups/all'>Explore Circles now.<a></li></ul>
+			</div></div>
+	<?php } ?>		
+<?php 	$this->Layout->blockEnd(); ?>	

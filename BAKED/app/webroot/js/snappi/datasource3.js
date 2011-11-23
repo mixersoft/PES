@@ -91,15 +91,15 @@
     
     
     /*
-     * queue for managing asynch io calls
+     * private attrs
      */
-    var _queue = new Y.AsyncQueue();
-    //		_queue.pause();
+    // queue for managing asynch io calls, 
+    // shared by SnappiDatasource, JsonDatasource, XmlDatasource
+    var _queue = null;
     
-    SNAPPI.queue = _queue;
     
     /*
-     * parse objects for different XML Datasources
+     * parse Auditions for different  Datasources
      */
     /*
      * Flickr Audition Parser
@@ -432,6 +432,7 @@
          * internal methods and attributes
          */
         this._cfg = Y.Lang.isObject(cfg) ? Y.merge(this._cfg, cfg) : this._cfg;
+        if (_queue === null) _queue = new Y.AsyncQueue();
     };
     
     SnappiDatasource.prototype = {

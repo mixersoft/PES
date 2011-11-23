@@ -68,6 +68,10 @@
 					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
 				}					
 				SNAPPI.Paginator.paginate_CircleMemberGallery('.gallery.group');				
+				if (parent.all('.FigureBox.Group').size() == 0) {
+					var emptyMsg = SNAPPI.Y.one('#markup .empty-circle-gallery-message');
+            		if (emptyMsg) parent.append(emptyMsg.removeClass('hide'));	
+				}
 			} catch (e) {}
 		};
 		try {
