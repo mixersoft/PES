@@ -124,7 +124,7 @@
 		CFG = {		// frequently used startup Config params 
 			DEBUG : {	// default when hostname==git*
 	    		snappi_comboBase: 'baked/app/webroot&',
-	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
+	    		snappi_useCombo: 0,					// <-- TESTING SNAPPI useCombo
 	    		pagemaker_useCombo: true,
 	    		alloy_useCombo: true,
 	    		yahoo_CDN: 0,
@@ -197,7 +197,7 @@
 			/*
 		     * 'async-queue': required by snappi-imageloader, singleton init()
 		     */
-		    'async-queue',  // TODO: datasource references Y.AsyncQueue as static  
+		    'async-queue',    
 		
 		    // 'snappi-debug',
 		    
@@ -437,13 +437,13 @@ console.log('SNAPPI.Y is defined');
                     path: 'groups3.js',
                     requires: ['node', 'snappi-sortedhash', 'snappi-dragdrop']
                 },
-                'snappi-datasource': {
-                    path: 'datasource3.js',
-                    requires: ['node', 'async-queue', 'io', 'datatype-xml', 'gallery-util']
-                },
+                // 'snappi-datasource': {
+                    // path: 'datasource3.js',
+                    // requires: ['node', 'async-queue', 'io', 'datatype-xml', 'gallery-util']
+                // },
                 'snappi-auditions': {
                     path: 'auditions.js',
-                    requires: ['node', 'gallery-util', 'snappi-group', 'snappi-sortedhash', 'snappi-datasource']
+                    requires: ['node', 'gallery-util', 'snappi-group', 'snappi-sortedhash']
                 },	    		
         		'snappi-toolbutton': {
         			path:'toolbuttons.js',
@@ -537,7 +537,7 @@ console.log('SNAPPI.Y is defined');
                 },
                 'XXXsnappi-domJsBinder': {
                     path: 'domJsBinder.js',
-                    requires: ['node', 'event-custom', 'io', 'snappi-datasource', 'snappi-auditions', 'snappi-sort', 'snappi-gallery']
+                    requires: ['node', 'event-custom', 'io', 'snappi-auditions', 'snappi-sort', 'snappi-gallery']
                 },
                 'snappi-lightbox': {
                     path: 'lightbox.js',

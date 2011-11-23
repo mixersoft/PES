@@ -138,7 +138,7 @@
 	</div>
 </div>
 
-	<?php echo $this->element('sql_dump'); ?>
+	<?php echo $this->element('sqldump'); ?>
 	<?php
 		if (Configure::read('js.bootstrap_snappi')) echo $this->Html->script('/js/snappi/base_aui.js');		
 		echo $scripts_for_layout;

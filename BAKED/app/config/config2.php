@@ -80,15 +80,18 @@ switch ($config['Config.os']) {
 		break;
 	case '*nix':
 	case 'unix':
-		$wwwroot = '/www-dev';
 		
-switch (env('SERVER_NAME')) {
-	case 'aws.snaphappi.com':
-	case 'dev2.snaphappi.com':
-	case 'gallery.snaphappi.com':
-		$wwwroot = '/www-dev2';
-		break;
-}		
+		switch (env('SERVER_NAME')) {
+			case 'dev2.snaphappi.com':
+			case 'gallery.snaphappi.com':
+				$wwwroot = '/www-dev2';
+				break;			
+			case 'aws.snaphappi.com':
+				default:
+				$wwwroot = '/www-dev'; 
+				break;
+		}
+		
 		$config['bin'] = array(
 			'imagemagick' => '/usr/bin/convert',
 			'jhead' => '/usr/bin/jhead',

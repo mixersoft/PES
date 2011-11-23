@@ -25,14 +25,6 @@
 		<?php echo $title_for_layout; ?>
 	</title>
 	<script id='css-start' type='text/javascript'> 
-	    document.createElement("header" );
-	    document.createElement("footer" );
-	    document.createElement("section");
-	    document.createElement("aside"  );
-	    document.createElement("nav"    );
-	    document.createElement("article");
-	    document.createElement("hgroup" );
-	    document.createElement("time"   );
 		PAGE = {jsonData:{STATE:{}, menu:{}}, init:[]}; 	
 		ALLOY_VERSION='alloy-1.0.2';
 	</script>
@@ -139,7 +131,7 @@
 	?>
 </div>
 
-	<?php echo $this->element('sql_dump'); ?>
+	<?php echo $this->element('sqldump'); ?>
 	<?php
 		if (Configure::read('js.bootstrap_snappi')) echo $this->Html->script('/js/snappi/base_aui.js');		
 		echo $scripts_for_layout;
