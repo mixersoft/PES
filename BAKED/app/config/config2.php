@@ -46,7 +46,7 @@ switch ($config['Config.os']) {
 		);
 		
 		$config['vendors'] = array('fileUploader'=>'valums-file-uploader-461068d'); 
-		$wwwroot = 'W:/www-git';
+		$wwwroot = 'W:/www-git.3';
 		$config['path'] = array(
 			'APIKEYS' => 'U:\Users\michael\PRIVATE\APIKEYS.php',
 			'wwwroot'=> $wwwroot,
@@ -59,9 +59,9 @@ switch ($config['Config.os']) {
 			'blank_user_photo'=> '/img/providers/snappi.png', 	// deprecate, use Stagehand::getSrc()
 			'default_badges'=>array(
 				'person'=>'/img/providers/snappi.png',
-				'group'=>'/img/providers/snappi.png',
-				'event'=>'/img/providers/snappi.png',
-				'wedding'=>'/img/providers/snappi.png',
+				'Group'=>'/img/providers/snappi.png',
+				'Event'=>'/img/providers/snappi.png',
+				'Wedding'=>'/img/providers/snappi.png',
 			),
 
 //			'meanshift_tmp'=>'W:/usr/bin/meanshift/tmp',
@@ -113,9 +113,9 @@ switch (env('SERVER_NAME')) {
 			'blank_user_photo'=> '/img/providers/snappi.png', 	// deprecate, use Stagehand::getSrc()
 			'default_badges'=>array(
 				'person'=>'/img/providers/snappi.png',
-				'group'=>'/img/providers/snappi.png',
-				'event'=>'/img/providers/snappi.png',
-				'wedding'=>'/img/providers/snappi.png',
+				'Group'=>'/img/providers/snappi.png',
+				'Event'=>'/img/providers/snappi.png',
+				'Wedding'=>'/img/providers/snappi.png',
 			),
 			'pageGalleryPrefix'=>'/svc/pages',
 			'pagemaker'=>array('catalog'=>$wwwroot.'/PAGEMAKER/arrangements'),

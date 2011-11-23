@@ -46,8 +46,6 @@
  * util loads before all YAHOO yui libs have been loaded
  */
 (function(){
-    if (!SNAPPI.util) {
-    
         var Y = SNAPPI.Y;
         
         /*
@@ -59,6 +57,8 @@
         };
         
         var Util = function(){
+        	if (Util.instance) return Util.instance;	// singleton
+        	Util.instance = this;
         };
         Util.prototype = {
             /*
@@ -337,8 +337,9 @@
 				return num.slice(0,-1*decimal_points) + "." + num.slice(-1*decimal_points)
 			},
         };
-    }
-    SNAPPI.util = new Util();
+        
+        // create global singleton
+    	SNAPPI.util = new Util();
 })();
 
 

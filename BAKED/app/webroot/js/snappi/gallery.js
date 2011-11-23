@@ -1029,11 +1029,12 @@
 						SNAPPI.STATE.selectAllPages = false;
 					}
 				};
-				SNAPPI.domJsBinder.fetchCastingCall.call(this, {
-					perpage : _LIGHTBOX_FULL_PAGE_LIMIT,
-					page : 1,
-					skipPaging: true
-				}, callback);
+				alert("deprecated domJsBinder.fetchCastingCall: USE this.loadCastingCall()");
+				// SNAPPI.domJsBinder.fetchCastingCall.call(this, {
+					// perpage : _LIGHTBOX_FULL_PAGE_LIMIT,
+					// page : 1,
+					// skipPaging: true
+				// }, callback);
 				return false; // don't clear selected until XHR call
 				// complete				
 				var check;

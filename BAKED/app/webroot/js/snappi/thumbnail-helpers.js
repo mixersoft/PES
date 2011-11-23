@@ -515,7 +515,8 @@
 			try {
 				target.ancestor('.preview-body').Dialog.refresh();
 			}catch(e){}
-			// save preview size to Session
+			// save preview size to Session, key='profile.previewSize'
+			SNAPPI.io.savePreviewSize(size);
 			// PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
 		},
 		handle_HiddenShotClick: function(e) {

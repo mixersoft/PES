@@ -267,11 +267,13 @@
 						} catch (e) {}
 					}
 				};
-				SNAPPI.domJsBinder.fetchCastingCall.call(this, {
-					perpage : _LIGHTBOX_FULL_PAGE_LIMIT,
-					page : 1,
-					skipPaging: true
-				}, callback);
+				// TODO: DEPRECATE: alert("deprecated domJsBinder.fetchCastingCall: USE this.loadCastingCall()");
+				alert("deprecated domJsBinder.fetchCastingCall: USE this.Gallery.loadCastingCall()");
+				// SNAPPI.domJsBinder.fetchCastingCall.call(this, {
+					// perpage : _LIGHTBOX_FULL_PAGE_LIMIT,
+					// page : 1,
+					// skipPaging: true
+				// }, callback);
 				return false; // don't clear selected until XHR call
 				// complete
 			} else {

@@ -25,15 +25,8 @@
 		<?php echo $title_for_layout; ?>
 	</title>
 	<script id='css-start' type='text/javascript'> 
-	    document.createElement("header" );
-	    document.createElement("footer" );
-	    document.createElement("section");
-	    document.createElement("aside"  );
-	    document.createElement("nav"    );
-	    document.createElement("article");
-	    document.createElement("hgroup" );
-	    document.createElement("time"   );
 		PAGE = {jsonData:{STATE:{}, menu:{}}, init:[]}; 	
+		// ALLOY_VERSION='alloy-1.0.2-20110809-export';
 		ALLOY_VERSION='alloy-1.0.2';
 	</script>
 	<script src="/svc/lib/alloy-1.0.2/build/aui/aui.js" type="text/javascript"></script>

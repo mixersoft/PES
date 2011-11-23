@@ -125,6 +125,21 @@
             this.post("/snappi/writeSession/.json", data, callback, '');
         };
         
+        this.savePreviewSize = function(size) {
+			var callback = {
+				complete : function(id, o, args) {
+					var check;
+				},
+				failure : function(id, o, args) {
+					var check;
+				}
+			};
+			var postData = [];
+			var photoSizeKeyName = 'profile.previewSize';
+			postData[photoSizeKeyName] = size;
+			SNAPPI.io.writeSession(postData, callback, '');
+		};
+        
         /**
          * call this method to read session from cakephp session component
          * key: to tell cakephp which key you want to read from metadata.

@@ -774,8 +774,20 @@ $this->log("using Cookie guestpass login for {$guestid}", LOG_DEBUG);
 			 */
 			$done = $this->renderXHRByRequest('json', 'xhr_login_view', null, $forceXHR);
 			if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
-			// if ($login_ok) $this->__continueToRedirect();
+			if ($login_ok) $this->__continueToRedirect();
 			// else try login again
+		} else {
+			if ($this->RequestHandler->isAjax() || $forceXHR) {
+				$this->log("[HTTP_COOKIE]=".$_SERVER['HTTP_COOKIE'], LOG_DEBUG);	
+				$response = array('success'=>true, 'message'=>'Current authenticated user');
+				$response['response'] = $this->Auth->user();
+				$response['Cookie'] = $_COOKIE;
+				$this->viewVars['jsonData'] = $response;
+				$this->log($this->viewVars['jsonData']['response'], LOG_DEBUG);
+				$this->log("result for current authenticated user", LOG_DEBUG);
+				$done = $this->renderXHRByRequest('json', null, null, $forceXHR);
+				if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false			
+			}			
 		}
 
 		/*

@@ -338,4 +338,5 @@
 	SNAPPI.xhrFetch = new XhrFetch();
 	SNAPPI.ajax = SNAPPI.xhrFetch;
 	
+	
 })();

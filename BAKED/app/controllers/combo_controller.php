@@ -40,7 +40,9 @@ class ComboController extends AppController {
             switch (strtolower($contentType)) {
                 case "js":
                     header('Content-Type: application/x-javascript');
-                    setExpiresHeader(5*60);		// 5 min for combo loaded scripts
+					if (strpos($baseurl, 'svc/lib') === 0) {
+						setExpiresHeader(24*3600);	// 1 day for /svc/lib
+					} else setExpiresHeader(5*60);		// 5 min for combo loaded scripts
                     break;
                 case "css":
                     header('Content-Type: text/css');
