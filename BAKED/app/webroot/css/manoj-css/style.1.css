@@ -472,6 +472,19 @@ section.gallery-display-options.wide ul > li.label {
 .FigureBox figcaption {
 	line-height: 1.2;
 }
+/*temp CSS for selected*/
+
+.FigureBox.Photo.selected {
+	border: 1px solid red;
+	-webkit-box-shadow: 2px 2px 5px #FF0000; /* Safari and Chrome */
+	box-shadow: 2px 2px 5px #FF0000; 
+}
+.FigureBox.Group.selected figure > a > img , .FigureBox.Person.selected figure > a > img{
+	-webkit-box-shadow: 0px 2px 2px #FF0000; /* Safari and Chrome */
+	box-shadow: 2px 2px 8px #FF0000;
+	border-width: 2px;
+	margin: 2px;
+}
 
 .FigureBox.Photo {
 	padding: 2px;
@@ -574,12 +587,7 @@ section.gallery-display-options.wide ul > li.label {
 	height: 33px;
 }
 
-/*temp CSS for selected*/
-.FigureBox.Photo.selected {
-	border: 1px solid red;
-	-webkit-box-shadow: 2px 2px 5px #FF0000; /* Safari and Chrome */
-	box-shadow: 2px 2px 5px #FF0000;
-}
+
 
 .FigureBox.Photo .label {
 	font-size: 8pt;
@@ -1282,12 +1290,8 @@ form input[type='text'].help {
 	border: 2px solid red !important; 
 }
 
+/*TODO: deprecate ?*/
 ul.circle-thumb li.selected {
-	margin-right:16px;
-	margin-bottom:8px;
-}
-/*replaces ul.circle-thumb li.selected */
-.FigureBox.Group.selected { 
 	margin-right:16px;
 	margin-bottom:8px;
 }

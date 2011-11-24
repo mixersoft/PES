@@ -251,6 +251,9 @@
 		        			SNAPPI.STATE.selectAllPages = false;
 		        		}
 		        	},'li.select-all input[type="checkbox"]', this.node);
+		        	// enable select-all menu
+		        	// TODO: currently done in gallery.init
+					// SNAPPI.MenuAUI.initMenus({'menu-select-all-markup':1});
 	        	}
 	        	return;
 	        },
@@ -386,10 +389,13 @@
 			GalleryFactory._attachNodes(gallery, cfg);
 	        gallery.init(cfg);
 	        
+	        
+	        
+	        
 	        // .gallery.photo AFTER init methods
 	        SNAPPI.Gallery.find[cfg.ID_PREFIX] = gallery;		// add to gallery lookup
 	        SNAPPI.Rating.startListeners(gallery.container);
-	        Y.fire('snappi:afterGalleryInit', this); 
+	        Y.fire('snappi:after_PhotoGalleryInit', this); 
 	        return gallery;					// return instance of SNAPPI.Gallery
         },
         handle_hiddenShotClick : function(e){
@@ -460,7 +466,7 @@
 	        // .gallery.photo AFTER init methods
 	        SNAPPI.Gallery.find[cfg.ID_PREFIX] = gallery;		// add to gallery lookup
 	        SNAPPI.Rating.startListeners(gallery.container);
-	        Y.fire('snappi:afterGalleryInit', this); 
+	        // Y.fire('snappi:after_PhotoGalleryInit', this); 
 	        return gallery;					// return instance of SNAPPI.Gallery
         },
 	};
@@ -640,7 +646,7 @@
 	'					<nav class="toolbar"> ' +
 	'						<div> ' +
 	'							<ul class="inline menu-trigger"> ' +
-	'								<li class="select-all"><input type="checkbox" value="" name=""><a class="menu-open"> </a></li> ' +
+	'								<li class="btn select-all"><input type="checkbox" value="" name=""><a class="menu-open"> </a></li> ' +
 	'							</ul> ' +
 	'						</div> ' +
 	'						<h1 class="count">0 Snaps</h1> ' +
@@ -746,7 +752,7 @@
 	        // .gallery.photo AFTER init methods
 	        SNAPPI.Gallery.find[cfg.ID_PREFIX] = gallery;		// add to gallery lookup
 	        SNAPPI.Rating.startListeners(gallery.container);
-	        Y.fire('snappi:afterGalleryInit', this); 
+	        Y.fire('snappi:after_PhotoGalleryInit', this); 
 	        return gallery;					// return instance of SNAPPI.Gallery
         },
 	};

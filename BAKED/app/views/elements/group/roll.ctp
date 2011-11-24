@@ -54,9 +54,10 @@
 		 */
 		var initOnce = function() {
 			try {
+				var Y = SNAPPI.Y;
 				SNAPPI.mergeSessionData();
 				SNAPPI.UIHelper.nav.setDisplayOptions();
-				var parent = SNAPPI.Y.one('.gallery.group .container');
+				var parent = Y.one('.gallery.group .container');
 				var listeners = {
 					// 'WindowOptionClick':1, 
 					'DisplayOptionClick':null,
@@ -69,9 +70,10 @@
 				}					
 				SNAPPI.Paginator.paginate_CircleMemberGallery('.gallery.group');				
 				if (parent.all('.FigureBox.Group').size() == 0) {
-					var emptyMsg = SNAPPI.Y.one('#markup .empty-circle-gallery-message');
+					var emptyMsg = Y.one('#markup .empty-circle-gallery-message');
             		if (emptyMsg) parent.append(emptyMsg.removeClass('hide'));	
 				}
+				Y.fire('snappi:after_GalleryInit', this); 
 			} catch (e) {}
 		};
 		try {

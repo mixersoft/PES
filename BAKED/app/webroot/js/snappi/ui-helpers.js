@@ -251,6 +251,8 @@
 	        			SNAPPI.STATE.selectAllPages = false;
 	        		}
 	        	},'li.select-all input[type="checkbox"]', container);
+	        	// enable select-all menu
+				SNAPPI.MenuAUI.initMenus({'menu-select-all-markup':1});
         	}
         	return;
         },		

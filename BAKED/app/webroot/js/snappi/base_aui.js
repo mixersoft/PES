@@ -37,18 +37,26 @@
         /*
          * these methods reference audition property
          */
-        var once = Y.on('snappi:afterGalleryInit', function(){
+        var once1 = Y.on('snappi:after_GalleryInit', function(){
             /**
-             * 	- fired by: new Gallery.init(),
+             * fired by: /groups/roll, /member/roll initOnce()
              */
-            once.detach();
-            var delayed = new Y.DelayedTask( function() {
-				SNAPPI.lightbox = new SNAPPI.Lightbox();
-			});
-			delayed.delay(2000);
+            once1.detach();
 			SNAPPI.UIHelper.markup.set_ItemHeader_WindowOptions();
 			SNAPPI.setPageLoading(false);
         });
+        var once2 = Y.on('snappi:after_PhotoGalleryInit', function(){
+            /**
+             * 	- fired by: GalleryFactory.Photo.build(), GalleryFactory.PhotoAIR,
+             */
+            once2.detach();
+        	var delayed = new Y.DelayedTask( function() {
+				SNAPPI.lightbox = new SNAPPI.Lightbox();
+			});
+			delayed.delay(1000);	
+			SNAPPI.UIHelper.markup.set_ItemHeader_WindowOptions();
+			SNAPPI.setPageLoading(false); 
+        });        
         Y.on('snappi:afterLightboxInit', function(){
             /**
              * 	- fired by: new Lightbox.init(),
@@ -65,7 +73,7 @@
         SNAPPI.sortConfig.init();	
         
         // var event;
-        // if (PAGE.jsonData.castingCall) event = 'snappi:afterGalleryInit';
+        // if (PAGE.jsonData.castingCall) event = 'snappi:after_PhotoGalleryInit';
         // else if (PAGE.jsonData.lightbox) event = 'snappi:afterMain';
         // SNAPPI.Lightbox.loadonce(event);
         
@@ -90,7 +98,8 @@
     	
         
         // ready now, or after Gallery init   
-        if (!Y.one('#body-container .xhr-get')) {
+        var isXhrGet =  Y.one('#body-container .xhr-get');
+        if (!isXhrGet) {
         	SNAPPI.setPageLoading(false);
         }                   
         /**********************************************************

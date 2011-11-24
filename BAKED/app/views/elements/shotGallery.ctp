@@ -19,7 +19,7 @@
 				<nav class="toolbar">
 					<div>
 						<ul class="inline menu-trigger">
-							<li class="select-all"><input type="checkbox" value="" name=""><a class="menu-open"> </a></li>
+							<li class="btn select-all"><input type="checkbox" value="" name=""><a class="menu-open"> </a></li>
 						</ul>
 					</div>
 					<h1 class="count"></h1>

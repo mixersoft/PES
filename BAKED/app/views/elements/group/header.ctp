@@ -11,6 +11,7 @@
 ?>
 <section class="gallery-header container_16">
 	<ul class="toolbar inline grid_3">
+		<li class="btn select-all"><input type="checkbox" value="" name=""><a class="menu-open"> </a></li>
 		<li><h1><?php echo $total; ?>  Circles</h1></li>
 	</ul>
     <nav class="settings push_6 grid_7">

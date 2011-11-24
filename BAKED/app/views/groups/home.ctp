@@ -66,6 +66,15 @@ if (empty($this->passedArgs['wide'])) {
 	echo "<div id='gallery-photo-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' nodelay='1'></div>";
 	// Configure::write('js.render_lightbox', true);
 ?>
+<?php  if (Configure::read('controller.name') == 'Groups') {	
+		$this->Layout->blockStart('markup'); 		?>
+			<div class='empty-photo-gallery-message hide'><div class='related-content message blue rounded-5 wrap-v'>
+				<h1>Snap Gallery</h1>
+				<p>You must be a member of this Circle to see these Snaps from this Group.
+				Join this Circle to share Snaps, Stories, and more with other members.</p>
+				<ul class='inline' ><li class='btn orange rounded-5'><a href='/groups/join/<?php echo AppController::$uuid; ?>'>Join now.<a></li></ul>
+			</div></div>
+<?php 	$this->Layout->blockEnd(); } ?>	
 
 <?php $this->Layout->blockStart('relatedContent');?>
 <aside id="related-content" class="related-content container_16">		    	

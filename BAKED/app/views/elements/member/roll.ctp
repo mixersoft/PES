@@ -46,20 +46,23 @@ $this->viewVars['jsonData']['STATE'] = $state;
 	<script type="text/javascript">		
 		var initOnce = function() {
 			try {
+				var Y = SNAPPI.Y;
 				SNAPPI.mergeSessionData();
 				SNAPPI.UIHelper.nav.setDisplayOptions();
-				var parent = SNAPPI.Y.one('.gallery.group .container');
+				var parent = Y.one('.gallery.group .container');
 				var listeners = {
 					// 'WindowOptionClick':1, 
 					'DisplayOptionClick':null,
-					'ContextMenuClick':{node:parent, type:'Person'}, 
+					// 'ContextMenuClick':{node:parent, type:'Person'}, 
+					// 'LinkToClick': {node:parent},
 					'MultiSelect':null,
 				};
 				for (var listen in listeners) {
-					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](null);
+					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
 				}					
 
 				SNAPPI.Paginator.paginate_CircleMemberGallery('.gallery.person');
+				Y.fire('snappi:after_GalleryInit', this); 
 			} catch (e) {}
 		};
 		try {

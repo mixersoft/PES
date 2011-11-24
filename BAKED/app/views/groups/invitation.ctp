@@ -137,7 +137,7 @@
 					// 'MultiSelect':1,
 				};
 				for (var listen in listeners) {
-					SNAPPI.UIHelper.listeners[listen](null);
+					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
 				}			
 				
 					
