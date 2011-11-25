@@ -6,8 +6,8 @@
 		$group['badge_src'] = Stagehand::getSrc($group['src_thumbnail'], 'sq');
 		$group['title'] = ucFirst($group['title']);
 		$group['linkTo'] = $this->Html->link($group['title'], 
-			Router::url(array('controller'=>'groups', 'action'=>'home', $group['id'])),
-			array('target'=>'_blank')
+			Router::url(array('controller'=>'groups', 'action'=>'home', $group['id']))
+			// ,array('target'=>'_blank')
 			);
 		echo String::insert("<ul class='inline'>
 			<li><input type='checkbox' uuid=':id' checked></li>

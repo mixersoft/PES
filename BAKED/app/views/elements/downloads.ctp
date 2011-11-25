@@ -2,7 +2,7 @@
 			$userAgent =  env('HTTP_USER_AGENT');
 			if (isset($this->params['url']['platform']) && $this->params['url']['platform'] == 'all') {
 					$downloads['Windows'] = 'snappi-uploader.exe';
-					$downloads['Macintosh'] = 'snappi-uploader.osx.dmg';
+					$downloads['Macintosh'] = 'snappi-uploader.dmg';
 			} else {
 				if (strpos($userAgent, 'Windows') !== false) {
 					$downloads['Windows'] = 'snappi-uploader.exe';
@@ -35,5 +35,5 @@
 						<?php if (count($downloads) == 1) echo "(<a href='{$all_platforms}'>Show all platforms</a>)"; ?>
 					</div>
 		</div>
-		<p /><b>Requirements:</b> The Snaphappi Desktop Uploader requires <a href='http://get.adobe.com/air/'>Adobe AIR 2.6+</a>. 
+		<p /><b>Requirements:</b> The Snaphappi Desktop Uploader requires <a href='http://get.adobe.com/air/'>Adobe AIR 3.0</a>. 
 		You will prompted to download &amp install the latest version of AIR if it is not available. 

@@ -855,10 +855,15 @@ var DEFAULT_CFG_contextmenu = 	{
 	};	
 	MenuItems.express_upload_click = function(menuItem, menu, properties){
 		var isExpress = menuItem.hasClass('selected');
-		isExpress = !isExpress
-		// TODO: POST isExpress to set GroupsUser.isExpress
-		if (isExpress) menuItem.addClass('selected');
-		else menuItem.removeClass('selected');
+		isExpress = !isExpress;
+		var cfg = {
+			gid: properties.id,
+			isExpress: isExpress,
+			node: menuItem,
+			menuItem: menuItem,
+		}
+		SNAPPI.UIHelper.groups.isExpress(cfg);
+				// menuItem.addClass('selected');
 	};	
 	MenuItems.share_with_this_circle_beforeShow = function(menuItem, menu){
 		if (/^Groups/.test(SNAPPI.STATE.controller.name)==false) {

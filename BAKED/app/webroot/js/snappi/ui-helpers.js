@@ -146,7 +146,60 @@
 				}
 			}
 			return null;
-		}
+		},
+		/**
+		 * @params cfg.gid, uuid of Group
+		 * @params cfg.isExpress Boolean, NOT NULL
+		 * @params cfg.node, Y.Node for loading mask, menuItem
+		 */
+		isExpress: function(cfg){
+			var data = {
+					'data[Group][id]' : cfg.gid,
+					'data[Group][isExpress]': cfg.isExpress
+			};
+			var uri = '/groups/express_upload/.json';	
+			var loadingNode = cfg.node;
+			if (loadingNode.io == undefined) {
+				var ioCfg = SNAPPI.IO.pluginIO_RespondAsJson({
+					uri: uri ,
+					parseContent:true,
+					method: 'POST',
+					qs: data,
+					dataType: 'json',
+					context: this,	
+					arguments: cfg,
+					on: {
+						successJson:  function(e, id, o, args) {
+							var resp = o.responseJson;
+							if (args.menuItem) {
+								try {
+									if (args.isExpress) {
+										args.menuItem.addClass('selected');
+										// update local copy
+										if (SNAPPI.Y.Lang.isArray(PAGE.jsonData.expressUploadGroups)) PAGE.jsonData.expressUploadGroups = {};
+										PAGE.jsonData.expressUploadGroups[args.gid] = 1;
+									} else {
+										args.menuItem.removeClass('selected');
+										delete (PAGE.jsonData.expressUploadGroups[args.gid]);
+									}
+								} catch(ex) {}
+								
+							}
+							// args.node.io.loadingmask.hide();
+							return false;
+						}
+					}
+				});
+	            loadingNode.plug(SNAPPI.Y.Plugin.IO, ioCfg );
+			} else {
+				loadingNode.io.set('data', data);
+				loadingNode.io.set('context', this);
+				loadingNode.io.set('uri', uri);
+				loadingNode.io.set('arguments', cfg);
+				loadingNode.io.start();
+	        }
+	        return;			
+		},
 	}
 	UIHelper.create = {
 		launchPageGallery : function(e){

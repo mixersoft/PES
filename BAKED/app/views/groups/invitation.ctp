@@ -37,9 +37,9 @@
 		<div class="grid_12 omega">
 			<p>
 <?php 
-	if (isset($from) && $this->params['url']['express']) {
+	if (isset($from) && !empty($this->params['url']['express'])) {
 		echo String::insert(":from has invited you to upload and share your Snaps with the <b>:circle</b> :group_type at Snaphappi. 
-				Your Snaps are needed to tell the whole story of this :group_type, and an express upload option will be provided to help you upload Snaps directly into this :group_type.", $invitation);
+				Your Snaps are needed to tell the whole story of this :group_type, and an <b>express upload</b> option will be provided to help you upload Snaps directly into this :group_type.", $invitation);
 	} else if (isset($from)) {
 		echo String::insert(":from has invited you to join the <b>:circle</b> :group_type at Snaphappi. As a member, you will be able share Snaps and connect with other members of this :group_type.", $invitation); 
 	} else {

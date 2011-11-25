@@ -99,7 +99,7 @@ class GroupsController extends AppController {
 			 * experimental 
 			 */'setRandomGroupCoverPhoto', 'test', 'load', 'addACL', 
 			 'invitation',		
-			 'join' // show require role='USER' but handle in controller for proper Flash msgs		
+			 'join', 'express_upload' // add to ACLs show require role='USER' but handle in controller for proper Flash msgs		
 		);
 		AppController::$writeOk = $this->Group->hasPermission('write',AppController::$uuid);
 		// TODO: why can't I just attach Taggable on the fly??
@@ -187,7 +187,7 @@ LIMIT 5;";
 	/**
 	 * @params isExpress boolean, uploader should check this status to offer express uploading into these Group(s)
 	 */
-	function __joinGroup($groupId, $userId, $isExpress=false){
+	function __joinGroup($groupId, $userId, $isExpress=null){
 		// TODO:  check permission to write to group before adding
 		$isApproved = $this->__membershipPolicy($groupId);
 
@@ -197,19 +197,29 @@ LIMIT 5;";
 		$data['role'] = 'member';
 		$data['isActive'] = $isApproved;
 		$data['isExpress'] = $isExpress;
-		$data['lastVisit'] = time();
+		$data['lastVisit'] = date('Y-m-d H:i:s',time());
 		$GroupUsers = ClassRegistry::init('GroupsUser');
-		$GroupUsers->create();
-		$ret =  @$GroupUsers->save($data);
-		if ($ret) {
-			// reinitialize Permissionable::group_ids
-			$this->Session->delete('Auth.Permissions.group_ids');
-			$this->Permissionable->initialize($this);
-			// $groupIds = Permissionable::getGroupIds();
-			// array_push($groupIds, $groupId);
-			// Permissionable::setGroupIds($groupIds);
-			// $this->Session->write('Auth.Permissions.group_ids', Permissionable::$group_ids);
-		}
+		$options = array(
+			'conditions'=>array('`GroupsUser`.group_id'=>$groupId , '`GroupsUser`.user_id'=>$userId )
+		);
+		$data = $GroupUsers->find('first', $options);
+		if ($data && $isExpress !== null) {	// update
+			$data['GroupsUser']['isExpress'] = $isExpress;
+			$GroupUsers->id = $data['GroupsUser']['id'];
+			$ret =  @$GroupUsers->save($data, true, array('isExpress', 'lastVisit') );
+		} else {
+			$GroupUsers->create();
+			$ret =  @$GroupUsers->save($data);
+			if ($ret) {
+				// reinitialize Permissionable::group_ids
+				$this->Session->delete('Auth.Permissions.group_ids');
+				$this->Permissionable->initialize($this);
+				// $groupIds = Permissionable::getGroupIds();
+				// array_push($groupIds, $groupId);
+				// Permissionable::setGroupIds($groupIds);
+				// $this->Session->write('Auth.Permissions.group_ids', Permissionable::$group_ids);
+			}			
+		}	
 		return $ret;
 	}
 
@@ -274,32 +284,41 @@ LIMIT 5;";
 		}
 		if (empty($this->data)) $this->redirectSafe();
 				
-		
+		$isExpress = Session::read('join.express_upload_gid') == $this->data['Group']['id'] ? true : null;
 		$role = Session::read('Auth.User.role');
 		if ($role == 'GUEST') {
 			// should not hit this line
 			$this->Session->setFlash('You must upgrade your Guest pass to a full user account to join a group. To upgrade your Guest pass, please sign up now.');
 			$this->Session->write('Auth.redirect', $this->here);
 		}		
+		
+		$join = $this->data['Group'];
 		if ($role == 'USER') {
-			$isMember = in_array($this->data['Group']['id'], Permissionable::getGroupIds());
+			$isMember = in_array($join['id'], Permissionable::getGroupIds());
 			if ($isMember) {
+				if ($isExpress) {
+					$ret = $this->__joinGroup($join['id'], AppController::$userid, $isExpress);
+					if ($ret) {
+						$this->Session->setFlash('You membership in this Group has now been marked for Express Upload.');
+						$this->redirect(array('action'=>'home', $join['id']), null, true);
+					}
+				}
 				$this->Session->setFlash('You are already a member of this group.');
-				$this->redirect(array('action'=>'home', $this->data['Group']['id']), null, true);
+				$this->redirect(array('action'=>'home', $join['id']), null, true);
 			}		
 		}
 		// POST
 		if (isset($this->data['Group'])) {
-			$action = $this->data['Group']['action'];
+			$action = $join['action'];
 			if ($action == 'Ignore') {
 				// TODO: cancel invitation from "recent activity" ticker
 				$this->redirectSafe();
 			} else {	// action = "Accept Invitation"
-				$isExpress = Session::read('join.express_upload_gid') == $this->data['Group']['id'];
-				$join = $this->data['Group'];
 				$ret = $this->__joinGroup($join['id'], AppController::$userid, $isExpress);
 				if ($ret) {
-					$this->Session->setFlash("Welcome! You are now a member of group <b>{$join['title']}</b>.");
+					$msg = "Welcome! You are now a member of the <b>{$join['title']}</b> Circle.";
+					if ($isExpress) $msg .= " Your membership has been marked for Express Upload.";
+					$this->Session->setFlash($msg);
 					Session::delete('join.express_upload_gid');
 					$this->redirect(array('action'=>'home', $join['id']), null, true);
 				} else {
@@ -308,6 +327,46 @@ LIMIT 5;";
 			}
 		}
 	}	
+
+	/**
+	 * XHR JSON to set GroupUser.express
+	 * POST:
+	 * 		data[Group][id], data[Group][isExpress], from SNAPPI.UIHelper.groups.isExpress()
+	 */
+	function express_upload () {
+		$this->layout = null;
+		$forceXHR = setXHRDebug($this, 0);		// xhr login is for AIR desktop uploader
+		if ($forceXHR && !empty($this->params['url']['data'])) {
+			$this->data = $this->params['url']['data'];
+		}
+		if (empty($this->data) || !isset($this->data['Group']['isExpress']) ) {
+			$success = false;
+			$message = "Only HTTP POST request allowed. data[Group][isExpress] cannot be NULL";
+		} else {
+			$isExpress = $this->data['Group']['isExpress'] ? true : false;
+			$role = Session::read('Auth.User.role');
+			$join = $this->data['Group'];
+			$isMember = in_array($join['id'], Permissionable::getGroupIds());
+			if ($role != 'USER' ) {
+				$success = false;
+				$message = "You must sign in as a full User to continue. ";
+			} else if (!$isMember) {
+				$success = false;
+				$message = "You are not a member of this Circle.";
+			} else {
+				$ret = $this->__joinGroup($join['id'], AppController::$userid, $isExpress);
+				if ($ret) {
+					if ($isExpress) $message = 'You membership in this Circle has now been marked for Express Upload.';
+					else $message = 'Express Upload has been removed from this Circle.';
+				}
+				$success = true;
+				$response = array_merge($this->data, array('User'=>array('id'=>AppController::$userid)));
+			}	
+		}
+		$this->viewVars['jsonData'] = compact('success', 'message', 'response');
+		$done = $this->renderXHRByRequest('json', null, null, $forceXHR);
+	}
+
 	// push this method into Model
 	function __contributePhotostream($groupId, $providerAccountId, $batchId=null){
 		// TODO:  check permission to write to group before adding

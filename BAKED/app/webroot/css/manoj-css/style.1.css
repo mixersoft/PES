@@ -903,7 +903,7 @@ aside.related-content .body section > h1 {
 	font-size: 13px;
 }
 
-.menu > ul > li , .menu > ul > li > a {
+.menu > ul  li , .menu > ul  li > a {
 	cursor: pointer;
 }
 .menu ul .menuItem-group, .menu ul > hr {
@@ -930,10 +930,6 @@ aside.related-content .body section > h1 {
 	color: #000;
 }
 
-.menu li:hover, .menu li a:hover {
-	background: #CCC;
-}
-
 
 .menu li.disabled, .menu li.disabled a {
 	color: #888;
@@ -944,8 +940,12 @@ aside.related-content .body section > h1 {
 	background: url(../images/next.png) no-repeat 2px center;
 	padding-left: 10px;
 }
+
 .menu ul.select > li.focus {
-	background: #CCC;
+	background-color: #CCC;
+}
+.menu li:hover, .menu li a:hover {
+	background-color: #CCC;
 }
 
 

@@ -51,7 +51,7 @@
 			<div class="link">
 				<?php  
 					echo String::insert("<input type='text' class='copy-paste' onclick='this.select();' value=':linkTo' />", $tokens);
-					echo String::insert("<a  class='right' href=':linkTo' target='_blank'>Try it</a>", $tokens) ?>
+					echo String::insert("<a  class='right' href=':linkTo' >Try it</a>", $tokens) ?>
 				</div>
 		</div>
 		<div class="alpha prefix_3 grid_11 omega">
@@ -59,13 +59,13 @@
 				<h3>Invitation to upload and share Snaps.</h3>
 				<blockquote>
 				<?php echo String::insert(":from has invited you to upload and share your Snaps with the <b>:circle</b> :group_type at Snaphappi. 
-				Your Snaps are needed to tell the whole story of this :group_type, and an express upload option will be provided to help you upload Snaps directly into this :group_type.", $tokens); ?>
+				Your Snaps are needed to tell the whole story of this :group_type, and an <b>express upload</b> option will be provided to help you upload Snaps directly into this :group_type.", $tokens); ?>
 				</blockquote>	
 			</section>
 			<div class="link">
 				<?php  
 					echo String::insert("<input type='text' class='copy-paste' onclick='this.select();' value=':linkTo&express=1' />", $tokens);
-					echo String::insert("<a  class='right' href=':linkTo&express=1' target='_blank'>Try it</a>", $tokens) ?>
+					echo String::insert("<a  class='right' href=':linkTo&express=1' >Try it</a>", $tokens) ?>
 				</div>
 		</div>		
 	</div>

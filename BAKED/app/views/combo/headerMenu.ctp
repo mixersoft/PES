@@ -1,4 +1,4 @@
-<div id="menu-header-markup" class="menu yui3-aui-overlaycontext-hidden">
+<div id="menu-header-markup" class="menu yui3-aui-overlaycontext-hidden hide">
 	<ul>
 		<li action='home' >
 			<a href="/my/home">My Home</a>
