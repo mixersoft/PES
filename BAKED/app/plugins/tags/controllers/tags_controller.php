@@ -168,12 +168,20 @@ class TagsController extends TagsAppController {
 	public $paginate = array(
 		'limit'=>10,
 		'big_limit'=>64,
-		'Tagged'=>array(				
+		'Tagged'=>array(
+			'preview_limit'=>10,
+			'paging_limit' =>64,
+			// deprecate limit, big_limit
+			// set limit in PageableBehavior->getPerpageLimit()				
 			'limit'=>10,
 			'big_limit'=>64,
 		),
-		'Asset'=>array(				
-			'limit' => 16,
+		'Asset'=>array(
+			'preview_limit'=>6,
+			'paging_limit' =>24,
+			// deprecate limit, big_limit
+			// set limit in PageableBehavior->getPerpageLimit()				
+			'limit' => 6,
 			'big_limit' =>48,
 			'order'=>array('Asset.dateTaken'=>'ASC'),
 			'extras'=>array(
@@ -186,7 +194,11 @@ class TagsController extends TagsAppController {
 			'limit'=>8,
 			'order'=>array('Collection.created'=>'DESC'),
 		),
-		'Group'=>array(				
+		'Group'=>array(	
+			'preview_limit'=>3,
+			'paging_limit' =>8,
+			// deprecate limit, big_limit
+			// set limit in PageableBehavior->getPerpageLimit()			
 			'limit' => 8,
 			'big_limit' =>36,
 			'order'=>array('Group.title'=>'ASC'),
@@ -305,6 +317,8 @@ class TagsController extends TagsAppController {
 	 */
 
 	function all(){
+		$this->layout = 'snappi';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';
 		// paginate 
 		$paginateModel = 'Tagged';
 		$Model = isset($this->{$paginateModel}) ? $this->{$paginateModel} : ClassRegistry::init('Tagged');
@@ -348,10 +362,11 @@ class TagsController extends TagsAppController {
 
 	
 	function trends($keyname = null) {
+		$this->layout = 'snappi';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';
 		$data = $this->__getTag($keyname);
 		$this->paginate['Tagged']['context'] = 'show';
 		//$this->action='all';
-		$this->set('isPreview', 0);
 		$this->all();
 	}
 	
@@ -459,12 +474,14 @@ class TagsController extends TagsAppController {
 
 	}	
 	/*
+	 * 
+	 * deprecate. use &preview=0&gallery=1
 	 * show a "big" page. 
 	 * - used for showing cloud from /[users|groups|tags]/trends
 	 */
 	function show_more() {
 		$paginateModel = 'Tagged';	
-		$this->paginate[$paginateModel]['limit'] = $this->getPerpageLimit($paginateModel, 'trends');
+		$this->paginate[$paginateModel]['preview_limit'] = $this->getPerpageLimit($paginateModel, 'trends');
 		$this->show();
 	}
 	
@@ -521,6 +538,7 @@ class TagsController extends TagsAppController {
 		}		
 		
 		$data = $this->__getTag($keyname);
+		$isPreview = (!empty($this->params['url']['preview']));
 
 		// paginate 
 		$paginateModel = 'Asset';
@@ -528,6 +546,8 @@ class TagsController extends TagsAppController {
 		$this->{$paginateModel} = $Model;	// add model to controller for paginate()
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $Model->getPaginatePhotosByTagId($keyname, $this->paginate[$paginateModel]);
+			
+		if ($isPreview) 1;
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
@@ -540,7 +560,7 @@ class TagsController extends TagsAppController {
 		
 		$taggable = $paginateModel;
 		$data[$taggable] = $pageData;
-		$this->set(compact('data','keyname'));
+		$this->set(compact('data','keyname', 'isPreview'));
 		
 		if (@empty($this->params['paging'][$paginateModel]['count'])) {
 			/*
@@ -573,7 +593,6 @@ class TagsController extends TagsAppController {
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 		// end paginate	
-		
 		$this->viewVars['jsonData'][$paginateModel] = $pageData;
 		$done = $this->renderXHRByRequest('json', '/elements/group/roll');
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	

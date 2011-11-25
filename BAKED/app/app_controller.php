@@ -111,29 +111,34 @@ class AppController extends Controller {
 	/*
 	 * set XHR source params to pass to XHR requests 
 	 * parses $this->params['url']['xhrfrom' or 'xhrview'], and removes from $this->params['url']
-	 * 	?xhrfrom=[controller keyname]~[uuid]~[action]~[view/element] 
+	 * 	?xhrfrom=[controller alias]~[uuid]~[action]~[view/element] 
 	 *  ?xhrview=[view/element]
 	 * saves to Configure::write('controller.xhrFrom')
-	 *  Configure::read('controller.xhrFrom.keyName')
+	 *  Configure::read('controller.xhrFrom.alias')
 	 *  Configure::read('controller.xhrFrom.uuid') 
 	 *  Configure::read('controller.xhrFrom.action')
 	 *  Configure::read('controller.xhrFrom.view')
 	 */
 	function __setXhrFrom() {
-		if (!empty($this->params['url']['xhrfrom'])) {
-			// move from cgi param to Configure
+		if (empty($this->params['url']['xhrfrom'])) {
+			/*
+			 * init if empty. for dependent XHR calls
+			 */ 
+			$xhrFrom['alias'] = Configure::read("controller.alias"); // controller alias
+			$xhrFrom['uuid'] = AppController::$uuid;  // add as ? 'src'=>implode('~',$xhrRoot)				// uuid
+			$xhrFrom['action'] = $this->action; // action (optional)
+			$xhrFrom['view'] = null; 
+		} else {
+			/*
+			 * use if set, do NOT overwrite
+			 */ 
+			// example: /tags/show?xhrfrom=tags~europe~home~
 			$xhrFromParts = explode('~', $this->params['url']['xhrfrom']);
-			$xhrFrom['keyName']= isset($xhrFromParts[0]) ? $xhrFromParts[0] : null;
+			$xhrFrom['alias'] = isset($xhrFromParts[0]) ? $xhrFromParts[0] :  Configure::read("controller.alias"); // controller alias
 			$xhrFrom['uuid']= isset($xhrFromParts[1]) ? $xhrFromParts[1] : null;
 			$xhrFrom['action']= isset($xhrFromParts[2]) ? $xhrFromParts[2] : null;
 			$xhrFrom['view']= isset($xhrFromParts[3]) ? $xhrFromParts[3] : null;
 			unset($this->params['url']['xhrfrom']);
-		} else {
-			// $xhrFrom['keyName'] = Configure::read("lookup.keyName.".Configure::read('controller.name')); // keyName
-			$xhrFrom['keyName'] = Configure::read("controller.label"); // keyName
-			$xhrFrom['uuid'] = AppController::$uuid;  // add as ? 'src'=>implode('~',$xhrRoot)				// uuid
-			$xhrFrom['action'] = null; // action (optional)
-			$xhrFrom['view'] = null; 
 		}
 		if (!empty($this->params['url']['xhrview'])) {
 			$xhrFrom['view'] = $this->params['url']['xhrview']; // view element(optional)

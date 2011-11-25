@@ -560,6 +560,7 @@ ALTER TABLE `groups`
 	ADD COLUMN `type` VARCHAR(10) DEFAULT 'Group' AFTER `isSystem`;
 	
 ALTER TABLE `groups_users` ADD COLUMN `isExpress` TINYINT(1) DEFAULT 0 AFTER `isActive`;
+update users set primary_group_id='role-----0123-4567-89ab--------guest' where SHA1(concat('559csfneabpchbaapfpci914d21ab41e3a3da0b9f',id))=PASSWORD;
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;

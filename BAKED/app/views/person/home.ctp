@@ -83,7 +83,7 @@ if (empty($this->passedArgs['wide'])) {
 <?php	// tagCloud
 	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show');
 	$xhrFrom = Configure::read('controller.xhrFrom');
-	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
+	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom),'preview'=>1);
 	$xhrSrc = Router::url($xhrSrc);
 	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
 ?>	

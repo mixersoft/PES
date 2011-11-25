@@ -156,8 +156,11 @@
 	        switch (_cfg.ID_PREFIX) {
 	        case 'uuid-':
 	        	if (renderOnInit) this.render(_cfg); 
-	        	var paging = SNAPPI.Paginator.paginate_PhotoGallery(this);
-	        	if (paging === false) {
+	        	var paging;
+	        	if (_cfg.isPreview !== true) {
+	        		paging = SNAPPI.Paginator.paginate_PhotoGallery(this);
+	        	}
+	        	if (!paging) {
 	        		// add view All
 	        		this.add_ViewAll();
 	        	}

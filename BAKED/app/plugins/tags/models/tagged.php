@@ -137,8 +137,11 @@ class Tagged extends TagsAppModel {
 		$xhrFrom = Configure::read('controller.xhrFrom');
 		if ($xhrFrom) {
 			// filter tagCloud by Model
-			$keyName = $xhrFrom['keyName']; $uuid = $xhrFrom['uuid'];
-			$model = Configure::read("lookup.xfr.{$keyName}.Model");
+			$uuid = $xhrFrom['uuid'];
+			// TODO: deprecate keyName usage
+			// $keyName = $xhrFrom['keyName']; 
+			// $model = Configure::read("lookup.xfr.{$keyName}.Model");
+			$model = Configure::read("lookup.xfr.{$xhrFrom['alias']}.Model");
 			$getConditionsFor = array($model=>$uuid);
 		} else {
 			$getConditionsFor = array();

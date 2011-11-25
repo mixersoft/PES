@@ -50,40 +50,59 @@ if (empty($this->passedArgs['wide'])) {
 <?php 
 	
 	$this->Layout->blockEnd();	} 
-
-
 	// tagged photos
-	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('plugin'=>'','action'=>'photos', '?'=>array('gallery'=>1)));
+	$options = array('plugin'=>'','action'=>'photos', '?'=>array('gallery'=>1, 'preview'=>1));
+	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + $options);
 	echo "<div id='gallery-photo-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' nodelay='1'></div>";
-	Configure::write('js.render_lightbox', true);
 ?>
 
 <?php
 	// tagged groups
 //	$ajaxSrc = Router::url(array('action'=>'groups', AppController::$uuid));
-	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('plugin'=>'','action'=>'groups', '?'=>array('preview'=>1)));
+	$options = array('plugin'=>'','action'=>'groups', '?'=>array('gallery'=>1, 'preview'=>1)); 
+	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + $options);
 	echo "<div id='groups-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
 ?>	
 
-<?php
-	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show');
-	$xhrFrom = Configure::read('controller.xhrFrom');
-	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
-	$xhrSrc = Router::url($xhrSrc);
-	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
-?>	
-
-<?php
+<?php $this->Layout->blockStart('relatedContent');?>
+<aside id="related-content" class="related-content container_16">		    	
+        <div class="grid_11">
+           	<div class="body">
+				<article>
+        	    	<section class="recent tabbed-area cur-nav-fix">  
+            		    <h1>Recent Activity</h1>      		
+                		<section class="wrap">
+                          <section id="snaps">
+                          </section>
+                        </section>
+					</section>
+				</article>
+				<article>
+					<a name='discussion'></a>
+					<section class="discussion">
+						<h1><?php __('Discussion'); ?></h1>			
+					<?php
 	$xhrSrc = array('plugin'=>'', 'action'=>'discussion', $this->passedArgs[0]);
 	$xhrSrc = Router::url($xhrSrc);
 	echo $this->element('comments/discussion-fragment', array('xhrSrc'=>$xhrSrc));
+						?>	
+					</section>
+				</article>				
+			</div>        	
+		</div>
+		<div class="grid_5 body-right">
+            <section id="tag-cloud" class="trends">
+				<h1><?php __('Trends');?></h1>
+<?php 
+	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show');
+	$xhrFrom = Configure::read('controller.xhrFrom');
+	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom),'preview'=>1);
+	$xhrSrc = Router::url($xhrSrc);
+	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
 ?>
-<script type="text/javascript">
-var initOnce = function() {
-	// init xhr paging & fetch xhr-gets
-	// NOTE: any xhr-gets will bind own PAGE.init() method
-	SNAPPI.xhrFetch.init();
-};
-try {SNAPPI.xhrFetch.fetchXhr; initOnce(); }			// run now for XHR request, or
-catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request
-</script>
+			</section>
+		</div>	
+</aside>
+<?php $this->Layout->blockEnd();?>
+
+

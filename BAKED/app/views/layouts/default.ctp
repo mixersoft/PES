@@ -52,7 +52,6 @@
 			<?php echo $this->Session->flash(); ?>
 			<?php echo $this->Session->flash('email'); ?>
 			<?php echo $content_for_layout; ?>
-			<?php if (Configure::read('js.render_lightbox')) {echo $this->element('/lightbox'); }?>
 <script type="text/javascript">
 <?php 	$this->viewVars['jsonData']['controller'] = Configure::read('controller');
 		foreach ($this->viewVars['jsonData'] as $key=>$value) {

@@ -9,56 +9,50 @@ if (empty($this->passedArgs['wide'])) {
 <?php echo $this->element('/group/roll');?>
 
 <?php $this->Layout->blockStart('relatedContent');?>
-<aside id="related-content" class="container_16">		    	
+<aside id="related-content" class="related-content container_16">		    	
         <div class="grid_11">
-           	<section class="left">
+           	<div class="body">
 				<article>
-        	    	<section class="tabbed-area cur-nav-fix">  
-            		    <h3 class="recent">Recent Activity</h3>      		
-                		<section class="box-wrap">
+        	    	<section class="recent tabbed-area cur-nav-fix">  
+            		    <h1>Recent Activity</h1>      		
+                		<section class="wrap">
                             <section id="snaps">
                           </section>
                         </section>
 					</section>
 				</article>
 				<article>
-					<section class="tabbed-area cur-nav-fix">  
-						<h3 class="person">People</h3>      		
-						<section class="box-wrap">
+					<section class="circles tabbed-area cur-nav-fix">  
+						<h1>People</h1>      		
+						<section class="wrap">
 						  <section id="members">
 <?php 
 	// $ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'fragment', 'a'=>'members', 'e'=>'preview-members'));
 	// $ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'members', '?'=>array('preview'=>1)));
 	// echo "<div id='members-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
-?>							  	
+?>						  	
 						  </section>
 						</section>
 					</section>
 				</article>
-			</section>        	
+			</div>        	
 		</div>
-		<div class="grid_5">
-        	<aside>
-                <section id="tag-cloud" class="popular">
-					<h3 class="popular"><?php __('Trends');?></h3>
+		<div class="grid_5 body-right">
+            <section id="tag-cloud" class="trends">
+				<h1><?php __('Trends');?></h1>
 <?php 
 	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show', 'filter'=>'Group');
 	$xhrFrom = Configure::read('controller.xhrFrom');
-	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
+	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom),'preview'=>1);
 	$xhrSrc = Router::url($xhrSrc);
 	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
-		// tag form 	
-	echo $this->element('tags', array('domId'=>'groups-tags', 'data'=>&$group));
 ?>
 	
-				</section>
-			</aside>
+			</section>
 		</div>	
-		
 </aside>
-<?php 
-	$this->Layout->blockEnd();
-?>	
+<?php $this->Layout->blockEnd();?>
+
 
 
 <?php  $this->Layout->blockStart('markup');

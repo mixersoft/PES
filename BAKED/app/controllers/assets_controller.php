@@ -21,6 +21,10 @@ class AssetsController extends AppController {
 
 	public $paginate = array(
 		'Asset'=>array(
+			'preview_limit'=>6,
+			'paging_limit' =>24,
+			// deprecate limit, big_limit
+			// set limit in PageableBehavior->getPerpageLimit()	
 			'limit' => 16,
 			'big_limit' =>48,
 			'order'=>array('Asset.dateTaken'=>'ASC'),
@@ -31,6 +35,10 @@ class AssetsController extends AppController {
 			),	
 		),
 		'Group'=>array(
+			'preview_limit'=>4,
+			'paging_limit' =>8,
+			// deprecate limit, big_limit
+			// set limit in PageableBehavior->getPerpageLimit()
 			'limit' => 8,
 			'big_limit' =>36,
 			'order'=>array('Group.title'=>'ASC'),
@@ -292,7 +300,7 @@ class AssetsController extends AppController {
 	
 	function all(){
 		$this->layout = 'snappi';
-		// $this->helpers[] = 'Time';
+		$this->helpers[] = 'Time';
 		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';	
 		// paginate 
 		$paginateModel = 'Asset';
@@ -362,7 +370,9 @@ class AssetsController extends AppController {
 		
 	
 	function groups($id){
+		$this->layout = 'snappi';
 		$this->helpers[] = 'Time';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';	
 				// paginate 
 		$paginateModel = 'Group';
 		$Model = $this->Asset->{$paginateModel};
@@ -1579,7 +1589,6 @@ debug("WARNING: This code path is not tested");
 		$this->Asset->contain(null);		
 		$data = @$this->Asset->find('first', $options);
 		$this->set('data', $data);	
-		Configure::write('js.render_lightbox', false);
 	}	
 	
 }

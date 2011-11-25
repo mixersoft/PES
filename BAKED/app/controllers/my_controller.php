@@ -303,7 +303,16 @@ $this->log($response, LOG_DEBUG);
 
 	function __getExpressUploads($userid) {
 				// paginate 
-		$paginateModel = 'Membership';
+		$paginateModel = 'ExpressUploadGroup';
+		$copyFromAlias = 'Membership';
+		
+		// bind habtm Group using $paginateModel as alias
+		$this->User->bindModel(array(
+			'hasAndBelongsToMany'=>array(
+				$paginateModel=>$this->User->hasAndBelongsToMany[$copyFromAlias])
+			)
+		);
+		
 		$Model = $this->User->{$paginateModel};
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $Model->getPaginateGroupsByUserId($userid, $this->paginate[$paginateModel]);
@@ -315,10 +324,14 @@ $this->log($response, LOG_DEBUG);
 					"`HABTM`.user_id" => $userid,
 					"`HABTM`.isActive" => 1,
 					"`HABTM`.isExpress" => 1,),
-			);		
+			);	
 		$paginateArray['joins'] = @mergeAsArray($paginateArray['joins'], $joins);
+		$paginateArray['order'] = array("`HABTM`.created DESC");
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$expressUploadGroups = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
+		
+		// this is the model we really want to paginate
+		Configure::write('paginate.Model', $copyFromAlias);
 		return $expressUploadGroups;
 	}
 	/**

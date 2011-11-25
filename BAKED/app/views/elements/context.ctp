@@ -1,7 +1,10 @@
 <span class='context '>
 <?php 
+/*
+ * TODO: check refactor of keyName -> alias/label
+ */
 	$controllerAttr = Configure::read('controller');
-	$fromKeyName =  $controllerAttr['xhrFrom']['keyName'];
+	$fromKeyName =  $controllerAttr['xhrFrom']['alias'];
 	$context = Session::read('lookup.context');
 //debug($context);	
 	if ( $context['keyName']==null 

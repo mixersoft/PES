@@ -1,6 +1,6 @@
 <?php
 /**
- * @param array $groups - usually $data['Group'] from $Model->find()
+ * @param array $members - usually $data['User'] from $Model->find()
  */
 // make helpers to format photo labels
 // function label() {
@@ -15,7 +15,7 @@ $THUMBSIZE = isset($passedArgs['thumbSize']) ?  $passedArgs['thumbSize'] : 'lm';
 $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 switch ($THUMBSIZE) {
 	case "lm" :
-		$SHORT = 24; $LONG = 255;
+		$SHORT = 20; $LONG = 255;
 		break;
 	case "sq":
 		$SHORT = 12; $LONG = 255;
@@ -24,22 +24,12 @@ switch ($THUMBSIZE) {
 $PREVIEW_LIMIT = $isPreview ? 6 : false;
 ?>
 <section class="<?php if ($isWide) echo "wide "; ?>gallery person">
-<?php if ($isPreview) { ?>	
-	<h2>
-		<?php
-			if ($total==0) {
-				echo "This Circle has <span class='count'>no</span> members. Join now.";
-			} else {
-				echo "Total <span class='count'>{$total}</span> Member" . ($total>1 ? "s. " : ". ");
-				echo $this->Html->link('Show all', array('action'=>'members')+$passedArgs); 
-			}
-		?> 
-		</h2>
-<?php } ?>		
 	<div class="container">
 <?php
 			if ($PREVIEW_LIMIT) $members = array_slice($members, 0, $PREVIEW_LIMIT);
-			foreach ($members as $member) { 
+			$lookup_role = Configure::read('lookup.roles');
+			foreach ($members as $member) {
+				$role = array_search($member['primary_group_id'], $lookup_role, true);
 				/*
 				 * TODO: move this to LabelHelper when complete
 				 */
@@ -48,7 +38,9 @@ $PREVIEW_LIMIT = $isPreview ? 6 : false;
 				// show owner name/link in label
 				// show count photos in titles, context sensitive?
 				$fields['owner'] = $member['username'];
-				$fields['trim_owner'] = $this->Text->truncate($fields['owner'], $SHORT);
+				if ($role == 'GUEST') {
+					$fields['trim_owner'] = 'Guest';
+				} else $fields['trim_owner'] = $this->Text->truncate($fields['owner'], $SHORT);
 				$fields['title'] = "member since {$this->Time->nice($member['created'])}";
 				$fields['last_login'] = "last visit: {$this->Time->timeAgoInWords($member['last_login'])}";
 				$link_options['title'] = $fields['title'];
@@ -72,7 +64,7 @@ $PREVIEW_LIMIT = $isPreview ? 6 : false;
 					echo $this->Html->link($img, "/person/home/{$member['id']}", array('escape'=>false) );
 				?>
 				<figcaption>
-					<div class="label"><?php echo String::insert(":new :owner", $fields); ?></div>
+					<div class="label" title="<?php echo $fields['owner'] ?>"><?php echo String::insert(":new :trim_owner", $fields); ?></div>
 					<ul class="inline extras">
 					<?php 
 						echo String::insert("<li class='snaps'><a href=':href' title='see Snaps'>:label</a></li>", $person_snaps); 

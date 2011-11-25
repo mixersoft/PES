@@ -25,18 +25,6 @@ switch ($THUMBSIZE) {
 $PREVIEW_LIMIT = $isPreview ? 8 : false;
 ?>
 <section class="<?php if ($isWide) echo "wide "; ?>gallery group">
-<?php if ($isPreview) { ?>	
-	<h2>
-		<?php
-			if ($total==0) {
-				echo "There are <span class='count'>no</span> Circle memberships.";
-			} else {
-				echo "Total <span class='count'>{$total}</span> Circle" . ($total>1 ? "s. " : ". ");
-				echo $this->Html->link('Show all', array('action'=>'groups')+$passedArgs); 
-			}
-		?> 
-	</h2>
-<?php } ?>		
 	<div class="container">
 <?php
 			if ($PREVIEW_LIMIT) $groups = array_slice($groups, 0, $PREVIEW_LIMIT); 

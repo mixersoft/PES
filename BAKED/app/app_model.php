@@ -79,11 +79,17 @@ class AppModel extends Model {
 
 	/**
 	 * Override paginateCount method, to eliminate double query
-	 * 
+	 * use $extras['paginateCacheKey'] to save cached results under different key  
+	 * NOTE: 
+	 * 	- USE $Controller->paginate[$this->alias][paginateCacheKey]='CacheKey' to save 
+	 * 		$cached_results_from_paginateCount under a different key than $this->alias
+	 * - WARNING: $controller->paginate() will overwrite counts in $this->params['paging'][$this->alias]
+	 * 		change $this->alias to avoid this problem. attach association on the fly
+	 * 		BUT, make sure you update Configure::write('paginate.Model', );
+	 * 		See: MyController::___getExpressUploads() for example
 	 */
 	public function paginateCount($conditions = null, $recursive = 0, $extra = array()) {
-//		debug("AppModel::paginateCount() for name={$this->alias}");
-		
+		$paginateCacheKey = isset($extra['paginateCacheKey']) ? $extra['paginateCacheKey'] : $this->alias;
 		if (false == in_array($this->name, $this->use_FOUND_ROWS_whitelist)) {
 			// cancel paginate/paginateCount override
 			return  $this->find('count', compact('conditions', 'recursive','extra'));
@@ -109,8 +115,8 @@ class AppModel extends Model {
 		} else {
 			// $USE_FOUND_ROWS will not work with cake 1.3.6 with DISTINCT field. extra `` problem 
 			// change field to COUNT(`[alias]`.id)
-			$data = $this->find('all', $paginateOptions);			
-			AppModel::$cached_results_from_paginateCount[$this->alias] = & $data;
+			$data = $this->find('all', $paginateOptions);	
+			AppModel::$cached_results_from_paginateCount[$paginateCacheKey] = & $data;
 			
 			if (strpos($firstField, '.*')) $paginateOptions['fields'] = str_replace('.*', '.id', $paginateOptions['fields']);
 			return  $this->find('count', $paginateOptions);
@@ -139,7 +145,7 @@ class AppModel extends Model {
 				break;
 		}
 		// save Query results for paginate()
-		AppModel::$cached_results_from_paginateCount[$this->alias] = & $data;	
+		AppModel::$cached_results_from_paginateCount[$paginateCacheKey] = & $data;	
 		$count = $this->getFoundRows();
 		return $count;
 	}
@@ -147,6 +153,7 @@ class AppModel extends Model {
 	 * Overridden paginate method 
 	 */	
 	public function paginate($conditions, $fields, $order, $limit, $page = 1, $recursive = null, $extra = array()) {
+		$paginateCacheKey = isset($extra['paginateCacheKey']) ? $extra['paginateCacheKey'] : $this->alias;
 		$options = array_merge(compact('conditions', 'fields', 'order', 'limit', 'page', 'recursive'), $extra);
 		if (false == in_array($this->name, $this->use_FOUND_ROWS_whitelist)) {
 			// cancel override
@@ -155,8 +162,8 @@ class AppModel extends Model {
 		/*
 		 * check for cached results from paginateCount()
 		 */
-		return isset(AppModel::$cached_results_from_paginateCount[$this->alias])  
-			? AppModel::$cached_results_from_paginateCount[$this->alias]  
+		return isset(AppModel::$cached_results_from_paginateCount[$paginateCacheKey])  
+			? AppModel::$cached_results_from_paginateCount[$paginateCacheKey]  
 			: $this->find('all', $options);
 	}		
 	

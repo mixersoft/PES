@@ -7,7 +7,7 @@
 			case 'Group': $label = $data['Group']['title']; break;
 			case 'User': $label = $data['User']['username']; break;
 			case 'Photo': $label = $data['Asset']['caption']; break; 
-			default: $label = "My Snaphappi";
+			default: $label = $controllerAttrs['label'];
 		}
 	} catch (Exception $e) {
 		$label = "&nbsp;";

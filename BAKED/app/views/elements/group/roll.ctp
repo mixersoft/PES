@@ -1,13 +1,24 @@
 <?php	
+
+/**
+ * @param array $groups - usually $data['Group'] from $Model->find()
+ */
+
 	$isPreview = (!empty($this->params['url']['preview']));
 	$isWide = !empty($this->params['named']['wide']);		// fluid layout
+	$isXhr = Configure::read('controller.isXhr');
 	$paginateModel = Configure::read('paginate.Model');
 	$state['displayPage'] = array_filter_keys($this->params['paging'][$paginateModel], array('page', 'count', 'pageCount', 'current'));
 	$state['displayPage']['perpage'] = $this->params['paging'][$paginateModel]['options']['limit'] ;	
 	$total = $state['displayPage']['count'] + 0;	// as int
 	$state['displayPage']['total'] = $total;	// as int;	
-	// xhr response
-	if (Configure::read('controller.isXhr')) {
+
+
+	if ($isXhr) {
+		// XHR response
+		if ($isWide) {
+			echo $this->element('/group/header-wide', compact('total', 'isPreview', 'state'));
+		} else echo $this->element('/group/header', compact('total', 'isPreview', 'state'));
 		echo $this->element('/group/paging-inner', compact('isPreview', 'isWide', 'total'));
 		
 		$this->Layout->blockStart('javascript');
@@ -25,24 +36,22 @@
 	</script>
 <?php 
 		$this->Layout->blockEnd();	
-		return;
-	};
-	
-	
-	// HTTP GET response
-/**
- * @param array $groups - usually $data['Group'] from $Model->find()
- */
-	$this->viewVars['jsonData']['STATE'] = $state;
+		
+		
+		
+	} else {
+		
+		// HTTP GET response
+		
+		$this->viewVars['jsonData']['STATE'] = $state;
+		echo $this->element('/group/section-header');
 	
 ?>
-
-<?php echo $this->element('/group/section-header'); ?>
 <div class='gallery-container'>
 		<?php 
 			if ($isWide) {
-				echo $this->element('/group/header-wide', array('total'=>$total));
-			} else echo $this->element('/group/header', array('total'=>$total));
+				echo $this->element('/group/header-wide', compact('total', 'isPreview', 'state'));
+			} else echo $this->element('/group/header', compact('total', 'isPreview', 'state'));
 		?>
 	<?php echo $this->element('/group/paging-inner', compact('isPreview', 'isWide', 'total')); ?>
 </div>
@@ -50,7 +59,7 @@
 <?php $this->Layout->blockStart('javascript'); ?>
 	<script type="text/javascript">		
 		/**
-		 * run after EACH XHR request
+		 * run after GET request
 		 */
 		var initOnce = function() {
 			try {
@@ -63,12 +72,12 @@
 					'DisplayOptionClick':null,
 					'ContextMenuClick':{node:parent, type:'Group'}, 
 					'LinkToClick': {node:parent},					
-					'MultiSelect':null,
+					'MultiSelect':parent,
 				};
 				for (var listen in listeners) {
 					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
 				}					
-				SNAPPI.Paginator.paginate_CircleMemberGallery('.gallery.group');				
+<?php if (!$isPreview) echo "SNAPPI.Paginator.paginate_CircleMemberGallery('.gallery.group');" ?>;				
 				if (parent.all('.FigureBox.Group').size() == 0) {
 					var emptyMsg = Y.one('#markup .empty-circle-gallery-message');
             		if (emptyMsg) parent.append(emptyMsg.removeClass('hide'));	
@@ -83,4 +92,6 @@
 			PAGE.init.push(initOnce); 
 		}	// run from Y.on('domready') for HTTP request
 	</script>	
-<?php $this->Layout->blockEnd(); ?> 
+<?php $this->Layout->blockEnd(); 
+	}
+?> 

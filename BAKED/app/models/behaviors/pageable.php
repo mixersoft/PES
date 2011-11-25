@@ -32,8 +32,8 @@ class PageableBehavior extends ModelBehavior {
  * @var array
  */
 	protected $_defaults = array(
-		'preview_limit' => 'limit',
-		'paging_limit' => 'big_limit',	
+		'preview_limit' => 'preview_limit',
+		'paging_limit' => 'paging_limit',	
 		'use_configure_passedArgs' => true,
 	);	
 	

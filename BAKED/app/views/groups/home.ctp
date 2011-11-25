@@ -64,7 +64,6 @@ if (empty($this->passedArgs['wide'])) {
 <?php 
 	$ajaxSrc = Router::url(Configure::read('passedArgs.complete') + array('action'=>'photos', 'perpage'=>24, '?'=>array('gallery'=>1)));
 	echo "<div id='gallery-photo-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' nodelay='1'></div>";
-	// Configure::write('js.render_lightbox', true);
 ?>
 <?php  if (Configure::read('controller.name') == 'Groups') {	
 		$this->Layout->blockStart('markup'); 		?>
@@ -122,9 +121,9 @@ if (empty($this->passedArgs['wide'])) {
 				<h1><?php __('Trends');?></h1>
 <?php 
 	// tagCloud
-	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show');
+	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show', 'filter'=>'Group');
 	$xhrFrom = Configure::read('controller.xhrFrom');
-	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom));
+	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom),'preview'=>1);
 	$xhrSrc = Router::url($xhrSrc);
 	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
 	// tag form 	

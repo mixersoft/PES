@@ -551,7 +551,7 @@ class UsersController extends UsersPluginController {
 /*
  * give guest "user" role for testing
  */
-$data['User']['primary_group_id'] = 'role-----0123-4567-89ab---------user';
+// $data['User']['primary_group_id'] = 'role-----0123-4567-89ab---------user';
 		$data['User']['privacy'] = 0;
 		$data['User']['active'] = 1;
 		$this->User->create();

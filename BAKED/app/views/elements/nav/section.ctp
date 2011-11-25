@@ -146,6 +146,7 @@ switch ($classLabel) {
 		$actions['Groups'] = array('action'=>'groups');
 		$actions['Trends'] = $this->action=='home' ? '#trends' : array('action'=>'trends');  // array('action'=>'home', 0=>null, 1=>'#trends');
 		$actions['Discussion'] =  $this->action=='home' ? '#discussion' : array('action'=>'discussion', 0=>null);
+		$label = AppController::$uuid;
 		break;
 }
 ?>

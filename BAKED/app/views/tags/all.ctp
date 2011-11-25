@@ -14,20 +14,43 @@
 	$this->Layout->blockStart('itemHeader');
 		echo $this->element('nav/section', array('badge_src'=>null)); 
 	$this->Layout->blockEnd();	
+	
+	// tagCloud
+	$paginateModel = Configure::read('paginate.Model');	
+	
 ?>
-<div id='paging-tags' class='paging-content'  xhrTarget='paging-tags-inner'>
-<?php 
-	echo $this->element('tags/paging-tags');
-?>
-</div>
-<script type="text/javascript">
-var initOnce = function() {
-	// init xhr paging & fetch xhr-gets
-	// NOTE: any xhr-gets will bind own PAGE.init() method
-	SNAPPI.xhrFetch.init();
-	SNAPPI.cfg.MenuCfg.renderPerpageMenu(); 
-};
-try {SNAPPI.xhrFetch.fetchXhr; initOnce(); }			// run now for XHR request, or
-catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request
-</script>
+	<ul class='inline context'>
+		<?php if (!$isPreview  && Configure::read("paginate.Options.{$paginateModel}.context")!='skip' ) { echo "<li>{$this->element('context')}</li>"; }?>
+	</ul>
 
+            <section id="tag-cloud" class="trends grid_16">
+<?php 
+	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show');
+	$xhrFrom = Configure::read('controller.xhrFrom');
+	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom), 'gallery'=>1);
+	$xhrSrc = Router::url($xhrSrc);
+	echo "<div id='paging-tags-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
+?>
+			</section>
+			
+			
+<?php $this->Layout->blockStart('relatedContent');?>
+<aside id="related-content" class="related-content container_16">		    	
+        <div class="grid_11">
+           	<div class="body">
+           		<article>
+
+           		</article>
+				<article>
+        	    	<section class="recent tabbed-area cur-nav-fix">  
+            		    <h1>Recent Activity</h1>      		
+                		<section class="wrap">
+                          <section id="snaps">
+                          </section>
+                        </section>
+					</section>
+				</article>
+			</div>        	
+		</div>
+</aside>
+<?php $this->Layout->blockEnd();?>

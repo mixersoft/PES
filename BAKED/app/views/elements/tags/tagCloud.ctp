@@ -10,42 +10,74 @@ Configure::write('debug',1);
 	$state['displayPage']['perpage'] = $this->params['paging']['Tagged']['options']['limit']; 
 	$total = $state['displayPage']['count'] + 0;	// as int
 	$state['displayPage']['total'] = $total;	// as int;
-	if (!isset($isPreview)) $isPreview = (!empty($this->params['url']['preview']));
+	$isPreview = (!empty($this->params['url']['preview']));
+	$isRelated = empty($this->params['url']['gallery']);							// use different default for TagCloud
 	$isWide = !empty($this->params['named']['wide']);		// fluid layout
-	$isXhr = Configure::read('controller.isXhr');
-	// $controllerAttr = Configure::read('controller');
-	$xhrFrom = Configure::read('controller.xhrFrom');
-	$PREVIEW_LIMIT = $isPreview ? 12 : false;
-?>
-
-<ul class='inline tag-roll-header'>
-	<?php if (!$isPreview  && Configure::read("paginate.Options.{$paginateModel}.context")!='skip' ) { echo "<li>{$this->element('context')}</li>"; }?>
-</ul>
-<?php if ($isPreview) { ?>	
-	<h2>
-		<?php
-			if ($total==0) {
-				echo "There are <span class='count'>no</span> Tags for this item.";
-			} else {
-				echo "Total <span class='count'>{$total}</span> Tag" . ($total>1 ? "s. " : ". ");
-				$next = array('controller'=>$xhrFrom['keyName'],'action'=>'trends', $xhrFrom['uuid']) + $passedArgs;
-				echo $this->Html->link('Show all', $next); 
-			}
-		?> 
-	</h2>
-<?php } ?>	
+	$controllerAttr = Configure::read('controller');
+	$isXhr = $controllerAttr['isXhr'];
+	$xhrFrom = $controllerAttr['xhrFrom']; 
+	switch($xhrFrom['alias']) {
+		case 'photos': 	$next_action = 'photos'; break;
+		case 'groups':
+		case 'circles':
+		case 'events':
+		case 'weddings':
+			$next_action = 'groups'; break;
+		case 'tags':
+		default:
+			$next_action = 'trends'; break;	
+	}
+	
+	if (1) {
+		$xhrFrom = Configure::read('controller.xhrFrom');
+		$passedArgs = Configure::read('passedArgs.min');
+		$next = array('controller'=>'tags','action'=>$next_action, $xhrFrom['uuid']) + $passedArgs;
+		$tokens['total'] = $total; 
+		$tokens['linkTo'] = $this->Html->link('Show all', $next); 
+		$tokens['type'] = ($total==1 ? "Tag. " : "Tags. ");
+		$header_content = String::insert("Total <span class=''>:total</span> :type :linkTo", $tokens);
+	}
+	
+	if ($isRelated) {
+		if ($total==0) {
+			$header_content = String::insert("There are <span class='count'>no</span> :type for this item.", $tokens);
+		} else {
+			$header_content = String::insert("Total <span class='count'>:total</span> :type :linkTo", $tokens);
+		}
+		echo "<h2>{$header_content}</h2>";
+		// return;
+	} else {
+		// tag-header for /all /trends
+		$tokens['total'] = $total; 
+		$tokens['type'] = ($total==1 ? "Tag. " : "Tags. ");
+		$header_content = String::insert("Total <span class=''>:total</span> :type", $tokens);
+?>		
+	
+<section class='tag-header'>
+	<ul class="toolbar inline grid_16">
+		<li class='blue label'><h1><?php echo $header_content; ?> </h1></li>
+	</ul>
+</section>	
+	
+<?php	} ?>
+	
+	
+	
+	
+	
+	
+	
 <ul class='inline'>
 <?php 
 	if (isset($cloudTags)) {
-		if ($PREVIEW_LIMIT) $cloudTags = array_slice($cloudTags,  0, $PREVIEW_LIMIT); 
 		// debug($xhrFrom);
 		
 		// set Context for tags
 		$route = array('plugin'=>'','controller' => 'tags', 'action'=>'home');
 		if ($ENABLED = 0) {
 			$context = array_shift(Session::read("lookup.context"));
-			if (!$context && in_array($xhrFrom['keyName'], array('Photo', 'Snap'))) {
-				$route['context']=$xhrFrom['keyName'];
+			if (!$context && in_array($xhrFrom['alias'], array('photos', 'circles', 'groups', 'events', 'weddings'))) {
+				$route['context']=Configure::read("lookup.xfr.{$xhrFrom['alias']}.ControllerLabel");
 			}
 		}
 
@@ -54,7 +86,7 @@ Configure::write('debug',1);
 			'before' => '<li><span style="font-size: %size%pt" class="tag">',
 			'after' => '</span></li>',
 			'minSize' => '8',
-			'maxSize' => '16',
+			'maxSize' => $isRelated ? '16' : '24',
 			'named' => 0,
 			'shuffle' => 0
 		));
@@ -63,14 +95,16 @@ Configure::write('debug',1);
 </ul>	
 
 <?php  		
-	if (!$isPreview) {
-		// setup aui_paginator
+	if (!$isRelated) {
+		// setup aui_paginator			
+		$this->Layout->blockStart('javascript');
 ?>
 		<script type="text/javascript">
 			var initOnce = function() {
 				//TODO: init aui_paginator 
+				SNAPPI.Y.fire('snappi:after_GalleryInit', this); 
 			};
 			try {SNAPPI.xhrFetch.fetchXhr; initOnce(); }			// run now for XHR request, or
 			catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request
 		</script>	
-<?php } ?>
+<?php $this->Layout->blockEnd(); } ?>

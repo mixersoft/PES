@@ -8,16 +8,34 @@
 		<?php echo $this->element('/group/paging-groups');?>
 	</div>
 </div>
-<?php	// tagCloud
-	$ajaxSrc = Router::url(array('plugin'=>'', 'controller'=>'tags','action'=>'all', 'filter'=>'Group'));
-	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
-?>	
-<script type="text/javascript">
-var initOnce = function() {
-	// init xhr paging & fetch xhr-gets
-	// NOTE: any xhr-gets will bind own PAGE.init() method
-	SNAPPI.xhrFetch.init(); 
-};
-try {SNAPPI.xhrFetch.fetchXhr; initOnce(); }			// run now for XHR request, or
-catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request
-</script>
+
+<?php $this->Layout->blockStart('relatedContent');?>
+<aside id="related-content" class="related-content container_16">		    	
+        <div class="grid_11">
+           	<div class="body">
+				<article>
+        	    	<section class="recent tabbed-area cur-nav-fix">  
+            		    <h1>Recent Activity</h1>      		
+                		<section class="wrap">
+                          <section id="snaps">
+                          </section>
+                        </section>
+					</section>
+				</article>
+			</div>        	
+		</div>
+		<div class="grid_5 body-right">
+            <section id="tag-cloud" class="trends">
+				<h1><?php __('Trends');?></h1>
+<?php // tagCloud
+	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show', 'filter'=>'Group');
+	$xhrFrom = Configure::read('controller.xhrFrom');
+	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom),'preview'=>1);
+	$xhrSrc = Router::url($xhrSrc);
+	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
+?>
+			</section>
+		</div>	
+</aside>
+<?php $this->Layout->blockEnd();?>
+

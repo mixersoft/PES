@@ -20,8 +20,13 @@ class PersonController extends UsersController {
 	public $paginate = array(
 		'photostream'=>array('limit'=>20),
 		'User'=>array(
+			'preview_limit'=>16,
+			'paging_limit' =>24,
+			// deprecate limit, big_limit
+			// set limit in PageableBehavior->getPerpageLimit()
 			'limit'=>16,
-			'big_limit' =>4,
+			'big_limit' =>24,
+			
 			'order'=>array('User.created'=>'ASC'),
 		),
 		'ProviderAccount'=>array(
@@ -31,6 +36,10 @@ class PersonController extends UsersController {
 			'fields' =>'ProviderAccount.*',
 		),
 		'Asset'=>array(
+			'preview_limit'=>6,
+			'paging_limit' =>24,
+			// deprecate limit, big_limit
+			// set limit in PageableBehavior->getPerpageLimit()
 			'limit' => 16,
 			'big_limit' =>24,
 			'photostream_limit' => 4,
@@ -50,12 +59,22 @@ class PersonController extends UsersController {
 			'order'=>array('Collection.created'=>'DESC'),
 	),
 		'Membership'=>array(
+			'preview_limit'=>4,
+			'paging_limit' =>8,
+			// deprecate limit, big_limit
+			// set limit in PageableBehavior->getPerpageLimit()
 			'limit' => 8,
 			'big_limit' =>36,
 			'order'=>array('Membership.title'=>'ASC'),
 			'recursive'=> -1,
 			'fields' =>'Membership.*',
-		)
+		),
+		'ExpressUploadGroup'=>array(
+			'preview_limit'=>8,
+			'paging_limit' =>8,
+			'recursive'=> -1,
+			'fields' =>'ExpressUploadGroup.*',
+		)		
 	);
 
 	/*
@@ -149,6 +168,8 @@ class PersonController extends UsersController {
 	}
 
 	function all(){
+		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
 		// paginate 
 		$paginateModel = 'User';
 		$Model = $this->User;

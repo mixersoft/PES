@@ -4,7 +4,7 @@
  */
 $context_class = Session::read('lookup.context.keyName');	
 $passedArgs = Configure::read('passedArgs.min');
-$isPreview = !empty($this->params['url']['preview']);
+$isPreview = !empty($this->params['url']['preview']);	// no paginate
 $isGallery = !empty($this->params['url']['gallery']);	// init lightbox
 $isWide = !empty($this->params['named']['wide']);		// fluid layout
 $isXhr = Configure::read('controller.isXhr');
@@ -24,36 +24,37 @@ $THUMBSIZE = isset($passedArgs['thumbSize']) ?  $passedArgs['thumbSize'] : 'lm';
 $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 ?>
 
-
-<?php echo $this->element('/photo/section-header'); ?>
-<div class='gallery-container' >
-	<?php 
-		if ($isWide) {
-			echo $this->element('/photo/header-wide', array('total'=>$total));
-		} else echo $this->element('/photo/header', array('total'=>$total));
+<?php  if ($isXhr && $isPreview) {
+// isPreview: Xhr by NOT JSON. no lightbox, no gallery-header or paginator
+		$this->Layout->blockStart('javascript');
 	?>
-	<section class="<?php if ($isWide) echo "wide "; ?>gallery photo container_16">
-		<div class='container grid_16'></div>
-	</section>
-</div>
-	
-	
-	
-<?php 
-	if ($isXhr && !$isGallery) {
-		$this->Layout->blockStart('javascript'); ?>
 		<script type="text/javascript">
 			// xhr response
 			SNAPPI.setPageLoading(true);
 			SNAPPI.mergeSessionData();
-			new SNAPPI.Gallery({type:'Photo'});
-			// SNAPPI.filter.initRating();
+			var cfg ={
+				type:'Photo',
+				isPreview: true, 
+			};
+			new SNAPPI.Gallery(cfg);
 		</script>
-<?php		
+
+	<?php  
 		$this->Layout->blockEnd();
-	} else {
-		$this->Layout->blockStart('javascript');
-?> 	
+		
+} else {
+// HTTP GET response 
+// init Gallery.Photo
+
+
+		$this->Layout->blockStart('lightbox'); 
+			echo $this->element('/lightbox'); 
+		$this->Layout->blockEnd();
+		
+		echo $this->element('/photo/section-header');
+
+		$this->Layout->blockStart('javascript'); 
+	?>
 	<script type="text/javascript">
 		/**
 		 * run after EACH XHR request
@@ -68,8 +69,8 @@ $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 			        	SNAPPI.filter.initRating();
 			        }				
 			        
-			        
-				new SNAPPI.Gallery({type:'Photo'});
+			    var cfg = {type:'Photo'};     
+				new SNAPPI.Gallery(cfg);
 				// SNAPPI.filter.initRating();
 				
 				// add create listener
@@ -84,12 +85,23 @@ $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 			PAGE.init.push(initOnce); 
 		}	// run from Y.on('domready') for HTTP request
 		var check;
-	</script>
-<?php 
-		$this->Layout->blockEnd();
-		
-		$this->Layout->blockStart('lightbox'); 
-			echo $this->element('/lightbox'); 
-		$this->Layout->blockEnd();
-	}
-?> 
+	</script>	
+<?php   $this->Layout->blockEnd();
+
+
+}		// end if - else
+
+	/*
+	 * this is the actual photo "gallery" markup
+	 */
+?>
+	<div class='gallery-container' >
+		<?php 
+			if ($isWide) {
+				echo $this->element('/photo/header-wide', compact('total', 'isPreview', 'state'));
+			} else echo $this->element('/photo/header', compact('total', 'isPreview', 'state'));
+		?>
+		<section class="<?php if ($isWide) echo "wide "; ?>gallery photo container_16">
+			<div class='container grid_16'></div>
+		</section>
+	</div>	

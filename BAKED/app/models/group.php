@@ -358,7 +358,7 @@ ORDER BY photos DESC;";
 	 */
 	function getPaginateGroupsByUserId ($userid , $paginate = array(), $paginateModel = null) {
 		$controllerClass = Configure::read('controller.class');
-		$paginateModel = ($controllerClass == 'User') ? 'Membership' : 'Group';		
+		$paginateModel = $this->alias;		
 		// add context, refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
@@ -410,7 +410,7 @@ ORDER BY photos DESC;";
 							'table'=>'tagged',
 							'alias'=>'Tagged',
 							'type'=>'INNER',
-							'conditions'=>array("`Tagged`.`foreign_key` = `Membership`.id AND `Tagged`.`model` = 'Group'"),
+							'conditions'=>array("`Tagged`.`foreign_key` = `{$paginateModel}`.id AND `Tagged`.`model` = 'Group'"),
 					);
 				$joins[] = 	array(
 							'table'=>'tags',

@@ -27,12 +27,20 @@ class GroupsController extends AppController {
 			'order'=>array('Group.title'=>'ASC'),
 		),
 		'ProviderAccount'=>array(
+			'preview_limit'=>5,
+			'paging_limit' =>20,
+			// deprecate limit, big_limit
+			// set limit in PageableBehavior->getPerpageLimit()	
 				'limit' => 5,
 				'big_limit' =>20,
 				'order' => array('ProviderAccount.created'=>'ASC'),
 				'fields' =>'ProviderAccount.*',
 		),	
 		'Asset'=>array(
+			'preview_limit'=>6,
+			'paging_limit' =>24,
+			// deprecate limit, big_limit
+			// set limit in PageableBehavior->getPerpageLimit()	
 				'limit' => 16,
 				'big_limit' =>48,
 				'photostream_limit' => 4,
@@ -49,6 +57,11 @@ class GroupsController extends AppController {
 				),
 		),
 		'Member'=>array(
+			'preview_limit'=>16,
+			'paging_limit' =>24,
+			// deprecate limit, big_limit
+			// set limit in PageableBehavior->getPerpageLimit()
+			
 			'limit' => 8,
 			'big_limit' =>36,
 			'order'=>array('Member.created'=>'ASC'),

@@ -299,6 +299,10 @@ section.gallery-header h1 {
 }
 section.gallery-header ul > li {
 }
+
+section.gallery-header  li.blue.label {
+	padding: 0 10px;
+}
 .gallery-container section.gallery-header ul {
 	line-height: 1.5;
 }
@@ -471,6 +475,9 @@ section.gallery-display-options.wide ul > li.label {
 /* thumbnails */
 .FigureBox figcaption {
 	line-height: 1.2;
+}
+.FigureBox figcaption .label {
+	cursor:default;
 }
 /*temp CSS for selected*/
 
@@ -1699,10 +1706,10 @@ aside.related-content .body-right section.people ul li:nth-child(5n+5) {
 	margin-right: 0px;
 }
 
-aside.related-content section.trends ul {
+section.trends ul:not(.toolbar) {
 	font-size: 10pt;
 }
-aside.related-content section.trends ul li {
+section.trends  ul:not(.toolbar) li {
 	-webkit-border-radius: 6px;
 	-moz-border-radius: 6px;
 	-webkit-box-shadow: 0px 0px 3px #ccd6db;
@@ -1710,10 +1717,12 @@ aside.related-content section.trends ul li {
 	background: #22AED1; 
 	border: 1px solid #006E9A;
 	line-height:16px;
+	vertical-align:middle;
 	margin: 4px 4px 0 0;
 	padding: 2px;
 }
-aside.related-content section.trends ul li a {
+
+section.trends  ul:not(.toolbar) li a {
 /*	color: #0c5586;*/
 	color: #FFF;
 	display: block;
@@ -1726,6 +1735,20 @@ section.trends form input[type="text"] {
 	width: 240px;
 }
 
+#body-container section.trends {
+	padding: 10px 0;
+}
+#body-container section.trends ul:not(.toolbar) {
+	font-size: 16pt;
+}
+#body-container section.trends ul:not(.toolbar) li {
+	line-height:36px;
+}
+#body-container section.trends .tag-header ul h1{
+	font-size:1.1em;
+	line-height: 28px;
+	padding: 0 10px;
+}
 /* this should be aside > section > h2 */
 aside.related-content h2  {
 	font-size: 0.9em;

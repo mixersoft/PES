@@ -1,14 +1,26 @@
 <?php
-
+	/**
+	 * @param array $members - usually $data['Member'] from $Model->find()
+	 */
+	
 	$isPreview = (!empty($this->params['url']['preview']));
 	$isWide = !empty($this->params['named']['wide']);		// fluid layout
+	$isXhr = Configure::read('controller.isXhr');
 	$paginateModel = Configure::read('paginate.Model');
 	$state['displayPage'] = array_filter_keys($this->params['paging'][$paginateModel], array('page', 'count', 'pageCount', 'current'));
 	$state['displayPage']['perpage'] = $this->params['paging'][$paginateModel]['options']['limit'] ;
 	$total = $state['displayPage']['count'] + 0;	// as int
 	$state['displayPage']['total'] = $total;	// as int;
-	// xhr response
-	if (Configure::read('controller.isXhr')) {
+debug($paginateModel);
+debug($state);
+debug($this->params['paging']);
+
+
+	if ($isXhr) {
+		// XHR response
+		if ($isWide) {
+			echo $this->element('/member/header-wide', compact('total', 'isPreview', 'state'));
+		} else echo $this->element('/member/header', compact('total', 'isPreview', 'state'));
 		echo $this->element('/member/paging-inner', compact('isPreview', 'isWide', 'total'));
 		
 		$this->Layout->blockStart('javascript');
@@ -18,26 +30,22 @@
 	</script>
 <?php 
 		$this->Layout->blockEnd();	
-		return;
-	};
-
-	// HTTP GET response
-/**
- * @param array $members - usually $data['Member'] from $Model->find()
- */
-
-// save for jsonData ouput 
-$this->viewVars['jsonData']['STATE'] = $state;
+		
+		
+	} else {
+		
+		// HTTP GET response
+		
+		$this->viewVars['jsonData']['STATE'] = $state;
+		echo $this->element('/member/section-header'); 
 
 
 ?>
-
-<?php echo $this->element('/member/section-header'); ?>
 <div class='gallery-container'>
 		<?php 
 			if ($isWide) {
-				echo $this->element('/member/header-wide', array('total'=>$total));
-			} else echo $this->element('/member/header', array('total'=>$total));
+				echo $this->element('/member/header-wide', compact('total', 'isPreview', 'state'));
+			} else echo $this->element('/member/header', compact('total', 'isPreview', 'state'));
 		?>
 	<?php echo $this->element('/member/paging-inner', compact('isPreview', 'isWide', 'total')); ?>
 </div>
@@ -61,7 +69,8 @@ $this->viewVars['jsonData']['STATE'] = $state;
 					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
 				}					
 
-				SNAPPI.Paginator.paginate_CircleMemberGallery('.gallery.person');
+<?php if (!$isPreview) echo "SNAPPI.Paginator.paginate_CircleMemberGallery('.gallery.person');" ?>;				
+
 				Y.fire('snappi:after_GalleryInit', this); 
 			} catch (e) {}
 		};
@@ -73,4 +82,6 @@ $this->viewVars['jsonData']['STATE'] = $state;
 		}	// run from Y.on('domready') for HTTP request		
 		var check;
 	</script>	
-<?php $this->Layout->blockEnd(); ?> 
+<?php $this->Layout->blockEnd(); 
+	}
+?> 
