@@ -249,7 +249,10 @@ console.log('SNAPPI.Y is defined');
 	        SNAPPI.setPageLoading = function (value) {
 	        	if (value == undefined) return Y.one('body').hasClass('wait');
 	        	if (value) Y.one('body').addClass('wait');
-	        	else Y.one('body').removeClass('wait');
+	        	else {
+	        		Y.one('body').removeClass('wait');
+	        		Y.one('#related-content').removeClass('hide');
+	        	}
 	        	return value ? true : false;
 	        }
 	        YAHOO = SNAPPI.Y.YUI2; // YUI2 deprecate when possible	

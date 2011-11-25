@@ -11,10 +11,6 @@
 	$state['displayPage']['perpage'] = $this->params['paging'][$paginateModel]['options']['limit'] ;
 	$total = $state['displayPage']['count'] + 0;	// as int
 	$state['displayPage']['total'] = $total;	// as int;
-debug($paginateModel);
-debug($state);
-debug($this->params['paging']);
-
 
 	if ($isXhr) {
 		// XHR response

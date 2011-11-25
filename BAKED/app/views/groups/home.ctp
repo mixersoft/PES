@@ -76,7 +76,7 @@ if (empty($this->passedArgs['wide'])) {
 <?php 	$this->Layout->blockEnd(); } ?>	
 
 <?php $this->Layout->blockStart('relatedContent');?>
-<aside id="related-content" class="related-content container_16">		    	
+<aside id="related-content" class="related-content container_16 hide">		    	
         <div class="grid_11">
            	<div class="body">
 				<article>
