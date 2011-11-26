@@ -503,8 +503,8 @@ class Asset extends AppModel {
 			),
 			'permissionable'=>false,
 		);
-		$data = $this->find('all', $checkDupes_options);
-//$this->log( "checkDupes_options data=".print_r($data, true), LOG_DEBUG);		
+		$data = $this->find('first', $checkDupes_options);
+// $this->log( "checkDupes_options data=".print_r($data, true), LOG_DEBUG);		
 		if (!empty($data['Asset']['id'])) {
 			// found
 			$response['message'][]="photo already imported";
@@ -561,12 +561,12 @@ class Asset extends AppModel {
  */			
 		$this->belongsTo['Owner']['counterCache']=false;
 		if ($ret = $this->save($data)) {
-//$this->log( "save asset, data=".print_r($data, true), LOG_DEBUG);				
+// $this->log( "save asset, data=".print_r($data, true), LOG_DEBUG);				
 			$response['message'][]="photo imported successfully";
 		} else 	$response['message'][]="Error creating asset, id={$asset['id']}";
 		$response['success'] = isset($response['success']) ? $response['success'] && $ret : $ret;
 		$data = $this->read();
-//$this->log( "AFTER save asset, data=".print_r($data, true), LOG_DEBUG);			
+// $this->log( "AFTER save asset, data=".print_r($data, true), LOG_DEBUG);			
 		return $data; 			
 	}
 			

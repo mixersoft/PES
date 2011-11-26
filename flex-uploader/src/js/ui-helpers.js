@@ -461,7 +461,7 @@ LOG('>>>>>>> BASEURL='+selected);
 	//			var datasource = _flexAPI_UI.datasource;
 				var datasource = SNAPPI.DATASOURCE;
 				datasource.setSessionId(PHPSESSID);
-	LOG(">>> UPLOAD HOST=" + datasource.getConfigs().uploadHost + ", uuid=" + SNAPPI.DATASOURCE.sessionId);
+	LOG(">>> UPLOAD HOST=" + datasource.getConfigs().uploadHost + ", sessionId=" + SNAPPI.DATASOURCE.sessionId);
 	
 				// cleanup actions: hide menu
 				var menu = SNAPPI.MenuAUI.find['menu-sign-in-markup'];
@@ -510,8 +510,53 @@ LOG('>>>>>>> BASEURL='+selected);
 	XhrHelper.login_Url = null;
 	
 	/*
-	 * json signIn
+	 * json testSession, 
+	 * 	test ability to connect to cakephp SESSION
 	 */
+	XhrHelper.testSession = function(){
+		var Y = SNAPPI.Y;
+		var node=Y.one('body');
+		var i=10;
+		var ioCfg = {
+   					uri: '/users/login/.json',
+					parseContent: false,
+					autoLoad: false,
+					context: node,
+					arguments: null, 
+					method: "POST",
+					dataType: 'json',
+					qs: {},
+					on: {
+						successJson: function(e, i, o,args){
+							var resp = o.responseJson;
+							var node = this;
+LOG(' >>>>>>>>>>>>>  testSession(): successJson    ');							
+LOG(resp);
+							// save Session Cookie
+							XhrHelper.setCookies(o.responseJson.Cookie);
+							
+							var authUser = resp.response.User;
+							var sessionId = resp.Cookie.CAKEPHP;
+							XhrHelper._setUser(authUser, sessionId);
+							
+							if (args.i>0){
+								if (node.io) node.unplug(Y.Plugin.IO);
+								node.plug(Y.Plugin.IO, ioCfg);
+								args.i--;
+LOG(' >>>>>>>>>>>>>  testSession(): starting next iteration    #'+args.i);										
+								node.io.set('arguments', {i:args.i})
+								node.io.start();
+							}
+							return false;
+						}, 
+					}
+			};		
+			ioCfg = SNAPPI.IO.pluginIO_RespondAsJson(ioCfg);
+			node.plug(Y.Plugin.IO, ioCfg);
+			i--;
+			node.io.set('arguments', {i:i})
+			node.io.start();
+	}
 	XhrHelper.getCookie = function(c_name){
 		var i,x,y,ARRcookies=document.cookie.split(";");
 		for (i=0;i<ARRcookies.length;i++)
@@ -533,45 +578,47 @@ LOG('>>>>>>> BASEURL='+selected);
 			var c_value=escape(value) + ((exdays==null) ? "" : "; expires="+exdate.toUTCString());
 			document.cookie=c_name + "=" + c_value;
 		};		
-LOG(data);
-LOG("COOKIES TO BE SAVED.");		
+// LOG(data);
+// LOG("COOKIES aved above.");		
 		var cookie = data;
 		for (var p in cookie) {
 			setCookie(p, cookie[p], 14);
-LOG('name='+p+', value='+cookie[p]);			
 		}
 	}
-	XhrHelper.signIn = function() {
+	XhrHelper.signIn = function(postData) {
 		var Y = SNAPPI.Y;
 		SNAPPI.setPageLoading(true);
-		var postData = {};
-		Y.all('form#UserLoginForm .postData').each(function(n, i, l) {
-			var key = n.getAttribute('name');
-			switch (key) {
-			case 'data[User][username]':
-			case 'data[User][password]':
-			case 'UserUsername':
-			case 'UserPassword':
-				postData[key] = n.get('value');
-				break;
-			case 'data[User][magic]':
-			case 'UserMagic':
-				n.get("options").some(function(n, i, l) {
-					// this = option from the select
-						if (n.get('selected')) {
-							postData[key] = n.getAttribute('value') || '';
-							return true;
-						}
-						;
-						return false;
-					});
-				break;
-			default:
-				// skip
-				break;
-			}
-		});
-		var uri = XhrHelper.login_Url || "http://" + SNAPPI.AIR.host + "/users/login/.json?optional=1";
+		if (postData === undefined) {
+			postData = {};
+			Y.all('form#UserLoginForm .postData').each(function(n, i, l) {
+				var key = n.getAttribute('name');
+				switch (key) {
+				case 'data[User][username]':
+				case 'data[User][password]':
+				case 'UserUsername':
+				case 'UserPassword':
+					postData[key] = n.get('value');
+					break;
+				case 'data[User][magic]':
+				case 'UserMagic':
+					n.get("options").some(function(n, i, l) {
+						// this = option from the select
+							if (n.get('selected')) {
+								postData[key] = n.getAttribute('value') || '';
+								return true;
+							}
+							;
+							return false;
+						});
+					break;
+				default:
+					// skip
+					break;
+				}
+			});			
+		}
+
+		var uri = XhrHelper.login_Url || "http://" + SNAPPI.AIR.host + "/users/login/.json";
 LOG(">>> LOGIN, login_Url="+uri+", postdata follows:");
 LOG(postData);
             
@@ -601,8 +648,8 @@ LOG(postData);
 					on: {
 						successJson: function(e, i, o,args){
 							var resp = o.responseJson;
-LOG(' >>>>>>>>>>>>>  successJson    ');							
-LOG(resp);
+// LOG(' >>>>>>>>>>>>>  successJson    ');							
+// LOG(resp);
 							// save Session Cookie
 							XhrHelper.setCookies(o.responseJson.Cookie);
 							
@@ -611,6 +658,7 @@ LOG(resp);
 							XhrHelper._setUser(authUser, sessionId);
 							this.one('.message').setContent('').addClass('hide');
 							args.loadingmask.hide();
+// XhrHelper.testSession();							
 							return false;
 						}, 
 						complete: function(e, i, o, args) {
@@ -721,5 +769,49 @@ LOG(resp);
 		});
 		return gids.join(',');
 	}
+	/*
+	 * Experimental: trying to upload from Flex using javascript
+	 * - may NOT be able to create File object from Flex/js. security error
+	 */
+	XhrHelper.uploader = null;
+	XhrHelper.initUpload = function(files, postData){
+		var timestamp = Math.round(new Date().getTime() / 1000);
+		var gids = getExpressUploads();
+		var uploader = XhrHelper.uploader || new qq.FileUploaderBasic({
+		    // pass the dom node (ex. $(selector)[0] for jQuery users)
+		    // element: document.getElementById('valums-file-uploader'),
+		    // path to server-side upload script
+		    action: '/my/upload',
+		    allowedExtensions:['jpg', 'jpeg'],
+	    	// sizeLimit: // 10Mb is the default in vender file,
+		    debug: true,
+			onSubmit: function(id, fileName){
+				
+			},
+			onProgress: function(id, fileName, loaded, total){
+				var fp = getFtp(id, fileName);
+				fp.uploadProgress_Callback(null, loaded, total);
+			},
+			onComplete: function(id, fileName, responseJSON){
+				
+			},
+			onCancel: function(id, fileName){
+				
+			},
+			end: null
+		});
+		postData.isAir = 1;
+		postData.groupIds = XhrHelper.getExpressUploads();;
+		postData.batchId = postData.batchId || timestamp; 
+		uploader.setParams(postData);  
+		// load files to upload and begin
+		// file instanceof File
+		uploader._uploadFileList(files);
+	}
+	XhrHelper.addUpload = function(files){
+		
+	}
+	
+	
 	LOG("load complete: XhrHelpers.js");	
 // }());

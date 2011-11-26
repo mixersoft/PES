@@ -27,7 +27,7 @@ class PersonController extends UsersController {
 			'limit'=>16,
 			'big_limit' =>24,
 			
-			'order'=>array('User.created'=>'ASC'),
+			'order'=>array('User.last_login'=>'desc'),
 		),
 		'ProviderAccount'=>array(
 			'limit' => 5,

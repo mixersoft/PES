@@ -459,13 +459,23 @@ class UsersController extends UsersPluginController {
 			/*
 			 * experimental
 			 */
-			 'addACLs', 'odesk_photos'
+			 'addACLs', 'odesk_photos', 'update_count'
 		);
 		// TODO: edit allowed for  'role-----0123-4567-89ab---------user'
 		// TODO: groups allowed for  'role-----0123-4567-89ab--------guest', 'role-----0123-4567-89ab---------user'
 		AppController::$writeOk = AppController::$userid  == AppController::$uuid || AppController::$userid == Permissionable::getRootUserId();
 	}
 	
+	function update_count($id = null) {
+		if (!Permissionable::isRoot() && $id===null) {
+			echo "Root permission required.";
+			exit;
+		}
+		if ($id) $ret = $this->User->updateCounter($id);
+		else $this->User->updateAllCounts();
+		if ($id) $this->redirect(array('action'=>'home', $id));
+		else $this->redirect('/person/all');
+	}
 	/*
 	 * WARNING: backdoor action for oDesk project
 	 */
@@ -652,7 +662,7 @@ class UsersController extends UsersPluginController {
 		if (isset($this->data['User'])) {
 if ($this->RequestHandler->isAjax() || $forceXHR) {
 	// $this->log($_COOKIE, LOG_DEBUG);	
-	$this->log("[HTTP_COOKIE]=".$_SERVER['HTTP_COOKIE'], LOG_DEBUG);	
+	// $this->log("[HTTP_COOKIE]=".$_SERVER['HTTP_COOKIE'], LOG_DEBUG);	
 	// $this->log("[HTTP_USER_AGENT]=".env('HTTP_USER_AGENT'), LOG_DEBUG);		
 	// debug($_COOKIE);
 }
@@ -778,13 +788,13 @@ $this->log("using Cookie guestpass login for {$guestid}", LOG_DEBUG);
 			// else try login again
 		} else {
 			if ($this->RequestHandler->isAjax() || $forceXHR) {
-				$this->log("[HTTP_COOKIE]=".$_SERVER['HTTP_COOKIE'], LOG_DEBUG);	
+// $this->log("[HTTP_COOKIE]=".$_SERVER['HTTP_COOKIE'], LOG_DEBUG);	
 				$response = array('success'=>true, 'message'=>'Current authenticated user');
 				$response['response'] = $this->Auth->user();
 				$response['Cookie'] = $_COOKIE;
 				$this->viewVars['jsonData'] = $response;
-				$this->log($this->viewVars['jsonData']['response'], LOG_DEBUG);
-				$this->log("result for current authenticated user", LOG_DEBUG);
+// $this->log($this->viewVars['jsonData']['response'], LOG_DEBUG);
+// $this->log("result for current authenticated user", LOG_DEBUG);
 				$done = $this->renderXHRByRequest('json', null, null, $forceXHR);
 				if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false			
 			}			

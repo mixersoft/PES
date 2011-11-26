@@ -130,6 +130,7 @@ WHERE g.id='{$gid}'
 		$result = $this->query($sql);
 		if ($result) {
 			$data[$this->alias] = array_shift(array_shift($result));
+			$data[$this->alias]['groups_user_count'] +=1; 		// add 1 for owner
 			$this->id = $gid;
 			$this->disablePermissionable(true);
 			$ret = $this->save($data, false, array('assets_group_count','groups_user_count'));
@@ -561,6 +562,8 @@ ORDER BY photos DESC;";
 	function contributePhoto($groupId, $assets, $isApproved=null, $providerAccountId=null) {
 		if ($isApproved === null) $isApproved = $this->canPublish($groupId);
 		if (is_string($assets))  $assets = explode(',', $assets );
+// $this->log($assets, LOG_DEBUG);
+// $this->log(Debugger::trace(), LOG_DEBUG);				
 		$userid = Session::read('Auth.User.id');
 		$saveAll_assets = array();
 		foreach($assets as $asset) {

@@ -101,7 +101,7 @@ class GroupsController extends AppController {
 			 */'index', 'all', 'open', 'most_active', 'most_recent','most_members','most_photos',
 			/*
 			 * experimental 
-			 */'setRandomGroupCoverPhoto', 'test', 'load', 'addACL', 
+			 */'setRandomGroupCoverPhoto', 'update_count', 'load', 'addACL', 
 			 'invitation',		
 			 'join', 'express_upload' // add to ACLs show require role='USER' but handle in controller for proper Flash msgs		
 		);
@@ -121,20 +121,29 @@ class GroupsController extends AppController {
 		parent::beforeRender(); 
 	}
 
-	function test(){
+	function update_count($id=null){
+		if (!Permissionable::isRoot() && $id===null) {
+			echo "Root permission required.";
+			exit;
+		}
 		$this->autoRender = false;
-//		$this->__setRandomGroupCoverPhoto();
-		$this->__setCounts(AppController::$uuid);
+		$this->__setRandomGroupCoverPhoto($id);
+		$this->__setCounts($id);
+		if ($id) $this->redirect(array('action'=>'home', $id));
+		else $this->redirect(array('action'=>'all'));
 	}
 
 	function __setRandomGroupCoverPhoto($id = null){
-		$this->Group->contain('Asset.src_thumbnail');
-		$this->Group->disablePermissionable();
-		$options = array('conditions'=>array('isSystem'=>0), 'recursive' => -1, 'fields'=>'id');
-		if ($id) $options['conditions']['id'] = $id;
+		$options = array('conditions'=>array('isSystem'=>0), 
+			'recursive' => -1, 
+			'fields'=>array('Group.id', 'Group.src_thumbnail'),
+		);
+		if ($id) $options['conditions']['Group.id'] = $id;
 		$data = $this->Group->find('all', $options);
-		$gids = Set::extract('/Group/id', $data);
-		foreach ($gids as $gid) {
+		// $gids = Set::extract('/Group/id', $data);
+		foreach ($data as $row) {
+			if (!empty($row['Group']['src_thumbnail'])) continue;	// skip 
+			$gid = $row['Group']['id'];
 			$this->Group->id = $gid;
 			$sql = "
 SELECT Asset.src_thumbnail, SharedEdit.score, Asset.id
@@ -149,10 +158,21 @@ LIMIT 5;";
 			shuffle($srcs);
 			$ret = $this->Group->saveField('src_thumbnail', array_shift($srcs));
 		}
-		return $ret;
+		return;
 	}
-	function __setCounts($id){
-		return $this->Group->updateCounter($id);
+	function __setCounts($id = null){
+		$options = array('conditions'=>array('isSystem'=>0), 
+			'recursive' => -1, 
+			'fields'=>array('Group.id', 'Group.src_thumbnail'),
+		);
+		if ($id) $options['conditions']['Group.id'] = $id;
+		$data = $this->Group->find('all', $options);
+		// $gids = Set::extract('/Group/id', $data);
+		foreach ($data as $row) {
+			$gid = $row['Group']['id'];
+			$this->Group->updateCounter($gid);
+		}		
+		return;
 	}
 
 	function load(){

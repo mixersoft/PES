@@ -916,10 +916,10 @@ LEFT JOIN groups g ON (u.id = g.owner_id and g.isSystem=0)
 WHERE u.id='{$uid}';";
 		$result = $this->query($sql);
 		if ($result) {
-			$data['User'] = array_shift(array_shift($result));
+			$data['User'] = $result[0][0];
 			$this->id = $uid;
 			$ret = $this->save($data, false, array('asset_count','groups_user_count'));
-			return $ret != false;
+			return $ret ? $data : false;
 		}
 		return false;
 	}	

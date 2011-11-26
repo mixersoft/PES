@@ -39,12 +39,13 @@ class MyController extends PersonController {
 			/*
 			 * experimental
 			 */
-			'pagemaker',
+			'pagemaker'
 		);
 		$this->Auth->allow( array_merge($this->Auth->allowedActions , $myAllowedActions));
 	
 		// else auth redirect
 	}
+	
 	
 	function home() {
 		parent::home(MyController::$userid );
@@ -121,11 +122,11 @@ class MyController extends PersonController {
 			$data['Asset']['perms'] = $profile['Profile']['privacy_assets'];
 		}	
 		$assetData = $this->Asset->addIfNew($data['Asset'], $paData['ProviderAccount'], $baseurl, $photoPath, $response);		
-//$this->log("MyController::__importPhoto, asset=".print_r($assetData, true), LOG_DEBUG);		
+// $this->log("MyController::__importPhoto, asset=".print_r($assetData, true), LOG_DEBUG);		
 		// move file to staging server 
 		$src = json_decode($assetData['Asset']['json_src'], true);
 		$stage=array('src'=>$photoPath, 'dest'=>$src['root']);
-//$this->log("MyController::__importPhoto, ".print_r($stage, true), LOG_DEBUG);		
+// $this->log("MyController::__importPhoto, ".print_r($stage, true), LOG_DEBUG);		
 	 	if ($ret3 = $Import->import2stage($stage['src'], $stage['dest'], null, $move = true)) {
 	 		$response['message'][]="file staged successfully, dest={$stage['dest']}";
 		} else $response['message'][]="Error staging file, src={$stage['src']}";
@@ -202,7 +203,7 @@ class MyController extends PersonController {
 			$response = Set::merge($response, $resp1);
 		}
 //$this->log($response, LOG_DEBUG);
-		
+		$this->User->updateCounter($userid);
 		// to pass data through iframe you will need to encode all html tags
 		// Configure::write('debug', 0);
 		// echo htmlspecialchars(json_encode($response), ENT_NOQUOTES);	
@@ -271,9 +272,10 @@ class MyController extends PersonController {
 		/*
 		 * import into DB
 		 */
-$this->log($this->data['Asset'], LOG_DEBUG);
+// $this->log("before __importPhoto  >>>>>>>>>>>>>>>", LOG_DEBUG);	
+// $this->log($this->data['Asset'], LOG_DEBUG);
 		$response = $this->__importPhoto($this->data, $UPLOAD_FOLDER, $dest);
-$this->log($response, LOG_DEBUG);		
+// $this->log($response, LOG_DEBUG);		
 		/*
 		 * share via express uploads, as necessary
 		 */ 
@@ -282,6 +284,8 @@ $this->log($response, LOG_DEBUG);
 			$resp1 = array();
 			foreach($groupIds as $gid){
 				$asset_id = $response['response']['Asset']['id'];
+// $this->log("asset_id={$asset_id}", LOG_DEBUG);				
+				if (!$asset_id) break; 		// error, skip contributePhoto 
 				$paid = $response['response']['Asset']['provider_account_id'];
 				$count = $this->User->Membership->contributePhoto($gid, $asset_id, $paid);
 				if ($count) {
@@ -291,6 +295,7 @@ $this->log($response, LOG_DEBUG);
 			}
 			$response = Set::merge($response, $resp1);
 		 }
+		 $this->User->updateCounter($userid);
 //		$this->log($response, LOG_DEBUG);
 		/*
 		 * return response
@@ -365,17 +370,22 @@ $this->log($response, LOG_DEBUG);
 		// exit(0);
 		$forceXHR = setXHRDebug($this, 0);
 		$force_UNSECURE_LOGIN = true;
-		if (empty($this->data) || AppController::$role != 'USER') {
+		if (AppController::$role != 'USER') {
 			/*
 			 *  POST from snappi AIR desktop uploader
 			 * 	WARNING: json/xhr login DOES NOT transfer Session cookie
 			 */
 // 			$this->log(Session::read('Auth.User'), LOG_DEBUG);
-			if ($force_UNSECURE_LOGIN && !$this->Auth->user() && Configure::read('debug') && isset($this->data['User']['id'])) {
+			if ($force_UNSECURE_LOGIN && !$this->Auth->user() && isset($this->data['User']['id'])) {
+$this->log("force_UNSECURE_LOGIN={$force_UNSECURE_LOGIN}, role=".AppController::$role, LOG_DEBUG);				
 				// TODO: authorize user by uuid. this is unsafe!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				$userid = $this->data['User']['id'];
 				$data = $this->User->read(null, $userid );
+			
+// $this->log($data, LOG_DEBUG);				
 				$ret = $this->Auth->login($data);
+// $this->log($ret, LOG_DEBUG);
+				
 				$this->__cacheAuth();
 				$this->Permissionable->initialize($this);
 //				$this->log(Session::read('Auth.User'), LOG_DEBUG);
@@ -384,6 +394,7 @@ $this->log($response, LOG_DEBUG);
 				$response['success']=false;
 				$response['message']='Session not Authenticated for COOKIE='.$_SERVER['HTTP_COOKIE'];
 	$this->log($response, LOG_DEBUG);			
+	$this->log("try setting force_UNSECURE_LOGIN in MyController", LOG_DEBUG);	
 				header('Content-Type: application/json');
 			    echo json_encode($response);
 			    exit(0);			

@@ -69,7 +69,7 @@ if (empty($this->passedArgs['wide'])) {
 	$ajaxSrc = Router::url(Configure::read('passedArgs.complete') + array('action'=>'photos', 'perpage'=>24, '?'=>array('gallery'=>1)));
 	echo "<div id='gallery-photo-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' nodelay='1'></div>";
 ?>
-<?php  if (Configure::read('controller.name') == 'Groups') {	
+<?php  if ( $data['Group']['assets_group_count']>0 ) {
 		$this->Layout->blockStart('markup'); 		?>
 			<div class='empty-photo-gallery-message hide'><div class='related-content message blue rounded-5 wrap-v'>
 				<h1>Snap Gallery</h1>

@@ -539,7 +539,7 @@ LOG(">>>>>>>>>>>>  CONTINUE UPLOADING  ============================");
 				} else {
 LOG(">>>>>>>>>>>>  RESET startUploadPage  ============================");						
 					// reset 'pending' and start from page 1
-					page = page || this.uploadPage || 1;
+					page = page || 1;
 					this.pausedPage = 0;
 					this.uploadRows = [];
 					this.uploadItemIndex = -1;
@@ -558,9 +558,13 @@ LOG(">>>>>>>>>>>>  startUploadPage  ============================ page="+page);
 		 */
 		nextUploadPage : function() {
 			if (this.uploadPage < this.count_totalPages) {
-				return this.uploadPage + 1;
+				this.uploadPage += 1;
+				return this.uploadPage;
+			} else {
+				// var remaining = this.flexUploadAPI.getCountByStatus('pending',this.batchId, this.baseurl,'=');
+				// if (remaining) this.uploadPage = 0;
+				return 0;
 			}
-			return 0;
 		},
 
 		/*
@@ -596,11 +600,22 @@ LOG("active count="+UploadManager.count());
 				} else {
 					// start next page if any;
 					var page = this.nextUploadPage();
+LOG("  >>>>>>>>>>>>  UPLOAD: next page="+page);					
 					if (page) {
 						// auto page change to next upload page on 'all' tab
 						this.startUploadPage(page);
 					} else {
 						// this.isUploading = false;
+						var remaining = this.flexUploadAPI.getCountByStatus('pending',this.batchId, this.baseurl,'=');
+LOG("  >>>>>>>>>>>>  UPLOAD: last page complete, checking for any pending files, remaing="+remaining);						
+						if (remaining) {
+							// start from beginning to upload missed files
+							this.isPaused = false;
+							this.startUploadPage(1);
+						} else {
+LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  PAUSE ");									
+							this.action_pause();
+						}
 					}
 					break;
 				}

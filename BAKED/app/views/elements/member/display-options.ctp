@@ -13,7 +13,7 @@
 	$orderBy_options['created'] = array('A_markup'=>$this->Paginator->sort('Member Since', 'created', $paginate_desc));
 	$orderBy_options['asset_count'] = array('A_markup'=>$this->Paginator->sort('Photos', 'asset_count', $paginate_desc ));
 	$orderBy_options['groups_user_count'] = array('A_markup'=>$this->Paginator->sort('Circles', 'groups_user_count', $paginate_desc));
-	$orderBy_selected = !empty($passed['sort']) ? $passed['sort'] : 'username';
+	$orderBy_selected = !empty($passed['sort']) ? $passed['sort'] : 'last_login';
 	$btn_active['orderBy'] = isset($passed['sort']);
 	$orderBy_options[$orderBy_selected]['selected'] = ' selected ';
 	
