@@ -24,7 +24,7 @@
 	} else {
 		$sections['Circles']=array('label'=>'Circles','href'=>'/groups/all');
 		$sections['Snaps']=array('label'=>'Snaps','href'=>'/photos/all');
-		$sections['People']=array('label'=>'People','href'=>'/persons/all');		
+		$sections['People']=array('label'=>'People','href'=>'/person/all');		
 		$sections['Explore']=array('label'=>'Explore','href'=>"/photos/all");
 	}
 	

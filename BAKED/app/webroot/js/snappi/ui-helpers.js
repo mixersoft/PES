@@ -337,6 +337,7 @@
          * 	start 'click' listener for action=
          * 		set-display-size:[size] 
          * 		set-display-view:[mode]
+         * adds minimize/maximize btns for item-header
          */
         WindowOptionClick : function(node) {
 			var Y = SNAPPI.Y;
@@ -344,7 +345,7 @@
         	var action = 'WindowOptionClick';
         	node.listen = node.listen || {};
             if (node.listen[action] == undefined) {
-            	var delegate_container = node.one('.window-options');
+            	var delegate_container = node.one('.window-options').removeClass('hide');
 				node.listen[action] = delegate_container.delegate('click', 
 	                function(e){
 	                	// action=[set-display-size:[size] | set-display-view:[mode]]

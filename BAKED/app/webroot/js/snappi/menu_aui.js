@@ -998,7 +998,7 @@ var DEFAULT_CFG_contextmenu = 	{
 		var target = menu.get('currentNode');
 		menu.hide();
 		// POST to /groups/join
-		window.location.href = '/groups/invitation/'+properties.id;
+		window.location.href = '/groups/join/'+properties.id;
 	};		
 	MenuItems.invite_beforeShow = function(menuItem, menu, properties){
 		var target = menu.get('currentNode');

@@ -59,6 +59,7 @@ switch ($config['Config.os']) {
 			'blank_user_photo'=> '/img/providers/snappi.png', 	// deprecate, use Stagehand::getSrc()
 			'default_badges'=>array(
 				'person'=>'/img/providers/snappi.png',
+				'Circle'=>'/img/providers/snappi.png',
 				'Group'=>'/img/providers/snappi.png',
 				'Event'=>'/img/providers/snappi.png',
 				'Wedding'=>'/img/providers/snappi.png',
@@ -116,6 +117,7 @@ switch ($config['Config.os']) {
 			'blank_user_photo'=> '/img/providers/snappi.png', 	// deprecate, use Stagehand::getSrc()
 			'default_badges'=>array(
 				'person'=>'/img/providers/snappi.png',
+				'Circle'=>'/img/providers/snappi.png',
 				'Group'=>'/img/providers/snappi.png',
 				'Event'=>'/img/providers/snappi.png',
 				'Wedding'=>'/img/providers/snappi.png',

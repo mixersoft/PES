@@ -1,12 +1,15 @@
-<?php 
+<?php
+if (empty($this->passedArgs['wide'])) {
 	$this->Layout->blockStart('itemHeader');
-		echo $this->element('nav/section', array('badge_src'=>null));
-	$this->Layout->blockEnd();		
+		$badge_src = Stagehand::getSrc(null, 'sq', 'Circle');
+		echo $this->element('nav/section', 
+			array('badge_src'=>$badge_src,
+		));
+	$this->Layout->blockEnd();	
+}	
 ?>
 <div class="groups all">
-	<div id='paging-groups' class='paging-content'  xhrTarget='paging-groups-inner'>
-		<?php echo $this->element('/group/paging-groups');?>
-	</div>
+	<?php echo $this->element('/group/roll'); ?>
 </div>
 
 <?php $this->Layout->blockStart('relatedContent');?>

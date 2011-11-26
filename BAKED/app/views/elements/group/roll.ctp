@@ -3,7 +3,7 @@
 /**
  * @param array $groups - usually $data['Group'] from $Model->find()
  */
-
+	$isInner = (!empty($this->params['url']['inner']));
 	$isPreview = (!empty($this->params['url']['preview']));
 	$isWide = !empty($this->params['named']['wide']);		// fluid layout
 	$isXhr = Configure::read('controller.isXhr');
@@ -16,9 +16,11 @@
 
 	if ($isXhr) {
 		// XHR response
-		if ($isWide) {
-			echo $this->element('/group/header-wide', compact('total', 'isPreview', 'state'));
-		} else echo $this->element('/group/header', compact('total', 'isPreview', 'state'));
+		if (!$isInner) {
+			if ($isWide) {
+				echo $this->element('/group/header-wide', compact('total', 'isPreview', 'state'));
+			} else echo $this->element('/group/header', compact('total', 'isPreview', 'state'));
+		}
 		echo $this->element('/group/paging-inner', compact('isPreview', 'isWide', 'total'));
 		
 		$this->Layout->blockStart('javascript');
@@ -53,7 +55,9 @@
 				echo $this->element('/group/header-wide', compact('total', 'isPreview', 'state'));
 			} else echo $this->element('/group/header', compact('total', 'isPreview', 'state'));
 		?>
+	<section class="<?php if ($isWide) echo "wide "; ?>gallery group">	
 	<?php echo $this->element('/group/paging-inner', compact('isPreview', 'isWide', 'total')); ?>
+	</section>
 </div>
 
 <?php $this->Layout->blockStart('javascript'); ?>

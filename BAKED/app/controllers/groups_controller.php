@@ -22,6 +22,10 @@ class GroupsController extends AppController {
 	public $paginate = array(
 		'photostream'=>array('limit'=>20),
 		'Group'=>array(
+			'preview_limit'=>4,
+			'paging_limit' =>12,
+			// deprecate limit, big_limit
+			// set limit in PageableBehavior->getPerpageLimit()	
 			'limit' => 16,
 			'big_limit' =>36,
 			'order'=>array('Group.title'=>'ASC'),
@@ -191,13 +195,6 @@ LIMIT 5;";
 		// TODO:  check permission to write to group before adding
 		$isApproved = $this->__membershipPolicy($groupId);
 
-		$data['group_id'] = $groupId;
-		$data['user_id'] = $userId;
-		$data['isApproved'] = $isApproved;
-		$data['role'] = 'member';
-		$data['isActive'] = $isApproved;
-		$data['isExpress'] = $isExpress;
-		$data['lastVisit'] = date('Y-m-d H:i:s',time());
 		$GroupUsers = ClassRegistry::init('GroupsUser');
 		$options = array(
 			'conditions'=>array('`GroupsUser`.group_id'=>$groupId , '`GroupsUser`.user_id'=>$userId )
@@ -209,6 +206,13 @@ LIMIT 5;";
 			$ret =  @$GroupUsers->save($data, true, array('isExpress', 'lastVisit') );
 		} else {
 			$GroupUsers->create();
+			$data['group_id'] = $groupId;
+			$data['user_id'] = $userId;
+			$data['isApproved'] = $isApproved;
+			$data['role'] = 'member';
+			$data['isActive'] = $isApproved;
+			$data['isExpress'] = $isExpress;
+			$data['lastVisit'] = date('Y-m-d H:i:s',time());			
 			$ret =  @$GroupUsers->save($data);
 			if ($ret) {
 				// reinitialize Permissionable::group_ids
@@ -229,8 +233,14 @@ LIMIT 5;";
 	 */
 	function invite ($id) {
 		$this->layout = 'snappi-guest';
-		$this->Group->recursive = 0;
-		$data = $this->Group->read(null,$id);
+		// get Group data
+		$options = array(
+			'contain'=>array('Owner.id', 'Owner.username'),
+			'fields'=>'Group.*',		// MUST ADD 'fields' for  containable+permissionable
+			'conditions'=>array('Group.id'=>$id),
+		);
+		$this->Group->contain(array('Owner.id', 'Owner.username'));
+		$data = $this->Group->find('first', $options);
 		$badges = ClassRegistry::init('User')->getBadges(AppController::$userid);
 		$this->set(compact('data', 'badges'));
 	}
@@ -251,7 +261,13 @@ LIMIT 5;";
 			Session::write('Auth.redirect', str_replace('&register=1', '', env('REQUEST_URI'))); 
 			$this->redirect('/users/register', null, true);
 		}		
-		$options = array('conditions'=>array('Group.id'=>$id));
+		// get Group data
+		$options = array(
+			'contain'=>array('Owner.id', 'Owner.username'),
+			'fields'=>'Group.*',		// MUST ADD 'fields' for  containable+permissionable
+			'conditions'=>array('Group.id'=>$id),
+		);
+		$this->Group->contain(array('Owner.id', 'Owner.username'));
 		$data = $this->Group->find('first', $options);
 		
 		// invitation from:
@@ -273,27 +289,65 @@ LIMIT 5;";
 		// 
 	}
 	/**
-	 * POST response only, from /groups/invitation
+	 * GET ok
+	 * POST response, from /groups/invitation
 	 * - requires Auth Session, role=USER
 	 */
-	function join ($redirect=null) {
-		$this->layout = 'snappi';
+	function join ($id = null) {
+		$this->layout = 'snappi-guest';
 		$forceXHR = setXHRDebug($this, 0);		// xhr login is for AIR desktop uploader
 		if ($forceXHR && !empty($this->params['url']['data'])) {
 			$this->data = $this->params['url']['data'];
 		}
-		if (empty($this->data)) $this->redirectSafe();
-				
-		$isExpress = Session::read('join.express_upload_gid') == $this->data['Group']['id'] ? true : null;
-		$role = Session::read('Auth.User.role');
-		if ($role == 'GUEST') {
-			// should not hit this line
-			$this->Session->setFlash('You must upgrade your Guest pass to a full user account to join a group. To upgrade your Guest pass, please sign up now.');
-			$this->Session->write('Auth.redirect', $this->here);
+		if (empty($this->data)) {
+			// GET response: allow $role=USER to join group, 
+			if (AppController::$role == 'VISITOR') {
+				$this->layout = 'snappi-guest';
+			}
+			// get Group data
+			$options = array(
+				'contain'=>array('Owner.id', 'Owner.username'),
+				'fields'=>'Group.*',		// MUST ADD 'fields' for  containable+permissionable
+				'conditions'=>array('Group.id'=>$id),
+			);
+			$this->Group->contain(array('Owner.id', 'Owner.username'));
+			$data = $this->Group->find('first', $options);			
+			
+			$isMember = in_array(AppController::$uuid, Permissionable::getGroupIds());
+			$isOwner = $data['Group']['owner_id'] == AppController::$userid;
+			if (0 && $isMember || $isOwner ) {
+				$this->Session->setFlash('You are already a member of this group.');
+				$this->redirect(array('action'=>'home', $id));
+			}  else {
+				$owner_name = Session::read('lookup.owner_names.'.$data['Group']['owner_id']);
+				if (empty($owner_name)) $owner_name = $data['Group']['owner_id'];
+				$this->set(compact('id', 'owner_name', 'data', 'isMember'));
+			}
+			return;
+		}
+		
+		if (isset($this->data['Group']['express_upload'])) {
+			// check POST from /groups/join
+			$isExpress = !empty($this->data['Group']['express_upload']);
+		} else {
+			// check session set by /groups/invitation
+			$isExpress = Session::read('join.express_upload_gid') == $this->data['Group']['id'] ? true : null;	
 		}		
 		
+		
+		$role = Session::read('Auth.User.role');
+	
+		
 		$join = $this->data['Group'];
-		if ($role == 'USER') {
+		if (AppController::$role == 'VISITOR') {
+				$this->Session->setFlash('You must sign up or sign in to Snapappi before you can join a group.');
+				$this->Session->write('Auth.redirect', $this->here);
+				$this->redirect('users/register', null, true);
+		} else if (AppController::$role == 'GUEST') {
+				$this->Session->setFlash('You must upgrade your Guest pass before you can join a group. To upgrade your Guest pass, please sign up now.');
+				$this->Session->write('Auth.redirect', $this->here);
+				$this->redirect('users/register', null, true);
+		} else if ($role == 'USER') {
 			$isMember = in_array($join['id'], Permissionable::getGroupIds());
 			if ($isMember) {
 				if ($isExpress) {
@@ -301,6 +355,7 @@ LIMIT 5;";
 					if ($ret) {
 						$this->Session->setFlash('You membership in this Group has now been marked for Express Upload.');
 						$this->redirect(array('action'=>'home', $join['id']), null, true);
+						return;
 					}
 				}
 				$this->Session->setFlash('You are already a member of this group.');
@@ -843,7 +898,8 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 
 
 	function photostreams($id=null){
-		$this->autoRender = false;
+		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';		
 
 		// paginate 
 		$paginateModel = 'ProviderAccount';
@@ -900,7 +956,6 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 		}
 
 		//Configure::write('lookup.photostreams', $this->Group->lookupPhotostreams($id));
-		$this->render('photostreams');
 	}
 	
 	function trends($id = null) {

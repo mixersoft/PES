@@ -23,7 +23,7 @@ switch ($THUMBSIZE) {
 }
 $PREVIEW_LIMIT = $isPreview ? 6 : false;
 ?>
-<section class="<?php if ($isWide) echo "wide "; ?>gallery person">
+
 	<div class="container">
 <?php
 			if ($PREVIEW_LIMIT) $members = array_slice($members, 0, $PREVIEW_LIMIT);
@@ -77,4 +77,4 @@ $PREVIEW_LIMIT = $isPreview ? 6 : false;
 		</article>
 		<?php } ?>
 	</div>
-</section>
+

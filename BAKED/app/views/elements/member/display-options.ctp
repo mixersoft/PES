@@ -9,7 +9,7 @@
 	$paginate_desc['url']['direction'] = 'desc';
 	$orderBy_options = array();
 	$orderBy_options['username'] = array('A_markup'=>$this->Paginator->sort('Name', 'username'));
-	$orderBy_options['last_login'] = array('A_markup'=>$this->Paginator->sort('Last Visit', 'last_login'));
+	$orderBy_options['last_login'] = array('A_markup'=>$this->Paginator->sort('Last Visit', 'last_login', $paginate_desc));
 	$orderBy_options['created'] = array('A_markup'=>$this->Paginator->sort('Member Since', 'created', $paginate_desc));
 	$orderBy_options['asset_count'] = array('A_markup'=>$this->Paginator->sort('Photos', 'asset_count', $paginate_desc ));
 	$orderBy_options['groups_user_count'] = array('A_markup'=>$this->Paginator->sort('Circles', 'groups_user_count', $paginate_desc));

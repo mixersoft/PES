@@ -1,5 +1,4 @@
 <?php
-
 	// debug($data['Group']);	
 
 	$controllerAlias = Configure::read('controller.alias');
@@ -18,7 +17,8 @@
 	$tokens['group_type'] = $data['Group']['type'];
 	// debug($from);	
 	// debug($signin_redirect);
-	$title = String::insert("Please Join Us at Snaphappi", $tokens);	
+	$title = String::insert("Join :circle", $tokens);
+	$body = String::insert("Join the <b>:circle</b> :group_type at Snaphappi. As a member, you will be able share Snaps and connect with other members of this :group_type.", $tokens);
 
 	$this->Layout->blockStart('itemHeader');
 		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
@@ -27,7 +27,7 @@
 				'classLabel'=>$data['Group']['type'],
 				'label'=>$data['Group']['title'],
 		));
-	?>
+?>
 <div class="properties hide container_16">	
 	<dl class="grid_16">
 		<?php $i = 0;
@@ -80,49 +80,23 @@
 <?php	$this->Layout->blockEnd(); ?>
 
 
-<section class='invitation prefix_1 grid_14 suffix_1'>
+<section class='join prefix_1 grid_14 suffix_1'>
 	<h2 class="alpha"><?php echo $title ?></h2>
 	<div class='wrap grid_14'>
-		<div class="alpha grid_2">
-			<div class="right">
-				<?php if (isset($from)) echo $this->Html->image($tokens['from_src'], array('url'=>$from[0]['linkTo'])) ?>	
-			</div></div>
 		<div class="grid_12 omega">
-			<p>
-<?php 
-	if (isset($from) && !empty($this->params['url']['express'])) {
-		echo String::insert(":from has invited you to upload and share your Snaps with the <b>:circle</b> :group_type at Snaphappi. 
-				Your Snaps are needed to tell the whole story of this :group_type, and an <b>express upload</b> option will be provided to help you upload Snaps directly into this :group_type.", $tokens);
-	} else if (isset($from)) {
-		echo String::insert(":from has invited you to join the <b>:circle</b> :group_type at Snaphappi. As a member, you will be able share Snaps and connect with other members of this :group_type.", $tokens); 
-	} else {
-		echo String::insert("This is an invitation to join the <b>:circle</b> :group_type at Snaphappi. As a member, you will be able share Snaps and connect with other members of this :group_type.", $tokens);
-	}
-?>
-				</p>
+			<p><?php echo $body ?></p>			
 			<div class="response wrap prefix_1">
 				<?php  
-					if (isset($signin_redirect)) {
-						$options = array('value'=>"Accept Invitation", 'name'=>'register', 'class'=>'orange',
-							'onclick'=>"window.location.href='{$signin_redirect}';",
-							// 'type'=>'button',
-						);
-						echo $this->Form->button("Accept Invitation", $options);
-					} else {
 						echo $this->Form->create('Group', array('action'=>'join'));
 						echo $this->Form->hidden('id', array('value'=>$id)); 
 						echo $this->Form->hidden('title', array('value'=>$data['Group']['title'])); 
-						if (!empty($this->params['url']['express'])) {
-							echo $this->Form->hidden('express', array('value'=>1)); 
-						}
-						echo $this->Form->button("Accept Invitation", array('value'=>"Accept Invitation", 'name'=>'data[Group][action]', 'class'=>'orange'));	
-						if ($role == 'USER') echo $this->Form->button("Ignore", array('value'=>"Ignore", 'name'=>'data[Group][action]'));	
-						echo $this->Form->end();
-					} 
-				?>			
+						echo $this->Form->button("I'd like to join this group!", array('value'=>"Accept Invitation", 'name'=>'data[Group][action]', 'class'=>'orange'));	
+						echo $this->Form->input('express_upload', array('type'=>'checkbox','label'=>'Allow Express Upload', 'title'=>'Express Upload allows you to upload photos and share with this Circle in one step.') );
+						echo $this->Form->end();				
+				?>
 			</div>
 		</div>
-	</div>
+	</div>	
 	<div class='wrap grid_14'>	
 		<article class="FigureBox Group bp">
 	    	<figure><?php echo $this->Html->image( $previewSrc , $options); ?>
@@ -137,6 +111,7 @@
 		</article>
 	</div>
 </section>
+
 
 <?php $this->Layout->blockStart('javascript'); ?>
 	<script type="text/javascript">		
@@ -161,71 +136,3 @@
 		}	// run from Y.on('domready') for HTTP request
 	</script>	
 <?php $this->Layout->blockEnd(); ?> 
-<!-- <?php $this->Layout->blockStart('javascript'); ?>
-	<script type="text/javascript">	
-		/**
-		 * NOTE: key issues for xhr login are
-		 *  - click for SignIn screen without leaving page
-		 *  - openId support. it might be bundled in Users plugin
-		 */
-		showLoginDialog = function(){
-    		/*
-    		 * create or reuse Dialog
-    		 */
-    		var dialog_ID = 'dialog-login';
-    		var uri = '/users/register';	// placeholder
-    		var dialog = SNAPPI.Dialog.find[dialog_ID];
-    		if (!dialog) {
-            	dialog = SNAPPI.Dialog.CFG[dialog_ID].load();
-            	SNAPPI.Dialog.find[dialog_ID] = dialog;
-            }
-            if (dialog.io) dialog.unplug(SNAPPI.Y.Plugin.IO);
-        	var args = {
-        		dialog: dialog,
-        	}
-        	// content for dialog contentBox
-			var ioCfg = {
-				uri: uri,
-				parseContent: true,
-				autoLoad: true,
-				modal: false,
-				context: dialog,
-				dataType: 'html',
-				arguments: args,    					
-				on: {
-					success: function(e, i,o,args) {
-						var check;
-						var container = SNAPPI.Y.Node.create(o.responseText); 
-						return container.one('#body-container');
-					}					
-				}
-			};
-			ioCfg = SNAPPI.IO.getIORequestCfg(uri, ioCfg.on, ioCfg);
-			dialog.plug(SNAPPI.Y.Plugin.IO, ioCfg);
-		}
-	
-		var initOnce = function() {
-			try {
-				var listeners = {
-					// 'WindowOptionClick':1, 
-					// 'DisplayOptionClick':1,
-					// 'ContextMenuClick':1, 
-					// 'LinkToClick': 1,
-					// 'MultiSelect':1,
-				};
-				for (var listen in listeners) {
-					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
-				}			
-				
-					
-						
-			} catch (e) {}
-		};
-		try {
-			SNAPPI.xhrFetch.fetchXhr; 
-			initOnce(); 
-		} catch (e) {
-			PAGE.init.push(initOnce); 
-		}	// run from Y.on('domready') for HTTP request	
-	</script>	
-<?php $this->Layout->blockEnd(); ?> 	 -->

@@ -1,14 +1,6 @@
 <?php
-	$this->Layout->blockStart('itemHeader');
-		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
-		echo $this->element('nav/section', 
-			array('badge_src'=>$badge_src,
-				'classLabel'=>$data['Group']['type'],
-				'label'=>$data['Group']['title'],
-		));
-	$this->Layout->blockEnd();
-	
-// debug($data['Group']);	
+
+	// debug($data['Group']);	
 
 	$controllerAlias = Configure::read('controller.alias');
 	$previewSrc =  Stagehand::getSrc($data['Group']['src_thumbnail'], 'bp');
@@ -31,7 +23,67 @@
 		'?'=>array('uuid'=>AppController::$userid),
 	), true);
 	
+
+
+	$this->Layout->blockStart('itemHeader');
+		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
+		echo $this->element('nav/section', 
+			array('badge_src'=>$badge_src,
+				'classLabel'=>$data['Group']['type'],
+				'label'=>$data['Group']['title'],
+		));
 ?>
+<div class="properties hide container_16">	
+	<dl class="grid_16">
+		<?php $i = 0;
+			$dtClass = 'grid_3 alpha';
+			$ddClass = 'grid_12 suffix_1 omega';
+			$altClass = ' altrow ';
+		?>
+		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Owner'); ?></span>
+		<span class='<?php echo $ddClass; if ($i % 2 == 0) echo $altClass;?>'>
+			<?php echo $this->Html->link($data['Owner']['username'], array('controller' => 'person', 'action' => 'home', $data['Owner']['id'])); ?>
+			&nbsp;
+		</span>	
+		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Photos'); ?></span>
+		<span class='<?php echo $ddClass; if ($i % 2 == 0) echo $altClass;?>'>
+			<?php echo $this->Html->link("{$data['Group']['assets_group_count']} photos","photos/{$data['Group']['id']}"); ?>
+			&nbsp;
+		</span>				
+		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Description'); ?></span>
+		<span class='<?php echo $ddClass; if ($i % 2 == 0) echo $altClass;?>'>
+			<?php echo $data['Group']['description']; ?>
+			&nbsp;
+		</span>
+		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Membership Policy'); ?></span>
+		<span class='<?php echo $ddClass; if ($i % 2 == 0) echo $altClass;?>'>
+			<?php echo $data['Group']['membership_policy']; ?>
+			&nbsp;
+		</span>
+		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Invitation Policy'); ?></span>
+		<span class='<?php echo $ddClass; if ($i % 2 == 0) echo $altClass;?>'>
+			<?php echo $data['Group']['invitation_policy']; ?>
+			&nbsp;
+		</span>
+		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Is NC17'); ?></span>
+		<span class='<?php echo $ddClass; if ($i % 2 == 0) echo $altClass;?>'>
+			<?php if(1 == $data['Group']['isNC17']){ echo __('Yes'); } else { echo __('No');}?>
+			&nbsp;
+		</span>
+		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Last Visit'); ?></span>
+		<span class='<?php echo $ddClass; if ($i % 2 == 0) echo $altClass;?>'>
+			<?php echo $data['Group']['lastVisit']; ?>
+			&nbsp;
+		</span>
+		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Created On'); ?></span>
+		<span class='<?php echo $ddClass; if ($i % 2 == 0) echo $altClass;?>'>
+			<?php echo $data['Group']['created']; ?>
+			&nbsp;
+		</span>
+	</dl>
+</div>
+<?php	$this->Layout->blockEnd(); ?>
+	
 <section class='invitation prefix_1 grid_14 suffix_1'>
 	<h2 ><?php echo String::insert("Invite your friends & family to join this :group_type.", $tokens); ?></h2>
 	<div class='wrap grid_14'>
@@ -70,3 +122,27 @@
 		</div>		
 	</div>
 </section>
+
+<?php $this->Layout->blockStart('javascript'); ?>
+	<script type="text/javascript">		
+		/**
+		 * run after GET request
+		 */
+		var initOnce = function() {
+			try {
+				var listeners = {
+					'WindowOptionClick':null, 
+				};
+				for (var listen in listeners) {
+					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
+				}					
+			} catch (e) {}
+		};
+		try {
+			SNAPPI.xhrFetch.fetchXhr; 
+			initOnce(); 
+		} catch (e) {
+			PAGE.init.push(initOnce); 
+		}	// run from Y.on('domready') for HTTP request
+	</script>	
+<?php $this->Layout->blockEnd(); ?> 

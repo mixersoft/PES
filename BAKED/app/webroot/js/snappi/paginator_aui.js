@@ -269,7 +269,7 @@
 		var baseurl = SNAPPI.STATE.controller.here;	
 		var nameData = {
 			page: pageNumber,
-			perpage: node.Paginator.get('rowsPerPage')
+			perpage: node.Paginator.get('rowsPerPage'),
 		};
 		baseurl = SNAPPI.IO.setNamedParams(baseurl, nameData);
 		if (target.io) {
@@ -282,6 +282,7 @@
 				uri: baseurl ,
 				parseContent:true,
 				arguments: nameData,
+				data: {inner:1},			// paging-inner
 				on: {
 					success: function(e, id, o , args) {
 						SNAPPI.mergeSessionData();

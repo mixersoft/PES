@@ -13,7 +13,7 @@
 		$options['url'] = array_merge($options['url'], $passedArgs);
 		$this->Paginator->options($options);
 		 
-		echo $this->element('/group/paging-groups');
+		echo $this->element('/group/roll'); 
 	?>
 	</div>
 </div>

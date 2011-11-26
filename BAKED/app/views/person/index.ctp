@@ -6,9 +6,7 @@ if (empty($this->passedArgs['wide'])) {
 }
 ?>
 <div class="users all">
-	<div id='paging-members' class='paging-content'  xhrTarget='paging-members-inner'>
-		<?php echo $this->element('/member/paging-members');?>
-	</div>
+	<?php echo $this->element('/member/roll');	?>
 </div>
 
 <?php $this->Layout->blockStart('relatedContent');?>
