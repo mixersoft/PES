@@ -471,11 +471,46 @@ class UsersController extends UsersPluginController {
 			echo "Root permission required.";
 			exit;
 		}
-		if ($id) $ret = $this->User->updateCounter($id);
-		else $this->User->updateAllCounts();
+		if ($id) {
+			$ret = $this->User->updateCounter($id);
+			$this->__setRandomGroupCoverPhoto($id);
+		} else {
+			$this->User->updateAllCounts();
+			$this->__setRandomGroupCoverPhoto();
+		}
 		if ($id) $this->redirect(array('action'=>'home', $id));
 		else $this->redirect('/person/all');
 	}
+function __setRandomGroupCoverPhoto($id = null){
+		$options = array(
+			'recursive' => -1, 
+			'fields'=>array('User.id', 'User.src_thumbnail'),
+		);
+		if ($id) $options['conditions']['User.id'] = $id;
+		$data = $this->User->find('all', $options);
+		// $gids = Set::extract('/User/id', $data);
+		foreach ($data as $row) {
+			if (!empty($row['User']['src_thumbnail'])) continue;	// skip 
+			$uid = $row['User']['id'];
+			$this->User->id = $uid;
+			$sql = "
+SELECT Asset.src_thumbnail, SharedEdit.score, Asset.id
+FROM assets Asset
+LEFT JOIN shared_edits AS `SharedEdit` ON (`SharedEdit`.`asset_hash` = `Asset`.`asset_hash`)
+WHERE Asset.owner_id='{$uid}'
+order by score desc
+LIMIT 5;";
+			$asset = $this->User->query($sql);
+			if ($asset) {
+				$srcs = Set::extract('/Asset/src_thumbnail', $asset);
+				shuffle($srcs);
+				$ret = $this->User->saveField('src_thumbnail', array_shift($srcs));
+			}
+		}
+		return;
+	}
+
+	
 	/*
 	 * WARNING: backdoor action for oDesk project
 	 */

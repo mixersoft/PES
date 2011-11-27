@@ -937,7 +937,7 @@ LEFT JOIN (
 	GROUP BY u.id
 ) AS t ON (`User`.id = t.user_id)
 SET `User`.asset_count = t.asset_count, `User`.groups_user_count = t.groups_user_count;";
-		$result = $this->query($sql);
+		$result = $this->query($SQL);
 		return true;
 	}
 	/**

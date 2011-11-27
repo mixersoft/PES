@@ -2,6 +2,7 @@
 	/**
 	 * @param array $members - usually $data['Member'] from $Model->find()
 	 */
+	$isInner = (!empty($this->params['url']['inner']));
 	$isPreview = (!empty($this->params['url']['preview']));
 	$isWide = !empty($this->params['named']['wide']);		// fluid layout
 	$isXhr = Configure::read('controller.isXhr');
