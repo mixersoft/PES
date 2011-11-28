@@ -1,7 +1,10 @@
 <?php
 $config['Config.os']=osName();
 
-$config['AAA']=array('allow_guest_login'=>false);
+$config['AAA']=array(
+	'allow_guest_login'=>false,
+	'allow_magic_login'=>false,
+	);
 
 $config['AAA.Permissionable'] = array('root_user_id'=>'12345678-1111-0000-0000-123456789abc', 'root_group_id'=>'role-----0123-4567-89ab-cdef----root');
 
@@ -32,6 +35,7 @@ $config['register'] = array(
 switch ($config['Config.os']) {
 	case 'win':
 	case 'win32':
+		$config['AAA']['allow_magic_login']=true;
 		$config['bin'] = array(
 			'imagemagick' => 'W:/usr/bin/ImageMagick',
 			'jhead' => 'W:/usr/bin/jhead',

@@ -15,8 +15,11 @@
 		<?php echo $this->Form->input('username');?> 
 		<?php echo $this->Form->input('password');?>
 		<?php echo $this->Form->submit('Login', $orange);?>
-		<?php $userlist = array_merge(array(' '=>'select test accounts'),$userlist);
-		echo $this->Form->select('magic', $userlist, ' ', array(), false);?>
+		<?php if (Configure::read('AAA.allow_magic_login')) {
+			$userlist = array_merge(array(' '=>'select test accounts'),$userlist);
+			echo $this->Form->select('magic', $userlist, ' ', array(), false);
+		}
+			?>
 		</div>
 	</div>
 	

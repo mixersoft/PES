@@ -15,13 +15,14 @@
 	        
 	    }   
 	};
-    
+	
     /*
      * Snappi Global Init
      */
     var _main = function(){
 // console.log('_main()');    	
         var Y = SNAPPI.Y;
+        
         SNAPPI.mergeSessionData();
 
         SNAPPI.MenuAUI.initMenus();
@@ -219,9 +220,18 @@
 				Y.log('Load failure: ' + result.msg, 'warn', 'Example');
 				
 			}    	
+			// check supported browser
+			if (1) {
+				var browserOk = Y.UA.gecko || Y.UA.webkit;
+				if (!browserOk) {
+					// show recomended browser
+					alert('Please use the Firefox, Google Chrome or Safari web browsers. At this time, we are not supporting Internet Explorer');
+				} 
+			}
+			
 		    Y.one('body').addClass('wait');
 		    Y.on("domready", function() {
-	console.log('domready fired');	    	
+// console.log('domready fired');	    	
 		    	SNAPPI.domready = true;
 		    });
 		    
@@ -245,14 +255,16 @@
 	        
 	        // make global
 	        SNAPPI.Y = Y;
-console.log('SNAPPI.Y is defined');	        
+// console.log('SNAPPI.Y is defined');	        
 	        SNAPPI.setPageLoading = function (value) {
-	        	if (value == undefined) return Y.one('body').hasClass('wait');
-	        	if (value) Y.one('body').addClass('wait');
-	        	else {
-	        		Y.one('body').removeClass('wait');
-	        		Y.one('#related-content').removeClass('hide');
-	        	}
+	        	try {
+		        	if (value == undefined) return Y.one('body').hasClass('wait');
+		        	if (value) Y.one('body').addClass('wait');
+		        	else {
+		        		Y.one('body').removeClass('wait');
+		        		Y.one('#related-content').removeClass('hide');
+		        	}
+	        	} catch (e) {}
 	        	return value ? true : false;
 	        }
 	        YAHOO = SNAPPI.Y.YUI2; // YUI2 deprecate when possible	
@@ -308,6 +320,7 @@ console.log('SNAPPI.Y is defined');
 					Y.log('Load failure: ' + result.msg, 'warn', 'Example');
 				}
 				else {
+					
 					/*
 					 * all script files loaded, begin init
 					 */

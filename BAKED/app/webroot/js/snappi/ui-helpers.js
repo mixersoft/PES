@@ -209,6 +209,21 @@
 			}catch(e){}			
 		}
 	}
+	UIHelper.util = {
+		checkSupportedBrowser : function(){
+			//TODO: note: need to check on first Y.use for ie, not in Y.ready()
+			try {
+				var Y = SNAPPI.Y;
+				if (1 ) {
+					var browserOk = Y.UA.gecko || Y.UA.webkit;
+					if (!browserOk) {
+						// show recomended browser
+						// alert('unsupported browser');
+					} 
+				}
+			}catch(e){}			
+		}
+	}	
 	UIHelper.markup = {
 		set_ItemHeader_WindowOptions: function(){
 			try {

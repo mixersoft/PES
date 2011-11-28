@@ -58,7 +58,7 @@ ul > li.btn {
 	cursor: default;
 }
 
-ul > li.btn:hover, ul > li.btn.focus {
+ul > li.btn:hover:not(.disabled), ul > li.btn.focus {
 	background: -moz-linear-gradient(bottom, #fca22f, #ffc374) !important;	 
 	background: -webkit-gradient(linear, center bottom, center top, from(#fca22f), to(#ffc374)) !important;	
 	-moz-border-radius: 4px;
@@ -66,6 +66,22 @@ ul > li.btn:hover, ul > li.btn.focus {
 	color: #fff;
 	border: 1px solid #CD7708;
 }
+li.btn.orange {
+	background: -moz-linear-gradient(bottom, #fca22f, #ffc374) !important;	 
+	background: -webkit-gradient(linear, center bottom, center top, from(#fca22f), to(#ffc374)) !important;		
+	border: 1px solid #CD7708;
+	font-size: 14pt;
+	margin: 10px 0;
+	padding: 4px;
+}
+li.btn.orange a {
+	color: #000;
+	font-weight: normal;
+}
+li.btn.orange:hover:not(.disabled) a, li.btn.orange.focus a {
+	font-weight: bold;
+}
+
 nav > ul {
 	cursor: default;
 }
@@ -100,8 +116,8 @@ ul > li.label {
 }
 
 header {
-	background: #000;
-	height: 40px;
+	height: 44px;
+	overflow:hidden;
 }
 header li {
 	line-height: 40px !important;
@@ -134,15 +150,19 @@ header .grey {
 	color: #AEAEAE;
 }
 
-section.item-header > div.wrap {
+section.item-header  {
 	background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0, rgb(197,232,250)),color-stop(1, rgb(232,246,253))	);
 	background-image: -moz-linear-gradient(center bottom,rgb(197,232,250) 0%,rgb(232,246,253) 100%);
 	background: #FFFFC3;
 	-webkit-border-radius: 10px 10px 0 0;
 	-moz-border-radius: 10px 10px 0 0;
 	box-shadow: 0 0 5px #888888;
-	padding: 4px;	
-	clear: both;
+	x-webkit-box-shadow: 0px 0px 7px #fff inset;
+	x-moz-box-shadow: 0px 0px 7px #fff inset;
+	overflow: hidden;
+}
+section.item-header  .wrap {
+	padding: 4px 0;	
 	overflow: hidden;
 }
 section.item-header .window-options .inline {
@@ -197,7 +217,7 @@ input[type='submit'].orange {
 	margin-left: auto;
 	margin-right: auto;
 }
-input[type='submit']:hover.orange {
+input[type='submit']:hover.orange, button[type='submit']:hover.orange {	
 	font-weight: bold;
 }
 #choose-folder .block {
@@ -1002,6 +1022,16 @@ ul li.btn.disabled, ul li.btn.disabled:hover {
     border-bottom: 1px solid #8fb9d0;
     font-size: 16pt;
     margin: 10px 0;
+}
+.related-content.message ul {
+	list-style-position: outside;
+	padding: 10px;
+}
+.related-content.message ul ol {
+	list-style-type: decimal;
+	list-style-position: outside;
+	padding-left:4px;
+	margin-left:10px;
 }
 /*
  * used in /my/upload for #express-upload-options 

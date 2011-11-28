@@ -460,7 +460,13 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 			 */
 			// render page
 			var pageNode = this.view_getBlankPage(page);  // '.gallery .container'
-			if (pageNode) {
+			if (pageNode && this.status=='all' && rows.length == 0) {
+				// show '.empty-photo-gallery-message'
+				try {
+					var n = Y.one('#markup .empty-photo-gallery-message').removeClass('hide');
+					pageNode.append(n);
+				} catch (e) {}
+			} else if (pageNode) {
 				// reset/render new page with array of Progress tiles
 				pageNode.removeClass('hide');
 				for ( var i = 0; i < rows.length; i++) {
