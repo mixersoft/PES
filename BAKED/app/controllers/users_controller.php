@@ -284,7 +284,6 @@ class UsersPluginController extends AppController {
 		if (!empty($this->data)) {
 			$register_cfg = Configure::read('register');
 			$this->data['User']['active'] = $register_cfg['active'];
-			
 			$user = $this->User->register($this->data, $register_cfg['email_verify']);
 			if ($user !== false) {
 				$this->set('user', $user);

@@ -371,7 +371,8 @@ abstract class UserPlugin extends AppModel {
 			$postData['Profile']['email_authenticated'] = 1;
 			$postData[$this->alias]['active'] = 1;	
 		}
-		$this->_removeExpiredRegistrations();
+		// $this->_removeExpiredRegistrations();
+		$this->_removeExpiredEmailTokens();
 		$this->set($postData);
 		if ($this->validates()) {
 			App::import('Core', 'Security');
@@ -534,13 +535,34 @@ abstract class UserPlugin extends AppModel {
 DELETE `User`, `Profile`
 FROM `users` AS `User`
 INNER JOIN `profiles` AS `Profile` ON (`Profile`.`user_id` = `User`.`id`)
-WHERE `Profile`.email_authenticated=1 AND `Profile`.email_token_expires < '{$now}'
+WHERE `Profile`.email_authenticated=0 AND `Profile`.email_token_expires < '{$now}'
 EOD;
 		$this->query($sql);
 //		$this->deleteAll(array(
 //			'Profile.email_authenticated' => 0,
 //			'Profile.email_token_expires <' => date('Y-m-d H:i:s')));
-	}	
+	}
+	
+/**
+ * Removes expired email Tokens, but does not delete user
+ *
+ * Override it as needed for your specific project
+ *
+ * @return void
+ */
+	protected function _removeExpiredEmailTokens() {
+		// delete from both users and profiles table using cascade
+		$now = date('Y-m-d H:i:s');
+$sql = <<<EOD
+UPDATE `Profile` 
+SET `Profile`.email_token_expires = NULL, `Profile`.email_token = NULL 
+WHERE `Profile`.email_token_expires < '{$now}'
+EOD;
+		$this->query($sql);
+//		$this->deleteAll(array(
+//			'Profile.email_authenticated' => 0,
+//			'Profile.email_token_expires <' => date('Y-m-d H:i:s')));
+	}		
 }
 
 

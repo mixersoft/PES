@@ -232,7 +232,7 @@ LIMIT 5;";
 			$data['role'] = 'member';
 			$data['isActive'] = $isApproved;
 			$data['isExpress'] = $isExpress;
-			$data['lastVisit'] = date('Y-m-d H:i:s',time());			
+			$data['lastVisit'] = date('Y-m-d H:i:s',time());
 			$ret =  @$GroupUsers->save($data);
 			if ($ret) {
 				// reinitialize Permissionable::group_ids
