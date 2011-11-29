@@ -13,7 +13,7 @@ class GalleryController extends AppController {
         /*
          *	These actions are allowed for all users
          */
-        $this->Auth->allow(array('story', 'page_gallery', 'save_page'));
+        $this->Auth->allow(array('story', 'page_gallery', 'save_page', 'upload_share'));
     }
     
     function home() {
@@ -195,5 +195,21 @@ class GalleryController extends AppController {
 			return;
 	    }
     }
+
+	function upload_share() {
+		$forceXHR = setXHRDebug($this, 0);
+		$data = $_POST ? $_POST : $this->data;
+		$this->autoRender = false;		
+		if (!empty($data)){
+			$this->log("POST to /gallery/upload_share", LOG_DEBUG);
+			$this->log($data, LOG_DEBUG);
+			$success = true;
+			$message = "POST data logged on server.";
+			$response = $data;
+			$this->viewVars['jsonData'] = compact('success', 'message', 'response');
+			$done = $this->renderXHRByRequest('json', null, null , 0);			
+			if ($done) return; 
+		}
+	}
 }
 ?>

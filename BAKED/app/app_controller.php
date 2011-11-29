@@ -155,42 +155,43 @@ class AppController extends Controller {
 		 * build filter config as jsonData
 		 */
 		$controllerAttr = Configure::read('controller');
-
-		$filter=array();
-		$context = Session::read('lookup.context');
-		if ($context['keyName']) {
-			$contextControllerAlias = Configure::read("lookup.xfr.{$context['keyName']}.ControllerAlias");
-			$labelHref = array('controller'=>$contextControllerAlias,'action'=>'home', $context['uuid']);
-			$removeHref  = $this->passedArgs + array('plugin'=>'', 'context'=>'remove');
-			$extras['label'] = $context['label'];
-			$extras['labelHref'] = Router::url($labelHref);
-			$extras['removeHref'] = Router::url($removeHref);
-			$filter[] = array_merge($context , $extras);
+		if (in_array($controllerAttr['name'], array('Users', 'Groups', 'Tags', 'Assets'))) {
+			$filter=array();
+			$context = Session::read('lookup.context');
+			if ($context['keyName']) {
+				$contextControllerAlias = Configure::read("lookup.xfr.{$context['keyName']}.ControllerAlias");
+				$labelHref = array('controller'=>$contextControllerAlias,'action'=>'home', $context['uuid']);
+				$removeHref  = $this->passedArgs + array('plugin'=>'', 'context'=>'remove');
+				$extras['label'] = $context['label'];
+				$extras['labelHref'] = Router::url($labelHref);
+				$extras['removeHref'] = Router::url($removeHref);
+				$filter[] = array_merge($context , $extras);
+			}
+			if (!empty($this->passedArgs['q'])) {	// search
+				$remove = $this->passedArgs;
+				unset($remove['q']);
+				$filter[] = array(
+					'class'=>'Search',
+					'label'=>$this->passedArgs['q'],
+	//				'classLabel'=>'text', 
+					'removeHref'=>Router::url($remove)
+				);
+			}
+			if (!empty($this->passedArgs['rating'])) {	// search
+				$remove = $this->passedArgs;
+				unset($remove['rating']);
+				$filter[] = array(
+					'class'=>'Rating', 
+					'label'=>"at least {$this->passedArgs['rating']}", 
+					'value'=>$this->passedArgs['rating'], 
+					'removeHref'=>Router::url($remove)
+				);
+			}
+			$this->viewVars['jsonData']['filter'] = @mergeAsArray($this->viewVars['jsonData']['filter'],$filter);
+			/*
+			 * end filter JSON
+			 */
 		}
-		if (!empty($this->passedArgs['q'])) {	// search
-			$remove = $this->passedArgs;
-			unset($remove['q']);
-			$filter[] = array(
-				'class'=>'Search',
-				'label'=>$this->passedArgs['q'],
-//				'classLabel'=>'text', 
-				'removeHref'=>Router::url($remove)
-			);
-		}
-		if (!empty($this->passedArgs['rating'])) {	// search
-			$remove = $this->passedArgs;
-			unset($remove['rating']);
-			$filter[] = array(
-				'class'=>'Rating', 
-				'label'=>"at least {$this->passedArgs['rating']}", 
-				'value'=>$this->passedArgs['rating'], 
-				'removeHref'=>Router::url($remove)
-			);
-		}
-		$this->viewVars['jsonData']['filter'] = @mergeAsArray($this->viewVars['jsonData']['filter'],$filter);
-		/*
-		 * end filter JSON
-		 */
 	}
 
 	/**

@@ -3,7 +3,7 @@
 	  echo header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); 
       
 	  require_once 'cluster-collage.4.php';	 
-	  // $appHost = 'git3:88'; 
+	  $appHost = 'git3:88'; 
 	  $appHost = 'aws.snaphappi.com';
 	  ?>
 <?php
@@ -26,12 +26,10 @@ $COUNT 		= $perpage;		// count of photos to use in the arrangement, taken from t
  */
 $controller = 'person';
 $url = "http://{$appHost}/{$controller}/odesk_photos/{$userid}/rating:{$rating}/page:{$page}/perpage:{$perpage}/.json?debug=0";
-// echo ($url); 
 $rawJson = file_get_contents($url);
 $json = json_decode($rawJson, true);
-$photos = $json['response']['castingCall']['CastingCall']['Auditions']['Audition'];
-$baseurl = "http://{$appHost}".$json['response']['castingCall']['CastingCall']['Auditions']['Baseurl'];
-// echo($photos);
+$photos = $json['castingCall']['CastingCall']['Auditions']['Audition'];
+$baseurl = "http://{$appHost}".$json['castingCall']['CastingCall']['Auditions']['Baseurl'];
 /*
  * extract key properties from photos
  */
@@ -50,7 +48,6 @@ function getPhotos($photos, $baseurl){
 		$output[] = $p;
 	}
 //	sort($output, );
-// echo(json_encode($output)); exit;
 	return $output;
 }
 
