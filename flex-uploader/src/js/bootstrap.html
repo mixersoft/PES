@@ -25,13 +25,15 @@
 			<ul class="inline authenticated hide">
 				<li>
 					<span class="grey">Welcome, </span>
-					<a id="userAccountBtn" class="menu-open" aria-controls="menu-header-markup">Guest</a>
+					<a id="userAccountBtn" class="menu-open" aria-controls="menu-header-markup" onclick="SNAPPI.AIR.UIHelper.nav.openPage('my-home');">Guest</a>
 				</li>
-				<li><a onclick="SNAPPI.AIR.XhrHelper.signOut();return false;">Sign out</a></li>
+				<li onclick="SNAPPI.AIR.UIHelper.nav.openPage('my-photos');">See Your Photos Online</li>
+				<li onclick="SNAPPI.AIR.XhrHelper.signOut();">Sign out</li>
 			</ul>
 			<ul class="inline guest">				
+				<li onclick="SNAPPI.AIR.UIHelper.nav.openPage();">Go Online</li>
 				<li><a id='sign-in'>Sign in</a></li>
-				<li><a href="/users/register" target="_blank">Sign up</a></li>
+				<li onclick="SNAPPI.AIR.UIHelper.nav.openPage('register');">Sign up</li>
 			</ul>	
 		</nav>	
 </header> <!--top header end-->	
@@ -45,6 +47,7 @@
 		</nav>		
 	</div>
 </section>
+
 <div id="item-body" class="plain container_x">
 	<div class="wrap">
 		<section class="import grid_x">
@@ -68,6 +71,7 @@
 		</div>		
 	</div>
 </div> <!-- end #item-body --> 
+
 <section id="gallery-container" class="container_x">
 	<div class="wrap">
 		<div class="grid_x alpha omega express-upload-container"></div>
@@ -81,7 +85,7 @@
 		<li class="label count">0 Snaps</li>
 	</ul>
 	<ul class='toolbar upload-toolbar inline'>		
-		<li class="btn start" status="pause" onclick="SNAPPI.AIR.UIHelper.toggle_upload(this);return false;">Start Upload</li>
+		<li class="btn start" status="ready" onclick="SNAPPI.AIR.UIHelper.toggle_upload(this);return false;">Start Upload</li>
 		<li class="btn hide" onclick="SNAPPI.AIR.uploadQueue.action_clear();return false;">Clear</li>
 		<li id="upload-progress" class="progress center"><div class="bar"></div><span></span></li>
 	</ul>
@@ -93,7 +97,6 @@
     	</ul>
 	</nav>      
 </section> 
-      	
 <section class="gallery-display-options container_x hide" >
 	<nav class="settings">
 	    	<ul class="filter inline">
@@ -198,8 +201,13 @@
 				</ul>
 				<p>You can simply close the Desktop Uploader at any time and for any reason. 
 					When you restart the uploader, it will automatically continue from the last upload.</p>
-				<ul class='inline' ><li class='btn orange rounded-5'><a onclick='SNAPPI.AIR.Flex_UploadAPI.selectFolder(); return false;'>Get started now.<a></li></ul>
-			</div></div>			
+				<ul class='inline' ><li class='btn orange rounded-5'><a onclick='SNAPPI.AIR.Flex_UploadAPI.selectFolder(); return false;'>Get started now.</a></li></ul>
+			</div></div>
+			<div class='upload-complete-message hide'><div style="margin: 10px;" class='related-content message blue rounded-5 wrap-v'>
+				<h1>Your Upload Is Complete.</h1>
+				<p>Congratulations, your upload is complete. Sign in at Snaphappi to orgnaize and share your uploaded photos.</p>
+				<ul class='inline' ><li class='btn orange rounded-5'><a onclick="SNAPPI.AIR.UIHelper.nav.openPage('my-photos'); SNAPPI.Y.one('.upload-complete-message').addClass('hide'); return false;">Go Online to See My Photos.</a></li></ul>
+			</div></div>  
 		</div>	<!-- end #markup -->
 		<div id="footer" class="container_x">
 			<span>&copy; 2008-2012 Snaphappi</span>

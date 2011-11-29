@@ -619,8 +619,14 @@ LOG("  >>>>>>>>>>>>  UPLOAD: last page complete, checking for any pending files,
 							this.isPaused = false;
 							this.startUploadPage(1);
 						} else {
-LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  PAUSE ");									
-							this.action_pause();
+LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  done ");									
+							SNAPPI.AIR.UIHelper.toggle_upload(null, 'done');
+							try {
+								var once = SNAPPI.Y.one('.upload-complete-message').removeClass('hide');	
+								SNAPPI.Y.one('#gallery-container').insert(once, 'before');
+							} catch (e){}
+							
+							
 						}
 					}
 					break;
@@ -1268,6 +1274,9 @@ LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  PAUSE ");
      * singleton object,
      * 		wrapper for all UploadQueue API calls.
      * 		these methods operate on the AIR.uploadQueues DB table
+     * 	_flexAPI_UI == javascript global, set by FlexUploaderAPI constructor
+     * // TODO: change to this this.flexAPI_UI
+     * flexAPI_UI == Flex Class defined as javascript global
      * 
      * WARNING: _flexAPI_UI.datasource !== SNAPPI.DATASOURCE == new SNAPPI.AIR.CastingCallDataSource()
      */

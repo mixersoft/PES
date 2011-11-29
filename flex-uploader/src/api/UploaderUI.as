@@ -7,7 +7,8 @@ package api
 	import flash.events.NativeDragEvent;
 	import flash.events.NativeWindowBoundsEvent;
 	import flash.filesystem.File;
-	import flash.geom.Rectangle;
+	import flash.net.URLRequest;
+	import flash.net.navigateToURL;
 	import flash.system.Capabilities;
 	
 	import mx.containers.Canvas;
@@ -589,7 +590,20 @@ package api
 				// start FileProgress while waiting for bp~uploadFile
 			}
 		}		
-		
+		/**
+		 * Open url in a NATIVE BROWSER
+		 * - DOES NOT change page in AIR browser
+		 */
+		public function openPage(name:String):void {
+			var url:String = "http://" + Config.HOST;
+			var req:URLRequest;
+			if (name == 'register') url += "/users/register"; 
+			if (name == 'my-photos') url += "/my/photos";
+			if (name == 'my-home') url += "/my/home";
+			req = new URLRequest(url);
+			navigateToURL( req  );
+			return;
+		}
 		private function postUploadFile(furl:String, params:Object):void{
 			var handlers:Object = params.handlers;
 //			var sessionKey:String = 'CAKEPHP=' + params.sessionId;

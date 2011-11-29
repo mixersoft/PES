@@ -91,12 +91,11 @@ LOG("+++ set folder, folder="+folder);
 		delayed.delay(100);  // wait 100 ms				
 	};
 	UIHelper.toggle_upload = function(el, force) {
+		var Y = SNAPPI.Y;
+		el = el || '.gallery-header .upload-toolbar li.btn.start';
+		var node = Y.one(el);
 		SNAPPI.setPageLoading(true);
 		if (SNAPPI.AIR.Helpers.isAuthorized()) {
-			if (!el) {
-				var n = SNAPPI.Y.one('.gallery-header .upload-toolbar li.btn.start');
-				el = n.getDOMNode();
-			} else {
 				// hide loadingmask, just in case
 				try {
 					var pluginNode = SNAPPI.Y.one('#gallery-container .gallery.photo');
@@ -107,17 +106,32 @@ LOG("+++ DEBUGGING: UIHelper.toggle_upload(). loadingmask.hide()");
 				} catch(e) {
 LOG("+++ EXCEPTION: loadingmask.hide()");						
 				}
-			}
-			var state = el.innerHTML;
-			if (force===false) state = 'Pause Upload';
-			if (force===true) state = 'Resume Upload';
-			if (state == 'Pause Upload') {
+			
+
+			/*
+			 * status = [ready| uploading| pause]
+			 */			
+			var statusLabel = {
+				'ready': 'Start Upload',
+				'uploading': 'Pause Upload',
+				'pause': 'Resume Upload',
+			}	
+			var status = node.getAttribute('status') || 'ready';
+			if (force===false) status = 'pause';
+			if (force===true) status = 'uploading';
+			if (force=='done') status = 'done';
+			if (status == 'pause' || status == 'ready') {
 				// n.set('innerHTML', 'Resume Upload');
-				el.innerHTML = "Resume Upload";
-				SNAPPI.AIR.uploadQueue.action_pause();
-			} else {
-				el.innerHTML = "Pause Upload";
+				status = 'uploading';
 				SNAPPI.AIR.uploadQueue.action_start();
+			} else if (status == 'uploading') {
+				status = "pause";
+				SNAPPI.AIR.uploadQueue.action_pause();
+				node.setContent(statusLabel[status]);
+			} else if (status == 'done') {
+				status = "ready";
+				SNAPPI.AIR.uploadQueue.action_pause();
+				node.setContent(statusLabel[status]);
 			}
 		} else {
 			// show login screen by menu click
@@ -258,6 +272,13 @@ LOG("toggle CONTEXT MENU, E="+e);
 		'goto' : function (o) {
 			window.location.href = o.options[o.selectedIndex].value;
 		}, 
+		/*
+		 * opens NATIVE browser from Flex
+		 */ 
+		'openPage' : function(page) {
+			// domParent.domWindow.flexAPI_UI = Config.UI == UploaderUI (UploaderUI.as);
+			_flexAPI_UI.openPage(page);
+		},		
 		'orderBy' : function (o) {
 			window.location.href = o.options[o.selectedIndex].value;
 		},
