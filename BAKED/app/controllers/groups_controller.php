@@ -355,15 +355,16 @@ LIMIT 5;";
 		}		
 		
 		
-		$role = Session::read('Auth.User.role');
-	
+		$role = AppController::$role;
+// Configure::write('debug',2);		
+// debug($role);	
 		
 		$join = $this->data['Group'];
-		if (AppController::$role == 'VISITOR') {
+		if ( $role == 'VISITOR') {
 				$this->Session->setFlash('You must sign up or sign in to Snapappi before you can join a group.');
 				$this->Session->write('Auth.redirect', $this->here);
 				$this->redirect('users/register', null, true);
-		} else if (AppController::$role == 'GUEST') {
+		} else if ( $role == 'GUEST') {
 				$this->Session->setFlash('You must upgrade your Guest pass before you can join a group. To upgrade your Guest pass, please sign up now.');
 				$this->Session->write('Auth.redirect', $this->here);
 				$this->redirect('users/register', null, true);
@@ -398,6 +399,7 @@ LIMIT 5;";
 					$this->redirect(array('action'=>'home', $join['id']), null, true);
 				} else {
 					$this->Session->setFlash('Error: there was a problem joining this group. Please try again.');
+					$this->redirectSafe();	// to referer
 				}
 			}
 		}

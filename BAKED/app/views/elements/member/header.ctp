@@ -11,7 +11,8 @@
 	if ($isPreview) {
 		$xhrFrom = Configure::read('controller.xhrFrom');
 		$passedArgs = Configure::read('passedArgs.min');
-		$next = array('controller'=>$xhrFrom['alias'],'action'=>'person', $xhrFrom['uuid']) + $passedArgs;
+		// ???: members or person?
+		$next = array('controller'=>$xhrFrom['alias'],'action'=>'members', $xhrFrom['uuid']) + $passedArgs;
 		$tokens['total'] = $total; 
 		$tokens['linkTo'] = $this->Html->link('Show all', $next); 
 		$tokens['type'] = ($total==1 ? "Member. " : "Members. ");
