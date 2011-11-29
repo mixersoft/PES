@@ -82,6 +82,9 @@ class PagesController extends AppController {
 			$title_for_layout = Inflector::humanize($path[$count - 1]);
 		}
 		$this->set(compact('page', 'subpage', 'title_for_layout'));
+		if ($this->__check_browserRedirect() == true) {
+			$this->layout = 'snappi-plain';
+		}
 		$this->render(implode('/', $path));
 	}
 	
