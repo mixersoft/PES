@@ -29,6 +29,7 @@
 		ALLOY_VERSION='alloy-1.0.2';
 	</script>
 	<script src="/svc/lib/alloy-1.0.2/build/aui/aui.js" type="text/javascript"></script>
+	<link rel="stylesheet" type="text/css" media="all" href="/combo/js?baseurl=svc/lib/alloy-1.0.2/build&/aui-skin-classic/css/aui-skin-classic-all.css&/aui-loading-mask/assets/skins/sam/aui-loading-mask.css&/aui-overlay/assets/skins/sam/aui-overlay.css&" />
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/reset.css" />
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/960-fluid.css" />	
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/style.css" />
@@ -131,8 +132,15 @@
 	?>
 </div>
 
-	<?php echo $this->element('sqldump'); ?>
-	<?php
+	<?php echo $this->element('sqldump');
+		$this->Layout->blockStart('javascript'); ?>
+		<script type="text/javascript">		
+			// this has to be AFTER base_aui.js load
+			SNAPPI.LazyLoad.gallery();
+		</script>	
+	<?php	
+		$this->Layout->blockEnd();
+		
 		if (Configure::read('js.bootstrap_snappi')) echo $this->Html->script('/js/snappi/base_aui.js');		
 		echo $scripts_for_layout;
 		$this->Layout->output($this->viewVars['javascript_for_layout']);

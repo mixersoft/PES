@@ -25,6 +25,7 @@ class AppController extends Controller {
 	 * @access public
 	 */
 	function beforeFilter() {
+		$this->__check_browserRedirect();
 		//Override default fields used by Auth component
 		$this->Auth->userModel = 'User';
 		$this->Auth->fields = array('username'=>'username', 'password'=>'password');
@@ -91,6 +92,21 @@ class AppController extends Controller {
 		$this->__addFiltersAsJsonData();
 	}
 	
+	function __check_browserRedirect() {
+		$u_agent = $_SERVER['HTTP_USER_AGENT']; 
+	    $unsupported = false; 
+	    if(preg_match('/MSIE/i',$u_agent)) 
+	    {
+	    	$unsupported = true;
+	    	
+	    } 
+		if (in_array($this->name, array('Pages', 'Gallery', 'Combo', 'Snappi'))) {
+			return $unsupported;
+		} else if ($unsupported) {
+			$this->redirect('/pages/browser_unsupported', null, true);
+		}
+		return true;
+	}
 	function __setPageTitle() {
 		if ($this->RequestHandler->isAjax() || $this->RequestHandler->ext=='json') {
 			return; // skip page titles for AJAX requests.

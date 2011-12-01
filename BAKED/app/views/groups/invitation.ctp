@@ -140,27 +140,12 @@
 
 <?php $this->Layout->blockStart('javascript'); ?>
 	<script type="text/javascript">		
-		/**
-		 * run after GET request
-		 */
-		var initOnce = function() {
-			try {
-				var listeners = {
-					'WindowOptionClick':null, 
-				};
-				for (var listen in listeners) {
-					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
-				}					
-			} catch (e) {}
-		};
-		try {
-			SNAPPI.xhrFetch.fetchXhr; 
-			initOnce(); 
-		} catch (e) {
-			PAGE.init.push(initOnce); 
-		}	// run from Y.on('domready') for HTTP request
+		// this has to be AFTER base_aui.js load
+		// SNAPPI.LazyLoad.min({fetchXhr:false});	// move to snappi-guest
 	</script>	
 <?php $this->Layout->blockEnd(); ?> 
+
+
 <!-- <?php $this->Layout->blockStart('javascript'); ?>
 	<script type="text/javascript">	
 		/**

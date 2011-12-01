@@ -359,8 +359,9 @@
         	node = node || Y.one('.item-header');        	
         	var action = 'WindowOptionClick';
         	node.listen = node.listen || {};
-            if (node.listen[action] == undefined) {
-            	var delegate_container = node.one('.window-options').removeClass('hide');
+        	var delegate_container = node.one('.window-options');
+            if (delegate_container && node.listen[action] == undefined) {
+            	delegate_container.removeClass('hide');
 				node.listen[action] = delegate_container.delegate('click', 
 	                function(e){
 	                	// action=[set-display-size:[size] | set-display-view:[mode]]
@@ -377,9 +378,9 @@
 			    			}	
 	                	}
 	                }, 'ul > li', node);
+				// back reference
+				UIHelper.listen[action] = node.listen[action];	                
 			}
-			// back reference
-			UIHelper.listen[action] = node.listen[action]; 
         },
         DragDrop : function(){
         	SNAPPI.DragDrop.pluginDrop(SNAPPI.Y.all('.droppable'));

@@ -1,4 +1,10 @@
 <?php 
+	$this->Layout->blockStart('HEAD');
+		$basepath = Configure::read('path.fileUploader.basepath');
+		echo $this->Html->css($basepath.'/client/fileuploader.css');
+		echo $this->Html->script($basepath.'/client/fileuploader.js');
+	$this->Layout->blockEnd();		
+
 	$this->Layout->blockStart('itemHeader');
 		$badge_src = Stagehand::getSrc($data['User']['src_thumbnail'], 'sq', 'person');
 		echo $this->element('nav/section', array('badge_src'=>$badge_src));  
@@ -6,14 +12,22 @@
 ?>
 <style type="text/css">
 #valums-file-uploader {
-	border: 1px dotted gray;
-	margin: 10px;
+	border: 1px solid #8FB9D0;
 	padding: 4px;
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;	
 }
 h1 {
 	font-size: 20pt;
+}
+.qq-upload-drop-area, .qq-upload-button {
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;	
+	width: 100%;
+}
+.qq-upload-drop-area {
+	min-height: 50px;
+	background-color: #FFFFC3;
+    border: 1px solid #8FB9D0;
+    box-shadow: 0 0 7px #FFFFFF inset;
 }
 </style>
 
@@ -27,7 +41,7 @@ h1 {
 		<?php echo $this->element('group/express-upload'); ?>	
 		</div>	
 		
-		<div id="valums-file-uploader" >       
+		<div id="valums-file-uploader" class='rounded-5'>       
 		    <noscript>          
 		        <p>Please enable JavaScript to use file uploader. </p>
 		        <!-- or put a simple form for upload here -->
@@ -89,5 +103,3 @@ try {initOnce(); }			// run now for XHR request, or
 catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request
 </script>	
 
-
-<?php echo $this->element('sqldump') ?>

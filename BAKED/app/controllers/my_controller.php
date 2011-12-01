@@ -411,6 +411,7 @@ $this->log("force_UNSECURE_LOGIN={$force_UNSECURE_LOGIN}, role=".AppController::
 	 * PHP or javascript/valums upload
 	 */
 	function upload () {
+		$this->layout = 'snappi-guest';
 //		$this->log($this->data, LOG_DEBUG);
 		$forceXHR = setXHRDebug($this);
 		$userid = AppController::$userid;
@@ -440,7 +441,7 @@ $this->log("force_UNSECURE_LOGIN={$force_UNSECURE_LOGIN}, role=".AppController::
 		 */
 //		debug(session_name()."=".session_id());
 		
-		$this->layout = 'upload';
+		
 		$this->User->contain();
 		$options = array('conditions'=>array('User.id'=>$userid));
 		$data = $this->User->find('first', $options);
