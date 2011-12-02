@@ -86,13 +86,20 @@
 		<div class="grid_12 omega">
 			<p><?php echo $body ?></p>			
 			<div class="response wrap prefix_1">
-				<?php  
+				<?php  if (isset($signin_redirect)) {
+						$options = array('name'=>'register', 'class'=>'orange',
+							'onclick'=>"window.location.href='{$signin_redirect}';",
+							// 'type'=>'button',
+						);
+						echo $this->Form->button("I'd like to join this group!", $options);
+					} else {
 						echo $this->Form->create('Group', array('action'=>'join'));
 						echo $this->Form->hidden('id', array('value'=>$id)); 
 						echo $this->Form->hidden('title', array('value'=>$data['Group']['title'])); 
 						echo $this->Form->button("I'd like to join this group!", array('value'=>"Accept Invitation", 'name'=>'data[Group][action]', 'class'=>'orange'));	
 						echo $this->Form->input('express_upload', array('type'=>'checkbox','label'=>'Allow Express Upload', 'title'=>'Express Upload allows you to upload photos and share with this Circle in one step.') );
-						echo $this->Form->end();				
+						echo $this->Form->end();
+					}				
 				?>
 			</div>
 		</div>

@@ -295,8 +295,8 @@ LIMIT 5;";
 			$badges = ClassRegistry::init('User')->getBadges($this->params['url']['uuid']);
 		}
 		
-		$role = Session::read('Auth.User.role');
-		if (!$role || $role == 'GUEST') {
+		$role = AppController::$role;
+		if (!$role || in_array($role, array('VISITOR','GUEST'))) {
 			$signin_redirect = Router::url(env('REQUEST_URI').'&register=1');
 		}
 		$isExpress =  (!empty($this->params['url']['express'])) ?  $id : null;
@@ -320,10 +320,17 @@ LIMIT 5;";
 			$this->data = $this->params['url']['data'];
 		}
 		if (empty($this->data)) {
+			$role = AppController::$role;
+			if (!empty($this->params['url']['register'])) {
+				/*
+				 * ask Visitor to Sign In before joining group
+				 */
+				$this->Session->setFlash('Please Sign-up or Sign-in before you join this Circle.');
+				Session::write('Auth.redirect', str_replace('&register=1', '', env('REQUEST_URI'))); 
+				$this->redirect('/users/register', null, true);
+			}	
+			
 			// GET response: allow $role=USER to join group, 
-			if (AppController::$role == 'VISITOR') {
-				$this->layout = 'snappi-guest';
-			}
 			// get Group data
 			$options = array(
 				'contain'=>array('Owner.id', 'Owner.username'),
@@ -335,13 +342,18 @@ LIMIT 5;";
 			
 			$isMember = in_array(AppController::$uuid, Permissionable::getGroupIds());
 			$isOwner = $data['Group']['owner_id'] == AppController::$userid;
-			if (0 && $isMember || $isOwner ) {
+			if ($isMember || $isOwner ) {
 				$this->Session->setFlash('You are already a member of this group.');
 				$this->redirect(array('action'=>'home', $id));
 			}  else {
+				// ask user to sign up/in
+				if (!$role || in_array($role, array('VISITOR','GUEST'))) {
+					$signin_redirect = Router::url(env('REQUEST_URI').'&register=1');
+				}
+				
 				$owner_name = Session::read('lookup.owner_names.'.$data['Group']['owner_id']);
 				if (empty($owner_name)) $owner_name = $data['Group']['owner_id'];
-				$this->set(compact('id', 'owner_name', 'data', 'isMember'));
+				$this->set(compact('id', 'owner_name', 'signin_redirect', 'data', 'isMember'));
 			}
 			return;
 		}
