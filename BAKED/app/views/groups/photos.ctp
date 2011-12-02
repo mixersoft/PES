@@ -18,6 +18,15 @@ if (empty($this->passedArgs['wide'])) {
 	$xhrSrc = Router::url($xhrSrc);
 	echo "<div id='tags-preview-xhr' class='xxhr-get' xhrSrc='{$xhrSrc}'></div>";
 ?>	
+<?php  if ( $data['Group']['assets_group_count']>0 ) {
+		$this->Layout->blockStart('markup'); 		?>
+			<div class='empty-photo-gallery-message hide'><div class='related-content message blue rounded-5 wrap-v'>
+				<h1>Snap Gallery</h1>
+				<p>You must be a member of this Circle to see these Snaps from this Group.
+				Join this Circle to share Snaps, Stories, and more with other members.</p>
+				<ul class='inline' ><li class='btn orange rounded-5'><a href='/groups/join/<?php echo AppController::$uuid; ?>'>Join now.<a></li></ul>
+			</div></div>
+<?php 	$this->Layout->blockEnd(); } ?>	
 <script type="text/javascript">
 var initOnce = function() {
 	// init xhr paging & fetch xhr-gets

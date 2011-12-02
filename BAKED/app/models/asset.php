@@ -672,6 +672,11 @@ class Asset extends AppModel {
 		
 	
 	function getPaginatePhotosByGroupId ($groupid , $paginate = array()) {
+		if (!$this->Group->hasPermission('read',$groupid) ){
+			// no read permission, likely non-member
+			$paginate = array('conditions'=>"1=0");
+			return $paginate;
+		}
 //		ClassRegistry::init('Asset')->disablePermissionable();
 		$paginateModel = 'Asset';
 //debug($paginateModel);	 

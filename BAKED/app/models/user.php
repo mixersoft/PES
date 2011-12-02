@@ -962,6 +962,35 @@ SET `User`.asset_count = t.asset_count, `User`.groups_user_count = t.groups_user
 		$result = $this->query($SQL);
 		return true;
 	}
+
+	function setRandomBadgePhoto($id){
+		$options = array(
+			'conditions'=>array('User.id'=>$id),
+			'recursive' => -1, 
+			'fields'=>array('User.id', 'User.src_thumbnail'),
+		);
+		$row = $this->find('first', $options);
+		// $gids = Set::extract('/User/id', $data);
+		if (empty($row['User']['src_thumbnail'])) { 
+			$uid = $row['User']['id'];
+			$this->id = $uid;
+			$sql = "
+SELECT Asset.src_thumbnail, SharedEdit.score, Asset.id
+FROM assets Asset
+LEFT JOIN shared_edits AS `SharedEdit` ON (`SharedEdit`.`asset_hash` = `Asset`.`asset_hash`)
+WHERE Asset.owner_id='{$uid}'
+order by score desc
+LIMIT 5;";
+			$asset = $this->query($sql);
+			if ($asset) {
+				$srcs = Set::extract('/Asset/src_thumbnail', $asset);
+				shuffle($srcs);
+				$ret = $this->saveField('src_thumbnail', array_shift($srcs));
+			}
+		}
+		return;
+	}		
+	
 	/**
 	 * @params array of User ids
 	 * @return aa of user badge data, indexed by uuid

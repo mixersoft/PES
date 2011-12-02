@@ -223,6 +223,7 @@ class MyController extends PersonController {
 		// Check for complete Filedata or return error
 		$fileDataERROR = !isset($_FILES["Filedata"]) || !is_uploaded_file($_FILES["Filedata"]["tmp_name"]) || $_FILES["Filedata"]["error"] != 0; 
 		if ($fileDataERROR && !$forceXHR) {
+$this->log("__upload_AIRclient(): fileDataERROR for userid={$userid}", LOG_DEBUG);			
 			header("HTTP/1.1 500 Internal Server Error");
 			$response['success'] = 'false';
 			$response['message'] = 'Error: invalid Filedata';
@@ -247,6 +248,7 @@ class MyController extends PersonController {
 				Session::write('airUploader.uploadFolder', $UPLOAD_FOLDER);
 			}		    
 			$dest = cleanpath($UPLOAD_FOLDER.$userid.DS.$name);
+$this->log("__upload_AIRclient(): upload success, file copied to dest={$dest}", LOG_DEBUG);				
 			if (!file_exists(dirname($dest))) mkdir(dirname($dest), 2775, true);
 			if( !move_uploaded_file($file_url, $dest) ){
 				@unlink($file_url);
@@ -272,10 +274,10 @@ class MyController extends PersonController {
 		/*
 		 * import into DB
 		 */
-// $this->log("before __importPhoto  >>>>>>>>>>>>>>>", LOG_DEBUG);	
-// $this->log($this->data['Asset'], LOG_DEBUG);
+$this->log("before __importPhoto  >>>>>>>>>>>>>>>", LOG_DEBUG);	
+$this->log($this->data['Asset'], LOG_DEBUG);
 		$response = $this->__importPhoto($this->data, $UPLOAD_FOLDER, $dest);
-// $this->log($response, LOG_DEBUG);		
+$this->log($response['message'], LOG_DEBUG);		
 		/*
 		 * share via express uploads, as necessary
 		 */ 
@@ -296,6 +298,7 @@ class MyController extends PersonController {
 			$response = Set::merge($response, $resp1);
 		 }
 		 $this->User->updateCounter($userid);
+		 $this->User->setRandomBadgePhoto($userid);
 //		$this->log($response, LOG_DEBUG);
 		/*
 		 * return response
@@ -377,14 +380,15 @@ class MyController extends PersonController {
 			 */
 // 			$this->log(Session::read('Auth.User'), LOG_DEBUG);
 			if ($force_UNSECURE_LOGIN && !$this->Auth->user() && isset($this->data['User']['id'])) {
-$this->log("force_UNSECURE_LOGIN={$force_UNSECURE_LOGIN}, role=".AppController::$role, LOG_DEBUG);				
+// $this->log("force_UNSECURE_LOGIN={$force_UNSECURE_LOGIN}, role=".AppController::$role, LOG_DEBUG);				
 				// TODO: authorize user by uuid. this is unsafe!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				$userid = $this->data['User']['id'];
 				$data = $this->User->read(null, $userid );
 			
-// $this->log($data, LOG_DEBUG);				
+// $this->log($data['User']['username'], LOG_DEBUG);				
 				$ret = $this->Auth->login($data);
 // $this->log($ret, LOG_DEBUG);
+$this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_DEBUG);
 				
 				$this->__cacheAuth();
 				$this->Permissionable->initialize($this);

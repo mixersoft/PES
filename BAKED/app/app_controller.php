@@ -459,7 +459,6 @@ class AppController extends Controller {
 	 * any breadcrumb related values
 	 */
 	function __cacheClickStream() {
-		if (!AppController::$uuid) return;  // all page, no clickstream update
 		if ($this->RequestHandler->isAjax()) return; // don't update ajax requests
 		
 		$controllerAttr = Configure::read('controller');
