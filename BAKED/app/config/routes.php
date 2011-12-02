@@ -39,7 +39,7 @@ Router::connect('/users/:action/*', array('plugin'=>'', 'controller'=>'users'));
 
 //Router::connect('/my/:action/:id', array('controller'=>'users'), array('pass'=>array('id')));
 
-Router::connect('/', array('controller' => 'users', 'action' => 'logout'));
+Router::connect('/', array('controller' => 'pages', 'action' => 'index'));
 	
 //Router::connect('/', array('controller'=>'welcome', 'action'=>'home'));
 

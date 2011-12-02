@@ -1,7 +1,10 @@
 <?php
 
 	// debug($data['Group']);	
-
+	$isExpress = !empty($this->params['url']['express']);
+	$role = AppController::$role;
+	$signin_redirect =  $this->here;  // Router::url(env('REQUEST_URI'));
+	
 	$controllerAlias = Configure::read('controller.alias');
 	$previewSrc = Stagehand::getSrc($data['Group']['src_thumbnail'], 'bp');
 	$options = array('linkTo'=>Router::url(array('plugin'=>'','controller'=>$controllerAlias, 'action'=>'home', $data['Group']['id']))); 
@@ -18,7 +21,9 @@
 	$tokens['group_type'] = $data['Group']['type'];
 	// debug($from);	
 	// debug($signin_redirect);
-	$title = String::insert("Please Join Us at Snaphappi", $tokens);	
+	$title = String::insert("Please Join Us at Snaphappi", $tokens);
+	
+		
 
 	$this->Layout->blockStart('itemHeader');
 		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
@@ -102,23 +107,42 @@
 				</p>
 			<div class="response wrap prefix_1">
 				<?php  
-					if (isset($signin_redirect)) {
-						$options = array('value'=>"Accept Invitation", 'name'=>'register', 'class'=>'orange',
-							'onclick'=>"window.location.href='{$signin_redirect}';",
-							// 'type'=>'button',
-						);
-						echo $this->Form->button("Accept Invitation", $options);
+					// echo $this->Form->create('Group', array('action'=>'join'));
+					// if (isset($signin_redirect)) {
+						// $options = array('value'=>"Accept Invitation", 'name'=>'register', 'class'=>'orange',
+							// 'onclick'=>"window.location.href='{$signin_redirect}'; return false;",
+							// // 'type'=>'button',
+						// );
+						// echo $this->Form->button("Accept Invitation", $options);
+					// } else {
+						// echo $this->Form->hidden('id', array('value'=>$id)); 
+						// echo $this->Form->hidden('title', array('value'=>$data['Group']['title'])); 
+						// // if ($isExpress) {
+							// // echo $this->Form->hidden('express', array('value'=>1)); 
+						// // }
+						// echo $this->Form->button("Accept Invitation", array('value'=>"Accept Invitation", 'name'=>'data[Group][action]', 'class'=>'orange'));	
+						// if ($role == 'USER') echo $this->Form->button("Ignore", array('value'=>"Ignore", 'name'=>'data[Group][action]'));	
+					// } 
+					// echo $this->Form->hidden('signin_redirect', array('value'=>$signin_redirect));
+					// $checkbox_options = array('type'=>'checkbox','label'=>'Enable Express Upload', 'title'=>'Express Upload allows you to upload photos and share with this Circle in one step.');
+					// if ($isExpress) $checkbox_options['checked']=1;
+					// echo $this->Form->input('express_upload',  $checkbox_options);
+					// echo $this->Form->end();
+					
+					echo $this->Form->create('Group', array('action'=>'join'));  
+					if (!$role || in_array($role, array('VISITOR','GUEST'))) {
+						echo $this->Form->hidden('signin_redirect', array('value'=>$signin_redirect));
+						echo $this->Form->hidden('noauth_redirect', array('value'=>'/users/register'));
+						echo $this->Form->button("Accept Invitation", array('value'=>"Sign In", 'name'=>'data[Group][action]', 'class'=>'orange'));
 					} else {
-						echo $this->Form->create('Group', array('action'=>'join'));
 						echo $this->Form->hidden('id', array('value'=>$id)); 
 						echo $this->Form->hidden('title', array('value'=>$data['Group']['title'])); 
-						if (!empty($this->params['url']['express'])) {
-							echo $this->Form->hidden('express', array('value'=>1)); 
-						}
 						echo $this->Form->button("Accept Invitation", array('value'=>"Accept Invitation", 'name'=>'data[Group][action]', 'class'=>'orange'));	
-						if ($role == 'USER') echo $this->Form->button("Ignore", array('value'=>"Ignore", 'name'=>'data[Group][action]'));	
-						echo $this->Form->end();
-					} 
+					}	
+					$checkbox_options = array('type'=>'checkbox','label'=>'Enable Express Upload', 'title'=>'Express Upload allows you to upload photos and share with this Circle in one step.');
+					if ($isExpress) $checkbox_options['checked']=1;
+					echo $this->Form->input('express_upload',  $checkbox_options);
+					echo $this->Form->end();					
 				?>			
 			</div>
 		</div>

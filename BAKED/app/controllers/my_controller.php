@@ -204,10 +204,11 @@ class MyController extends PersonController {
 		}
 //$this->log($response, LOG_DEBUG);
 		$this->User->updateCounter($userid);
+		$this->User->setRandomBadgePhoto($userid);
 		// to pass data through iframe you will need to encode all html tags
 		// Configure::write('debug', 0);
-		// echo htmlspecialchars(json_encode($response), ENT_NOQUOTES);	
-		echo json_encode($response);
+		echo htmlspecialchars(json_encode($response), ENT_NOQUOTES);	
+		// echo json_encode($response);
 		exit(0);
 	}
 	

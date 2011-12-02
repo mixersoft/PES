@@ -92,5 +92,10 @@ class PagesController extends AppController {
 		parent::beforeFilter();
 		$this->Auth->allow('*');
 	}
+
+	function index() {
+		$no_controller_redirect = '/groups/all';
+		$this->redirect($no_controller_redirect); 	
+	}
 	
 }

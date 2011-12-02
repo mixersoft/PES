@@ -273,14 +273,6 @@ LIMIT 5;";
 	 */
 	function invitation ($id=null) {
 		$this->layout = 'snappi-guest';
-		if (!empty($this->params['url']['register'])) {
-			/*
-			 * ask Visitor to Sign In before joining group
-			 */
-			$this->Session->setFlash('Please Sign-up or Sign-in before you join this Circle.');
-			Session::write('Auth.redirect', str_replace('&register=1', '', env('REQUEST_URI'))); 
-			$this->redirect('/users/register', null, true);
-		}		
 		// get Group data
 		$options = array(
 			'contain'=>array('Owner.id', 'Owner.username'),
@@ -295,18 +287,9 @@ LIMIT 5;";
 			$badges = ClassRegistry::init('User')->getBadges($this->params['url']['uuid']);
 		}
 		
-		$role = AppController::$role;
-		if (!$role || in_array($role, array('VISITOR','GUEST'))) {
-			$signin_redirect = Router::url(env('REQUEST_URI').'&register=1');
-		}
-		$isExpress =  (!empty($this->params['url']['express'])) ?  $id : null;
-		Session::write('join.express_upload_gid', $isExpress);
-		
 		$this->set('title_for_layout', "An Invitation to Join {$data['Group']['type']} {$data['Group']['title']}");
-		$this->set(compact('id', 'owner_name', 'data', 'badges', 'signin_redirect', 'role'));	
+		$this->set(compact('id', 'owner_name', 'data', 'badges'));	
 		$this->render('invitation');		
-		// debug(Session::read('Auth.redirect'));
-		// 
 	}
 	/**
 	 * GET ok
@@ -320,6 +303,9 @@ LIMIT 5;";
 			$this->data = $this->params['url']['data'];
 		}
 		if (empty($this->data)) {
+			/*
+			 * GET request
+			 */
 			$role = AppController::$role;
 			if (!empty($this->params['url']['register'])) {
 				/*
@@ -353,61 +339,62 @@ LIMIT 5;";
 				
 				$owner_name = Session::read('lookup.owner_names.'.$data['Group']['owner_id']);
 				if (empty($owner_name)) $owner_name = $data['Group']['owner_id'];
-				$this->set(compact('id', 'owner_name', 'signin_redirect', 'data', 'isMember'));
+				$this->set(compact('id', 'owner_name',  'data', 'isMember'));
 			}
 			return;
 		}
-		
-		if (isset($this->data['Group']['express_upload'])) {
-			// check POST from /groups/join
-			$isExpress = !empty($this->data['Group']['express_upload']);
-		} else {
-			// check session set by /groups/invitation
-			$isExpress = Session::read('join.express_upload_gid') == $this->data['Group']['id'] ? true : null;	
-		}		
-		
-		
-		$role = AppController::$role;
-// Configure::write('debug',2);		
-// debug($role);	
-		
-		$join = $this->data['Group'];
-		if ( $role == 'VISITOR') {
-				$this->Session->setFlash('You must sign up or sign in to Snapappi before you can join a group.');
-				$this->Session->write('Auth.redirect', $this->here);
-				$this->redirect('users/register', null, true);
-		} else if ( $role == 'GUEST') {
-				$this->Session->setFlash('You must upgrade your Guest pass before you can join a group. To upgrade your Guest pass, please sign up now.');
-				$this->Session->write('Auth.redirect', $this->here);
-				$this->redirect('users/register', null, true);
-		} else if ($role == 'USER') {
-			$isMember = in_array($join['id'], Permissionable::getGroupIds());
-			if ($isMember) {
-				if ($isExpress) {
-					$ret = $this->__joinGroup($join['id'], AppController::$userid, $isExpress);
-					if ($ret) {
-						$this->Session->setFlash('You membership in this Group has now been marked for Express Upload.');
-						$this->redirect(array('action'=>'home', $join['id']), null, true);
-						return;
+
+		/*
+		 * POST METHOD 
+		 */
+	
+		if (!empty($this->data['Group'])) {
+			$role = AppController::$role;
+			$join = $this->data['Group'];
+			$isExpress = !empty($join['express_upload']);
+			$signin_redirect = isset($join['signin_redirect']) ?  $join['signin_redirect'] : $this->here;
+			if ($isExpress) $signin_redirect .= "?express=1";
+			$noauth_redirect = isset($join['noauth_redirect']) ?  $join['noauth_redirect'] : '/users/register';
+			// check if conditions ok to join Group
+			if ( !$role || $role == 'VISITOR') {
+					$this->Session->setFlash('You must sign up or sign in to Snapappi before you can join a group.');
+					$this->Session->write('Auth.redirect', $signin_redirect);
+					$this->redirect($noauth_redirect, null, true);
+			} else if ( $role == 'GUEST') {
+					$this->Session->setFlash('You must upgrade your Guest pass before you can join a group. To upgrade your Guest pass, please sign up now.');
+					$this->Session->write('Auth.redirect', $signin_redirect);
+					$this->redirect($noauth_redirect, null, true);
+			} else if ($role == 'USER') {
+				$isMember = in_array($join['id'], Permissionable::getGroupIds());
+				if ($isMember) {
+					if ($isExpress) {
+						$ret = $this->__joinGroup($join['id'], AppController::$userid, $isExpress);
+						if ($ret) {
+							$this->Session->setFlash('Your membership in this Group has now been marked for Express Upload.');
+							$this->redirect(array('action'=>'home', $join['id']), null, true);
+							return;
+						}
 					}
-				}
-				$this->Session->setFlash('You are already a member of this group.');
-				$this->redirect(array('action'=>'home', $join['id']), null, true);
-			}		
-		}
-		// POST
-		if (isset($this->data['Group'])) {
+					$this->Session->setFlash('You are already a member of this group.');
+					$this->redirect(array('action'=>'home', $join['id']), null, true);
+				}		
+			}
+debug($this->data); exit;				
+			// POST
 			$action = $join['action'];
 			if ($action == 'Ignore') {
 				// TODO: cancel invitation from "recent activity" ticker
 				$this->redirectSafe();
+			} else if ($action == 'Sign In') {
+				// should already be handled above by $join['signin_redirect']
+				
 			} else {	// action = "Accept Invitation"
 				$ret = $this->__joinGroup($join['id'], AppController::$userid, $isExpress);
 				if ($ret) {
 					$msg = "Welcome! You are now a member of the <b>{$join['title']}</b> Circle.";
 					if ($isExpress) $msg .= " Your membership has been marked for Express Upload.";
 					$this->Session->setFlash($msg);
-					Session::delete('join.express_upload_gid');
+					// Session::delete('join.express_upload_gid');
 					$this->redirect(array('action'=>'home', $join['id']), null, true);
 				} else {
 					$this->Session->setFlash('Error: there was a problem joining this group. Please try again.');
