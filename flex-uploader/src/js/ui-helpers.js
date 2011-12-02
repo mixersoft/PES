@@ -127,12 +127,11 @@ LOG("+++ EXCEPTION: loadingmask.hide()");
 			} else if (status == 'uploading') {
 				status = "pause";
 				SNAPPI.AIR.uploadQueue.action_pause();
-				node.setContent(statusLabel[status]);
 			} else if (status == 'done') {
 				status = "ready";
 				SNAPPI.AIR.uploadQueue.action_pause();
-				node.setContent(statusLabel[status]);
 			}
+			node.setContent(statusLabel[status]).setAttribute('status', status);
 		} else {
 			// show login screen by menu click
 			SNAPPI.MenuAUI.find['menu-sign-in-markup'].show();

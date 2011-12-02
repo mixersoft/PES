@@ -541,6 +541,7 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 					// continue
 LOG(">>>>>>>>>>>>  CONTINUE UPLOADING  ============================");							
 					page = this.uploadPage || page || 1;
+					this.isPaused = false;	// change status from status-paused to ready
 					// set to filter='pending', baseurl='all'
 				} else {
 LOG(">>>>>>>>>>>>  RESET startUploadPage  ============================");						
@@ -555,7 +556,6 @@ LOG(">>>>>>>>>>>>  RESET startUploadPage  ============================");
 				this.uploadPage = page;	
 LOG(">>>>>>>>>>>>  startUploadPage  ============================ page="+page);						
 				this.view_showPage(page, 'upload');
-				this.isPaused = false;
 				this.doUpload();
 		},
 
