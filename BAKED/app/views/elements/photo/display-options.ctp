@@ -19,10 +19,11 @@
 	}
 	
 	// Sort select TAG
+	$paginate_desc['url']['direction'] = 'desc';
 	$orderBy_options = array();
 	$orderBy_options['dateTaken'] = array('A_markup'=>$this->Paginator->sort('Date Taken', 'dateTaken'));
 	$orderBy_options['0.rating'] = array('A_markup'=>$rating_markup);
-	$orderBy_options['batchId'] = array('A_markup'=>$this->Paginator->sort('Date Uploaded', 'batchId'));
+	$orderBy_options['batchId'] = array('A_markup'=>$this->Paginator->sort('Date Uploaded', 'batchId', $paginate_desc));
 	$orderBy_options['owner_id'] = array('A_markup'=>$this->Paginator->sort('Owner', 'owner_id'));
 	$orderBy_options['provider_account_id'] = array('A_markup'=>$this->Paginator->sort('Provider', 'provider_account_id'));
 	$orderBy_options['caption'] = array('A_markup'=>$this->Paginator->sort('caption'));

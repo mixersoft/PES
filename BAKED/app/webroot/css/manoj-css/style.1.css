@@ -1686,7 +1686,7 @@ aside.related-content section.trends > h1 {
 	background: url(../images/popular.png) left top no-repeat;
 }
 aside.related-content  section.discussion > h1 {
-	background: url(../images/discussion.png) left top no-repeat;
+	xbackground: url(../images/discussion.png) left top no-repeat;
 } 
 
 #related-content aside p, aside.related-content p {
