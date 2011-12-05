@@ -231,10 +231,6 @@
 		before_LazyLoadCallback : function(Y, result){
 			// SNAPPI.Y = Y;	// update global with new modules
 			LazyLoad.helpers.add_ynode(Y);
-			SNAPPI.setPageLoading = LazyLoad.helpers.setPageLoading;
-		},
-		after_LazyLoadCallback : function(Y){
-			LazyLoad.helpers.setPageLoading(false);
 			// defer inits until Y instance available
 			if (SNAPPI.onYready) {
 				for (var f in SNAPPI.onYready) {
@@ -243,7 +239,11 @@
 						delete 	SNAPPI.onYready[f];
 					} catch (e){}
 				}
-			}
+			}			
+			SNAPPI.setPageLoading = LazyLoad.helpers.setPageLoading;
+		},
+		after_LazyLoadCallback : function(Y){
+			LazyLoad.helpers.setPageLoading(false);
 		},		
 		setPageLoading : function (value) {
         	try {

@@ -4,7 +4,6 @@
     SNAPPI.namespace('SNAPPI.onYready');
     SNAPPI.onYready.Menu = function(Y){
 		if (_Y === null) _Y = Y;
-		Menu.classInit();
 		SNAPPI.MenuAUI = Menu;
 		
 		// SNAPPI.MenuAUI
@@ -66,8 +65,6 @@
 	Menu.listen = {};		// ??? track Class listeners? or instance listeners?
 	Menu.find = {};	// keep track of dialog instances for reuse
 	Menu.overlayManager = null;
-	Menu.classInit = function() {
-	};
 	
 	/**
 	 * fetch html markup using Plugin.IO
