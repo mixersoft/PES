@@ -27,12 +27,10 @@
  */
 (function(){
 
-
-    var Y = SNAPPI.Y;
-    
     /*
      * protected
      */
+    var _Y = null;					// set in SNAPPI.onYready()
     var _registeredGroups = {};
     /*
      * manages the Data element for SubstitutionGroup.
@@ -45,13 +43,14 @@
     };
     SubstitutionGroupData.prototype = {
         init : function(cfg){
+        	
             var defaultCfg = { 
             	stale: false
             };
-            var _cfg = Y.merge(defaultCfg, cfg);
+            var _cfg = _Y.merge(defaultCfg, cfg);
             
             // sortedHash
-            this.id = _cfg.id || Y.guid('subGrData-');
+            this.id = _cfg.id || _Y.guid('subGrData-');
             this._sh = new SNAPPI.SortedHash();
             
             // public methods
@@ -226,7 +225,7 @@
      */
     var Group = function(cfg){
         var defaultCfg = {};
-        var _cfg = Y.merge(defaultCfg, cfg);
+        var _cfg = _Y.merge(defaultCfg, cfg);
         
         
         // initial rendering of substitutes using stack._fnInsertWithSubstitutes
@@ -253,9 +252,9 @@
             oddStyle: '',
             evenStyle: ''
         };
-        _cfg = Y.merge(defaultCfg, cfg);
+        _cfg = _Y.merge(defaultCfg, cfg);
         var parent = _cfg.parent.ynode();
-        //            var parent = _cfg.parent instanceof HTMLElement ? Y.one(_cfg.parent) : _cfg.parent;
+        //            var parent = _cfg.parent instanceof HTMLElement ? _Y.one(_cfg.parent) : _cfg.parent;
         parent.all(_cfg.selector).each(function(n, i, nl){
             var thisStyle = (i % 2 == 0) ? _cfg.evenStyle : _cfg.oddStyle;
             var lastStyle = thisStyle == _cfg.evenStyle ? _cfg.oddStyle : _cfg.evenStyle;
@@ -286,14 +285,14 @@
             parent: null,
             className: 'substitutionGroup'
         };
-        var _cfg = Y.merge(defaultCfg, cfg);
+        var _cfg = _Y.merge(defaultCfg, cfg);
         SubstitutionGroup.superclass.constructor.call(this, _cfg);
         
         this.init = function(_cfg){
             this._subGrData = _cfg.subGrData;
             if (_cfg.el == null) {
                 // create element, if necessary
-                this._n = Y.Node.create("<ul class='" + _cfg.className + "' />");
+                this._n = _Y.Node.create("<ul class='" + _cfg.className + "' />");
                 this._el = this._n.dom();
                 
             }
@@ -309,12 +308,12 @@
             return this._el;
         };
         this.add = function(nodeList){
-            if (!(nodeList instanceof Y.NodeList)) {
+            if (!(nodeList instanceof _Y.NodeList)) {
                 // make a nodeList
                 if (nodeList instanceof HTMLElement) 
-                    nodeList = Y.one(nodeList);
+                    nodeList = _Y.one(nodeList);
                 if (nodeList.hasOwnProperty('_node')) 
-                    nodeList = new Y.NodeList([nodeList]);
+                    nodeList = new _Y.NodeList([nodeList]);
             }
             
             var pass = {
@@ -328,7 +327,7 @@
                 this._el.appendChild(t); // update DOM, put in right place
             }, this);
             // style elements, include those changed on removal of node
-            //                var stack = Y.one(this._el).ancestor('div.stack-content').dom().stack;
+            //                var stack = _Y.one(this._el).ancestor('div.stack-content').dom().stack;
             //                SubstitutionGroup.styleElements(this._subGrData, stack);
             SubstitutionGroup.styleElements(this._subGrData);
             for (var p in pass.byref) {
@@ -347,12 +346,12 @@
         };
         
         this.remove = function(nodeList){
-            if (!(nodeList instanceof Y.NodeList)) {
+            if (!(nodeList instanceof _Y.NodeList)) {
                 // make a nodeList
                 if (nodeList instanceof HTMLElement) 
-                    nodeList = Y.one(nodeList);
+                    nodeList = _Y.one(nodeList);
                 if (nodeList.hasOwnProperty('_node')) 
-                    nodeList = new Y.NodeList([nodeList]);
+                    nodeList = new _Y.NodeList([nodeList]);
             }
             
             //                var pass = {
@@ -384,7 +383,7 @@
                     if (nextUL.hasClass('substitutionGroup')) {
                         if (nextUL.previous().hasClass('substitutionGroup')) {
                             // make a new UL
-                            var newUL = Y.Node.create("<ul class='photoSet'></ul>");
+                            var newUL = _Y.Node.create("<ul class='photoSet'></ul>");
                             nextUL.insert(newUL, 'before');
                             //                                nextUL.get('parentNode').insertBefore(newUL, nextUL);
                             // make droppable
@@ -429,7 +428,7 @@
         this.init(_cfg);
         
     };
-    Y.extend(SubstitutionGroup, Group);
+    // _Y.extend(SubstitutionGroup, Group);
     
     
     /*
@@ -452,7 +451,7 @@
         if (o instanceof SubstitutionGroupData) {
             subGrData = o;
             subGrData.each(function(t){
-                var n = Y.one(t);
+                var n = _Y.one(t);
                 if (!(n.hasClass('thumb-wrapper'))) 
                     return;
                 var ret = subGrData.isBest(t);
@@ -466,11 +465,11 @@
         
         // style nodeList
         var nodeList = o;
-        if (!(nodeList instanceof Y.NodeList)) {
+        if (!(nodeList instanceof _Y.NodeList)) {
             if (nodeList instanceof HTMLElement) 
-                nodeList = Y.one(nodeList);
+                nodeList = _Y.one(nodeList);
             if (nodeList.hasOwnProperty('_node')) 
-                nodeList = new Y.NodeList([nodeList]);
+                nodeList = new _Y.NodeList([nodeList]);
         }
         nodeList.each(function(o){
             if (!o.hasClass('thumb-wrapper')) 
@@ -489,10 +488,16 @@
         n.removeClass('hiddenshot-show');
     };
     
-    SNAPPI.Group = Group;
-    SNAPPI.SubstitutionGroup = SubstitutionGroup;
-    SNAPPI.SubstitutionGroupData = SubstitutionGroupData;
     
+    
+	SNAPPI.namespace('SNAPPI.onYready');
+	SNAPPI.onYready.Group = function(Y){
+		if (_Y === null) _Y = Y;
+		_Y.extend(SubstitutionGroup, Group);
+		SNAPPI.Group = Group;
+	    SNAPPI.SubstitutionGroup = SubstitutionGroup;
+	    SNAPPI.SubstitutionGroupData = SubstitutionGroupData;
+	}    
     
 })();
 

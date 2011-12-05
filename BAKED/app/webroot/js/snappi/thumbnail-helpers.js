@@ -360,7 +360,7 @@
 			// set src to the correct size
 			var img = node.one('figure > img');
 			src = audition.getImgSrcBySize(audition.urlbase + audition.src, sizeCfg.size);
-			if (this._cfg.queue && SNAPPI.imageloader.QUEUE_IMAGES) {
+			if (this._cfg.queue && SNAPPI.Imageloader.QUEUE_IMAGES) {
 				img.qSrc = src;
 				// SNAPPI.util3.ImageLoader.queueOneImg(img); // defer,
 				// queue by selector
@@ -641,7 +641,7 @@
 			// set src to the correct size
 			var img = node.one('img');
 			src = audition.getImgSrcBySize(audition.urlbase + audition.src, sizeCfg.size);
-			if (this._cfg.queue && SNAPPI.imageloader.QUEUE_IMAGES) {
+			if (this._cfg.queue && SNAPPI.Imageloader.QUEUE_IMAGES) {
 				img.qSrc = src;
 				// SNAPPI.util3.ImageLoader.queueOneImg(img); // defer,
 				// queue by selector
@@ -790,7 +790,7 @@
 			
 			// set src to the correct size
 			var img = node.one('figure > img');
-			if (this._cfg.queue && SNAPPI.imageloader.QUEUE_IMAGES) {
+			if (this._cfg.queue && SNAPPI.Imageloader.QUEUE_IMAGES) {
 				img.qSrc = src;
 				// SNAPPI.util3.ImageLoader.queueOneImg(img); // defer,
 				// queue by selector
@@ -880,7 +880,7 @@
 			
 			// set src to the correct size
 			var img = node.one('figure > img');
-			if (this._cfg.queue && SNAPPI.imageloader.QUEUE_IMAGES) {
+			if (this._cfg.queue && SNAPPI.Imageloader.QUEUE_IMAGES) {
 				img.qSrc = src;
 				// SNAPPI.util3.ImageLoader.queueOneImg(img); // defer,
 				// queue by selector

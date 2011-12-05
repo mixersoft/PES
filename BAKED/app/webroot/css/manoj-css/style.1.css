@@ -2014,3 +2014,14 @@ img.tiny {
 	width:33px;
 	height:33px;
 }
+
+
+/*
+ * AUI CSS skin/hosting bugs
+ */
+.aui-loadingmask-message-content {
+    background: url("/images/loading_indicator.gif") no-repeat scroll 5px 50% #FFFFFF;
+}
+.aui-loadingmask-message {
+    background: url("/images/common/state_default_bg.png") repeat-x scroll 0 0 #D4D4D4;
+}

@@ -389,7 +389,7 @@
 		CFG = {		// frequently used startup Config params 
 			DEBUG : {	// default when hostname==git*
 	    		snappi_comboBase: 'baked/app/webroot&',
-	    		snappi_useCombo: 0,					// <-- TESTING SNAPPI useCombo
+	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
 	    		pagemaker_useCombo: true,
 	    		alloy_useCombo: true,
 	    		yahoo_CDN: 0,
@@ -463,6 +463,15 @@
 		},
 		after_LazyLoadCallback : function(Y){
 			LazyLoad.helpers.setPageLoading(false);
+			// defer inits until Y instance available
+			if (SNAPPI.onYready) {
+				for (var f in SNAPPI.onYready) {
+					try {
+						SNAPPI.onYready[f](Y);
+						delete 	SNAPPI.onYready[f];
+					} catch (e){}
+				}
+			}
 		},		
 		setPageLoading : function (value) {
 			var Y = SNAPPI.Y;
@@ -615,7 +624,6 @@
 			'gallery-util',
 			'snappi-thumbnail',
 			'snappi-io',
-			'snappi-dialog-aui',
 			'snappi-menu-aui',
 			'snappi-paginator',
 			'snappi-gallery-helpers',
@@ -625,10 +633,7 @@
 			'snappi-gallery', 
 			'snappi-lightbox',
 			'snappi-filter', 'snappi-tabs',
-			/*
-			 * pagemaker
-			 */
-			'pagemaker-base', 
+			 
 			/*
 			 * util scripts
 			 */
@@ -637,34 +642,44 @@
 			// 'snappi-property', 'snappi-menucfg', 'snappi-toolbutton', 'snappi-menu', 'snappi-menuitem', 'snappi-dialogboxCfg','snappi-dialogbox', 'snappi-zoom',
 			// UNUSED
 			// 'aui-resize', 
+		];
+		modules_3 = [
+			'snappi-dialog-aui',
+			/*
+			 * pagemaker
+			 */
+			'pagemaker-base',
 		]
 		
-		var onlazyload_1 = function(Y, result){
-			Y.on("domready", function() {
-console.log('domready fired');	    	
-		    	SNAPPI.domready = true;
-		    });
-		    YAHOO = SNAPPI.Y.YUI2; // YUI2 deprecate when possible
-		    LazyLoad.use(modules_2, onlazyload_2, {before: null});
-		}
-		var onlazyload_2 = function(Y, result){
+		// var onlazyload_1 = function(Y, result){
+			// Y.on("domready", function() {
+		    	// SNAPPI.domready = true;
+		    // });
+		    // YAHOO = SNAPPI.Y.YUI2; // YUI2 deprecate when possible
+		    // LazyLoad.use(modules_2, onlazyload_2, {before: null});
+		// }
+		var onlazyload = function(Y, result){
 			/*
 			 * all script files loaded, begin init
 			 */
-
-			if (SNAPPI.domready) {
-				_main();		// domready event already called
-			} else {
-console.warn('Y.ready() BEFORE domready');					
-				var detach = Y.on("domready", function() {
-					detach.detach();
-			    	_main();
-			    });
-			}
+			Y.on("domready", function() {
+		    	_main();
+		    });
+			// if (SNAPPI.domready) {
+				// _main();		// domready event already called
+			// } else {
+// console.warn('Y.ready() BEFORE domready');					
+				// var detach = Y.on("domready", function() {
+					// detach.detach();
+			    	// _main();
+			    // });
+			// }
+			// LazyLoad.use(modules_3, onlazyload_3, {before: null});
 		}
-		LazyLoad.use(modules_1, onlazyload_1, {after: null});
-		// TODO: check warnings to fix modules that prevent single step use()
-		// LazyLoad.use( modules_1.concat(modules_2), onlazyload_2, null );
+		var onlazyload_3 = function(Y, result){
+			// init for dialog, pagemakerPlugin
+		}
+		LazyLoad.use( modules_1.concat(modules_2, modules_3), onlazyload, null );
 	}
 	
 
@@ -746,7 +761,7 @@ console.warn('Y.ready() BEFORE domready');
             modules: {
 	    		'snappi-event-hover': {
 	    			path: 'event_hover.js',
-	    			requires:["event-synthetic"]
+	    			requires:['event',"event-synthetic"]
 	    		},
                 'snappi-group': {
                     path: 'groups3.js',

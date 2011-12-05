@@ -380,7 +380,7 @@ LIMIT 5;";
 					$this->redirect(array('action'=>'home', $join['id']), null, true);
 				}		
 			}
-debug($this->data); exit;				
+// debug($this->data); exit;				
 			// POST
 			$action = $join['action'];
 			if ($action == 'Ignore') {

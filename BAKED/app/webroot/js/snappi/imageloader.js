@@ -21,50 +21,56 @@
  * SNAPPI.imageLoader, singleton class/object for monitoring/loading IMG src async 
  */
 (function(){
-    /*
-     * singleton SNAPPI.imageLoader
-     */
-    if (SNAPPI.imageLoader)  return;
-	
-    // init once
-	SNAPPI.namespace('SNAPPI.imageLoader');
-    SNAPPI.imageLoader.QUEUE_IMAGES = true;
-    
-    var Y = SNAPPI.Y;
     
     /*
      * protected methods and variables
      */
-    
-    /*
-     * ImageLoader Event Delegate Listener
-     */
-    // use event delegate for all img load listeners
-    // Y.delegate("load", function(e){
-    // alert("delegate event working in ImageLoader!!!")
-    // var imgEl = Y.Node.getDOMNode(e.currentTarget);
-    // if (imgEl.ImageLoader !== undefined) {
-    // imgEl.ImageLoader.popCompleted(imgEl);
-    // }
-    // }, "#content-tabview", 'ul.photoSet > li > img');
-    
-    
+	var _queueCallback = {
+        fn: function(chunkSize, queueImgSrc){
+            var n = chunkSize;
+            while (imageLoader.arrayToQueue.length && n-- > 0) {
+                if (queueImgSrc) 
+                    this.queueOneImg(imageLoader.arrayToQueue.shift());
+                else 
+                    this.push(imageLoader.arrayToQueue.shift());
+            }
+            this.finishIfLoaded();
+        },
+        context: this,
+        args: null,
+        until: function(){
+            return imageLoader.arrayToQueue.length == 0;
+        },
+        timeout: 10
+    };    
+    var _queue;
     
     /*
      * ImageLoader Class
      */
     var ImageLoader = function(cfg){
+    	if (ImageLoader.instance) return ImageLoader.instance;	// singleton class
+    	
 		/*
 		 * private attributes
 		 */
-        var _queue;
         
-        this.init = function(cfg){
+        this.init(cfg);
+    };
+    SNAPPI.ImageLoader = ImageLoader;
+    
+    /*
+     * class static
+     */
+    ImageLoader.QUEUE_IMAGES = true;
+    
+	ImageLoader.prototype = {
+		init : function(cfg){
 			/*
 			 * WARNING: By initializing singleton class in module load
 			 * this script REQUIRES 'async-queue' to be loaded BEFORE script load
 			 */
-			_queue = new SNAPPI.Y.AsyncQueue();
+			_queue = _queue || new SNAPPI.Y.AsyncQueue();
             /*
              * initialize AsynchQueue
              */
@@ -97,13 +103,13 @@
              * array of onComplete callback functions
              */
             this.onComplete = [];
-            
-        };
+            ImageLoader.instance = this;
+        },
         
         /*
          * use a selector to monitor the watch of all IMG elements
          */
-        this.watchBySelector = function(selector, onComplete, cfg){
+        watchBySelector : function(selector, onComplete, cfg){
             var arrImg = [];
             if (Y.Lang.isFunction(onComplete)) 
                 this.onComplete.push(onComplete);
@@ -130,12 +136,12 @@
             }, cfg);
             // watch by selector
             this.prepareToAddToAsynchQueue(arrImg, _cfg.chunkSize, _cfg.queueImgSrc);
-        };
+        },
         
         /*
          * use a selector to monitor the load of all IMG elements
          */
-        this.queueBySelector = function(container, selector, onComplete, chunkSize){
+        queueBySelector : function(container, selector, onComplete, chunkSize){
             chunkSize = chunkSize || 40;
             var arrImg = [];
             if (Y.Lang.isFunction(onComplete)) 
@@ -156,7 +162,7 @@
                         }
                     });
                 }
-            });
+            }),
             
             
             /*
@@ -164,29 +170,12 @@
              * to execute in chunks
              */
             // queue by Selector
-            this.prepareToAddToAsynchQueue(arrImg, chunkSize, true);
-        };
+        	this.prepareToAddToAsynchQueue(arrImg, chunkSize, true);
+        },
         
-        var _queueCallback = {
-            fn: function(chunkSize, queueImgSrc){
-                var n = chunkSize;
-                while (imageLoader.arrayToQueue.length && n-- > 0) {
-                    if (queueImgSrc) 
-                        this.queueOneImg(imageLoader.arrayToQueue.shift());
-                    else 
-                        this.push(imageLoader.arrayToQueue.shift());
-                }
-                this.finishIfLoaded();
-            },
-            context: this,
-            args: null,
-            until: function(){
-                return imageLoader.arrayToQueue.length == 0;
-            },
-            timeout: 10
-        };
         
-        this.prepareToAddToAsynchQueue = function(arrImg, chunkSize, queueImgSrc){
+        
+        prepareToAddToAsynchQueue : function(arrImg, chunkSize, queueImgSrc){
             chunkSize = chunkSize || 40;
             this.arrayToQueue = this.arrayToQueue.concat(arrImg);
             if (imageLoader.arrayToQueue.length == 0) {
@@ -202,9 +191,9 @@
             }
             if (!_queue.isRunning()) 
                 _queue.run();
-        };
+        },
         
-        this.queueOneImg = function(imgEl){
+        queueOneImg : function(imgEl){
             imgEl = imgEl.dom();
             /*
              * begin img load process if queued src exists, assume that
@@ -218,16 +207,16 @@
              * register to wait for load
              */
             this.push(imgEl);
-        };
+        },
         
-        this.onLoadHandler = function(e){
+        onLoadHandler : function(e){
             alert("delegate event working in imageLoader!!!");
             var imgEl = e.currentTarget.dom();
             if (imgEl.imageLoader !== undefined) {
                 imgEl.imageLoader.popCompleted(imgEl);
             }
-        };
-        this.push = function(imgEl){
+        },
+        push : function(imgEl){
             if (!(imgEl instanceof HTMLElement)) {
                 imgEl = imgEl.dom();
             }
@@ -240,9 +229,9 @@
                 imgEl.imageLoader = this;
                 Y.on('load', this.popCompleted, imgEl, this, imgEl);
             }
-        };
+        },
         
-        this.popCompleted = function(e, imgEl){
+        popCompleted : function(e, imgEl){
             if (!(imgEl instanceof HTMLElement)) {
                 imgEl = imgEl.dom();
             }
@@ -253,8 +242,8 @@
             delete imgEl.imageLoader;
             Y.Event.detach('load', this.popCompleted, imgEl);
             this.finishIfLoaded();
-        };
-        this.finishIfLoaded = function(){
+        },
+        finishIfLoaded : function(){
             if (this.arrayToQueue.length || this._watchListCount) 
                 return false;
             
@@ -270,13 +259,11 @@
                 this.onComplete = [];
             }
             return true;
-        };
-        
-        
-        /*
+        },
+		/*
          * cleanup methods
          */
-        this.queueCleanup = function(loadingmask){
+        queueCleanup : function(loadingmask){
         	try {
         		var visible = loadingmask.overlaymask.get('visible');	
         	} catch (e) {}
@@ -289,8 +276,8 @@
                     cleanupTimer.cancel();
                 SNAPPI.imageLoader.cleanupTimer = null;
             }
-        };
-        this.cleanup = function(){
+        },
+        cleanup : function(){
             // confirm that this._watchList && this._watchListCount are
             // in sync
             var n = 0;
@@ -304,11 +291,26 @@
                     queueImgSrc: false
                 });
             }
-        };
-        /*
-         * main
-         */
-        this.init(cfg);
-    };
-    SNAPPI.imageLoader = new ImageLoader();
+        }		
+	}    
+    
+    
+    SNAPPI.namespace('SNAPPI.onYready');
+	SNAPPI.onYready.ImageLoader = function(Y) {
+		SNAPPI.imageLoader = new ImageLoader();	
+		SNAPPI.ImageLoader.QUEUE_IMAGES = true;
+		
+	    /*
+	     * ImageLoader Event Delegate Listener
+	     */
+	    // use event delegate for all img load listeners
+	    // Y.delegate("load", function(e){
+	    // alert("delegate event working in ImageLoader!!!")
+	    // var imgEl = Y.Node.getDOMNode(e.currentTarget);
+	    // if (imgEl.ImageLoader !== undefined) {
+	    // imgEl.ImageLoader.popCompleted(imgEl);
+	    // }
+	    // }, "#content-tabview", 'ul.photoSet > li > img');		
+	}
+    
 })();

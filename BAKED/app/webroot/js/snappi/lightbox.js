@@ -50,19 +50,7 @@
 		Lightbox.instance = this;	// singleton Class
 	};
 	
-	// /*
-	 // * static properties and methods
-	 // */
-	// Lightbox.loadonce = function(event) {
-		// event = event || 'snappi:afterPhotoRollInit';
-		// var run_once = function(){
-    		// once.detach();
-			// SNAPPI.lightbox = new Lightbox();
-    	// };
-    	// var once = SNAPPI.Y.on( event, run_once );		
-	// };
 	SNAPPI.Lightbox = Lightbox;
-
 
 	Lightbox.prototype = {
 		init : function(cfg) {
@@ -132,91 +120,91 @@
 			
 			Y.fire('snappi:afterLightboxInit', this); 
 		},
-	/**
-	 * load lightbox markup
-	 * @param cfg
-	 * @return
-	 */
-	getMarkup : function(cfg){
-		var Y = SNAPPI.Y;
-		var CSS_ID = 'lightbox-markup';
-		var MARKUP = {
-				id: CSS_ID,
-				selector: '#'+CSS_ID,
-				container: Y.one('#markup'),
-				uri: '/combo/markup/lightbox',
-				end: null
-		};
-		
-		var callback = function(){
-			// move markup from #markup to dest
-			var parent = Y.one('.anchor-bottom');
-			if (parent) {
-				parent.prepend(Y.one('section#lightbox'));
-			} else {
-				if (console) console.error('Mission .anchor-bottom for lightbox markup');
-			}
-			this.init.apply(this, MARKUP, TRIGGER, cfg);
-		};
-		return SNAPPI.MenuAUI.getMarkup(MARKUP , callback);
-	},
+		/**
+		 * load lightbox markup
+		 * @param cfg
+		 * @return
+		 */
+		getMarkup : function(cfg){
+			var Y = SNAPPI.Y;
+			var CSS_ID = 'lightbox-markup';
+			var MARKUP = {
+					id: CSS_ID,
+					selector: '#'+CSS_ID,
+					container: Y.one('#markup'),
+					uri: '/combo/markup/lightbox',
+					end: null
+			};
+			
+			var callback = function(){
+				// move markup from #markup to dest
+				var parent = Y.one('.anchor-bottom');
+				if (parent) {
+					parent.prepend(Y.one('section#lightbox'));
+				} else {
+					if (console) console.error('Mission .anchor-bottom for lightbox markup');
+				}
+				this.init.apply(this, MARKUP, TRIGGER, cfg);
+			};
+			return SNAPPI.MenuAUI.getMarkup(MARKUP , callback);
+		},
+	    		
+    	/*
+    	 * this is used to remove the existing options to click on the submenu.
+    	 * 
+    	 */
+    	removeOptionChilds: function(selectBoxId) {
     		
-	    	/*
-	    	 * this is used to remove the existing options to click on the submenu.
-	    	 * 
-	    	 */
-	    	removeOptionChilds: function(selectBoxId) {
-	    		
-	    		var parent = Y.one('#' + selectBoxId);
-	    		
-	    		var options = parent.all('option');
-	    		if (options.size() > 1){
-	    			options.each(function(n, k) {
-	        			
-	        			if(n.hasClass('help')){
-	        			}else {
-	        				
-	        				parent.removeChild(n);
-	        			}
-	        			
-	                });
-	    		}else {
-	    		}
-	    		
-	    	},	
-	    	
-	    	renderSubmenu: function(buttonName){
-	    		/*
-	    		if(Y.one('#menu-organizeBtn')){
-	    			var organizeBtn = Y.one('#organizeBtn');
-	    			SNAPPI.cfg.MenuCfg.renderLightboxOrganize(organizeBtn);
-	    		}
-	    		else if (Y.one('#menu-createBtn')){
-	    			var createBtn = Y.one('#createBtn');
-	    			SNAPPI.cfg.MenuCfg.renderLightboxCreate(createBtn);
-	    		}
-	    		
-	    		else{}
-	    		*/
-	    	},
-	    	
-	        listen: function(status){
-	            status = (status == undefined) ? true : status;
-	            var node = this.node;
-	            if (node.listen == undefined) node.listen = {};
-	            if (status) {
-	                if (node.listen.keypress == undefined) {
+    		var parent = Y.one('#' + selectBoxId);
+    		
+    		var options = parent.all('option');
+    		if (options.size() > 1){
+    			options.each(function(n, k) {
+        			
+        			if(n.hasClass('help')){
+        			}else {
+        				
+        				parent.removeChild(n);
+        			}
+        			
+                });
+    		}else {
+    		}
+    		
+    	},	
+    	
+    	renderSubmenu: function(buttonName){
+    		/*
+    		if(Y.one('#menu-organizeBtn')){
+    			var organizeBtn = Y.one('#organizeBtn');
+    			SNAPPI.cfg.MenuCfg.renderLightboxOrganize(organizeBtn);
+    		}
+    		else if (Y.one('#menu-createBtn')){
+    			var createBtn = Y.one('#createBtn');
+    			SNAPPI.cfg.MenuCfg.renderLightboxCreate(createBtn);
+    		}
+    		
+    		else{}
+    		*/
+    	},
+    	
+        listen: function(status){
+            status = (status == undefined) ? true : status;
+            var node = this.node;
+            if (node.listen == undefined) node.listen = {};
+            if (status) {
+                if (node.listen.keypress == undefined) {
 //	                    this.listen.keypress = Y.on('keypress', this.handleKeypress, document, this);
-	                    //					this.listen.keypress = Y.on('keyup', this.handleKeypress, node, '46', this);
-	                }
-	            }
-	            else {
-	                for (var i in node.listen) {
-	                    node.listen[i].detach();
-	                }
-	                node.listen = {};
-	            }
-	        },
+                    //					this.listen.keypress = Y.on('keyup', this.handleKeypress, node, '46', this);
+                }
+            }
+            else {
+                for (var i in node.listen) {
+                    node.listen[i].detach();
+                }
+                node.listen = {};
+            }
+        },
 		toggleZoomMode: function() {
 			
 			if(!this.node.dom().Zoom){
@@ -1488,11 +1476,11 @@
 	 * private methods
 	 */
 	
-	Y.on('snappi:lightbox-afterToolBarCreated', function(){
-        // SNAPPI.cfg.MenuCfg.setupLightboxMenus();
-	});
-	
-	Y.on('snappi:lightbox-onload', function(){	
-	});	
+	// Y.on('snappi:lightbox-afterToolBarCreated', function(){
+        // // SNAPPI.cfg.MenuCfg.setupLightboxMenus();
+	// });
+// 	
+	// Y.on('snappi:lightbox-onload', function(){	
+	// });	
 
 })();
