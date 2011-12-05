@@ -1,31 +1,38 @@
 (function(){
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.Dialog = function(Y){
+		if (_Y === null) _Y = Y;
+	}      
+    
 
-var BUTTONS_OK_CANCEL = [{
+	var BUTTONS_OK_CANCEL = [{
 			text: 'OK',
 			handler: null
 		},{
 			test: 'Cancel',
 			handler: this.close()
 		}],
-	BUTTONS_CLOSE =[{
-		text: 'Close',
-		handler: this.close()
-	}];
-
-var DEFAULT_CFG_dialog = {
-		centered: true,
-		constrain2view: true,
-		draggable: true,
-		resizble: false,
-		destroyOnClose: true,
-		height: 250,
-		width: 500,
-		close: true,
-		buttons: [],
-		end:null
-	};
-var DEFAULT_CFG_io = {
-	};
+			
+		BUTTONS_CLOSE =[{
+			text: 'Close',
+			handler: this.close()
+		}];
+	
+	var DEFAULT_CFG_dialog = {
+			centered: true,
+			constrain2view: true,
+			draggable: true,
+			resizble: false,
+			destroyOnClose: true,
+			height: 250,
+			width: 500,
+			close: true,
+			buttons: [],
+			end:null
+		};
+	var DEFAULT_CFG_io = {
+		};
 	
 
 	var Dialog = function(){
@@ -44,7 +51,6 @@ var DEFAULT_CFG_io = {
 	 * Photoroll Hidden Shots dialog
 	 */
 	CFG_Dialog_Hidden_Shots.load = function(cfg){
-		var Y = SNAPPI.Y;
 		var CSS_ID = 'dialog-photo-roll-hidden-shots';
 		var _cfg = {
 			title: 'Hidden Shot Gallery',
@@ -55,18 +61,18 @@ var DEFAULT_CFG_io = {
 			modal: false			
 		}
 		cfg = cfg || {};
-		_cfg = Y.merge(DEFAULT_CFG_dialog, _cfg, cfg);
+		_cfg = _Y.merge(DEFAULT_CFG_dialog, _cfg, cfg);
 		
-		var dialog = new Y.Dialog(_cfg);
+		var dialog = new _Y.Dialog(_cfg);
 		dialog.listen = {};
 		dialog.cellOffsets = {
 			bodyNodeOffset: {w:64, h:64}, // +19 px for scrollbar
 		}		
 		// resize dialog to show .preview-body
 		dialog.refresh = function(previewBody){
-			previewBody = previewBody instanceof Y.Node ? previewBody : dialog.getStdModNode('body').one('.preview-body');
+			previewBody = previewBody instanceof _Y.Node ? previewBody : dialog.getStdModNode('body').one('.preview-body');
 			if (previewBody) {
-	        	var delayed = new Y.DelayedTask( function() {
+	        	var delayed = new _Y.DelayedTask( function() {
 		        	var h = previewBody.get('clientHeight')+ this.cellOffsets.bodyNodeOffset.h;
 					this.set('height', h );	
 					delete delayed;					
@@ -86,12 +92,11 @@ var DEFAULT_CFG_io = {
 	 * Lightbox, choose circles dialog
 	 */
 	CFG_Dialog_Select_Circles.load = function(cfg){
-		var Y = SNAPPI.Y;
 		var CSS_ID = 'dialog-select-circles';
 		var _cfg = {
 			title: 'My Circle',
 			id: CSS_ID,
-			width: 678,	// 2 columns, for now
+			width: 740,	// 3 columns, for now
 			height: 395,	// 3 rows
 			destroyOnClose: false,
 			modal: true,
@@ -134,7 +139,7 @@ var DEFAULT_CFG_io = {
 					var content = this.get('contentBox');
 					var selected = content.one('.selected');
 					var gid = selected.get('id');
-					var detach = SNAPPI.Y.on('snappi:share-complete', function(lightbox, loading, response){
+					var detach = _Y.on('snappi:share-complete', function(lightbox, loading, response){
 						// TODO: show response in msg
 						loading.loadingmask.hide();
 						SNAPPI.multiSelect.clearAll(this.get('contentBox'));
@@ -155,9 +160,9 @@ var DEFAULT_CFG_io = {
 				handler: function() {
 					var check;
 					var content = this.get('contentBox');
-					var selected = content.one('.selected');
+					var selected = content.one('.container .FigureBox.selected');
 					var gid = selected.get('id');
-					var detach = SNAPPI.Y.on('snappi:share-complete', function(lightbox, loading, response){
+					var detach = _Y.on('snappi:share-complete', function(lightbox, loading, response){
 						loading.loadingmask.hide();
 						SNAPPI.multiSelect.clearAll(this.get('contentBox').one('.container'));
 						// TODO: show response in msg
@@ -170,9 +175,9 @@ var DEFAULT_CFG_io = {
 			]			
 		}
 		cfg = cfg || {};
-		_cfg = Y.merge(DEFAULT_CFG_dialog, _cfg, cfg);
+		_cfg = _Y.merge(DEFAULT_CFG_dialog, _cfg, cfg);
 		
-		var dialog = new Y.Dialog(_cfg);
+		var dialog = new _Y.Dialog(_cfg);
 		dialog.listen = {};
 		dialog.listen['select'] = SNAPPI.Dialog.listen_select(dialog);
 		
@@ -187,7 +192,6 @@ var DEFAULT_CFG_io = {
 	 * Lightbox, choose circles dialog
 	 */
 	CFG_Dialog_Select_Privacy.load = function(cfg){
-		var Y = SNAPPI.Y;
 		var CSS_ID = 'dialog-select-privacy';
 		var _cfg = {
 			title: 'Privacy Settings',
@@ -203,7 +207,7 @@ var DEFAULT_CFG_io = {
 					var content = this.get('contentBox');
 					var selected = content.one('.selected');
 					var value = parseInt(selected.getAttribute('value'));
-					var detach = SNAPPI.Y.on('snappi:privacy-complete', function(lightbox, loading){
+					var detach = _Y.on('snappi:privacy-complete', function(lightbox, loading){
 						loading.loadingmask.hide();
 						// update asset count in dialog
 						detach.detach();
@@ -214,9 +218,9 @@ var DEFAULT_CFG_io = {
 			]			
 		}
 		cfg = cfg || {};
-		_cfg = Y.merge(DEFAULT_CFG_dialog, _cfg, cfg);
+		_cfg = _Y.merge(DEFAULT_CFG_dialog, _cfg, cfg);
 		
-		var dialog = new Y.Dialog(_cfg);
+		var dialog = new _Y.Dialog(_cfg);
 		dialog.listen = {};
 		dialog.listen['select'] = SNAPPI.Dialog.listen_select(dialog);
 		
@@ -234,7 +238,6 @@ var DEFAULT_CFG_io = {
 	 * 
 	 */
 	CFG_Dialog_Login.load = function(cfg){
-		var Y = SNAPPI.Y;
 		var CSS_ID = 'dialog-login';
 		var _cfg = {
 			title: 'Sign In to Snaphappi',
@@ -253,9 +256,9 @@ var DEFAULT_CFG_io = {
 			resizble: true,			
 		}
 		cfg = cfg || {};
-		_cfg = Y.merge(DEFAULT_CFG_dialog, _cfg, cfg);
+		_cfg = _Y.merge(DEFAULT_CFG_dialog, _cfg, cfg);
 		
-		var dialog = new Y.Dialog(_cfg);
+		var dialog = new _Y.Dialog(_cfg);
 		dialog.listen = {};
 		
 		if (cfg.autoLoad !== false) dialog.render();
@@ -346,7 +349,7 @@ var DEFAULT_CFG_io = {
 	        } catch (e){
 	        	previewSize = DEFAULT_THUMBSIZE;
 	        } 
-        	previewBody = Y.Node.create('<section class="preview-body" />')
+        	previewBody = _Y.Node.create('<section class="preview-body" />')
         	previewBody.setAttribute('size', previewSize);
         	
         	dialog.setStdModContent('body', previewBody);
@@ -355,7 +358,7 @@ var DEFAULT_CFG_io = {
         	
         	var loadingmaskTarget = dialog.getStdModNode('body');
 			// plugin loadingmask
-			previewBody.plug(Y.LoadingMask, {
+			previewBody.plug(_Y.LoadingMask, {
 				strings: {loading:''}, 	// BUG: A.LoadingMask
 				target: loadingmaskTarget,
 				end: null
@@ -429,7 +432,6 @@ var DEFAULT_CFG_io = {
 	DialogHelper.showLogin = function(show) {
 		if (show == undefined) show = true; 	// default
 		// from MenuItems.showHiddenShot_click()
-		var Y = SNAPPI.Y;
 		
 		var dialog_ID = 'dialog-login';
 		var dialog = SNAPPI.Dialog.find[dialog_ID];
@@ -438,9 +440,9 @@ var DEFAULT_CFG_io = {
         	// create dialog
         	dialog = SNAPPI.Dialog.CFG[dialog_ID].load();
         	if (SNAPPI.Dialog.CFG[dialog_ID].markup) {
-        		body = Y.Node.create(SNAPPI.Dialog.CFG[dialog_ID].markup);	
+        		body = _Y.Node.create(SNAPPI.Dialog.CFG[dialog_ID].markup);	
         	} else {
-        		body = Y.one('#login').removeClass('hide');
+        		body = _Y.one('#login').removeClass('hide');
         	}
         	
         	dialog.setStdModContent('body', body);
@@ -449,7 +451,7 @@ var DEFAULT_CFG_io = {
         	
         	// var loadingmaskTarget = dialog.getStdModNode('body');
 			// // plugin loadingmask
-			// body.plug(Y.LoadingMask, {
+			// body.plug(_Y.LoadingMask, {
 				// strings: {loading:''}, 	// BUG: A.LoadingMask
 				// target: loadingmaskTarget,
 				// end: null

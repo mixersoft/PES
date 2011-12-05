@@ -26,12 +26,18 @@
 	/*
 	 * protected
 	 */
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.Lightbox = function(Y){
+		if (_Y === null) _Y = Y;
+		
+		SNAPPI.Lightbox = Lightbox;
+	}	
 	var defaultCfg = {
 		GET_CASTINGCALL_URI : "http://" + window.location.host
 				+ "/photos/getCC/.json",
 		ID_PREFIX : 'lightbox-'
 	};
-	var Y = SNAPPI.Y;
 	var charCode = {
 		deletePatt : /(^46$)/
 	// del
@@ -50,13 +56,12 @@
 		Lightbox.instance = this;	// singleton Class
 	};
 	
-	SNAPPI.Lightbox = Lightbox;
+	
 
 	Lightbox.prototype = {
 		init : function(cfg) {
-			var Y = SNAPPI.Y;
-			this._cfg = Y.merge(defaultCfg, cfg);
-			this.node = Y.one('section.lightbox');
+			this._cfg = _Y.merge(defaultCfg, cfg);
+			this.node = _Y.one('section.lightbox');
 			if (this.node) {
 				// rendered from cakePHP: app/views/elements/lightbox.ctp
 			} else { 
@@ -65,7 +70,7 @@
 				return;
 			};
 			this.node.removeClass('hide');
-			SNAPPI.Y.one('div.anchor-bottom').append(this.node);	// move to the right location
+			_Y.one('div.anchor-bottom').append(this.node);	// move to the right location
 			this.node.Lightbox = this;
 			this.node.dom().Lightbox = this;	// for firebug
 			// plugin droppables
@@ -84,12 +89,20 @@
 			size = size || 'lbx-tiny';
 			try {
 				var view = SNAPPI.STATE.profile.view['-lightbox'];
-    			if (PAGE.jsonData.lightbox.full_page){
-					// deprecate fullpage lightbox, use 'maximize' instead
-    				view = 'maximize';
-    			}					
-			} catch (e) {}
-			view = view || 'minimize';
+			} catch (e) {
+				// if not set, use smart default
+				try {			
+	    			if (PAGE.jsonData.lightbox.full_page){
+						// TODO: deprecate fullpage lightbox, use 'maximize' instead
+	    				view = 'maximize';
+	    			}					
+	    			if (!view && PAGE.jsonData.lightbox.castingCall.CastingCall.Auditions.Total){
+	    				view = 'one-row';
+	    			}
+				} catch (e) {
+				}
+			}
+			view = view || 'minimize';	
 			
 			var options = {
 				type: 'Lightbox',
@@ -101,6 +114,8 @@
 			SNAPPI.Factory.Gallery.actions.setView(this.Gallery, view);				
 			
 			this.restoreLightboxFromJson();	// lightbox.visible, lightbox.regionAsJSON
+			
+			
 //			this.yui2_plugResizeAndDrag.call(this, this.node);	// yui2 lightbox resize and drag	
 // 			this.plugResizeAndDrag.call(this, this.node);		// yui3 lightbox resize and drag			
 			
@@ -118,7 +133,7 @@
 			this.listen(true);
 			this.updateCount();
 			
-			Y.fire('snappi:afterLightboxInit', this); 
+			_Y.fire('snappi:afterLightboxInit', this); 
 		},
 		/**
 		 * load lightbox markup
@@ -126,21 +141,20 @@
 		 * @return
 		 */
 		getMarkup : function(cfg){
-			var Y = SNAPPI.Y;
 			var CSS_ID = 'lightbox-markup';
 			var MARKUP = {
 					id: CSS_ID,
 					selector: '#'+CSS_ID,
-					container: Y.one('#markup'),
+					container: _Y.one('#markup'),
 					uri: '/combo/markup/lightbox',
 					end: null
 			};
 			
 			var callback = function(){
 				// move markup from #markup to dest
-				var parent = Y.one('.anchor-bottom');
+				var parent = _Y.one('.anchor-bottom');
 				if (parent) {
-					parent.prepend(Y.one('section#lightbox'));
+					parent.prepend(_Y.one('section#lightbox'));
 				} else {
 					if (console) console.error('Mission .anchor-bottom for lightbox markup');
 				}
@@ -155,7 +169,7 @@
     	 */
     	removeOptionChilds: function(selectBoxId) {
     		
-    		var parent = Y.one('#' + selectBoxId);
+    		var parent = _Y.one('#' + selectBoxId);
     		
     		var options = parent.all('option');
     		if (options.size() > 1){
@@ -175,12 +189,12 @@
     	
     	renderSubmenu: function(buttonName){
     		/*
-    		if(Y.one('#menu-organizeBtn')){
-    			var organizeBtn = Y.one('#organizeBtn');
+    		if(_Y.one('#menu-organizeBtn')){
+    			var organizeBtn = _Y.one('#organizeBtn');
     			SNAPPI.cfg.MenuCfg.renderLightboxOrganize(organizeBtn);
     		}
-    		else if (Y.one('#menu-createBtn')){
-    			var createBtn = Y.one('#createBtn');
+    		else if (_Y.one('#menu-createBtn')){
+    			var createBtn = _Y.one('#createBtn');
     			SNAPPI.cfg.MenuCfg.renderLightboxCreate(createBtn);
     		}
     		
@@ -194,8 +208,8 @@
             if (node.listen == undefined) node.listen = {};
             if (status) {
                 if (node.listen.keypress == undefined) {
-//	                    this.listen.keypress = Y.on('keypress', this.handleKeypress, document, this);
-                    //					this.listen.keypress = Y.on('keyup', this.handleKeypress, node, '46', this);
+//	                    this.listen.keypress = _Y.on('keypress', this.handleKeypress, document, this);
+                    //					this.listen.keypress = _Y.on('keyup', this.handleKeypress, node, '46', this);
                 }
             }
             else {
@@ -209,7 +223,7 @@
 			
 			if(!this.node.dom().Zoom){
 				
-				var bn = Y.one('#lightbox_zoom_btn');
+				var bn = _Y.one('#lightbox_zoom_btn');
 				var Zoom = new SNAPPI.Zoom(this.node, bn);
 				
 			}
@@ -232,7 +246,6 @@
 			return this._cfg.ID_PREFIX + str;
 		},
 		processDrop : function(nodeList, onComplete) {
-			var Y = SNAPPI.Y;
 			var saveToSession = true;
 			
 			var LIMIT = _LIGHTBOX_LIMIT;
@@ -250,7 +263,7 @@
 						SNAPPI.STATE.selectAllPages = false;
 						// reset .gallery-container li.select-all .checkbox
 						try {
-							var cb = SNAPPI.Y.one('.gallery-container li.select-all .checkbox');
+							var cb = _Y.one('.gallery-container li.select-all .checkbox');
 							cb.set('checked', false);
 						} catch (e) {}
 					}
@@ -302,7 +315,7 @@
 				}
 				for (var header in galleryHeaders) {
 					try {
-						var cb = SNAPPI.Y.one(header + ' li.select-all input[type="checkbox"]');
+						var cb = _Y.one(header + ' li.select-all input[type="checkbox"]');
 						cb.set('checked', false);
 					} catch (e) {}
 				}
@@ -347,7 +360,7 @@
             var batch = this.node.all('.FigureBox.focus');
             // if (batch.size() == 0) {
             	// // then we will check if there's any selected items in the photo gallery
-            	// batch = Y.all('section.gallery.photo .FigureBox.focus');
+            	// batch = _Y.all('section.gallery.photo .FigureBox.focus');
             	// if (batch.size() == 0){
             		// // if none, then select everything in lightbox
             		// // batch = this.node.all('.FigureBox');
@@ -358,12 +371,11 @@
 		},		
 		add : function(n, limit) {
 			var LIMIT = limit || 999;
-			var Y = SNAPPI.Y,
-				overflow = false,
+			var overflow = false,
 				ul = this.Gallery.container,
 				_auditionSH = this.Gallery.auditionSH;
 			
-			if (n instanceof Y.NodeList) {
+			if (n instanceof _Y.NodeList) {
 				n.some(function(node,i,l){
 					if (_auditionSH.count() >= LIMIT) {
 						overflow = true;
@@ -383,7 +395,7 @@
 			} else {
 				// from drag/drop, the original nodeList is IMG elements
 				// TODO: using temp lightbox.Gallery.castingCall. deprecate when schemaParser is passed with audition
-				if (!Y.Lang.isArray(n)) {
+				if (!_Y.Lang.isArray(n)) {
 					n = [ n ];
 				}
 				for (var i in n) {
@@ -505,7 +517,12 @@
 					// render castingCall in Lightbox
 					this.renderLightboxFromCC.call(this, castingCall);
 					this.node.get('parentNode').removeClass('minimize');
-					var view = SNAPPI.STATE.profile.view['-lightbox'] || 'one-row';
+					// set view from state if available
+					try {
+						var view = SNAPPI.STATE.profile.view['-lightbox'];	
+					} catch (e) {
+						view = 'one-row'
+					}
 					SNAPPI.Factory.Gallery.actions.setView(this.Gallery, view);	
     			};
     			this.Gallery.node.removeClass('hide');
@@ -518,7 +535,7 @@
 				var selects = PAGE.jsonData.lightbox.selected;
 				var node, array_selected = selects.split(',');
 				
-				Y.each(array_selected, function(id, k) {
+				_Y.each(array_selected, function(id, k) {
 					node = this.node.one('#' + this.addIdPrefix(id));
 					node.addClass('selected');
 		        }, this);
@@ -589,26 +606,26 @@
         organize: function() {
         	
         	/*
-        	if(!Y.one('#submenu-organize')){
-        		if(Y.one('#menu-organizeBtn')){
-	    			var organizeBtn = Y.one('#organizeBtn');
+        	if(!_Y.one('#submenu-organize')){
+        		if(_Y.one('#menu-organizeBtn')){
+	    			var organizeBtn = _Y.one('#organizeBtn');
 	    			SNAPPI.cfg.MenuCfg.renderLightboxOrganize(organizeBtn);
 	    		}
-	    		else if (Y.one('#menu-createBtn')){
-	    			var createBtn = Y.one('#createBtn');
+	    		else if (_Y.one('#menu-createBtn')){
+	    			var createBtn = _Y.one('#createBtn');
 	    			SNAPPI.cfg.MenuCfg.renderLightboxCreate(createBtn);
 	    		}
         		this.renderSubmenu('organizeBtn');
         	}
         	*/
-        	if(!Y.one('#menu-organizeBtn')){
+        	if(!_Y.one('#menu-organizeBtn')){
     			
         		SNAPPI.cfg.MenuCfg.renderLightboxOrganize();
     		}
         	
         },
         create: function(e) {
-        	if (!Y.one('#menu-createBtn')){
+        	if (!_Y.one('#menu-createBtn')){
         		SNAPPI.cfg.MenuCfg.renderLightboxCreate();
     		}
         },
@@ -779,7 +796,7 @@
 			batch.each(function(audition) {
 				asset_ids.push(audition.id);
 			});
-			node = node || SNAPPI.Y.one('#lbx-rating .ratingGroup'); // .ratingGroup 
+			node = node || _Y.one('#lbx-rating .ratingGroup'); // .ratingGroup 
 			SNAPPI.AssetRatingController.postRating(v, asset_ids.join(','), node.Rating, null);
 		},
 		/*
@@ -787,7 +804,7 @@
 		 */
 		renderTagInput : function(node) {
 			// TODO: for now, just add to the button. later, render in subMenu
-			var nTagForm = Y.Node
+			var nTagForm = _Y.Node
 					.create("<span><form id='lbx-tag-form' onsubmit='return false;' /><input id='lbx-tag-field' class='help' type='text' size='20' maxlength='255' value='Enter tags' onclick='this.value=null; this.className=null;'><input type='submit' value='Go' onclick='SNAPPI.lightbox.applyTagInBatch(this);return false;'/></form></span>");
 			node.append(nTagForm);
 		},
@@ -836,7 +853,7 @@
 						}
 					}
 				});
-	            loadingNode.plug(Y.Plugin.IO, ioCfg );
+	            loadingNode.plug(_Y.Plugin.IO, ioCfg );
 			} else {
 				loadingNode.io.set('data', data);
 				loadingNode.io.set('context', self);
@@ -864,16 +881,16 @@
 		 * Share/Contribute
 		 */
         renderShareInput: function(node){
-        	// var nShare = Y.Node.create("<ul id='lbx-share-list'></ul>");
-        	var nShare = Y.one('#lbx-share-list-1');
+        	// var nShare = _Y.Node.create("<ul id='lbx-share-list'></ul>");
+        	var nShare = _Y.one('#lbx-share-list-1');
         	
         	if(nShare == null){
         		
         		var markup = "<ul title='share groups' id='lbx-share-list-1'></ul>";
-        		var n = Y.Node.create(markup);
+        		var n = _Y.Node.create(markup);
         		nShare = node.appendChild(n);
         		
-        		nShare.append(Y.Node.create("<li class='loading' style='display: block;'>Loading</li>"));
+        		nShare.append(_Y.Node.create("<li class='loading' style='display: block;'>Loading</li>"));
         		
         	}
         	
@@ -886,7 +903,7 @@
                         value: json.Groups[i].id,
                         label: json.Groups[i].title
                     };
-                    var option = Y.Node.create(Y.substitute(optionMarkup, cfg));
+                    var option = _Y.Node.create(_Y.substitute(optionMarkup, cfg));
                     selectNode.append(option);
                     option.dom()._value = cfg.value;
                     if(i >= 5){
@@ -906,7 +923,7 @@
                 nShare.all('li.loading').remove();
                 nShare.removeClass('hidden');
                 
-                Y.fire('snappi:checkRegion', nShare);
+                _Y.fire('snappi:checkRegion', nShare);
                 
                 /*
                  * TODO: refactor delegate approach
@@ -925,7 +942,7 @@
                 
                 
             };
-            var groupRoll = Y.one('#json-Groups');
+            var groupRoll = _Y.one('#json-Groups');
             if (groupRoll) {
                 _renderGroupOptions(select, groupRoll.getAttribute('groups'), Y);
             }
@@ -949,7 +966,7 @@
                         Y: Y
                     }
                 };
-                Y.io(uri, iocfg);
+                _Y.io(uri, iocfg);
             }
 
             node.append(nShare);
@@ -975,7 +992,7 @@
 			/*
 			 * adjustments for 'remove from group'
 			 */
-			if (options.data) data = SNAPPI.Y.merge(data, options.data);
+			if (options.data) data = _Y.merge(data, options.data);
 			data = SNAPPI.IO.object2querystring(data);
 			
 			var args = {
@@ -995,13 +1012,13 @@
 					arguments: args, 
 					on: {
 						successJson:  function(e, id, o, args) {
-							SNAPPI.Y.fire('snappi:share-complete', this, loadingNode, o.responseJson);
+							_Y.fire('snappi:share-complete', this, loadingNode, o.responseJson);
 							this.onShareGroupComplete(args.gid, o.responseJson.message);
 							return false;
 						}
 					}
 				});
-	            loadingNode.plug(Y.Plugin.IO, ioCfg );
+	            loadingNode.plug(_Y.Plugin.IO, ioCfg );
 			} 
 			loadingNode.io.set('data', data);
 			loadingNode.io.set('context', self);
@@ -1020,17 +1037,17 @@
 		 */
 	    renderUnShareInput: function(node){
 	        // TODO: for now, just add to the button. later, render in subMenu
-	        // var nShare = Y.Node.create("<span><form id='lbx-unShare-form' class='hidden' onsubmit='return false;' /><select id='lightbox-unShare'><option class='help' value='' SELECTED >[my Groups]</option></select><input type='submit' value='Go' onclick='SNAPPI.lightbox.applyUnShareInBatch(this);return false;'/></form></span>");
-			// var nShare = Y.Node.create("<ul id='lbx-share-list'></ul>");
-			var unShare = Y.one('#lbx-unShare-list-1');
+	        // var nShare = _Y.Node.create("<span><form id='lbx-unShare-form' class='hidden' onsubmit='return false;' /><select id='lightbox-unShare'><option class='help' value='' SELECTED >[my Groups]</option></select><input type='submit' value='Go' onclick='SNAPPI.lightbox.applyUnShareInBatch(this);return false;'/></form></span>");
+			// var nShare = _Y.Node.create("<ul id='lbx-share-list'></ul>");
+			var unShare = _Y.one('#lbx-unShare-list-1');
 			
 			if(unShare == null){	
 	    		
 	    		var markup = "<ul title='share groups' id='lbx-unShare-list-1'></ul>";
-	    		var n = Y.Node.create(markup);
+	    		var n = _Y.Node.create(markup);
 	    		unShare = node.appendChild(n);
 	    		
-	    		unShare.append(Y.Node.create("<li class='loading' style='display: block;'>Loading</li>"));
+	    		unShare.append(_Y.Node.create("<li class='loading' style='display: block;'>Loading</li>"));
 	    		
 	    	}
 			
@@ -1044,7 +1061,7 @@
 	                    label: json.Groups[i].title
 	                    
 	                };
-	                var option = Y.Node.create(Y.substitute(optionMarkup, cfg));
+	                var option = _Y.Node.create(_Y.substitute(optionMarkup, cfg));
 	                selectNode.append(option);
 	                option.dom()._value = cfg.value;
 	                if(i >= 5){
@@ -1061,7 +1078,7 @@
 	            unShare.all('li.loading').remove();
 	            unShare.removeClass('hidden');
 	            
-	            Y.fire('snappi:checkRegion', unShare);
+	            _Y.fire('snappi:checkRegion', unShare);
 	            
 	            Submenu.dialog.attachClickListener(unShare);
 	            
@@ -1085,7 +1102,7 @@
 	            
 	        }
 	        
-	        var groupRoll = Y.one('#json-Groups');
+	        var groupRoll = _Y.one('#json-Groups');
 	        if (groupRoll) {
 	            _renderGroupOptions(select, groupRoll.getAttribute('groups'), Y);
 	        }
@@ -1107,7 +1124,7 @@
 	                    Y: Y
 	                }
 	            };
-	            Y.io(uri, iocfg);
+	            _Y.io(uri, iocfg);
 	        }
 	
 	        node.append(unShare);
@@ -1165,23 +1182,23 @@
 		 */
 		renderPrivacyInput : function(node) {
 			// TODO: for now, just add to the button. later, render in subMenu
-			// var nShare = Y.one('#lbx-share-list');
+			// var nShare = _Y.one('#lbx-share-list');
 	    	// nShare.one('li').removeClass('working');
-			var nPrivacy = Y.one('#lbx-privacy-list-1'); 
+			var nPrivacy = _Y.one('#lbx-privacy-list-1'); 
 			
 			if(nPrivacy == null){	
 	    		
 	    		var markup = "<ul title='share groups' id='lbx-privacy-list-1'></ul>";
-	    		var n = Y.Node.create(markup);
+	    		var n = _Y.Node.create(markup);
 	    		nPrivacy = node.appendChild(n);
 	    		
-	    		nPrivacy.append(Y.Node.create("<li class='loading' style='display: block;'>Loading</li>"));
+	    		nPrivacy.append(_Y.Node.create("<li class='loading' style='display: block;'>Loading</li>"));
 	    		
 	    	}
 	
 			var _renderOptions = function(selectNode, jsonOrCfg, Y) {
 				var more = false;
-				var cfg = (Y.Lang.isString(jsonOrCfg)) ? eval('(' + jsonOrCfg + ')')
+				var cfg = (_Y.Lang.isString(jsonOrCfg)) ? eval('(' + jsonOrCfg + ')')
 						: jsonOrCfg;
 				var optionMarkup = "<li><a>{label}</a></li>";
 				for ( var i in cfg) {
@@ -1189,7 +1206,7 @@
 						value : cfg[i].id,
 						label : cfg[i].title
 					};
-					var option = Y.Node.create(Y.substitute(optionMarkup, tokens));
+					var option = _Y.Node.create(_Y.substitute(optionMarkup, tokens));
 					selectNode.append(option);
 					option.dom()._value = tokens.value;
 					if(i >= 5){
@@ -1206,7 +1223,7 @@
 				nPrivacy.all('li.loading').remove();
 				nPrivacy.removeClass('hidden');
 	            
-				Y.fire('snappi:checkRegion', nPrivacy);
+				_Y.fire('snappi:checkRegion', nPrivacy);
 				
 	            Submenu.dialog.attachClickListener(nPrivacy);
 	            
@@ -1286,12 +1303,12 @@
 					arguments: args, 
 					on: {
 						successJson:  function(e, id, o, args) {
-							SNAPPI.Y.fire('snappi:privacy-complete', this, loadingNode);
+							_Y.fire('snappi:privacy-complete', this, loadingNode);
 							SNAPPI.lightbox.onPrivacyGroupComplete(args.privacy, o.responseJson);
 						}
 					}
 				});
-	            loadingNode.plug(Y.Plugin.IO, ioCfg );
+	            loadingNode.plug(_Y.Plugin.IO, ioCfg );
 			} else {
 				loadingNode.io.set('data', data);
 				loadingNode.io.set('context', self);
@@ -1365,11 +1382,10 @@
 			// }
 		// },
 		plugResizeAndDrag : function(node) {
-			var Y = SNAPPI.Y;
 			var node = node || this.node;
-			node.plug(Y.Plugin.Drag); 
+			node.plug(_Y.Plugin.Drag); 
 			// we may need to narrow the lightbox, then it's much convenient for user.
-			node.dd.plug(Y.Plugin.DDConstrained, {
+			node.dd.plug(_Y.Plugin.DDConstrained, {
 				constrain2node : '#container'
 			});
 			
@@ -1391,10 +1407,10 @@
 			/*
 			 * disable AUI-resize
 			 */
-			// var resize = new Y.Resize({
+			// var resize = new _Y.Resize({
 				// node : '#lightbox'
 			// });
-			// resize.plug(Y.Plugin.ResizeConstrained, {
+			// resize.plug(_Y.Plugin.ResizeConstrained, {
 				// minHeight : _LIGHTBOX_MIN_HEIGHT,
 				// minWidth  : _LIGHTBOX_MIN_WIDTH 
 			// });
@@ -1403,43 +1419,6 @@
 	            // var postData = {'lightbox.regionAsJSON': region};
 	            // SNAPPI.io.writeProfile(postData, callback, '');
 		    // });
-		},
-		yui2_plugResizeAndDrag : function (node) {
-			var Y = SNAPPI.Y;
-			var node = node || this.node;
-			node.plug(Y.Plugin.Drag); 
-			node.dd.addHandle('.toolbar');
-			var callback = {
-	   		complete: function(id, o, args){
-		            var check;
-	           },
-				failure : function(id, o, args) {
-					var check;
-				}
-			};
-			
-			node.dd.on('drag:end', function(){
-				var region = node.get('region');
-	           var postData = {'lightbox.regionAsJSON': region};
-	           SNAPPI.io.writeProfile(postData, callback, '');
-			}, this);
-			
-			/* 
-			 * YUI3 version of resize from 
-			 * http://www.yuiblog.com/blog/2010/03/25/gallery-resize/
-			 * 
-			 * but doesn't work
-			 * Y.one( "#lightbox" ).plug( Y.Plugin.Resize );
-			 * 
-			 */
-		    
-			var YAHOO = Y.YUI2;
-		    var resize = new YAHOO.util.Resize('lightbox');
-		    resize.on('endResize', function(){
-		    	var region = node.get('region');
-	           var postData = {'lightbox.regionAsJSON': region};
-	           SNAPPI.io.writeProfile(postData, callback, '');
-		    });
 		},
         showThumbnailRatings : function(node){
 			var pr = node || this.Gallery;
@@ -1476,11 +1455,11 @@
 	 * private methods
 	 */
 	
-	// Y.on('snappi:lightbox-afterToolBarCreated', function(){
+	// _Y.on('snappi:lightbox-afterToolBarCreated', function(){
         // // SNAPPI.cfg.MenuCfg.setupLightboxMenus();
 	// });
 // 	
-	// Y.on('snappi:lightbox-onload', function(){	
+	// _Y.on('snappi:lightbox-onload', function(){	
 	// });	
 
 })();

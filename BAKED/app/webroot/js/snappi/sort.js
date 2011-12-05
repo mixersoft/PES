@@ -1,8 +1,22 @@
 (function(){
-	if (SNAPPI.Sort) return;
-    SNAPPI.namespace("SNAPPI.Sort");
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.Sort = function(Y){
+		if (_Y === null) _Y = Y;
+		
+		/*
+		 * make global
+		 */
+	    SNAPPI.Sort = Sort;
+	}
 	
-    var Sort = {};
+    var Sort = function(){
+    	if (Sort.instance) return Sort.instance;
+    	Sort.instance = this;
+    };
+    /*
+     * static properties
+     */
     
     Sort.regex  = {
         /*
@@ -108,7 +122,7 @@
                 var retval = 0, thisCfg = {};
                 for (var i = 0; i < cfg.length; i++) {
                     // thisCfg = SNAPPI.util.mergeObjCopy(cfg[i], thisCfg);
-                    thisCfg = Y.merge(thisCfg, Y.clone(cfg[i])); 
+                    thisCfg = _Y.merge(thisCfg, _Y.clone(cfg[i])); 
                     thisCfg.invert = ((thisCfg.order === 'desc') ? -1 : 1);
 					try {
 						retval = thisCfg.fn(a, b, thisCfg);	
@@ -147,8 +161,5 @@
         return reorderedSortCfg;
     };
 	
-	/*
-	 * make global
-	 */
-    SNAPPI.Sort = Sort;
+	
 })();

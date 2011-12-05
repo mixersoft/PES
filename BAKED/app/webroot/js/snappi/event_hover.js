@@ -2,8 +2,14 @@
  * SNAPPI custom event - hover
  */
 (function(){
-	SNAPPI.namespace('SNAPPI.onYready');
-	SNAPPI.onYready.SnappiHoverEvent = function(Y) {
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.SnappiHoverEvent = function(Y){
+		if (_Y === null) _Y = Y;
+		_define_SnappiHoverEvent(Y);
+	}
+	
+	var _define_SnappiHoverEvent = function(Y) {
 		Y = Y || SNAPPI.Y;
 	    /*
 	     * add 'snappi:hover' custom event

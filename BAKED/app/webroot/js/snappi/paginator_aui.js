@@ -1,20 +1,19 @@
 (function(){	
-	var Paginator = function(){
-		if (Paginator.doClassInit) Paginator.classInit();
-	};
-	Paginator.prototype = {};
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.Paginator = function(Y){
+		if (_Y === null) _Y = Y;
+		SNAPPI.Paginator = Paginator;
+	}	
+	
+	var Paginator = function(){	};
 	
 	/*
 	 * static properties and methods
 	 */
-	Paginator.doClassInit = true;
 	Paginator.listen = {};
 	Paginator.find = {};	// keep track of dialog instances for reuse
 	
-	Paginator.classInit = function() {
-		var Y = SNAPPI.Y;
-		Paginator.doClassInit = false;
-	};
 
 	/**
 	 * add Paginator to gallery
@@ -43,7 +42,6 @@
 				return Paginator.find[NAME];
 			}
 			
-			var Y = SNAPPI.Y;
 			var controller = SNAPPI.STATE.controller;
 			var displayPage = SNAPPI.STATE.displayPage;
 			
@@ -81,8 +79,8 @@
 					}
 			};
 			if (DELAY) {
-				var delayed = new Y.DelayedTask( function() {
-					var P = new Y.Paginator(pageCfg);
+				var delayed = new _Y.DelayedTask( function() {
+					var P = new _Y.Paginator(pageCfg);
 					paginateContainer.Paginator = P;
 					paginateContainer.Gallery = g;
 					paginateContainer.dom().Paginator = P;
@@ -93,7 +91,7 @@
 				delayed.delay(DELAY);
 				return "delayed";
 			} else {
-				var p = new Y.Paginator(pageCfg);
+				var p = new _Y.Paginator(pageCfg);
 				p.target = target;
 				p.container = paginateContainer;
 				paginateContainer.Paginator = p;
@@ -114,9 +112,8 @@
 	 * @params CSS selector to Gallery node, i.e. section.gallery.person
 	 */
 	Paginator.paginate_CircleMemberGallery = function(selector){
-			var Y = SNAPPI.Y;
 			var target, baseurl, NAME = selector;	
-			target = Y.one(NAME);	// XHR response is child of Y.one(NAME);
+			target = _Y.one(NAME);	// XHR response is child of _Y.one(NAME);
 			var type = /person/.test(selector) ? 'Members' : 'Circles';
 				
 			var DELAY = 1000;	// delay_task			
@@ -170,8 +167,8 @@
 					}
 			};
 			if (DELAY) {
-				var delayed = new Y.DelayedTask( function() {
-					paginateContainer.Paginator = new Y.Paginator(pageCfg).render();
+				var delayed = new _Y.DelayedTask( function() {
+					paginateContainer.Paginator = new _Y.Paginator(pageCfg).render();
 					paginateContainer.dom().Paginator = paginateContainer.Paginator;
 					paginateContainer.Paginator.target = target;
 					Paginator.find[NAME] = paginateContainer.Paginator;
@@ -179,7 +176,7 @@
 				delayed.delay(DELAY);
 				return "delayed";
 			} else {
-				paginateContainer.Paginator = new Y.Paginator(pageCfg).render();
+				paginateContainer.Paginator = new _Y.Paginator(pageCfg).render();
 				paginateContainer.dom().Paginator = paginateContainer.Paginator;
 				paginateContainer.Paginator.target = target;
 				Paginator.find[NAME] = paginateContainer.Paginator;
@@ -193,7 +190,6 @@
 	 * @params paginateTarget '#gallery-container .gallery.photo .container'
 	 */
 	Paginator.paginate_PhotoAirUpload = function(paginateTarget, page, perpage, total){
-			var Y = SNAPPI.Y;
 			var g, baseurl, 
 				type = 'Snaps',
 				NAME = 'PhotoAirUpload';	
@@ -201,7 +197,7 @@
 				// already created, just reuse
 				return Paginator.find[NAME];
 			} 
-			g = paginateTarget.ancestor('.gallery');	// XHR response is child of Y.one(NAME);
+			g = paginateTarget.ancestor('.gallery');	// XHR response is child of _Y.one(NAME);
 			
 			// set param defaults
 			page = page || paginateTarget.UploadQueue.activePage;
@@ -247,7 +243,7 @@
 					}
 			};
 			// no delay necessary in Air
-			var p = new Y.Paginator(pageCfg).render();
+			var p = new _Y.Paginator(pageCfg).render();
 			p.target = paginateTarget;
 			p.container = paginateContainer;
 			paginateContainer.Paginator = p;
@@ -263,7 +259,6 @@
 	 * @return 
 	 */
 	Paginator._getPage = function(node, pageNumber){
-		var Y = SNAPPI.Y;
 		var target = node.Paginator.target;  // paginateContainer
 		if (pageNumber == SNAPPI.STATE.displayPage.page) return;
 		var baseurl = SNAPPI.STATE.controller.here;	
@@ -278,7 +273,7 @@
 			target.io.set('uri', baseurl).start();
 		} else {
 			// uses pluginIO_RespondAsJson() with Plugin.IO
-			target.plug(Y.Plugin.IO, {
+			target.plug(_Y.Plugin.IO, {
 				uri: baseurl ,
 				parseContent:true,
 				arguments: nameData,
@@ -326,7 +321,6 @@
 	 * @return 
 	 */
 	Paginator._getPageFromAirDs = function(node, pageNumber){
-		var Y = SNAPPI.Y;
 		var target = node.Paginator.target;  // paginateTarget
 		// if (pageNumber == SNAPPI.STATE.displayPage.page) return;
 		var nameData = {
@@ -340,7 +334,7 @@
 		
 		// get new page content
 		target.UploadQueue.view_showPage(pageNumber, null, null);
-		var delay = new Y.DelayedTask( 
+		var delay = new _Y.DelayedTask( 
 			function() {
 				pluginNode.loadingmask.hide();
 			}, this);
@@ -348,6 +342,4 @@
 		return;
 	};	
 	
-	
-	SNAPPI.Paginator = Paginator;
 })();

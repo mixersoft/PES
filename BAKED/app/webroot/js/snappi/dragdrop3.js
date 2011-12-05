@@ -20,36 +20,41 @@
  *
  */
 (function(){
-    var Y = SNAPPI.Y;
+    var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.DragDrop = function(Y){
+		if (_Y === null) _Y = Y;
+		SNAPPI.DragDrop = new DragDrop();		
+	}
+	
     var defaultCfg = {};
     
     var DragDrop = function(cfg){
     	if (DragDrop.instance) return DragDrop.instance;
-        this._cfg = null;
-        this.listen = {};
+    	this.init(cfg);
+    	DragDrop.instance = this;
     };
     
     DragDrop.prototype = {
         init : function(cfg){
-            this._cfg = SNAPPI.Y.merge(defaultCfg, cfg);
-            this.startListeners();
-            // plugin dropppables
+            this._cfg = _Y.merge(defaultCfg, cfg);
+            // this.startListeners();
         },    
+        listen: {},
         startListeners : function(){
-            var Y = SNAPPI.Y;
             /*
              * parent = Stack.thumbListEl (<UL>), or list of <LI>
              */
             //Stop the drag with the escape key
-            var body = Y.one(document.body);
+            var body = _Y.one(document.body);
             if (!this.listen['keypress']) {
-	            this.listen['keypress'] = Y.on('keypress', function(e){
+	            this.listen['keypress'] = _Y.on('keypress', function(e){
 	                //The escape key was pressed
 	                if ((e.keyCode === 27) || (e.charCode === 27)) {
 	                    //We have an active Drag
-	                    if (Y.DD.DDM.activeDrag) {
+	                    if (_Y.DD.DDM.activeDrag) {
 	                        //Stop the drag
-	                        Y.DD.DDM.activeDrag.stopDrag();
+	                        _Y.DD.DDM.activeDrag.stopDrag();
 	                    }
 	                }
 	            }, document.body);
@@ -57,7 +62,7 @@
             
             
             //On the drag:mouseDown add the selected class
-//            handle = Y.DD.DDM.on('drag:mouseDown', function(e){
+//            handle = _Y.DD.DDM.on('drag:mouseDown', function(e){
 //            });
 //            listeners.push(handle);
             
@@ -66,7 +71,7 @@
              * on drag
              */
             if (!this.listen['drag:start']) {
-	            this.listen['drag:start']= Y.DD.DDM.on('drag:start', function(e){
+	            this.listen['drag:start']= _Y.DD.DDM.on('drag:start', function(e){
 	                //On drag start, get all the selected elements
 	                //Add the count to the proxy element and offset it to the cursor.
 	                var target = e.target.get('node');
@@ -126,7 +131,7 @@
              * on drop
              */
             if (!this.listen['drag:drophit']) {
-	            this.listen['drag:drophit'] = Y.DD.DDM.on('drag:drophit', 
+	            this.listen['drag:drophit'] = _Y.DD.DDM.on('drag:drophit', 
 	            function(e){
 	            	try {
 	            		/*
@@ -181,9 +186,9 @@
             nodeList.each(function(node){
                 //Clone the image, position it on top of the original and animate it to the drop target
                 var clone = node.cloneNode().set('id', '').setStyle('position', 'absolute');
-                Y.one('body').appendChild(clone);
+                _Y.one('body').appendChild(clone);
                 clone.setXY(node.getXY());
-                var a = new Y.Anim({
+                var a = new _Y.Anim({
                     node: clone,
                     to: {
                         height: 20,
@@ -210,11 +215,11 @@
          */
         pluginDrag : function(node){
             //Plugin the Drag plugin
-            node.plug(Y.Plugin.Drag, {
+            node.plug(_Y.Plugin.Drag, {
                 offsetNode: false
             });
             //Plug the Proxy into the DD object
-            node.dd.plug(Y.Plugin.DDProxy, {
+            node.dd.plug(_Y.Plugin.DDProxy, {
                 resizeFrame: false,
                 moveOnEnd: false,
                 borderStyle: 'none'
@@ -225,11 +230,11 @@
          * add Drag Plugin to element, use delegated event listener
          */        
         pluginDelegatedDrag : function (container, selector) {
-            var delegate = new Y.DD.Delegate({
+            var delegate = new _Y.DD.Delegate({
                 container: container,
                 nodes: selector
             });
-            delegate.dd.plug(Y.Plugin.DDProxy, {
+            delegate.dd.plug(_Y.Plugin.DDProxy, {
                 resizeFrame: false,
                 moveOnEnd: false,
                 borderStyle: 'none'
@@ -241,12 +246,10 @@
          */
         pluginDrop : function(node){
             //Add drop support to the albums
-            node.plug(Y.Plugin.Drop);
+            node.plug(_Y.Plugin.Drop);
             return node;
         }
 	}
-	
-	SNAPPI.DragDrop = new DragDrop();
 	
 	var Helpers = function(){};	
     /**

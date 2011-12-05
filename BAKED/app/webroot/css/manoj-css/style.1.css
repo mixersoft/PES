@@ -1293,7 +1293,7 @@ form input[type='text'].help {
  * dialogs
  */
 .aui-dialog-bd .selected {
-	border: 2px solid red !important; 
+	xxxborder: 2px solid red !important; 
 }
 
 /*TODO: deprecate ?*/

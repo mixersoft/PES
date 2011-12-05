@@ -23,17 +23,22 @@
  *
  */
 (function(){
-
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.SnappiHoverEvent = function(Y){
+		if (_Y === null) _Y = Y;
+		
+		SNAPPI.SortedHash = SortedHash;
+	}
     /*
      * dependencies
      *  - SNAPPI.Sort.compare.
      */
-    var Y = SNAPPI.Y;
     
     /*
      * protected functions
      */
-    var hash = function(key){
+    var _hash = function(key){
         return (key.id) ? key.id : key.hashcode ? key.hashcode() : key;
     };
 	// merge properties of anonymous objects
@@ -99,11 +104,11 @@
              */
             try {
                 if (typeof(m) == "number") {
-                    return this._data[hash(this._keys[m])];
+                    return this._data[_hash(this._keys[m])];
                 }
                 else // m is a key object, find the key index 
                 {
-                    return this._data[hash(m)];
+                    return this._data[_hash(m)];
                 }
             } 
             catch (e) {
@@ -139,7 +144,7 @@
                 	// new SNAPPI.DataElement(value, 'snappi-sh-obj');	// deprecated
                 } catch(e) {}
             }
-            var hashedKey = hash(key);
+            var hashedKey = _hash(key);
             // add key if new to end of _keys
             if (this._data[hashedKey] === undefined) {
                 this._keys.push(key);
@@ -161,7 +166,7 @@
          */
         addIfNew: function(key, value){
             value = value || key;
-            var hashedKey = hash(key);
+            var hashedKey = _hash(key);
             if (this._data[hashedKey]) {
             	return this._data[hashedKey];
             } else {
@@ -198,7 +203,7 @@
                 i = this.indexOf(old);
             }
             if (-1 < i && i < this.count() && old) {
-            	var hashedKey = hash(value);
+            	var hashedKey = _hash(value);
             	var exists = this._keys.indexOf(value);
             	// remove existing key, then splice in new position
             	if (exists > 0) {
@@ -207,7 +212,7 @@
             	}
             	this._keys.splice(i, 1, hashedKey);
             	this._data[hashedKey] = value;
-            	delete this._data[hash(old)];
+            	delete this._data[_hash(old)];
             	return value;
             }
             return false;
@@ -218,11 +223,11 @@
         remove: function(key){
         	var hashedKey = key;
         	if (hashedKey.hashcode) {
-        		hashedKey = hash(hashedKey);
+        		hashedKey = _hash(hashedKey);
         	}
             delete this._data[hashedKey];
             for (var i in this._keys) {
-                if (this._keys[i] && hash(this._keys[i]) === hashedKey) {
+                if (this._keys[i] && _hash(this._keys[i]) === hashedKey) {
                     this._keys.splice(i, 1); // remove element i, and renumber
                     break;
                 }
@@ -237,16 +242,16 @@
         },
         
         hasKey: function(key){
-            if (this._data[hash(key)] === undefined) 
+            if (this._data[_hash(key)] === undefined) 
                 return false;
             return true;
         },
         indexOfKey: function(key){
-            var match = hash(key);
+            var match = _hash(key);
             if (this._data[match] === undefined) 
                 return -1;
             for (var i in this._keys) {
-                if (hash(this._keys[i]) === match) {
+                if (_hash(this._keys[i]) === match) {
                     return parseInt(i);
                 }
             }
@@ -260,7 +265,7 @@
         },
         indexOfValue: function(value){
             for (var i in this._keys) {
-                if (this._data[hash(this._keys[i])] === value) {
+                if (this._data[_hash(this._keys[i])] === value) {
                     return parseInt(i);
                 }
             }
@@ -272,7 +277,7 @@
         getValues: function(){
             var v = [];
             for (var i in this._keys) {
-                v.push(this._data[hash(this._keys[i])]);
+                v.push(this._data[_hash(this._keys[i])]);
             }
             return v;
         },
@@ -341,7 +346,7 @@
                      * is there a more efficient way to do this?
                      */
                     for (var i in this._keys) {
-                        if (hash(this._keys[i]) === hash(m)) {
+                        if (_hash(this._keys[i]) === _hash(m)) {
                             found = true;
                             break;
                         }
@@ -455,7 +460,6 @@
         defaultSortFn: null,
         defaultSortCfg: null,
         setDefaultSort: function(cfg, sortNow){
-            var Y = SNAPPI.Y;
             // pass by value
             this.defaultSortCfg = cfg; // should be an array
             this.defaultSortFn = SNAPPI.Sort.compare.makeSortFn(this.defaultSortCfg);
@@ -473,17 +477,17 @@
     };
     
     
-    SNAPPI.SortedHash = SortedHash;
+    
     
     //    SNAPPI.SortedHash.prototype = {};
-//    SNAPPI.SortedHash.prototype = Y.merge(hashtable, navigation, sort)
+//    SNAPPI.SortedHash.prototype = _Y.merge(hashtable, navigation, sort)
 
     
    SortedHash.test = function(){
         var len = 100;
         var sh = new SNAPPI.SortedHash();
         for (var i = 0; i < len; i++) {
-            var guid = Y.guid();
+            var guid = _Y.guid();
             sh.add({
                 id: guid,
                 v: i

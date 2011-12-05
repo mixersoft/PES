@@ -22,12 +22,15 @@
  */
 
 (function() {
-	
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.UIHelper = function(Y){
+		if (_Y === null) _Y = Y;
+		SNAPPI.UIHelper = UIHelper;
+	}	
 	SNAPPI.namespace('SNAPPI.STATE');
 
 	var UIHelper = function(cfg) {	}; 
-	UIHelper.prototype = {};
-	SNAPPI.UIHelper = UIHelper;
 	
 	/*
 	 * static methods/properties
@@ -42,7 +45,7 @@
 			window.location.href = o.options[o.selectedIndex].value;
 		},
 		'goSearch' : function() {
-			var value = SNAPPI.Y.one('#search input').get('value');
+			var value = _Y.one('#search input').get('value');
 			if (value) {
 				if (value.length>2) {
 					var here = window.location.href;
@@ -56,7 +59,6 @@
 			return false;
 		},
 		toggleDisplayOptions  : function(o){
-			var Y = SNAPPI.Y;
 			try {
 				SNAPPI.STATE.showDisplayOptions = SNAPPI.STATE.showDisplayOptions ? 0 : 1;
 				UIHelper.nav.setDisplayOptions();
@@ -66,22 +68,21 @@
 		 * restore open/closed state for Gallery display options
 		 */
 		setDisplayOptions : function(){
-			var Y = SNAPPI.Y;
 			try {
 				if (SNAPPI.STATE.showDisplayOptions) {
-					Y.one('section.gallery-header li.display-option').addClass('open');
-					Y.one('section.gallery-display-options').removeClass('hide');
+					_Y.one('section.gallery-header li.display-option').addClass('open');
+					_Y.one('section.gallery-display-options').removeClass('hide');
 
 					// for /photo/roll.ctp: init rating
 					// TODO: move to a better spot?
-					var ratingFilterNode = Y.one('#filter-rating-parent');
+					var ratingFilterNode = _Y.one('#filter-rating-parent');
 			        if (ratingFilterNode) {
 			        	SNAPPI.filter.initRating();
 			        }
 			        					
 				} else {
-					Y.one('section.gallery-header li.display-option').removeClass('open');
-					Y.one('section.gallery-display-options').addClass('hide');
+					_Y.one('section.gallery-header li.display-option').removeClass('open');
+					_Y.one('section.gallery-display-options').addClass('hide');
 				}	
 			} catch (e) {}
 		},
@@ -107,7 +108,7 @@
 	    		var contextMenuCfg = {
 	    			triggerType: type,		// .gallery.group, .person, .photo, etc. 
 	    			currentTarget: e.currentTarget,
-	    			// triggerRoot:  SNAPPI.Y.one('.gallery .container'),
+	    			// triggerRoot:  _Y.one('.gallery .container'),
 	    			init_hidden: false,
 				}; 
 	    		SNAPPI.MenuAUI.CFG[CSS_ID].load(contextMenuCfg);
@@ -150,7 +151,7 @@
 		/**
 		 * @params cfg.gid, uuid of Group
 		 * @params cfg.isExpress Boolean, NOT NULL
-		 * @params cfg.node, Y.Node for loading mask, menuItem
+		 * @params cfg.node, _Y.Node for loading mask, menuItem
 		 */
 		isExpress: function(cfg){
 			var data = {
@@ -176,7 +177,7 @@
 									if (args.isExpress) {
 										args.menuItem.addClass('selected');
 										// update local copy
-										if (SNAPPI.Y.Lang.isArray(PAGE.jsonData.expressUploadGroups)) PAGE.jsonData.expressUploadGroups = {};
+										if (_Y.Lang.isArray(PAGE.jsonData.expressUploadGroups)) PAGE.jsonData.expressUploadGroups = {};
 										PAGE.jsonData.expressUploadGroups[args.gid] = 1;
 									} else {
 										args.menuItem.removeClass('selected');
@@ -190,7 +191,7 @@
 						}
 					}
 				});
-	            loadingNode.plug(SNAPPI.Y.Plugin.IO, ioCfg );
+	            loadingNode.plug(_Y.Plugin.IO, ioCfg );
 			} else {
 				loadingNode.io.set('data', data);
 				loadingNode.io.set('context', this);
@@ -204,18 +205,17 @@
 	UIHelper.create = {
 		launchPageGallery : function(e){
 			try {
-				var g = SNAPPI.Y.one('section.gallery.photo').Gallery;
+				var g = _Y.one('section.gallery.photo').Gallery;
 				if (g.getSelected().count()) g.launchPagemaker();
 			}catch(e){}			
 		}
 	}
 	UIHelper.util = {
 		checkSupportedBrowser : function(){
-			//TODO: note: need to check on first Y.use for ie, not in Y.ready()
+			//TODO: note: need to check on first _Y.use for ie, not in _Y.ready()
 			try {
-				var Y = SNAPPI.Y;
 				if (1 ) {
-					var browserOk = Y.UA.gecko || Y.UA.webkit;
+					var browserOk = _Y.UA.gecko || _Y.UA.webkit;
 					if (!browserOk) {
 						// show recomended browser
 						// alert('unsupported browser');
@@ -227,9 +227,9 @@
 	UIHelper.markup = {
 		set_ItemHeader_WindowOptions: function(){
 			try {
-				var found = SNAPPI.Y.one('div.properties.hide');
+				var found = _Y.one('div.properties.hide');
 				if (found) {
-					var itemHeader = SNAPPI.Y.one('.item-header');
+					var itemHeader = _Y.one('.item-header');
 					SNAPPI.UIHelper.listeners['WindowOptionClick'](itemHeader);
 					itemHeader.one('.window-options').removeClass('hide');
 				}
@@ -242,16 +242,14 @@
 		 * compares to GalleryFactory.listeners{}
 		 */
 		getGalleryType : function(node) {
-			var Y = SNAPPI.Y;
-			node = node || Y.one('.gallery-container section.gallery');
+			node = node || _Y.one('.gallery-container section.gallery');
 			node = node.ancestor('section.gallery', true);
 			if (node.hasClass('group')) return 'group';
 			if (node.hasClass('person')) return 'person';
 			return null;
 		},
         LinkToClick : function(cfg) {
-        	var Y = SNAPPI.Y;
-        	var node = cfg.node || Y.one('.gallery .container');
+        	var node = cfg.node || _Y.one('.gallery .container');
         	var action = 'LinkToClick';
         	
         	node.listen = node.listen || {};
@@ -277,8 +275,7 @@
          * 		i.e. .FigureBox.Group
          */
         ContextMenuClick : function(cfg) {
-        	var Y = SNAPPI.Y;
-        	var node = cfg.node || Y.one('.gallery .container');
+        	var node = cfg.node || _Y.one('.gallery .container');
         	var action = 'ContextMenuClick';
         	var selector = '.FigureBox';
         	if (cfg.type) selector += '.'+cfg.type ;
@@ -295,8 +292,7 @@
 			UIHelper.listen[action] = node.listen[action];
         }, 	        
         MultiSelect : function (node) {
-        	var Y = SNAPPI.Y;
-        	node = node || Y.one('.gallery .container');
+        	node = node || _Y.one('.gallery .container');
         	var container = node;
         	var action = 'MultiSelect';
         	
@@ -308,7 +304,7 @@
 			UIHelper.listen[action] = node.listen[action];	        	
         	
         	// select-all checkbox listener
-        	var galleryHeader = Y.one('.gallery-container .gallery-header');
+        	var galleryHeader = _Y.one('.gallery-container .gallery-header');
         	if (galleryHeader && !container.listen['selectAll']) {
 	        	container.listen['selectAll'] = galleryHeader.delegate('click', 
 	        	function(e){
@@ -325,8 +321,7 @@
         	return;
         },		
         DisplayOptionClick : function(node) {
-        	var Y = SNAPPI.Y;
-        	node = node || Y.one('.gallery-display-options');
+        	node = node || _Y.one('.gallery-display-options');
         	var action = 'DisplayOptionClick';
         	
         	node.listen = node.listen || {};
@@ -355,8 +350,7 @@
          * adds minimize/maximize btns for item-header
          */
         WindowOptionClick : function(node) {
-			var Y = SNAPPI.Y;
-        	node = node || Y.one('.item-header');        	
+        	node = node || _Y.one('.item-header');        	
         	var action = 'WindowOptionClick';
         	node.listen = node.listen || {};
         	var delegate_container = node.one('.window-options');
@@ -383,7 +377,7 @@
 			}
         },
         DragDrop : function(){
-        	SNAPPI.DragDrop.pluginDrop(SNAPPI.Y.all('.droppable'));
+        	SNAPPI.DragDrop.pluginDrop(_Y.all('.droppable'));
         	SNAPPI.DragDrop.startListeners();
         }
 	}

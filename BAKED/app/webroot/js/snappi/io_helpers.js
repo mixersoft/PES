@@ -22,43 +22,49 @@
  */
 (function(){
 	
-	var Y = SNAPPI.Y;
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.Flash = function(Y){
+		if (_Y === null) _Y = Y;
+		
+		SNAPPI.flash = new Flash();
+		SNAPPI.timeout = {	};
+	}
 	var TIMEOUT = 5000;
 	/**************************************************************************
 	 * Cakephp style Session Flash from JS
 	 */
 	
 	var Flash = function(content) {
-		var Y = SNAPPI.Y;
 
 		var content = arguments;
 
 	};
 	Flash.prototype = {
 		flash : function(content) {
-			var msgNode = Y.one('#content > div.messages');
+			var msgNode = _Y.one('#content > div.messages');
 			if (!msgNode) {
 				var tokens = {
 					'class' : 'messages',
 					id : 'flashMessage'
 				};
-				var msgNode = Y.Node.create(
-						Y.substitute("<div id='{id}' class='{class}'></div>",
+				var msgNode = _Y.Node.create(
+						_Y.substitute("<div id='{id}' class='{class}'></div>",
 								tokens)).dom();
-				Y.one('#content').prepend(msgNode);
+				_Y.one('#content').prepend(msgNode);
 				msgNode.setContent(null).append("<div class='message'>"+content+"</div>");
 			} else {
 				msgNode.setContent(null).append("<div class='message'>"+content+"</div>");
 				msgNode.removeClass('hide');
 			}
 
-			SNAPPI.timeout.flashMsg = Y.later(TIMEOUT, {}, function() {
+			SNAPPI.timeout.flashMsg = _Y.later(TIMEOUT, {}, function() {
 				msgNode.addClass('hide');
 			});
 		},
 		flashJsonResponse: function(o){
 			try {
-				var msg = o.responseJson.message || Y.JSON.Stringify(o.responseJson);
+				var msg = o.responseJson.message || _Y.JSON.Stringify(o.responseJson);
 			} catch (e) {
 				msg = o.responseText;
 			}
@@ -85,10 +91,6 @@
 		}		
 	};
 
-	SNAPPI.flash = new Flash();
-	
-	SNAPPI.timeout = {	};	
-
 })();
 
 
@@ -96,7 +98,16 @@
  * XHR (XhrFetch) module SNAPPI.ajax = new XhrFetch();
  */
 (function() {
-
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.XhrFetch = function(Y){
+		if (_Y === null) _Y = Y;
+		/*
+		 * make global
+		 */
+		SNAPPI.xhrFetch = new XhrFetch();
+		SNAPPI.ajax = SNAPPI.xhrFetch;
+	}
 	/*
 	 * XhrFetch Class (singleton class) 
 	 * Use '.xhr-get' markup to request CakePhp element by XHR/XhrFetch 
@@ -130,7 +141,6 @@
 		 * search for page xhr-gets to fetch via ajax request
 		 */
 		fetchXhr : function(n, cfg) {
-			var Y = SNAPPI.Y;
 			var TRIGGER = cfg && cfg.TRIGGER ? cfg.TRIGGER : this.CSS_CLASS_TRIGGER;  
 			if (n && n.hasClass(TRIGGER)) {
 				// direct request, just fetch without delay
@@ -138,7 +148,7 @@
 			} else {
 				// searches page for xhr-gets, add delay as necessary
 				var wait = cfg.delay || this.XHR_PAGE_INIT_DELAY;
-				var fragments = Y.all('.'+TRIGGER);
+				var fragments = _Y.all('.'+TRIGGER);
 				if (fragments) {
 					fragments.each(function(n,i,l) {
 						if (n.hasClass('xhr-loading')) return;	// prevent duplicate loading
@@ -147,7 +157,7 @@
 						if (nodelay) {
 							this.requestFragment(n);							
 						} else {
-							var delayed = new Y.DelayedTask( function() {
+							var delayed = new _Y.DelayedTask( function() {
 								this.requestFragment(n);
 							}, this);
 							// executes after XXXms the callback
@@ -169,11 +179,10 @@
 		 * @param {Object} n - YUI3 node for 'div.xhr-get'
 		 */
 		requestFragment : function(n) {
-			var Y = SNAPPI.Y;
 			
 			var target = n.getAttribute('xhrTarget');
 			var nodelay = n.getAttribute('nodelay');
-			target = target ? Y.one('#'+target) : n;
+			target = target ? _Y.one('#'+target) : n;
 			var uri = n.getAttribute('xhrSrc');
 			
 //			var _updateDOM = this._updateDOM;
@@ -185,7 +194,7 @@
 			
 			var args = {target: target, fragment: n};
 			if (!target.io) {
-				target.plug(Y.Plugin.IO, {
+				target.plug(_Y.Plugin.IO, {
 					uri: uri,
 					method: 'GET',
 					parseContent: true,
@@ -206,13 +215,13 @@
 			}
 			
 			/*
-			 *  before Y.Plugin.IO.setContent()
+			 *  before _Y.Plugin.IO.setContent()
 			 */
-			// var detach = Y.before(function(content, target, fragment){
-				// console.warn("before Y.Plugin.IO.setContent()");
+			// var detach = _Y.before(function(content, target, fragment){
+				// console.warn("before _Y.Plugin.IO.setContent()");
 				// detach.detach();
 				// this.before_SetContent(content, target, fragment);
-				// // new Y.DelayedTask(SNAPPI.xhrFetch.init).delay(100);
+				// // new _Y.DelayedTask(SNAPPI.xhrFetch.init).delay(100);
 			// }, target.io, 'setContent', this, target, n); 
 			       				
 			target.io.set('uri', uri);
@@ -234,8 +243,7 @@
 		 * repeatedly with no side-effects
 		 */
 		initPaging : function() {
-			var Y = SNAPPI.Y;
-			var paging = Y.all('div.paging-content');	// deprecate. using SNAPPI.Paginator
+			var paging = _Y.all('div.paging-content');	// deprecate. using SNAPPI.Paginator
 			if (paging) {
 				paging.each(function(n) {
 					// add event delegate listeners
@@ -262,11 +270,10 @@
 		 * @param {Object} e - click event object
 		 */
 		requestPagingContent : function(e) {
-			var Y = SNAPPI.Y;
 			e.halt(); // stop event propagation
 			//e.container == delegate event container
 			var targetId = e.container.getAttribute('xhrTarget') || e.container.get('id');
-			var target = Y.one('#'+targetId);
+			var target = _Y.one('#'+targetId);
 			var uri = e.target.get('href');
 
 			try {
@@ -275,7 +282,7 @@
 			} catch (e) {
 			}
 			if (!target.io) {
-				target.plug(Y.Plugin.IO, {
+				target.plug(_Y.Plugin.IO, {
 					uri: uri,
 					method: 'GET',
 					parseContent: true,
@@ -293,20 +300,19 @@
 		 * 
 		 * - replaces innerHTML of Dom element with responseText
 		 * 
-		 * @param {Object} id Y.io transaction Id
+		 * @param {Object} id _Y.io transaction Id
 		 * @param {Object} o response object
 		 * @param {Object} args args.sectionId == id of DOM container
 		 */
 		_updateDOM : function(id, o, args) {
 			console.warning("DEPRECATE? SNAPPI.xhrFetch._updateDOM");
-			var Y = SNAPPI.Y;
 			var data = o.responseText; // Response data.
 			var target = args.target || args[0]; // DOM element id to put
 													// data
 			var node = target.setContent(data);
 	
 			SNAPPI.xhrFetch.xhrInit(node); // execute js in ajax markup
-			Y.fire('snappi:ajaxLoad'); // execute js in script files
+			_Y.fire('snappi:ajaxLoad'); // execute js in script files
 		},
 		/**
 		 * DEPRECATED (?) XHR request should call 
@@ -332,11 +338,6 @@
 		 *            e
 		 */
 	};
-	/*
-	 * make global
-	 */
-	SNAPPI.xhrFetch = new XhrFetch();
-	SNAPPI.ajax = SNAPPI.xhrFetch;
 	
 	
 })();

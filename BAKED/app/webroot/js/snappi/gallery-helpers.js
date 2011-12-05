@@ -22,7 +22,15 @@
  */
 
 (function() {
-	var Y = SNAPPI.Y;
+	var _Y = null;
+	var LIGHTBOX_PERPAGE_LIMIT;
+	
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.GalleryFactory = function(Y){
+		if (_Y === null) _Y = Y;
+		LIGHTBOX_PERPAGE_LIMIT = 72;
+	}
+    
     var GalleryFactory = function(){};
     SNAPPI.namespace('SNAPPI.Factory');
     SNAPPI.Factory.Gallery = GalleryFactory;
@@ -310,7 +318,7 @@
      */
     GalleryFactory._attachNodes = function(gallery, cfg){
         gallery.container = null;
-		var node = cfg.node instanceof Y.Node ? cfg.node : Y.one(cfg.node);
+		var node = cfg.node instanceof _Y.Node ? cfg.node : _Y.one(cfg.node);
 		if (!node && console) console.error('GalleryFactory._attachNodes(): invalid cfg.node. where do we append markup?');
     	try {
     		if (node.Gallery) {
@@ -366,13 +374,12 @@
          * @params cfg object, cfg object
          */
     	build: function(gallery, cfg){
-            var Y = SNAPPI.Y;
             // var self = gallery;		// instance of SNAPPI.Gallery
             cfg = cfg || {};
             // inherit javascript state information from current page, 
             // called AFTER SNAPPI.mergeSessionData();
             // TODO: only merge SNAPPI.STATE.displayPage for "primary" gallery, with paging
-            cfg = Y.merge(GalleryFactory[cfg.type].defaultCfg, SNAPPI.STATE.displayPage, cfg);	
+            cfg = _Y.merge(GalleryFactory[cfg.type].defaultCfg, SNAPPI.STATE.displayPage, cfg);	
             try {
             	cfg.size = PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
             } catch (e){}
@@ -395,7 +402,7 @@
 	        // .gallery.photo AFTER init methods
 	        SNAPPI.Gallery.find[cfg.ID_PREFIX] = gallery;		// add to gallery lookup
 	        SNAPPI.Rating.startListeners(gallery.container);
-	        Y.fire('snappi:after_PhotoGalleryInit', this); 
+	        _Y.fire('snappi:after_PhotoGalleryInit', this); 
 	        return gallery;					// return instance of SNAPPI.Gallery
         },
         handle_hiddenShotClick : function(e){
@@ -410,7 +417,7 @@
 		},
 	};
 	
-	LIGHTBOX_PERPAGE_LIMIT = 72;
+	
     GalleryFactory.Lightbox = {
     	defaultCfg : {
     		type: 'Lightbox',
@@ -441,12 +448,11 @@
          * @params cfg object, cfg object
          */
     	build: function(gallery, cfg){
-            var Y = SNAPPI.Y;
             // var self = gallery;		// instance of SNAPPI.Gallery
             cfg = cfg || {};
             // inherit javascript state information from current page, 
             // called AFTER SNAPPI.mergeSessionData();
-            cfg = Y.merge(GalleryFactory[cfg.type].defaultCfg, SNAPPI.STATE.displayPage, cfg);	
+            cfg = _Y.merge(GalleryFactory[cfg.type].defaultCfg, SNAPPI.STATE.displayPage, cfg);	
             try {
             	cfg.size = PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
             } catch (e){}
@@ -466,7 +472,7 @@
 	        // .gallery.photo AFTER init methods
 	        SNAPPI.Gallery.find[cfg.ID_PREFIX] = gallery;		// add to gallery lookup
 	        SNAPPI.Rating.startListeners(gallery.container);
-	        // Y.fire('snappi:after_PhotoGalleryInit', this); 
+	        // _Y.fire('snappi:after_PhotoGalleryInit', this); 
 	        return gallery;					// return instance of SNAPPI.Gallery
         },
 	};
@@ -510,7 +516,7 @@
 	    	gallery.auditionSH.setFocus(selected);
 	    	gallery.scrollFocus(selected);
 	    	try {
-		    	var previewBody = Y.one('.preview-body');
+		    	var previewBody = _Y.one('.preview-body');
 		    	var previewUuid = previewBody.one('.FigureBox.PhotoPreview').Thumbnail.id;
 		    	if (selected.id != previewUuid) {
 		    		// SNAPPI.domJsBinder.bindSelected2Page(gallery, selected, oldUuid);
@@ -530,14 +536,14 @@
 			if (view == 'minimize') {
 				// show item-header
 				try {
-					SNAPPI.Y.one('.item-header').removeClass('hide');	
-					SNAPPI.Y.one('.properties').removeClass('hide');
+					_Y.one('.item-header').removeClass('hide');	
+					_Y.one('.properties').removeClass('hide');
 				} catch (e) {}
 			} else {
 				// hide item-header
 				try {
-					SNAPPI.Y.one('.item-header').addClass('hide');	
-					SNAPPI.Y.one('.properties').addClass('hide');
+					_Y.one('.item-header').addClass('hide');	
+					_Y.one('.properties').addClass('hide');
 				} catch (e) {}
 			}
 			// update castingCall if necessary 
@@ -568,7 +574,7 @@
 					// get extended castingCall by cacheRefresh
 					var named = {perpage: perpage, page: page};
 					uri = SNAPPI.IO.setNamedParams(uri, named);
-					var options = SNAPPI.Y.merge({
+					var options = _Y.merge({
 						uuid: uuid,
 					}, named);
 					g.loadCastingCall(uri, options);				
@@ -577,7 +583,7 @@
 				// activate autoScroll for now
 				// TODO: add checkbox to PhotoPreview, default active
 				try {
-					var previewThumbnail = Y.one('.preview-body .FigureBox.PhotoPreview').Thumbnail;
+					var previewThumbnail = _Y.one('.preview-body .FigureBox.PhotoPreview').Thumbnail;
 					SNAPPI.Factory.Thumbnail.PhotoPreview.set_AutoScroll(true, previewThumbnail, g);
 				} catch (e) {}
 				var check;			
@@ -726,13 +732,12 @@
          * @params cfg object, cfg object
          */
     	build: function(gallery, cfg){
-            var Y = SNAPPI.Y;
             // var self = gallery;		// instance of SNAPPI.Gallery
             cfg = cfg || {};
             // inherit javascript state information from current page, 
             // called AFTER SNAPPI.mergeSessionData();
             // TODO: only merge SNAPPI.STATE.displayPage for "primary" gallery, with paging
-            cfg = Y.merge(GalleryFactory[cfg.type].defaultCfg, SNAPPI.STATE.displayPage, cfg);	
+            cfg = _Y.merge(GalleryFactory[cfg.type].defaultCfg, SNAPPI.STATE.displayPage, cfg);	
             try {
             	cfg.size = PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
             } catch (e){}
@@ -752,7 +757,7 @@
 	        // .gallery.photo AFTER init methods
 	        SNAPPI.Gallery.find[cfg.ID_PREFIX] = gallery;		// add to gallery lookup
 	        SNAPPI.Rating.startListeners(gallery.container);
-	        Y.fire('snappi:after_PhotoGalleryInit', this); 
+	        _Y.fire('snappi:after_PhotoGalleryInit', this); 
 	        return gallery;					// return instance of SNAPPI.Gallery
         },
 	};

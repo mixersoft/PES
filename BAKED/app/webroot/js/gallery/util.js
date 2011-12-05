@@ -46,8 +46,13 @@
  * util loads before all YAHOO yui libs have been loaded
  */
 (function(){
-        var Y = SNAPPI.Y;
-        
+        var _Y = null;
+        SNAPPI.namespace('SNAPPI.onYready');
+        SNAPPI.onYready.Util = function(Y){
+			if (_Y === null) _Y = Y;
+			// create global singleton
+    		SNAPPI.util = new Util();
+		}          
         /*
          * override String
          */
@@ -135,11 +140,11 @@
                 else 
                     return key ? key.toString() : null;
             },
-            // deprecate, use Y.merge
+            // deprecate, use _Y.merge
             mergeObjCopy: function(cfg, defaultCfg){
                 return SNAPPI.util.mergeObj(SNAPPI.util.copyObj(cfg), defaultCfg);
             },
-            // deprecate, use Y.merge
+            // deprecate, use _Y.merge
             mergeObj: function(cfg, defaultCfg){
                 if (cfg === undefined || cfg === null) 
                     cfg = {};
@@ -149,7 +154,7 @@
                 }
                 return cfg;
             },
-            // deprecate, use Y.merge
+            // deprecate, use _Y.merge
             copyObj: function(obj){
                 if (obj == null || typeof(obj) != 'object') 
                     return obj;
@@ -338,8 +343,6 @@
 			},
         };
         
-        // create global singleton
-    	SNAPPI.util = new Util();
 })();
 
 

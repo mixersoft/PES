@@ -22,6 +22,14 @@
  *
  */
 (function(){
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.Gallery = function(Y){
+		if (_Y === null) _Y = Y;
+		
+	}
+	
+	
 	var Factory = SNAPPI.Factory.Gallery;
     /*
      * dependencies
@@ -51,7 +59,6 @@
 //    	
 //        return !(n.hasClass('hidden') || n.hasClass('hide')  || eleInvisible);
 //    };
-    var Y = SNAPPI.Y;
     
     var Gallery = function(cfg){
     	cfg = cfg || {type: 'Photo'};
@@ -104,7 +111,7 @@
     Gallery.prototype = {
     	init: function(cfg) {
     		var Y = SNAPPI.Y;
-	    	var _cfg = Y.merge(cfg);		// copy cfg
+	    	var _cfg = _Y.merge(cfg);		// copy cfg
 	    	
 	    	// skip this line
 	        if (_cfg.sh) {	// resuse SH, if provided
@@ -171,7 +178,7 @@
 	        	this.container.addClass('one-row'); // these are all filmstrips, init in filmstrip mode
 	        	if (renderOnInit) this.render(_cfg);
         		else {
-                	var emptyMsg = SNAPPI.Y.one('#markup .empty-lightbox-gallery-message');
+                	var emptyMsg = _Y.one('#markup .empty-lightbox-gallery-message');
                 	if (emptyMsg) this.container.append(emptyMsg.removeClass('hide'));
                 }	        	
 	        	// this.scrollFocus( cfg.uuid );
@@ -249,7 +256,7 @@
         		this.auditionSH.setFocus(focusUuid);
 //        		delete cfg.uuid;	// TODO: filmstrip doesn't work unless we update this._cfg.uuid
         	} else focusUuid = this.auditionSH.getFocus();
-        	if (cfg) this._cfg = Y.merge(this._cfg, cfg);
+        	if (cfg) this._cfg = _Y.merge(this._cfg, cfg);
             
             var offset = 0;
             if (!this.auditionSH) 
@@ -314,7 +321,7 @@
 	                this._cfg.start = 0;
 	                this._cfg.end = perpage;
 	                if (this.auditionSH.size() == 0) {
-	                	var emptyMsg = SNAPPI.Y.one('#markup .empty-photo-gallery-message');
+	                	var emptyMsg = _Y.one('#markup .empty-photo-gallery-message');
 	                	if (emptyMsg) this.container.append(emptyMsg.removeClass('hide'));
 	                }	                
             		break;
@@ -333,7 +340,7 @@
             			// hide extras, unbind and remove extras
             			n.Thumbnail.remove();
             			// n.addClass('hide');
-            		} else if (Y.Lang.isNumber(this._cfg.start) && this._cfg.end) {
+            		} else if (_Y.Lang.isNumber(this._cfg.start) && this._cfg.end) {
 						var audition = this.auditionSH.get(offset+i);
 						if (audition && offset+i < this._cfg.end) { 
 						    this.reuseThumbnail(audition, n, thumbCfg);
@@ -383,10 +390,10 @@
 			if (!force && page == SNAPPI.STATE.displayPage.page) return;
         	
         	var uri = cfg.uri || this.castingCall.CastingCall.Request;
-        	cfg.nameData = SNAPPI.Y.merge(cfg.nameData, {page:page, perpage:perpage});
+        	cfg.nameData = _Y.merge(cfg.nameData, {page:page, perpage:perpage});
         	
         	// cfg.qs -> cfg.data as querystring
-	 		if (force) cfg.qs = SNAPPI.Y.merge(cfg.qs, {
+	 		if (force) cfg.qs = _Y.merge(cfg.qs, {
 				refresh: 1,
 				ccid: this.castingCall.CastingCall.ID,
 			});       	
@@ -394,7 +401,7 @@
 				parseContent: true,
 				dataType: 'json',
 			}
-			cfg.args = SNAPPI.Y.merge(cfg.args,{page: page});
+			cfg.args = _Y.merge(cfg.args,{page: page});
 			cfg.successJson = function(e, i,o,args) {
 					var response = o.responseJson.response;
 					PAGE.jsonData.castingCall = response.castingCall;
@@ -443,7 +450,7 @@
         },
         createThumbnail: function(audition, cfg){
         	// TODO: do NOT copy ALL cfg attrs to thumbnail. figure out which ones we need
-        	cfg = SNAPPI.Y.merge(this._cfg, cfg);	// copy
+        	cfg = _Y.merge(this._cfg, cfg);	// copy
         	cfg.gallery = this;
         	cfg.type = cfg.tnType || cfg.type;
         	var t = new SNAPPI.Thumbnail(audition, cfg);
@@ -534,8 +541,8 @@
             if (this.node.listen['Keypress'] == undefined) {
             	var startListening = function() {
             		if (!this.node.listen['Keypress']) {
-            			this.node.listen['Keypress'] = Y.on('keypress', this.handleKeypress, document, this);
-//            			this.node.listen.keypress = Y.on('key', this.handleKeypress, document, this);
+            			this.node.listen['Keypress'] = _Y.on('keypress', this.handleKeypress, document, this);
+//            			this.node.listen.keypress = _Y.on('key', this.handleKeypress, document, this);
             		}
             	};
             	var stopListening = function() {
@@ -599,14 +606,14 @@
         // TODO: should get state from cakephp Session / user profile
         restoreState : function(){
             try {
-                if (SNAPPI.STATE.showRatings && SNAPPI.Y.one('li#show-ratings')) {
+                if (SNAPPI.STATE.showRatings && _Y.one('li#show-ratings')) {
                 	var v = SNAPPI.STATE.showRatings || 'hide';
-                    this.toggleRatings(SNAPPI.Y.one('li#show-ratings'), v);
+                    this.toggleRatings(_Y.one('li#show-ratings'), v);
                 }
-                if (SNAPPI.STATE.selectAllPages && SNAPPI.Y.one('li#select-all-pages')) {
+                if (SNAPPI.STATE.selectAllPages && _Y.one('li#select-all-pages')) {
                     this.applySelectAllPages();
                 }
-                if (SNAPPI.STATE.showSubstitutes && SNAPPI.Y.one('li#show-substitutes')) {
+                if (SNAPPI.STATE.showSubstitutes && _Y.one('li#show-substitutes')) {
                     this.applyShowSubstitutes();
                 }
             } 
@@ -641,9 +648,8 @@
          * @return
          */
         setFocus: function(m){
-        	var Y = SNAPPI.Y;
         	var focusNode, o;
-        	if (m instanceof Y.Node && m.hasClass('.FigureBox')) {
+        	if (m instanceof _Y.Node && m.hasClass('.FigureBox')) {
 				o = SNAPPI.Auditions.find(m.uuid);  
         		focusNode = m;
         	} else if (m && m.id) {
@@ -693,7 +699,7 @@
 	        	}
 	        	if (oldWidth > newWidth) {
 	        		// use delay to avoid flash when narrowing 
-					var delay = new Y.DelayedTask( 
+					var delay = new _Y.DelayedTask( 
 						function() {
 							setWidth(newWidth, this);  
 						}, this);
@@ -706,12 +712,12 @@
         },
         /*
          * scroll ".gallery .filmstrip" to show focus in center
-         * @params m mixed, Y.Node (.FigureBox), uuid, or index
+         * @params m mixed, _Y.Node (.FigureBox), uuid, or index
          */
         scrollFocus: function(m) {
         	var i, thumbs, selected, parent = this.container.ancestor('.filmstrip');
         	try {
-        		if (m instanceof SNAPPI.Y.Node && m.hasClass('.FigureBox')) {
+        		if (m instanceof _Y.Node && m.hasClass('.FigureBox')) {
         			thumbs = this.container.all('.FigureBox');
         			i = thumbs.indexOf(m);
         		} else if (m && m.id) {
@@ -777,7 +783,7 @@
 
 			// reset .gallery-container li.select-all .checkbox
 			try {
-				var cb = SNAPPI.Y.one('.gallery-container li.select-all input[type="checkbox"]');
+				var cb = _Y.one('.gallery-container li.select-all input[type="checkbox"]');
 				cb.set('checked', false);
 			} catch (e) {}
             
@@ -941,7 +947,7 @@
         	
         	var _renderAsNode = function(selected){
         		
-        		var detailNodeParent = Y.one('.assets blockquote');
+        		var detailNodeParent = _Y.one('.assets blockquote');
             	var existingNode = detailNodeParent.one('dl');
             	if(existingNode){
             		existingNode.remove();
@@ -983,17 +989,17 @@
             		detailNodeParent.append(detailNode);
             	}
 
-            	Y.fire('snappi:completeAsync', detailNodeParent);
+            	_Y.fire('snappi:completeAsync', detailNodeParent);
             	
             	// add 'more info' label and attach listener to it.
             	if(!detailNodeParent.one('h5')){
             		
-            		var moreInfoNode = Y.Node.create('<h5>more info...</h5>');
+            		var moreInfoNode = _Y.Node.create('<h5>more info...</h5>');
             		detailNodeParent.one('div').append(moreInfoNode);
             		
             		detailNodeParent.one('h5').on('click', function(e){
             			
-            			var photo_audition = SNAPPI.Auditions.find(Y.one('#neighbors ul li.focus').uuid);
+            			var photo_audition = SNAPPI.Auditions.find(_Y.one('#neighbors ul li.focus').uuid);
             			
             			SNAPPI.propertyManager.renderDialogInPhotoRoll(photo_audition);
                 	}, this);
@@ -1002,7 +1008,7 @@
 
         	var asyncCfg = {
 					fn : _renderAsNode,
-					node : Y.one('.assets blockquote'),
+					node : _Y.one('.assets blockquote'),
 					size: 'big',
 					context : this,
 					args : [selected]
@@ -1097,7 +1103,7 @@
 			
 			if(!this.container.dom().Zoom){
 				
-				var bn = Y.one('#element-roll_zoom_btn');
+				var bn = _Y.one('#element-roll_zoom_btn');
 				var Zoom = new SNAPPI.Zoom(this.container, bn);
 				
 			}
@@ -1175,7 +1181,7 @@
 			}			
 		},
         applyShowSubstitutes: function(){
-			this.toggleSubstitutes(SNAPPI.Y.one('#show-substitutes'), SNAPPI.STATE.showSubstitutes);
+			this.toggleSubstitutes(_Y.one('#show-substitutes'), SNAPPI.STATE.showSubstitutes);
         },		
 		/**
 		 * group all selected items into ONE shot. 
@@ -1222,7 +1228,7 @@
 						}
 					}
 				});
-	            loadingNode.plug(Y.Plugin.IO, ioCfg );
+	            loadingNode.plug(_Y.Plugin.IO, ioCfg );
 			} else {
 				loadingNode.io.set('data', data);
 				loadingNode.io.set('context', this);
@@ -1329,7 +1335,7 @@
 						}
 					}
 				});
-	            loadingNode.plug(Y.Plugin.IO, ioCfg );
+	            loadingNode.plug(_Y.Plugin.IO, ioCfg );
 			} else {
 				loadingNode.io.set('data', data);
 				loadingNode.io.set('context', this);
@@ -1445,7 +1451,7 @@
 						}
 					}
 				});
-	            loadingNode.plug(Y.Plugin.IO, ioCfg );
+	            loadingNode.plug(_Y.Plugin.IO, ioCfg );
 			} else {
 				loadingNode.io.set('data', data);
 				loadingNode.io.set('context', this);
@@ -1509,8 +1515,8 @@
 				}
 				if (!photoGallery) {
 					// still not found, try to find by CSS
-					photoGallery = Y.one('section#nav-filmstrip .gallery.photo');
-					if (!photoGallery) photoGallery = Y.one('.gallery-contaienr .gallery.photo');				
+					photoGallery = _Y.one('section#nav-filmstrip .gallery.photo');
+					if (!photoGallery) photoGallery = _Y.one('.gallery-contaienr .gallery.photo');				
 					if (photoGallery && photoGallery.Gallery) photoGallery = photoGallery.Gallery;
 				}
 
@@ -1609,7 +1615,7 @@
 						}
 					}
 				});
-	            loadingNode.plug(Y.Plugin.IO, ioCfg );
+	            loadingNode.plug(_Y.Plugin.IO, ioCfg );
 			} else {
 				loadingNode.io.set('data', data);
 				loadingNode.io.set('context', this);
@@ -1627,7 +1633,7 @@
 				var bestShot = selected.Audition.Substitutions.best;
 				// confirm showHidden bestShot is in main photoroll
 				if (1 || bestShot !== selected) {
-					// var photoroll = SNAPPI.Y.one('section.gallery.photo').Gallery;
+					// var photoroll = _Y.one('section.gallery.photo').Gallery;
 					g = SNAPPI.Gallery.find['uuid-'] || SNAPPI.Gallery.find['nav-'];
 					// splice into original location, nav- or uuid-
 					var result = g.auditionSH.replace(bestShot, selected);
@@ -1649,8 +1655,8 @@
 		},
 		/**
 		 * delete Thumbnail, .FigureBox, and refresh gallery page
-		 * @params node Y.Node .FigureBox, or null for getSelected()
-		 * @params loadingmask Y.Node, node for loading mask. NOTE: uses node for now.
+		 * @params node _Y.Node .FigureBox, or null for getSelected()
+		 * @params loadingmask _Y.Node, node for loading mask. NOTE: uses node for now.
 		 */
 		deleteThumbnail: function(node, loadingmask) {
 			var sh, aids = [], gids=[];
@@ -1771,15 +1777,15 @@
         		uri: uri,
         	};
         	if (cfg.replace == undefined) args.replace = true;	// replace audition with value in response, default true
-        	if (cfg.args) args = Y.merge(args, cfg.args);
+        	if (cfg.args) args = _Y.merge(args, cfg.args);
         	
         	
         	var pluginNode = this.node;	// plugin to node seems to work better
         	/*
-    		 * plugin Y.Plugin.IO
+    		 * plugin _Y.Plugin.IO
     		 */
     		if (0 || !pluginNode.io) {
-    			if (pluginNode.io) pluginNode.unplug(Y.Plugin.IO);
+    			if (pluginNode.io) pluginNode.unplug(_Y.Plugin.IO);
     			var ioCfg = {
 //    					uri: subUri,
     					parseContent: false,
@@ -1792,18 +1798,18 @@
     						}					
     					}
     			};
-    			if (cfg.ioCfg) ioCfg = Y.merge(ioCfg, cfg.ioCfg);
+    			if (cfg.ioCfg) ioCfg = _Y.merge(ioCfg, cfg.ioCfg);
     			if (cfg.complete) ioCfg.on.complete = cfg.complete;
-    			pluginNode.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(ioCfg));
+    			pluginNode.plug(_Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(ioCfg));
     		}
          	
          	
     		if (0 || !pluginNode.loadingmask) {
     			// loadingmask doesn't seem to be reusable, even with delay
-    			if (!pluginNode.loadingmask) pluginNode.unplug(Y.LoadingMask);
+    			if (!pluginNode.loadingmask) pluginNode.unplug(_Y.LoadingMask);
     			
     			var loadingmaskTarget = this.node.hasClass('filmstrip') ? this.container.ancestor('.filmstrip') : this.container;
-    			pluginNode.plug(Y.LoadingMask, {
+    			pluginNode.plug(_Y.LoadingMask, {
     				target: loadingmaskTarget
     			});    			
     			pluginNode.loadingmask._conf.data.value['target'] = loadingmaskTarget;
@@ -1855,7 +1861,7 @@
 	                    return false;
 					},
 				};
-				ioCfg = Y.merge(ioCfg, cfg);
+				ioCfg = _Y.merge(ioCfg, cfg);
 				this.loadCastingCall(uri, ioCfg);
         	}
         },
@@ -1865,7 +1871,7 @@
         		return;
         	}
         	
-        	var detach = SNAPPI.Y.on('snappi-pm:after-launch', function(e) {
+        	var detach = _Y.on('snappi-pm:after-launch', function(e) {
         		detach.detach();
         		// node.ynode().set('innerHTML', 'Create Page');
         		var photoRoll = this;
@@ -1894,7 +1900,7 @@
     			var performance = stage ? stage.performance : null;
     			
 //    			var stage2 = photoRoll.container.create("<div id='stage-2' class='grid_16' style='position:absolute;top:200px;'></div>");
-//    			Y.one('#content').append(stage2);
+//    			_Y.one('#content').append(stage2);
     			var sceneCfg = {
     				roleCount: batch.count(),
     				fnDisplaySize: {h:800},

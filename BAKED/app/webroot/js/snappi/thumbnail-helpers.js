@@ -25,6 +25,21 @@
 	/*
 	 * protected
 	 */
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.ThumbnailFactory = function(Y){
+		if (_Y === null) _Y = Y;
+		
+		// MultiSelect
+		SNAPPI.MultiSelect = MultiSelect;
+		SNAPPI.multiSelect = new MultiSelect();
+		
+		// Thumbnail Factory
+		SNAPPI.namespace('SNAPPI.Factory');
+		SNAPPI.Factory.Thumbnail = ThumbnailFactory;
+
+	}	
+	
 	// // find only visible elements. copied from SNAPPI.util.isDOMVisible(n);
     var _isDOMVisible = function(n){
     	return n.getComputedStyle('display') != 'none' && n.getComputedStyle('visibility') != 'hidden';
@@ -37,6 +52,7 @@
 		found = found && _isDOMVisible(n);
 		return found;
 	};
+	
 	var MultiSelect = function(cfg) {
 		if (MultiSelect.instance) return MultiSelect.instance;		// singleton
 		MultiSelect.instance = this;
@@ -125,21 +141,20 @@
 			}
 		},
 		selectAll : function(node) {
-			node = node || SNAPPI.Y.one('section.gallery .container');
+			node = node || _Y.one('section.gallery .container');
 			node.all('.FigureBox').addClass('selected');
 		},
 		clearAll : function(node) {
-			node = node || SNAPPI.Y.one('section.gallery .container');
+			node = node || _Y.one('section.gallery .container');
 			node.all('.FigureBox').removeClass('selected');
 		},
 		listen : function(container, status, handler) {
-			var Y = SNAPPI.Y;
 			handler = handler || MultiSelect.multiSelectHandler
 			status = (status == undefined) ? true : status;
 			container = container || 'section.gallery.photo .container';
 			if (status) {
 				// listen
-				Y.all(container).each( 
+				_Y.all(container).each( 
 					function(n) {
 						n.listen = n.listen || {};
 						if (!n.listen['MultiSelect']) {
@@ -154,7 +169,7 @@
 				// SNAPPI.lightbox.listen(true); // listen in base.js
 			} else {
 				// stop listening
-				Y.all(container).each(function(n) {
+				_Y.all(container).each(function(n) {
 						if (n.listen['MultiSelect']) {
 							try {
 								n.listen['MultiSelect'].detach();
@@ -169,8 +184,6 @@
 	/*
 	 * make global
 	 */
-	SNAPPI.MultiSelect = MultiSelect;
-	SNAPPI.multiSelect = new MultiSelect();
 	
 	var SingleSelect
 
@@ -178,8 +191,7 @@
 	 * factory class for creating instance of Thumbnail, i.e. Photo Group or Person
 	 */
 	var ThumbnailFactory = function(){};
-	SNAPPI.namespace('SNAPPI.Factory');
-	SNAPPI.Factory.Thumbnail = ThumbnailFactory;
+	
 	/*
 	 * static methods
 	 */
@@ -354,7 +366,7 @@
 			delete(sizeCfg.addClass);		// keep size classes local
 			
 			// addClass from this._cfg
-			this._cfg = Y.merge(this._cfg, sizeCfg, cfg);
+			this._cfg = _Y.merge(this._cfg, sizeCfg, cfg);
 			if (this._cfg.addClass) node.addClass(this._cfg.addClass);
 
 			// set src to the correct size
@@ -433,11 +445,10 @@
 			return this;
 		},
 		bindSelected: function(selected, previewBody, size) {
-    		var Y = SNAPPI.Y;
 			if (!selected.id) {
         		selected = SNAPPI.Auditions.get(selected);
         	} 	    		
-    		var previewBody = previewBody || Y.one('.photo .preview-body');
+    		var previewBody = previewBody || _Y.one('.photo .preview-body');
     		if (!previewBody) return;
     		
     		var cfg, uuid, size, auditionSH;
@@ -462,7 +473,7 @@
 	    		if (!previewBody.loadingmask) {
 	    			var loadingmaskTarget = node;
 					// plugin loadingmask to Thumbnail.PreviewPhoto
-					previewBody.plug(Y.LoadingMask, {
+					previewBody.plug(_Y.LoadingMask, {
 						strings: {loading:''}, 	// BUG: A.LoadingMask
 						target: loadingmaskTarget,
 						end: null
@@ -520,7 +531,7 @@
 			// PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
 		},
 		handle_HiddenShotClick: function(e) {
-			var parent = SNAPPI.Y.one('#shot-gallery');
+			var parent = _Y.one('#shot-gallery');
 			var selected = SNAPPI.Auditions.find(parent.get('parentNode').one('.FigureBox').uuid);
         	var shotGallery = SNAPPI.Gallery.find['shot-'];
         	if (!shotGallery) {
@@ -550,7 +561,7 @@
 			if (value && !node.listen[listener]) {
 				var previewBody = node.ancestor('.preview-body');
 				var g = gallery || SNAPPI.Gallery.find['nav-'];
-				node.listen[listener] = SNAPPI.Y.on('snappi:ratingChanged', 
+				node.listen[listener] = _Y.on('snappi:ratingChanged', 
 					function(r){
 						if (g && previewBody.one('.FigureBox.PhotoPreview').contains(r.node)) {
 							var selected = g.auditionSH.next();
@@ -564,7 +575,6 @@
 		},
 	};	
 	
-	var Y = SNAPPI.Y;
 	/*
 	 * Photo Thumbnail
 	 */
@@ -635,7 +645,7 @@
 			delete(sizeCfg.addClass);		// keep size classes local
 			
 			// addClass from this._cfg
-			this._cfg = Y.merge(this._cfg, sizeCfg, cfg);
+			this._cfg = _Y.merge(this._cfg, sizeCfg, cfg);
 			if (this._cfg.addClass) node.addClass(this._cfg.addClass);
 
 			// set src to the correct size
@@ -782,7 +792,7 @@
 					sizeCfg.showExtras = true;
 					break;
 			}
-			this._cfg = Y.merge(this._cfg, sizeCfg);
+			this._cfg = _Y.merge(this._cfg, sizeCfg);
 			
 			// set CSS classNames
 			node.set('className', 'FigureBox').addClass(this._cfg.type).addClass(sizeCfg.size);
@@ -872,7 +882,7 @@
 					sizeCfg.showExtras = true;
 					break;
 			}
-			this._cfg = Y.merge(this._cfg, sizeCfg);
+			this._cfg = _Y.merge(this._cfg, sizeCfg);
 			
 			// set CSS classNames
 			node.set('className', 'FigureBox').addClass(this._cfg.type).addClass(sizeCfg.size);
@@ -964,7 +974,7 @@
 						if (!container.listen) container.listen = {};
 						container.listen['imgOnLoad'] = img.on('load', function(e){
 							container.loadingmask.hide();
-							Y.fire('snappi:preview-change', container);
+							_Y.fire('snappi:preview-change', container);
 						}); 
 					}		    		
 					var src = selected.getImgSrcBySize(selected.urlbase + selected.src, size);
@@ -975,7 +985,7 @@
 		},
 		listen: function(filmstrip){
 			if (!filmstrip.node.listen['preview-change']) {
-				filmstrip.node.listen['preview-change'] = Y.on('snappi:preview-change', 
+				filmstrip.node.listen['preview-change'] = _Y.on('snappi:preview-change', 
 	            	function(previewBody){
 	            		var dialog_ID = 'dialog-photo-roll-hidden-shots';
 						var dialog = SNAPPI.Dialog.find[dialog_ID];

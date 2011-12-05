@@ -32,6 +32,17 @@
      */
     var _Y = null;					// set in SNAPPI.onYready()
     var _registeredGroups = {};
+    
+	SNAPPI.namespace('SNAPPI.onYready');
+	SNAPPI.onYready.Group = function(Y){
+		if (_Y === null) _Y = Y;
+		_Y.extend(SubstitutionGroup, Group);
+		SNAPPI.Group = Group;
+	    SNAPPI.SubstitutionGroup = SubstitutionGroup;
+	    SNAPPI.SubstitutionGroupData = SubstitutionGroupData;
+	}    
+        
+    
     /*
      * manages the Data element for SubstitutionGroup.
      * Note: data exists as part of Thumbnail.data.substitutes.
@@ -215,11 +226,6 @@
     
     
     
-    
-    
-    
-    
-    
     /**
      * Group BASE Class
      */
@@ -229,18 +235,19 @@
         
         
         // initial rendering of substitutes using stack._fnInsertWithSubstitutes
-        this.init = function(cfg){
-        };
-        // why am I calling the baseClass method here?
-        this.add = function(subGroup, nodeList){
-        };
-        this.remove = function(subGroup, nodeList){
-        };
-        this.style = function(parent){
-        };
-        
         this.init(cfg);
     };
+    // Class interface definition. subclass must override
+    Group.prototype = {
+ 		init : function(cfg){
+       	},
+        add : function(subGroup, nodeList){
+        },
+        remove : function(subGroup, nodeList){
+        },
+        style : function(parent){
+        },   	
+    }
     
     /*
      * static functions
@@ -274,7 +281,7 @@
     
     
     /*
-     * Class SubstitutionGroup
+     * Class SubstitutionGroup extends Group
      * manages DOM elements associated with shots
      */
     var SubstitutionGroup = function(cfg){
@@ -288,7 +295,15 @@
         var _cfg = _Y.merge(defaultCfg, cfg);
         SubstitutionGroup.superclass.constructor.call(this, _cfg);
         
-        this.init = function(_cfg){
+        /*
+         * main
+         */
+        this.init(_cfg);
+        
+    };
+    // _Y.extend(SubstitutionGroup, Group);  	// extend in SNAPPI.onYready();
+    SubstitutionGroup.prototype = {
+		init : function(_cfg){
             this._subGrData = _cfg.subGrData;
             if (_cfg.el == null) {
                 // create element, if necessary
@@ -303,11 +318,11 @@
             // append to parentEl
             _cfg.parent.ynode().append(this._el);
             this._el.subGr = this; // back reference
-        };
-        this.getEl = function(){
+       },
+        getEl : function(){
             return this._el;
-        };
-        this.add = function(nodeList){
+        },
+        add : function(nodeList){
             if (!(nodeList instanceof _Y.NodeList)) {
                 // make a nodeList
                 if (nodeList instanceof HTMLElement) 
@@ -334,8 +349,8 @@
                 SubstitutionGroup.styleElements(pass.byref[p]);
             }
             // style parent after all adds are finished
-        };
-        this.move = function(nodeList){
+        },
+        move : function(nodeList){
             this.add(nodeList);
             // style parent
             SNAPPI.Group.styleOddEven({
@@ -343,9 +358,8 @@
                 selector: 'ul.substitutionGroup',
                 evenStyle: 'even'
             });
-        };
-        
-        this.remove = function(nodeList){
+        },        
+        remove : function(nodeList){
             if (!(nodeList instanceof _Y.NodeList)) {
                 // make a nodeList
                 if (nodeList instanceof HTMLElement) 
@@ -413,22 +427,15 @@
                 selector: 'ul.substitutionGroup',
                 evenStyle: 'even'
             });
-        };
-        this.findBest = function(t){
+        },
+        findBest : function(t){
             if (t instanceof HTMLElement && t.data) {
                 return this._subGrData.setIfBest(t);
             }
             return this._subGrData.findBest();
-        };
-        
-        
-        /*
-         * main
-         */
-        this.init(_cfg);
-        
-    };
-    // _Y.extend(SubstitutionGroup, Group);
+        },    	
+    }
+    
     
     
     /*
@@ -489,15 +496,6 @@
     };
     
     
-    
-	SNAPPI.namespace('SNAPPI.onYready');
-	SNAPPI.onYready.Group = function(Y){
-		if (_Y === null) _Y = Y;
-		_Y.extend(SubstitutionGroup, Group);
-		SNAPPI.Group = Group;
-	    SNAPPI.SubstitutionGroup = SubstitutionGroup;
-	    SNAPPI.SubstitutionGroupData = SubstitutionGroupData;
-	}    
     
 })();
 

@@ -21,6 +21,13 @@
  * SNAPPI.imageLoader, singleton class/object for monitoring/loading IMG src async 
  */
 (function(){
+	var _Y = null;
+	SNAPPI.namespace('SNAPPI.onYready');
+	SNAPPI.onYready.ImageLoader = function(Y){
+		if (_Y === null) _Y = Y;
+		
+		ImageLoader.QUEUE_IMAGES = true;
+	}  
     
     /*
      * protected methods and variables
@@ -62,7 +69,7 @@
     /*
      * class static
      */
-    ImageLoader.QUEUE_IMAGES = true;
+    ImageLoader.QUEUE_IMAGES = null;
     
 	ImageLoader.prototype = {
 		init : function(cfg){
@@ -70,7 +77,7 @@
 			 * WARNING: By initializing singleton class in module load
 			 * this script REQUIRES 'async-queue' to be loaded BEFORE script load
 			 */
-			_queue = _queue || new SNAPPI.Y.AsyncQueue();
+			_queue = _queue || new _Y.AsyncQueue();
             /*
              * initialize AsynchQueue
              */
@@ -111,10 +118,10 @@
          */
         watchBySelector : function(selector, onComplete, cfg){
             var arrImg = [];
-            if (Y.Lang.isFunction(onComplete)) 
+            if (_Y.Lang.isFunction(onComplete)) 
                 this.onComplete.push(onComplete);
             
-            Y.all(selector).each(function(node){
+            _Y.all(selector).each(function(node){
                 if (node.get('nodeName') == "IMG") {
                     arrImg.push(node);
                 }
@@ -129,7 +136,7 @@
             /*
              * now that we have an array of all IMG elements, load
              */
-            var _cfg = Y.merge({
+            var _cfg = _Y.merge({
                 chunkSize: 500, // use larger chunkSize if we are just
                 // watching
                 queueImgSrc: false
@@ -144,10 +151,10 @@
         queueBySelector : function(container, selector, onComplete, chunkSize){
             chunkSize = chunkSize || 40;
             var arrImg = [];
-            if (Y.Lang.isFunction(onComplete)) 
+            if (_Y.Lang.isFunction(onComplete)) 
                 this.onComplete.push(onComplete);
             
-            var root = Y.one(container);
+            var root = _Y.one(container);
             if (!root) 
                 root = container;
             root.all(selector).each(function(node){
@@ -187,7 +194,7 @@
             if (_queue.indexOf(_queueCallback) == -1) {
                 _queue.add(_queueCallback).promote(_queueCallback);
                 if (SNAPPI.imageLoader.cleanupTimer == null) 
-                    SNAPPI.imageLoader.cleanupTimer = Y.later(10000, SNAPPI.imageLoader, SNAPPI.imageLoader.queueCleanup, null, true);
+                    SNAPPI.imageLoader.cleanupTimer = _Y.later(10000, SNAPPI.imageLoader, SNAPPI.imageLoader.queueCleanup, null, true);
             }
             if (!_queue.isRunning()) 
                 _queue.run();
@@ -227,7 +234,7 @@
                 this._watchList[imgEl.src] = 1;
                 this._watchListCount++;
                 imgEl.imageLoader = this;
-                Y.on('load', this.popCompleted, imgEl, this, imgEl);
+                _Y.on('load', this.popCompleted, imgEl, this, imgEl);
             }
         },
         
@@ -240,7 +247,7 @@
             delete this._watchList[imgEl.src];
             this._watchListCount--;
             delete imgEl.imageLoader;
-            Y.Event.detach('load', this.popCompleted, imgEl);
+            _Y.Event.detach('load', this.popCompleted, imgEl);
             this.finishIfLoaded();
         },
         finishIfLoaded : function(){
@@ -304,9 +311,9 @@
 	     * ImageLoader Event Delegate Listener
 	     */
 	    // use event delegate for all img load listeners
-	    // Y.delegate("load", function(e){
+	    // _Y.delegate("load", function(e){
 	    // alert("delegate event working in ImageLoader!!!")
-	    // var imgEl = Y.Node.getDOMNode(e.currentTarget);
+	    // var imgEl = _Y.Node.getDOMNode(e.currentTarget);
 	    // if (imgEl.ImageLoader !== undefined) {
 	    // imgEl.ImageLoader.popCompleted(imgEl);
 	    // }

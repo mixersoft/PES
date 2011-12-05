@@ -27,8 +27,18 @@
 	/*
 	 * protected methods and variables
 	 */
-	var Y = SNAPPI.Y;
-
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.Rating = function(Y){
+		if (_Y === null) _Y = Y;
+		// custom listeners, global
+		var eventString = 'snappi:ratingChanged';
+		if (!Rating.listen[eventString]) {
+			Rating.listen[eventString] = _Y.on(eventString, function(r){
+				r.node.loadingmask.hide();
+			});		
+		}		
+	}
 	var _ratingCSS;
 
 	var _getStarValueFromEvent = function(ev) {
@@ -60,24 +70,11 @@
 	/*
 	 * static properties
 	 */
-	Rating.doClassInit = true;
 	Rating.listen = {};
 
 	/*
 	 * static functions
 	 */
-	Rating.classInit = function(){
-		var Y = SNAPPI.Y;
-		// custom listeners, global
-		var eventString = 'snappi:ratingChanged';
-		if (!Rating.listen[eventString]) {
-			Rating.listen[eventString] = Y.on(eventString, function(r){
-				r.node.loadingmask.hide();
-			});		
-		}		
-		Rating.doClassInit = false;
-	};
-	
 	Rating.toggleShowRating = function(value) {
 		if (value) {
 			Rating.toggleShowSizeByRating(true);
@@ -133,7 +130,7 @@
 			setDbValueFn : Rating.postRatingChangeAndCleanup,
 			listen : false
 		};
-		ratingCfg = SNAPPI.Y.merge(ratingCfg, cfg);
+		ratingCfg = _Y.merge(ratingCfg, cfg);
 		Rating.attach(parent, ratingCfg);
 		// if (parent.one('figure > img')) parent.one('figure > img').addClass('rating' + v);
 		// if (parent.one('div.thumb-label')) parent.one('div.thumb-label').addClass('hide');
@@ -156,7 +153,7 @@
 			className : 'ratingGroup',
 			listen : true
 		};
-		_cfg = Y.merge(_cfg, cfg);
+		_cfg = _Y.merge(_cfg, cfg);
 
 		var ratingGroup;
 		if (parent.Rating) {	
@@ -181,7 +178,7 @@
 		} else {
 			// CREATE new ratingGroup
 			var ratingGroup = parent.one('.'+_cfg.className);
-			if (!ratingGroup) ratingGroup = parent.create(Y.substitute(
+			if (!ratingGroup) ratingGroup = parent.create(_Y.substitute(
 					"<div class='{className}'></div>", _cfg));
 			try {
 				parent.one('ul > li.rating').append(ratingGroup);	
@@ -210,7 +207,7 @@
 		// plugin loading mask then call XHR POST
 		if (!r.node.loadingmask) {
 			var loadingmaskTarget = r.node.get('parentNode');
-			r.node.plug(Y.LoadingMask, {
+			r.node.plug(_Y.LoadingMask, {
 				strings: {loading:''}, 	// BUG: A.LoadingMask
 				target: loadingmaskTarget,
 				end: null
@@ -224,9 +221,9 @@
 		// post rating value
 		if (r.getValue() == 0 || r.rerate) {
 			var v = _getStarValueFromEvent(e);
-			if (r.applyToBatch && Y.Lang.isFunction(r.applyToBatch)) {
+			if (r.applyToBatch && _Y.Lang.isFunction(r.applyToBatch)) {
 				r.applyToBatch(v, r.node);			
-			} else if (r.setDbValueFn && Y.Lang.isFunction(r.setDbValueFn)) {
+			} else if (r.setDbValueFn && _Y.Lang.isFunction(r.setDbValueFn)) {
 				// var silent = silent || false;
 				/*
 				 * set by DataElement, fires onChange event
@@ -240,30 +237,30 @@
 
 	/**
 	 * startListeners()
-	 * @param delegateContainer Y.Node or CSS selector
+	 * @param delegateContainer _Y.Node or CSS selector
 	 * @param selector	CSS selector
 	 * 
 	 * * Note: Filter Rating listener started by SNAPPI.filter.initRating();
 	 */
 	Rating.startListeners = function(delegateContainer, selector) {
 		var selector = selector || 'div.ratingGroup';
-		if (!delegateContainer instanceof Y.Node) {
-			delegateContainer = Y.one(delegateContainer);
+		if (!delegateContainer instanceof _Y.Node) {
+			delegateContainer = _Y.one(delegateContainer);
 		}
 		var id = delegateContainer.get('id') || delegateContainer._yuid;
 		var name = id + '-' + selector;
 		if (!Rating.listen[name]) {
 			Rating.listen[name] = delegateContainer.delegate('click', Rating.handleClick, selector);	
 		}
-		// Y.one(delegateContainer).delegate("mouseover",
+		// _Y.one(delegateContainer).delegate("mouseover",
 		// Rating.handleMouseOver, selector);
-		// Y.one(delegateContainer).delegate("mouseout",
+		// _Y.one(delegateContainer).delegate("mouseout",
 		// Rating.handleMouseOut, selector);
 		return Rating.listen[name];
 	};
 	Rating.stopListeners = function(delegateContainer) {
-		if (!delegateContainer instanceof Y.Node) {
-			delegateContainer = Y.one(delegateContainer);
+		if (!delegateContainer instanceof _Y.Node) {
+			delegateContainer = _Y.one(delegateContainer);
 		}
 		var detach = delegateContainer.get('id') + selector;
 		if (Rating.listen[detach]) Rating.listen[detach].detach();
@@ -281,7 +278,6 @@
 		 */
 		// container: null,
 		init : function(cfg) {
-			var Y = SNAPPI.Y;
 			var _cfg = {
 				// el : null,
 				id: null,
@@ -291,7 +287,7 @@
 				rerate : true
 			// change an existing rating
 			};
-			_cfg = Y.merge(_cfg, cfg);
+			_cfg = _Y.merge(_cfg, cfg);
 			this.id = _cfg.id || _cfg.uuid || _cfg.node.get('id');
 			// this.id = (_cfg.uuid || (_cfg.uuid === false)) ? _cfg.uuid
 					// : _cfg.node.get('id');
@@ -389,11 +385,11 @@
 		r = eTarget.parentNode.Rating;
 		if (r.getValue() == 0 || r.rerate)
 			r.mouseOver(starValue);
-		// Y.on('mousemove', Rating.handleMouseOver, e.target);
+		// _Y.on('mousemove', Rating.handleMouseOver, e.target);
 	};
 	Rating.XXXhandleMouseOut = function(e) {
 		e.stopPropagation();
-		// Y.detach('mousemove', Rating.handleMouseOut, e.target);
+		// _Y.detach('mousemove', Rating.handleMouseOut, e.target);
 		var r, eTarget = e.target;
 		r = eTarget.parentNode.Rating;
 		if (r.getValue() == 0 || r.rerate)
@@ -403,7 +399,7 @@
 
 	Rating.toggleShowSizeByRating = function(value) {
 		if (!_ratingCSS) {
-			_ratingCSS = new Y.StyleSheet('ratingCSS');
+			_ratingCSS = new _Y.StyleSheet('ratingCSS');
 			_ratingCSS.disable();
 		}
 		SNAPPI.Thumbnail.showSizeByRating = value
@@ -447,13 +443,12 @@
 	/**
 	 * called by Gallery.deleteThumbnail()
 	 * TODO: move to differnt class, io_helpers(?)
-	 * @params container Y.Node, container for loadingmask 
+	 * @params container _Y.Node, container for loadingmask 
 	 * @params ids Array, asset UUIDs
 	 * @params properties obj, {rating:, rotate:, }
 	 * @params actions obj, {updateBestshot:1, }
 	 */
 	AssetRatingController.deleteByUuid = function(container, cfg){
-		var Y = SNAPPI.Y;
 		var uri = "/photos/delete/.json";
 		var postData = {
 			'data[Asset][id]' : cfg.ids,
@@ -469,7 +464,7 @@
 		}
 		
     	/*
-		 * plugin Y.Plugin.IO
+		 * plugin _Y.Plugin.IO
 		 */
 		var ioCfg;
     	var args = {
@@ -491,7 +486,7 @@
 			// var loadingmaskTarget = container.get('parentNode');
 			var loadingmaskTarget = container;
 			// set loadingmask to parent
-			container.plug(Y.LoadingMask, {
+			container.plug(_Y.LoadingMask, {
 				strings: {loading:''}, 	// BUG: A.LoadingMask
 				target: loadingmaskTarget,
 			});    			
@@ -501,7 +496,7 @@
 			// container.loadingmask.overlayMask.set('target', target);
 			container.loadingmask.set('zIndex', 10);
 			container.loadingmask.overlayMask.set('zIndex', 10);
-			container.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(ioCfg));
+			container.plug(_Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(ioCfg));
 		} else {
 			ioCfg = {
 				arguments: args, 
@@ -522,13 +517,12 @@
 	/**
 	 * 
 	 * TODO: move to differnt class, io_helpers(?)
-	 * @params container Y.Node, container for loadingmask 
+	 * @params container _Y.Node, container for loadingmask 
 	 * @params ids Array, asset UUIDs
 	 * @params properties obj, {rating:, rotate:, }
 	 * @params actions obj, {updateBestshot:1, }
 	 */
 	AssetRatingController.setProp = function(container, cfg){
-		var Y = SNAPPI.Y;
 		var uri = "/photos/setprop/.json";
 		var postData = {
 			'data[Asset][id]' : cfg.ids,
@@ -544,7 +538,7 @@
 		}
 		
     	/*
-		 * plugin Y.Plugin.IO
+		 * plugin _Y.Plugin.IO
 		 */
 		var ioCfg;
     	var args = {
@@ -566,7 +560,7 @@
 			// var loadingmaskTarget = container.get('parentNode');
 			var loadingmaskTarget = container;
 			// set loadingmask to parent
-			container.plug(Y.LoadingMask, {
+			container.plug(_Y.LoadingMask, {
 				strings: {loading:''}, 	// BUG: A.LoadingMask
 				target: loadingmaskTarget,
 			});    			
@@ -576,7 +570,7 @@
 			// container.loadingmask.overlayMask.set('target', target);
 			container.loadingmask.set('zIndex', 10);
 			container.loadingmask.overlayMask.set('zIndex', 10);
-			container.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(ioCfg));
+			container.plug(_Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(ioCfg));
 		} else {
 			ioCfg = {
 				arguments: args, 
@@ -631,7 +625,7 @@
 							var selected = shotPhotoRoll.selected;
 							// confirm showHidden bestShot is in main photoroll
 							if (bestShot !== selected) {
-								var photoroll = SNAPPI.Y.one('section.gallery.photo').Gallery;
+								var photoroll = _Y.one('section.gallery.photo').Gallery;
 								// splice into original location
 								var result = photoroll.auditionSH.replace(selected, bestShot);
 								if (result) {
@@ -715,7 +709,6 @@
 			}
 		};
 		AssetRatingController.onRatingChanged = function(r, v) {
-			var Y = SNAPPI.Y;
 			// get audition from parent of ratingGroup
 			switch (r.node.get('id')) {
 			case 'lbx-rating-group': // apply rating to lightbox.getSelected()
@@ -726,12 +719,12 @@
 					AssetRatingController._updateRatingChange(audition, v);
 					r.render(v);	// r not listed in audition.bindTo
 				}, this);
-				Y.fire('snappi:ratingChanged', r);
+				_Y.fire('snappi:ratingChanged', r);
 				break;
 			case "photos-home-rating": // rating for IMG.preview
 				// try {
 					// v = v || r.value;
-					// var auditionSH = Y.one('section#nav-filmstrip .gallery.photo.filmstrip').Gallery.auditionSH;
+					// var auditionSH = _Y.one('section#nav-filmstrip .gallery.photo.filmstrip').Gallery.auditionSH;
 					// var audition = auditionSH.get(r.id);
 					// AssetRatingController._updateRatingChange(audition, v);
 				// } catch (e) {
@@ -744,16 +737,16 @@
 					// AssetRatingController._updateRatingChange(audition, v);
 				// } catch (e) {
 				// }
-				// Y.fire('snappi:ratingChanged', r);
+				// _Y.fire('snappi:ratingChanged', r);
 				break;
 			case 'menuItem-contextRatingGrp': // right-click over .FigureBox
 				var audition = SNAPPI.Auditions.get(r.id);
 				v = v || r.value;
 				AssetRatingController._updateRatingChange(audition, v);
-				Y.fire('snappi:ratingChanged', r);
+				_Y.fire('snappi:ratingChanged', r);
 				// hide contextMenu
 				// use aui-delayed-task and/or aui-debounce
-				Y.later(2000, null, function(){tn.dom().Menu.getNode().addClass('hide');});
+				_Y.later(2000, null, function(){tn.dom().Menu.getNode().addClass('hide');});
 				break;
 			default: // photoRoll .FigureBox ratingGroup
 				try {
@@ -763,7 +756,7 @@
 					AssetRatingController._updateRatingChange(audition, v);
 				} catch (e) {
 				}
-				Y.fire('snappi:ratingChanged', r);
+				_Y.fire('snappi:ratingChanged', r);
 				break;
 			}
 		};

@@ -22,24 +22,28 @@
  */
 
 (function(){
-
-    /***************************************
-     * experimental code
-     * TODO: figure out where to put these functions
-     */
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.IO = function(Y){
+		if (_Y === null) _Y = Y;
+		
+		SNAPPI.IO = IO;
+		SNAPPI.io = new IO();		// deprecate object, use Static class
+	}
+    
     /************************************************************************************
 	 * singleton async io class for posting to DB
 	 * 		SNAPPI.io = new IO();
 	 */
 	
-    var IO = function(){
+    var IO = function(){}
+    IO.prototype = {
         /**
          * call this method to write profile into metadata
          * postData: data user provided
          * callback: defined in caller function to process response
          */
-        this.writeProfile = function(postData, callback, args){
-        	var Y = SNAPPI.Y;
+        writeProfile : function(postData, callback, args){
             var jsonFlag = true;
             var data;
             for(var key in postData){
@@ -53,21 +57,20 @@
         	    var cakeKey = 'data[' + keyArray.join('][') + ']';
         	    var data = {};
         	    if(jsonFlag == true){
-        	    	data[cakeKey] = Y.JSON.stringify(postData[key]);
+        	    	data[cakeKey] = _Y.JSON.stringify(postData[key]);
         	    } else {
         	    	data[cakeKey] = postData[key];
         	    }
         	    this.post("/snappi/writeProfile/.json", data, callback, '');
         	}
-        };
+        },
         
         /**
          * call this method to read profile from metadata
          * key: to tell cakephp which key you want to read from metadata.
          * callback: defined in caller function to process response
          */
-        this.readProfile = function(key, callback, args){
-        	var Y = SNAPPI.Y;
+        readProfile : function(key, callback, args){
             var ioCfg = {
                 method: "GET",
             	headers: {
@@ -76,7 +79,7 @@
                 on: {
                     complete: function(id, o, args){
 		            	if (o.statusText == 'OK') {
-		            		var xhrMsg = Y.JSON.parse(o.responseText);
+		            		var xhrMsg = _Y.JSON.parse(o.responseText);
 			            	callback.complete(xhrMsg);
 		            	}else{
 		            		//TODO need to think about return what kind of error info
@@ -93,16 +96,15 @@
             if (args != undefined) 
                 ioCfg.arguments = args;
             var uri = "/snappi/readProfile/.json?key="+key;
-            Y.io(uri, ioCfg);
-        };
+            _Y.io(uri, ioCfg);
+        },
         
         /**
          * call this method to write session into cakephp session component
          * postData: data user provided
          * callback: defined in caller function to process response
          */
-        this.writeSession = function(postData, callback, args){
-        	var Y = SNAPPI.Y;
+        writeSession : function(postData, callback, args){
             var jsonFlag = true;
             var data = {};
             for(var key in postData){
@@ -116,16 +118,16 @@
         	    var cakeKey = 'data[' + keyArray.join('][') + ']';
         	    
         	    if(jsonFlag == true){
-        	    	data[cakeKey] = Y.JSON.stringify(postData[key]);
+        	    	data[cakeKey] = _Y.JSON.stringify(postData[key]);
         	    } else {
         	    	data[cakeKey] = postData[key];
         	    }
 //        	    this.post("/snappi/writeSession/.json", data, callback, '');
         	}
             this.post("/snappi/writeSession/.json", data, callback, '');
-        };
+        },
         
-        this.savePreviewSize = function(size) {
+        savePreviewSize : function(size) {
 			var callback = {
 				complete : function(id, o, args) {
 					var check;
@@ -138,15 +140,14 @@
 			var photoSizeKeyName = 'profile.previewSize';
 			postData[photoSizeKeyName] = size;
 			SNAPPI.io.writeSession(postData, callback, '');
-		};
+		},
         
         /**
          * call this method to read session from cakephp session component
          * key: to tell cakephp which key you want to read from metadata.
          * callback: defined in caller function to process response
          */
-        this.readSession = function(key, callback, args){
-        	var Y = SNAPPI.Y;
+        readSession : function(key, callback, args){
             var ioCfg = {
                 method: "GET",
             	headers: {
@@ -155,7 +156,7 @@
                 on: {
 		            complete: function(id, o, args){
 		            	if (o.statusText == 'OK') {
-		            		var xhrMsg = Y.JSON.parse(o.responseText);
+		            		var xhrMsg = _Y.JSON.parse(o.responseText);
 			            	callback.complete(xhrMsg);
 		            	}else{
 		            		//TODO need to think about return what kind of error info
@@ -172,10 +173,10 @@
             if (args != undefined) 
                 ioCfg.arguments = args;
             var uri = "/snappi/readSession/.json?key="+key;
-            Y.io(uri, ioCfg);
-        };
+            _Y.io(uri, ioCfg);
+        },
         
-        this.post = function(uri, postData, callback, args, sync){	
+        post : function(uri, postData, callback, args, sync){	
             // POST to uri
             var v, post = [];
             // stringify post params
@@ -190,7 +191,7 @@
                     complete: function(id, o, args){
             			// process json response
 		            	if (o.getResponseHeader && o.getResponseHeader('Content-Type') == 'application/json') {
-//		            		o.responseJson = Y.JSON.parse(o.responseText);
+//		            		o.responseJson = _Y.JSON.parse(o.responseText);
 		            		o.responseJson = eval('('+o.responseText+')');
 		            	}
 		            	if (callback.success) callback.success.call(this, id, o, args);
@@ -207,17 +208,16 @@
             if (args != undefined) 
                 ioCfg.arguments = args;
             if (sync) ioCfg.sync = true;	// synch XHR call
-            var Y = SNAPPI.Y;
-            var response = Y.io(uri, ioCfg);
+            var response = _Y.io(uri, ioCfg);
             return sync ? response : null;
-        };
-        this.setNamedParams = function(uri, namedData) {
+        },
+        setNamedParams : function(uri, namedData) {
         	// deprecate
         	console.warn("DEPRECATE. use static method, SNAPPI.IO.setNamedParams");
         	return IO.setNamedParams(uri, namedData);
 
-        };
-        this.get = function(uri, callback, qsData, namedData, args, sync){
+        },
+        get : function(uri, callback, qsData, namedData, args, sync){
         	
             var ioCfg = {
                 method: "GET",
@@ -226,7 +226,7 @@
             			console.warn('io:complete');
 	        			// process json response
 		            	if (o.getResponseHeader && o.getResponseHeader('Content-Type') == 'application/json') {
-//		            		o.responseJson = Y.JSON.parse(o.responseText);
+//		            		o.responseJson = _Y.JSON.parse(o.responseText);
 		            		o.responseJson = eval('('+o.responseText+')');
 		            	}
 	        			callback.complete.call(this, id, o, args);
@@ -244,7 +244,6 @@
             };
             if (args != undefined) 
                 ioCfg.arguments = args;
-            var Y = SNAPPI.Y;
             if (sync) ioCfg.sync = true;	// synch XHR call
             if (namedData) {
             	uri = IO.setNamedParams(uri, namedData);
@@ -257,15 +256,74 @@
                 }            
             	uri = uri + '?' + qs.join('&');
             }
-            var response = Y.io(uri, ioCfg);
+            var response = _Y.io(uri, ioCfg);
             return sync ? response : null;
-        };   
+        }, 
     };
+    
+    
+	/**
+	 * @deprecated, not sure how this is better than IO.getIORequestCfg
+	 * use A.IORequest for enhanced _Y.io XHR. adds loadingMask
+	 * @param uri
+	 * @param callback
+	 * @param cfg {
+	 * 		qs: {}, name value querystring params to add to url
+	 * 		nameData: {}, name-value name params to add to url 
+	 * 		args: [], args to return to callback,
+	 * 		context: object
+	 * automatically includes A.LoadingMask plugin
+	 * 		loadingmask: _Y.Node || {
+	 * 			target: _Y.Node target for loadingmask
+	 * 			label: string to display, default loading...
+	 * 			hideEvent: string, custom event string to hide mask
+	 * 		 }
+	 * these options from from A.io.request,
+	 * 		dataType: string, [text, html, json, xml], default null 
+	 * 		cache: boolean, default false. If false the current timestamp will be appended to the url to prevent cache   
+	 * 		autoLoad: boolean, default true.
+	 * } 
+	 * @return A.IORequest
+	 */
+	IO.getIORequest = function(uri, callback, cfg){
+		var ioCfg = IO.getIORequestCfg.call(this, uri, callback, cfg);
+        // set loadingMask
+        if (cfg.loadingMask) {
+        	var target = (cfg.loadingMask instanceof _Y.Node) ? cfg.loadingMask : cfg.loadingMask.target;
+        	if (target instanceof _Y.Node) {
+        		if (!target.loadingmask) {
+					// cleanup listeners
+					if (!target.listen) target.listen = {};
+					var hideEventString = cfg.loadingMask.hideEvent || 'snappi:hideLoadingMask';
+					if (!target.listen[hideEventString]) {
+						target.listen[hideEventString] = _Y.on(hideEventString, function(n){
+							target.loadingmask.hide();
+						});		
+					} else {
+						// check if eventString matches current listener
+						console.warn("snappi.io: check if eventString matches current listener");
+					}
+					var loadingMaskCfg = {};
+	        		if (cfg.loadingMask.label) {
+	        			loadingMaskCfg.strings = {loading: cfg.loadingMask.label };
+//		        			target.loadingmask.set('strings', {loading: cfg.loadingMask.label });  // BUG: doesn't work here
+		        	} 
+	        		target.plug(_Y.LoadingMask, loadingMaskCfg);
+        		}
+				if (ioCfg.autoLoad) target.loadingmask.show();
+        	}
+        }
+        
+        // uses A.IORequest
+        var io = _Y.io.request(uri, ioCfg);
+        return io;
+    };    
+    
 	/**
 	 * 
-	 * preferred: use IO.pluginIO_RespondAsJson
+	 * preferred: use IO.pluginIO_RespondAsJson for JSON requests
 	 * 
-	 * use A.IORequest for enhanced Y.io XHR. 
+	 * use A.IORequest for enhanced _Y.io XHR. 
 	 * @param uri
 	 * @param callback
 	 * @param cfg {
@@ -516,7 +574,7 @@
 				else return false;
 	        }
 	    };
-    	cfg.on = SNAPPI.Y.merge(cfg.on, _json_callbacks);
+    	cfg.on = _Y.merge(cfg.on, _json_callbacks);
     	
     	// add named params
     	if (cfg.nameData) {
@@ -538,70 +596,7 @@
     	return cfg;
     };    
 
-    
-    
-    
-    IO.prototype = {
-    	/**
-    	 * use A.IORequest for enhanced Y.io XHR. adds loadingMask
-    	 * @param uri
-    	 * @param callback
-    	 * @param cfg {
-    	 * 		qs: {}, name value querystring params to add to url
-    	 * 		nameData: {}, name-value name params to add to url 
-    	 * 		args: [], args to return to callback,
-    	 * 		context: object
-    	 * automatically includes A.LoadingMask plugin
-    	 * 		loadingmask: Y.Node || {
-    	 * 			target: Y.Node target for loadingmask
-    	 * 			label: string to display, default loading...
-    	 * 			hideEvent: string, custom event string to hide mask
-    	 * 		 }
-    	 * these options from from A.io.request,
-    	 * 		dataType: string, [text, html, json, xml], default null 
-    	 * 		cache: boolean, default false. If false the current timestamp will be appended to the url to prevent cache   
-    	 * 		autoLoad: boolean, default true.
-    	 * } 
-    	 * @return A.IORequest
-    	 */
-    	getIORequest: function(uri, callback, cfg){
-    		var Y = SNAPPI.Y;
-    		var ioCfg = IO.getIORequestCfg.call(this, uri, callback, cfg);
-	        // set loadingMask
-	        if (cfg.loadingMask) {
-	        	var target = (cfg.loadingMask instanceof Y.Node) ? cfg.loadingMask : cfg.loadingMask.target;
-	        	if (target instanceof Y.Node) {
-	        		if (!target.loadingmask) {
-						// cleanup listeners
-						if (!target.listen) target.listen = {};
-						var hideEventString = cfg.loadingMask.hideEvent || 'snappi:hideLoadingMask';
-						if (!target.listen[hideEventString]) {
-							target.listen[hideEventString] = Y.on(hideEventString, function(n){
-								target.loadingmask.hide();
-							});		
-						} else {
-							// check if eventString matches current listener
-							console.warn("snappi.io: check if eventString matches current listener");
-						}
-						var loadingMaskCfg = {};
-		        		if (cfg.loadingMask.label) {
-		        			loadingMaskCfg.strings = {loading: cfg.loadingMask.label };
-//		        			target.loadingmask.set('strings', {loading: cfg.loadingMask.label });  // BUG: doesn't work here
-			        	} 
-		        		target.plug(Y.LoadingMask, loadingMaskCfg);
-	        		}
-					if (ioCfg.autoLoad) target.loadingmask.show();
-	        	}
-	        }
-	        
-	        // uses A.IORequest
-	        var io = Y.io.request(uri, ioCfg);
-	        return io;
-	    }	    
-    };
 
-	SNAPPI.IO = IO;
-	SNAPPI.io = new IO();
 })();
 
 

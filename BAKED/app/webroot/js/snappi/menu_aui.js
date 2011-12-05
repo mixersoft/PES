@@ -1,6 +1,33 @@
 (function(){
 
-var DEFAULT_CFG_contextmenu = 	{
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.Menu = function(Y){
+		if (_Y === null) _Y = Y;
+		Menu.classInit();
+		SNAPPI.MenuAUI = Menu;
+		
+		// SNAPPI.MenuAUI
+		// global lookup by CSS ID
+		Menu.CFG = {
+			'menu-header-markup': CFG_Menu_Header,
+			'contextmenu-photoroll-markup': CFG_Context_Photoroll,
+			'contextmenu-hiddenshot-markup': CFG_Context_HiddenShot,
+			'menu-pagemaker-selected-create-markup': CFG_Menu_Pagemaker_Create, 
+			'menu-select-all-markup': CFG_Menu_SelectAll,
+			'menu-lightbox-organize-markup': CFG_Menu_Lightbox_Organize,
+			'menu-lightbox-share-markup': CFG_Menu_Lightbox_Share,
+			'menu-sign-in-markup': CFG_Menu_SignIn,
+			'menu-uploader-batch-markup': CFG_Menu_Uploader_Batch,		
+			'menu-uploader-folder-markup': CFG_Menu_Uploader_Folder,
+			// context menus
+			'contextmenu-group-markup': CFG_Context_FigureBox,		
+			'contextmenu-person-markup': CFG_Context_FigureBox,
+		};		
+			
+	}
+
+	var DEFAULT_CFG_contextmenu = 	{
 		showOn: 'mouseover',
 		hideOn: 'mouseleave',
 		align: { points:['tl', 'tr'] },
@@ -31,32 +58,24 @@ var DEFAULT_CFG_contextmenu = 	{
 	};
 
 	
-	var Menu = function(){
-		if (Menu.doClassInit) Menu.classInit();
-	};
-	Menu.prototype = {};
+	var Menu = function(){};
 	
 	/*
 	 * static properties and methods
 	 */
-	Menu.doClassInit = true;
 	Menu.listen = {};		// ??? track Class listeners? or instance listeners?
 	Menu.find = {};	// keep track of dialog instances for reuse
 	Menu.overlayManager = null;
 	Menu.classInit = function() {
-		if (Menu.doClassInit == false) return;
-		var Y = SNAPPI.Y;
-		Menu.doClassInit = false;
 	};
 	
 	/**
 	 * fetch html markup using Plugin.IO
-	 * @param cfg {uri:, selector:, container:, plug Y.Plugin.io cfg attrs}
+	 * @param cfg {uri:, selector:, container:, plug _Y.Plugin.io cfg attrs}
 	 * @param callback, callback method to init Menu
 	 * @return menu or false on XHR request
 	 */
 	Menu.getMarkup = function(cfg, callback){
-		var Y = SNAPPI.Y;
 		var container = cfg.container;
 		var selector = cfg.selector;
 		
@@ -66,16 +85,16 @@ var DEFAULT_CFG_contextmenu = 	{
 				showLoading:false, 
 				end: null
 		};		
-		var ioCfg = Y.merge(ioCfg, cfg);
+		var ioCfg = _Y.merge(ioCfg, cfg);
 		delete ioCfg.selector;
 		delete ioCfg.selector;
 		
-		if (!Y.one(selector)) {
+		if (!_Y.one(selector)) {
 			// BUG: container.one('#menu-header') does NOT work in chrome
-			var markupNode = Y.Node.create("<div />");
+			var markupNode = _Y.Node.create("<div />");
 			container.append(markupNode);
 			SNAPPI.setPageLoading(true);
-			markupNode.plug(Y.Plugin.IO, ioCfg);	
+			markupNode.plug(_Y.Plugin.IO, ioCfg);	
 			markupNode.io.afterHostMethod('insert', function(){
 				SNAPPI.setPageLoading(false);
 				callback.apply(this, arguments);
@@ -89,11 +108,10 @@ var DEFAULT_CFG_contextmenu = 	{
 	 * 
 	 * @param MARKUP
 	 * @param TRIGGER
-	 * @param cfg {}, additional config for Y.OverlayContext
+	 * @param cfg {}, additional config for _Y.OverlayContext
 	 * @return
 	 */
 	Menu.initMenus = function(menus){
-		var Y = SNAPPI.Y;
 		var defaultMenus;
 		try {
 			defaultMenus = {
@@ -102,28 +120,27 @@ var DEFAULT_CFG_contextmenu = 	{
 		} catch (e) {
 			defaultMenus = {};		// catch race condition
 		}
-		menus = Y.merge(defaultMenus, menus);
+		menus = _Y.merge(defaultMenus, menus);
 		for (var i in menus) {
 			var CSS_ID = menus[i] ? i : null; 
-			var cfg = Y.Lang.isObject(menus[i]) ? menus[i] : null;
+			var cfg = _Y.Lang.isObject(menus[i]) ? menus[i] : null;
 	    	if (CSS_ID && !Menu.find[CSS_ID]) {
 	    		Menu.CFG[CSS_ID].load(cfg);
 	    	}			
 		}
-		Y.one('#markup').setStyle('display', 'block');
+		_Y.one('#markup').setStyle('display', 'block');
 	};	
 	/**
 	 * 
 	 * @param MARKUP
 	 * @param TRIGGER
-	 * @param cfg {}, additional config for Y.OverlayContext
+	 * @param cfg {}, additional config for _Y.OverlayContext
 	 * 		cfg.host: adds cfg.host.ContextMenu backreference
 	 * 		cfg.triggerType	.gallery.[triggerType]
 	 * 		cfg.triggerRoot '#'+cfg.triggerRoot.get('id')
 	 * @return
 	 */
 	Menu.initContextMenu = function(MARKUP, TRIGGER, cfg){
-		var Y = SNAPPI.Y;
 		cfg = cfg || {};	// closure
 		if (cfg.triggerType) TRIGGER = '.gallery.'+cfg.triggerType + TRIGGER;
 		if (cfg.triggerRoot) TRIGGER = '#'+cfg.triggerRoot.get('id')+' '+ TRIGGER;
@@ -132,10 +149,10 @@ var DEFAULT_CFG_contextmenu = 	{
 				contentBox: MARKUP.selector,
 				boundingBox: MARKUP.selector
 		};
-		_cfg = Y.merge(DEFAULT_CFG_contextmenu, _cfg, cfg);
+		_cfg = _Y.merge(DEFAULT_CFG_contextmenu, _cfg, cfg);
 		if (cfg.currentTarget) _cfg.trigger = cfg.currentTarget;	// 'startup/disabled' trigger
 
-		var menu = new Y.OverlayContext(_cfg);
+		var menu = new _Y.OverlayContext(_cfg);
 		menu.render();
 		menu.get('contentBox').removeClass('hide');
 		if (cfg.init_hidden === false) menu.show();
@@ -235,32 +252,31 @@ var DEFAULT_CFG_contextmenu = 	{
 		return;		// disable
 		
 		
-		var Y = SNAPPI.Y;
 		var peek = ['refreshAlign', 'toggle', 'show', 'hide', 'updateCurrentNode', 'focus', 'render', 'enable' , 'disable' ];
-		Y.before(function(){
+		_Y.before(function(){
 			console.log("before A.OverlayContext.refreshAlign()");
 		}, menu, 'refreshAlign', menu);  
-		Y.before(function(){
+		_Y.before(function(){
 			console.log("before A.OverlayContext.toggle()");
 		}, menu, 'toggle', menu); 
-		Y.before(function(){
+		_Y.before(function(){
 			console.log("before A.OverlayContext.show()");
 		}, menu, 'show', menu); 
-		Y.before(function(){
+		_Y.before(function(){
 			console.log("before A.OverlayContext.hide()");
 		}, menu, 'hide', menu); 
-		Y.before(function(){
+		_Y.before(function(){
 			console.log("before A.OverlayContext.updateCurrentNode()");
 		}, menu, 'updateCurrentNode', menu); 			
-		Y.before(function(){
+		_Y.before(function(){
 			console.log("before A.OverlayContext.focus()");
 		}, menu, 'focus', menu); 			
-		Y.before(function(){
+		_Y.before(function(){
 			console.log("before A.OverlayContext.render()");
 		}, menu, 'render', menu); 		
 	};
 	
-	SNAPPI.MenuAUI = Menu;
+	
 	
 	
 	var MenuItems = function(){}; 
@@ -381,7 +397,7 @@ var DEFAULT_CFG_contextmenu = 	{
 			// used by SNAPPI.uploader to retry in uploadQueue
 			var isSelected, target = menu.get('currentNode');	// cancel target only
 			if (menuItem.ancestor('#contextmenu-photoroll-markup')) { 
-				isSelected = SNAPPI.Y.all(target);
+				isSelected = _Y.all(target);
 			} else {
 				var gallery, container;
 				gallery = target.ancestor('section').next('section.gallery');
@@ -428,7 +444,7 @@ var DEFAULT_CFG_contextmenu = 	{
 			var isSelected, target = menu.get('currentNode');	// cancel target only
 			if (menuItem.ancestor('#contextmenu-photoroll-markup')) { 
 				// if status allows cancel, then
-				isSelected = SNAPPI.Y.all(target);
+				isSelected = _Y.all(target);
 			} else {
 				var gallery, container;
 				gallery = target.ancestor('section').next('section.gallery');
@@ -452,7 +468,7 @@ var DEFAULT_CFG_contextmenu = 	{
 			var isSelected, response, target = menu.get('currentNode');	// cancel target only
 			if (menuItem.ancestor('#contextmenu-photoroll-markup')) { 
 				// if status allows cancel, then
-				isSelected = SNAPPI.Y.all(target);
+				isSelected = _Y.all(target);
 				response = confirm('Are you sure you want to remove this Snap?');
 			} else {
 				// selected
@@ -516,7 +532,7 @@ var DEFAULT_CFG_contextmenu = 	{
 	};	
 	// formerly _getPhotoRoll(), currently unused
 	MenuItems.getGalleryFromTarget = function(target){
-		if (target instanceof SNAPPI.Y.OverlayContext) {
+		if (target instanceof _Y.OverlayContext) {
 			target = target.get('currentNode');	// contextmenu target
 		}
 		return SNAPPI.Gallery.getFromChild(target);
@@ -823,14 +839,14 @@ var DEFAULT_CFG_contextmenu = 	{
 			// batch = g.getSelected(true);			
 		}		
 		if (batch.count()) {
-			var Y = SNAPPI.PM.Y || SNAPPI.Y;
+			var Y = SNAPPI.PM.Y || _Y;
 //			var stage = SNAPPI.PageGalleryPlugin.stage;
 //			var performance = stage ? stage.performance : null;
-			var stage2 = Y.one('#stage-2');
+			var stage2 = _Y.one('#stage-2');
 			if (!stage2) {
 				stage2 = g.container.create("<section class='container_16'><div id='stage-2' class='grid_16' style='position:absolute;top:200px;'></div></section>");
-				Y.one('section#body-container').insert(stage2, 'after');
-				stage2 = Y.one('#stage-2');
+				_Y.one('section#body-container').insert(stage2, 'after');
+				stage2 = _Y.one('#stage-2');
 			}
 			var sceneCfg = {
 				roleCount: batch.count(),
@@ -904,14 +920,14 @@ var DEFAULT_CFG_contextmenu = 	{
 							var parent = args.dialog.getStdModNode('body');
 							parent.setContent(o.responseText);
 							// start multi-select listener
-							var container = parent.one('.gallery.group .container');
+							var container = parent.one('.container');
 							SNAPPI.multiSelect.listen(container, true, SNAPPI.MultiSelect.singleSelectHandler);
 							return false;
 						}					
 					}
     			};
     			ioCfg = SNAPPI.IO.pluginIO_RespondAsJson(ioCfg);
-    			dialog.plug(SNAPPI.Y.Plugin.IO, ioCfg);
+    			dialog.plug(_Y.Plugin.IO, ioCfg);
     			// dialog_ID == dialog.get('boundingBox').get('id')
     			SNAPPI.Dialog.find[dialog_ID] = dialog;
     		} else {
@@ -953,14 +969,14 @@ var DEFAULT_CFG_contextmenu = 	{
 						success: function(e, i,o,args) {
 							args.menu.hide();
 							// use div#settings-asset-privacy-markup
-							var parent = SNAPPI.Y.Node.create(o.responseText); 
+							var parent = _Y.Node.create(o.responseText); 
 							var markup = parent.one('div#settings-asset-privacy-markup');
 							return markup.removeClass('hide');
 						}					
 					}
     			};
     			ioCfg = SNAPPI.IO.pluginIO_RespondAsJson(ioCfg);
-    			dialog.plug(SNAPPI.Y.Plugin.IO, ioCfg);
+    			dialog.plug(_Y.Plugin.IO, ioCfg);
     			// dialog_ID == dialog.get('boundingBox').get('id')
     			SNAPPI.Dialog.find[dialog_ID] = dialog;
     		} else {
@@ -1047,19 +1063,18 @@ var DEFAULT_CFG_contextmenu = 	{
 	 * @return
 	 */
 	CFG_Menu_Header.load = function(cfg){
-		var Y = SNAPPI.Y;
 		var defaultCfg = {
 			showOn: 'click',	
 			align: { points:['tr', 'br'] },
 			init_hidden: true
 		};
-		cfg = Y.merge(defaultCfg, cfg);
+		cfg = _Y.merge(defaultCfg, cfg);
 		var CSS_ID = 'menu-header-markup';
 		var TRIGGER = '#userAccountBtn';
 		var MARKUP = {
 				id: CSS_ID,
 				selector: '#'+CSS_ID,
-				container: Y.one('#markup'),
+				container: _Y.one('#markup'),
 				uri: '/combo/markup/headerMenu',
 				end: null
 		};
@@ -1081,19 +1096,18 @@ var DEFAULT_CFG_contextmenu = 	{
 	 * @return
 	 */
 	CFG_Menu_Pagemaker_Create.load = function(cfg){
-		var Y = SNAPPI.Y;
 		var defaultCfg = {
 			showOn: 'click',	
 			align: { points:['tl', 'bl'] },
 			init_hidden: true
 		};
-		cfg = Y.merge(defaultCfg, cfg);
+		cfg = _Y.merge(defaultCfg, cfg);
 		var CSS_ID = 'menu-pagemaker-selected-create-markup';
 		var TRIGGER = cfg.trigger || '#createBtn';
 		var MARKUP = {
 			id: CSS_ID,
 			selector: '#'+CSS_ID,
-			container: Y.one('#markup'),
+			container: _Y.one('#markup'),
 			uri: '/combo/markup/pagemakerSelectedCreateMenu',
 			end: null
 		};
@@ -1115,18 +1129,17 @@ var DEFAULT_CFG_contextmenu = 	{
 	 * @return
 	 */
 	CFG_Context_Photoroll.load = function(cfg){
-		var Y = SNAPPI.Y;
 		var CSS_ID = 'contextmenu-photoroll-markup';
 		var TRIGGER = ' .FigureBox';
 		var defaultCfg = {
 				// constrain: true,
 		}
-		cfg = Y.merge(defaultCfg, cfg);
+		cfg = _Y.merge(defaultCfg, cfg);
 
 		var MARKUP = {
 				id: CSS_ID,
 				selector: '#'+CSS_ID,
-				container: Y.one('#markup'),
+				container: _Y.one('#markup'),
 				uri: '/combo/markup/photoRollContextMenu',
 		};
 		// reuse, if found
@@ -1158,18 +1171,17 @@ var DEFAULT_CFG_contextmenu = 	{
 	 * @return
 	 */
 	CFG_Context_HiddenShot.load = function(cfg){
-		var Y = SNAPPI.Y;
 		var defaultCfg = {
 				constrain: true,
 		}
-		cfg = Y.merge(defaultCfg, cfg);
+		cfg = _Y.merge(defaultCfg, cfg);
 				
 		var CSS_ID = 'contextmenu-hiddenshot-markup';
 		var TRIGGER = ' .FigureBox.Photo';
 		var MARKUP = {
 				id: CSS_ID,
 				selector: '#'+CSS_ID,
-				container: Y.one('#markup'),
+				container: _Y.one('#markup'),
 				uri: '/combo/markup/hiddenShotContextMenu'
 		};
 		
@@ -1192,7 +1204,6 @@ var DEFAULT_CFG_contextmenu = 	{
 	
 	var CFG_Menu_SelectAll = function(){}; 
 	CFG_Menu_SelectAll.load = function(cfg){
-		var Y = SNAPPI.Y;
 		var defaultCfg = {
 			showOn: 'click',	
 			align: { points:['tl', 'bl'] },
@@ -1209,13 +1220,13 @@ var DEFAULT_CFG_contextmenu = 	{
 				}
 			}
 		};
-		cfg = Y.merge(defaultCfg, cfg);
+		cfg = _Y.merge(defaultCfg, cfg);
 		var CSS_ID = 'menu-select-all-markup';
 		var TRIGGER = cfg.trigger || 'li.select-all a.menu-open';
 		var MARKUP = {
 			id: CSS_ID,
 			selector: '#'+CSS_ID,
-			container: Y.one('#markup'),
+			container: _Y.one('#markup'),
 			uri: '/combo/markup/selectAll',
 			end: null
 		};
@@ -1237,19 +1248,18 @@ var DEFAULT_CFG_contextmenu = 	{
 	 * @return
 	 */
 	CFG_Menu_Lightbox_Organize.load = function(cfg){
-		var Y = SNAPPI.Y;
 		var defaultCfg = {
 			showOn: 'click',	
 			align: { points:['bl', 'tl'] },
 			init_hidden: true
 		};
-		cfg = Y.merge(defaultCfg, cfg);
+		cfg = _Y.merge(defaultCfg, cfg);
 		var CSS_ID = 'menu-lightbox-organize-markup';
 		var TRIGGER = cfg.trigger || 'section#lightbox ul.menu-trigger li.organize';
 		var MARKUP = {
 			id: CSS_ID,
 			selector: '#'+CSS_ID,
-			container: Y.one('#markup'),
+			container: _Y.one('#markup'),
 			uri: '/combo/markup/lightbox',
 			end: null
 		};
@@ -1266,19 +1276,18 @@ var DEFAULT_CFG_contextmenu = 	{
 	
 	var CFG_Menu_Lightbox_Share = function(){}; 
 	CFG_Menu_Lightbox_Share.load = function(cfg){
-		var Y = SNAPPI.Y;
 		var defaultCfg = {
 			showOn: 'click',	
 			align: { points:['bl', 'tl'] },
 			init_hidden: true
 		};
-		cfg = Y.merge(defaultCfg, cfg);
+		cfg = _Y.merge(defaultCfg, cfg);
 		var CSS_ID = 'menu-lightbox-share-markup';
 		var TRIGGER = cfg.trigger || 'section#lightbox ul.menu-trigger li.share';
 		var MARKUP = {
 			id: CSS_ID,
 			selector: '#'+CSS_ID,
-			container: Y.one('#markup'),
+			container: _Y.one('#markup'),
 			uri: '/combo/markup/lightbox',
 			end: null
 		};
@@ -1300,15 +1309,14 @@ var DEFAULT_CFG_contextmenu = 	{
 	 */
 	var CFG_Menu_SignIn = function(){}; 
 	CFG_Menu_SignIn.load = function(cfg){
-		var Y = SNAPPI.Y;
 		var defaultCfg = {
 			showOn: 'click',	
 			align: { points:['tr', 'br'] },
 			init_hidden: true,
 			on: {
 				show: function(e) {
-			    	if (SNAPPI.AIR.debug && Y.one('#login select.postData')) {
-			    		Y.one('#login select.postData').removeClass('hide');
+			    	if (SNAPPI.AIR.debug && _Y.one('#login select.postData')) {
+			    		_Y.one('#login select.postData').removeClass('hide');
 			    	}					
 					// var menuTarget = e.target;
 					// var contextTarget = menuTarget.get('currentNode');
@@ -1326,13 +1334,13 @@ var DEFAULT_CFG_contextmenu = 	{
 				},
 			},			
 		};
-		cfg = Y.merge(defaultCfg, cfg);
+		cfg = _Y.merge(defaultCfg, cfg);
 		var CSS_ID = 'menu-sign-in-markup';
 		var TRIGGER = '#sign-in';
 		var MARKUP = {
 				id: CSS_ID,
 				selector: '#'+CSS_ID,
-				container: Y.one('#markup'),
+				container: _Y.one('#markup'),
 				uri: '/combo/markup/headerMenu',
 				end: null
 		};
@@ -1354,7 +1362,6 @@ var DEFAULT_CFG_contextmenu = 	{
 	 */
 	var CFG_Menu_Uploader_Batch = function(){};
 	CFG_Menu_Uploader_Batch.load = function(cfg){
-		var Y = SNAPPI.Y;
 		var defaultCfg = {
 			showOn: 'click',	
 			align: { points:['tl', 'bl'] },
@@ -1374,13 +1381,13 @@ var DEFAULT_CFG_contextmenu = 	{
 				},
 			},			
 		};
-		cfg = Y.merge(defaultCfg, cfg);
+		cfg = _Y.merge(defaultCfg, cfg);
 		var CSS_ID = 'menu-uploader-batch-markup';
 		var TRIGGER = '.gallery-display-options li.btn.choose-folder';
 		var MARKUP = {
 				id: CSS_ID,
 				selector: '#'+CSS_ID,
-				container: Y.one('#markup'),
+				container: _Y.one('#markup'),
 				uri: '/combo/markup/headerMenu',
 				end: null
 		};
@@ -1397,7 +1404,6 @@ var DEFAULT_CFG_contextmenu = 	{
 	
 	var CFG_Menu_Uploader_Folder = function(){};
 	CFG_Menu_Uploader_Batch.load = function(cfg){
-		var Y = SNAPPI.Y;
 		var defaultCfg = {
 			showOn: 'click',	
 			align: { points:['tl', 'bl'] },
@@ -1416,13 +1422,13 @@ var DEFAULT_CFG_contextmenu = 	{
 				},
 			},
 		};
-		cfg = Y.merge(defaultCfg, cfg);
+		cfg = _Y.merge(defaultCfg, cfg);
 		var CSS_ID = 'menu-uploader-folder-markup';
 		var TRIGGER = '.gallery-display-options li.btn.choose-folder';
 		var MARKUP = {
 				id: CSS_ID,
 				selector: '#'+CSS_ID,
-				container: Y.one('#markup'),
+				container: _Y.one('#markup'),
 				uri: '/combo/markup/headerMenu',
 				end: null
 		};
@@ -1444,7 +1450,6 @@ var DEFAULT_CFG_contextmenu = 	{
 	 * @return
 	 */
 	CFG_Context_FigureBox.load = function(cfg){
-		var Y = SNAPPI.Y;
 		var TRIGGER = ' .FigureBox';
 		// if (cfg.triggerType) TRIGGER = '.gallery.'+cfg.triggerType + TRIGGER;
 		var TYPE_LOOKUP = {
@@ -1492,12 +1497,12 @@ if (!typeDefaults && console) console.error("ERROR: missing contextmenu type for
 				}
 			},	
 		}
-		cfg = Y.merge(defaultCfg, cfg);
+		cfg = _Y.merge(defaultCfg, cfg);
 
 		var MARKUP = {
 				id: CSS_ID,
 				selector: '#'+CSS_ID,
-				container: Y.one('#markup'),
+				container: _Y.one('#markup'),
 				uri: typeDefaults.uri,
 		};
 		// reuse, if found
@@ -1505,9 +1510,6 @@ if (!typeDefaults && console) console.error("ERROR: missing contextmenu type for
 			return Menu.find[CSS_ID];
 		
 		
-		Menu.classInit(); 
-
-
 		var callback = function(){
 			var menu = Menu.initContextMenu(MARKUP, TRIGGER, cfg);
 			var offset = {x:-20, y:20};
@@ -1520,22 +1522,5 @@ if (!typeDefaults && console) console.error("ERROR: missing contextmenu type for
 		return Menu.getMarkup(MARKUP , callback);
 	};		
 	
-		
-	// SNAPPI.MenuAUI
-	// global lookup by CSS ID
-	Menu.CFG = {
-		'menu-header-markup': CFG_Menu_Header,
-		'contextmenu-photoroll-markup': CFG_Context_Photoroll,
-		'contextmenu-hiddenshot-markup': CFG_Context_HiddenShot,
-		'menu-pagemaker-selected-create-markup': CFG_Menu_Pagemaker_Create, 
-		'menu-select-all-markup': CFG_Menu_SelectAll,
-		'menu-lightbox-organize-markup': CFG_Menu_Lightbox_Organize,
-		'menu-lightbox-share-markup': CFG_Menu_Lightbox_Share,
-		'menu-sign-in-markup': CFG_Menu_SignIn,
-		'menu-uploader-batch-markup': CFG_Menu_Uploader_Batch,		
-		'menu-uploader-folder-markup': CFG_Menu_Uploader_Folder,
-		// context menus
-		'contextmenu-group-markup': CFG_Context_FigureBox,		
-		'contextmenu-person-markup': CFG_Context_FigureBox,
-	};
+
 })();

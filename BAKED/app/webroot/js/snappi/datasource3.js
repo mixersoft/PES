@@ -21,7 +21,51 @@
  */
 (function(){
 
-    var Y = SNAPPI.Y;
+    var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+	SNAPPI.onYready.Datasource = function(Y){
+		if (_Y === null) _Y = Y;
+		_Y.augment(SnappiDatasource, _Y.EventTarget);
+    	SNAPPI.SnappiDatasource = SnappiDatasource;
+    	
+    	_Y.extend(JsonDatasource, SnappiDatasource);
+    	SNAPPI.JsonDatasource = JsonDatasource;
+    	
+    	_Y.extend(XmlDatasource, SnappiDatasource);
+		SNAPPI.XmlDatasource = XmlDatasource;
+		
+		if (AuditionParser_Snappi.uri.indexOf('.json?') != -1) {
+	        _Y.extend(SnappiCastingCall, JsonDatasource);
+	    }
+	    else {
+	        _Y.extend(SnappiCastingCall, XmlDatasource);
+	    }
+	    SNAPPI.SnappiCastingCall = SnappiCastingCall;
+	    
+	    /*
+	     * AIR DataSource for CastingCalls
+	     */
+	    try {
+	        // check if class exists
+	        var check = _Y.Lang.isObject(SNAPPI.AIR.CastingCallDataSource);
+	        SNAPPI.AIRCastingCall = SNAPPI.AIR.CastingCallDataSource;
+	        SNAPPI.AIRCastingCall.prototype.schemaParser = AuditionParser_AIR;
+	    } 
+	    catch (ex) {
+	        //		SNAPPI.isAIR == false;
+	    }
+	    
+	    _Y.extend(FlickrXmlCastingCall, SNAPPI.XmlDatasource);
+	    SNAPPI.FlickrXmlCastingCall = FlickrXmlCastingCall;
+	    
+		// TEMP: publish parser for baked render
+		AuditionParser.snappi.getImgSrcBySize = SNAPPI.util.getImgSrcBySize;
+		SNAPPI.AuditionParser_Snappi = AuditionParser_Snappi;	  
+		
+	    //        _Y.extend(FacebookXmlCastingCall, SNAPPI.XmlDatasource);
+	    //        SNAPPI.FacebookXmlCastingCall = FacebookXmlCastingCall;
+	    
+	}  
     
     /*
      * protected methods and variables
@@ -33,7 +77,7 @@
      */
     var _forceArray = function(o){
         try {
-            if (false == Y.Lang.isArray(o)) 
+            if (false == _Y.Lang.isArray(o)) 
                 return [o];
             else 
                 return o;
@@ -54,7 +98,7 @@
             toArray: ['CastingCall.Auditions.Audition', 'CastingCall.Clusters.Cluster', 'CastingCall.Substitutions.Substitution', 'CastingCall.Tags.Tag', 'CastingCall.Sets.Set'],
             findProperty2Array: ['AuditionREF']
         };
-        _schema = Y.merge(_schema, schema);
+        _schema = _Y.merge(_schema, schema);
         // handle arrays
         var o;
         for (var p in _schema.toArray) {
@@ -76,7 +120,7 @@
                 if (i == p) 
                     fn(o[i]);
                 else {
-                    if (Y.Lang.isObject(o[i])) 
+                    if (_Y.Lang.isObject(o[i])) 
                         findProperty(o[i], p, fn);
                 }
             }
@@ -109,7 +153,7 @@
         xmlns: 'sn',
         rootNode: 'CastingCall',
         qsOverride: { //                perpage: '100',
-}        ,
+		},
         parse: function(rootNode){
             //            _xml2JsTidy(rootNode);
             var p, audition, arrAuditions, baseurl, proxyCacheBaseurl, node, results = [];
@@ -219,7 +263,7 @@
         xmlns: 'sn',
         rootNode: 'CastingCall',
         qsOverride: { //                perpage: '100',
-}        ,
+		},
         parse: function(rootNode){
             //            _xml2JsTidy(rootNode);
             var p, audition, arrAuditions, baseurl, node, results = [];
@@ -271,7 +315,7 @@
                 return parts[parts.length - 1];
             }
         },
-        getImgSrcBySize: SNAPPI.util.getImgSrcBySize
+        getImgSrcBySize: null, // set to SNAPPI.util.getImgSrcBySize
     };
     
     var AuditionParser_AIR = {
@@ -350,7 +394,7 @@
     //        var testForAIR = SNAPPI.AIR.CastingCallDataSource;
     //        
     //        
-    //        Y.augment(SNAPPI.AIR.CastingCallDataSource, AuditionParser_AIR);
+    //        _Y.augment(SNAPPI.AIR.CastingCallDataSource, AuditionParser_AIR);
     //        SNAPPI.AIR.AuditionParser_AIR = AuditionParser_AIR;
     //        
     //        
@@ -410,7 +454,7 @@
         arguments: {}
     };
     var log = function(str, args){
-        var log = Y.one('#log');
+        var log = _Y.one('#log');
         if (log) {
             var s = log.get('innerHTML');
             s += "ID: " + str;
@@ -431,8 +475,8 @@
         /*
          * internal methods and attributes
          */
-        this._cfg = Y.Lang.isObject(cfg) ? Y.merge(this._cfg, cfg) : this._cfg;
-        if (_queue === null) _queue = new Y.AsyncQueue();
+        this._cfg = _Y.Lang.isObject(cfg) ? _Y.merge(this._cfg, cfg) : this._cfg;
+        if (_queue === null) _queue = new _Y.AsyncQueue();
     };
     
     SnappiDatasource.prototype = {
@@ -463,9 +507,9 @@
             //            else { // xml parse
             //                e.response2.responseXML = o.responseXML;
             //                if (e.response2.responseXML === null) {
-            //                    // webkit browsers do not return responseXML so we must parse manually with Y.DataType.XML
+            //                    // webkit browsers do not return responseXML so we must parse manually with _Y.DataType.XML
             //                    var responseText = o.responseText;
-            //                    e.response2.responseXML = Y.DataType.XML.parse(responseText);
+            //                    e.response2.responseXML = _Y.DataType.XML.parse(responseText);
             //                    if (!e.response2.responseXML instanceof XMLDocument) {
             //                        // fire error event                        e.stopPropagation();
             //                        e.error = {
@@ -484,7 +528,7 @@
             //            this.fire('XmlDatasource:responseXMLSuccess', e, this);
         },
         _getQsAsStr: function(qs){
-            qs = Y.Lang.isObject(qs) ? Y.merge(this._cfg, qs) : this._cfg;
+            qs = _Y.Lang.isObject(qs) ? _Y.merge(this._cfg, qs) : this._cfg;
             // &pages=all override
             if (SNAPPI.util.getFromQs('perpage')) 
                 qs.perpage = SNAPPI.util.getFromQs('perpage');
@@ -505,7 +549,7 @@
                     e.response2.parsedResponse.requestUri = e.response2.requestUri;
                     e.response2.schemaParser = this.schemaParser;
                     e.response2.parsedResponse = this.schemaParser.parse(e.response2.dsResponse);
-                    if (Y.Lang.isFunction(callback.success)) 
+                    if (_Y.Lang.isFunction(callback.success)) 
                         callback.success(e);
                 }
                 this.detach('SnappiDatasource:responseSuccess');
@@ -517,7 +561,7 @@
         queueRequest: function(uri){
             ioCfg.arguments.request = uri;
             ioCfg.context = this;
-            _queue.add(Y.io(uri, ioCfg));
+            _queue.add(_Y.io(uri, ioCfg));
         },
         
         parseMeanShiftGroupings: function(results, rootNode){
@@ -537,7 +581,7 @@
             var Tags = cc.Tags && cc.Tags.Tag || [];
             
             for (var gr in Substitutions) {
-                if (!Y.Lang.isArray(Substitutions[gr].AuditionREF)) 
+                if (!_Y.Lang.isArray(Substitutions[gr].AuditionREF)) 
                     continue; // skip if there is only one element in this substitution group
                 //                    var best = null, arrGroupIds = [];
                 var subGrData = new SNAPPI.SubstitutionGroupData();
@@ -559,7 +603,7 @@
             }
             for (var gr in Clusters) {
                 var type = Clusters[gr].Type;
-                if (Y.Lang.isArray(Clusters[gr].AuditionREF)) {
+                if (_Y.Lang.isArray(Clusters[gr].AuditionREF)) {
                     for (var a in Clusters[gr].AuditionREF) {
                         var audition = auditionByKey[Clusters[gr].AuditionREF[a].idref];
 						if (!audition) break;
@@ -583,9 +627,6 @@
         }
     };
     
-    
-    Y.augment(SnappiDatasource, Y.EventTarget);
-    SNAPPI.SnappiDatasource = SnappiDatasource;
     
     /*
      * JSON datasource
@@ -622,19 +663,18 @@
                 if (e.response2.dsResponse) {
                     // parse JSON with JSON "schema" to get datasource results
                     this.fire('JsonDatasource:parsedResponseSuccess', e); // { response: e,target: self,});
-                    if (Y.Lang.isFunction(callback.success)) 
+                    if (_Y.Lang.isFunction(callback.success)) 
                         callback.success(e);
                 }
                 this.detach('SnappiDatasource:responseJSONSuccess');
             });
-            qs = (Y.Lang.isObject(this.schemaParser.qsOverride)) ? Y.merge(qs, this.schemaParser.qsOverride) : qs;
-            var req = (qs && Y.Lang.isString(qs)) ? qs : this.schemaParser.uri + this._getQsAsStr(qs);
+            qs = (_Y.Lang.isObject(this.schemaParser.qsOverride)) ? _Y.merge(qs, this.schemaParser.qsOverride) : qs;
+            var req = (qs && _Y.Lang.isString(qs)) ? qs : this.schemaParser.uri + this._getQsAsStr(qs);
             this.queueRequest(req);
         };
         
     };
-    Y.extend(JsonDatasource, SnappiDatasource);
-    SNAPPI.JsonDatasource = JsonDatasource;
+    
     
     /*
      * XML datasource
@@ -652,9 +692,9 @@
             e.response2.requestUri = args.request;
             e.response2.responseXML = o.responseXML;
             if (e.response2.responseXML === null) {
-                // webkit browsers do not return responseXML so we must parse manually with Y.DataType.XML
+                // webkit browsers do not return responseXML so we must parse manually with _Y.DataType.XML
                 var responseText = o.responseText;
-                e.response2.responseXML = Y.DataType.XML.parse(responseText);
+                e.response2.responseXML = _Y.DataType.XML.parse(responseText);
                 if (!e.response2.responseXML instanceof XMLDocument) {
                     // fire error event                        e.stopPropagation();
                     e.error = {
@@ -686,18 +726,17 @@
                 if (e.response2.dsResponse) {
                     // parse XML with XML "schema" to get datasource results
                     this.fire('XmlDatasource:parsedResponseSuccess', e); // { response: e,target: self,});
-                    if (Y.Lang.isFunction(callback.success)) 
+                    if (_Y.Lang.isFunction(callback.success)) 
                         callback.success(e);
                 }
                 this.detach('SnappiDatasource:responseXMLSuccess');
             });
-            qs = (Y.Lang.isObject(this.schemaParser.qsOverride)) ? Y.merge(qs, this.schemaParser.qsOverride) : qs;
-            var req = (qs && Y.Lang.isString(qs)) ? qs : this.schemaParser.uri + this._getQsAsStr(qs);
+            qs = (_Y.Lang.isObject(this.schemaParser.qsOverride)) ? _Y.merge(qs, this.schemaParser.qsOverride) : qs;
+            var req = (qs && _Y.Lang.isString(qs)) ? qs : this.schemaParser.uri + this._getQsAsStr(qs);
             this.queueRequest(req);
         };
     };
-    Y.extend(XmlDatasource, SnappiDatasource);
-    SNAPPI.XmlDatasource = XmlDatasource;
+    
     
     
     /*
@@ -708,27 +747,7 @@
         this.schemaParser = AuditionParser_Snappi;
         SnappiCastingCall.superclass.constructor.call(this, cfg);
     };
-    if (AuditionParser_Snappi.uri.indexOf('.json?') != -1) {
-        Y.extend(SnappiCastingCall, JsonDatasource);
-    }
-    else {
-        Y.extend(SnappiCastingCall, XmlDatasource);
-    }
-    SNAPPI.SnappiCastingCall = SnappiCastingCall;
-    
-    
-    /*
-     * AIR DataSource for CastingCalls
-     */
-    try {
-        // check if class exists
-        var check = Y.Lang.isObject(SNAPPI.AIR.CastingCallDataSource);
-        SNAPPI.AIRCastingCall = SNAPPI.AIR.CastingCallDataSource;
-        SNAPPI.AIRCastingCall.prototype.schemaParser = AuditionParser_AIR;
-    } 
-    catch (ex) {
-        //		SNAPPI.isAIR == false;
-    }
+
     
     
     
@@ -740,11 +759,8 @@
         this.schemaParser = AuditionParser_Flickr;
         FlickrXmlCastingCall.superclass.constructor.call(this, cfg);
     };
-    Y.extend(FlickrXmlCastingCall, SNAPPI.XmlDatasource);
-    SNAPPI.FlickrXmlCastingCall = FlickrXmlCastingCall;
     
-	// TEMP: publish parser for baked render
-	SNAPPI.AuditionParser_Snappi = AuditionParser_Snappi;
+    
 	
     /*
      * Facebook DataSource for CastingCalls
@@ -753,6 +769,5 @@
     //            this.schemaParser = AuditionParser_Facebook;
     //            FacebookXmlCastingCall.superclass.constructor.call(this, cfg);
     //        }
-    //        Y.extend(FacebookXmlCastingCall, SNAPPI.XmlDatasource);
-    //        SNAPPI.FacebookXmlCastingCall = FacebookXmlCastingCall;
+
 })();

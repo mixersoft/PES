@@ -2,26 +2,14 @@
  * SNAPPI util module
  */
 (function(){
+	var _Y = null;
         
-    /*
-     * 	
-     */
-    var _pageInit = function(){        // execute embedded PAGE.init scripts
-	    while (PAGE.init.length) {
-	        var init = PAGE.init.shift();
-	        try {
-	        	init();	
-	        } catch (e) {}
-	        
-	    }   
-	};
-	
     /*
      * Snappi Global Init
      */
-    var _main = function(){
+    var _main = function(Y){
 // console.log('_main()');    	
-        var Y = SNAPPI.Y;
+        Y = Y || _Y || SNAPPI.Y;
         
         SNAPPI.mergeSessionData();
 
@@ -73,20 +61,15 @@
          */
         SNAPPI.sortConfig.init();	
         
-        // var event;
-        // if (PAGE.jsonData.castingCall) event = 'snappi:after_PhotoGalleryInit';
-        // else if (PAGE.jsonData.lightbox) event = 'snappi:afterMain';
-        // SNAPPI.Lightbox.loadonce(event);
-        
         /*
-         * filter bar
+         * filter bar, filters json set in AppController::beforeRender()
          */
         SNAPPI.filter.renderBar(SNAPPI.STATE.filters);
         
         /*
          * embedded PAGE.init scripts
          */ 
-        _pageInit(); 
+        LazyLoad.helpers.parseDeferredInlineJs(); 
         SNAPPI.xhrFetch.fetchXhr(null, {delay:2000});
 
 		// start document UI listeners
@@ -128,217 +111,6 @@
         
     };	
     
-	// convenience func to put Y.use() at the top of file
-	// deprecate: replace with SNAPPI.LazyLoad.gallery();
-	var _afterLoad = function(){
-		namespace('CFG');
-		CFG = {		// frequently used startup Config params 
-			DEBUG : {	// default when hostname==git*
-	    		snappi_comboBase: 'baked/app/webroot&',
-	    		snappi_useCombo: 0,					// <-- TESTING SNAPPI useCombo
-	    		pagemaker_useCombo: true,
-	    		alloy_useCombo: true,
-	    		yahoo_CDN: 0,
-	    		YUI_VERSION: '3.3.0',	// this is actually set in aui.js
-	    		// yui_CDN == true => use "http://yui.yahooapis.com/combo?"
-				// yui_CDN == false => use snaphappi hosted yui libs: "/combo/js?"
-		    },
-	    	PROD : {	// use for unix/server testing
-	    		snappi_comboBase: 'app/webroot&',
-	    		snappi_useCombo: 1,
-	    		pagemaker_useCombo: true,
-	    		alloy_useCombo: true,
-	    		yahoo_CDN: 0,
-	    		YUI_VERSION: '3.3.0',
-	    	}
-	    }
-		/*
-		 * bootstrap YUI, Alloy, and snaphappi javascript
-		 * will automatically set to CFG.DEBUG for /git/.test(hostname)
-		 */
-		var hostCfg = Config.getHostConfig(	{} );
-	    var Y;
-		var yuiConfig = { // GLOBAL
-	    	// AUI will set base for yui load	
-	     	// yui3 base for alloy_useCombo=false
-	    	// base: "/svc/lib/yui3/",		 
-	        timeout: 10000,
-	        loadOptional: false,
-	        combine: hostCfg.alloy_useCombo,	// yui & alloy combine values will match 
-	        allowRollup: true,
-	//      filter: "MIN",		// ['MIN','DEBUG','RAW'], default='RAW'        
-	//		filter: "DEBUG",
-	        filter: hostCfg.alloy_useCombo ? 'MIN' : "RAW",
-	        insertBefore: 'css-start',
-			groups: {
-	    		alloy: Config.addModule_alloy(hostCfg),
-	    		snappi: Config.addModule_snappi(hostCfg),
-	    		gallery: Config.addModule_gallery(hostCfg),
-	    		pagemaker: Config.addModule_pagemaker(hostCfg),
-	    		jsLib: Config.addModule_jsLib(hostCfg)
-	    	}
-	    };
-	    // update yuiConfig for yahoo CDN config
-	    if (hostCfg.alloy_useCombo && hostCfg.yahoo_CDN == false) {
-	    	// use hosted combo services
-	    	yuiConfig.comboBase = 'http://' + hostCfg.host + '/combo/js?baseurl=svc/lib/yui_'+hostCfg.YUI_VERSION+'/yui/build&';
-	    	yuiConfig.root = '/';
-	    }
-	    
-	    SNAPPI.yuiConfig = yuiConfig;		// make global
-	    
-	    /*
-	     * YUI3 init, use External Module Loading
-	     * - base.js dependencies = 'node', 'event-custom', 'node-menunav', "yui2-container", 'snappi-util', 'snappi-io',  'snappi-dragdrop', 'snappi-domJsBinder'
-	     *
-	     */
-		AUI(SNAPPI.yuiConfig).use(    
-			// load first to minimize CSS flash, required for menu-aui/dialog-aui CSS
-			'aui-skin-classic-all', 	
-			/*
-		     * required by base
-		     */
-		    'node', 'event', 'event-custom', 
-		    
-		    /*
-		     * add custom/synthetic hover event
-		     */
-		    "event-synthetic", "event-mouseenter", 
-		    
-			/*
-		     * 'async-queue': required by snappi-imageloader, singleton init()
-		     */
-		    'async-queue',    
-		
-		    // 'snappi-debug',
-		    
-	    /*
-	     * callback function
-	     */
-	    function(Y, result){
-		    if (!result.success) {
-				
-				Y.log('Load failure: ' + result.msg, 'warn', 'Example');
-				
-			}    	
-			// check supported browser
-			if (1) {
-				var browserOk = Y.UA.gecko || Y.UA.webkit;
-				if (!browserOk) {
-					// show recomended browser
-					alert('Please use the Firefox, Google Chrome or Safari web browsers. At this time, we are not supporting Internet Explorer');
-				} 
-			}
-			
-		    Y.one('body').addClass('wait');
-		    Y.on("domready", function() {
-// console.log('domready fired');	    	
-		    	SNAPPI.domready = true;
-		    });
-		    
-	        /*
-	         * Helper Functions
-	         */
-	        Y.Node.prototype.dom = function(){
-	            return Y.Node.getDOMNode(this);
-	        };
-	        Y.Node.prototype.ynode = function(){
-	            return this;
-	        };
-	        try {	// ie8 incompatibility
-		        HTMLElement.prototype.dom = function(){
-		            return this;
-		        };
-		        HTMLElement.prototype.ynode = function(){
-		            return Y.one(this);
-		        };
-	        } catch(e) {}
-	        
-	        // make global
-	        SNAPPI.Y = Y;
-// console.log('SNAPPI.Y is defined');	        
-	        SNAPPI.setPageLoading = function (value) {
-	        	try {
-		        	if (value == undefined) return Y.one('body').hasClass('wait');
-		        	if (value) Y.one('body').addClass('wait');
-		        	else {
-		        		Y.one('body').removeClass('wait');
-		        		Y.one('#related-content').removeClass('hide');
-		        	}
-	        	} catch (e) {}
-	        	return value ? true : false;
-	        }
-	        YAHOO = SNAPPI.Y.YUI2; // YUI2 deprecate when possible	
-	        /*
-	         * ADD modules to existing Y instance
-	         */	
-	        
-	        Y.ready(
-	        		/*
-	        		 * aui modules
-	        		 */
-	        	    'aui-delayed-task', 'aui-io', 'aui-loading-mask', 	        	
-	        		/*
-	        		 * primary scripts
-	        		 */
-	        		'snappi-event-hover',
-	        		'snappi-dragdrop', 
-	        		'snappi-sortedhash',
-	        		'snappi-group',
-	        		'snappi-thumbnail-helpers', 
-	        		'snappi-imageloader',
-	        		'gallery-util',
-	        		'snappi-thumbnail',
-	        		'snappi-io',
-	        		'snappi-dialog-aui',
-	        		'snappi-menu-aui',
-	        		'snappi-paginator',
-	        		'snappi-gallery-helpers',
-	        		'snappi-io-helpers',
-	        		'snappi-ui-helpers',
-	        		'snappi-util',
-	        		'snappi-gallery', 
-	        		'snappi-lightbox',
-	        		'snappi-filter', 'snappi-tabs',
-	        		/*
-	        		 * pagemaker
-	        		 */
-	        		'pagemaker-base', 
-	        		/*
-	        		 * util scripts
-	        		 */
-	        		
-	        		// deprecated
-	        		// 'snappi-property', 'snappi-menucfg', 'snappi-toolbutton', 'snappi-menu', 'snappi-menuitem', 'snappi-dialogboxCfg','snappi-dialogbox', 'snappi-zoom',
-	        		// UNUSED
-	        		// 'aui-resize', 
-	        		     		
-			/*
-			 * 
-			 */
-			function(Y, result){
-			    if (!result.success) {
-					Y.log('Load failure: ' + result.msg, 'warn', 'Example');
-				}
-				else {
-					
-					/*
-					 * all script files loaded, begin init
-					 */
-	
-					if (SNAPPI.domready) {
-						_main();		// domready event already called
-					} else {
-	console.warning('Y.ready() BEFORE domready');					
-						var detach = Y.on("domready", function() {
-							detach.detach();
-					    	_main();
-					    });
-					}
-				}
-	        });
-	    });
-	}
 	
     /*********************************************************************************
      * Globals
@@ -474,19 +246,18 @@
 			}
 		},		
 		setPageLoading : function (value) {
-			var Y = SNAPPI.Y;
         	try {
-	        	if (value == undefined) return Y.one('body').hasClass('wait');
-	        	if (value) Y.one('body').addClass('wait');
+	        	if (value == undefined) return _Yone('body').hasClass('wait');
+	        	if (value) _Y.one('body').addClass('wait');
 	        	else {
-	        		Y.one('body').removeClass('wait');
-	        		Y.one('#related-content').removeClass('hide');
+	        		_Y.one('body').removeClass('wait');
+	        		_Y.one('#related-content').removeClass('hide');
 	        	}
         	} catch (e) {}
         	return value ? true : false;
         },		
 		add_ynode : function(Y) {
-			Y = Y || SNAPPI.Y;
+			Y = Y || _Y;
 	        Y.Node.prototype.dom = function(){
 	            return Y.Node.getDOMNode(this);
 	        };
@@ -502,6 +273,17 @@
 		        };
 	        } catch(e) {}	
 		},
+		// execute inline/deferred js scripts 
+		parseDeferredInlineJs : function(){        // execute embedded PAGE.init scripts
+			try {
+			    while (PAGE.init.length) {
+			        var init = PAGE.init.shift();
+			        try {
+			        	init();	
+			        } catch (e) {}
+			    }
+			} catch (e) {}
+	    },   
 	}
 	/**
 	 * wrapper for AUI/Y.use(), calls for a loadModule config
@@ -524,11 +306,14 @@
 		}
 		modules.push(wrappedCallback);
 		
-		if (!SNAPPI.Y) SNAPPI.Y = AUI(Config.getYuiConfig()); 
+		if (_Y===null) {
+			_Y = AUI(Config.getYuiConfig());
+			SNAPPI.Y = _Y;
+		} 
 		LazyLoad.helpers.before_LazyLoad();
 		
 		// begin loading modules
-		SNAPPI.Y.use.apply(SNAPPI.Y, modules);
+		_Y.use.apply(_Y, modules);
 	}
 	// supports WindowOptionClick, primary header menu, xhr init	
 	LazyLoad.min = function(cfg){
@@ -580,7 +365,7 @@
 					/*
 			         * embedded PAGE.init scripts, if any
 			         */ 
-			        _pageInit(); 
+			       LazyLoad.helpers.parseDeferredInlineJs();
 			        SNAPPI.xhrFetch.fetchXhr(null, {delay:2000});						
 				}
 		}
@@ -663,7 +448,7 @@
 			 * all script files loaded, begin init
 			 */
 			Y.on("domready", function() {
-		    	_main();
+		    	_main(Y);
 		    });
 			// if (SNAPPI.domready) {
 				// _main();		// domready event already called
@@ -769,7 +554,7 @@
                 },
                 // 'snappi-datasource': {
                     // path: 'datasource3.js',
-                    // requires: ['node', 'async-queue', 'io', 'datatype-xml', 'gallery-util']
+                    // requires: ['node', 'async-queue', 'io', 'datatype-xml']
                 // },
                 'snappi-auditions': {
                     path: 'auditions.js',
@@ -1009,10 +794,9 @@
 	 *  use SNAPPI.STATE (global) to store local session/state across XHR gets
 	 */    
     SNAPPI.mergeSessionData = function(castingCall){
-    	var Y = SNAPPI.Y;
         try {
             SNAPPI.STATE = SNAPPI.STATE  || {}; // stores session data across XHR calls
-        	SNAPPI.STATE = Y.merge(PAGE.jsonData.STATE, SNAPPI.STATE);
+        	SNAPPI.STATE = _Y.merge(PAGE.jsonData.STATE, SNAPPI.STATE);
         	PAGE.jsonData.STATE = {};
     		// merge PAGE into SNAPPI.STATE
     		try {
@@ -1042,6 +826,5 @@
     
     // LazyLoad.gallery();  // move to snappi and snappi-wide layout
     
-console.log('1. base_aui.js LOADED');    
     
 })();

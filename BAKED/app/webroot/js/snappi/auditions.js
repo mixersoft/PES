@@ -26,30 +26,39 @@
  */
 (function(){
 
-    var Y = SNAPPI.Y;
+    var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.Audition = function(Y){
+		if (_Y === null) _Y = Y;
+		AuditionParser.snappi.getImgSrcBySize = SNAPPI.util.getImgSrcBySize;
     
+	    /*
+	     * Audition master list, key on AuditionREF
+	     */
+	    _auditionSH = new SNAPPI.SortedHash({
+	        'isDataElement': false
+	    });
+	    _shotsSH = new SNAPPI.SortedHash();
+	    
+	    Auditions._auditionSH = _auditionSH;		// expose for debugging
+    	Auditions._shotsSH = _shotsSH;		// enforced shot uniqueness
+
+	    
+	    SNAPPI.Auditions = Auditions;	// expose Static properties and methods
+	}
     
-    /*
-     * Audition master list, key on AuditionREF
-     */
-    var _auditionSH = new SNAPPI.SortedHash({
-        'isDataElement': false
-    });
-    var _shotsSH = new SNAPPI.SortedHash();
-    var _defaultCfg = {};
     
     /**
      * Auditions constructor
-     * @param {Object} cfg
      */
-    var Auditions = function(){
-    };
-    SNAPPI.Auditions = Auditions;	// expose Static properties and methods
+    var Auditions = function(){};
+    
     /*
      * static properties and methods
      */
-    Auditions._auditionSH = _auditionSH;		// expose for debugging
-    Auditions._shotsSH = _shotsSH;		// enforced shot uniqueness
+    var _auditionSH = null;
+    var _shotsSH = null;
+    var _defaultCfg = {};
     
     // convenience function
     Auditions.get = function(id){
@@ -271,7 +280,7 @@
         shotType = group.ShotType || 'Usershot';
         groupTypePlural = groupType + 's';
         AuditionREFs = group.AuditionREF || [];
-        AuditionREFs = Y.Lang.isArray(AuditionREFs) ? AuditionREFs : [AuditionREFs];
+        AuditionREFs = _Y.Lang.isArray(AuditionREFs) ? AuditionREFs : [AuditionREFs];
         // passed by reference objects, shared by objects in the same group
         for (j in AuditionREFs) {
             
@@ -397,7 +406,7 @@
                 
                 
 //                AuditionREFs = group.AuditionREF || [];
-//                AuditionREFs = Y.Lang.isArray(AuditionREFs) ? AuditionREFs : [AuditionREFs];
+//                AuditionREFs = _Y.Lang.isArray(AuditionREFs) ? AuditionREFs : [AuditionREFs];
 //                
 //                // passed by reference objects, shared by objects in the same group
 //                for (j in AuditionREFs) {
@@ -510,7 +519,7 @@
                 return parts[parts.length - 1];
             }
         },
-        getImgSrcBySize: SNAPPI.util.getImgSrcBySize,
+        getImgSrcBySize: null, // set in SNAPPI.onYready.Audition SNAPPI.util.getImgSrcBySize,
 	};
 	AuditionParser.AIR= {
 		datasource: null,
@@ -712,5 +721,6 @@
     var AuditionParser_AIR = {
 
     };
+    
     	
 })();

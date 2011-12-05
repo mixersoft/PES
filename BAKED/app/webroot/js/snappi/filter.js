@@ -22,18 +22,23 @@
  *
  */
 (function(){
-	
-
     /*
      * local vars
      */
-    var Y = SNAPPI.Y;
+    var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.Filter = function(Y){
+		if (_Y === null) _Y = Y;
+		SNAPPI.filter = new Filter();	// singleton
+	}
     
     
     /*
      * class def
      */
     var Filter = function(cfg) {
+    	if (Filter.instance) return Filter.instance;
+    	Filter.instance = this;
     };
 
     /*
@@ -48,15 +53,14 @@
     	container: null,
     	active : {},
     	renderRating : function(value) {
-    		var Y = SNAPPI.Y;
-    		var parent = Y.Node.create('<li></li>');
+    		var parent = _Y.Node.create('<li></li>');
 			this.initRating(parent, value);
 			return parent;
     	},
     	renderBar : function(filters){
     		if (!this.container) {
-    			// this.container = Y.one('#page-filters');	
-    			this.container = Y.one('#display-option-sub');
+    			// this.container = _Y.one('#page-filters');	
+    			this.container = _Y.one('#display-option-sub');
     			if (!this.container) return;
     		}    		
     		if (!filters) {
@@ -87,12 +91,12 @@
     				// tokens.labelLabel = wrapper.get('innerHTML');
     				// SNAPPI.filter.active.Rating = filter.value;
     			} else {
-	    			if (filter.labelHref) tokens.labelLabel = Y.substitute(markup_A, tokens);
-	    			else tokens.labelLabel = Y.substitute(markup_B, tokens);
+	    			if (filter.labelHref) tokens.labelLabel = _Y.substitute(markup_A, tokens);
+	    			else tokens.labelLabel = _Y.substitute(markup_B, tokens);
 	    			if (console) console.warn("deprecate SNAPPI.filter, use SNAPPI.STATE.filter instead");
 	    			SNAPPI.filter.active[filter['class']] = filter;
     			}
-    			var filterNode = this.container.create(Y.substitute(markup, tokens));
+    			var filterNode = this.container.create(_Y.substitute(markup, tokens));
     			this.container.one('ul').append(filterNode);
     		}
     	},
@@ -112,7 +116,7 @@
     			value = 0;
     		}
     		if (!parent) {
-    			parent = Y.one('#filter-rating-parent');
+    			parent = _Y.one('#filter-rating-parent');
     		}
     		var cfg = {
 				// el : parent.dom(),
@@ -149,7 +153,7 @@
     		return;
     		
     		// SNAPPI.filter.active.Rating = v;
-    		// var parent = Y.one('#'+target).ancestor('div#paging-photos-inner').get('parentNode');
+    		// var parent = _Y.one('#'+target).ancestor('div#paging-photos-inner').get('parentNode');
     		// SNAPPI.filter.container = parent;
     		// SNAPPI.filter.fetchFilteredXhr.call(SNAPPI.filter);	// set this context 
 //     		
@@ -178,7 +182,7 @@
     		            target.prepend(pagingControls);
     		            
     		            SNAPPI.xhrFetch.xhrInit(node); // execute js in ajax markup
-    		            Y.fire('snappi:ajaxLoad'); // execute js in script files
+    		            _Y.fire('snappi:ajaxLoad'); // execute js in script files
     		            /*
     		             * end XHR page update
     		             */
@@ -188,6 +192,4 @@
     		SNAPPI.io.get.call(this, uri, callback, null, cfg, {self: this});
     	}
     };
-    
-    SNAPPI.filter = new Filter();	// singleton
 })();

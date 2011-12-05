@@ -22,17 +22,22 @@
  */
 
 (function() {
-
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.ShotController = function(Y){
+		if (_Y === null) _Y = Y;
+		
+		SNAPPI.ShotController = ShotController;
+		SNAPPI.shotController = new ShotController();
+	}
 	/***************************************************************************
 	 * EditMode Static Class - Works with Settings/Edit Actions - searches for
 	 * 'div.setting' to attach delegated click listener Notes: - just changes
 	 * form fields to write, and submit value='Submit' - NOT really ajax.
 	 */
-	SNAPPI.EditMode = function(cfg) {
-	};
+	SNAPPI.EditMode = function(cfg) { };
 	// make request based on setting DOM id
 	SNAPPI.EditMode.requestEditContent = function(e) {
-		var Y = SNAPPI.Y;
 		var sectionId = e.container.get('id'); // delegate container
 												// id='fields'
 		var target = e.target;
@@ -55,10 +60,9 @@
 	};
 
 	SNAPPI.EditMode.init = function() {
-		var Y = SNAPPI.Y;
 		// add event delegate listeners
-		// var submits = Y.all('input[type="submit"]');
-		var setting = Y.all('div.setting');
+		// var submits = _Y.all('input[type="submit"]');
+		var setting = _Y.all('div.setting');
 		if (setting) {
 			setting.each(function(n) {
 				n.delegate('click', SNAPPI.EditMode.requestEditContent,
@@ -99,7 +103,7 @@
 		var CCid, mainPR;
 		try {
 			if (o instanceof SNAPPI.Lightbox) {
-				mainPR = SNAPPI.Y.one('section.gallery.photo').Gallery;
+				mainPR = _Y.one('section.gallery.photo').Gallery;
 			} else {
 				mainPR = (o instanceof SNAPPI.Gallery) ? o :  o.dom().Gallery;
 			}
@@ -149,7 +153,6 @@
 	 * @return shotId
 	 */
 	ShotController.removeFromShots_afterPostSuccess = function(photoRoll, shotId, auditionREF) {
-		var Y = SNAPPI.Y;
 		/*
 		 * local processing after successful POST add Substitution to
 		 * CastingCall
@@ -275,9 +278,7 @@
 			SNAPPI.io.post.call(this, uri, data, post_callback, {photoRoll:pr});		
 		}		
 	};
-	SNAPPI.ShotController = ShotController;
-	SNAPPI.shotController = new ShotController();
-
+	
 	SNAPPI.sortConfig = new function() {
 		this.init = function() {
 			this.RATING = {

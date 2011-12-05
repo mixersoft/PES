@@ -23,14 +23,23 @@
  * 
  */
 (function() {
-	if (SNAPPI.Thumbnail) return;
-
-	var Y = SNAPPI.Y;
-	var Factory = SNAPPI.Factory.Thumbnail;
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.Thumbnail = function(Y){
+		if (_Y === null) _Y = Y;
+		
+		Factory = SNAPPI.Factory.Thumbnail;
+		
+		SNAPPI.Thumbnail = Thumbnail;
+	}
+	
+	
+	
 
 	/*
 	 * protected
 	 */
+	var Factory = null;
 	var _showSubstitutesCSS; // stylesheet for hiding substitutes
 	var _defaultCfg = {
 		// className : 'thumbnail',
@@ -85,7 +94,7 @@
 	Thumbnail.hideSubstitutes = true;
 	Thumbnail.toggleHideSubstitutes = function(value) {
 		if (_showSubstitutesCSS === undefined) {
-			_showSubstitutesCSS = new Y.StyleSheet('hideSubstitutes');
+			_showSubstitutesCSS = new _Y.StyleSheet('hideSubstitutes');
 			_showSubstitutesCSS.disable();
 			_showSubstitutesCSS.set(
 					'section.gallery.photo > div > .Figurebox.hiddenshot-hide', {
@@ -111,7 +120,7 @@
 			this._cfg = {};
 			
 			try {
-				this._cfg = SNAPPI.Y.merge(Factory[cfg.type].defaultCfg, cfg);
+				this._cfg = _Y.merge(Factory[cfg.type].defaultCfg, cfg);
 			} catch (e) {}
 			
 			// TODO: deprecate. use Factory[cfg.type].defaultCfg instead
@@ -138,7 +147,7 @@
 			// set id
 			var id = audition.id;
 			this.id = id;	// deprecate
-			var node = Y.Node.create(Factory[this._cfg.type].markup);
+			var node = _Y.Node.create(Factory[this._cfg.type].markup);
 			this.node = node;
 			// node.uuid = id;
 			// node.dom().uuid = id;	// for firebug			
@@ -220,10 +229,10 @@
 			}
 		},	
 		setScore: function(audition){
-			SNAPPI.Factory.Thumbnail.setScoreNode(this, audition);
+			Factory.Thumbnail.setScoreNode(this, audition);
 		},
 		setHiddenShot: function(audition){
-			SNAPPI.Factory.Thumbnail.setHiddenShotNode(this, audition);
+			Factory.Thumbnail.setHiddenShotNode(this, audition);
 		},
 		setSubGroupHide: function (hide) {
 			if (hide === false || hide=='show') {
@@ -240,7 +249,7 @@
 			 */
 			makeSubstitutionGroupsDroppable : function(value) {
 				if (console) console.warn("deprecate: makeSubstitutionGroupsDroppable()")
-				Y.all('section.gallery.photo > div').each(function(ul) {
+				_Y.all('section.gallery.photo > div').each(function(ul) {
 					if (value) {
 						SNAPPI.DragDrop.pluginDrop(ul);
 					} else {
@@ -268,7 +277,7 @@
 				return;
 			},
 			setRatingDbValue : function(value) {
-				var t = Y.one(this).ancestor('.thumb-wrapper');
+				var t = _Y.one(this).ancestor('.thumb-wrapper');
 				t.dom().data.set( {
 					rating : value
 				});
@@ -278,7 +287,7 @@
 				if (this.data && this.data.tags !== undefined) {
 					LI = this;
 				} else {
-					LI = Y.one(this).ancestor('.thumb-wrapper');
+					LI = _Y.one(this).ancestor('.thumb-wrapper');
 				}
 				if (LI) {
 					var aTags, curTags = LI.data.tags;
@@ -333,7 +342,5 @@
 		},
 
 	};
-	SNAPPI.Thumbnail = Thumbnail;
-	
 
 })();
