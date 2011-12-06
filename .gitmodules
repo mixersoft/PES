@@ -31,3 +31,6 @@
 [submodule "_git_modules/odesk-200607765"]
 	path = _git_modules/odesk-200607765
 	url = git://github.com/mixersoft/odesk-200607765.git
+[submodule "_git_modules/mrclay/minify"]
+	path = _git_modules/mrclay/minify
+	url = https://github.com/mrclay/minify.git
