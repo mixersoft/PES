@@ -1,3 +1,4 @@
+(function() {
 _JS_DATASOURCE = {
 		baseurls: ["C:\\USERS\\michael\\Pictures\\importTest"],
 		getBaseurls: function(){ return this.baseurls },
@@ -51,3 +52,5 @@ _JS_UI = {
 		uploadFile: function(){return true},
 		end: null
 }
+
+})();

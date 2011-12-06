@@ -20,20 +20,29 @@
  *
  *
  */
-// (function() {
+(function() {
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.UploadQueue = function(Y){
+		if (_Y === null) _Y = Y;
+		SNAPPI.AIR.Flex_UploadAPI = Flex_UploadAPI;
+		SNAPPI.AIR.UploadQueue = UploadQueue;		// class reference
+	}
+	
+	
 	var util = SNAPPI.coreutil;
 	/*
 	 * this class only used to generate and manage upload queue UI part e.g.
 	 * pagination,start/pause/clear all
 	 */
 	var UploadQueue = function(cfg) {
-		var Y = SNAPPI.Y;
+		
 		if ( UploadQueue.instance ) return UploadQueue.instance;		// singleton instance
 		this.load = function(cfg) {
 			LOG("-----------------------> uploadQueue.load() ");
 			
 			
-			this.container = cfg.container || Y.one('#gallery-container');
+			this.container = cfg.container || _Y.one('#gallery-container');
 			this.ds = cfg.datasource || null;
 			this.paginate = this.cakeStylePaginate;
 			this.XXXsnapshot = {};  		// snapshot of active upload rows
@@ -47,7 +56,7 @@
 			/*
 			 * uploader items perpage
 			 */
-			this.perpage = __CONFIG.uploader.perpage;					// initialize in JS
+			this.perpage = SNAPPI.AIR.Config.CONSTANTS.uploader.perpage;					// initialize in JS
 
 			/*
 			 * total no of pages available in the queue
@@ -77,7 +86,7 @@
 			 */
 			this.isUploading = this.flexUploadAPI.isUploading;	// bind function
 			
-			var detach = Y.on('snappi-air:upload-status-changed', function(isUploading){
+			var detach = _Y.on('snappi-air:upload-status-changed', function(isUploading){
 				if (!isUploading) SNAPPI.setPageLoading(false);
 			});			
 		}
@@ -116,7 +125,6 @@
 //				'AIR-upload-manager', 'AIR-file-progress',
 				'snappi-thumbnail-helpers',
 				function(Y) {
-					LOG(SNAPPI.Y);
 					LOG(SNAPPI.MultiSelect2);
 					var check;
 				}
@@ -139,7 +147,7 @@
 			tab = tab || 'all';
 			this.container.removeClass('hide');
 			// set filter li.btn focus
-			SNAPPI.Y.all('.gallery-display-options nav.settings .filter li.btn').each(
+			_Y.all('.gallery-display-options nav.settings .filter li.btn').each(
 				function(n,i,l){
 					if (n.get('id').indexOf(tab)>-1) n.addClass('focus');
 					else  n.removeClass('focus');
@@ -215,7 +223,7 @@
 				}				
 			} else {
 				try {
-					var oldStatus = SNAPPI.Y.one('.gallery-display-options .settings .filter li.btn.focus').getAttribute('action');
+					var oldStatus = _Y.one('.gallery-display-options .settings .filter li.btn.focus').getAttribute('action');
 					oldStatus = oldStatus.split(':').pop();
 				} catch (e) {
 					oldStatus='failure';
@@ -256,7 +264,7 @@
 		 * 	
 		 */
 		action_cancel : function(node) {
-			var Y = SNAPPI.Y;
+			
 			var o, um = SNAPPI.AIR.UploadManager;
 			// cancel selected node, only
 			if (node) {
@@ -364,7 +372,7 @@ LOG("****************************  uploader getOpenBatchId has been DEPRECATED")
 		 */
 		// this.initQueue = function(pages, perpage, total){
 		initQueue : function(filter, cfg) { // OK
-			var Y = SNAPPI.Y;
+			
 			cfg = cfg || {};
 			filter = filter || 'all';
 			if (this.status != filter) {
@@ -440,7 +448,7 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 			} else perpage = this.flexUploadAPI.getPerpage();
 			
 			mode = mode || 'show';
-			var Y = SNAPPI.Y;
+			
 			var rows;
 			if (mode == 'upload') {
 				// mode=upload: save rows separately, does not overwrite view rows 
@@ -454,7 +462,6 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 			LOG(">>> uploadQueue.getPageItems(), mode="+mode+", page=" + page
 					+ ", previous page=" + this.activePage + ", status="
 					+ this.status + ", count=" + rows.length);
-
 			/*
 			 * view add pages
 			 */
@@ -463,7 +470,7 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 			if (pageNode && this.status=='all' && rows.length == 0) {
 				// show '.empty-photo-gallery-message'
 				try {
-					var n = Y.one('#markup .empty-photo-gallery-message').removeClass('hide');
+					var n = _Y.one('#markup .empty-photo-gallery-message').removeClass('hide');
 					pageNode.append(n);
 				} catch (e) {}
 			} else if (pageNode) {
@@ -499,11 +506,9 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 					}
 				}
 			}
-			
 			/*
 			 * view methods
 			 */				
-			
 			/*
 			 * update Paginator
 			 */
@@ -622,8 +627,8 @@ LOG("  >>>>>>>>>>>>  UPLOAD: last page complete, checking for any pending files,
 LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  done ");									
 							SNAPPI.AIR.UIHelper.toggle_upload(null, 'done');
 							try {
-								var once = SNAPPI.Y.one('.upload-complete-message').removeClass('hide');	
-								SNAPPI.Y.one('#gallery-container').insert(once, 'before');
+								var once = _Y.one('.upload-complete-message').removeClass('hide');	
+								_Y.one('#gallery-container').insert(once, 'before');
 							} catch (e){}
 							
 							
@@ -638,10 +643,10 @@ LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  done ");
 		 * and 'pause' according to mode set status of items paused to cancelled
 		 */
 		stopUploadPage : function(mode) {
-			var Y = SNAPPI.Y;
+			
 			mode = mode || 'clear'; // clear or pause
 			if (this.isUploading()) {
-				var detach = Y.on('snappi-air:upload-status-changed', function(isUploading){
+				var detach = _Y.on('snappi-air:upload-status-changed', function(isUploading){
 					if(!isUploading && mode=='clear'){
 						detach.detach();
 						this.uploadPage = 0;
@@ -699,7 +704,7 @@ LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  done ");
 		 * it is fired by retryUpload() snaphappi.mxml to update the FileProgress UI
 		 */
 		doRetry : function(rows) {
-			var Y = SNAPPI.Y;
+			
 			if (rows && rows.length) {
 				for ( var i = 0; i < rows.length; i++) {
 					var row = rows[i];
@@ -856,7 +861,7 @@ LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  done ");
 	        setTimeout(function(){
 	        	_flexAPI_UI.importPhotos(droppedFolder, cb);
 	        }, 50);
-	        SNAPPI.Y.fire('snappi-air:begin-import');
+	        _Y.fire('snappi-air:begin-import');
 	    },
 	    // called from FlexAPI(?)
 	    onImportComplete : function(baseurl) {
@@ -868,10 +873,10 @@ LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  done ");
             //TODO: move to 'snappi-air:import-complete' event
             SNAPPI.AIR.Helpers.addToUploader(this, baseurl);
             
-            SNAPPI.Y.fire('snappi-air:import-complete');
+            _Y.fire('snappi-air:import-complete');
 	    },
 		cakeStylePaginate : function(parent, total, current) {
-			var Y = SNAPPI.Y;
+			
 			LOG(">>>>>>>>> showing page " + current + " of " + total);
 			/*
 			 * <div class="paging-control paging-numbers"> <span class="disabled"> «</span>
@@ -886,7 +891,7 @@ LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  done ");
 			var page_markup = '<span><a href="#" id="page-link-:page" onclick="return false;">:page</a></span>';
 			var current_markup = '<span class="current">:page</span>';
 
-			// var parent = Y.Node.create('<div class="paging-control
+			// var parent = _Y.Node.create('<div class="paging-control
 			// paging-numbers">');
 			var pageWidth = parent.get('offsetWidth');
 			var MARKER_WIDTH = 32;
@@ -910,26 +915,26 @@ LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  done ");
 			for ( var n = start; n <= end; n++) {
 				if (n == start) {
 					if (current == 1) {
-						parent.append(Y.Node
+						parent.append(_Y.Node
 								.create('<span class="disabled"> «</span>'));
 					} else {
-						parent.append(Y.Node.create(prev_markup.replace(/:page/g,
+						parent.append(_Y.Node.create(prev_markup.replace(/:page/g,
 								(parseInt(current) - 1))));
 					}
 				}
 				// page numbers
 				if (n == current) {
-					parent.append(Y.Node
+					parent.append(_Y.Node
 							.create(current_markup.replace(/:page/g, n)));
 				} else
-					parent.append(Y.Node.create(page_markup.replace(/:page/g, n)));
+					parent.append(_Y.Node.create(page_markup.replace(/:page/g, n)));
 				// next
 				if (n == end) {
 					if (current == total) {
-						parent.append(Y.Node
+						parent.append(_Y.Node
 								.create('<span class="disabled">» </span>'));
 					} else {
-						parent.append(Y.Node.create(next_markup.replace(/:page/g,
+						parent.append(_Y.Node.create(next_markup.replace(/:page/g,
 								(parseInt(current) + 1))));
 					}
 				}
@@ -1199,7 +1204,7 @@ LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  done ");
 	
 	
 
-	SNAPPI.AIR.UploadQueue = UploadQueue;		// class reference
+	
 	// use SNAPPI.AIR.UploadQueue.instance for singleton object reference
 	
 	/*
@@ -1213,7 +1218,7 @@ LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  done ");
 	UploadQueue.view_setImportTotalProgress = function() {
 		var progress = _flexAPI_UI.getImportProgress();
 		var percent = Math.round(progress.scanned/progress.total*100);
-		var node = SNAPPI.Y.one('#import-progress');
+		var node = _Y.one('#import-progress');
 		
 		var color = (percent > 50) ? 'white' : 'black';
 		try {
@@ -1223,7 +1228,7 @@ LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  done ");
 		}
 	}
 	UploadQueue.showImportProgress = function() {
-		var node = SNAPPI.Y.one('#item-body .import-progress-wrap');
+		var node = _Y.one('#item-body .import-progress-wrap');
 		this.view_setImportTotalProgress();
 		node.removeClass('hide');
 	}
@@ -1232,8 +1237,8 @@ LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  done ");
 	 * show DropTarget
 	 */
 	UploadQueue.showDropTarget = function(show) {
-		if (show || typeof show == 'undefined') SNAPPI.Y.one('#drop-target').addClass("over");
-		else SNAPPI.Y.one('#drop-target').removeClass("over");
+		if (show || typeof show == 'undefined') _Y.one('#drop-target').addClass("over");
+		else _Y.one('#drop-target').removeClass("over");
 	}
 	
 	UploadQueue.getDropTargetId = function() {
@@ -1252,19 +1257,20 @@ LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  done ");
  * helper methods
  */	
 	    
-	var util = SNAPPI.coreutil;
-    /*
-     * called inernally when drop a folder
-     * called with one param as string i.e. folder's nativepath
-     * no return value
-     * */
-    SNAPPI.AIR.onDrop = function(droppedFolder, uploader){
-    	LOG(SNAPPI.AIR.uploadQueue);
-    	uploader = uploader ||  SNAPPI.AIR.uploadQueue;
-    	uploader.onDrop.call(this, droppedFolder);
-    };
-    
-    
+	// var util = SNAPPI.coreutil;
+    // /*
+     // * called inernally when drop a folder
+     // * called with one param as string i.e. folder's nativepath
+     // * no return value
+     // * */
+    // // deprecate: moved to UIHelper.actions.onDrop;
+    // SNAPPI.AIR.onDrop = function(droppedFolder, uploader){
+    	// LOG(SNAPPI.AIR.uploadQueue);
+    	// uploader = uploader ||  SNAPPI.AIR.uploadQueue;
+    	// uploader.onDrop.call(this, droppedFolder);
+    // };
+//     
+//     
     
     
     
@@ -1289,7 +1295,6 @@ LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  done ");
     		_flexAPI_UI = flexAPI_UI;		// Flex UploaderUI.as
     		htmlctrl = flexAPI_UI;
     		LOG(">>>>>>>>>>>>>>>>>>>>>>>>> JAVASCRIPT FLEX BRIDGE");
-    		LOG(_flexAPI_UI);
     	}
     };
     Flex_UploadAPI.prototype = {
@@ -1585,8 +1590,7 @@ LOG("retryUpload: batchid="+batchid+", baseurl="+baseurl) ;
     Flex_UploadAPI.selectFolder = function(){
     	_flexAPI_UI.selectRootFolder();
     }
-    SNAPPI.AIR.Flex_UploadAPI = Flex_UploadAPI;
     
     
     LOG("load complete: api_bridge.js : Flex_UploadAPI");	
-// }());
+})();

@@ -21,6 +21,14 @@
  *
  */
 (function(){  
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.ApiBridge = function(Y){
+		if (_Y === null) _Y = Y;
+		// publish in SNAPPI namespace
+    	SNAPPI.AIR.CastingCallDataSource = AIRCastingCallDataSource;
+	}	
+	
     var util = SNAPPI.coreutil;
      
     /*
@@ -111,7 +119,7 @@
     		LOG("------------------------------> datasource.load() ");
 	        var defaultCfg = {
 	                page: 1,
-	                perpage: __CONFIG.datasource.perpage,  // was this.getConfigs().photosPerpage
+	                perpage: SNAPPI.AIR.Config.CONSTANTS.datasource.perpage,  // was this.getConfigs().photosPerpage
 	                baseurl: '',
 	                schemaParser: null			// AIR schema parser?
 	            };
@@ -482,7 +490,7 @@ LOG(baseurls);
          * XHR post to url to get url for uploadHost
          */
         setUploadHostFromServer : function(url, fnContinue){
-        	url = url || __CONFIG.datasource.uploadHostLookup
+        	url = url || SNAPPI.AIR.Config.CONSTANTS.datasource.uploadHostLookup
             var callback = {
                 success: function(e){
         			var uploadHost = e.responseText;
@@ -875,8 +883,6 @@ LOG(">>>>>>>>>>   SESSIONID="+sessionId);
 		}
 
     };
-    // publish in SNAPPI namespace
-    SNAPPI.AIR.CastingCallDataSource = AIRCastingCallDataSource;    
     
 //    LOG(SNAPPI.AIR);
    LOG("load complete: api_bridge.js : CastingCallDataSource");

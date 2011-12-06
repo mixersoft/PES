@@ -25,7 +25,7 @@
 (function(){
 	var _Y = null;
     SNAPPI.namespace('SNAPPI.onYready');
-    SNAPPI.onYready.SnappiHoverEvent = function(Y){
+    SNAPPI.onYready.SortedHash = function(Y){
 		if (_Y === null) _Y = Y;
 		
 		SNAPPI.SortedHash = SortedHash;

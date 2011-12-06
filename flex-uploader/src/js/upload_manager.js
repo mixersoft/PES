@@ -20,7 +20,15 @@
  *
  *
  */
-// (function() {
+(function() {
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.UploadManager = function(Y){
+		if (_Y === null) _Y = Y;
+		UploadManager.activeSH = new SNAPPI.SortedHash(); //init new SNAPPI.SortedHash() later, not on script load
+		SNAPPI.AIR.UploadManager = UploadManager;
+	}	
+	
 	var util = SNAPPI.coreutil;
 	/*
 	 * callback object for managing all async uploads
@@ -53,7 +61,7 @@
 	 * static methods
 	 */
 	UploadManager.MAX_CONCURRENT_UPLOADS = 2;
-	UploadManager.activeSH = new SNAPPI.SortedHash(); //init new SNAPPI.SortedHash() later, not on script load
+	UploadManager.activeSH = null; //init in onYready()
 	UploadManager.add = function(o){
 		return UploadManager.activeSH.add(o);
 	}
@@ -67,7 +75,7 @@
 		return UploadManager.activeSH.count();
 	}
 	UploadManager.fire_upload_status_changed = function(isUploading){
-		SNAPPI.Y.fire('snappi-air:upload-status-changed', isUploading);
+		_Y.fire('snappi-air:upload-status-changed', isUploading);
 	}
 	/*
 	 * READ ONLY: this value is set to 
@@ -215,7 +223,7 @@ LOG("upload manager: cancel, pause="+pause);
 		}
 		
 	}
-	SNAPPI.AIR.UploadManager = UploadManager;
+	
 	
 	LOG("load complete: uploadmanager.js");	
-// }());
+})();

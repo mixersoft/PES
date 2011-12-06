@@ -20,96 +20,114 @@
  * 
  * 
  */
-console.log("load BEGIN: helpers.js");	
 (function() {
+console.log("load BEGIN: helpers.js");	
+
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.Helpers = function(Y){
+		if (_Y === null) _Y = Y;
+		SNAPPI.AIR.Helpers = Helpers;
+	}	
 	/***************************************************************************
 	 * Helpers Static Class
-	 * 	SNAPPI.AIR.Helpers = Helpers;
+	 * 	Helpers.= Helpers;
 	 */
 	var Helpers = function() {}
-	Helpers.prototype = {};
-	SNAPPI.AIR.Helpers = Helpers;
+	
 	SNAPPI.namespace('SNAPPI.STATE.displayPage');
 	
-	Helpers.add_snappiHoverEvent = function(Y) {
-		/*
-		 * add 'snappi:hover' custom event see:
-		 * http://developer.yahoo.com/yui/3/examples/event/event-synth-hover.html
-		 * TODO: replace with yui3 hover in yui 3.4.0
-		 */
-		var check = Y.Event.define("snappi:hover", {
-			processArgs : function(args) {
-				// Args received here match the Y.on(...) order, so
-			// [ 'hover', onHover, "#demo p", endHover, context, etc ]
-			var endHover = null, selector = null, context = null;
-			if (args.length > 3) {
-				endHover = args[3];
-				args.splice(3, 1);
-			}
-			if (args.length > 3) {
-				context = args[3];
-				args.splice(3, 1);
-			}
-			if (args.length > 3) {
-				selector = args[3];
-				args.splice(3, 1);
-			}
-
-			// This will be stored in the subscription's '_extra' property
-			return {
-				endHover : endHover,
-				context : context,
-				selector : selector
-			};
-		},
-		on : function(node, sub, notifier) {
-			var onHover = sub.fn;
-			var endHover = sub._extra && sub._extra.endHover || null;
-			var context = sub._extra && sub._extra.context || null;
-			sub.context = context;
-			// To make detaching the associated DOM events easy, use a
-			// detach category, but keep the category unique per subscription
-			// by creating the category with Y.guid()
-			sub._evtGuid = Y.guid() + '|';
-
-			node.on(sub._evtGuid + "mouseenter", function(e) {
-				// Firing the notifier event executes the hover subscribers
-					sub.fn = onHover;
-					notifier.fire(e);
-				});
-
-			node.on(sub._evtGuid + "mouseleave", function(e) {
-				// Firing the notifier event executes the hover subscribers
-					sub.fn = endHover;
-					notifier.fire(e);
-				});
-		},
-		detach : function(node, sub, notifier) {
-			// Detach the mouseenter and mouseout subscriptions using the
-			// detach category
-			node.detach(sub._evtGuid + '*');
-		},
-		// add delegate support. it will be used in zoom or other places
-			delegate : function(node, sub, notifier, filter) {
-				var onHover = sub.fn;
-				var selector = sub._extra && sub._extra.selector || null;
-				var context = sub._extra && sub._extra.context || null;
-				sub._evtGuid = Y.guid() + '|';
-
-				node.delegate(sub._evtGuid + "mouseenter", sub.fn, selector,
-						context);
-
-			},
-
-			// Delegate uses a separate detach function to facilitate undoing
-			// more
-			// complex wiring created in the delegate logic above. Not needed
-			// here.
-			detachDelegate : function(node, sub, notifier) {
-				sub._delegateDetacher.detach();
-			}
+	Helpers.go = function(){
+		var node = Helpers.init_GalleryLoadingMask();
+		LOG(">>>>>>>>>>>>>>>>>>>>>>>>  AIR_init <<<<<<<<<<<<<");
+		
+   		/*
+   		 *  flex_onYuiDomReady: js global defined in snaphappi.mxml,
+   		 */
+		flex_onYuiDomReady();
+		
+		
+		
+		
+		LOG(">>>>>>>>>>>>>>>>>>>>>>>>  YUI/domready BEGIN <<<<<<<<<<<<<");
+		Helpers.pageOnLoadComplete();		// show body
+	
+	    var datasource, uploader; 
+	    
+	    /*
+	     * configure Datasource for uploader
+	     */
+		try {
+			if (!flexAPI_Datasource) throw new Exception();
+			datasource = new SNAPPI.AIR.CastingCallDataSource();
+		} catch (e) {
+			LOG(">>>>>>>>>>>>>>>>  WARNING: USING JAVASCRIPT DATASOURCE  >>>>>>>>>>>>>>>>>>>");
+			datasource = _JS_DATASOURCE;
+		}   
+		SNAPPI.DATASOURCE = datasource;
+		
+		uploader = new SNAPPI.AIR.UploadQueue({
+	    	container: _Y.one('#gallery-container'),
+	    	datasource: datasource
+	    });
+	    SNAPPI.AIR.uploadQueue = uploader;
+	    
+	    /*
+	     * globals
+	     * 
+	     SNAPPI.AIR.uploadQueue = SNAPPI.AIR.UploadQueue.instance
+	     SNAPPI.AIR.uploadQueue.ds = SNAPPI.DATASOURCE
+	     NOTE: SNAPPI.AIR.uploadQueue.flexUploadAPI bypasses SNAPPI.DATASOURCE, 
+	     	access global _flexAPI_UI directly Flex UploaderUI.as
+	     * 
+	     */
+	    
+	    
+	    
+	    /*
+	     * DEV/Testing config
+	     */
+		if (0 && 'test') {
+			Helpers.DEV_runTestSuite();
+		}
+		
+		// magic login for AIR Test user
+		Helpers.DEV_addProviderKeyAsTestUser(datasource.getConfigs().provider_key);
+		// add all photos to uploadQueue
+	//	Helpers.addToUploader(uploader, '');
+		// var host = SNAPPI.AIR.host=='dev2.snaphappi.com' ? 'remote' : 'local' ;
+		Helpers.DEV_setRuntimeHost(uploader);		// local or remote
+		
+		// add login menu
+		SNAPPI.MenuAUI.initMenus({
+			'menu-sign-in-markup':1,
+			'menu-uploader-batch-markup':1,
+			'menu-select-all-markup':1,
+			// 'contextmenu-photoroll-markup':1,	// init from UIHelper.toggle_ContextMenu()
 		});
-	}
+		// use batchid==null on startup
+		Helpers.initUploadGallery(uploader, 1, null, null);
+		// start listeners, as necessary
+		var listeners = {
+			'WindowOptionClick':null, 
+			'DisplayOptionClick':null,
+			'ContextMenuClick':null, 
+			'MultiSelect':null,
+		};
+		for (var listen in listeners) {
+			if (listeners[listen]!==false) SNAPPI.AIR.UIHelper.listeners[listen](listeners[listen]);
+		}
+		Helpers.hide_StartupLoadingMask();
+		LOG(">>>>>>>>> DONE");	
+	
+	
+		var detach = _Y.on('snappi-air:begin-import', function(){
+			_Y.one('#item-body .import-progress-wrap').removeClass('hide');		
+		});
+		
+		LOG(">>>>>>>>>>>>>>>>>>>>>>>>  YUI/domready COMPLETE <<<<<<<<<<<<<");
+		
+	};
 	
 	Helpers.DEV_setRuntimeHost = function(uploader, host) {
 		if (!SNAPPI.AIR.host) {
@@ -128,8 +146,8 @@ console.log("load BEGIN: helpers.js");
 				// break;
 			// case 'local':
 			// default:
-				// var Y = SNAPPI.Y;
-				// SNAPPI.AIR.host =  Y.one('base').getAttribute('host');
+				// 
+				// SNAPPI.AIR.host =  _Y.one('base').getAttribute('host');
 				// break;
 			// }			
 		}
@@ -157,7 +175,6 @@ console.log("load BEGIN: helpers.js");
 	Helpers.isAuthorized = function() {
 		try {
 			var userid = SNAPPI.STATE.user.id;
-			// TODO: post uuid to server to validate
 			return userid;
 		} catch (e) {
 		}
@@ -165,7 +182,7 @@ console.log("load BEGIN: helpers.js");
 	}	
 	
 	Helpers.pageOnLoadComplete = function() {
-		SNAPPI.Y.one('body').setAttribute('style','');
+		_Y.one('body').setAttribute('style','');
 	}
 	
 	/*
@@ -173,13 +190,13 @@ console.log("load BEGIN: helpers.js");
 	 */
 	// TODO: providerKey !== provider_account_key/id, right???
 	Helpers.DEV_addProviderKeyAsTestUser = function(uuid) {
-		var option = SNAPPI.Y.one('form#UserLoginForm select > option.hr');
+		var option = _Y.one('form#UserLoginForm select > option.hr');
 		option.insert("<option value='" + uuid
 				+ "'>AIR upload test user</option>", 'after');
 	}
 	
 	Helpers.DEV_runTestSuite = function(){
-		var Y = SNAPPI.Y;
+		
 	    try {	
 			LOG("TEST: get new SNAPPI.CastingCallDataSource()");
 			var datasource = new SNAPPI.AIR.CastingCallDataSource();
@@ -198,7 +215,7 @@ console.log("load BEGIN: helpers.js");
 	    	var stopDrop = function() {
 	    		LOG("hover stop");
 			}; 
-	    	Y.one('#upload').on('snappi:hover', startDrop, stopDrop, this);	
+	    	_Y.one('#upload').on('snappi:hover', startDrop, stopDrop, this);	
 	  	} 
 	    catch (e) {
 	        LOG("SNAPPI.AIR.Test not available");
@@ -267,10 +284,10 @@ console.log("load BEGIN: helpers.js");
         return added;
     }
     Helpers.show_login = function() {
-    	var Y = SNAPPI.Y;
+    	
     	// SNAPPI.Helper.Dialog.showLogin();
-    	if (SNAPPI.AIR.debug && Y.one('#login select.postData')) {
-    		Y.one('#login select.postData').removeClass('hide');
+    	if (SNAPPI.AIR.debug && _Y.one('#login select.postData')) {
+    		_Y.one('#login select.postData').removeClass('hide');
     	}
     }
     /*
@@ -287,7 +304,6 @@ LOG("Helpers.initUploadGallery, BATCHID="+batchId+", folder="+folder+", page="+p
 		SNAPPI.STATE.displayPage.perpage = perpage;
 		
 		// init/show upload queue
-		var Y = SNAPPI.Y;
 		
 		
 		// check .filter for current focus
@@ -304,7 +320,6 @@ LOG("Helpers.initUploadGallery, BATCHID="+batchId+", folder="+folder+", page="+p
 		if (hasFocus) {
 			filter = hasFocus.getAttribute('action').split(':').pop();
 		} else filter = 'pending';	// Ready for upload
-		
 		uploadQueue.initQueue(filter, {
 			batchId: batchId,
 			folder: folder, 				// folder='all' => baseurl=''
@@ -313,12 +328,12 @@ LOG("Helpers.initUploadGallery, BATCHID="+batchId+", folder="+folder+", page="+p
 		});
 		// show initial page using Paginator
 		
-		var node = Y.one('#gallery-container .gallery.photo');
+		var node = _Y.one('#gallery-container .gallery.photo');
 		// init gallery listeners
 		Helpers.init_GalleryLoadingMask(node);
 		var p = SNAPPI.Paginator.find['PhotoAirUpload'];
 		if (!p) {
-			var paginateTarget = Y.one('#gallery-container .gallery.photo .container');
+			var paginateTarget = _Y.one('#gallery-container .gallery.photo .container');
 			paginateTarget.UploadQueue = uploadQueue;
 			p = SNAPPI.Paginator.paginate_PhotoAirUpload(paginateTarget, page, SNAPPI.STATE.displayPage.perpage, uploadQueue.count_totalItems);
 		}
@@ -334,8 +349,8 @@ LOG("Helpers.initUploadGallery, BATCHID="+batchId+", folder="+folder+", page="+p
 	 * use HTML5 startup loading mask to show before JS is ready
 	 */
 	Helpers.hide_StartupLoadingMask = function(){
-		var Y = SNAPPI.Y;
-		var mask = Y.one('#startup-loading-mask');
+		
+		var mask = _Y.one('#startup-loading-mask');
 		if (mask) {
 			mask.get('parentNode').append(mask.one('*'));
 			mask.empty().destroy();
@@ -344,16 +359,16 @@ LOG("Helpers.initUploadGallery, BATCHID="+batchId+", folder="+folder+", page="+p
 	
 	
 	Helpers.init_GalleryLoadingMask = function(pluginNode, target){
-		var Y = SNAPPI.Y;
+		// Helpers.hide_StartupLoadingMask();
 		// show initial page using Paginator, doesn't work
-		pluginNode = pluginNode || Y.one('#gallery-container .gallery.photo');
+		pluginNode = pluginNode || _Y.one('#gallery-container .gallery.photo');
 		target = target || pluginNode;
 		if (target.ancestor('.gallery.photo')) target = target.ancestor('.gallery.photo');
 		
 		if (!pluginNode.loadingmask) {				// add loadingmask ASAP
 			var loadingmaskTarget = target;
 			// set loadingmask to parent
-			pluginNode.plug(Y.LoadingMask, {
+			pluginNode.plug(_Y.LoadingMask, {
 				pluginNode: loadingmaskTarget
 			});    			
 			pluginNode.loadingmask._conf.data.value['pluginNode'] = loadingmaskTarget;
@@ -370,7 +385,7 @@ LOG("Helpers.initUploadGallery, BATCHID="+batchId+", folder="+folder+", page="+p
 		return pluginNode;
 	}
 	
-}());
+})();
 
 
 // LOG("load complete: helpers.js");	

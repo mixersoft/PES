@@ -151,16 +151,10 @@
      */
 	var Config = function(){};    
 	SNAPPI.Config = Config;	// make global
-	
-	Config.getYuiConfig = function(force){
-		if (SNAPPI.yuiConfig && force !== true) {
-			return SNAPPI.yuiConfig;
-		}
-		
-    	namespace('CFG');
-		CFG = {		// frequently used startup Config params 
+	var _CFG = {		// frequently used startup Config params 
 			DEBUG : {	// default when hostname==git*
 	    		snappi_comboBase: 'baked/app/webroot&',
+	    		air_comboBase: 'app/air&',
 	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
 	    		pagemaker_useCombo: true,
 	    		alloy_useCombo: true,
@@ -171,6 +165,7 @@
 		    },
 	    	PROD : {	// use for unix/server testing
 	    		snappi_comboBase: 'app/webroot&',
+	    		air_comboBase: 'app/air&',
 	    		snappi_useCombo: 1,
 	    		pagemaker_useCombo: true,
 	    		alloy_useCombo: true,
@@ -178,6 +173,16 @@
 	    		YUI_VERSION: '3.3.0',
 	    	}
 	    }
+	namespace('CFG');
+	CFG = _CFG;
+	
+	Config.getYuiConfig = function(force){
+		if (SNAPPI.yuiConfig && force !== true) {
+			return SNAPPI.yuiConfig;
+		}
+		
+    	
+		
 		/*
 		 * bootstrap YUI, Alloy, and snaphappi javascript
 		 * will automatically set to CFG.DEBUG for /git/.test(hostname)
@@ -201,7 +206,9 @@
 	    		snappi: Config.addModule_snappi(hostCfg),
 	    		gallery: Config.addModule_gallery(hostCfg),
 	    		pagemaker: Config.addModule_pagemaker(hostCfg),
-	    		jsLib: Config.addModule_jsLib(hostCfg)
+	    		jsLib: Config.addModule_jsLib(hostCfg),
+	    		AIR: Config.addModule_AIR(hostCfg),
+    			AIR_CSS: Config.addModule_AIR_CSS(hostCfg),
 	    	}
 	    };
 	    // update yuiConfig for yahoo CDN config
@@ -297,7 +304,7 @@
 		var wrappedCallback = function(Y, result){
 			if (!result.success) {
 				
-				Y.log('Load failure: ' + result.msg, 'warn', 'Example');
+				Y.log('Load failure: ' + result.msg, 'warn', 'Example')
 				
 			}
 			if (before) before(Y, result);
@@ -466,6 +473,137 @@
 		}
 		LazyLoad.use( modules_1.concat(modules_2, modules_3), onlazyload, null );
 	}
+	LazyLoad.AIRDesktopUploader = function(cfg){
+		cfg = cfg || {};	// closure for onlazyload
+		
+		var modules = [
+			// css
+    		'AIR-upload-ui-css',
+    		/*
+    		 * required
+    		 */
+    		'node', 'event', 'event-delegate', 'event-custom', "event-mouseenter",
+    		'node-event-simulate',
+    		/*
+    		 * early load modules
+    		 */
+    		// 'AIR-firebug-stable',
+    		'AIR-firebug-1.2',
+    		/*
+    		 * snappi modules
+    		 */
+    		'snappi-sortedhash','snappi-io', 'snappi-io-helpers', 
+    		'snappi-paginator', 'snappi-menu-aui', 
+    		// 'snappi-dialog-aui', 'snappi-gallery-helpers', 
+    		/*
+    		 * air modules - bootstrap only. add additional modules after init 
+    		 */
+        	// 'AIR-menu-aui',
+    		'AIR-api-bridge',  'AIR-upload-ui', 
+    		/*
+    		 * save for 2nd load
+    		 */
+    		'AIR-upload-manager', 'AIR-file-progress',
+    		/*
+    		 * unused
+    		 */
+    		'AIR-js-datasource',
+//    		'AIR-test-api',		
+		];
+		var onlazyload = function(Y, result){
+				SNAPPI.Y = Y;
+    			
+    			LOG(" *********** base.js:  SNAPPI.Y = " + SNAPPI.Y.version);
+    			LOG(SNAPPI.AIR);
+    			try {
+    				SNAPPI.AIR.Helpers.add_snappiHoverEvent(Y);
+    			} catch (e) {}
+    			
+    			/*********************************************************************************
+    			 * domready init
+    			 */
+    			Y.on('domready', function(){
+    				SNAPPI.AIR.Helpers.go();
+    			});
+		}
+		
+		// before before_LazyLoad
+		var before_LazyLoad = function(){
+			ALLOY_VERSION='alloy-1.0.2';
+			namespace('SNAPPI.AIR');
+			SNAPPI.AIR.Config = Config;	// make global
+			SNAPPI.AIR.Config.CONSTANTS = {
+				uploader: {
+					perpage: 48,
+					end: null
+				},
+				datasource: {
+					perpage: 999,
+					uploadHostLookup: "/air/flex-uploader/lib/_php/getUploadHost.php",
+		    		updateServer: '/snappi/debugPost',	// post url
+		    		syncServer: '/air/flex-uploader/lib/_php/syncstatus.php',
+		    		setSyncAndSetDataUrl: '/air/flex-uploader/lib/_php/set_syncstatus.php',				
+					end: null
+				},			
+			}
+			
+			/*
+			 * Set host from <BASE> tag, which is first set in snaphappi.mxml:bootstrap_html() 
+			 */
+			try {
+				SNAPPI.id = "SNAPPI Desktop Uploader";
+				// host attribute set in flex on init
+				var base = document.getElementsByTagName('base')[0];
+				SNAPPI.AIR.host = base.getAttribute('host');
+				SNAPPI.AIR.debug = base.getAttribute('debug')=='true';
+				SNAPPI.isAIR = true;	// deprecate
+			} catch (e) {
+				alert("baseurl is not set");
+				SNAPPI.AIR.host = 'git3:88';
+			}	
+			/*
+			 * helper functions, debug for firebug lite
+			 */
+			// GLOBAL
+			var serialize = function(o) {
+				var serialized = [];
+				for ( var p in o) {
+					serialized.push(p + ': ' + o[p]);
+				}
+				return serialized;
+			};
+			LOG = function(msg) {
+		    	try {
+		    		console.log(msg);
+		    	} catch (e) {
+		    		try {
+			        	msg = serialize(msg);
+			        	console.log(msg);
+		    		} catch(e) {}
+		    	}
+			}
+		    firebugLog = function (msg) {
+		    	if (   Object.prototype.toString.call(msg) == '[object Array]'
+		    		|| Object.prototype.toString.call(msg) == '[object ScriptBridgingArrayProxyObject]'
+		    	) {
+		    		console.log('FLEX> '+msg);
+		    		console.log(serialize(msg));
+		//    	} else if (SNAPPI.coreutil.isObject(msg)) {
+		//    		 LOG('FLEX> '+msg);
+		//    		 LOG(msg);
+		    	} else LOG('FLEX> '+msg);
+		    };
+		    LazyLoad.helpers.before_LazyLoad();	
+		    
+		    
+		    CFG.DEBUG.snappi_useCombo = 0;
+ 
+		}
+		
+		
+		before_LazyLoad();	
+		LazyLoad.use(modules, onlazyload, cfg);
+	};
 	
 
 
@@ -760,6 +898,9 @@
     		    'datejs': {
     		    	path: 'datejs.js'
     	    	},
+    	        'coreutil': {
+    	        	path: 'coreutil.js'
+                },
     	        'snappi-debug': {
     	        	path: 'debug.js'
                 }
@@ -767,6 +908,124 @@
         };
 	    return yuiConfig_jsLib;
 	}; 	
+	
+	/**
+	 * snappi AIR uploader javascript module
+	 * @param hostCfg
+	 * @return
+	 */	
+	Config.addModule_AIR = function(hostCfg) {
+		hostCfg = hostCfg || Config.getHostConfig();	
+	    var yuiConfig_AIR = {
+	    	// combine: hostCfg.snappi_useCombo,
+	        combine: false,		
+	        base: '/app/air/js/',
+	//        comboBase: 'http://' + host + '/combo/js?baseurl='+combo_baseurl,
+			comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl='+hostCfg.air_comboBase,
+	        root: 'js/',			// base for combo loading, combo load uri = comboBase+root+[module-name]
+	        modules: {
+	            'AIR-ui-helpers': {
+	                path: 'ui-helpers.js',
+	                requires: ['snappi-event-hover', 'snappi-paginator'] 
+			    },		        	
+	            'AIR-helpers': {	//TODO: deprecate. move to ui-helpers.js
+	                path: 'helpers.js',
+	                requires: ['AIR-ui-helpers'],
+			    },			    
+	            // 'AIR-init': {
+	                // path: 'init.js',
+	                // requires: ['AIR-helpers', 'AIR-api-bridge', 'AIR-file-progress', 'AIR-upload-manager', 'AIR-upload-ui'] 
+			    // },		    
+	            'AIR-file-progress': {
+	                path: 'fileprogress.js',
+	                requires: ['node','snappi-thumbnail-helpers', 'AIR-helpers']                 
+			    },    	
+		        'AIR-api-bridge': {
+			        path: 'api_bridge.js',
+			        requires: ['AIR-helpers', 'coreutil']
+			    },
+	            'AIR-test-api': {
+	                path: 'testapi.js',
+	                requires: ['AIR-api-bridge']                           
+		        },    	
+	            'AIR-upload-manager': {		// wrapper for SNAPPI.DATASOURCE/'AIR-api-bridge'
+	                path: 'upload_manager.js',
+	                requires: ['snappi-sortedhash', 'coreutil', 'AIR-api-bridge', 'AIR-file-progress']
+			    },		    
+	            'AIR-upload-ui': {
+	                path: 'upload_ui.js',
+	                // 'AIR-snappi-css' loaded in HTML head
+	                requires: ['AIR-upload-ui-css', 'coreutil', 'AIR-api-bridge', 'AIR-file-progress', 'AIR-ui-helpers']
+			    },
+		        'AIR-firebug-stable': {	// not supported in AIR/webkit browser
+		            path: 'https://getfirebug.com/firebug-lite.js#startOpened',
+		        },  			    
+		        'AIR-firebug-1.3': {	// not supported in AIR/webkit browser
+		            path: 'debug/firebug-lite.1.3.2.js#startOpened',
+		        },    	
+		        'AIR-firebug-1.2': {
+		            path: 'debug/firebug-lite-compressed.1.2.3.1.js',	            
+		        },
+	    		// 'AIR-menuCfg': {
+	    			// path: 'menucfg.js',
+	    			// requires:['snappi-menu', 'snappi-menuitem', 'node-event-simulate']
+	    		// },	        
+	            'AIR-js-datasource': {
+	                path: 'jsDatasource.js',
+	                requires: []                           
+		        },  	        
+        		// 'AIR-menu-aui': {
+        			// path: 'AIR_menu_aui.js',
+        			// // BUG: requires A.Plugin.IO, found in "aui-io", but not available
+        			// requires:['aui-io', 'aui-aria', 'aui-overlay-context', 'aui-overlay-manager']
+        		// }, 		        
+        		// 'AIR-dialog-aui': {
+	    			// path: 'dialog_aui.js',
+	    			// requires:['node', 'aui-aria', 'aui-dialog', 'aui-overlay-manager', 'dd-constrain']
+	    		// },	        
+	        }
+	    };  
+	    return yuiConfig_AIR; 
+	}
+
+	/**
+	 * snappi AIR CSS module
+	 * @param hostCfg
+	 * @return
+	 */ 
+    /*
+     *  NOTE: getting security violation if I try to load CSS from "/app/air/js/css" 
+     *  load CSS from mx:HTML location file
+     */    
+    Config.addModule_AIR_CSS = function(hostCfg) {
+    	hostCfg = hostCfg || Config.getHostConfig();	
+	    var yuiConfig_AIR_CSS = {
+            combine: false,
+            // base: '/app/air/js/css/',
+            base: 'http://' + hostCfg.host + '/app/air/js/css/',
+			comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl='+hostCfg.air_comboBase,
+	        root: 'js/css',			// base for combo loading, combo load uri = comboBase+root+[module-name]
+            modules: {
+            	'960-reset-css': { 	// load manually in HTML HEAD
+            		path: 'reset.css',
+            		requires: [],
+            		type: 'css'
+            	},
+            	'AIR-upload-ui-css': {
+    		        path: 'upload_ui.css',
+    		        // requires: ['snappi-cake-css','old-snappi-css','snappi-menu-css'],
+    		        requires: [],
+    		        type: 'css'
+    		    },
+    			'AIR-snappi-css': {		// load manually in HTML HEAD
+    		        path: 'AIR_snappi.css',
+    		        requires: ['960-reset-css', 'AIR-upload-ui-css'],		
+    		        type: 'css'
+    			},       		     	        
+            }
+        };    	
+		return yuiConfig_AIR_CSS; 
+	};	
 	/**********************************************************************************
 	 * end static Class Configure
 	 **********************************************************************************/

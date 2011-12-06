@@ -21,8 +21,17 @@
  * 
  */
 // console.log("load BEGIN: ui-helpers.js");	
-// (function() {
-	
+(function() {
+		
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.UIHelper = function(Y){
+		if (_Y === null) _Y = Y;
+		SNAPPI.AIR.UIHelper = UIHelper;
+		
+		SNAPPI.AIR.onDrop = UIHelper.actions.onDrop;
+	}
+		
 	SNAPPI.namespace('SNAPPI.STATE');
 			
 	/***************************************************************************
@@ -31,12 +40,12 @@
 	 */
 	var UIHelper = function(){	}
 	UIHelper.prototype = {};
-	SNAPPI.AIR.UIHelper = UIHelper;
+	
 
 	
 	UIHelper.set_Folder = function(node, target){
 		if (SNAPPI.AIR.uploadQueue.isUploading()) {
-			var detach = Y.on('snappi-air:upload-status-changed', function(isUploading){
+			var detach = _Y.on('snappi-air:upload-status-changed', function(isUploading){
 				if(!isUploading){
 					detach.detach();
 					UIHelper.set_Folder(node, target);
@@ -49,10 +58,10 @@
 		// target = menu trigger
 		SNAPPI.AIR.Helpers.init_GalleryLoadingMask();
 						
-		var Y = SNAPPI.Y;
+		
 		var folder = node.hasAttribute('baseurl') ? node.getAttribute('baseurl') : node.get('innerHTML');			
 LOG("+++ set folder, folder="+folder);		
-		var delayed = new Y.DelayedTask( function() {
+		var delayed = new _Y.DelayedTask( function() {
 			node.siblings('li').removeClass('focus');
 			node.addClass('focus');	
 							
@@ -67,7 +76,7 @@ LOG("+++ set folder, folder="+folder);
 			// var p = SNAPPI.Paginator.find['PhotoAirUpload'];
 			// SNAPPI.Paginator._getPageFromAirDs(p.container, page);
 			delete delayed;		
-			Y.one('body').removeClass('wait');
+			_Y.one('body').removeClass('wait');
 		});
 		delayed.delay(100);  // wait 100 ms					
 	};
@@ -80,7 +89,7 @@ LOG("+++ set folder, folder="+folder);
 			pluginNode.loadingmask.show();
 		} catch(e) {
 		}
-		var delayed = new Y.DelayedTask( function() {
+		var delayed = new _Y.DelayedTask( function() {
 			var batchid = node.getAttribute('batch');
 			SNAPPI.AIR.Helpers.initUploadGallery(null, 1, null, batchid);		// reload gallery with new baseurl
 			
@@ -91,22 +100,20 @@ LOG("+++ set folder, folder="+folder);
 		delayed.delay(100);  // wait 100 ms				
 	};
 	UIHelper.toggle_upload = function(el, force) {
-		var Y = SNAPPI.Y;
 		el = el || '.gallery-header .upload-toolbar li.btn.start';
-		var node = Y.one(el);
+		var node = _Y.one(el);
 		SNAPPI.setPageLoading(true);
 		if (SNAPPI.AIR.Helpers.isAuthorized()) {
 				// hide loadingmask, just in case
 				try {
-					var pluginNode = SNAPPI.Y.one('#gallery-container .gallery.photo');
-LOG(pluginNode);		
-lm = pluginNode.loadingmask;			
+					var pluginNode = _Y.one('#gallery-container .gallery.photo');
+// LOG(pluginNode);		
+// lm = pluginNode.loadingmask;			
 					pluginNode.loadingmask.hide();
 LOG("+++ DEBUGGING: UIHelper.toggle_upload(). loadingmask.hide()");					
 				} catch(e) {
 LOG("+++ EXCEPTION: loadingmask.hide()");						
 				}
-			
 
 			/*
 			 * status = [ready| uploading| pause]
@@ -148,7 +155,7 @@ LOG("+++ EXCEPTION: loadingmask.hide()");
     	if (!SNAPPI.MenuAUI.find[CSS_ID]) {
     		var contextMenuCfg = {
     			currentTarget: e.currentTarget,
-    			triggerRoot:  SNAPPI.Y.one('.gallery.photo .container'),
+    			triggerRoot:  _Y.one('.gallery.photo .container'),
     			init_hidden: false,
 			}; 
     		SNAPPI.MenuAUI.CFG[CSS_ID].load(contextMenuCfg);
@@ -169,8 +176,8 @@ LOG("toggle CONTEXT MENU, E="+e);
 	         * 		set-display-view:[mode]
 	         */
 	        WindowOptionClick : function(node) {
-	        	var Y = SNAPPI.Y;
-	        	node = node || Y.one('body');
+	        	
+	        	node = node || _Y.one('body');
 	        	var action = 'WindowOptionClick';
 	        	node.listen = node.listen || {};
 	            if (node.listen[action] == undefined) {
@@ -194,8 +201,8 @@ LOG("toggle CONTEXT MENU, E="+e);
 				UIHelper.listen[action] = node.listen[action];
 	        },	        
 	        DisplayOptionClick : function(node) {
-	        	var Y = SNAPPI.Y;
-	        	node = node || Y.one('.gallery-display-options');
+	        	
+	        	node = node || _Y.one('.gallery-display-options');
 	        	var action = 'DisplayOptionClick';
 	        	
 	        	node.listen = node.listen || {};
@@ -222,8 +229,8 @@ LOG("toggle CONTEXT MENU, E="+e);
 				UIHelper.listen[action] = node.listen[action];
 	        },  		
 	        ContextMenuClick : function(node) {
-	        	var Y = SNAPPI.Y;
-	        	node = node || Y.one('.gallery.photo .container');
+	        	
+	        	node = node || _Y.one('.gallery.photo .container');
 	        	var action = 'ContextMenuClick';
 	        	
 	        	node.listen = node.listen || {};
@@ -238,8 +245,8 @@ LOG("toggle CONTEXT MENU, E="+e);
 				UIHelper.listen[action] = node.listen[action];
 	        }, 	        
 	        MultiSelect : function (node) {
-	        	var Y = SNAPPI.Y;
-	        	node = node || Y.one('.gallery.photo .container');
+	        	
+	        	node = node || _Y.one('.gallery.photo .container');
 	        	var container = node;
 	        	var action = 'MultiSelect';
 	        	
@@ -251,7 +258,7 @@ LOG("toggle CONTEXT MENU, E="+e);
 				UIHelper.listen[action] = node.listen[action];	        	
 	        	
 	        	// select-all checkbox listener
-	        	var galleryHeader = Y.one('#gallery-container .gallery-header');
+	        	var galleryHeader = _Y.one('#gallery-container .gallery-header');
 	        	if (galleryHeader && !container.listen['selectAll']) {
 		        	container.listen['selectAll'] = galleryHeader.delegate('click', 
 		        	function(e){
@@ -268,6 +275,16 @@ LOG("toggle CONTEXT MENU, E="+e);
 	}
 	// for lister getAttribute('action') handlers
 	UIHelper.actions = {
+		/*
+	     * called inernally when drop a folder
+	     * called with one param as string i.e. folder's nativepath
+	     * no return value
+	     * */
+		onDrop : function(droppedFolder, uploader){
+	    	LOG(SNAPPI.AIR.uploadQueue);
+	    	uploader = uploader ||  SNAPPI.AIR.uploadQueue;
+	    	uploader.onDrop.call(this, droppedFolder);
+	    },
 		'goto' : function (o) {
 			window.location.href = o.options[o.selectedIndex].value;
 		}, 
@@ -283,14 +300,14 @@ LOG("toggle CONTEXT MENU, E="+e);
 		},
 		setDisplayView : function(view) {
 			// show/hide body
-			var body = SNAPPI.Y.one('#item-body');
+			var body = _Y.one('#item-body');
 			if (view=='minimize') body.addClass('hide');
 			else body.removeClass('hide');
 			// flex_setDropTarget: js global defined in snaphappi.mxml,
 			flex_setDropTarget();		 // reset dropTarget in Flex
 		},
 		toggleDisplayOptions  : function(o){
-			var Y = SNAPPI.Y;
+			
 			SNAPPI.AIR.UIHelper.toggle_ContextMenu(false);	// hide contextmenu
 			try {
 				SNAPPI.STATE.showDisplayOptions = SNAPPI.STATE.showDisplayOptions ? 0 : 1;
@@ -298,15 +315,15 @@ LOG("toggle CONTEXT MENU, E="+e);
 			} catch (e) {}
 		},
 		setDisplayOptions : function(){
-			var Y = SNAPPI.Y;
+			
 			try {
 				if (SNAPPI.STATE.showDisplayOptions) {
-					Y.one('section.gallery-header li.display-option').addClass('open');
-					Y.one('section.gallery-display-options').removeClass('hide');
+					_Y.one('section.gallery-header li.display-option').addClass('open');
+					_Y.one('section.gallery-display-options').removeClass('hide');
 					
 				} else {
-					Y.one('section.gallery-header li.display-option').removeClass('open');
-					Y.one('section.gallery-display-options').addClass('hide');
+					_Y.one('section.gallery-header li.display-option').removeClass('open');
+					_Y.one('section.gallery-display-options').addClass('hide');
 				}	
 			} catch (e) {}
 		},		
@@ -315,7 +332,7 @@ LOG("toggle CONTEXT MENU, E="+e);
 		 */
 		filter : function(node, value) {
 			if (SNAPPI.AIR.uploadQueue.isUploading()) {
-				var detach = Y.on('snappi-air:upload-status-changed', function(isUploading){
+				var detach = _Y.on('snappi-air:upload-status-changed', function(isUploading){
 					if(!isUploading){
 						detach.detach();
 						this.filter(node, value);
@@ -331,8 +348,8 @@ LOG("toggle CONTEXT MENU, E="+e);
 			// } catch(e) {}
 LOG("+++ set filter, status="+value);			
 			SNAPPI.AIR.Helpers.init_GalleryLoadingMask();
-			var Y = SNAPPI.Y;
-			var delayed = new Y.DelayedTask( function() {
+			
+			var delayed = new _Y.DelayedTask( function() {
 				// SNAPPI.AIR.uploadQueue.show(value);
 				var uploader = SNAPPI.AIR.uploadQueue,
 					page = 1;
@@ -350,7 +367,7 @@ LOG("+++ set filter, status="+value);
 		},
 		retry : function() {
 			if (SNAPPI.AIR.uploadQueue.isUploading()) {
-				var detach = Y.on('snappi-air:upload-status-changed', function(isUploading){
+				var detach = _Y.on('snappi-air:upload-status-changed', function(isUploading){
 					if(!isUploading){
 						detach.detach();
 						SNAPPI.AIR.uploadQueue.action_retry();
@@ -376,7 +393,7 @@ LOG("+++ set filter, status="+value);
 				node = node.one('ul')
 				if (node.all('li').size() && !reload) return;
 				
-				var Y = SNAPPI.Y;
+				
 				// folders = upload batches
 				var batches = SNAPPI.AIR.uploadQueue.flexUploadAPI.getBatchIdsFromDB(),
 					currentBatchid = SNAPPI.AIR.uploadQueue.batchId;
@@ -411,10 +428,10 @@ LOG("+++ set filter, status="+value);
 			// add listener
 			node.listen = node.listen || {};
 			if (!node.listen['import-complete']) {
-				node.listen['import-complete'] = Y.on('snappi-air:import-complete', function(){
+				node.listen['import-complete'] = _Y.on('snappi-air:import-complete', function(){
 					// reset upload batch folders, will automatically rebuild
 		            try {
-		            	SNAPPI.Y.one('#markup #menu-uploader-batch-markup ul').setContent('');	
+		            	_Y.one('#markup #menu-uploader-batch-markup ul').setContent('');	
 		            } catch (e) {}
 				});
 			}
@@ -430,7 +447,7 @@ LOG("+++ set filter, status="+value);
 				node = node.one('ul')
 				if (node.all('li').size() && !reload) return;
 				
-				var Y = SNAPPI.Y;
+				
 				// folders = baseurls	
 				var folders =  SNAPPI.AIR.uploadQueue.ds.getBaseurls(),
 				selected = SNAPPI.AIR.uploadQueue.baseurl;					
@@ -471,10 +488,10 @@ LOG('>>>>>>> BASEURL='+selected);
 	 * private methods
 	 */
 	XhrHelper._setUser = function(user, PHPSESSID) {
-		var Y = SNAPPI.Y;
+		
 		SNAPPI.namespace('SNAPPI.STATE');
 		SNAPPI.STATE.user = user;
-		var expressNode = Y.one('#gallery-container .express-upload-container');
+		var expressNode = _Y.one('#gallery-container .express-upload-container');
 		
 		if (user && user.id) {
 			try {
@@ -501,8 +518,8 @@ LOG('>>>>>>> BASEURL='+selected);
 		XhrHelper._setHeader(user);
 	}
 	XhrHelper._setHeader = function(user) {
-		var Y = SNAPPI.Y;
-		var userHeader = Y.one('header nav.user');
+		
+		var userHeader = _Y.one('header nav.user');
 		if (user && user.id) {
 			// update 'header nav.user' 
 			userHeader.one('#userAccountBtn').setContent(user.username);
@@ -515,7 +532,7 @@ LOG('>>>>>>> BASEURL='+selected);
 		}
 	}
 	XhrHelper.resetSignInForm = function(container) {
-		if (typeof container == "string") container = SNAPPI.Y.one(container);
+		if (typeof container == "string") container = _Y.one(container);
 		// reset Sign-in dialog
 		try {
 			container.one('.message').setContent('').addClass('hide');
@@ -534,8 +551,8 @@ LOG('>>>>>>> BASEURL='+selected);
 	 * 	test ability to connect to cakephp SESSION
 	 */
 	XhrHelper.testSession = function(){
-		var Y = SNAPPI.Y;
-		var node=Y.one('body');
+		
+		var node=_Y.one('body');
 		var i=10;
 		var ioCfg = {
    					uri: '/users/login/.json',
@@ -560,8 +577,8 @@ LOG(resp);
 							XhrHelper._setUser(authUser, sessionId);
 							
 							if (args.i>0){
-								if (node.io) node.unplug(Y.Plugin.IO);
-								node.plug(Y.Plugin.IO, ioCfg);
+								if (node.io) node.unplug(_Y.Plugin.IO);
+								node.plug(_Y.Plugin.IO, ioCfg);
 								args.i--;
 LOG(' >>>>>>>>>>>>>  testSession(): starting next iteration    #'+args.i);										
 								node.io.set('arguments', {i:args.i})
@@ -572,7 +589,7 @@ LOG(' >>>>>>>>>>>>>  testSession(): starting next iteration    #'+args.i);
 					}
 			};		
 			ioCfg = SNAPPI.IO.pluginIO_RespondAsJson(ioCfg);
-			node.plug(Y.Plugin.IO, ioCfg);
+			node.plug(_Y.Plugin.IO, ioCfg);
 			i--;
 			node.io.set('arguments', {i:i})
 			node.io.start();
@@ -606,11 +623,11 @@ LOG(' >>>>>>>>>>>>>  testSession(): starting next iteration    #'+args.i);
 		}
 	}
 	XhrHelper.signIn = function(postData) {
-		var Y = SNAPPI.Y;
+		
 		SNAPPI.setPageLoading(true);
 		if (postData === undefined) {
 			postData = {};
-			Y.all('form#UserLoginForm .postData').each(function(n, i, l) {
+			_Y.all('form#UserLoginForm .postData').each(function(n, i, l) {
 				var key = n.getAttribute('name');
 				switch (key) {
 				case 'data[User][username]':
@@ -643,7 +660,7 @@ LOG(">>> LOGIN, login_Url="+uri+", postdata follows:");
 LOG(postData);
             
 		// SNAPPI.io GET JSON  
-		var container = Y.one('#menu-sign-in-markup #login');
+		var container = _Y.one('#menu-sign-in-markup #login');
 		// XhrHelper.resetSignInForm(container);
 		
     	var args = {
@@ -651,7 +668,7 @@ LOG(postData);
     		uri: uri,
     	};
     	/*
-		 * plugin Y.Plugin.IO
+		 * plugin _Y.Plugin.IO
 		 * TODO: refactor. pattern also used in AssetRatingController.setProp()
 		 */
 		var ioCfg;
@@ -671,7 +688,7 @@ LOG(postData);
 // LOG(' >>>>>>>>>>>>>  successJson    ');							
 // LOG(resp);
 							// save Session Cookie
-							XhrHelper.setCookies(o.responseJson.Cookie);
+							XhrHelper.setCookies(resp.Cookie);
 							
 							var authUser = resp.response.User;
 							var sessionId = resp.Cookie.CAKEPHP;
@@ -704,7 +721,7 @@ LOG(postData);
 			// var loadingmaskTarget = container.get('parentNode');
 			var loadingmaskTarget = container.one('div');
 			// set loadingmask to parent
-			container.plug(Y.LoadingMask, {
+			container.plug(_Y.LoadingMask, {
 				strings: {loading:'One moment...'}, 	// BUG: A.LoadingMask
 				target: loadingmaskTarget,
 			});    			
@@ -714,7 +731,7 @@ LOG(postData);
 			// container.loadingmask.overlayMask.set('target', target);
 			container.loadingmask.set('zIndex', 10);
 			container.loadingmask.overlayMask.set('zIndex', 10);
-			container.plug(Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(ioCfg));
+			container.plug(_Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(ioCfg));
 		} else {
 			ioCfg = {
 				arguments: args, 
@@ -749,12 +766,12 @@ LOG(postData);
 	}
 	
 	XhrHelper.insertExpressUpload = function(node, clear) {
-		var Y = SNAPPI.Y;
-		node = node || Y.one('#gallery-container .express-upload-container');
+		
+		node = node || _Y.one('#gallery-container .express-upload-container');
 		// reset content before use
 		if (clear) {
 			node.setContent('');
-			if (node.io) node.unplug(Y.Plugin.IO);	
+			if (node.io) node.unplug(_Y.Plugin.IO);	
 		} else {
 			var ioCfg = {
 				uri:  '/my/express_uploads',
@@ -778,13 +795,13 @@ LOG(postData);
 			};
 			ioCfg = SNAPPI.IO.getIORequestCfg(ioCfg.uri, ioCfg.on, ioCfg);
 			SNAPPI.setPageLoading(true);
-			node.plug(Y.Plugin.IO, ioCfg);	
+			node.plug(_Y.Plugin.IO, ioCfg);	
 		}
 	}	
 	XhrHelper.getExpressUploads = function(){
-		var Y = SNAPPI.Y;
+		
 		var gids = [];
-		Y.all('#express-upload-options input[type=checkbox]').each(function(n,i,l){
+		_Y.all('#express-upload-options input[type=checkbox]').each(function(n,i,l){
 			if (n.get('checked')) gids.push(n.getAttribute('uuid'));
 		});
 		return gids.join(',');
@@ -834,4 +851,4 @@ LOG(postData);
 	
 	
 	LOG("load complete: XhrHelpers.js");	
-// }());
+})();	

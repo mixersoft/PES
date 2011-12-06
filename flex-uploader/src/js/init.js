@@ -20,92 +20,107 @@
  *
  *
  */
-LOG("load BEGIN: init.js");
-/****************************
- * DOM/HTML INIT
- */
-_domready1 = function(Y) {
-	LOG("DOMREADY 1 ************************");
-	var Helpers = SNAPPI.AIR.Helpers; 
-	Helpers.pageOnLoadComplete();		// show body
-
-    var datasource, uploader; 
-    
-    /*
-     * configure Datasource for uploader
-     */
-	try {
-		if (!flexAPI_Datasource) throw new Exception();
-		datasource = new SNAPPI.AIR.CastingCallDataSource();
-	} catch (e) {
-		LOG(">>>>>>>>>>>>>>>>  USING JAVASCRIPT DATASOURCE  >>>>>>>>>>>>>>>>>>>");
-		datasource = _JS_DATASOURCE;
-	}   
-	SNAPPI.DATASOURCE = datasource;
+(function() {
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.Init = function(Y){
+    	if (_Y === null) _Y = Y;
+    	SNAPPI.AIR.AIR_init = AIR_init;
+    }
+    var AIR_init = function(){
+		var node = SNAPPI.AIR.Helpers.init_GalleryLoadingMask();
+		LOG(">>>>>>>>>>>>>>>>>>>>>>>>  AIR_init <<<<<<<<<<<<<");
+		
+   		/*
+   		 *  flex_onYuiDomReady: js global defined in snaphappi.mxml,
+   		 */
+		flex_onYuiDomReady();
+		
+		
+		
+		
+		LOG(">>>>>>>>>>>>>>>>>>>>>>>>  YUI/domready BEGIN <<<<<<<<<<<<<");
+		var Helpers = SNAPPI.AIR.Helpers; 
+		Helpers.pageOnLoadComplete();		// show body
 	
-	uploader = new SNAPPI.AIR.UploadQueue({
-    	container: Y.one('#gallery-container'),
-    	datasource: datasource
-    });
-    SNAPPI.AIR.uploadQueue = uploader;
-    
-    
-    /*
-     * globals
-     * 
-     SNAPPI.AIR.uploadQueue = SNAPPI.AIR.UploadQueue.instance
-     SNAPPI.AIR.uploadQueue.ds = SNAPPI.DATASOURCE
-     NOTE: SNAPPI.AIR.uploadQueue.flexUploadAPI bypasses SNAPPI.DATASOURCE, 
-     	access global _flexAPI_UI directly Flex UploaderUI.as
-     * 
-     */
-    
-    
-    
-    /*
-     * DEV/Testing config
-     */
-	if (0 && 'test') {
-		Helpers.DEV_runTestSuite();
+	    var datasource, uploader; 
+	    
+	    /*
+	     * configure Datasource for uploader
+	     */
+		try {
+			if (!flexAPI_Datasource) throw new Exception();
+			datasource = new SNAPPI.AIR.CastingCallDataSource();
+		} catch (e) {
+			LOG(">>>>>>>>>>>>>>>>  USING JAVASCRIPT DATASOURCE  >>>>>>>>>>>>>>>>>>>");
+			datasource = _JS_DATASOURCE;
+		}   
+		SNAPPI.DATASOURCE = datasource;
+		
+		uploader = new SNAPPI.AIR.UploadQueue({
+	    	container: _Y.one('#gallery-container'),
+	    	datasource: datasource
+	    });
+	    SNAPPI.AIR.uploadQueue = uploader;
+	    
+	    
+	    /*
+	     * globals
+	     * 
+	     SNAPPI.AIR.uploadQueue = SNAPPI.AIR.UploadQueue.instance
+	     SNAPPI.AIR.uploadQueue.ds = SNAPPI.DATASOURCE
+	     NOTE: SNAPPI.AIR.uploadQueue.flexUploadAPI bypasses SNAPPI.DATASOURCE, 
+	     	access global _flexAPI_UI directly Flex UploaderUI.as
+	     * 
+	     */
+	    
+	    
+	    
+	    /*
+	     * DEV/Testing config
+	     */
+		if (0 && 'test') {
+			Helpers.DEV_runTestSuite();
+		}
+		
+		// magic login for AIR Test user
+		Helpers.DEV_addProviderKeyAsTestUser(datasource.getConfigs().provider_key);
+		// add all photos to uploadQueue
+	//	Helpers.addToUploader(uploader, '');
+		// var host = SNAPPI.AIR.host=='dev2.snaphappi.com' ? 'remote' : 'local' ;
+		Helpers.DEV_setRuntimeHost(uploader);		// local or remote
+		
+		
+		// add login menu
+		SNAPPI.MenuAUI.initMenus({
+			'menu-sign-in-markup':1,
+			'menu-uploader-batch-markup':1,
+			'menu-select-all-markup':1,
+			// 'contextmenu-photoroll-markup':1,	// init from UIHelper.toggle_ContextMenu()
+		});
+		// use batchid==null on startup
+		Helpers.initUploadGallery(uploader, 1, null, null);	
+		// start listeners, as necessary
+		var listeners = {
+			'WindowOptionClick':null, 
+			'DisplayOptionClick':null,
+			'ContextMenuClick':null, 
+			'MultiSelect':null,
+		};
+		for (var listen in listeners) {
+			if (listeners[listen]!==false) SNAPPI.AIR.UIHelper.listeners[listen](listeners[listen]);
+		}	
+		Helpers.hide_StartupLoadingMask();
+		LOG(">>>>>>>>> DONE");	
+	
+	
+		var detach = _Y.on('snappi-air:begin-import', function(){
+			_Y.one('#item-body .import-progress-wrap').removeClass('hide');		
+		});
+		
+		LOG(">>>>>>>>>>>>>>>>>>>>>>>>  YUI/domready COMPLETE <<<<<<<<<<<<<");
+		
 	}
-	
-	// magic login for AIR Test user
-	Helpers.DEV_addProviderKeyAsTestUser(datasource.getConfigs().provider_key);
-	// add all photos to uploadQueue
-//	Helpers.addToUploader(uploader, '');
-	// var host = SNAPPI.AIR.host=='dev2.snaphappi.com' ? 'remote' : 'local' ;
-	Helpers.DEV_setRuntimeHost(uploader);		// local or remote
-	
-	
-	// add login menu
-	SNAPPI.MenuAUI.initMenus({
-		'menu-sign-in-markup':1,
-		'menu-uploader-batch-markup':1,
-		'menu-select-all-markup':1,
-		// 'contextmenu-photoroll-markup':1,	// init from UIHelper.toggle_ContextMenu()
-	});
-	// use batchid==null on startup
-	Helpers.initUploadGallery(uploader, 1, null, null);	
-	// start listeners, as necessary
-	var listeners = {
-		'WindowOptionClick':null, 
-		'DisplayOptionClick':null,
-		'ContextMenuClick':null, 
-		'MultiSelect':null,
-	};
-	for (var listen in listeners) {
-		if (listeners[listen]!==false) SNAPPI.AIR.UIHelper.listeners[listen](listeners[listen]);
-	}	
-	Helpers.hide_StartupLoadingMask();
-LOG(">>>>>>>>> DONE");	
-
-
-	var detach = SNAPPI.Y.on('snappi-air:begin-import', function(){
-		SNAPPI.Y.one('#item-body .import-progress-wrap').removeClass('hide');		
-	});
-	
-	
-	
-}
     
 LOG("load complete: init.js");
+})();
