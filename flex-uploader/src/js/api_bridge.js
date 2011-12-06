@@ -886,5 +886,5 @@ LOG(">>>>>>>>>>   SESSIONID="+sessionId);
     
 //    LOG(SNAPPI.AIR);
    LOG("load complete: api_bridge.js : CastingCallDataSource");
-}());
+})();
 

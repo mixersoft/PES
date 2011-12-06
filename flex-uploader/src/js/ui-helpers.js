@@ -141,7 +141,7 @@ LOG("+++ EXCEPTION: loadingmask.hide()");
 			node.setContent(statusLabel[status]).setAttribute('status', status);
 		} else {
 			// show login screen by menu click
-			SNAPPI.MenuAUI.find['menu-sign-in-markup'].show();
+			var menu = SNAPPI.MenuAUI.find['menu-sign-in-markup'].show();
 			SNAPPI.setPageLoading(false);
 		}
 	};	
@@ -506,6 +506,9 @@ LOG('>>>>>>> BASEURL='+selected);
 				
 				// add express Upload section
 				XhrHelper.insertExpressUpload(expressNode);	
+				
+				// save username
+				datasource.setConfig({username: user.username});
 			} catch (e) {
 			}
 		} else {
@@ -591,7 +594,7 @@ LOG(' >>>>>>>>>>>>>  testSession(): starting next iteration    #'+args.i);
 			ioCfg = SNAPPI.IO.pluginIO_RespondAsJson(ioCfg);
 			node.plug(_Y.Plugin.IO, ioCfg);
 			i--;
-			node.io.set('arguments', {i:i})
+			node.io.set('arguments', {i:i});
 			node.io.start();
 	}
 	XhrHelper.getCookie = function(c_name){

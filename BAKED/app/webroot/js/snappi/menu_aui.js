@@ -1319,10 +1319,12 @@
 					// var contextTarget = menuTarget.get('currentNode');
 // LOG('menu-sign-in-markup: onShow()');						
 // var content = e.target.get('contentBox');
-					e.target.get('contentBox').removeClass('hide');
 					try {
 						SNAPPI.AIR.XhrHelper.resetSignInForm('#login');
+						var username = SNAPPI.DATASOURCE.getConfigs().username;
+						this.get('contentBox').one('input#UserUsername').set('value',username);
 					} catch (e) {}
+					e.target.get('contentBox').removeClass('hide');
 				},
 				hide: function(e) {
 // LOG('menu-sign-in-markup: onHide()');						
