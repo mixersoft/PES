@@ -249,7 +249,7 @@ $this->log("__upload_AIRclient(): fileDataERROR for userid={$userid}", LOG_DEBUG
 				Session::write('airUploader.uploadFolder', $UPLOAD_FOLDER);
 			}		    
 			$dest = cleanpath($UPLOAD_FOLDER.$userid.DS.$name);
-$this->log("__upload_AIRclient(): upload success, file copied to dest={$dest}", LOG_DEBUG);				
+$this->log("__upload_AIRclient(): upload success, owner_id={$userid}, file dest={$dest}", LOG_DEBUG);				
 			if (!file_exists(dirname($dest))) mkdir(dirname($dest), 2775, true);
 			if( !move_uploaded_file($file_url, $dest) ){
 				@unlink($file_url);

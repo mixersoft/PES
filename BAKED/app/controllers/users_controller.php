@@ -699,6 +699,7 @@ class UsersController extends UsersPluginController {
 		 */
 		if (isset($this->data['User'])) {
 if ($this->RequestHandler->isAjax() || $forceXHR) {
+	$this->log("   >>> ATTEMPTED XHR Sign-in for user={$this->data['User']['username']}", LOG_DEBUG);
 	// $this->log($_COOKIE, LOG_DEBUG);	
 	// $this->log("[HTTP_COOKIE]=".$_SERVER['HTTP_COOKIE'], LOG_DEBUG);	
 	// $this->log("[HTTP_USER_AGENT]=".env('HTTP_USER_AGENT'), LOG_DEBUG);		
@@ -788,7 +789,8 @@ $this->log("using Cookie guestpass login for {$guestid}", LOG_DEBUG);
 // $this->log("response cookie value above. ", LOG_DEBUG);	
 				$this->__reset($saveRedirect = true);
 				$login_ok = $this->__loginUser($this->data);
-				$this->data['User'] = $this->Auth->user();
+				$this->data = $this->Auth->user();
+// $this->log($this->data['User'], LOG_DEBUG);				
 				if ($login_ok == false) {
 					// login failed
 					// check for email authorized token
@@ -800,6 +802,8 @@ $this->log("using Cookie guestpass login for {$guestid}", LOG_DEBUG);
 					$this->Session->setFlash($response['message']);
 					$this->data['User']['password']='';
 					// try again below
+				} else {
+					$this->log("   >>> Successful sign-in for user={$this->data['User']['username']}", LOG_DEBUG);
 				}
 			}
 			/*
@@ -807,7 +811,7 @@ $this->log("using Cookie guestpass login for {$guestid}", LOG_DEBUG);
 			 */
 			if ($this->RequestHandler->isAjax() || $forceXHR) {
 				$response['success'] = $login_ok ? 'true' : 'false';
-				$response['response'] = $this->data['User'];
+				$response['response']['User']  = $this->data['User'];
 				$this->viewVars['jsonData'] = $response; 
 				$this->viewVars['jsonData']['Session.Config'] = $_SESSION['Config'];
 // loadComponent('Cookie', $this);
@@ -824,7 +828,7 @@ $this->log("using Cookie guestpass login for {$guestid}", LOG_DEBUG);
 			if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
 			if ($login_ok) $this->__continueToRedirect();
 			// else try login again
-		} else {
+		} else {	// status of current auth user
 			if ($this->RequestHandler->isAjax() || $forceXHR) {
 // $this->log("[HTTP_COOKIE]=".$_SERVER['HTTP_COOKIE'], LOG_DEBUG);	
 				$response = array('success'=>true, 'message'=>'Current authenticated user');

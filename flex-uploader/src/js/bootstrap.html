@@ -214,7 +214,10 @@
 			<span>&copy; 2008-2012 Snaphappi</span>
 			<a href="http://www.cakephp.org/" target="_blank"><img src="/img/cake.power.gif" alt="CakePHP: the rapid development php framework" border="0"></a>		
 		</div> <!-- end #footer -->
-		<script type="text/javascript">SNAPPI.LazyLoad.AIRDesktopUploader();</script>
+		<script type="text/javascript">
+			window.onbeforeunload = function(){ return false;}
+			SNAPPI.LazyLoad.AIRDesktopUploader();
+		</script>
 		
     </body>
 </html>

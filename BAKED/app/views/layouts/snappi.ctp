@@ -33,7 +33,7 @@
 	<link rel="stylesheet" type="text/css" media="all" href="/combo/js?baseurl=svc/lib/alloy-1.0.2/build&/aui-skin-classic/css/aui-skin-classic-all.css&/aui-loading-mask/assets/skins/sam/aui-loading-mask.css&/aui-overlay/assets/skins/sam/aui-overlay.css&" />
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/reset.css" />
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/960.css" />	
-	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/style.css" />
+<!-- 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/style.css" /> -->
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/style.1.css" />
 	<?php
 		echo $this->Html->meta('favicon.ico', '/img/favicon.ico', array('type' => 'icon') );

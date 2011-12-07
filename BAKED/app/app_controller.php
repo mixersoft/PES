@@ -475,7 +475,7 @@ class AppController extends Controller {
 		// cache nav location in session
 		// displayName == $controllerAttr['label'] == Me, Person, Group, Photo/Snap, Tag (section header)
 		// titleName = Me, People, Groups, Tags
-		$navPrimary = ($controllerAttr['action'] != 'all') ? $this->displayName : 'Explore';
+		$navPrimary = (isset($this->displayName ) && $controllerAttr['action'] != 'all') ? $this->displayName : 'Explore';
 		if ($navPrimary == "Tag") {
 			if ($context = Session::read("lookup.context")) {
 debug($context);				
