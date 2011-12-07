@@ -125,6 +125,11 @@ div.messages > div.message {
 	font-size: 1.2em;
 	overflow: hidden;
 }
+form .error-message {
+	background-color: #710909;
+	color: #FFF;
+	font-size: 0.9em;
+} 
 
 /* header */
 header {

@@ -46,7 +46,7 @@
 						'error' => __d('users', 'Passwords must match', true)
 						)
 					);
-			echo $this->Form->input('Profile.tos', array(
+			echo $this->Form->input('User.tos', array(
 						'label' => __d('users', 'I have read and agreed to ', true) . $this->Html->link(__d('users', 'Terms of Service', true), array('controller' => 'pages', 'action' => 'tos')), 
 						'type' => 'checkbox',
 						'error' => __d('users', 'You must verify you have read the Terms of Service', true)

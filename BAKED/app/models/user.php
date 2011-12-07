@@ -48,7 +48,7 @@ abstract class UserPlugin extends AppModel {
 			'password' => array(
 				'to_short' => array(
 					'rule' => array('minLength', '4'),
-					'message' => __d('users', 'The password must have at least 8 characters.', true)),
+					'message' => __d('users', 'The password must have at least 4 characters.', true)),
 				'required' => array(
 					'rule' => 'notEmpty',
 					'message' => __d('users', 'Please enter a password.', true))),
@@ -371,7 +371,9 @@ abstract class UserPlugin extends AppModel {
 			$postData['Profile']['email_authenticated'] = 1;
 			$postData[$this->alias]['active'] = 1;	
 		}
+		$postData['Profile']['tos'] = $postData['User']['tos'];
 		// $this->_removeExpiredRegistrations();
+// debug($postData);		
 		$this->_removeExpiredEmailTokens();
 		$this->set($postData);
 		if ($this->validates()) {
@@ -554,7 +556,7 @@ EOD;
 		// delete from both users and profiles table using cascade
 		$now = date('Y-m-d H:i:s');
 $sql = <<<EOD
-UPDATE `Profile` 
+UPDATE profiles as `Profile` 
 SET `Profile`.email_token_expires = NULL, `Profile`.email_token = NULL 
 WHERE `Profile`.email_token_expires < '{$now}'
 EOD;

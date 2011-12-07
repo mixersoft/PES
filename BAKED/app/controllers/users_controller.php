@@ -279,7 +279,7 @@ class UsersPluginController extends AppController {
 		}
 		$msg['success'] = __d('users', 'Your account has been created. You should receive an e-mail shortly to verify your email address.', true);
 		if (1 || !Session::check('Auth.redirect')){
-			$msg['success'] .= "<BR />Why not get a jump on things by downloading the <a href='/pages/downloads' target='_blank'>Snaphappi Desktop Uploader</a>?";	
+			$msg['success'] .= " Why not get a jump on things by downloading the <a href='/pages/downloads' target='_blank'>Snaphappi Desktop Uploader</a>?";	
 		}
 		if (!empty($this->data)) {
 			$register_cfg = Configure::read('register');
@@ -297,7 +297,13 @@ class UsersPluginController extends AppController {
 			} else {
 				unset($this->data[$this->modelClass]['password']);
 				unset($this->data[$this->modelClass]['temppassword']);
-				$this->Session->setFlash(__d('users', 'Your account could not be created. Please, try again.', true), 'default', array('class' => 'message warning'));
+				$msg = 'Your account could not be created for the reasons shown below. Please, try again';
+				$errors = $this->User->invalidFields(); // contains validationErrors array
+				if (!empty($errors)) {
+					$msg = 'Your account could not be created for the following reasons:<ul>';					
+				} else $msg = 'Your account could not be created. Please, try again.';
+				
+				$this->Session->setFlash(__d('users', $msg, true), 'default', array('class' => 'message warning'));
 			}
 		}
 
