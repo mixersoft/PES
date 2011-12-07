@@ -16,19 +16,24 @@
 
 	if ($isXhr) {
 		// XHR response
-		if (!$isInner) {
+		if ($isInner) {
+			// from paginator
+			echo $this->element('/group/paging-inner', compact('isPreview', 'isWide', 'total'));
+		} else {
+			// isPreview  TODO: wrap in .gallery class for trigger consistency???
+			// initial page of gallery.group from /groups/home
 			if ($isWide) {
 				echo $this->element('/group/header-wide', compact('total', 'isPreview', 'state'));
 			} else echo $this->element('/group/header', compact('total', 'isPreview', 'state'));
+			echo $this->element('/group/paging-inner', compact('isPreview', 'isWide', 'total'));
 		}
-		echo $this->element('/group/paging-inner', compact('isPreview', 'isWide', 'total'));
 		
 		$this->Layout->blockStart('javascript');
 ?> 
 	<script type="text/javascript">
 		SNAPPI.mergeSessionData();
-		var parent = SNAPPI.Y.one('.gallery.group .container');
-		var listeners = {
+		var listeners, parent = SNAPPI.Y.one('.gallery.group .container') 
+		listeners = {
 			'ContextMenuClick':{node:parent, type:'Group'}, 
 			'LinkToClick': {node:parent},
 		};

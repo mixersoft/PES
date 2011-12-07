@@ -99,6 +99,7 @@
 				'person': 'contextmenu-person-markup',
 			}
 			var type = UIHelper.listeners.getGalleryType(e.currentTarget);
+			// var isPreview = 0&& !e.currentTarget.test('.gallery.'+type+' .FigureBox');
 	    	var CSS_ID = ID_LOOKUP[ type ];
 	    	if (e==false && !SNAPPI.MenuAUI.find[CSS_ID]) return;
 	    	
@@ -106,11 +107,12 @@
 	    	var listenerNode = e.currentTarget.ancestor('.container');
 	    	if (!SNAPPI.MenuAUI.find[CSS_ID]) {
 	    		var contextMenuCfg = {
-	    			triggerType: type,		// .gallery.group, .person, .photo, etc. 
+	    			triggerType: type,		// NOTE: add .gallery.group to id=groups-preview-xhr
 	    			currentTarget: e.currentTarget,
-	    			// triggerRoot:  _Y.one('.gallery .container'),
+	    			triggerRoot:  listenerNode,
 	    			init_hidden: false,
-				}; 
+				};
+				
 	    		SNAPPI.MenuAUI.CFG[CSS_ID].load(contextMenuCfg);
 	    		// stop LinkToClickListener
 	    		listenerNode.listen['disable_LinkToClick'] = true;
@@ -243,9 +245,14 @@
 		 */
 		getGalleryType : function(node) {
 			node = node || _Y.one('.gallery-container section.gallery');
-			node = node.ancestor('section.gallery', true);
-			if (node.hasClass('group')) return 'group';
-			if (node.hasClass('person')) return 'person';
+			if (node.hasClass('FigureBox')) {
+				if (node.hasClass('Group')) return 'group';
+				if (node.hasClass('Person')) return 'person';	
+			} else {
+				node = node.ancestor('section.gallery', true);
+				if (node.hasClass('group')) return 'group';
+				if (node.hasClass('person')) return 'person';	
+			}
 			return null;
 		},
         LinkToClick : function(cfg) {

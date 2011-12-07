@@ -29,7 +29,7 @@ if (empty($this->passedArgs['wide'])) {
 <?php 
 	// $ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'fragment', 'a'=>'members', 'e'=>'preview-members'));
 	// $ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'members', '?'=>array('preview'=>1)));
-	// echo "<div id='members-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
+	// echo "<div id='members-preview-xhr' class='xhr-get gallery person' xhrSrc='{$ajaxSrc}'></div>";
 ?>						  	
 						  </section>
 						</section>

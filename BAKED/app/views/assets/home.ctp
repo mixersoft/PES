@@ -79,7 +79,7 @@
 				<h1 class="circle">Circles</h1>
 		<?php
 			$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'groups', '?'=>array('preview'=>1)));
-			echo "<div id='groups-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
+			echo "<div id='groups-preview-xhr' class='xhr-get gallery group' xhrSrc='{$ajaxSrc}'></div>";
 		?>			
 			</section>
 			

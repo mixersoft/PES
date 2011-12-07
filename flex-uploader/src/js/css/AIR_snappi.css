@@ -621,6 +621,7 @@ section.gallery-display-options nav.settings > * {
 .FigureBox.sq > figure > img {
 	width: 75px;
 	height: 75px;
+	background: url(/'img/css/ajax-loading-img-med.gif')  no-repeat center;
 }
 
 /*temp CSS for selected*/

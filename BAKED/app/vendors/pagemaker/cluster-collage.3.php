@@ -207,7 +207,7 @@ class ClusterCollage {
 		foreach ($photos as $i => & $photo) {
 			$h = $photo['height'];
 			$w = $photo['width'];
-			$rating = $photo['rating'];
+			$rating = $photo['rating'] ? $photo['rating'] : 0.2;
 			if ($h <= 0 || $w <= 0 || $rating < 0 || $rating > $ratingsSum)
 	            throw new Exception('Bad parameters for ' . __CLASS__ . '::' . __FUNCTION__);
 	        $newAreaPhoto = $rating / $ratingsSum;

@@ -135,12 +135,17 @@
 	 * 		cfg.host: adds cfg.host.ContextMenu backreference
 	 * 		cfg.triggerType	.gallery.[triggerType]
 	 * 		cfg.triggerRoot '#'+cfg.triggerRoot.get('id')
+	 * 		cfg.currentTarget, open at currentTarget, set menu._stashTrigger
 	 * @return
 	 */
 	Menu.initContextMenu = function(MARKUP, TRIGGER, cfg){
 		cfg = cfg || {};	// closure
-		if (cfg.triggerType) TRIGGER = '.gallery.'+cfg.triggerType + TRIGGER;
-		if (cfg.triggerRoot) TRIGGER = '#'+cfg.triggerRoot.get('id')+' '+ TRIGGER;
+		
+		// set the correct TRIGGER
+		if (cfg.triggerRoot && cfg.triggerRoot instanceof _Y.Node) TRIGGER = '#'+cfg.triggerRoot.get('id')+' '+ TRIGGER;
+		else if (cfg.triggerRoot) TRIGGER = cfg.triggerRoot +' '+ TRIGGER;
+		else if (cfg.triggerType) TRIGGER = '.gallery.'+cfg.triggerType + TRIGGER;
+		
 		var _cfg = {
 				trigger: TRIGGER,
 				contentBox: MARKUP.selector,
@@ -1144,9 +1149,6 @@
 			return Menu.find[CSS_ID];
 		
 		
-		Menu.classInit(); 
-
-
 		var callback = function(){
 			var menu = Menu.initContextMenu(MARKUP, TRIGGER, cfg);
 			var offset = {x:-20, y:20};

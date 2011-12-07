@@ -440,7 +440,7 @@
 			/*
 			 * pagemaker
 			 */
-			'pagemaker-base',
+			// 'pagemaker-base',
 		]
 		
 		// var onlazyload_1 = function(Y, result){
