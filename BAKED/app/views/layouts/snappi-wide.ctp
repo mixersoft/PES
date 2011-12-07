@@ -47,10 +47,11 @@
 <section id="body-container" class='container_16'><!--body container start-->
 	<?php // echo $this->element('/nav/secondary'); ?>
 	<div id="content">
-		<div id="messages" class="container_16">
+		<div id="message" class="messages prefix_2 grid_12 suffix_2">
 			<?php echo $this->Session->flash(); ?>
 			<?php echo $this->Session->flash('email'); ?>
 		</div>
+		<div class='clear'></div>
 		<?php echo $content_for_layout; ?>
 	</div>
 </section><!--body container ends-->

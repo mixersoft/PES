@@ -25,10 +25,11 @@
 	<?php $this->Layout->output($this->viewVars['itemHeader_for_layout']); ?>	
 <section id="body-container" class='plain container_16'><!--body container start-->
 	<div id="content">
-		<div id="message" class="messages container_16">
+		<div id="message" class="messages prefix_2 grid_12 suffix_2">
 			<?php echo $this->Session->flash(); ?>
 			<?php echo $this->Session->flash('email'); ?>
 		</div>
+		<div class='clear'></div>
 		<?php echo $content_for_layout; ?>
 	</div>
 </section><!--body container ends-->

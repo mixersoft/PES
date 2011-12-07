@@ -36,7 +36,7 @@ h1 {
 	<section class="alpha grid_8">
 		<h2>Upload a Few Photos</h2>
 		<p>If you plan to upload just a few photos, you can drag-drop the photos onto the button below. (Only JPG files, please.) 
-			But, if you plan to upload 10+ photos, we <b>strongly</b> suggest you use the Desktop Uploader</p>
+			But, if you plan to upload 10+ photos, we recommend that you use the <b>50x faster Snaphappi Desktop Uploader</b>.</p>
 		<div class="wrap">
 		<?php echo $this->element('group/express-upload'); ?>	
 		</div>	

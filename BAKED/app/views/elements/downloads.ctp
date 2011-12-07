@@ -15,8 +15,8 @@
 	<p>The Snaphappi Desktop Uploader makes uploading 1000s of photos a snap. It offers the following key benefits:</p> 
 	<blockquote style="margin:20px 40px;">
 	<ul>
-		<li>easily scan entire folders for photos, and</li>
-		<li>finish quickly with the fastest upload times</li>
+		<li>easily scan entire folders for JPG photo files, </li>
+		<li>finish up to <b>50x faster</b> by uploading resized copies, and</li>
 		<li>safely restart upload sessions at any time.</li>
 	</ul>
 	</blockquote>

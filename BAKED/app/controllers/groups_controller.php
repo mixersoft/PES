@@ -358,11 +358,15 @@ LIMIT 5;";
 			$noauth_redirect = isset($join['noauth_redirect']) ?  $join['noauth_redirect'] : '/users/register';
 			// check if conditions ok to join Group
 			if ( !$role || $role == 'VISITOR') {
-					$this->Session->setFlash('You must sign up or sign in to Snapappi before you can join a group.');
+				$msg = "Please sign up or sign in to Snaphappi before you join a Circle.";
+				$msg .= "<br />You will return to your invitation when you are done."; 
+					$this->Session->setFlash($msg);
 					$this->Session->write('Auth.redirect', $signin_redirect);
 					$this->redirect($noauth_redirect, null, true);
 			} else if ( $role == 'GUEST') {
-					$this->Session->setFlash('You must upgrade your Guest pass before you can join a group. To upgrade your Guest pass, please sign up now.');
+				$msg = "Please upgrade your Guest pass before you join a Circle. To upgrade your Guest pass, please sign up now.";
+				$msg .= "<br />You will return to your invitation when you are done."; 
+					$this->Session->setFlash($msg);
 					$this->Session->write('Auth.redirect', $signin_redirect);
 					$this->redirect($noauth_redirect, null, true);
 			} else if ($role == 'USER') {
