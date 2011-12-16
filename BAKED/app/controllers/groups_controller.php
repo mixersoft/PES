@@ -1004,6 +1004,7 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 	}
 		
 	function discussion($id) {
+		$this->layout = 'snappi';
 		if (!$id) {
 			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'group'));
 			$this->redirectSafe();

@@ -3,6 +3,9 @@
     SNAPPI.namespace('SNAPPI.onYready');
     SNAPPI.onYready.Dialog = function(Y){
 		if (_Y === null) _Y = Y;
+		SNAPPI.Dialog = Dialog;
+		SNAPPI.namespace('SNAPPI.Helper');
+		SNAPPI.Helper.Dialog = DialogHelper;
 	}      
     
 
@@ -11,12 +14,12 @@
 			handler: null
 		},{
 			test: 'Cancel',
-			handler: this.close()
+			handler: function(){this.close();}
 		}],
 			
 		BUTTONS_CLOSE =[{
 			text: 'Close',
-			handler: this.close()
+			handler: function(){this.close();}
 		}];
 	
 	var DEFAULT_CFG_dialog = {
@@ -38,8 +41,31 @@
 	var Dialog = function(){
 		if (Dialog.doClassInit) Dialog.classInit();
 	};
-	Dialog.prototype = {};
-	Dialog.CFG  = {};
+	
+	/*
+	 * static properties and methods
+	 */
+	Dialog.listen = {};
+	Dialog.find = {};	// keep track of dialog instances for reuse
+	
+	Dialog.listen_select = function(d) {
+		var content = d.get('contentBox');
+		var detach = content.delegate('click', function(e,i,o){
+			var target = e.currentTarget;
+			e.halt(true);
+			target.get('parentNode').all('.selected').removeClass('selected');
+			target.addClass('selected');
+		}, 'li', d);
+		return detach;
+	}
+	Dialog.listen_close = function(d) {
+		var detach = d.get('closeChange', function(e){
+			for (var i in this.listen) {
+				this.listen[i].detach();
+			}
+		}, d)
+		return detach;		
+	}
 	
 		
 	/*
@@ -222,7 +248,7 @@
 		
 		var dialog = new _Y.Dialog(_cfg);
 		dialog.listen = {};
-		dialog.listen['select'] = SNAPPI.Dialog.listen_select(dialog);
+		dialog.listen['select'] = Dialog.listen_select(dialog);
 		
 		if (cfg.autoLoad !== false) dialog.render();
 		// save reference
@@ -278,47 +304,14 @@
 	};
 		
 	
-	/*
-	 * static properties and methods
-	 */
-	Dialog.doClassInit = true;
-	Dialog.listen = {};
-	Dialog.find = {};	// keep track of dialog instances for reuse
 	
-	Dialog.classInit = function() {
-		var Y = SNAPPI.Y;
-		Dialog.doClassInit = false;
-	};
-	
-	Dialog.listen_select = function(d) {
-		var content = d.get('contentBox');
-		var detach = content.delegate('click', function(e,i,o){
-			var target = e.currentTarget;
-			e.halt(true);
-			target.get('parentNode').all('.selected').removeClass('selected');
-			target.addClass('selected');
-		}, 'li', d);
-		return detach;
-	}
-	Dialog.listen_close = function(d) {
-		var detach = d.get('closeChange', function(e){
-			for (var i in this.listen) {
-				this.listen[i].detach();
-			}
-		}, d)
-		return detach;		
-	}
-
-	
-	SNAPPI.Dialog = Dialog;
 	
 	
 	/*********************************************************************
 	 * helper methods for Dialogs
 	 */
 	var DialogHelper = function(cfg) {};
-	SNAPPI.namespace('SNAPPI.Helper');
-	SNAPPI.Helper.Dialog = DialogHelper;
+	
 	/**
 	 * @params g SNAPPI.Gallery object
 	 * @params selected obj, audition of selected item

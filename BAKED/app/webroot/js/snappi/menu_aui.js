@@ -943,8 +943,8 @@
 			// shots are NOT included. get shots via XHR and render
 			var subUri = '/my/groups';
 			dialog.io.set('uri', subUri );
-			// dialog.io.set('arguments', args );    			
-			document.body.style.cursor = 'wait';
+			// dialog.io.set('arguments', args ); 
+			SNAPPI.setPageLoading(true);   			
 			dialog.io.start();			
 	};	
 	MenuItems.photo_privacy_click = function(menuItem, menu){
@@ -1324,7 +1324,7 @@
 					try {
 						SNAPPI.AIR.XhrHelper.resetSignInForm('#login');
 						var username = SNAPPI.DATASOURCE.getConfigs().username;
-						this.get('contentBox').one('input#UserUsername').set('value',username);
+						if (username) this.get('contentBox').one('input#UserUsername').set('value',username);
 					} catch (e) {}
 					e.target.get('contentBox').removeClass('hide');
 				},

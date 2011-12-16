@@ -4,6 +4,6 @@
 		echo $this->element('nav/section', array('badge_src'=>$badge_src));
 	$this->Layout->blockEnd();		
 ?>
-<div id='paging-comments' class="paging-content placeholder">
+<div id='paging-comments' class="paging-content grid_11">
 	<?php echo $this->element('comments/discussion')?>
 </div>	

@@ -254,7 +254,7 @@
 		},		
 		setPageLoading : function (value) {
         	try {
-	        	if (value == undefined) return _Yone('body').hasClass('wait');
+	        	if (value == undefined) return _Y.one('body').hasClass('wait');
 	        	if (value) _Y.one('body').addClass('wait');
 	        	else {
 	        		_Y.one('body').removeClass('wait');
@@ -471,7 +471,8 @@
 		var onlazyload_3 = function(Y, result){
 			// init for dialog, pagemakerPlugin
 		}
-		LazyLoad.use( modules_1.concat(modules_2, modules_3), onlazyload, null );
+		var modules = modules_1.concat(modules_2, modules_3);
+		LazyLoad.use( modules, onlazyload, null );
 	}
 	LazyLoad.AIRDesktopUploader = function(cfg){
 		cfg = cfg || {};	// closure for onlazyload
@@ -781,7 +782,8 @@
                     requires: ['node', 'event', 'event-key', 'snappi-event-hover', 
                     'snappi-util', // uses SNAPPI.ShotController
                     'snappi-auditions',
-                    'snappi-rating', 'snappi-dialog-aui', 'snappi-menu-aui', 'snappi-paginator', 'snappi-gallery-helpers', 'snappi-thumbnail-helpers'
+                    'snappi-rating', 'snappi-menu-aui', 'snappi-paginator', 'snappi-gallery-helpers', 'snappi-thumbnail-helpers',
+                    // 'snappi-dialog-aui', 
                     ] // snappi-util -> SNAPPI.shotController(move)
                 },                                       
                 'snappi-gallery-helpers': {
@@ -808,7 +810,7 @@
                     path: 'util.js',
                     requires: ['node', 'event-custom', 'io', 'substitute',
                                'snappi-rating', 
-                               'snappi-lightbox'
+                               // 'snappi-lightbox'
                                ]
                 },
                 'snappi-io': {
