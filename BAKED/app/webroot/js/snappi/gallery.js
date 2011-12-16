@@ -26,11 +26,17 @@
     SNAPPI.namespace('SNAPPI.onYready');
     SNAPPI.onYready.Gallery = function(Y){
 		if (_Y === null) _Y = Y;
+		Factory = SNAPPI.Factory.Gallery;
+		/*
+	     * make global
+	     */
+	    SNAPPI.Gallery = Gallery;
 		
 	}
 	
+	var Factory = null;	// closure, init in onYready()
 	
-	var Factory = SNAPPI.Factory.Gallery;
+	
     /*
      * dependencies
      */
@@ -106,7 +112,6 @@
     	this.showHiddenShotsAsPreview(selected, shotType, ul);
     };
     
-
 	
     Gallery.prototype = {
     	init: function(cfg) {
@@ -1914,12 +1919,5 @@
     		};
         }
     };
-    
-    
-    /*
-     * make global
-     */
-    SNAPPI.Gallery = Gallery;
-    
     
 })();
