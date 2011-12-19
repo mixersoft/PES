@@ -103,6 +103,7 @@ class AppController extends Controller {
 		if (in_array($this->name, array('Pages', 'Gallery', 'Combo', 'Snappi'))) {
 			return $unsupported;
 		} else if ($unsupported) {
+			Session::write('browser_unsupported_redirect', $this->here);
 			$this->redirect('/pages/browser_unsupported', null, true);
 		}
 		return true;
