@@ -871,6 +871,7 @@ LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  done ");
             
             // add new baseurl to uploadQueue
             //TODO: move to 'snappi-air:import-complete' event
+            //TODO: show notice to sign-in, start upload
             SNAPPI.AIR.Helpers.addToUploader(this, baseurl);
             
             _Y.fire('snappi-air:import-complete');

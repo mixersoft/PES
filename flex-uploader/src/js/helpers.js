@@ -280,7 +280,18 @@ console.log("load BEGIN: helpers.js");
             LOG("added to uploadQueue, count="+added+", open batchId="+batchId);			                
             uploader.show("reload");
         }, datasource, false);
-        Helpers.set_Filter_FolderSelect();
+        // open added folder
+		var delayed = new _Y.DelayedTask( function() {
+			var uploader = SNAPPI.AIR.uploadQueue;
+			uploader.initQueue('pending', {
+				folder: baseurl, 				// folder='all' => baseurl=''
+				page: 1,
+			});
+			uploader.view_showPage();
+			delete delayed;		
+			_Y.one('body').removeClass('wait');
+		});
+		delayed.delay(100);  // wait 100 ms	        
         return added;
     }
     Helpers.show_login = function() {

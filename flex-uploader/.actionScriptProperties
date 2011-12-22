@@ -15,8 +15,8 @@
     <application path="snaphappi.mxml">
       <airExcludes>
         <airExclude path="js"/>
-        <airExclude path="logs"/>
         <airExclude path="srcview"/>
+        <airExclude path="logs"/>
       </airExcludes>
     </application>
   </applications>
