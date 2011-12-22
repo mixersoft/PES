@@ -138,15 +138,18 @@ package api
 		}
 		*/
 		//save root folder info at db
-		public function saveLocalStore(folder:String):Boolean{
+		public function saveLocalStore(base_url:String):Boolean{
 			var flag:Boolean = true;
 			try{
-				var query:String = "SELECT * FROM local_stores WHERE base_url='" + this.sql.SQLBug(folder) + "'";
-				var dt:Array = this.sql.execQuery(query);
+				var params : Array = [];
+				params.push({name:"@base_url",value:base_url});
+				var query:String = "SELECT * FROM local_stores WHERE base_url=@base_url";
+				var dt:Array = Config.sql.executeQueryParams(query,params); 
+				// var dt:Array = this.sql.execQuery(query);
 				var alreadyExists:Boolean = (dt && dt.length);
 				if(!alreadyExists){
-					query = "INSERT INTO local_stores(base_url) VALUES ('" + this.sql.SQLBug(folder) + "')"
-					this.sql.execNonQuery(query);
+					query = "INSERT INTO local_stores(base_url) VALUES (@base_url)"
+					Config.sql.executeNonSQLParams(query,params);
 				}
 				flag = true;
 			}catch(e:Error){
@@ -209,12 +212,14 @@ package api
 		}
 		
 		
-		public function updateLastSelected(folder:String):void{
+		public function updateLastSelected(base_url:String):void{
 			try{
 				var query:String = "update local_stores set last_selected=0 where 1=1";
 				this.sql.execNonQuery(query);
-				query = "update local_stores set last_selected=1 where base_url='" + this.sql.SQLBug(folder) + "'";
-				this.sql.execNonQuery(query);	
+				query = "update local_stores set last_selected=1 where base_url=@base_url";
+				var params:Array = [{name:"@base_url",value:base_url}];
+				Config.sql.executeNonSQLParams(query,params); 
+				// this.sql.execNonQuery(query);	
 			}catch(e:Error){
 				Config.logger.writeLog("Error",e.message + '-while update lastSelected');
 			}
@@ -393,26 +398,37 @@ package api
 		
 
 		private function isImageAlreadyExists(base_url:String,rel_path:String,asset_hash:String):Boolean{
-			var query:String = "select * from photos where rel_path='" + rel_path + "' and base_url='" + base_url + "'";
-			var dt:Array = this.sql.execQuery(query);
+			var params : Array = [];
+			var query:String = "select * from photos where rel_path=@rel_path and base_url=@base_url";
+			params.push({name:"@rel_path",value:rel_path});
+			params.push({name:"@base_url",value:base_url});
+			var dt:Array = this.sql.executeQueryParams(query,params);  
+			// var dt:Array = this.sql.execQuery(query);
 			var isexists:Boolean = (dt && dt.length);
 			if(!isexists){
-				query = "select * from photos where asset_hash='" + asset_hash + "'";
-				dt = this.sql.execQuery(query);
+				query = "select * from photos where asset_hash=@asset_hash";
+				params = [{name:"@asset_hash",value:asset_hash}];
+				dt = Config.sql.executeQueryParams(query,params); 
+				// dt = this.sql.execQuery(query);
 				isexists = (dt && dt.length);
 			} 
 			return isexists;
 		}
 		private function hasToUpdateImage(base_url:String,rel_path:String,asset_hash:String):Boolean{
-			var query:String = "select * from photos where rel_path='" + rel_path + "' and base_url='" + base_url + "'";
-			var dt:Array = this.sql.execQuery(query);
+			var params : Array = [];
+			var query:String = "select * from photos where rel_path=@rel_path and base_url=@base_url";
+			params.push({name:"@rel_path",value:rel_path});
+			params.push({name:"@base_url",value:base_url});
+			var dt:Array = this.sql.executeQueryParams(query,params); 
 			var is2update:Boolean = false;
 			if(dt && dt.length){
 				var old_asset_hash:String = dt[0]["asset_hash"];
 				is2update = (asset_hash!=old_asset_hash);
 			}else{
-				query = "select * from photos where asset_hash='" + asset_hash + "'";
-				dt = this.sql.execQuery(query);
+				query = "select * from photos where asset_hash=@asset_hash";
+				params = [{name:"@asset_hash",value:asset_hash}];
+				dt = Config.sql.executeQueryParams(query,params); 
+				// dt = this.sql.execQuery(query);
 				is2update = (!(dt && dt.length));
 			}
 			return is2update;	

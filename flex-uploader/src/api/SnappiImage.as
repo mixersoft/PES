@@ -53,12 +53,14 @@ package api
 		public static var checkImgSrcBySize:Function = function (id:String,size:String):String{
 			var furl:String = null;
 			try{
-				var query:String = "SELECT base_url, rel_path FROM photos WHERE id='" + id + "'";
-				var dt:Array = Config.sql.execQuery(query);
+				var params:Array = [{name:"@id",value:id}];
+				var query:String = "SELECT base_url, rel_path FROM photos WHERE id=@id";
+				var dt:Array = Config.sql.executeQueryParams(query,params); 
+				// var dt:Array = Config.sql.execQuery(query);
 				if(dt && dt.length){
 					var baseurl:String = dt[0]['base_url'];
 					var relpath:String = dt[0]['rel_path'];
-					var resized:File = this.getImgPathBySize(baseurl, relpath, size);
+					var resized:File = SnappiImage.getImgPathBySize(baseurl, relpath, size);
 					if(resized.exists) {
 						return resized.url;	
 					}
@@ -104,8 +106,10 @@ package api
 			callback = options.callback || null;
 			params = callback.arguments || {}; 
 			try{
-				var query:String = "SELECT base_url, rel_path, json_exif, rotate FROM photos WHERE id='" + id + "'";
-				var dt:Array = Config.sql.execQuery(query);
+				var query:String = "SELECT base_url, rel_path, json_exif, rotate FROM photos WHERE id=@id";
+				var params2:Array = [{name:"@id",value:id}];
+				var dt:Array = Config.sql.executeQueryParams(query,params2); 
+				//var dt:Array = Config.sql.execQuery(query);
 				if(dt && dt.length){
 					var baseurl:String = dt[0]['base_url'];
 					var relpath:String = dt[0]['rel_path'];			
@@ -115,15 +119,15 @@ package api
 					var orig:File = new File(path);
 //					orig = new File(Misc.normalizeFilePath(path));
 					if(orig.exists){
-						var resized:File = this.getImgPathBySize(baseurl, relpath, size);
-						furl = resized.url;
+						var resized:File = SnappiImage.getImgPathBySize(baseurl, relpath, size);
+						furl = resized.url;	// TODO: deprecate. pass as File object instead
 						if (Config.USE_IMAGEMAGICK_RESIZE) {
 							// ImageMagick resize
-							SnappiImage.IM_resizeOrRotateImage(orig, furl, size, options, json_exif);
-							return furl;
+							SnappiImage.IM_resizeOrRotateImage(orig, resized, size, options, json_exif);
+							return resized.url;
 						} else {
 							// FLASH resize orig,furl,size,options
-							SnappiImage.FLASH_prepareResizeOrRotate(orig, furl, size, options, json_exif);
+							SnappiImage.FLASH_prepareResizeOrRotate(orig, resized, size, options, json_exif);
 						}
 					}
 				}else{
@@ -160,9 +164,10 @@ package api
 		}
 		
 		// use NativeProcess Imagemagick to resize/rotate
-		public static var IM_resizeOrRotateImage:Function = function(src:File, url:String, size:String, options:Object, json_exif:Object):void{
+		public static var IM_resizeOrRotateImage:Function = function(src:File, dest:File, size:String, options:Object, json_exif:Object):void{
 			if (NativeProcess.isSupported){
-				var dest:File = new File(url);
+				// file:///Users/snaphappi/Library/Preferences/snaphappi-uploader/Local%20Store/images/Volumes/SNAPPI2/folder%20with%20special%20char%20(%3B'&.=%5E%25$%23@!)%20test/sq~P1030448.JPG
+				// var dest:File = new File(url);   // pass as File object, not String
 				var callback:Object = options.callback;
 				var args:Object = callback.arguments || {};
 				
@@ -190,7 +195,7 @@ package api
 						Config.logger.writeLog("Error", errorMsg + '-IM-resizeOrRotateImage');
 					} else {
 						// exit 0
-						callback.success.call(context, url, args);	
+						callback.success.call(context, dest.url, args);	
 					}
 				}
 					
@@ -215,18 +220,19 @@ package api
 				
 			} else {
 				// use flash as fallback
-				setTimeout(SnappiImage.FLASH_resizeOrRotateImage,50,src,url,size,options);
+				setTimeout(SnappiImage.FLASH_resizeOrRotateImage,50,src, dest,size,options);
 			}
 		}		
 			
 		/***********************************************************
 		 * FLASH resize methods
 		*/
-		public static var FLASH_prepareResizeOrRotate:Function = function(src:File, destUrl:String, size:String, options:Object, json_exif:Object):void{
+		public static var FLASH_prepareResizeOrRotate:Function = function(src:File, dest:File, size:String, options:Object, json_exif:Object):void{
 			// FLASH resize
+			var destUrl:String = dest.url;
 			var has2Create:Boolean = false;
 			
-			var dest:File = new File(destUrl);
+			// var dest:File = new File(destUrl);
 			var rotate:int = 1;
 			var orientation:int = options.autorotate && json_exif && json_exif.Orientation ? json_exif.Orientation : 1;
 			if (options.rotate) {
@@ -241,7 +247,7 @@ package api
 			var context:Object = callback.scope || Config.jsGlobal;
 
 			if (options.replace || (options.create && dest.exists == false)){
-				setTimeout(SnappiImage.FLASH_resizeOrRotateImage, 50, src, destUrl, size, options);	
+				setTimeout(SnappiImage.FLASH_resizeOrRotateImage, 50, src, dest, size, options);	
 			} else {
 				try { 	// assume Image already exists, callback.success()
 					callback.success.call(context, destUrl, params);				
@@ -252,8 +258,9 @@ package api
 			}
 		}
 		
-		public static var FLASH_resizeOrRotateImage:Function = function(src:File, destUrl:String, size:String, options:Object):void{
+		public static var FLASH_resizeOrRotateImage:Function = function(src:File, dest:File, size:String, options:Object):void{
 			// change to Static method with closures
+			var destUrl:String = dest.url;
 			var callback:Object = options.callback;
 			var params:Object = callback.arguments || {};
 			var context:Object = callback.scope || Config.jsGlobal;
@@ -263,7 +270,7 @@ package api
 			var FLASH_resizeOrRotateLoadedImage:Function = function (e:Event):void {
 				e.target.removeEventListener(e.type, arguments.callee);
 				try {
-					var dest:File = new File(destUrl);
+					// var dest:File = new File(destUrl);
 					var bd:BitmapData = Bitmap( ld.content).bitmapData;
 					var bd1:BitmapData = Misc.resizeIt(bd, Misc.getImgSize(size), options.rotate);
 					Misc.saveJPG(bd1, dest, Misc.getJPGcompression());

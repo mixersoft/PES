@@ -42,7 +42,7 @@ package api
 		public static var init:Function = function():void {
 			switch (Config.OS) {
 				case 'Mac': 
-					convertExe = File.applicationDirectory.resolvePath("ImageMagick/mac/x86_64/bin/convert");
+					convertExe = File.applicationDirectory.resolvePath("ImageMagick/mac/x86_64/convert");
 					workingDir = File.applicationDirectory.resolvePath("ImageMagick/mac");
 					break;
 				case 'Win':

@@ -369,18 +369,28 @@ package api
 				//				SELECT count(*) as tot_items 
 				//				FROM uploadQueues as uq ,photos as p 
 				//				WHERE  p.id=uq.photo_id
-				//				and p.base_url='C:\Users\michael\Pictures\importTest\Oregon'				
+				//				and p.base_url='C:\Users\michael\Pictures\importTest\Oregon'	
+				var params : Array = [];
 				var query:String = "SELECT count(*) as tot_items " +
 					"FROM uploadQueues as uq, photos as p " +
 					"WHERE  p.id=uq.photo_id ";
-				if (batch_id == 'null')batch_id = this.datasource.cfg.batch_id || '';
-				if (batch_id) query += " AND batch_id='" + batch_id + "'"; 
-				if (baseurl && baseurl!=='null') query += " AND p.base_url='" + baseurl + "'"; 
-				
+				if (batch_id == 'null'){
+					batch_id = this.datasource.cfg.batch_id || '';
+				}
+				if (batch_id) {
+					params.push({name:"@batch_id",value:batch_id});
+					query += " AND batch_id=@batch_id "; 
+				}
+				if (baseurl && baseurl!=='null') {
+					params.push({name:"@base_url",value:baseurl});
+					query += " AND p.base_url=@base_url "; 
+				}
 				if(status!='all'){
-					query = query + " AND status" + op + "'" + status + "'";
+					params.push({name:"@status",value:status});
+					query += " AND status" + op + "@status";
 				}	
-				var dt:Array = Config.sql.execQuery(query);
+				var dt:Array = Config.sql.executeQueryParams(query,params); 
+				// var dt:Array = Config.sql.execQuery(query);
 				if(dt && dt.length){
 					count = dt[0]["tot_items"];
 				}
@@ -394,6 +404,8 @@ package api
 		public function getPageItems(page:int,status:String='all',batch_id:String='',baseurl:String=''):Array{
 			var pageitems:Array = [];
 			try{
+				var params : Array = [];
+				
 				var batch_id:String = this.datasource.cfg.batch_id || '';
 				var perpage:int = this.getUploadQueuePerpage();
 				// page should be 1-based, but somewhere there is a 0 bug
@@ -402,13 +414,21 @@ package api
 				var query:String = "SELECT uq.id,uq.photo_id,uq.batch_id,uq.status,p.rel_path,p.rating,p.tags" +
 					" FROM uploadQueues as uq ,photos as p " + 
 					" WHERE p.id=uq.photo_id";
-				if (batch_id) query += " AND batch_id='" + batch_id + "'"; 
-				if (baseurl) query += " AND p.base_url='" + baseurl + "'"; 
+				if (batch_id) {
+					query += " AND batch_id=@batch_id "; 
+					params.push({name:"@batch_id",value:batch_id});
+				}
+				if (baseurl) {
+					query += " AND p.base_url=@base_url ";
+					params.push({name:"@base_url",value:baseurl});
+				}
 				if(StringUtil.trim(status).length>0 && status!='all'){
-					query += " AND status='" + status + "'";
+					query += " AND status=@status ";
+					params.push({name:"@status",value:status});
 				}				   
 				query += " ORDER BY uq.id LIMIT " + xpage + "," + perpage;
-				var dt:Array = Config.sql.execQuery(query);
+				var dt:Array = Config.sql.executeQueryParams(query,params);  
+				// var dt:Array = Config.sql.execQuery(query);
 				dt = dt || [];
 				pageitems = dt;
 			}catch(e:Error){
@@ -421,14 +441,21 @@ package api
 		public function getItemsByStatus(status:String,batch_id:String='',op:String='='):Array{
 			status = status || 'all';
 			var arr:Array = [];
+			var params : Array = [];
 			try{
 				var batch_id:String = this.datasource.cfg.batch_id || '';
 				var query:String = "SELECT * FROM uploadQueues WHERE 1=1";
-				if (batch_id) query += " AND batch_id='" + batch_id + "'"; 
 				if(status!='all'){
-					query += " AND status" + op + "'" + status + "'";
+//					query += " AND status" + op + "'" + status + "'";
+					query += " AND status" + op + "@status ";
+					params.push({name:"@status",value:status});
 				}	
-				var dt:Array = Config.sql.execQuery(query);
+				if (batch_id) {
+					query += " AND batch_id=@batch_id "; 
+					params.push({name:"@batch_id",value:batch_id});
+				}
+				var dt:Array = Config.sql.executeQueryParams(query,params);  
+				// var dt:Array = Config.sql.execQuery(query);
 				if(dt && dt.length){
 					arr = dt;
 				}
@@ -461,6 +488,7 @@ package api
 		* */			
 		public function addToUploadQueue(photos:Array,batch_id:String):int{
 			var tot_added:int=0;
+			var params:Array, params_insert:Array, dt:Array;
 			try{
 				if(StringUtil.trim(batch_id).length==0){
 					throw new Error("batch not found");
@@ -473,23 +501,21 @@ package api
 						uuid = photos[i+''];
 					}
 					// use LEFT JOIN on uploadQueues to prevent duplicate key
+					// TODO: use p.id IN () to reduce to 1 select
 					var query:String = "SELECT p.id, p.asset_hash, uq.photo_id " +
 						" FROM photos p " +
 						" LEFT JOIN uploadQueues uq ON uq.photo_id=p.id " +
-						" WHERE uq.photo_id IS NULL AND p.id='" + uuid + "'";
-					var dt:Array = Config.sql.execQuery(query);
+						" WHERE uq.photo_id IS NULL AND p.id=@id";
+					params = [{name:"@id",value:uuid}];
+					dt = Config.sql.executeQueryParams(query,params); 
 					if(dt && dt.length){
-						var photo_id:String = dt[0]['id'];
-						var asset_hash:String = dt[0]['asset_hash'];
-						query = "INSERT INTO uploadQueues(photo_id,batch_id,status,updated_on,asset_hash) " + 
-							" values("+
-							"'" + photo_id +  "'" +
-							",'" + batch_id +  "'" +
-							",'pending'" + 
-							",''" +
-							",'" + asset_hash + "'" + 
-							")";
-						Config.sql.execNonQuery(query);
+						params_insert = [];
+						params_insert.push({name:"@batch_id",value:batch_id});
+						params_insert.push({name:"@photo_id",value:dt[0]['id']});
+						params_insert.push({name:"@asset_hash",value:dt[0]['asset_hash']});
+						query = "INSERT INTO uploadQueues(photo_id, batch_id, status, updated_on, asset_hash) " + 
+							" VALUES (@photo_id, @batch_id, 'pending', '', @asset_hash )";
+						Config.sql.executeNonSQLParams(query,params_insert); 
 						tot_added++;		
 					}	
 				}		
@@ -513,13 +539,15 @@ package api
 			try{
 				var query:String = "SELECT count(id) AS tot_avail FROM uploadQueues" + 
 					" WHERE status!='done' AND updated_on=''" + 
-					" AND photo_id in('" + photos.join("','") + "')";
+					" AND photo_id IN ('" + photos.join("','") + "')";
+				// TODO: fix IN clause using params
 				var dt:Array = Config.sql.execQuery(query);
 				var tot_avail:int= (dt && dt.length)?dt[0]['tot_avail'] : 0;
 				if(tot_avail>0){
 					query = "DELETE FROM uploadQueues " +
 						" WHERE status!='done' AND updated_on=''" + 
 						" AND photo_id in('" + photos.join("','") + "')";
+					// TODO: fix IN clause using params
 					Config.sql.execNonQuery(query);
 					tot_removed = dt.length;
 				}
@@ -533,14 +561,25 @@ package api
 		* set status in upload queue
 		* @params batchid, baseurl
 		*/
-		public function setUploadQueueStatus(newStatus:String='pending', oldStatus:String='failure', batchId:String=null, baseurl:String='null'):Boolean{
+		public function setUploadQueueStatus(newStatus:String='pending', oldStatus:String='failure', batch_id:String=null, baseurl:String='null'):Boolean{
 			try{
-				// still to be done
-				var query:String = "UPDATE uploadQueues	SET status='"+newStatus+"' WHERE 1=1 ";
-				if (oldStatus) query += " AND status='"+oldStatus+"'";
-				if (baseurl && baseurl!=='null') query += " AND uploadQueues.photo_id IN (SELECT id FROM photos WHERE base_url='"+baseurl+"')";
-				if (batchId) query += " AND batch_id = '"+batchId+"'";				
-				var dt:Array = Config.sql.execNonQuery(query);
+				var params : Array = [];
+				params.push({name:"@newStatus",value:newStatus});
+				var query:String = "UPDATE uploadQueues	SET status=@newStatus WHERE 1=1 ";
+				if (oldStatus) {
+					query += " AND status=@oldStatus ";
+					params.push({name:"@oldStatus",value:oldStatus});
+				}
+				if (baseurl && baseurl!=='null') {
+					query += " AND uploadQueues.photo_id IN (SELECT id FROM photos WHERE base_url=@base_url) ";
+					params.push({name:"@base_url",value:baseurl});
+				}
+				if (batch_id) {
+					query += " AND batch_id=@batch_id "; 
+					params.push({name:"@batch_id",value:batch_id});
+				}
+				Config.sql.executeNonSQLParams(query,params); 
+				// var dt:Array = Config.sql.execNonQuery(query);
 			}catch(e:Error){
 				return false;
 				Config.logger.writeLog("Error",e.message + '-setUploadQueueStatus');
@@ -608,8 +647,10 @@ package api
 			var handlers:Object = params.handlers;
 //			var sessionKey:String = 'CAKEPHP=' + params.sessionId;
 			try{
-				var query:String = "select p.*, uq.batch_id from photos p JOIN uploadQueues uq on uq.photo_id = p.id where p.id='" + params.photo_id + "'";
-				var asset:Array = Config.sql.execQuery(query);
+				var query:String = "select p.*, uq.batch_id from photos p JOIN uploadQueues uq on uq.photo_id = p.id where p.id=@id";
+				var query_params:Array = [{name:"@id",value:params.photo_id}];
+				var asset:Array = Config.sql.executeQueryParams(query,query_params); 
+				// var asset:Array = Config.sql.execQuery(query);
 				var json_exif:String = '';
 				if(asset && asset.length){
 					json_exif = asset[0]['json_exif'];

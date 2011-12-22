@@ -55,6 +55,7 @@ package api
 		public function reQueue(photoids:Array,cb:Object):void{
 			this.cb = cb || null;
 			var query:String = "select * from photos where id in('" + photoids.join("','") + "')";
+			// TODO: fix IN clause using params
 			var dt:Array = this.sql.execQuery(query);
 			if(dt && dt.length){
 				this.queue = dt;
@@ -131,10 +132,12 @@ package api
 					var data:String =  loader.data as String;
 					if(data.length>0){
 						//update status after successfully post
-						var query:String = "update photos set sync_status=true,isStale=false where id='" + this.curr_rec['id'] + "'";
+						var query:String = "update photos set sync_status=true,isStale=false where id=@id";
 						try{
-							this.sql.execNonQuery(query);
-						}catch(e:Error){
+							var params:Array = [{name:"@id",value:this.curr_rec['id']}];
+							Config.sql.executeNonSQLParams(query,params); 
+							// this.sql.execNonQuery(query);
+						} catch(e:Error){
 							throw new Error(e.message); 
 						}	
 						this.curr_rec = null;

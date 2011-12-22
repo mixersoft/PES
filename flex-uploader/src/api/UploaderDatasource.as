@@ -142,6 +142,7 @@ package api
 					}
 				}
 				//closed batch_ids 
+				// TODO: fix IN clause using params
 				query = "select batch_id,status from uploadQueues where (status='done' or status='cancelled') and batch_id not in('" + allitems.open.join("','") + "')  group by batch_id ORDER BY batch_id asc";
 				dt = Config.sql.execQuery(query);
 				if(dt && dt.length){
@@ -215,21 +216,26 @@ package api
 			try{
 				for(var i:int=0;i<baseurls.length;i++){
 					var base_url:String = baseurls[i+""]; 
-					var query:String = "SELECT * FROM local_stores WHERE base_url='" + Config.sql.SQLBug(base_url) + "'";
-					var dt:Array = Config.sql.execQuery(query);
+					var params : Array = [];
+					params.push({name:"@base_url",value:base_url});
+					var query:String = "SELECT * FROM local_stores WHERE base_url=@base_url";
+					var dt:Array = Config.sql.executeQueryParams(query,params); 
+					// var dt:Array = Config.sql.execQuery(query);
 					if(dt && dt.length){ //if it is exists then delete it and its photos
-						query = "DELETE FROM local_stores WHERE base_url='" + Config.sql.SQLBug(base_url) + "'";
-						Config.sql.execQuery(query);
+						query = "DELETE FROM local_stores WHERE base_url=@base_url";
+						Config.sql.executeQueryParams(query,params); 
+						// Config.sql.execQuery(query);
 						
-						query =  "SELECT id, base_url, rel_path FROM photos WHERE base_url='" + Config.sql.SQLBug(base_url) + "'";
-						var photos:Array = Config.sql.execQuery(query);
+						query =  "SELECT id, base_url, rel_path FROM photos WHERE base_url=@base_url";
+						var photos:Array = Config.sql.executeQueryParams(query,params); 
+						// Config.sql.execQuery(query);
 						if (photos && photos.length) {
 							query = "DELETE FROM uploadQueues WHERE uploadQueues.photo_id=@id";
-							var params:Array = [], path:String;
+							var path:String;
 							for(var j:int=0;j<photos.length;j++){
 								// delete row from uploadQueue
 //								params.push({name:"@id", value:photos[j]['id']});
-								Config.sql.executeNonSQLParams(query, [{name:"@id", value:photos[j]['id']}]);
+								Config.sql.executeQueryParams(query, [{name:"@id", value:photos[j]['id']}]);
 								// delete file from File.ApplicationStorageDirectory()
 								path = photos[j]['base_url']+ File.separator + photos[j]['rel_path'];
 								var deleteFile:File = new File(path);
@@ -244,13 +250,14 @@ package api
 								flag = flag && ret;
 							}
 						}
-						query = "DELETE FROM photos WHERE base_url='" + Config.sql.SQLBug(base_url) + "'";
-						Config.sql.execQuery(query);
+						query = "DELETE FROM local_stores WHERE base_url=@base_url";
+						Config.sql.executeQueryParams(query,params); 
+						// Config.sql.execQuery(query);
 					}
 				}
 				flag = true;
 			}catch(e:Error){
-				this.logger.writeLog("Error",e.message + '-deleteBaseurl');
+				Config.logger.writeLog("Error",e.message + '-deleteBaseurl');
 			}
 			return flag;
 		}		
@@ -279,7 +286,7 @@ package api
 					params.push({name:"@batch_id",value:batch_id});	
 				}
 				if (baseurl && baseurl!=='null') {
-					query += " AND photo_id IN (SELECT id FROM photos WHERE base_url='@baseurl')";
+					query += " AND photo_id IN (SELECT id FROM photos WHERE base_url=@baseurl)";
 					params.push({name:"@baseurl",value:baseurl});	
 				}
 				Config.sql.executeNonSQLParams(query,params);
@@ -290,12 +297,12 @@ package api
 				//					this.sql.execQuery(query);
 				
 				if(has2UpdateisStale){
-					query = "UPDATE photos SET upload_status=1, isStale=true WHERE id='" + uuid + "'";
-					Config.sql.execNonQuery(query); 
+					query = "UPDATE photos SET upload_status=1, isStale=true WHERE id=@id";
+					Config.sql.executeNonSQLParams(query,[{name:"@id",value:uuid}]); // Config.sql.execNonQuery(query); 
 				}
 				flag = true;
 			}catch(e:Error){
-				this.logger.writeLog("Error",e.message + '-setUploadStatus');
+				Config.logger.writeLog("Error",e.message + '-setUploadStatus');
 			}
 			return flag;
 		}
@@ -303,12 +310,14 @@ package api
 		public function updatePhotoProperties(json:Object):Boolean{
 			var flag:Boolean=false
 			try{
-				var query:String = "SELECT * FROM photos WHERE id='" + json.id + "'";
-				var dt:Array = Config.sql.execQuery(query);
+				var query:String = "SELECT * FROM photos WHERE id=@id";
+				var params:Array = [{name:"@id",value:json.id}];
+				var dt:Array = Config.sql.executeQueryParams(query,params); 
+				//var dt:Array = Config.sql.execQuery(query);
 				if(dt && dt.length){
 					var setparams:String = '';
 					var i:int = 0;
-					var params :Array = [];
+					params = [];
 					//add modified date
 					json.modified = Misc.convertDateStr(new Date());
 					for(var k:String in json){
@@ -353,9 +362,9 @@ package api
 		*/		
 		public function getCastingCall(qs:Object, callback:Object):Object{
 			try{
-				var params:Object = callback.arguments;
+				var args:Object = callback.arguments;
 			}catch(e:Error){	
-				params = {};
+				args = {};
 			}
 			try{
 				var baseurl:String = qs.baseurl || '';
@@ -365,57 +374,64 @@ package api
 				var tags:String = qs.tags || '';
 				var page:int = qs.page-1; //cause in sqlite page starts from 0
 				var perpage:int = qs.perpage;
+				var params : Array = [];
 				var whereQuery : String = " WHERE 1=1";
 				if (baseurl) {
-					whereQuery = whereQuery  + " AND base_url='" + Config.sql.SQLBug(baseurl) + "'";						
+					whereQuery += " AND base_url=@base_url ";						
+					params.push({name:"@base_url",value:baseurl});
 				}
 				if(rating!=-1){ //if rating defined means not -1
-					whereQuery = whereQuery  + " AND rating>=" + rating;
+					whereQuery += " AND rating>=@rating ";
+					params.push({name:"@rating",value:rating});
 				}
 				if(StringUtil.trim(dateFrom).length){
-					whereQuery = whereQuery  + " AND date_taken>='" + StringUtil.trim(dateFrom) + "'";
+					whereQuery += " AND date_taken>=@dateFrom ";
+					params.push({name:"@dateFrom",value:StringUtil.trim(dateFrom)});
 				}
 				if(StringUtil.trim(dateTo).length){
-					whereQuery = whereQuery  + " AND date_taken<='" + StringUtil.trim(dateTo) + "'";
+					whereQuery += " AND date_taken<=@dateTo ";
+					params.push({name:"@dateTo",value:StringUtil.trim(dateTo)});
 				}
 				if(StringUtil.trim(tags).length){
-					var tgs:Array = tags.split(",");
+					var arrTags:Array = tags.split(",");
 					var tagsCond:String = '';
-					for(var i:int;i<tgs.length;i++){
+					for(var i:int;i<arrTags.length;i++){
 						if(i>0){
-							tagsCond += ' and ';
+							tagsCond += ' AND ';
 						}
-						tagsCond += " tags LIKE '%" + tgs[i] + "%'";
+						tagsCond += " tags LIKE @tags_"+i+" ";
+						params.push({name:"@tags_"+i,value:'%'+arrTags[i]+'%'});
 					}
-					whereQuery = whereQuery  + ' and ' + tagsCond;
+					whereQuery += ' AND ' + tagsCond;
 				}
 				
-				var query:String = "SELECT count(*) AS total_rows from PHOTOS " + whereQuery;
-				
-				var dt:Array = Config.sql.execQuery(query);
+				var query:String = "SELECT count(*) AS total_rows FROM photos " + whereQuery;
+				var dt:Array = Config.sql.executeQueryParams(query,params);
+				// var dt:Array = Config.sql.execQuery(query);
 				var json:Object = {};
 				if(dt && dt.length){
 					var total_rows:int = dt[0]['total_rows'];
 					page = perpage * page;
 					query = "SELECT * FROM photos " + whereQuery +  " LIMIT " + page + "," + perpage;
-					dt = Config.sql.execQuery(query);
+					dt = Config.sql.executeQueryParams(query,params);
+					// dt = Config.sql.execQuery(query);
 					if(dt && dt.length){
 						json = Misc.createSnaphappiJSON(dt,total_rows,qs);
 					}
 				}
-				params.success = true;
+				args.success = true;
 				if (callback === null) {
 					return json;
 				} else { 
 					Config.logger.writeJson("getCastingCall",json);
-					callback.success.call(callback.scope || Config.jsGlobal, json,params);
+					callback.success.call(callback.scope || Config.jsGlobal, json,args);
 					return true;
 				}
 			}catch(e:Error){
-				params.success = false;
+				args.success = false;
 				Config.logger.writeLog("Error",e.message + '-getCastingCall');
 				if (callback !== null) {
-					callback.failure.call(callback.scope || Config.jsGlobal,{error:e.message},params);
+					callback.failure.call(callback.scope || Config.jsGlobal,{error:e.message},args);
 				} 
 				return false;
 			}
