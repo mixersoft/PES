@@ -9,6 +9,7 @@
  * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 ?>
+<div class="prefix_2 grid_12 suffix_2">
 <h2><?php __d('users', 'Forgot your password?'); ?></h2>
 <p>
 	<?php __d('users', 'Please enter the email you used for registration and you\'ll get an email with further instructions.'); ?>
@@ -23,3 +24,4 @@
 	echo $this->Form->submit(__d('users', 'Submit', true));
 	echo $this->Form->end();
 ?>
+</div>

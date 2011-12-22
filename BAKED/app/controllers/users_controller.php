@@ -100,7 +100,7 @@ class UsersPluginController extends AppController {
 				}
 			} else {
 				$this->Session->setFlash(__d('users', 'No user was found with that email.', true));
-				$this->redirect('/');
+				$this->redirect('/users/reset_password');
 			}
 		}
 		$this->render('request_password_change');
@@ -433,6 +433,8 @@ class UsersController extends UsersPluginController {
 	public $titleName = 'People';
 	public $displayName = 'Person';	// section header
 	
+	public $layout = 'snappi-guest';
+	
 	public $helpers  = array(
 		'Tags.TagCloud',
 		'Time','Text',
@@ -469,6 +471,7 @@ class UsersController extends UsersPluginController {
 		// TODO: edit allowed for  'role-----0123-4567-89ab---------user'
 		// TODO: groups allowed for  'role-----0123-4567-89ab--------guest', 'role-----0123-4567-89ab---------user'
 		AppController::$writeOk = AppController::$userid  == AppController::$uuid || AppController::$userid == Permissionable::getRootUserId();
+		if (get_class($this) == 'UsersController') Session::delete("nav.primary");
 	}
 	
 	function update_count($id = null) {
@@ -875,6 +878,16 @@ $this->log("using Cookie guestpass login for {$guestid}", LOG_DEBUG);
 		$this->Session->setFlash('You are now signed out.');
 		$this->Session->destroy();
 		$this->redirect($this->Auth->logout());
+	}
+	
+	function reset_password($token = null, $user = null) {
+		$this->layout = $layout = 'snappi-plain';
+		parent::reset_password($token, $user);
+	}
+	
+	function change_password() {
+		$this->layout = $layout = 'snappi-plain';
+		parent::change_password();
 	}
 
 	/**

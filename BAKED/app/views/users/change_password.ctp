@@ -9,6 +9,7 @@
  * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 ?>
+<div class="prefix_2 grid_12 suffix_2">
 <h2><?php __d('users', 'Change your password'); ?></h2>
 <p>
 	<?php __d('users', 'Please enter your old password because of security reasons and then your new password twice.'); ?>
@@ -26,3 +27,4 @@
 		'type' => 'password'));
 	echo $this->Form->end(__d('users', 'Submit', true));
 ?>
+</div>

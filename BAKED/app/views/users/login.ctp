@@ -15,6 +15,9 @@
 		<?php echo $this->Form->input('username');?> 
 		<?php echo $this->Form->input('password');?>
 		<?php echo $this->Form->submit('Login', $orange);?>
+		<div style="margin-left:148px;font-size:0.8em;">
+			<?php echo $this->Html->link('lost password?', '/users/reset_password'); ?>
+		</div>
 		<?php if (Configure::read('AAA.allow_magic_login')) {
 			$userlist = array_merge(array(' '=>'select test accounts'),$userlist);
 			echo $this->Form->select('magic', $userlist, ' ', array(), false);

@@ -1,3 +1,4 @@
+<div class="prefix_2 grid_12 suffix_2">
 <h2><?php __d('users', 'Reset your password'); ?></h2>
 
 <?php
@@ -14,3 +15,4 @@
 	echo $this->Form->submit(__d('users', 'Submit', true));
 	echo $this->Form->end();
 ?>
+</div>
