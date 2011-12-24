@@ -449,6 +449,24 @@ class UsersController extends UsersPluginController {
 	 */
 	function beforeFilter() {
 		// only for snaphappi user login, not rpxnow
+		if ($this->action=='login' && !empty($this->data['User'])){
+			//Override default fields used by Auth component
+			$this->Auth->userModel = 'User';
+			//Extend auth component to include authorisation via isAuthorized action
+			$this->Auth->authorize = 'controller';
+			//Restrict access to only users with an active account
+			$this->Auth->userScope = array('User.active = 1');
+			
+			if (strpos($this->data['User']['username'],'@')){
+				// use email for auth
+				$this->data['User']['email'] = $this->data['User']['username'];
+				unset($this->data['User']['username']);
+				$this->Auth->fields = array('username'=>'email', 'password'=>'password');
+			} else {
+				// use username for auth
+				$this->Auth->fields = array('username'=>'username', 'password'=>'password');
+			}
+		}
 		parent::beforeFilter();
 		/*
 		 *	These actions are allowed for all users
@@ -647,17 +665,17 @@ class UsersController extends UsersPluginController {
 		if (!$ret) {
 			$this->log("ERROR: this->Auth->login(), data=".print_r($data, true), LOG_DEBUG);
 			return false;
+		} else {
+			// $data = $this->Auth->user();
 		}
-		if (empty($data['User']['id'])) {
-			// get valid user data after auth ok;
-			$options = array(
-				'conditions'=>array('username'=>$data['User']['username']),
-				'recursive'=>0);
-			$data = $this->User->find('first', $options);
-		}
+		// get valid user, Profile data after auth ok;
+		$options = array(
+			'contain'=>array('Profile'),
+			'conditions'=>array('User.id'=>$this->Auth->user('id')),
+			'recursive'=>0);
+		$data = $this->User->find('first', $options);
 		// authorize User data. set Auth.Permissions
 		$ret = $ret && parent::isAuthorized();
-		//		parent::getCurrent();
 		// update lastVisit
 		$this->User->id = $data['User']['id'];
 		$this->User->saveField('lastVisit', date('Y-m-d H:i:s',time()), false);
@@ -714,7 +732,7 @@ if ($this->RequestHandler->isAjax() || $forceXHR) {
 	// $this->log("[HTTP_USER_AGENT]=".env('HTTP_USER_AGENT'), LOG_DEBUG);		
 	// debug($_COOKIE);
 }
-						
+
 			$login_ok = false;
 			$response = array();
 			if (empty($this->data['User']['username'])) {
@@ -795,7 +813,7 @@ $this->log("using Cookie guestpass login for {$guestid}", LOG_DEBUG);
 // $this->log("after /users/login for user={$this->data['User']['username']}", LOG_DEBUG);		
 // $this->log($this->data['User'], LOG_DEBUG);
 // $this->log($_COOKIE, LOG_DEBUG);	
-// $this->log("response cookie value above. ", LOG_DEBUG);	
+// $this->log("response cookie value above. ", LOG_DEBUG);
 				$this->__reset($saveRedirect = true);
 				$login_ok = $this->__loginUser($this->data);
 				$this->data = $this->Auth->user();

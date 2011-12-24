@@ -26,9 +26,6 @@ class AppController extends Controller {
 	 */
 	function beforeFilter() {
 		$this->__check_browserRedirect();
-		//Override default fields used by Auth component
-		$this->Auth->userModel = 'User';
-		$this->Auth->fields = array('username'=>'username', 'password'=>'password');
 		//Set application wide actions which do not require authentication
 
 		//		$this->Auth->allow(array('home', 'photos'));
@@ -41,14 +38,10 @@ class AppController extends Controller {
 		$this->Auth->loginRedirect = '/my/home';
 		// login page
 		if (empty($this->Auth->loginAction)) $this->Auth->loginAction = '/users/login' . (Configure::read('AAA.allow_guest_login') ? '?optional' : '');
-		//Extend auth component to include authorisation via isAuthorized action
-		$this->Auth->authorize = 'controller';
-		//Restrict access to only users with an active account
-		$this->Auth->userScope = array('User.active = 1');
-		//Pass auth component data over to view files
-		$this->set('Auth', $this->Auth->user());		
+		
 		// call login() after auth for additional processing
 		$this->Auth->autoRedirect = false;
+		
 		// assume $this->Auth->user has been set
 		$this->prepareRequest();
 		
@@ -360,7 +353,6 @@ class AppController extends Controller {
 		$this->__setXhrFrom();			
 		$this->__moveParamToNamed();
 		$this->__loadProfile();
-		
 		$this->__checkForContextChange();	
 		
 		$this->passedArgs['plugin'] = '';  // suppress plugin on Router::url() generation
@@ -400,6 +392,8 @@ class AppController extends Controller {
 			// TODO: refactor to use AppController::$userid instead of Session::read('Auth.User.id');
 			AppController::$userid = $auth['User']['id'];	
 			AppController::$role = $role;
+			//Pass auth component data over to view files
+			if ($this->Auth->user()) $this->set('Auth', $this->Auth->user());
 		}
 	}
 	
