@@ -50,8 +50,7 @@ package api
 		}
 		
 		// snappi.uploadFile > snappi.postUploadFile > UploadFile.startUpload
-		public static var checkImgSrcBySize:Function = function (id:String,size:String):String{
-			var furl:String = null;
+		public static var checkImgSrcBySize:Function = function (id:String,size:String):File{
 			try{
 				var params:Array = [{name:"@id",value:id}];
 				var query:String = "SELECT base_url, rel_path FROM photos WHERE id=@id";
@@ -62,7 +61,7 @@ package api
 					var relpath:String = dt[0]['rel_path'];
 					var resized:File = SnappiImage.getImgPathBySize(baseurl, relpath, size);
 					if(resized.exists) {
-						return resized.url;	
+						return resized;	
 					}
 				}	
 			}catch(e:Error){
@@ -94,12 +93,12 @@ package api
 		* 	} 
 		* @return : returns absolute url of the photo based on size e.g. file:///D:/downloads/1000pics/xyz.jpg
 		* */			
-		public static var getImgSrcBySize:Function = function (id:String, size:String, options:Object):String{
-			var furl:String = '';
+		public static var getImgSrcBySize:Function = function (id:String, size:String, options:Object):File{
+			var f:File;
 			
 			// check if file by imageSize already exists, if so, return response directly
-			furl = SnappiImage.checkImgSrcBySize(id, size);
-			if (furl) return furl;
+			f = SnappiImage.checkImgSrcBySize(id, size);
+			if (f) return f;
 			
 			var callback:Object = null; 
 			var params:Object = {}; 
@@ -120,13 +119,12 @@ package api
 //					orig = new File(Misc.normalizeFilePath(path));
 					if(orig.exists){
 						var resized:File = SnappiImage.getImgPathBySize(baseurl, relpath, size);
-						furl = resized.url;	// TODO: deprecate. pass as File object instead
 						if (Config.USE_IMAGEMAGICK_RESIZE) {
 							// ImageMagick resize
 							SnappiImage.IM_resizeOrRotateImage(orig, resized, size, options, json_exif);
-							return resized.url;
+							return resized;
 						} else {
-							// FLASH resize orig,furl,size,options
+							// FLASH resize orig,resized,size,options
 							SnappiImage.FLASH_prepareResizeOrRotate(orig, resized, size, options, json_exif);
 						}
 					}
@@ -139,7 +137,7 @@ package api
 					callback.failure.call(callback.scope || Config.jsGlobal,e.message,params);
 				}
 			}
-			return furl;
+			return null;
 		}
 		/**
 		 * @params orientation int - [ 1 | 3 | 6 | 8 ] exifOrientation, used for autoRotate
@@ -195,7 +193,7 @@ package api
 						Config.logger.writeLog("Error", errorMsg + '-IM-resizeOrRotateImage');
 					} else {
 						// exit 0
-						callback.success.call(context, dest.url, args);	
+						callback.success.call(context, dest, args);	
 					}
 				}
 					

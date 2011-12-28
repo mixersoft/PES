@@ -465,10 +465,12 @@ package api
 		}
 		
 		public function getImgSrcBySize(id:String,size:String,options:Object):String{
-			return SnappiImage.getImgSrcBySize(id, size, options);
+			var f:File = SnappiImage.getImgSrcBySize(id, size, options);
+			return f ? f.url: null;
 		}
 		public function checkImgSrcBySize(id:String,size:String):String{
-			return SnappiImage.checkImgSrcBySize(id, size);
+			var f:File = SnappiImage.checkImgSrcBySize(id, size);
+			return f ? f.url: null;
 		}		
 		
 		
@@ -602,10 +604,10 @@ package api
 				handlers : handlers,
 				sessionId: sessionId
 			};				
-			var furl:String = SnappiImage.checkImgSrcBySize(photo_id,'bp');
-			if (furl) {
+			var f:File = SnappiImage.checkImgSrcBySize(photo_id,'bp');
+			if (f) {
 				// upload file exists, just post upload directly
-				this.postUploadFile(furl, uploadCfg);
+				this.postUploadFile(f, uploadCfg);
 			} else {
 				// create upload file async, THEN post upload from callback
 				var resizeImg_Callback:Object = {
@@ -624,7 +626,7 @@ package api
 				}
 				resizeImg_Callback.callback = uploadFile_Callback;	
 				// upload preview size
-				furl = SnappiImage.getImgSrcBySize(photo_id,'bp',resizeImg_Callback);
+				f = SnappiImage.getImgSrcBySize(photo_id,'bp',resizeImg_Callback);
 				// start FileProgress while waiting for bp~uploadFile
 			}
 		}		
@@ -643,7 +645,7 @@ package api
 			navigateToURL( req  );
 			return;
 		}
-		private function postUploadFile(furl:String, params:Object):void{
+		private function postUploadFile(f:File, params:Object):void{
 			var handlers:Object = params.handlers;
 //			var sessionKey:String = 'CAKEPHP=' + params.sessionId;
 			try{
@@ -686,7 +688,6 @@ package api
 				if (gids) {
 					postData['data[groupIds]'] = gids;
 				}
-				var f:File = new File(furl);
 				// var uq:UploadFile = new UploadFile(f,postparams,handlers,filePostName);
 				var uq:UploadFile = UploadFile.getUploadFile(f, postData,handlers,filePostName);
 				uq.startUpload();
