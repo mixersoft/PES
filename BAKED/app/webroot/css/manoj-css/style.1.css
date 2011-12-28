@@ -37,6 +37,29 @@ body.wait, body.wait a {
 section, aside, #content {
 	overflow: hidden;
 }
+.container_x, .grid_x {
+	margin-left: 10px;
+	margin-right: 10px;
+}
+.grid_x {
+    display: inline-block;
+    position: relative;
+    float: left;
+}
+/* http://nicolasgallagher.com/micro-clearfix-hack/ */
+/* For modern browsers */
+.cf:before,
+.cf:after {
+    content:"";
+    display:table;
+}
+.cf:after {
+    clear:both;
+}
+/* For IE 6/7 (trigger hasLayout) */
+.cf {
+    zoom:1;
+}
 
 .hide {
 	display: none !important;
@@ -1302,9 +1325,27 @@ form input[type='text'].help {
 /*
  * dialogs
  */
-.aui-dialog-bd .selected {
-	xxxborder: 2px solid red !important; 
+
+#dialog-alert .aui-dialog-hd {
+	background: #FFF;
+	border-color: #FFF;
 }
+#dialog-alert h1{
+	border-bottom: 1px solid #D2D2D2;
+	font-size: 14pt;
+	margin-bottom: 8px;
+}
+#dialog-alert p {
+	margin-bottom: 8px;
+}
+
+#dialog-alert .import-complete .copy-paste {
+	width: 100%;
+}
+#dialog-alert .import-complete ol {
+	padding: 0 40px;
+}
+
 
 /*TODO: deprecate ?*/
 ul.circle-thumb li.selected {

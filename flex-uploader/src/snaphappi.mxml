@@ -12,7 +12,7 @@
 		<mx:HTML id="domParent" x="0" y="0" width="100%" height="100%" complete="{onDomReady()}" />
 		<mx:Canvas id="dropTarget1"  x="0" y="0" width="100%" height="100%" visible="false" includeInLayout="false" backgroundColor="#FFFFFF" alpha=".2"/>
 		<s:BorderContainer id="glass" x="0" y="0" width="100%" height="100%" backgroundAlpha="0.9"
-						   contentBackgroundAlpha="1.0" backgroundImage="@Embed('/images/body_bg.jpg')"
+						   contentBackgroundAlpha="1.0" backgroundImage="@Embed('/images/desktop_bg.jpg')"
 						   backgroundImageFillMode="clip">
 			<s:BorderContainer backgroundColor="#000000" borderColor="#000000"
 							   borderStyle="solid" color="#000000" cornerRadius="5"

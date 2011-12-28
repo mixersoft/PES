@@ -39,9 +39,15 @@
 	 * 	SNAPPI.AIR.UIHelpers = UIHelpers;
 	 */
 	var UIHelper = function(){	}
-	UIHelper.prototype = {};
 	
-
+	UIHelper.isAuthorized = function() {
+		try {
+			var userid = SNAPPI.STATE.user.id;
+			return userid;
+		} catch (e) {
+		}
+		return false;
+	}
 	
 	UIHelper.set_Folder = function(node, target){
 		if (SNAPPI.AIR.uploadQueue.isUploading()) {
@@ -50,8 +56,8 @@
 					detach.detach();
 					UIHelper.set_Folder(node, target);
 				};						
-			}, this);			
-			SNAPPI.AIR.UIHelper.toggle_upload(null, false);	// force pause 
+			}, this);		
+			UIHelper.toggle_upload(null, false);	// force pause 
 			return;
 		}
 		// node == selected li/menuItem
@@ -103,7 +109,7 @@ LOG("+++ set folder, folder="+folder);
 		el = el || '.gallery-header .upload-toolbar li.btn.start';
 		var node = _Y.one(el);
 		SNAPPI.setPageLoading(true);
-		if (SNAPPI.AIR.Helpers.isAuthorized()) {
+		if (UIHelper.isAuthorized()) {
 				// hide loadingmask, just in case
 				try {
 					var pluginNode = _Y.one('#gallery-container .gallery.photo');
@@ -139,9 +145,15 @@ LOG("+++ EXCEPTION: loadingmask.hide()");
 				SNAPPI.AIR.uploadQueue.action_pause();
 			}
 			node.setContent(statusLabel[status]).setAttribute('status', status);
+			
 		} else {
 			// show login screen by menu click
 			var menu = SNAPPI.MenuAUI.find['menu-sign-in-markup'].show();
+			var detach = _Y.on('snappi-air:sign-in-success', function(){
+				detach.detach();
+				// startup upload after login
+				UIHelper.toggle_upload();
+			})
 			SNAPPI.setPageLoading(false);
 		}
 	};	
@@ -271,7 +283,42 @@ LOG("toggle CONTEXT MENU, E="+e);
 		        	},'li.select-all input[type="checkbox"]', container);
 	        	}
 	        	return;
-	        },	        
+	        },
+	        /**
+	         * 'snappi-air:import-complete' fired by UploaderUI.as: onScanFoldersComplete()
+	         */
+	        ImportComplete : function(node)	{
+	        	var action = 'ImportComplete';
+	        	node = node || _Y.one('#drop-target');	// who is listening???
+	        	node.listen = node.listen || {};
+	            if (node.listen[action] == undefined) {
+	            	node.listen[action] = _Y.on('snappi-air:import-complete', 
+	            	function(args){
+						// LOG('ON snappi-air:import-complete');	
+	            		try {	// show folder baseurl
+	            			var added = UIHelper.actions.addToUploader(SNAPPI.AIR.uploadQueue, args.baseurl);
+	            		} catch (e) {}
+	            		
+	            		// show next steps
+	            		// var uri = "http://" + SNAPPI.AIR.host + '/combo/markup/importComplete';
+	            		var tokens = {
+	            			folder: args.baseurl,
+	            			count: args.count,
+	            			added: added,
+	            		}
+	            		// show dialog-alert .alert-import-complete 
+			 			var alert = SNAPPI.Alert.load({
+		    				selector: '#markup .alert-import-complete',
+		    				height: 340,
+		    				tokens: tokens,
+			    		});
+			    		if (tokens.added < tokens.count) {
+			    			var body = alert.getStdModNode('body');
+			    			body.one('.added').removeClass('hide');
+			    		}
+	            	});
+				}
+	        },        
 	}
 	// for lister getAttribute('action') handlers
 	UIHelper.actions = {
@@ -294,10 +341,50 @@ LOG("toggle CONTEXT MENU, E="+e);
 		'openPage' : function(page) {
 			// domParent.domWindow.flexAPI_UI = Config.UI == UploaderUI (UploaderUI.as);
 			_flexAPI_UI.openPage(page);
+			return false;
 		},		
 		'orderBy' : function (o) {
 			window.location.href = o.options[o.selectedIndex].value;
 		},
+		/**
+		 * add imported photos (by baseurl) to uploadQueue, creates a new batchid
+		 *	@params uploader OPTIONAL, uses global SNAPPI.AIR.UploadQueue
+		 *	@params baseurl string OPTIONAL, add all baseurls if null 
+		 *	@return int - count of photos added
+		 */
+		addToUploader : function(uploader, baseurl){
+	//  baseurl = baseurl || 'C:\\USERS\\michael\\Pictures\\importTest';
+			uploader = uploader || SNAPPI.AIR.uploadQueue;
+	        var query = {	
+	        		page: 1,
+	                perpage: 1999,
+	                baseurl: baseurl  
+	            };
+	        var added = 0;
+LOG("SNAPPI.AIR.UIHelper.actions.addToUploader  ****************************************************");
+	        var datasource = uploader.ds;
+	        datasource.getAuditions_all(query, function (auditions) {
+	        	LOG("datasource.getAuditions_all");
+	            //before adding photos to upload queue set batch_id first
+	            added = uploader.flexUploadAPI.addToUploadQueue(auditions);
+	            var batchId = uploader.flexUploadAPI.getLastOpenBatchId();
+LOG("added to uploadQueue, count="+added+", open batchId="+batchId);			                
+	            uploader.show("reload");
+	        }, datasource, false);
+	        // open added folder
+			var delayed = new _Y.DelayedTask( function() {
+				var uploader = SNAPPI.AIR.uploadQueue;
+				uploader.initQueue('pending', {
+					folder: baseurl, 				// folder='all' => baseurl=''
+					page: 1,
+				});
+				uploader.view_showPage();
+				delete delayed;		
+				_Y.one('body').removeClass('wait');
+			});
+			delayed.delay(100);  // wait 100 ms	        
+	        return added;
+	    },
 		setDisplayView : function(view) {
 			// show/hide body
 			var body = _Y.one('#item-body');
@@ -509,13 +596,16 @@ LOG('>>>>>>> BASEURL='+selected);
 				
 				// save username
 				datasource.setConfig({username: user.username});
+				
+				_Y.fire('snappi-air:sign-in-success');
 			} catch (e) {
 			}
 		} else {
+			// login unsuccessful
 			var datasource = SNAPPI.DATASOURCE;
 			PHPSESSID = PHPSESSID || 'data[User][id]=null';
 			datasource.setSessionId(PHPSESSID);
-			XhrHelper.insertExpressUpload(expressNode, true);
+			XhrHelper.insertExpressUpload(expressNode, true);	// clear
 			SNAPPI.setPageLoading(false);
 		}
 		XhrHelper._setHeader(user);
@@ -768,6 +858,20 @@ LOG(postData);
 		SNAPPI.io.get.call(this, url, callback);
 	}
 	
+	/**
+	 * change a.href to openPage() to open in browser
+	 */
+	XhrHelper.href2openPage = function(node) {
+		try {
+			node.all('a').each(function(n){
+				var href = n.getAttribute('href');
+				var openPage = "return SNAPPI.AIR.UIHelper.nav.openPage('"+href+"');"
+				n.setAttribute('href', '').setAttribute('onclick', openPage);
+			});
+		} catch(e) {}
+		return node;
+	}
+	
 	XhrHelper.insertExpressUpload = function(node, clear) {
 		
 		node = node || _Y.one('#gallery-container .express-upload-container');
@@ -786,12 +890,14 @@ LOG(postData);
 				on: {
 					success: function(e,i,o,args){
 						SNAPPI.setPageLoading(false);
-						var body = this.create(o.responseText);
+						var body = _Y.Node.create(o.responseText);
 						var found = body.one('ul li input[type=checkbox]');
-						return (found)? body : false;
+						body = XhrHelper.href2openPage(body);
+						if (found) this.setContent(body);
+						return false;
 					},
 					failure: function(e,i,o,args) {
-						return this.create('<aside id="express-upload-options"  class="related-content blue rounded-5 message">').setContent(o.responseText);
+						return _Y.Node.c.create('<aside id="express-upload-options"  class="related-content blue rounded-5 message">').setContent(o.responseText);
 					}
 					
 				}

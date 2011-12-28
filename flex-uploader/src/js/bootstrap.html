@@ -10,12 +10,12 @@
 		<link rel="stylesheet" type="text/css" media="all" href="/app/air/js/css/reset.css" />
 		<link id="css-start" rel="stylesheet" type="text/css" media="all" href="/app/air/js/css/AIR_snappi.css" />
 		<!-- Combo-handled YUI 3 CORE + Loader JS files: -->
-<!--  		<script type="text/javascript" src="/app/air/js/firebug-lite-compressed.1.2.3.1.js"></script> -->
+<!-- <script type="text/javascript" src="/app/air/js/firebug-lite-compressed.1.2.3.1.js"></script> -->
 		<script type="text/javascript" src="/svc/lib/alloy-1.0.2/build/aui/aui.js"></script>
 		<script type="text/javascript" src="/js/snappi/base_aui.js"></script>		
     </head>
 
-    <body>
+    <body class='desktop'>
 <header class="container_x">
 		<div class="grid_x">
 			<h1 class="logo grid_x">
@@ -82,13 +82,13 @@
 	<ul class="title inline grid_3">
 		<li class="label" title="Photos you have imported into the Snaphappi Desktop Uploader.">
 			Upload Queue</li>
-			<li class="select-all"><input type="checkbox" name="" value=""><a class="menu-open" aria-controls="menu-select-all-markup"></a></li>
+			<li class="btn select-all"><input type="checkbox" name="" value=""><a class="menu-open" aria-controls="menu-select-all-markup"></a></li>
 		<li class="label count">0 Snaps</li>
 	</ul>
 	<ul class='toolbar upload-toolbar inline'>		
 		<li class="btn start" status="ready" onclick="SNAPPI.AIR.UIHelper.toggle_upload(this);return false;">Start Upload</li>
 		<li class="btn hide" onclick="SNAPPI.AIR.uploadQueue.action_clear();return false;">Clear</li>
-		<li id="upload-progress" class="progress center"><div class="bar"></div><span></span></li>
+		<li id="upload-progress" class="hidden progress center"><div class="bar"></div><span></span></li>
 	</ul>
     <nav class="settings window-options grid_7 right">
 		<ul class="inline right">
@@ -204,10 +204,24 @@
 					When you restart the uploader, it will automatically continue from the last upload.</p>
 				<ul class='inline' ><li class='btn orange rounded-5'><a onclick='SNAPPI.AIR.Flex_UploadAPI.selectFolder(); return false;'>Get started now.</a></li></ul>
 			</div></div>
-			<div class='upload-complete-message hide'><div style="margin: 10px;" class='related-content message blue rounded-5 wrap-v'>
-				<h1>Your Upload Is Complete.</h1>
-				<p>Congratulations, your upload is complete. Sign in at Snaphappi to orgnaize and share your uploaded photos.</p>
-				<ul class='inline' ><li class='btn orange rounded-5'><a onclick="SNAPPI.AIR.UIHelper.nav.openPage('my-photos'); SNAPPI.Y.one('.upload-complete-message').addClass('hide'); return false;">Go Online to See My Photos.</a></li></ul>
+			<div class="hide"><div class="alert-import-complete container_x">
+				<h1>Scan Complete (Yeah!)</h1>
+				<p>We found <b>{count}</b> JPG photos in the following folder:</p>
+				<div class='wrap-v'><input type='text' class='copy-paste' onclick='this.select();' value='{folder}' /></div>
+				<p class='added hide'>but only <b>{added}</b> were added - the rest were duplicates.</p>
+				<p>Before you can see these photos online, you need to complete the following steps:</p>
+				<div><ol class='wrap-v'>
+					<li>Sign-in to your Snaphappi account, then</li>
+					<li>Click <span class='btn orange rounded-5'>Start Upload</span> to begin uploading photos.</li>
+				</ol></div>
+				<p>You may also review your imported photos individually to cancel uploading or remove entirely.</p>
+			</div></div>
+			<div class="hide"><div class='alert-upload-complete'>
+				<h1>Upload Complete (double Yeah!)</h1>
+				<p>Congratulations, your upload is complete. Go online to Snaphappi to see, organize and share your uploaded photos.</p>
+				<ul class='inline center' >
+					<li class='btn orange rounded-5'><a onclick="return SNAPPI.AIR.UIHelper.nav.openPage('my-photos');">Go Online to See My Photos.</a></li>
+				</ul>
 			</div></div>  
 		</div>	<!-- end #markup -->
 		<div id="footer" class="container_x">

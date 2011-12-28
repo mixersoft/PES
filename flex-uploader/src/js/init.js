@@ -86,7 +86,7 @@
 		// magic login for AIR Test user
 		Helpers.DEV_addProviderKeyAsTestUser(datasource.getConfigs().provider_key);
 		// add all photos to uploadQueue
-	//	Helpers.addToUploader(uploader, '');
+	//	SNAPPI.AIR.UIHelper.actions.addToUploader(uploader, '');
 		// var host = SNAPPI.AIR.host=='dev2.snaphappi.com' ? 'remote' : 'local' ;
 		Helpers.DEV_setRuntimeHost(uploader);		// local or remote
 		

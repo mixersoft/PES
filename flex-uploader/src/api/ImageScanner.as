@@ -206,7 +206,16 @@ package api
 				this.isScanning = false;
 				//finish all scanning
 				if(typeof(this.cb)=='function'){
-					this.cb.call(this.scope,{success:true, message:'success'},this.params);
+					var count:int = this.totalCount[this.params.baseurl];
+					var resp:Object = {
+						success: true,
+						message: 'scan folder complete',
+						response: {
+							baseurl:this.params.baseurl,
+							count: count
+						}
+					}
+					this.cb.call(this.scope, resp, this.params);
 				}
 			}
 		}
@@ -233,7 +242,7 @@ package api
 		
 		private var fileOrFolders:Array = [];
 		private var folders:Array = [];
-		private var totalCount:Object = {};
+		public var totalCount:Object = {};
 		private static var timers:Object = {};
 		private var fileOrFolderIndex:int = -1;
 		private var subTimer:uint;

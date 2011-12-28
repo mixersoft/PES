@@ -399,8 +399,8 @@
         // set uri
         ioCfg.uri = uri;
         
-        if (cfg.args) 
-        	ioCfg.arguments = cfg.args;
+        if (cfg.arguments || cfg.args) 
+        	ioCfg.arguments = cfg.arguments || cfg.args;
         var Y = SNAPPI.Y;
         if (cfg.qs) {
             var qs = [];

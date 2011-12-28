@@ -250,16 +250,13 @@ package api
 		
 		
 		/**
-		* Callback function, execute after finish of scanfolders queue
+		* Callback function, execute after finish of scanfolders queue, but before callback.success
 		*	- on complete, start the updateServerUrl() queue ??? 
 		* */
 		public function onScanFoldersComplete(resp:Object, params:Object=null):void{
 			this.photoScanner.isScanning = false;
-			// add to uploadQueue
 			try {
-				var baseurl:String = params ? params.baseurl : '';
-				var uploader:Object = Config.jsGlobal.SNAPPI.AIR.uploadQueue;
-				if (baseurl) uploader.onImportComplete(baseurl);
+				Config.jsGlobal.SNAPPI.Y.fire('snappi-air:import-complete', resp.response);
 			} catch (e:Error) {
 				trace("Error: onScanFoldersComplete");
 			}
@@ -277,7 +274,9 @@ package api
 			if(!scanner.isScanning){
 				// NOTE: should we still queue callback.success when the scanner is ALREADY scanning????
 				var _callbackWrapper:Function = function(resp:Object, params:Object):void{
+					params.count = scanner.totalCount[params.baseurl];
 					this.onScanFoldersComplete(resp, params);
+					
 					if(callback){
 						try {
 						var context:Object = callback.scope ? callback.scope : this;
@@ -286,7 +285,7 @@ package api
 						} catch (e:Error){}
 					}
 				}				
-				var params:Object = callback ? callback.arguments : null;
+				var params:Object = callback ? callback.arguments : {};
 				scanner.startScan(_callbackWrapper, this, params);
 			}
 		}
@@ -639,6 +638,7 @@ package api
 			if (name == 'register') url += "/users/register"; 
 			if (name == 'my-photos') url += "/my/photos";
 			if (name == 'my-home') url += "/my/home";
+			if (name.indexOf('/groups/home/')===0) url += name; 
 			req = new URLRequest(url);
 			navigateToURL( req  );
 			return;

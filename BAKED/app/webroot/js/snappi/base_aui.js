@@ -155,7 +155,7 @@
 			DEBUG : {	// default when hostname==git*
 	    		snappi_comboBase: 'baked/app/webroot&',
 	    		air_comboBase: 'app/air&',
-	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
+	    		snappi_useCombo: 0,					// <-- TESTING SNAPPI useCombo
 	    		pagemaker_useCombo: true,
 	    		alloy_useCombo: true,
 	    		yahoo_CDN: 0,
@@ -495,7 +495,8 @@
     		 */
     		'snappi-sortedhash','snappi-io', 'snappi-io-helpers', 
     		'snappi-paginator', 'snappi-menu-aui', 
-    		// 'snappi-dialog-aui', 'snappi-gallery-helpers', 
+    		'snappi-dialog-aui', 
+    		// 'snappi-gallery-helpers', 
     		/*
     		 * air modules - bootstrap only. add additional modules after init 
     		 */
@@ -525,7 +526,8 @@
     			 */
     			Y.on('domready', function(){
     				SNAPPI.AIR.Helpers.go();
-    			});
+    				SNAPPI.AIR.UIHelper.listeners.ImportComplete();
+	    		});
 		}
 		
 		// before before_LazyLoad

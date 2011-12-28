@@ -88,7 +88,7 @@
 			
 			var detach = _Y.on('snappi-air:upload-status-changed', function(isUploading){
 				if (!isUploading) SNAPPI.setPageLoading(false);
-			});			
+			});	
 		}
 		
 		/*
@@ -181,6 +181,7 @@
 			if (this.isUploading()) {
 				return;
 			}
+			_Y.one('#upload-progress').removeClass('hidden');
 			var page = (this.isPaused) ? this.pausedPage : 1;
 			// this.isUploading = true;
 			this.isCancelling = false;
@@ -590,7 +591,8 @@ LOG(">>>>>>>>>>>>  startUploadPage  ============================ page="+page);
 		 */
 		doUpload : function() {
 			var UploadManager = SNAPPI.AIR.UploadManager;
-			while (UploadManager.count() < UploadManager.MAX_CONCURRENT_UPLOADS) {
+			var remaining = this.flexUploadAPI.getCountByStatus('pending',this.batchId, this.baseurl,'=');
+			while (remaining && UploadManager.count() < UploadManager.MAX_CONCURRENT_UPLOADS) {
 				this.uploadItemIndex++;
 				if (this.uploadItemIndex < this.uploadRows.length) {
 					var row = this.uploadRows[this.uploadItemIndex];
@@ -617,25 +619,31 @@ LOG("  >>>>>>>>>>>>  UPLOAD: next page="+page);
 						this.startUploadPage(page);
 					} else {
 						// this.isUploading = false;
-						var remaining = this.flexUploadAPI.getCountByStatus('pending',this.batchId, this.baseurl,'=');
+						remaining = this.flexUploadAPI.getCountByStatus('pending',this.batchId, this.baseurl,'=');
 LOG("  >>>>>>>>>>>>  UPLOAD: last page complete, checking for any pending files, remaing="+remaining);						
 						if (remaining) {
 							// start from beginning to upload missed files
 							this.isPaused = false;
 							this.startUploadPage(1);
-						} else {
-LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  done ");									
-							SNAPPI.AIR.UIHelper.toggle_upload(null, 'done');
-							try {
-								var once = _Y.one('.upload-complete-message').removeClass('hide');	
-								_Y.one('#gallery-container').insert(once, 'before');
-							} catch (e){}
-							
-							
 						}
 					}
 					break;
 				}
+			}
+			if (remaining===0) {
+				SNAPPI.AIR.UIHelper.toggle_upload(null, 'done');
+				try {
+					// show dialog-alert .upload-complete 
+		 			SNAPPI.Alert.load({
+	    				selector: '#markup .alert-upload-complete',
+		    		});
+					var delayed = new _Y.DelayedTask( function() {
+						// TODO: status keeps getting reset, but why do I need to put this on a delay?
+						_Y.one('.gallery-header .upload-toolbar li.btn.start').setContent('Start Upload').setAttribute('status', 'ready');	
+						delete delayed;		
+					});
+					delayed.delay(500);
+				} catch (e){}
 			}
 		},
 		/*
@@ -862,19 +870,6 @@ LOG("  >>>>>>>>>>>>  UPLOAD: last page complete,  done ");
 	        	_flexAPI_UI.importPhotos(droppedFolder, cb);
 	        }, 50);
 	        _Y.fire('snappi-air:begin-import');
-	    },
-	    // called from FlexAPI(?)
-	    onImportComplete : function(baseurl) {
-	    	baseurl = baseurl || '';
-            // ADD TO uploadQueue
-	    	LOG("UPLOADER.onImportComplete");
-            
-            // add new baseurl to uploadQueue
-            //TODO: move to 'snappi-air:import-complete' event
-            //TODO: show notice to sign-in, start upload
-            SNAPPI.AIR.Helpers.addToUploader(this, baseurl);
-            
-            _Y.fire('snappi-air:import-complete');
 	    },
 		cakeStylePaginate : function(parent, total, current) {
 			

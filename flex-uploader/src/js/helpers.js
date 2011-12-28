@@ -94,7 +94,7 @@ console.log("load BEGIN: helpers.js");
 		// magic login for AIR Test user
 		Helpers.DEV_addProviderKeyAsTestUser(datasource.getConfigs().provider_key);
 		// add all photos to uploadQueue
-	//	Helpers.addToUploader(uploader, '');
+	//	SNAPPI.AIR.UIHelper.actions.addToUploader(uploader, '');
 		// var host = SNAPPI.AIR.host=='dev2.snaphappi.com' ? 'remote' : 'local' ;
 		Helpers.DEV_setRuntimeHost(uploader);		// local or remote
 		
@@ -171,7 +171,7 @@ console.log("load BEGIN: helpers.js");
 		} catch (e) {}
 	}
 	
-
+	// deprecate: use UIHelper.isAuthorized()
 	Helpers.isAuthorized = function() {
 		try {
 			var userid = SNAPPI.STATE.user.id;
@@ -241,7 +241,7 @@ console.log("load BEGIN: helpers.js");
 	            datasource.setConfig({
 	                baseurl: baseurl
 	            });
-//	            var count = Helpers.addToUploader(uploader, baseurl);
+//	            var count = SNAPPI.AIR.UIHelper.actions.addToUploader(uploader, baseurl);
 	        }, 
 			failure: function(o) {
 				alert('addPhotos failure');
@@ -256,6 +256,7 @@ console.log("load BEGIN: helpers.js");
 		datasource.importPhotos(folderpath, importPhoto_callback);		            
 	}
 	/**
+	 * deprecated. moved to  UIHelper.actions.addToUploader() 
 	 * add imported photos (by baseurl) to uploadQueue, creates a new batchid
 	 *	@params uploader OPTIONAL, uses global SNAPPI.AIR.UploadQueue
 	 *	@params baseurl string OPTIONAL, add all baseurls if null 

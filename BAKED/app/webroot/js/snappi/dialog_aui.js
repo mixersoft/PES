@@ -4,6 +4,7 @@
     SNAPPI.onYready.Dialog = function(Y){
 		if (_Y === null) _Y = Y;
 		SNAPPI.Dialog = Dialog;
+		SNAPPI.Alert = CFG_Dialog_Alert;
 		SNAPPI.namespace('SNAPPI.Helper');
 		SNAPPI.Helper.Dialog = DialogHelper;
 	}      
@@ -26,14 +27,25 @@
 			centered: true,
 			constrain2view: true,
 			draggable: true,
-			resizble: false,
+			resizable: false,
 			destroyOnClose: true,
 			height: 250,
 			width: 500,
 			close: true,
 			buttons: [],
-			end:null
 		};
+	var DEFAULT_CFG_modal = {
+			modal: true,
+			centered: true,
+			constrain2view: true,
+			draggable: false,
+			resizable: false,
+			destroyOnClose: true,
+			height: 250,
+			width: 500,
+			close: true,
+			buttons: [],
+		};		
 	var DEFAULT_CFG_io = {
 		};
 	
@@ -266,7 +278,7 @@
 	CFG_Dialog_Login.load = function(cfg){
 		var CSS_ID = 'dialog-login';
 		var _cfg = {
-			title: 'Sign In to Snaphappi',
+			title: 'Sign In',
 			id: CSS_ID,
 			height: 300,	// 3 rows
 			destroyOnClose: false,
@@ -292,18 +304,87 @@
 		Dialog.find[CSS_ID] = dialog;
 		return dialog;		
 	}	
-	CFG_Dialog_Login.markup = "";
+	
+	/*
+	 * example usage
+	 * 
+				var cfg = {
+					selector: [CSS selector, copies outerHTML and substitutes tokens as necessary],
+					markup: [html markup],
+	    			uri: '/combo/markup/importComplete',
+	    			height: 300,
+	    			tokens: {
+	    				folder: 'folder',
+		    			count: 17,
+		    			added: 4
+	    			},
+	    		};
+	 * var alert = SNAPPI.Alert.load(cfg) or SNAPPI.Dialog.CFG_Dialog_Alert.load(cfg);
+	 */
+	var CFG_Dialog_Alert = function(){}; 
+	CFG_Dialog_Alert.load = function(cfg){
+		var CSS_ID = 'dialog-alert';
+		var _cfg = {
+			id: CSS_ID,
+			// height: 500,	
+			// width: 500,
+			// bodyContent: null,
+		}
+		cfg = cfg || {};
+		_cfg = _Y.merge(DEFAULT_CFG_modal, _cfg, cfg);
+		var alert = new _Y.Dialog(_cfg).render();
+		var body = alert.getStdModNode('body');
+		if (_cfg.selector) {
+			var markup = _Y.one(_cfg.selector).get('parentNode.innerHTML');
+			if (_cfg.tokens) markup = _Y.substitute(markup, _cfg.tokens);
+			body.setContent(markup);
+		} else if (_cfg.markup) {	
+			if (_cfg.tokens) _cfg.markup = _Y.substitute(_cfg.markup, _cfg.tokens);
+			body.setContent(_cfg.markup);
+		} else if (_cfg.uri) {
+			// XHR content for dialog contentBox
+    		var args = {
+	    		dialog: alert,
+	    	}
+	    	if (_cfg.tokens) args.tokens = _cfg.tokens;
+	    	if (alert.io) alert.unplug(SNAPPI.Y.Plugin.IO);
+			var ioCfg = {
+				uri: cfg.uri,
+				parseContent: true,
+				autoLoad: true,
+				// modal: false,
+				context: alert,
+				dataType: 'html',
+				arguments: args,    					
+				on: {
+					success: _cfg.success || function(e, i, o, args) {
+						if (args && args.tokens) {
+							var markup = _Y.substitute(o.responseText, args.tokens);
+						} else markup = o.responseText;
+						body.setContent(markup);	// closure
+						return false; 
+					}					
+				}
+			};
+			ioCfg = SNAPPI.IO.getIORequestCfg(cfg.uri, ioCfg.on, ioCfg);
+			alert.plug(SNAPPI.Y.Plugin.IO, ioCfg);
+		}		
+		Dialog.find[_cfg.id] = alert;		// save reference for lookup
+		return alert;		
+	}	
 	
 	
+		
 	// save CFG in static
 	Dialog.CFG = {
 		'dialog-photo-roll-hidden-shots': CFG_Dialog_Hidden_Shots,
 		'dialog-select-circles': CFG_Dialog_Select_Circles,
 		'dialog-select-privacy': CFG_Dialog_Select_Privacy,
 		'dialog-login': CFG_Dialog_Login,
+		'dialog-alert': CFG_Dialog_Alert,
 	};
-		
 	
+
 	
 	
 	
