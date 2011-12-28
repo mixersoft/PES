@@ -23,6 +23,17 @@
  *
  */
 (function(){
+	
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.TabNav = function(Y){
+		if (_Y === null) _Y = Y;
+		/*
+	     * make global
+	     */
+	    SNAPPI.TabNav = new TabNav();
+	}
+	
     /*
      * protected
      */
@@ -30,35 +41,39 @@
         top: '#top',
         menu: '#tabs',
         nested: '#nested',
-        section: '#section-tabs',
+        section: '#section-tabs',	// used in /my/settings
         selected: {
             menu: null,
             nested: null
         }
     }
     
-    
     var TabNav = function(cfg){
-        this.selected = {
+    	this.selected = {
             menu: {},
             nested: {},
-            section: {}
-        }
-        this.lookup = {
+            section: {},
+		};
+		this.lookup = {
             menu: [],
             nested: [],
-            section: []
+            section: [],
         };
-        
-        this.selectByName = function(page, isWizard){
-            var Y = SNAPPI.Y;
-            
+        this.init(cfg);
+    };
+	TabNav.listen = {};
+	TabNav.find = {};	
+    TabNav.prototype = {
+    	init : function(cfg){
+		},
+        selectByName : function(page, isWizard){
             if (page.section) {
-                var section = Y.one(defaultCfg.section + " li > a." + page.section);
+            	var container = _Y.one(defaultCfg.section);
+                var section = container.one('#'+ page.section);
                 if (section) {
-					Y.all(defaultCfg.section + " .FigureBox.selected").removeClass('selected');
+					container.all("li.focus").removeClass('focus');
 					var tab = section.get('parentNode');
-                    tab.addClass('selected');
+                    tab.addClass('focus');
                     this.selected.section.id = page.section;
                     this.selected.section.name = section.get('innerHTML');
                 }
@@ -66,14 +81,14 @@
             // for the moment, nested menus are not being used
             if (page.menu) {
                 var parts = page.menu.split(':');
-                var tab = Y.one(defaultCfg.menu + " li > a." + parts[0]);
+                var tab = _Y.one(defaultCfg.menu + " li > a." + parts[0]);
                 if (tab) {
-					Y.all(defaultCfg.menu + " .FigureBox.selected").removeClass('selected');
+					_Y.all(defaultCfg.menu + " .FigureBox.selected").removeClass('selected');
                     tab.get('parentNode').addClass('selected');
                     this.selected.menu.id = parts[0];
                     this.selected.menu.name = tab.get('innerHTML');
                 }
-                var nested = Y.one(defaultCfg.nested + " > ul#" + this.selected.menu.id);
+                var nested = _Y.one(defaultCfg.nested + " > ul#" + this.selected.menu.id);
                 if (nested) {
                     nested.addClass('selected').removeClass('hide');
                     // test for nested tab select
@@ -89,13 +104,11 @@
                     }
                 }
             }
-        };
-        
-        this.select = function(cfg){
-            var Y = SNAPPI.Y;
+        },
+        select : function(cfg){
             // select tab
             if (cfg && cfg.tab) {
-                if (Y.Lang.isString(cfg.tab)) {
+                if (_Y.Lang.isString(cfg.tab)) {
                 
                 }
                 else 
@@ -103,7 +116,7 @@
             }
             this.selected.menu.index = defaultCfg.selected.menu;
             // select tab
-            Y.all(defaultCfg.menu + " li > a").each(function(n, i){
+            _Y.all(defaultCfg.menu + " li > a").each(function(n, i){
                 if (i == this.selected.menu.index) {
                     n.get('parentNode').addClass('selected');
                     this.selected.menu.id = n.get('className');
@@ -114,13 +127,13 @@
                 }
             }, this);
             // show/hide nested UL
-            Y.all(defaultCfg.nested + " > ul").each(function(n, i){
+            _Y.all(defaultCfg.nested + " > ul").each(function(n, i){
                 if (this.selected.menu.id == n.get('id')) {
                     n.addClass('selected').removeClass('hide');
                     
                     // select nested LI
                     if (cfg && cfg.nested) {
-                        if (Y.Lang.isString(cfg.nested)) {
+                        if (_Y.Lang.isString(cfg.nested)) {
                         
                         }
                         else 
@@ -142,18 +155,6 @@
                     n.removeClass('selected').addClass('hide');
                 }
             }, this);
-        }
-        
-        this.init = function(cfg){
-            var Y = SNAPPI.Y;
-            //            this.select(cfg);
-            this.selectByName("tab-see:My Ratings");
-        }
-        //        this.init();
+        },
     }
-    
-    /*
-     * make global
-     */
-    SNAPPI.TabNav = new TabNav();
 })();

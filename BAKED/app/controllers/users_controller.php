@@ -1065,22 +1065,32 @@ $this->log("using Cookie guestpass login for {$guestid}", LOG_DEBUG);
 			/*
 			 * update
 			 */
-			unset($this->data['Profile']['setting']);
 			// check role permissions
 			$allowed = array('ADMIN');
 			$userid = AppController::$userid;
-			if ( $userid== $id || in_array(Session::read('Auth.User.role'), $allowed)) {
+			if ( $userid== $id || in_array(AppController::$role, $allowed)) {
 				if (empty($this->data['User']['password'])) unset($this->data['User']['password']);
-				if (@empty($this->data['User'])) {
+				if (empty($this->data['User'])) {
 					$this->data['User']['id'] = $userid;
 				}
-
-				$redirect = Router::url(array('action' => 'settings', $userid));
+				
+				// redirect on success
+				if ($this instanceof MyController) {
+					$redirect = Router::url(array('action' => 'settings'));
+				} else $redirect = Router::url(array('action' => 'settings', $userid));
+				if (isset($this->data['Profile']['setting'])) {
+					$tabParts = explode('-',$this->data['Profile']['setting']);
+					Session::write('settings.tabName', $tabParts[1] );
+					unset($this->data['Profile']['setting']);		
+				}		
+		
+				
 				$ret = 1;
 				if (count($this->data['User'])>1) {
-					$ret = $ret && $this->User->save($this->data);	
+					$this->User->id = $this->data['User']['id'];
+					$ret = $ret && $this->User->save($this->data, true, array_keys($this->data['User']));	
 				}
-				if (!@empty($this->data['Profile'])) {
+				if (!empty($this->data['Profile'])) {
 					$userid = $this->data['User']['id'];
 					$options = array('fields'=>'Profile.id', 'recursive'=>-1,'conditions'=>array('Profile.user_id'=>$userid));
 					$profile = $this->User->Profile->find('first', $options);

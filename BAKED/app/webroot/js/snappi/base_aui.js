@@ -424,7 +424,8 @@
 			'snappi-util',
 			'snappi-gallery', 
 			'snappi-lightbox',
-			'snappi-filter', 'snappi-tabs',
+			'snappi-filter', 
+			'snappi-tabs',
 			 
 			/*
 			 * util scripts
@@ -717,7 +718,11 @@
         			path: 'menu_aui.js',
         			// BUG: requires A.Plugin.IO, found in "aui-io", but not available
         			requires:['event-mouseenter', 'aui-io', 'aui-aria', 'aui-overlay-context', 'aui-overlay-manager']
-        		},        		
+        		}, 
+        		'snappi-tab': {
+        			path: 'tabs.js',
+        			requires:['node'],
+        		},       		
         		'snappi-paginator': {
         			path: 'paginator_aui.js',
         			requires:['aui-io', 'aui-paginator']

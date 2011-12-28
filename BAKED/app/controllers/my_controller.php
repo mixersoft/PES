@@ -66,7 +66,7 @@ class MyController extends PersonController {
 		parent::search(MyController::$userid );
 	}					
 	function edit() {
-		// parent::edit(MyController::$userid );
+		parent::edit(MyController::$userid );
 	}	
 		
 	function settings() {
@@ -78,15 +78,14 @@ class MyController extends PersonController {
 			 * redirect to edit with setting=[form id]
 			 */
 			$qs = @http_build_query(array('setting'=>$this->data['User']['setting']));
-			$redirect = Router::url(array('action'=>'edit', $id)). ($qs ? "?{$qs}" : '');
+			$redirect = Router::url(array('action'=>'edit')). ($qs ? "?{$qs}" : '');
 			$this->redirect($redirect, null, true);
 		}
 		$privacy = $this->__getPrivacyConfig();
 		$moderator =  $this->__getModeratorConfig();
 		$this->set(compact('privacy', 'moderator'));
 		
-		
-		$this->User->contain();
+		$this->User->contain('Profile');
 		$options = array('conditions'=>array('User.id'=>$id));
 		$data = $this->User->find('first', $options);
 		
@@ -232,7 +231,9 @@ $this->log("__upload_AIRclient(): fileDataERROR for userid={$userid}", LOG_DEBUG
 			header('Content-Type: application/json');
 		    echo json_encode($response);
 		    exit(0);
-		} 
+		} else {
+$this->log("upload FILES[Filedata] = {$_FILES['Filedata']['tmp_name']}", LOG_DEBUG);			
+		}
 		if (!$fileDataERROR) {
 			/*
 			 *  move/rename uploaded file

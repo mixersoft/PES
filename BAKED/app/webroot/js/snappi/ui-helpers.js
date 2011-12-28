@@ -58,6 +58,19 @@
 			}  
 			return false;
 		},
+		/**
+		 * old-style 'snappi-tabs' nav
+		 */
+		'gotoTab' : function(dom){
+			var _Y = SNAPPI.Y;
+			var n = _Y.one(dom);
+			if (/\/cancel/.test(n.getAttribute('href'))) return false;
+			PAGE.section = n.get('id');
+			SNAPPI.TabNav.selectByName(PAGE);
+			var container = SNAPPI.Y.one("#tab-section").setAttribute('xhrSrc', dom.href);
+			SNAPPI.xhrFetch.requestFragment(container);
+			return false;
+		},
 		toggleDisplayOptions  : function(o){
 			try {
 				SNAPPI.STATE.showDisplayOptions = SNAPPI.STATE.showDisplayOptions ? 0 : 1;
