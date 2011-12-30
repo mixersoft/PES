@@ -1,17 +1,9 @@
-<?php $uuid = $this->passedArgs[0]; ?>
-<script <?php if ($this->layout == 'ajax')  echo "class='xhrInit' "; ?> type="text/javascript">
+<script type="text/javascript">
 PAGE.section = "tab-privacy";
 SNAPPI.TabNav.selectByName(PAGE);
-nextTab = {
-		href:'/groups/settings/<?php echo $uuid; ?>?xhrview=settings-policy',
-		className: "tab-policy"
-};
-PAGE.init.push(SNAPPI.EditMode.init);
-/*
- * note: we must use Y.io ajax post if we don't want to navigate away from the tab on edit/save
- */
+SNAPPI.EditMode.init();
 </script>
-	<div id='privacy' class="setting placeholder">
+	<div id='privacy' class="setting">
 		<h3>Privacy Settings</h3>
 		<?php $formOptions['id']='GroupForm-privacy'; 
 			$formOptions['url']=array('action'=>'edit');  

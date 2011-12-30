@@ -2153,3 +2153,40 @@ ul.term-condition h1 {
 	width: 380px;
 	padding: 0 0 0 10px;
 }
+
+/*
+ * tabs
+ */
+div#section-tabs {
+    color: white;
+}
+div#section-tabs ul {
+    border-bottom: 1px solid #538FB3;
+    line-height: 20px;
+    text-align: center;
+}
+div#section-tabs li {
+    background-color: white;
+    border: 1px solid #538FB3;
+    margin: 0;
+    padding: 2px 15px;
+}
+div#section-tabs a {
+    color: #538FB3;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+    text-decoration: none;
+}
+div#section-tabs a:hover {
+    color: #D04098;
+    text-decoration: underline;
+}
+div#section-tabs li.selected {
+    border-bottom: 1px solid white;
+}
+div#section-tabs li.selected a {
+    color: #D04098;
+    cursor: default;
+    text-decoration: none !important;
+}

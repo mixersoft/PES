@@ -678,6 +678,7 @@ debug("WARNING: This code path is not tested");
 	 */
 
 	function settings ($id = null) {
+		$this->layout = 'snappi';
 		if (!$id && empty($this->data)) {
 			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'asset'));
 			$this->redirectSafe();
@@ -700,10 +701,17 @@ debug("WARNING: This code path is not tested");
 		$this->set(compact('policy', 'privacy'));
 
 		$options = array(
-			'conditions'=>array('Asset.id'=>$id), 
+			'conditions'=>array('Asset.id'=>$id),
+			'contain'=> array('Owner.id', 'Owner.username', 'ProviderAccount.id', 'ProviderAccount.provider_name', 'ProviderAccount.display_name'),
+			'fields'=>'Asset.*',		// MUST ADD 'fields' for  containable+permissionable
+			'extras'=>array(
+				'show_edits'=>true,
+				// 'join_shots'=>$shotType, 		// join shots to get shot_count?
+				'join_bestshot'=>false,			// do NOT need bestShots when we access by $asset_id
+				// 'show_hidden_shots'=>true,		// by $asset_id, hidden shots ok, or DONT join_bestshot
+			),
 		);
-		$this->Asset->contain('Owner.id', 'Owner.username', 'ProviderAccount.id', 'ProviderAccount.provider_name', 'ProviderAccount.display_name');		
-		$data = @$this->Asset->find('first', $options);
+		$data = $this->Asset->find('first', $options);
 
 		$this->__decodePerms($data);
 

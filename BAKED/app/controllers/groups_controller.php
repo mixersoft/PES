@@ -816,7 +816,6 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 //				'permissionable'=>false,
 				'conditions'=>array('Group.id'=>$id),
 			);
-			$this->Group->contain(array('Owner.id', 'Owner.username'));
 			$data = $this->Group->find('first', $options);
 			if (empty($data)) {
 				/*
@@ -1020,6 +1019,7 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 
 
 	function create() {
+		$this->layout = 'snappi';
 		$step = @ifed($this->data['Group']['step'], 'create-choose');
 		if (!empty($this->data)) {
 				
@@ -1168,6 +1168,7 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 	}
 
 	function settings($id = null) {
+		$this->layout = 'snappi';
 		if (!$id && empty($this->data)) {
 			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'group'));
 			if (!$this->RequestHandler->isAjax()) $this->redirectSafe();
@@ -1191,12 +1192,15 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 		$policy =  $this->__getPolicyConfig();
 		$this->set(compact('policy', 'privacy'));
 
-		$options = array('conditions'=>array('Group.id'=>$id));
-		$this->Group->contain('Owner.id', 'Owner.username');
-		$data = @$this->Group->find('first', $options);		
-
+		$options = array(
+			'contain'=>array('Owner.id', 'Owner.username'),
+			'fields'=>'Group.*',		// MUST ADD 'fields' for  containable+permissionable
+//				'permissionable'=>false,
+			'conditions'=>array('Group.id'=>$id),
+		);
+		$data = $this->Group->find('first', $options);		
+		
 		$this->__decodeGroupPerms($data);
-
 		$this->data = $data;
 		$this->set('data', $data);
 		//		$owners = $this->Group->Owner->find('list');

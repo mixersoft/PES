@@ -1,14 +1,9 @@
-<?php  $uuid = $this->passedArgs[0]; ?>
-<script <?php if ($this->layout == 'ajax')  echo "class='xhrInit' "; ?> type="text/javascript">
+<script type="text/javascript">
 PAGE.section = "tab-details";
-nextTab = {
-		href:'/groups/settings/<?php echo $uuid; ?>?xhrview=settings-privacy',
-		className: "tab-privacy"
-};
 SNAPPI.TabNav.selectByName(PAGE);
-PAGE.init.push(SNAPPI.EditMode.init);
+SNAPPI.EditMode.init();
 </script>
-	<div id='fields' class="setting placeholder">
+	<div id='fields' class="setting">
 		<h3>Description</h3>
 		<?php	
 			$formOptions['url']=Router::url(array(

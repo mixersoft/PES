@@ -74,6 +74,7 @@
 
 		// start document UI listeners
 		var listeners = {
+			'WindowOptionClick': null,
 			'DragDrop': 1,
 		};
 		for (var listen in listeners) {

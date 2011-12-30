@@ -1,5 +1,5 @@
 <script type="text/javascript">
-PAGE={};	// namespace for page functions
+PAGE=PAGE || {};	// namespace for page functions
 PAGE.gotoStep = function(dom, show){
 	try {
 		// if we are on the finish tab, disable tab nav
@@ -29,23 +29,28 @@ PAGE.gotoStep = function(dom, show){
 	<div class='groups'>
 		<div id='section-tabs'>
 			<ul class='inline'>
-	<?php 		
-		$xhrSrc = array('plugin'=>'', 'action'=>'create');
+	<?php 	
+		$xhrSrc = Router::url(array('plugin'=>'', 'action'=>'create'));
+		$chooseSrc = $xhrSrc."?xhrview=create-choose";
+		$detailsSrc = $xhrSrc."?xhrview=create-details";
+		$privacySrc = $xhrSrc."?xhrview=create-privacy";
+		$policySrc = $xhrSrc."?xhrview=create-policy";
+		
 		$xhrFrom = Configure::read('controller.xhrFrom');
-		$xhrSrc['?'] = array('xhrview'=>'create-choose');
-		$chooseSrc = Router::url($xhrSrc);
-		$xhrSrc['?'] = array('xhrview'=>'create-details');
-		$detailsSrc = Router::url($xhrSrc);		
-		$xhrSrc['?'] = array('xhrview'=>'settings-privacy');
-		$privacySrc = Router::url($xhrSrc);	
-		$xhrSrc['?'] = array('xhrview'=>'settings-policy');
-		$policySrc = Router::url($xhrSrc);			
+		if (empty($xhrFrom['view'])) {
+			$tabName = Session::read('settings.tabName');
+			if ($tabName) {
+				Session::delete('settings.tabName');
+				$xhrFrom['view'] = "create-{$tabName}";
+			}
+			else $xhrFrom['view'] = "create-choose";
+		}
 	?>			
-				<li class='selected'><a class='tab-choose' href='<?php echo $chooseSrc ?>' onclick='return PAGE.gotoStep(this, "choose");'>Choose Group Type</a></li>
-				<li><a class='tab-details' href='<?php echo $detailsSrc ?>' onclick='return PAGE.gotoStep(this, "details");'>Add Details</a></li>
-				<li><a class='tab-privacy' href='<?php echo $privacySrc ?>' onclick='return PAGE.gotoStep(this, "privacy");'>Privacy</a></li>
-				<li><a class='tab-policy' href='<?php echo $policySrc ?>' onclick='return PAGE.gotoStep(this, "policy");'>Policies</a></li>
-				<li><a class='tab-finish' href='#'  onclick='PAGE.gotoStep(this, "finish"); return false;'>Finish</a></li>
+				<li class='btn focus'><a id='tab-choose' href='<?php echo $chooseSrc ?>' onclick='return PAGE.gotoStep(this, "choose");'>Choose Group Type</a></li>
+				<li class='btn'><a id='tab-details' href='<?php echo $detailsSrc ?>' onclick='return PAGE.gotoStep(this, "details");'>Add Details</a></li>
+				<li class='btn'><a id='tab-privacy' href='<?php echo $privacySrc ?>' onclick='return PAGE.gotoStep(this, "privacy");'>Privacy</a></li>
+				<li class='btn'><a id='tab-policy' href='<?php echo $policySrc ?>' onclick='return PAGE.gotoStep(this, "policy");'>Policies</a></li>
+				<li class='btn'><a id='tab-finish' href='#'  onclick='PAGE.gotoStep(this, "finish"); return false;'>Finish</a></li>
 			</ul>
 		</div>
 		<?php 

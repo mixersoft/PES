@@ -1,16 +1,7 @@
-<?php $uuid = $this->passedArgs[0]; ?>
-<script <?php if ($this->layout == 'ajax')  echo "class='xhrInit' "; ?> type="text/javascript">
+<script type="text/javascript">
 PAGE.section = "tab-details";
-nextTab = {
-		href:'/photos/settings/<?php echo $uuid; ?>?xhrview=settings-privacy',
-		className: "tab-privacy"
-};
 SNAPPI.TabNav.selectByName(PAGE);
-try {
-	PAGE.init.push(SNAPPI.EditMode.init);
-} catch(e) {
-	PAGE.init = [	SNAPPI.EditMode.init ];
-}
+SNAPPI.EditMode.init();
 </script>
 	<div id='fields' class="setting placeholder">
 		<h3>Description</h3>

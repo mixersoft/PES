@@ -1,14 +1,9 @@
-<?php $uuid = $this->passedArgs[0]; ?>
-<script <?php if ($this->layout == 'ajax')  echo "class='xhrInit' "; ?> type="text/javascript">
-PAGE.section = "tab-details";
+<script type="text/javascript">
+PAGE.section = "tab-policy";
 SNAPPI.TabNav.selectByName(PAGE);
-nextTab = {
-		href:'/groups/settings/<?php echo $uuid; ?>?xhrview=settings-details',
-		className: "tab-details"
-};
-PAGE.init.push(SNAPPI.EditMode.init);
+SNAPPI.EditMode.init();
 </script>
-	<div id='policies' class="setting placeholder">
+	<div id='policies' class="setting">
 		<h3>Policy Settings</h3>
 		<?php $formOptions['id']='GroupForm-policy'; 
 			$formOptions['url']=array('action'=>'edit');  

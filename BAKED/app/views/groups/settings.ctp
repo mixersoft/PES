@@ -1,99 +1,90 @@
-<?php $uuid = $this->passedArgs[0]; ?>
-<script type="text/javascript">
-gotoTab = function(dom){
-	if (dom.href.search('/cancel')>=0) {
-			return false;
-	}
-	PAGE={section: dom.className};
-	SNAPPI.TabNav.selectByName(PAGE);
-	var container = SNAPPI.Y.one("#tab-section").setAttribute('ajaxSrc', dom.href);
-	SNAPPI.xhrFetch.requestFragment(container);
-	return false;
-};
-var initOnce = function() {
-	// init xhr paging & fetch xhr-gets
-	// NOTE: any xhr-gets will bind own PAGE.init() method
-	SNAPPI.xhrFetch.fetchXhr(); 
-};
-PAGE.init.push(initOnce);
-</script>
 <?php
-echo $this->element('nav/section', array('icon_src'=>$data['Group']['src_thumbnail']));
-?>	
-<div class="groups view main-div placeholder">
+	$this->Layout->blockStart('itemHeader');
+		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
+		echo $this->element('nav/section', 
+			array('badge_src'=>$badge_src,
+				'classLabel'=>$data['Group']['type'],
+				'label'=>$data['Group']['title'],
+		));
+?>
+<div class="properties hide container_16">	
+	<dl class="grid_16">
+		<?php $i = 0;
+			$dtClass = 'grid_3 alpha';
+			$ddClass = 'grid_12 suffix_1 omega';
+			$altClass = ' altrow ';
+		?>
+		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Owner'); ?></span>
+		<span class='<?php echo $ddClass; if ($i % 2 == 0) echo $altClass;?>'>
+			<?php echo $this->Html->link($data['Owner']['username'], array('controller' => 'person', 'action' => 'home', $data['Owner']['id'])); ?>
+			&nbsp;
+		</span>	
+		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Photos'); ?></span>
+		<span class='<?php echo $ddClass; if ($i % 2 == 0) echo $altClass;?>'>
+			<?php echo $this->Html->link("{$data['Group']['assets_group_count']} photos","photos/{$data['Group']['id']}"); ?>
+			&nbsp;
+		</span>				
+		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Description'); ?></span>
+		<span class='<?php echo $ddClass; if ($i % 2 == 0) echo $altClass;?>'>
+			<?php echo $data['Group']['description']; ?>
+			&nbsp;
+		</span>
+		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Membership Policy'); ?></span>
+		<span class='<?php echo $ddClass; if ($i % 2 == 0) echo $altClass;?>'>
+			<?php echo $data['Group']['membership_policy']; ?>
+			&nbsp;
+		</span>
+		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Invitation Policy'); ?></span>
+		<span class='<?php echo $ddClass; if ($i % 2 == 0) echo $altClass;?>'>
+			<?php echo $data['Group']['invitation_policy']; ?>
+			&nbsp;
+		</span>
+		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Is NC17'); ?></span>
+		<span class='<?php echo $ddClass; if ($i % 2 == 0) echo $altClass;?>'>
+			<?php if(1 == $data['Group']['isNC17']){ echo __('Yes'); } else { echo __('No');}?>
+			&nbsp;
+		</span>
+		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Last Visit'); ?></span>
+		<span class='<?php echo $ddClass; if ($i % 2 == 0) echo $altClass;?>'>
+			<?php echo $data['Group']['lastVisit']; ?>
+			&nbsp;
+		</span>
+		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Created On'); ?></span>
+		<span class='<?php echo $ddClass; if ($i % 2 == 0) echo $altClass;?>'>
+			<?php echo $data['Group']['created']; ?>
+			&nbsp;
+		</span>
+	</dl>
+</div>	
+<?php	$this->Layout->blockEnd(); ?>
+
+<div class="groups view main-div ">
 
 <div id='section-tabs'>
 <ul class='inline'>
-	<?php 		
-		$xhrSrc = array('plugin'=>'', 'action'=>'settings', $this->passedArgs[0]);
-		$xhrFrom = Configure::read('controller.xhrFrom');
-		$xhrSrc['?'] = array('xhrview'=>'settings-details');
-		$settingsSrc = Router::url($xhrSrc);
-		$xhrSrc['?'] = array('xhrview'=>'settings-privacy');
-		$privacySrc = Router::url($xhrSrc);	
-		$xhrSrc['?'] = array('xhrview'=>'settings-policy');
-		$policySrc = Router::url($xhrSrc);			
-	?>
-	<li><a class='tab-details' href='<?php echo $settingsSrc ?>' onclick='return gotoTab(this);'>Details</a></li>
-	<li><a class='tab-privacy' href='<?php echo $privacySrc ?>' onclick='return gotoTab(this);'>Privacy</a></li>
-	<li><a class='tab-policy' href='<?php echo $policySrc ?>' onclick='return gotoTab(this);'>Policies</a></li>
+<?php 	
+	$xhrSrc = Router::url(array('plugin'=>'', 'action'=>'settings', AppController::$uuid));
+	$detailsSrc = $xhrSrc."?xhrview=settings-details";
+	$privacySrc = $xhrSrc."?xhrview=settings-privacy";
+	$policySrc = $xhrSrc."?xhrview=settings-policy";
+	
+	$xhrFrom = Configure::read('controller.xhrFrom');
+	if (empty($xhrFrom['view'])) {
+		$tabName = Session::read('settings.tabName');
+		if ($tabName) {
+			Session::delete('settings.tabName');
+			$xhrFrom['view'] = "settings-{$tabName}";
+		}
+		else $xhrFrom['view'] = "settings-details";
+	}
+?>	
+	<li class='btn'><a id='tab-details' href='<?php echo $detailsSrc ?>' onclick='return SNAPPI.UIHelper.nav.gotoTab(this);'>Details</a></li>
+	<li class='btn'><a id='tab-privacy' href='<?php echo $privacySrc ?>' onclick='return SNAPPI.UIHelper.nav.gotoTab(this);'>Privacy</a></li>
+	<li class='btn'><a id='tab-policy' href='<?php echo $policySrc ?>' onclick='return SNAPPI.UIHelper.nav.gotoTab(this);'>Policies</a></li>
 </ul>
 </div>	
-<div id='tab-section' class="setting placeholder xhr-get"  xhrSrc='<?php echo $settingsSrc ?>'>
-</div>	
-		
-	<dl><?php $i = 0; $class = ' class="altrow"';?>
-		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Owner'); ?></dt>
-		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
-			<?php echo $this->Html->link($data['Owner']['id'], array('controller' => 'users', 'action' => 'view', $data['Owner']['id'])); ?>
-			&nbsp;
-		</dd>
-		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Is System'); ?></dt>
-		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
-			<?php if(1 == $data['Group']['isSystem']){ echo __('Yes'); } else { echo __('No');} ?>
-			&nbsp;
-		</dd>
-		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Title'); ?></dt>
-		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
-			<?php echo $data['Group']['title']; ?>
-			&nbsp;
-		</dd>
-		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Description'); ?></dt>
-		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
-			<?php echo $data['Group']['description']; ?>
-			&nbsp;
-		</dd>
-		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Membership Policy'); ?></dt>
-		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
-			<?php echo $data['Group']['membership_policy']; ?>
-			&nbsp;
-		</dd>
-		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Invitation Policy'); ?></dt>
-		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
-			<?php echo $data['Group']['invitation_policy']; ?>
-			&nbsp;
-		</dd>
-		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Submission Policy'); ?></dt>
-		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
-			<?php echo $data['Group']['submission_policy']; ?>
-			&nbsp;
-		</dd>
-		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Is NC17'); ?></dt>
-		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
-			<?php if(1 == $data['Group']['isNC17']) { echo __('Yes');} else { echo __('No');} ?>
-			&nbsp;
-		</dd>
-		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Last Visit'); ?></dt>
-		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
-			<?php echo $data['Group']['lastVisit']; ?>
-			&nbsp;
-		</dd>
-		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Created On'); ?></dt>
-		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
-			<?php echo $data['Group']['created']; ?>
-			&nbsp;
-		</dd>
-	</dl>
+
+	<div id='tab-section' class="setting xhr-get"  xhrSrc='<?php echo $xhrSrc."?xhrview={$xhrFrom['view']}" ?>'  nodelay='1'></div>	
 </div>
 
 
