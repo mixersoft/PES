@@ -22,7 +22,7 @@
 		<li class="disabled"><a>Timeline</a></li>
 		<li class="disabled"><a>Invites</a></li>
 		<li class="disabled"><a>Activity Feed</a></li>
-		<li class="rounded-5 blue focus preference"><a>Preferences</a></li>
+		<li class="disabled rounded-5 preference"><a>Preferences</a></li>
 	</ul>
     <aside class="grid_4">
       	<?php echo $this->element('nav/search')?>
