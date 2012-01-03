@@ -19,7 +19,7 @@
 				<nav class="toolbar">
 					<div>
 						<ul class="inline menu-trigger">
-							<li class="btn select-all"><input type="checkbox" value="" name=""><a class="menu-open"> </a></li>
+							<li class="btn white select-all"><input type="checkbox" value="" name=""><a class="menu-open"> </a></li>
 						</ul>
 					</div>
 					<h1 class="count"></h1>
@@ -31,7 +31,7 @@
 						<li class="label">Size</li>
 						<?php 
 							foreach ($sizes as $size => $src ) {
-								echo "<li class='btn ".($thumbSize==$size ? 'focus' : '')."'  action='set-display-size:{$size}'><img src='{$src}' alt=''></li>";
+								echo "<li class='btn white ".($thumbSize==$size ? 'focus' : '')."'  action='set-display-size:{$size}'><img src='{$src}' alt=''></li>\n";
 							}
 						?>
 					</ul>

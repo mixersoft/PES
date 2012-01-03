@@ -48,8 +48,8 @@
 	$this->Layout->blockStart('inner_DisplayOptions'); ?> 
 	    	<ul class="filter inline">
 	    		<li class='label'>Filter</li>
-	    		<li class="btn <?php if ($btn_active['filter-me']) echo "selected" ?>" onclick="SNAPPI.UIHelper.groups.myGroups(this);">My Circles</li>
-	    		<li class="btn <?php if ($btn_active['filter-type']) echo "selected" ?>">Type
+	    		<li class="btn white <?php if ($btn_active['filter-me']) echo "selected" ?>" onclick="SNAPPI.UIHelper.groups.myGroups(this);">My Circles</li>
+	    		<li class="btn white <?php if ($btn_active['filter-type']) echo "selected" ?>">Type
 	             	<select onchange="SNAPPI.UIHelper.nav.goto(this);">
 	             		<?php 
 							foreach ($filterBy_options as $id => $option) {
@@ -60,11 +60,11 @@
 	             		?>
 	             	</select>	    			
 	    		</li>
-				<li class="btn">Date Taken<span class="menu-open"></span></li>
+				<li class="btn white">Date Taken<span class="menu-open"></span></li>
 			</ul>
-	        <ul class="sort inline right">
+	        <ul class="sort inline inline-break right">
 	        	<li class='label'>Sort</li>
-	            <li class='btn <?php if ($btn_active['orderBy']) echo "selected" ?>'>
+	            <li class='btn white <?php if ($btn_active['orderBy']) echo "selected" ?>'>
 	             	<select onchange="SNAPPI.UIHelper.nav.goto(this);">
 	             		<?php 
 							foreach ($orderBy_options as $id => $option) {
@@ -84,7 +84,7 @@
 		$this->Layout->output($this->viewVars['inner_DisplayOptions_for_layout']);
 	} else {  ?>      	
 <section class="gallery-display-options container_16 hide">
-	<nav class="settings grid_16 wrapped">
+	<nav class="settings cf grid_16 wrapped">
 		<?php $this->Layout->output($this->viewVars['inner_DisplayOptions_for_layout']); ?>
 	</nav>
 </section>

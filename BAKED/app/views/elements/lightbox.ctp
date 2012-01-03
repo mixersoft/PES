@@ -39,13 +39,13 @@ if (Configure::read('controller.action')=='lightbox') {
 ?>
 <section class="lightbox filmstrip drop container_16 hide" id="lightbox">
 	<section class="gallery-header grid_16">
-		<ul class="inline">
-			<li><h3>My Lightbox <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li>
+		<ul class="inline cf">
+			<li><h3>Lightbox</h3></li>
 			<li>
 				<nav class="toolbar">
 					<div>
 						<ul class="inline menu-trigger">
-							<li class="btn select-all"><input type="checkbox" value="" name=""><a class="menu-open"> </a></li>
+							<li class="btn white select-all"><input type="checkbox" value="" name=""><a class="menu-open"></a></li>
 							<li class="organize">Organize</li>
 							<li class="share">Share</li>
 							<li class="create">Create</li>
@@ -60,7 +60,7 @@ if (Configure::read('controller.action')=='lightbox') {
 						<li class="label">Size</li>
 						<?php 
 							foreach ($sizes as $size => $src ) {
-								echo "<li class='btn ".($thumbSize==$size ? 'focus' : '')."'  action='set-display-size:{$size}'><img src='{$src}' alt=''></li>";
+								echo "<li class='btn white ".($thumbSize==$size ? 'focus' : '')."'  action='set-display-size:{$size}'><img src='{$src}' alt=''></li>\n";
 							}
 						?>
 					</ul>

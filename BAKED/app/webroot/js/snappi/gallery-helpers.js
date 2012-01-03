@@ -104,14 +104,18 @@
 	    				if (fn) {
 	    					fn(this.Gallery, action[1] );
 	    				} else GalleryFactory.actions.setView(this.Gallery, action[1]);
+	    				e.currentTarget.get('parentNode').all('li').removeClass('focus');
+		        		e.currentTarget.addClass('focus');
 	    			break;
 	    			case 'set-display-size':
 	    				GalleryFactory.actions.setSize(this.Gallery, action[1]);
-	    			break;	    			
+	    				e.currentTarget.get('parentNode').all('li').removeClass('focus');
+		        		e.currentTarget.addClass('focus');
+	    			break;	 
+	    			case 'toggle-display-options':
+	    				SNAPPI.UIHelper.nav.toggleDisplayOptions();
+	    			break;   			
 	    		}
-	    		// set window option button to selected value
-	    		e.currentTarget.get('parentNode').all('li').removeClass('focus');
-	        	e.currentTarget.addClass('focus');
 	        	
 	        	// check for 'after' event
 				var fn = GalleryFactory[this.Gallery._cfg.type]['after_setToolbarOption'];
@@ -646,13 +650,13 @@
 	'			<div class="filmstrip-wrap hidden"><div class="filmstrip"><div class="container"></div></div></div> ' +
 	'		</section>	 ' +
 	'		<section class="gallery-header alpha-b1 grid_11 omega-b1"> ' +
-	'			<ul class="inline"> ' +
+	'			<ul class="inline cf"> ' +
 	'				<li><h3><img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li> ' +
 	'				<li> ' +
 	'					<nav class="toolbar"> ' +
 	'						<div> ' +
 	'							<ul class="inline menu-trigger"> ' +
-	'								<li class="btn select-all"><input type="checkbox" value="" name=""><a class="menu-open"> </a></li> ' +
+	'								<li class="btn white select-all"><input type="checkbox" value="" name=""><a class="menu-open"> </a></li> ' +
 	'							</ul> ' +
 	'						</div> ' +
 	'						<h1 class="count">0 Snaps</h1> ' +
@@ -662,7 +666,9 @@
 	'								<nav class="window-options"> ' +
 	'									<ul class="thumb-size inline"> ' +
 	'										<li class="label">Size</li> ' +
-	'										<li class="btn" action="set-display-size:sq"><img alt="" src="/css/images/img_1.gif"></li><li class="btn"  action="set-display-size:tn"><img alt="" src="/css/images/img_2.gif"></li><li class="btn" action="set-display-size:lm"><img alt="" src="/css/images/img_3.gif"></li>	 ' +
+	'										<li class="btn white " action="set-display-size:sq"><img alt="" src="/css/images/img_1.gif"></li>' +
+	'										<li class="btn white "  action="set-display-size:tn"><img alt="" src="/css/images/img_2.gif"></li>' +
+	'										<li class="btn white " action="set-display-size:lm"><img alt="" src="/css/images/img_3.gif"></li>' +
 	'									</ul><ul class="inline"> ' +
 	'										<li action="set-display-view:one-row"><img src="/css/images/img_zoomin.gif"></li><li action="set-display-view:maximize"><img src="/css/images/img_zoomout.gif"></li> ' +
 	'									</ul> ' +

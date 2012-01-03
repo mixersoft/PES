@@ -27,7 +27,7 @@
 						<li class="label">Size</li>
 						<?php 
 							foreach ($sizes as $size => $src ) {
-								echo "<li class='btn ".($thumbSize==$size ? 'focus' : '')."' action='set-display-size:{$size}'><img src='{$src}' alt=''></li>";
+								echo "<li class='btn white ".($thumbSize==$size ? 'focus' : '')."' action='set-display-size:{$size}'><img src='{$src}' alt=''></li>\n";
 							}
 						?>
 					</ul>

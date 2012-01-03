@@ -47,22 +47,22 @@
 	
 	
 	<ul class="toolbar inline grid_3">
-		<li class="btn select-all"><input type="checkbox" value="" name=""><a class="menu-open"> </a></li>
+		<li class="btn white select-all"><input type="checkbox" value="" name=""><a class="menu-open"> </a></li>
 		<li ><h1><?php echo $total; ?>  Circles</h1></li>
 	</ul>	
     <nav class="settings push_6 grid_7">
 		<ul class="inline right">
-			<li class="display-option" onclick='SNAPPI.UIHelper.nav.toggleDisplayOptions();'>
-    			<a class='menu-open'>Display Options</a>
+			<li class="btn white display-option" action='toggle-display-options' onclick='SNAPPI.UIHelper.nav.toggleDisplayOptions();'>
+    			<span class='menu-open'>Display Options</span>
     		</li>
     	</ul><ul class="thumb-size inline right">
 			<li class="label">Size</li>
 			<?php 
 				foreach ($sizes as $size => $src ) {
-					echo "<li class='btn ".($focus==$size ? 'focus' : '')."' size='{$size}'><img src='{$src}' alt=''></li>";
+					echo "<li class='btn white ".($focus==$size ? 'focus' : '')."' size='{$size}'><img src='{$src}' alt=''></li>\n";
 				}
 			?>
-			<li class='btn' onclick="SNAPPI.UIHelper.nav.toggle_fullscreen(true);">Fullscreen</li>
+			<li class='btn white' onclick="SNAPPI.UIHelper.nav.toggle_fullscreen(true);">Fullscreen</li>
 		</ul>
 	</nav>      
 	

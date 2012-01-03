@@ -11,25 +11,25 @@
 ?>
 <section class="wide gallery-header gallery-display-options container_16">
 	<ul class="toolbar inline grid_2">
-		<li class="btn select-all"><input type="checkbox" value="" name=""><a class="menu-open"> </a></li>
+		<li class="btn white select-all"><input type="checkbox" value="" name=""><a class="menu-open"> </a></li>
 		<li><h1><?php echo $total; ?>  Circles</h1></li>
 	</ul>	
 	<nav class="settings grid_4">
 		<ul class="wide-display-options inline">
-			<li class="btn option">Delete</li>
-			<li class="btn option">Group as Shot</li>
-			<li class="btn option">Add to Lightbox</li>
+			<li class="btn white option">Delete</li>
+			<li class="btn white option">Group as Shot</li>
+			<li class="btn white option">Add to Lightbox</li>
 		</ul>
 	</nav>	
-    <nav class="settings grid_9">
-		<ul class="thumb-size inline right">
+    <nav class="settings grid_10">
+    	<?php echo $this->element('/photo/display-options');  ?>
+		<ul class="thumb-size inline inline-break right">
 			<li class="label">Size</li>
 			<?php 
 				foreach ($sizes as $size => $src ) {
-					echo "<li class='btn ".($focus==$size ? 'focus' : '')."' size='{$size}'><img src='{$src}' alt=''></li>";
+					echo "<li class='btn white ".($focus==$size ? 'focus' : '')."' size='{$size}'><img src='{$src}' alt=''></li>";
 				}
 			?>
 		</ul>
-		<?php echo $this->element('/photo/display-options');  ?>
 	</nav>      
 </section> 

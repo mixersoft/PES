@@ -18,11 +18,11 @@
 	<h1 class="grid_3"><?php echo $label ?></h1>
     <ul class="inline grid_9">
 		<li class="disabled"><a>Montage</a></li>                    
-		<li class="focus"><a>Gallery</a></li>
+		<li class="rounded-5 orange focus"><a>Gallery</a></li>
 		<li class="disabled"><a>Timeline</a></li>
 		<li class="disabled"><a>Invites</a></li>
 		<li class="disabled"><a>Activity Feed</a></li>
-		<li class="focus preference"><a>Preferences</a></li>
+		<li class="rounded-5 blue focus preference"><a>Preferences</a></li>
 	</ul>
     <aside class="grid_4">
       	<?php echo $this->element('nav/search')?>
