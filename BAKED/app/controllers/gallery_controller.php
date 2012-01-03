@@ -199,13 +199,81 @@ class GalleryController extends AppController {
 	function upload_share() {
 		$forceXHR = setXHRDebug($this, 0);
 		$data = $_POST ? $_POST : $this->data;
-		$this->autoRender = false;		
+		$this->autoRender = false;	
+// $this->log("POST _FILES['Filedata'] follow:", LOG_DEBUG);			
+// $this->log($_FILES['Filedata'], LOG_DEBUG);			
+		if (!empty($_FILES) && !isset($_FILES["Filedata"])) {
+			$fileDataERROR = !isset($_FILES["Filedata"]) || !is_uploaded_file($_FILES["Filedata"]["tmp_name"]) || $_FILES["Filedata"]["error"] != 0; 
+$this->log("fileDataERROR={$fileDataERROR}, is_uploaded_file=".is_uploaded_file($_FILES["Filedata"]["tmp_name"]) , LOG_DEBUG);			
+		}
 		if (!empty($data)){
-			$this->log("POST to /gallery/upload_share", LOG_DEBUG);
-			$this->log($data, LOG_DEBUG);
+// $this->log("POST to /gallery/upload_share", LOG_DEBUG);
+// $this->log($data['data']['arrangement'], LOG_DEBUG);
+
+
+		    /*
+			 * set story params for anonymous upload 
+			 */ 
+			$UPLOAD_FOLDER = Configure::Read('path.storyMakerUploader');
+			$STORY_PREFIX = "story_";
+			$EXTENSION = ".JPG";
+		    $arrangement = json_decode($data['data']['arrangement'], true);
+			$photos = json_decode($data['data']['photos'], true);
+			$story_id = $arrangement['story_id'];
+			$photo_id = $_FILES["Filedata"]["name"];
+			$tmp_filepath = $_FILES["Filedata"]["tmp_name"];
+			$dest_basepath = cleanpath("{$UPLOAD_FOLDER['folder_basepath']}{$STORY_PREFIX}{$story_id}");
+					    
+			$dest_filepath = $dest_basepath.DS.$photo_id.$EXTENSION;
+// $this->log("__upload_share(): upload success, story_id={$story_id}, file dest={$dest_filepath}", LOG_DEBUG);				
+			/*
+			 * reset story folder if we are REPLACING photos
+			 */ 
+			if (!file_exists($dest_basepath)) mkdir($dest_basepath, 0775, true);
+			/*
+			 * TODO: check if $tmp_filepath == $dest_filepath
+			 * 		can we cancel upload EARLY if the file is the same?
+			 */
+			if ( !move_uploaded_file($tmp_filepath, $dest_filepath) ){
+				@unlink($tmp_filepath);
+				// return error
+				$response['success'] = 'false';
+				$response['message'] = 'Error moving uploaded file';
+				$response['response'] = array('tmp_name'=>$tmp_filepath, 'dest'=>$dest_filepath);
+				header('Content-Type: application/json');
+			    echo json_encode($response);
+			    exit(0);
+			}
 			$success = true;
 			$message = "POST data logged on server.";
-			$response = $data;
+			// $response = $data;
+			$response['uploaded_file'] = $_FILES['Filedata'];
+			unset($response['uploaded_file']['tmp_name']);
+			
+			/*
+			 * check if story upload complete
+			 */
+			$count = 0; $total = count($photos);
+			foreach ($photos as $photo){
+				$check_filepath = $dest_basepath.DS.$photo['photo_id'].$EXTENSION;
+				if (file_exists($check_filepath)) {
+					$count++;
+// $this->log(">>> UPLOAD COMPLETE uuid={$photo['photo_id']},  file={$check_filepath}" , LOG_DEBUG);
+				}
+			}
+			$response['story']['upload_complete'] = $count/$total;
+			if ($count == $total) {
+				$story_baseurl = "http://".env('HTTP_HOST').cleanpath("/{$UPLOAD_FOLDER['baseurl']}{$STORY_PREFIX}{$story_id}");
+				$message = "story upload complete.";
+				$response['story']['url'] = "{$story_baseurl}";
+				$response['arrangement'] = $arrangement;
+$this->log("StoryMaker: story upload complete. baseurl = {$story_baseurl}", LOG_DEBUG);					
+$this->log($response , LOG_DEBUG);					
+			} else {
+				$message = "received {$count}/{$total} photos";
+				$response['story']['url'] = null;
+			}
+			
 			$this->viewVars['jsonData'] = compact('success', 'message', 'response');
 			$done = $this->renderXHRByRequest('json', null, null , 0);			
 			if ($done) return; 
