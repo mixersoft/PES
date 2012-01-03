@@ -33,6 +33,6 @@ SNAPPI.EditMode.init();
 		<?php echo $this->Form->input('Profile.notify_downloads', array_merge( $checkbox_attrs , array('label'=>'Notify me when someone downloads my stuff.')));?>
 		<?php echo $this->Form->hidden('User.id');?>		
 		<?php echo $this->Form->hidden('setting',array('value'=>$formOptions['id']));?>
-		<?php echo $this->Form->end( array('label'=>'Edit', 'div'=>array('class'=>null)));?>	
-			
+		<?php echo $this->Form->submit("Edit", array('value'=>"Edit", 'class'=>'green')); ?>
+		<?php echo $this->Form->end(); ?>	
 	</div>	

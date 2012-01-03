@@ -9,22 +9,30 @@ PAGE.gotoStep = function(dom, show){
 	var Y = SNAPPI.Y;
 	if (show == 'finish') {
 		// show all sections
-		Y.all('form > div > div.submit').addClass('hide');	// hide section buttons
-//		Y.all('form  div.column-3').setStyle('width','100%');
-		Y.all('form > div.create').removeClass('hide'); // show all sections
-		Y.all('form > div#choose').addClass('hide'); // show all sections
-		Y.all('form > div#create-finish').removeClass('hide');
+		Y.all('form div.submit').addClass('hide');	// hide section buttons
+		Y.all('form  .create.tab-panel').removeClass('hide'); // show all sections
+		Y.all('form > div#choose').addClass('hide'); // except 1st panel, choose
+		// Y.all('form > div#create-finish').removeClass('hide');
 		
 	}
 	else {
-		Y.all('form > div').addClass('hide');
-		Y.one('form > div#'+show).removeClass('hide');
+		Y.all('form .create.tab-panel').addClass('hide');
+		Y.one('form  div#'+show).removeClass('hide');
 	}
 	SNAPPI.TabNav.selectByName({section: 'tab-'+show});
 	return dom.id ? (dom.id=='finish') : false;
 }
+PAGE.saveChoice = function(o) {
+	var Y = SNAPPI.Y;
+	var privacy = o.getAttribute('privacy');
+	Y.one('#GroupPrivacyGroups'+privacy).set('checked', true);
+	// set default policy
+	PAGE.setPolicyDefaults(privacy);
+	Y.all('form#create-choose #choose > div').addClass('hide');
+	Y.one('form#create-choose #choose > div#Group'+privacy).removeClass('hide');
+}
 </script>
-<div class="groups view placeholder">
+<div class="groups view ">
 	<h2><?php printf(__('Create a New %s', true), __('Group', true)); ?></h2>
 	<div class='groups'>
 		<div id='section-tabs'>
@@ -58,10 +66,12 @@ PAGE.gotoStep = function(dom, show){
 			$formOptions['id']='create-choose';
 			echo $this->Form->create('Group', $formOptions); 
 		?>		
-		<?php echo $this->element("/groups/create-choose"); ?>
-		<?php echo $this->element("/groups/create-details"); ?>
-		<?php echo $this->element("/groups/create-privacy"); ?>
-		<?php echo $this->element("/groups/create-policy"); ?>
-		<?php echo $this->element("/groups/create-finish"); ?>
+		<div class=" prefix_1 grid_14 suffix_1 wrap-v">
+			<?php echo $this->element("/groups/create-choose"); ?>
+			<?php echo $this->element("/groups/create-details"); ?>
+			<?php echo $this->element("/groups/create-privacy"); ?>
+			<?php echo $this->element("/groups/create-policy"); ?>
+			<?php echo $this->element("/groups/create-finish"); ?>
+		</div>
 	</div>
 </div>

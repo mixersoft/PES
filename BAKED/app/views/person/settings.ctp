@@ -55,6 +55,6 @@
 				<li class='btn'><a id='tab-moderator' href='<?php echo $moderatorSrc ?>' onclick='return SNAPPI.UIHelper.nav.gotoTab(this);'>Moderation</a></li>
 			</ul>
 		</div>	
-		<div id='tab-section' class="setting  xhr-get"  xhrSrc='<?php echo $xhrSrc."?xhrview={$xhrFrom['view']}" ?>' nodelay='1'></div>	
+		<div id='tab-section' class="setting xhr-get prefix_1 grid_14 suffix_1"  xhrSrc='<?php echo $xhrSrc."?xhrview={$xhrFrom['view']}" ?>' nodelay='1'></div>	
 	</div>	
 </div>

@@ -3,7 +3,7 @@ PAGE.section = "tab-details";
 SNAPPI.TabNav.selectByName(PAGE);
 SNAPPI.EditMode.init();
 </script>
-	<div id='fields' class="setting placeholder">
+	<div id='fields' class="setting ">
 		<h3>Description</h3>
 		<?php	
 			$formOptions['url']=Router::url(array(
@@ -16,5 +16,6 @@ SNAPPI.EditMode.init();
 		<?php echo $this->Form->input('caption', array('label'=>'Caption', 'readOnly'=>true));?>
 		<?php echo $this->Form->input('keyword', array('label'=>'Keywords', 'readOnly'=>true));?> 
 		<?php echo $this->Form->hidden('setting',array('value'=>$formOptions['id']));?>
-		<?php echo $this->Form->end( array('label'=>'Edit', 'div'=>array('class'=>null)));?>
+		<?php echo $this->Form->submit("Edit", array('value'=>"Edit", 'class'=>'green')); ?>
+		<?php echo $this->Form->end(); ?>
 	</div>	

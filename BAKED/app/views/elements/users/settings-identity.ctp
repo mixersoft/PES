@@ -38,5 +38,6 @@ SNAPPI.EditMode.init();
 		<?php echo $this->Form->input('Profile.utcOffset', array('label'=>'Timezone', 'readOnly'=>true));?>
 		<?php echo $this->Form->hidden('User.id');?>		
 		<?php echo $this->Form->hidden('setting',array('value'=>$formOptions['id']));?>
-		<?php echo $this->Form->end( array('label'=>'Edit', 'div'=>array('class'=>null)));?>	
+		<?php echo $this->Form->submit("Edit", array('value'=>"Edit", 'class'=>'green')); ?>
+		<?php echo $this->Form->end(); ?>
 	</div>

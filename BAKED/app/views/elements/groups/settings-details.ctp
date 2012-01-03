@@ -17,7 +17,8 @@ SNAPPI.EditMode.init();
 			
 		<?php echo $this->Form->input('title', array('label'=>'Title', 'readOnly'=>true));?>
 		<?php echo $this->Form->input('description', array('label'=>'Description', 'readOnly'=>true));?>
-		<?php echo $this->Form->input('isNC17', array_merge( $checkbox_attrs , array('label'=>'Rated NC17')));?> 
+		<?php echo $this->Form->input('isNC17', array_merge( $checkbox_attrs , array('label'=>'NSFW')));?> 
 		<?php echo $this->Form->hidden('setting',array('value'=>$formOptions['id']));?>
-		<?php echo $this->Form->end( array('label'=>'Edit', 'div'=>array('class'=>null)));?>
+		<?php echo $this->Form->submit("Edit", array('value'=>"Edit", 'class'=>'green')); ?>
+		<?php echo $this->Form->end(); ?>
 	</div>	

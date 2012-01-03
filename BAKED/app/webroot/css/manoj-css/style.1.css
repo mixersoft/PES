@@ -1907,11 +1907,21 @@ input[type='submit'], button[type='submit'] {
  * PAGE: /pages/downloads page buttons
  */
 div#download-uploader .center {
-	margin: 20px;
-	width: 600px;
+	margin: 20px 0;
+}
+div#download-uploader .center li {
+	font-size: 1.2em;
+	display: block;
+	width: 320px;
+}  
+section.main div#download-uploader .center {
+	width: 420px;
 } 
-
-
+section.main div#download-uploader .center li {
+	font-size: 1.2em;
+	display: block;
+	width: 320px;
+} 
 	
 /*
  * /groups/invitation CSS

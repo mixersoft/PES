@@ -3,7 +3,7 @@ PAGE.section = "tab-privacy";
 SNAPPI.TabNav.selectByName(PAGE);
 SNAPPI.EditMode.init();
 </script>
-	<div id='privacy' class="setting placeholder">
+	<div id='privacy' class="setting ">
 		<h3>Privacy Settings</h3>
 		<?php $formOptions['id']='AssetForm-privacy'; 
 			$formOptions['url']=array('action'=>'edit');  
@@ -27,5 +27,6 @@ SNAPPI.EditMode.init();
 					
 		<?php 	echo $this->Form->hidden('Asset.id');?>
 		<?php 	// echo $this->Form->hidden('id');?>
-		<?php echo $this->Form->end( array('label'=>'Edit', 'div'=>array('class'=>null)));?>					
+		<?php echo $this->Form->submit("Edit", array('value'=>"Edit", 'class'=>'green')); ?>
+		<?php echo $this->Form->end(); ?>
 	</div>	

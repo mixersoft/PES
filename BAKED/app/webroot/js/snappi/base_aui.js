@@ -338,9 +338,10 @@
 				
 				// start listeners
 				var listeners = {
-					'WindowOptionClick':null,
+					// 'WindowOptionClick':null,
 					'ContentMenuClick': false, 
 				};
+				listeners = Y.merge(listeners, PAGE.listeners);
 				for (var listen in listeners) {
 					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
 				}
@@ -365,6 +366,7 @@
 					'WindowOptionClick':null,
 					'ContentMenuClick': false, 
 				};
+				listeners = Y.merge(listeners, PAGE.listeners);
 				for (var listen in listeners) {
 					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
 				}

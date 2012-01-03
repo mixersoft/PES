@@ -52,8 +52,7 @@
 					if (n.get('readOnly'))
 						n.set('readOnly', false);
 					if (n.get('type') == 'submit')
-						n.set('value', 'Submit').get('parentNode').addClass(
-								'submit');
+						n.set('value', 'Submit').replaceClass('green','orange');
 					var check;
 				});
 		}

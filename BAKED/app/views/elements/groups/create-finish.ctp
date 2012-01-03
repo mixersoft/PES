@@ -1,3 +1,3 @@
-	<div id='create-finish' class='submit'>
-		<input id="finish" type="submit" value="Create Group" ></input>
+	<div id='create-finish' class='create tab-panel submit hide '>
+		<input id="finish" class='orange' type="submit" value="Create Group" ></input>
 	</div>	

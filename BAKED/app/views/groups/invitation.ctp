@@ -65,7 +65,7 @@
 			<?php echo $data['Group']['invitation_policy']; ?>
 			&nbsp;
 		</span>
-		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Is NC17'); ?></span>
+		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('NSFW'); ?></span>
 		<span class='<?php echo $ddClass; if ($i % 2 == 0) echo $altClass;?>'>
 			<?php if(1 == $data['Group']['isNC17']){ echo __('Yes'); } else { echo __('No');}?>
 			&nbsp;
@@ -164,8 +164,9 @@
 
 <?php $this->Layout->blockStart('javascript'); ?>
 	<script type="text/javascript">		
-		// this has to be AFTER base_aui.js load
-		// SNAPPI.LazyLoad.min({fetchXhr:false});	// move to snappi-guest
+		PAGE.listeners = {
+			'WindowOptionClick':null,
+		};
 	</script>	
 <?php $this->Layout->blockEnd(); ?> 
 

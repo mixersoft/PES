@@ -1,4 +1,4 @@
-	<div id='details' class="create placeholder hide ">
+	<div id='details' class="create tab-panel hide ">
 		<h3>Description</h3>
 		<?php	
 			$checkbox_attrs = array('legend'=> false);
@@ -9,6 +9,6 @@
 		<?php echo $this->Form->input('isNC17', array_merge( $checkbox_attrs , array('label'=>'Rated NC17')));?>
 		 
 			<div class='submit'>
-				<input id="details" type="submit" value="Next" onclick='return PAGE.gotoStep(this, "privacy");'></input>
+				<input id="details" type="submit" class='orange' value="Next" onclick='return PAGE.gotoStep(this, "privacy");'></input>
 			</div>
 	</div>

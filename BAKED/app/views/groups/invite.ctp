@@ -65,7 +65,7 @@
 			<?php echo $data['Group']['invitation_policy']; ?>
 			&nbsp;
 		</span>
-		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('Is NC17'); ?></span>
+		<span class='<?php $i++;  echo $dtClass; if ($i % 2 == 0) echo $altClass;?>'><?php __('NSFW'); ?></span>
 		<span class='<?php echo $ddClass; if ($i % 2 == 0) echo $altClass;?>'>
 			<?php if(1 == $data['Group']['isNC17']){ echo __('Yes'); } else { echo __('No');}?>
 			&nbsp;
@@ -125,24 +125,8 @@
 
 <?php $this->Layout->blockStart('javascript'); ?>
 	<script type="text/javascript">		
-		/**
-		 * run after GET request
-		 */
-		var initOnce = function() {
-			try {
-				var listeners = {
-					'WindowOptionClick':null, 
-				};
-				for (var listen in listeners) {
-					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
-				}					
-			} catch (e) {}
+		PAGE.listeners = {
+			'WindowOptionClick':null,
 		};
-		try {
-			SNAPPI.xhrFetch.fetchXhr; 
-			initOnce(); 
-		} catch (e) {
-			PAGE.init.push(initOnce); 
-		}	// run from Y.on('domready') for HTTP request
-	</script>	
+	</script>
 <?php $this->Layout->blockEnd(); ?> 

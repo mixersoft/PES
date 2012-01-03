@@ -110,7 +110,7 @@
 	<li class='btn'><a id='tab-privacy' href='<?php echo $privacySrc ?>' onclick='return SNAPPI.UIHelper.nav.gotoTab(this);'>Privacy</a></li>
 </ul>
 </div>	
-<div id='tab-section' class="setting  xhr-get"  xhrSrc='<?php echo $xhrSrc."?xhrview={$xhrFrom['view']}" ?>' nodelay='1'>
+<div id='tab-section' class="setting  xhr-get  prefix_1 grid_14 suffix_1 wrap-v"  xhrSrc='<?php echo $xhrSrc."?xhrview={$xhrFrom['view']}" ?>' nodelay='1'>
 </div>	
 
 

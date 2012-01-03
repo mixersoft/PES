@@ -25,5 +25,6 @@ SNAPPI.EditMode.init();
 		
 		<?php 	echo $this->Form->hidden('Group.id');?>
 		<?php 	echo $this->Form->hidden('id');?>
-		<?php echo $this->Form->end( array('label'=>'Edit', 'div'=>array('class'=>null)));?>					
+		<?php echo $this->Form->submit("Edit", array('value'=>"Edit", 'class'=>'green')); ?>
+		<?php echo $this->Form->end(); ?>
 	</div>

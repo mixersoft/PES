@@ -42,7 +42,7 @@
 			<?php echo $data['Group']['submission_policy']; ?>
 			&nbsp;
 		</dd>
-		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Is NC17'); ?></dt>
+		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('NSFW'); ?></dt>
 		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
 			<?php if(1 == $data['Group']['isNC17']) { echo __('Yes');} else { echo __('No');} ?>
 			&nbsp;
