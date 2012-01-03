@@ -81,7 +81,10 @@ switch ($config['Config.os']) {
 		$config['path']['airUploader'] = array(
 				'folder_basepath'=>$wwwroot.DS.'svc'.DS.'upload'.DS,
 			);			
-		
+		$config['path']['storyMakerUploader'] = array(
+				'folder_basepath'=>$wwwroot.DS.'svc'.DS.'upload'.DS,
+				'baseurl'=>'svc'.DS.'upload'.DS,
+			);		
 		break;
 	case '*nix':
 	case 'unix':
@@ -136,7 +139,11 @@ switch ($config['Config.os']) {
 			);	
 		$config['path']['airUploader'] = array(
 				'folder_basepath'=>$wwwroot.DS.'svc'.DS.'upload'.DS,
-			);					
+			);	
+		$config['path']['storyMakerUploader'] = array(
+				'folder_basepath'=>$wwwroot.DS.'svc'.DS.'upload'.DS,
+				'baseurl'=>'svc'.DS.'upload'.DS,
+			);		
 		break;		
 }
 
