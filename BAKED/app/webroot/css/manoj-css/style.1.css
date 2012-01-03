@@ -169,7 +169,9 @@ header .grey {
 header .logo {
 	padding-top: 5px;
 }
-
+header nav.primary ul li {
+	margin: 0;
+}
 header nav.primary li:hover {
 	background-color: #474b4d;
 }
