@@ -436,10 +436,14 @@
 	 * 	singleton class, make static
 	 *  manages DB Post and Cleanup for a ratingChanged event.
 	 */
-	var AssetRatingController = function() {
-	};
-	AssetRatingController.prototype = {
-	};
+	var _Y = null;
+    SNAPPI.namespace('SNAPPI.onYready');
+    SNAPPI.onYready.AssetRatingController = function(Y){
+		if (_Y === null) _Y = Y;
+		// custom listeners, global
+		SNAPPI.AssetRatingController = AssetRatingController;
+	}	
+	var AssetRatingController = function() {};
 	/**
 	 * called by Gallery.deleteThumbnail()
 	 * TODO: move to differnt class, io_helpers(?)
@@ -760,6 +764,6 @@
 				break;
 			}
 		};
-	SNAPPI.AssetRatingController = AssetRatingController;
+	
 	
 })();
