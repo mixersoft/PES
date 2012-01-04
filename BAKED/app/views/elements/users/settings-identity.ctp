@@ -10,11 +10,14 @@ SNAPPI.EditMode.init();
 	<div id='profile' class="setting">
 		<h3>Identity and Personal Profile</h3>
 		<?php	
+			$orange = array('class'=>'orange'); 
 			$formOptions['id']='UserForm-identity';
 			$formOptions['url']=Router::url(array('controller'=>'my', 'action'=>'edit'));
 			$checkbox_attrs = array('legend'=> false, 'onclick'=>'return false;');
 			$radio_attrs = array('legend'=> false,'onclick'=>'return false;' );			
 			echo $this->Form->create('Profile', $formOptions);?>
+		<h4>Your Account</h4>	
+		<?php echo $this->Form->button("Change Password", array('onclick'=>'window.location.href=\'/users/change_password\'; return false;', 'class'=>'orange')); ?>
 			
 		<h4>Your Display Names</h4>	
 		<?php echo $this->Form->input('User.username', array('label'=>'Username', 'readOnly'=>true));?>

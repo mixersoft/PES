@@ -47,8 +47,8 @@ class UsersPluginController extends AppController {
 		$from = Configure::read('email.noreply');
 		$defaults = array(
 			'from' => $from,
-			'subject' => __d('users', 'Account verification', true),
-			'template' => 'account_verification');
+			'subject' => __d('users', 'Verify your Snaphappi email address', true),
+			'template' => 'email_verification');
 
 		$options = array_merge($defaults, $options);
 		$this->Email = loadComponent('Email', $this);
@@ -73,7 +73,7 @@ class UsersPluginController extends AppController {
 		$from = Configure::read('email.noreply');
 		$defaults = array(
 			'from' => $from,
-			'subject' => __d('users', 'Password Reset', true),
+			'subject' => __d('users', 'Reset Password Request', true),
 			'template' => 'password_reset_request');
 
 		$options = array_merge($defaults, $options);
@@ -95,7 +95,7 @@ class UsersPluginController extends AppController {
 						$user[$this->modelClass]['email']));
 					$this->redirect(array('action' => 'index', 'admin' => true));
 				} else {
-					$this->Session->setFlash(__d('users', 'You should receive an email with further instructions shortly', true));
+					$this->Session->setFlash(__d('users', 'You should receive an email shortly to help reset your password.', true));
 					$this->redirect(array('action' => 'login'));
 				}
 			} else {
@@ -279,7 +279,7 @@ class UsersPluginController extends AppController {
 		}
 		$msg['success'] = __d('users', 'Your account has been created. You should receive an e-mail shortly to verify your email address.', true);
 		if (1 || !Session::check('Auth.redirect')){
-			$msg['success'] .= " Why not get a jump on things by downloading the <a href='/pages/downloads' target='_blank'>Snaphappi Desktop Uploader</a>?";	
+			$msg['success'] .= "<br /><br />Why not get a jump on things by downloading the Snaphappi Desktop Uploader?";	
 		}
 		if (!empty($this->data)) {
 			$register_cfg = Configure::read('register');
@@ -328,7 +328,7 @@ class UsersPluginController extends AppController {
 		} elseif($type === 'reset') {
 			$data = $this->User->validateToken($token, true);
 		} else {
-			$this->Session->setFlash(__d('users', 'There url you accessed is not longer valid', true));
+			$this->Session->setFlash(__d('users', 'The link you accessed has already expired.', true));
 			$this->redirect('/');
 		}
 
@@ -367,11 +367,11 @@ class UsersPluginController extends AppController {
 					$this->redirect(array('action' => 'login'));
 				}
 			} else {
-				$this->Session->setFlash(__d('users', 'There was an error trying to validate your e-mail address. Please check your e-mail for the URL you should use to verify your e-mail address.', true));
+				$this->Session->setFlash(__d('users', 'There was an error trying to validate your e-mail address. Please check your e-mail for the link you should use to verify your e-mail address.', true));
 				$this->redirect('/');
 			}
 		} else {
-			$this->Session->setFlash(__d('users', 'The url you accessed is not longer valid', true));
+			$this->Session->setFlash(__d('users', 'The link you accessed has already expired.', true));
 			$this->redirect('/');
 		}
 	}

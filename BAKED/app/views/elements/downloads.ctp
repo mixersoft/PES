@@ -35,5 +35,5 @@
 						<?php if (count($downloads) == 1) echo "(<a href='{$all_platforms}'>Show all platforms</a>)"; ?>
 					</div>
 		</div>
-		<p /><b>Requirements:</b> The Snaphappi Desktop Uploader requires <a href='http://get.adobe.com/air/'>Adobe AIR 3.0</a>. 
-		You will prompted to download &amp install the latest version of AIR if it is not available. 
+		<p><b>Requirements:</b> The Snaphappi Desktop Uploader requires <a href='http://get.adobe.com/air/'>Adobe AIR 3.0</a>. 
+		If it is not already available, the installation will <b>also download the latest version of AIR</b>, and prompt you to install.</p> 
