@@ -363,11 +363,11 @@ class UsersPluginController extends AppController {
 				} else {
 					$this->User->Profile->id = $data['Profile']['id'];
 					$this->User->Profile->save($data);
-					$this->Session->setFlash(__d('users', 'Your e-mail has been validated!', true));
+					$this->Session->setFlash(__d('users', 'Your e-mail has been verified!', true));
 					$this->redirect(array('action' => 'login'));
 				}
 			} else {
-				$this->Session->setFlash(__d('users', 'There was an error trying to validate your e-mail address. Please check your e-mail for the link you should use to verify your e-mail address.', true));
+				$this->Session->setFlash(__d('users', 'There was an error trying to verify your e-mail address. Please check your e-mail for the link you should use to verify your e-mail address.', true));
 				$this->redirect('/');
 			}
 		} else {
@@ -475,16 +475,15 @@ class UsersController extends UsersPluginController {
 			/*
 			 * main
 			 */
-			'logout', 'login', 'rpxlogin', 'openidlogin', 'checkPermission',
+			'logout', 'login', 
 			/*
 			 * from Users.Users plugin
 			 */
 			'register', 'reset', 'verify', 'reset_password', 'resend_email_verify', 
-			'change_password',	// add to ACLs
 			/*
 			 * experimental
 			 */
-			 'addACLs', 'odesk_photos', 'update_count'
+			 'addACLs', 'odesk_photos', 'update_count', 'rpxlogin', 'openidlogin', 'checkPermission'
 		);
 		// TODO: edit allowed for  'role-----0123-4567-89ab---------user'
 		// TODO: groups allowed for  'role-----0123-4567-89ab--------guest', 'role-----0123-4567-89ab---------user'
@@ -904,7 +903,7 @@ $this->log("using Cookie guestpass login for {$guestid}", LOG_DEBUG);
 	}
 	
 	function change_password() {
-		$this->layout = $layout = 'snappi-plain';
+		$this->layout = $layout = 'snappi';
 		parent::change_password();
 	}
 
@@ -994,7 +993,7 @@ $this->log("using Cookie guestpass login for {$guestid}", LOG_DEBUG);
 		return $moderator;
 	}
 
-	function settings($id = null) {
+	function admin_settings($id = null) {
 		if (!$id) {
 			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'user'));
 			if (!$this->RequestHandler->isAjax()) $this->redirectSafe();
@@ -1023,7 +1022,7 @@ $this->log("using Cookie guestpass login for {$guestid}", LOG_DEBUG);
 		
 		$this->data = $data;
 		$this->set('data', $data);
-		
+debug($data);		
 		$xhrFrom = Configure::read('controller.xhrFrom');
 		if ($xhrFrom) {
 			$viewElement = '/elements/users/'.$xhrFrom['view'];

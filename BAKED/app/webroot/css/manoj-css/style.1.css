@@ -1226,6 +1226,7 @@ form input[type='text'].help {
  */
 .toolbar input[type='checkbox'] {
 	vertical-align: text-bottom;
+	padding-right: 4px;
 }
 .toolbar .menu-open {
 	padding-right: 10px;
@@ -1851,33 +1852,36 @@ form div.submit {
 body.simple .item-header h1 {
 	font-size: 20pt;
 }
-body.simple > #body-container.plain {
+body.simple > #body-container.plain, .plain-form {
 	margin-top: 0;
 	padding: 40px 0;
 }
 
-#body-container.plain h2 {
+#body-container.plain h2, .plain-form h2 {
 	font-size: 16pt;
 	border-bottom: 1px solid #E2E6EB;
 	margin: 10px 0;
 }
 
-#body-container.plain form > div {
+#body-container.plain form > div, .plain-form form > div {
 	padding: 4px;
 }
-#body-container.plain form label {
+#body-container.plain form label , .plain-form form label {
 	margin: 0 4px;
 	font-size: 12pt;	
 }
-#body-container.plain form .input.text > label, #body-container.plain form .input.password > label {
+#body-container.plain form .input.text > label, 
+#body-container.plain form .input.password > label,
+.plain-form form .input.text > label,
+.plain-form form .input.password > label {
 	width: 140px;
 	display: inline-block;
 	text-align: right;
 }
-#body-container.plain form input {
+#body-container.plain form input , .plain-form form input {
 	font-size: 1.1em;
 }
-#body-container.plain form div.submit {
+#body-container.plain form div.submit , .plain-form form div.submit{
 	margin-top: 4px;
 	border-top: 1px solid  #E2E6EB;
 	padding-left: 151px;
@@ -2111,6 +2115,10 @@ div#tab-section h3 {
 div#tab-section h4 {
 	border-bottom: 1px solid #E2E6EB;
 	margin: 10px 0;
+}
+
+div#tab-section input[type='checkbox'] {
+	margin-right: 8px;
 }
 
 /* http://www.colorzilla.com/gradient-editor/ */

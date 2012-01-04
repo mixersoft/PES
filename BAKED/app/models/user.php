@@ -214,7 +214,11 @@ abstract class UserPlugin extends AppModel {
 				$this->alias . '.email' => $postData[$this->alias]['email']),
 		);
 		$user = $this->find('first', $options );
-		if (!empty($user) && $user['Profile']['email_authenticated'] == 1) {
+		// if (!empty($user) && $user['Profile']['email_authenticated'] == 1) {
+		/*
+		 * allow password reset for non-authenticated email addresses
+		 */ 	
+		if (!empty($user)) {			
 			$sixtyMins = time() + 43000;
 			$token = $this->generateToken();
 			$user['Profile']['password_token'] = $token;

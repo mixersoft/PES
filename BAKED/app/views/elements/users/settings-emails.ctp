@@ -18,7 +18,19 @@ SNAPPI.EditMode.init();
 					
 			echo $this->Form->create('Profile', $formOptions);?>
 		<h4>Email Address</h4>
-		<?php echo $this->Form->input('User.email', array('label'=>'Primary Email Address', 'readOnly'=>true));?>
+		<div class="input text required">
+			<label for="UserEmail">Primary Email Address</label>
+			<input type="text" id="UserEmail" value="<?php  echo $data['User']['email'] ?>" maxlength="166" readonly="1" name="data[User][email]">
+		<?php 
+			// echo $this->Form->input('User.email', array('label'=>'Primary Email Address', 'readOnly'=>true));
+			if (0&& $data['Profile']['email_authenticated']) {
+				echo "<span style='color:green;padding: 0 4px;' >Email Verified</span>";
+			} else {
+				echo "<span style='color:red;padding: 0 4px;' >Email Not Verified</span>&nbsp;";
+				echo $this->Form->button("Resend Email Verification", array('onclick'=>'window.location.href=\'/users/resend_email_verify\'; return false;', 'class'=>'orange')); 
+			}
+		?>
+		</div>
 		<?php echo $this->Form->input('Profile.isHtmlEmailOk', array_merge( $checkbox_attrs , array('label'=>'Send me HTML emails.')));?>
 
 		<h4>Emails</h4>
