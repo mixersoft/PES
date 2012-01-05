@@ -53,12 +53,12 @@
 		</nav>
 		<nav class='user grid_7'>
 			<ul class="right rightlink">
-				<li class="bg-grey">
-					<a onclick="SNAPPI.UIHelper.nav.toggle_fullscreen();">Normal View</a>
+				<li class="normal-view">
+					<span class="header-btn orange rounded-5" onclick="SNAPPI.UIHelper.nav.toggle_fullscreen();">Normal View</span>
 				</li>
 			<?php if ( AppController::$userid) { ?>
-				<li class="bg-grey"><img src="/css/images/plus-grey.png" alt="" align="absmiddle" class="add">
-					<a class='menu-open'>Create</a>
+				<li class="menu-trigger-create">
+					<span class="header-btn green rounded-5">+</span>
 				</li>
 				<li>
 					<span class="grey">Welcome,</span>

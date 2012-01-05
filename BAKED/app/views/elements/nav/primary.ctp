@@ -54,8 +54,8 @@
 		<nav class='user grid_7'>
 			<ul class="right rightlink">
 			<?php if ( AppController::$userid) { ?>
-				<li class="create bg-grey"><img src="/css/images/plus-grey.png" alt="" align="absmiddle" class="add">
-					<a class='menu-open'>Create</a>
+				<li class="menu-trigger-create">
+					<span class="header-btn green rounded-5">+</span>
 				</li>
 				<li>
 					<span class="grey">Welcome,</span>

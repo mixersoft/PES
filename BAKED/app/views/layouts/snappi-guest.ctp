@@ -112,10 +112,11 @@
 		SNAPPI.LazyLoad.min();
 	</script>	
 <?php $this->Layout->blockEnd(); ?> 
+<?php
+	echo $this->Html->script('/js/snappi/base_aui.js');		
+	echo $scripts_for_layout;
+	SNAPPI.LazyLoad.min();
+	$this->Layout->output($this->viewVars['javascript_for_layout']);
+?>
 </body>
 </html>
-	<?php
-		echo $this->Html->script('/js/snappi/base_aui.js');		
-		echo $scripts_for_layout;
-		$this->Layout->output($this->viewVars['javascript_for_layout']);
-	?>

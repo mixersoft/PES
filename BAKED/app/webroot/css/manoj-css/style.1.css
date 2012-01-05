@@ -172,7 +172,7 @@ header .logo {
 header nav.primary ul li {
 	margin: 0;
 }
-header nav.primary li:hover {
+header nav.primary li:hover , header nav.user li:hover {
 	background-color: #474b4d;
 }
 header nav.primary li.focus {
@@ -182,17 +182,18 @@ header nav.primary li.focus a {
 	background: url(../images/arrow.png) no-repeat bottom center;
 	padding-bottom: 4px;
 }
+
+
 header nav.user ul.right > li {
-	display: inline;
+	display: inline-block;
 	padding-left: 5px;
 	margin-left: 10px;
 }
-header nav.user li.bg-grey {
-	background: #474b4d;
-	padding: 0 5px;
-	display: inline-block !important;
+.header-btn {
+	border: 1px solid transparent;
+	padding: 2px 6px;
+	margin: 0 4px;
 }
-
 .menu-open {
 	background: url(../images/arrow.png) no-repeat right center;
 	padding-right: 15px;
@@ -201,6 +202,26 @@ header nav.user li.bg-grey {
 	background: url(../images/arrow-up.png) no-repeat right center;
 	padding-right: 15px;
 }
+
+header nav.user ul.right > li > span.header-btn {
+	box-shadow: 2px 2px 1px #DDD inset;
+	color: #333 !important;
+}
+header nav.user ul.right > li:hover.menu-trigger-create > span.header-btn {
+	box-shadow: 2px 2px 1px #FFFFFF inset;
+	color: #000 !important;
+}
+header nav.user ul.right > li.normal-view > span.header-btn {
+	padding: 3px 8px;
+	font-size: 10pt;
+    font-weight: normal;
+}
+header nav.user ul.right > li.menu-trigger-create > span.header-btn {
+	padding: 2px 6px;
+	font-size: 1.1em;
+    font-weight: 900;
+}
+
 
 section#body-container {
 	-moz-box-shadow: 0 0 5px #888;
@@ -909,6 +930,9 @@ aside.related-content .body section > h1 {
 .menu li.selected {
 	background: url(../images/next.png) no-repeat 2px center;
 	padding-left: 10px;
+}
+.menu li.clicked {
+	font-weight: 700;
 }
 
 .menu ul.select > li.focus {
@@ -1994,43 +2018,7 @@ img.tiny {
     background: url("/images/common/state_default_bg.png") repeat-x scroll 0 0 #D4D4D4;
 }
 
-/*
- * from manoj style.css
- */
-.btn-plus {
-	background-image: -webkit-gradient(
-	linear,
-	left bottom,
-	left top,
-	color-stop(0, #c3e4f7),
-	color-stop(1, #ffffff)
-	);
-	background-image: -moz-linear-gradient(
-	center bottom,
-	#c3e4f7 0%,
-	#ffffff 100%
-	);
-	border: 1px solid #a6d0e7;
-	-webkit-border-radius: 4px;
-	-moz-border-radius: 4px;
-	display: table-cell;
-	padding: 2px;
-	text-align: center;
-	vertical-align: middle;
-	margin-top: 10px;
-	font-size: 13px;
-	cursor: default;
-}
-.btn-plus a {
-	text-decoration: none;
-	background: url(../images/plus.png) left no-repeat;
-	color: #000;
-	padding: 0px 5px 0px 25px;
-	display: block;
-	line-height: 20px;
-	font-size: 13px;
-	cursor: default;
-}
+
 
 .footer ul li {
 	float: left;

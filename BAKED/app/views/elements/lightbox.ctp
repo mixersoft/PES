@@ -45,7 +45,7 @@ if (Configure::read('controller.action')=='lightbox') {
 				<nav class="toolbar">
 					<div>
 						<ul class="inline menu-trigger">
-							<li class="btn white select-all"><input type="checkbox" value="" name=""><a class="menu-open"></a></li>
+							<li class="btn white select-all"><span class="menu-open"><input type="checkbox" value="" name=""></span></li>
 							<li class="organize">Organize</li>
 							<li class="share">Share</li>
 							<li class="create">Create</li>

@@ -43,7 +43,7 @@
 	
 		
 	<ul class="toolbar inline grid_3">
-		<li class="btn white select-all"><input type="checkbox" value="" name=""><a class="menu-open"> </a></li>
+		<li class="btn white select-all"><span class="menu-open"><input type="checkbox" value="" name=""></span></li>
 		<li><h1><?php echo $total; ?>  Members</h1></li>
 	</ul>
     <nav class="settings window-options push_6 grid_7">

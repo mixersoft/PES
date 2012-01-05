@@ -10,6 +10,7 @@
 		// global lookup by CSS ID
 		Menu.CFG = {
 			'menu-header-markup': CFG_Menu_Header,
+			'menu-header-create-markup': CFG_Menu_Header_Create,
 			'contextmenu-photoroll-markup': CFG_Context_Photoroll,
 			'contextmenu-hiddenshot-markup': CFG_Context_HiddenShot,
 			'menu-pagemaker-selected-create-markup': CFG_Menu_Pagemaker_Create, 
@@ -86,7 +87,7 @@
 		delete ioCfg.selector;
 		delete ioCfg.selector;
 		
-		if (!_Y.one(selector)) {
+		if (!_Y.one(selector) && ioCfg.uri) {
 			// BUG: container.one('#menu-header') does NOT work in chrome
 			var markupNode = _Y.Node.create("<div />");
 			container.append(markupNode);
@@ -109,14 +110,19 @@
 	 * @return
 	 */
 	Menu.initMenus = function(menus){
-		var defaultMenus;
+		var auth, defaultMenus = {};
 		try {
-			defaultMenus = {
-				'menu-header-markup': SNAPPI.STATE.controller.userid,	// authenticated
-			};
+			auth = SNAPPI.STATE.controller.userid; // authenticated
 		} catch (e) {
-			defaultMenus = {};		// catch race condition
-		}
+			auth = null;
+		}			
+		if (auth) {
+			defaultMenus = {
+				'menu-header-markup': 1,	
+				'menu-header-create-markup': 1,
+			};
+		}			
+		
 		menus = _Y.merge(defaultMenus, menus);
 		for (var i in menus) {
 			var CSS_ID = menus[i] ? i : null; 
@@ -220,8 +226,18 @@
 				MenuItems[methodName](menuItem, this);
 			} else {
 				// default
-				// no special clickhandler, so just find a.href
-//					window.location.href = menuItem.one('a').getAttribute('href');
+				try {
+					// no special clickhandler, so just find a.href
+					var next = menuItem.one('a').getAttribute('href');
+					menuItem.addClass('clicked');
+					SNAPPI.setPageLoading(true);
+					var delayed = new _Y.DelayedTask( function() {
+						Menu.hide();
+						menuItem.removeClass('clicked');
+						window.location.href = next;
+					});
+					delayed.delay(100);
+				} catch (e) {}
 			}
 		};
 			
@@ -1057,27 +1073,29 @@
 	/*
 	 * MenuCfgs
 	 */
-	
-	var CFG_Menu_Header = function(){}; 
 	/**
-	 * load user shortcuts menu
-	 * @param cfg
+	 * load method for pop-up menu with static, onclick trigger
+	 * @param id string, CSS_ID for menu markup
+	 * @param trigger string, CSS3 selector
+	 * @param cfg, cfg.uri for markup by XHR load
 	 * @return
 	 */
-	CFG_Menu_Header.load = function(cfg){
+	var _load_Single_Trigger_Menu = function(id, trigger, uri, cfg){
+		// cfg.uri for XHR load
 		var defaultCfg = {
 			showOn: 'click',	
 			align: { points:['tr', 'br'] },
 			init_hidden: true
 		};
 		cfg = _Y.merge(defaultCfg, cfg);
-		var CSS_ID = 'menu-header-markup';
-		var TRIGGER = '#userAccountBtn';
+		uri = uri || cfg.uri;
+		var CSS_ID = id;
+		var TRIGGER = trigger;
 		var MARKUP = {
 				id: CSS_ID,
 				selector: '#'+CSS_ID,
 				container: _Y.one('#markup'),
-				uri: '/combo/markup/headerMenu',
+				uri: uri,			// cfg.uri for XHR load
 				end: null
 		};
 		
@@ -1089,7 +1107,32 @@
 			Menu.initContextMenu(MARKUP, TRIGGER, cfg);
 		};
 		return Menu.getMarkup(MARKUP , callback);
+	} 
+	 
+	/**
+	 * load user shortcuts menu
+	 * @param cfg
+	 * @return
+	 */
+	var CFG_Menu_Header = function(){};
+	CFG_Menu_Header.load = function(cfg){
+		var CSS_ID = 'menu-header-markup';
+		var TRIGGER = '#userAccountBtn';
+		var XHR_URI = '/combo/markup/headerMenu'; 
+		return _load_Single_Trigger_Menu(CSS_ID, TRIGGER, cfg);
 	};	
+	/**
+	 * load user Create menu
+	 * @param cfg
+	 * @return
+	 */
+	var CFG_Menu_Header_Create = function(){}
+	CFG_Menu_Header_Create.load = function(cfg){
+		var CSS_ID = 'menu-header-create-markup';
+		var TRIGGER = 'nav.user li.menu-trigger-create';
+		var XHR_URI = '/combo/markup/headerMenuCreate'; 
+		return _load_Single_Trigger_Menu(CSS_ID, TRIGGER, XHR_URI, cfg);
+	};
 	
 	var CFG_Menu_Pagemaker_Create = function(){}; 
 	/**
@@ -1221,7 +1264,7 @@
 		};
 		cfg = _Y.merge(defaultCfg, cfg);
 		var CSS_ID = 'menu-select-all-markup';
-		var TRIGGER = cfg.trigger || 'li.select-all a.menu-open';
+		var TRIGGER = cfg.trigger || 'li.select-all span.menu-open';
 		var MARKUP = {
 			id: CSS_ID,
 			selector: '#'+CSS_ID,
