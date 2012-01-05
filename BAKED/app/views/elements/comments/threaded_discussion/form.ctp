@@ -1,4 +1,4 @@
-<?php
+<?php 
 /**
  * Copyright 2009 - 2010, Cake Development Corporation
  *                        1785 E. Sahara Avenue, Suite 490-423
@@ -10,11 +10,7 @@
 ?>
 <?php
 	$_url = array_merge($url, array('plugin'=>'','action' => r(Configure::read('Routing.admin') . '_', '', $this->action)));
-	if (isset($this->passedArgs['f'])) {
-debug("Comments: This is not deprecated");		
-		$_url['action']=@ifed($this->passedArgs['f'],$this->passedArgs['a']);
-		$_url['f'] = $this->passedArgs['f']; 		// propagate f: named param
-	}
+
 	foreach (array('page', 'order', 'sort', 'direction') as $named) {
 		if (isset($this->passedArgs[$named])) {
 			$_url[$named] = $this->passedArgs[$named];

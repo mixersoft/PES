@@ -48,7 +48,6 @@ class AppController extends Controller {
 		
 		// setup for Comments plugin
 		if ($this->action=='discussion' && isset($this->Comments)) {
-			$this->passedArgs['comment_view_type'] = 'flat';
 			$this->Comments->actionNames = array('discussion');
 			$this->Comments->viewVariable = 'data';
 		}	
@@ -150,6 +149,7 @@ class AppController extends Controller {
 			$xhrFrom['view']= isset($xhrFromParts[3]) ? $xhrFromParts[3] : null;
 			unset($this->params['url']['xhrfrom']);
 		}
+		// TODO: move to a better place. used for settings/edit
 		if (!empty($this->params['url']['xhrview'])) {
 			$xhrFrom['view'] = $this->params['url']['xhrview']; // view element(optional)
 			unset($this->params['url']['xhrview']);
@@ -647,6 +647,79 @@ debug($context);
 	public function callback_commentsView($displayType, $processActions = true) {
 		return $this->Comments->callback_view($displayType, $processActions);
 	}
+	/**
+	 * Initializes the view type for comments widget
+	 *
+	 * @return string
+	 * @access public
+	 */
+    public function callback_commentsInitType($class='discussion') {
+    	$type = $this->Session->read("comments.viewType.{$class}");
+		if (empty($type)) {
+	    	switch ($class) {
+				case 'discussion': $type = 'flat'; break;
+				case 'help': $type =  'threaded'; break;
+				default: $type =  'flat'; break;
+	    	}
+		}
+		return $type;
+    }
+/**
+ * Flat representaion. Paginable
+ *
+ * @param array $options
+ * @return array
+ */
+	public function callback_commentsfetchDataFlat($options) {
+		/*
+		 * same as: $conditions = $this->Comments->_prepareModel($options);
+		 */ 
+		$CommentsComponent = $this->Comments;
+		$UserModel = $CommentsComponent->userModel;
+		$params = array(
+			'isAdmin' => $this->Auth->user('is_admin') == true,
+			'userModel' => $UserModel,
+			'userData' => $this->Auth->user());
+		$conditions = $this->{$CommentsComponent->modelName}->commentBeforeFind(array_merge($params, $options));
+		/*
+		 * append UserModel fields for belongsTo Association
+		 */
+		$UserModelFields = & $this->{$CommentsComponent->modelName}->Comment->belongsTo[$CommentsComponent->userModel]['fields'];  
+		$UserModelFields = array_merge($UserModelFields, array( "{$UserModel}.src_thumbnail", "{$UserModel}.asset_count", "{$UserModel}.groups_user_count", "{$UserModel}.last_login"));		
+		return $this->paginate($CommentsComponent->assocName, $conditions);
+	}
+
+/**
+ * Threaded method - non paginable, whole data is fetched
+ *
+ * @param array $options
+ * @return array
+ */
+	public function callback_commentsfetchDataThreaded($options) {
+		$CommentsComponent = $this->Comments;
+		$UserModel = $CommentsComponent->userModel;
+		
+		$Comment =& $this->{$CommentsComponent->modelName}->Comment;
+		$params = array(
+			'isAdmin' => $this->Auth->user('is_admin') == true,
+			'userModel' => $UserModel,
+			'userData' => $this->Auth->user());
+		$conditions = $this->{$CommentsComponent->modelName}->commentBeforeFind(array_merge($params, $options));
+		$fields = array(
+			'Comment.id', 'Comment.user_id', 'Comment.foreign_key', 'Comment.parent_id', 'Comment.approved',
+			'Comment.title', 'Comment.body', 'Comment.slug', 'Comment.created',
+			$CommentsComponent->modelName . '.id',
+			$CommentsComponent->userModel . '.id',
+			$CommentsComponent->userModel . '.' . $Comment->{$CommentsComponent->userModel}->displayField,
+			$CommentsComponent->userModel . '.slug',
+			"{$UserModel}.src_thumbnail", "{$UserModel}.asset_count", "{$UserModel}.groups_user_count", "{$UserModel}.last_login"
+			);
+		$order = array(
+			'Comment.parent_id' => 'asc',
+			'Comment.created' => 'asc');
+		return $Comment->find('threaded', compact('conditions', 'fields', 'order'));
+	}	
+		
 }
 
 ?>

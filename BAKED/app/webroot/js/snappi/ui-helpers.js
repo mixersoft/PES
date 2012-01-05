@@ -400,6 +400,24 @@
         DragDrop : function(){
         	SNAPPI.DragDrop.pluginDrop(_Y.all('.droppable'));
         	SNAPPI.DragDrop.startListeners();
+        },
+        CommentReply : function(node) {
+        	node = node || _Y.one('div.comments-main');        	
+        	var action = 'CommentReply';
+        	node.listen = node.listen || {};
+        	if (node.listen[action] == undefined) {
+	        	node.listen[action] = node.delegate('click', 
+	                function(e){
+	                	var href = e.currentTarget.getAttribute('href');
+	                	var post = node.one('div.post');
+	                	var form = post.one('form').setAttribute('action', href);
+	                	var before = e.currentTarget.ancestor('div.comments');
+	                	before.insert(post, 'after');
+	                	var check;
+	                }, 'div.posted a.reply', node);
+				// back reference
+				UIHelper.listen[action] = node.listen[action];
+			}
         }
 	}
 	

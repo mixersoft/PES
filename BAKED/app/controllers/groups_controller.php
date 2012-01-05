@@ -1012,7 +1012,9 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 		$options = array('conditions'=>array('Group.id'=>$id));
 		$data = $this->Group->find('first', $options);	
 		$this->set('data', $data);
-		
+		if (isset($this->params['url']['view'])) {
+			$this->Session->write("comments.viewType.discussion", $this->params['url']['view']);
+		}
 		$done = $this->renderXHRByRequest(null, '/elements/comments/discussion', 0);
 		// or $this->autoRender
 	}
@@ -1022,8 +1024,6 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 		$this->layout = 'snappi';
 		$step = @ifed($this->data['Group']['step'], 'create-choose');
 		if (!empty($this->data)) {
-				
-				debug($this->data);
 				$this->Group->create();
 				$this->data['Group']['owner_id'] = Session::read('Auth.User.id');
 //				$this->Group->Behaviors->Permissionable->settings['Group']['defaultBits'] = $this->data['Group']['privacy_groups'];

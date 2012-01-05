@@ -1542,6 +1542,15 @@ section.item-header .window-options ul {
 	width: 75px;
 	height: 75px;
 }
+.FigureBox.Person.sq.small figure > a > img {
+	width: 48px;
+	height: 48px;
+}
+.FigureBox.Person.sq.tiny figure > a > img {
+	width: 33px;
+	height: 33px;
+}
+
 .FigureBox.Person.sq  figcaption {
 	display: inline-block;
 	padding: 2px;
@@ -1783,38 +1792,62 @@ aside.related-content.grid_5 > section {
 
 /* Comments */
 .comments-main .post {
-	margin: 10px 20px;
+	margin: 2px;
+	padding: 2px 10px;
 	overflow: hidden;
 }
 .comments-main .post h3 {
 	font-size: 0.9em;
 }
+.comments-main .post h3 span.comment-view {
+	font-weight: normal;
+	font-size: 8pt;
+	padding-top: 4px;
+	cursor: default;
+}
+.comments-main .post h3 span.comment-view a {
+	color: #0063DC;
+}
 .comments-main form > div {
 	display: inline-block;
 }
 .comments-main form textarea {
-	width: 530px;
+	width: 100%;
 	height: 40px;
+	
 }
 .comments-main .post form .input.textarea {
-}
-.comments-main .post form textarea {
+	display: block;
+	width: 100%;
 }
 .comments-main .post form .submit {
 	float: right;
 	margin-top: 4px;
 }
-.comments-main .FigureBox.Person .label {
-	overflow: hidden;
+
+.FigureBox.Person:hover figure {
+	background: #d2d2d2;
 }
-.comments-main .FigureBox.Person .label span.new {
-	font-weight: bold;
-	color: red;
+
+.comments-main .FigureBox.Person a {
+	color: #000;
 }
-.comments-main .FigureBox.Person .label span a {
-	font-weight: bold;
+.comments-main .FigureBox.Person a:hover {
 	color: #0063DC;
 }
+.comments-main .FigureBox.Person figcaption {
+	font-size: 8pt;
+}
+.comments-main .FigureBox.Person figcaption .item .body {
+	font-size: 10pt;
+	margin: 4px 0 !important;
+}
+
+.comments-main .FigureBox.Person span.user {
+	font-weight: bold;
+}
+
+/* unused ?*/
 .comments-main .FigureBox.Person .description {
 	font-size: 0.8em;
 }
@@ -1824,12 +1857,10 @@ aside.related-content.grid_5 > section {
 }
 
 .grid_11 .comments-main .comments {
-	width: 620px;
-	padding: 0 10px;
+	width: 630px;
 }
-
-.grid_11 .comments-main .FigureBox.Person.sq  figcaption {
-	width: 520px;	
+.grid_11 .comments-main .comments .FigureBox.Person.sq  figcaption {
+	width: 558px;	
 }
 section.discussion div.wrap {
 	background-color: #FFF;
@@ -1838,15 +1869,54 @@ section.discussion div.wrap {
 	-webkit-border-radius: 5px;
 	-moz-border-radius: 5px;
 }
-.comments div.body {
-    padding: 5px 0px 10px 0px;
+/*.comments-main div.body {
+    padding: 5px 0px;
     font-size: 13px;
     color: #000000;
-}
-.comments div.instruction {
-    font-size: 12px;
+}*/
+.comments-main div.posted {
+    font-size: 8pt;
     width: 100%;
     color: #878787;
+}
+.comments-main div.posted span.new {
+	font-weight: bold;
+	color: red;
+}
+.comments-main div.submit {
+	border-top: none;
+}
+.comments-main div.submit input[type=submit]{
+	font-size: 0.8em;
+	padding: 2px;
+}
+/*
+ * comments - view = threaded
+ */
+.comments-main ul.tree-block ul {
+	margin-left : 50px;
+}
+.comments-main ul.tree-block li {
+	list-style-type: none;
+}
+.grid_11 .comments-main ul ul .comments {
+	width: 580px;
+}
+.grid_11 .comments-main ul ul .comments .FigureBox.Person.sq  figcaption {
+	width: 523px;	
+}
+.grid_11 .comments-main ul ul ul .comments {
+	width: 530px;
+}
+.grid_11 .comments-main ul ul ul .comments .FigureBox.Person.sq  figcaption {
+	width: 473px;	
+}
+.comments-main ul.tree-block ul li .FigureBox.Person.sq.small figure img {
+	width:33px;
+	height:33px;
+}
+.comments-main ul.tree-block ul li .FigureBox.Person.sq.small {
+	margin-bottom: 4px;
 }
 /*
  * global footer 
