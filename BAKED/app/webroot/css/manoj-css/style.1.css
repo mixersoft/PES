@@ -770,7 +770,7 @@ section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
  */
 div.ratingGroup {
     margin: 0 auto;
-    background: url('../images/smileyGrp.png') no-repeat;
+    background: url('../images/smileyStarGrp.png') no-repeat;
     background-position: -70px 0; /* init to 0 stars */
     width: 71px; /* width of 5 stars */
     height: 15px;
@@ -1791,6 +1791,9 @@ aside.related-content.grid_5 > section {
 }
 
 /* Comments */
+section.discussion {
+	min-height: 20px;
+}
 .comments-main .post {
 	margin: 2px;
 	padding: 2px 10px;
@@ -1798,15 +1801,6 @@ aside.related-content.grid_5 > section {
 }
 .comments-main .post h3 {
 	font-size: 0.9em;
-}
-.comments-main .post h3 span.comment-view {
-	font-weight: normal;
-	font-size: 8pt;
-	padding-top: 4px;
-	cursor: default;
-}
-.comments-main .post h3 span.comment-view a {
-	color: #0063DC;
 }
 .comments-main form > div {
 	display: inline-block;
@@ -1824,7 +1818,15 @@ aside.related-content.grid_5 > section {
 	float: right;
 	margin-top: 4px;
 }
-
+.comments-main span.comment-view {
+	font-weight: normal;
+	font-size: 8pt;
+	padding-right: 4px;
+	cursor: default;
+}
+.comments-main span.comment-view a {
+	color: #0063DC;
+}
 .FigureBox.Person:hover figure {
 	background: #d2d2d2;
 }
@@ -1836,20 +1838,24 @@ aside.related-content.grid_5 > section {
 	color: #0063DC;
 }
 .comments-main .FigureBox.Person figcaption {
-	font-size: 8pt;
+	font-size: 10pt;
+	line-height: 1;
 }
 .comments-main .FigureBox.Person figcaption .item .body {
-	font-size: 10pt;
-	margin: 4px 0 !important;
+	margin: 8px 0 !important;
 }
 
 .comments-main .FigureBox.Person span.user {
 	font-weight: bold;
 }
-
+.comments-main .FigureBox.Person span.title a {
+	padding-left: 8px;
+	font-weight: bold;
+	color: #888;
+}
 /* unused ?*/
 .comments-main .FigureBox.Person .description {
-	font-size: 0.8em;
+/*	font-size: 0.8em;*/
 }
 
 .comments-main  .FigureBox.Person.sq {

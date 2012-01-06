@@ -12,12 +12,12 @@
 	<div class="post rounded-5 blue">
 	<?php 
 	$discussion = array_merge(array('action'=>'discussion'), Configure::read('passedArgs.min'));
-	$discussion['?'] = @mergeAsArray($discussion['?'], array('view'=>'threaded') );
+	$discussion['?'] = @mergeAsArray($discussion['?'], array('view'=>'tree') );
 	// show add form
 	$isAddMode=1;  // always show add form
 	if ($allowAddByAuth):
 		if ($isAddMode && $allowAddByAuth): ?>
-			<h3><?php __d('comments', 'Post a Comment'); ?><span class="comment-view right">Show: <b>most recent</b> | <a href='<?php echo Router::url($discussion) ?>'>threaded</a></span></h3>
+			<h3><?php __d('comments', 'Post a Comment'); ?></h3>
 			<?php
 			echo $commentWidget->element('form', array('comment' => (!empty($comment) ? $comment : 0)));
 		else:
@@ -32,8 +32,9 @@
 	endif;
 	?>		
 	</div>
-	
+
 	<div>	
+		<span class="comment-view right">Showing: <b>most recent</b> | <a href='<?php echo Router::url($discussion) ?>'>threaded</a></span>
 	<?php	
 		// show paging
 		echo $commentWidget->element('paginator');

@@ -650,15 +650,15 @@ debug($context);
 	/**
 	 * Initializes the view type for comments widget
 	 *
-	 * @return string
+	 * @return string [flat|threaded|tree]
 	 * @access public
 	 */
     public function callback_commentsInitType($class='discussion') {
     	$type = $this->Session->read("comments.viewType.{$class}");
 		if (empty($type)) {
 	    	switch ($class) {
-				case 'discussion': $type = 'flat'; break;
-				case 'help': $type =  'threaded'; break;
+				case 'discussion': $type = 'tree'; break;
+				case 'help': $type =  'tree'; break;
 				default: $type =  'flat'; break;
 	    	}
 		}
@@ -695,11 +695,13 @@ debug($context);
  * @param array $options
  * @return array
  */
-	public function callback_commentsfetchDataThreaded($options) {
+	public function callback_commentsFetchDataThreaded($options) {
 		$CommentsComponent = $this->Comments;
 		$UserModel = $CommentsComponent->userModel;
-		
 		$Comment =& $this->{$CommentsComponent->modelName}->Comment;
+		/*
+		 * same as: $conditions = $this->Comments->_prepareModel($options);
+		 */ 
 		$params = array(
 			'isAdmin' => $this->Auth->user('is_admin') == true,
 			'userModel' => $UserModel,
@@ -716,9 +718,56 @@ debug($context);
 			);
 		$order = array(
 			'Comment.parent_id' => 'asc',
-			'Comment.created' => 'asc');
+			'Comment.created' => 'desc');
 		return $Comment->find('threaded', compact('conditions', 'fields', 'order'));
 	}	
+
+/**
+ * Tree representaion. Paginable.
+ *
+ * @param array $options
+ * @return array
+ */
+	public function callback_commentsFetchDataTree($options) {
+		$COMMENTS_TREE_VIEW_LIMIT = 10;
+		
+		$CommentsComponent = $this->Comments;
+		$UserModel = $CommentsComponent->userModel;
+		/*
+		 * same as: $conditions = $this->Comments->_prepareModel($options);
+		 */ 
+		$params = array(
+			'isAdmin' => $this->Auth->user('is_admin') == true,
+			'userModel' => $UserModel,
+			'userData' => $this->Auth->user());
+		$conditions = $this->{$CommentsComponent->modelName}->commentBeforeFind(array_merge($params, $options));
+
+		$order = array('Comment.lft' => 'desc');
+		$limit = $COMMENTS_TREE_VIEW_LIMIT;
+		$fields = array(
+			'Comment.id', 'Comment.user_id', 'Comment.foreign_key', 'Comment.parent_id', 'Comment.approved',
+			'Comment.lft', 'Comment.rght',
+			'Comment.title', 'Comment.body', 'Comment.slug', 'Comment.created',
+			$CommentsComponent->modelName . '.id',
+			$CommentsComponent->userModel . '.id',
+			$CommentsComponent->userModel . '.username',
+			$CommentsComponent->userModel . '.slug',
+			"{$UserModel}.src_thumbnail", "{$UserModel}.asset_count", "{$UserModel}.groups_user_count", "{$UserModel}.last_login"
+		);
+		$this->paginate['Comment'] = compact('order', 'conditions', 'limit', 'fields');
+		$data = $this->paginate('Comment');
+		$parents = array();
+		if (isset($data[0]['Comment'])) {
+			$rec = $data[0]['Comment'];
+			$conditions[] = array('Comment.lft <' => $rec['lft']);
+			$conditions[] = array('Comment.rght >' => $rec['rght']);
+			$parents = $this->{$CommentsComponent->modelName}->Comment->find('all', compact('conditions', 'order', 'fields'));
+		}
+		return array_merge($parents, $data);
+	}
+
+
+
 		
 }
 

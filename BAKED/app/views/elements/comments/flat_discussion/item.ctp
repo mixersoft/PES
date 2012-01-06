@@ -59,10 +59,10 @@
 	?>
     		<figcaption>
     		<div class="label">
-    			<span class="user"><?php echo $fields['ownerLink'] ?></span>
+    			<span class="user"><?php echo $fields['ownerLink'] ?></span> 
+    			<span class='title'><a name="comment<?php echo $comment['Comment']['id'];?>"><?php echo $comment['Comment']['title'];?></a></span>
     		</div>
 			<div class='item'>
-				<div class="title"><!--<a name="comment<?php echo $comment['Comment']['id'];?>">--><?php echo $comment['Comment']['title'];?><!--</a>--></div>
 				<div class="body"><?php echo $cleaner->bbcode2js($comment['Comment']['body']);?></div>
 				<div class="posted">
 					<?php echo String::insert(":new", $fields); ?>
