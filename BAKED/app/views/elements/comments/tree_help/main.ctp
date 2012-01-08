@@ -12,7 +12,7 @@
 	<div class="post rounded-5 green">
 	<?php 
 	$set_view = $this->passedArgs;
-	$set_view['?'] = array('view'=>'tree');
+	$set_view['?'] = array('view'=>'flat');
 	// show add form
 	?>
 			<h3><?php __d('comments', 'Post a Question, Comment or Suggestion for Topic:'); ?>
@@ -23,17 +23,15 @@
 	?>		
 	</div>
 
-	<div>	
-		<span class="comment-view right">Showing: <b>most recent</b> | <a href='<?php echo Router::url($set_view) ?>'>threaded</a></span>
-	<?php	
-		// show paging
-		echo $commentWidget->element('paginator');
-		// show comments
-		foreach (${$viewComments} as $comment):
-			echo $commentWidget->element('item', array('comment' => $comment));
-		endforeach;
-		$comment = null;
-	?>
+	<div>
+		<span class="comment-view right">Showing: <a href='<?php echo Router::url($set_view) ?>'>most recent</a> | <b>threaded</b></span>
+<?php 
+	echo $commentWidget->element('paginator');
+	echo $tree->generate(${$viewComments}, array(
+		'callback' => array(&$commentWidget, 'treeCallback'),
+		'model' => 'Comment',
+		'class' => 'tree-block'));
+?>		
 	</div>
 	
 <?php echo $this->Html->image('/comments/img/indicator.gif', array('id' => 'busy-indicator',
@@ -51,4 +49,4 @@
 			PAGE.init.push(initOnce);
 		}
 	</script>	
-<?php $this->Layout->blockEnd(); ?>
+<?php	$this->Layout->blockEnd(); ?>

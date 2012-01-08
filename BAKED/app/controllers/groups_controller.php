@@ -112,7 +112,6 @@ class GroupsController extends AppController {
 	}
 	
 	function beforeRender() {
-		Configure::write('js.bootstrap_snappi', true);
 		if (!$this->RequestHandler->isAjax() && AppController::$uuid) {
 			$label = @ifed($this->viewVars['data']['Group']['title'], null);
 			if (Session::read("lookup.trail.{$this->displayName}.uuid") == AppController::$uuid) {
@@ -1008,6 +1007,10 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'group'));
 			$this->redirectSafe();
 		}		
+		if (isset($this->params['url']['view'])) {
+			$this->Session->write("comments.viewType.discussion", $this->params['url']['view']);
+			$this->redirect($this->here, null, true);
+		}
 		$this->Group->contain('Comment');
 		$options = array('conditions'=>array('Group.id'=>$id));
 		$data = $this->Group->find('first', $options);	

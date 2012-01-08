@@ -72,6 +72,37 @@
 			SNAPPI.xhrFetch.requestFragment(container);
 			return false;
 		},
+		'showHelp': function(btn, node){
+			try {
+				var container = node || _Y.one('section.help');
+				btn = _Y.one(btn);
+				if (btn.hasClass('green')) {
+					container.addClass('hide');
+					btn.replaceClass('green', 'blue-gloss');
+				} else if (container.one('article.topic')) {
+					container.removeClass('hide');
+					btn.replaceClass('blue-gloss','green');
+				} else {
+					var article, uri, topics = container.getAttribute('topics').split(':');
+					container.setContent().removeClass('hide');
+					for (var i in topics) {
+						uri = '/help/topic/'+topics[i];
+						article = container.create('<article class="grid_16 topic wrap-v cf"></article>');
+						container.append(article);
+						var ioCfg = {
+							parseContent: true,
+							autoLoad: true,
+							context: container,
+							dataType: 'html',
+						};
+						ioCfg = SNAPPI.IO.getIORequestCfg(uri, {}, ioCfg);
+						article.plug(_Y.LoadingMask,{});
+						article.plug(_Y.Plugin.IO, ioCfg);
+					}
+					btn.replaceClass('blue-gloss','green');
+				}
+			} catch(e) {}
+		},
 		toggleDisplayOptions  : function(o){
 			try {
 				SNAPPI.STATE.showDisplayOptions = SNAPPI.STATE.showDisplayOptions ? 0 : 1;
@@ -402,7 +433,8 @@
         	SNAPPI.DragDrop.startListeners();
         },
         CommentReply : function(node) {
-        	node = node || _Y.one('div.comments-main');        	
+        	node = node || _Y.one('div.comments-main');  
+        	if (_Y.Lang.isString(node)) node = _Y.one(node);      	
         	var action = 'CommentReply';
         	node.listen = node.listen || {};
         	if (node.listen[action] == undefined) {
@@ -413,7 +445,15 @@
 	                	var form = post.one('form').setAttribute('action', href);
 	                	var before = e.currentTarget.ancestor('div.comments');
 	                	before.insert(post, 'after');
-	                	var check;
+	                	var title = before.one('span.title a');
+	                	if (title && title.get('innerHTML')) {
+	                		title = title.get('innerHTML');
+	                		post.one('label[for="CommentTitle"]').addClass('hide');
+	                	} else {
+	                		title = '';
+	                		post.one('label[for="CommentTitle"]').removeClass('hide');
+	                	}
+	                	post.one('input#CommentTitle').set('value', title);
 	                }, 'div.posted a.reply', node);
 				// back reference
 				UIHelper.listen[action] = node.listen[action];

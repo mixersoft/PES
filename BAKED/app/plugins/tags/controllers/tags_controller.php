@@ -234,7 +234,6 @@ class TagsController extends TagsAppController {
 	}
 
 	function beforeRender(){
-		Configure::write('js.bootstrap_snappi', true);
 		if (!$this->RequestHandler->isAjax() && AppController::$uuid) {
 			$label = @ifed($this->viewVars['data']['Tag']['name'], null);
 			if (Session::read("lookup.trail.{$this->displayName}.uuid") == AppController::$uuid) {
@@ -625,6 +624,10 @@ class TagsController extends TagsAppController {
 		if (!$id) {
 			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'group'));
 			$this->redirectSafe();
+		}
+		if (isset($this->params['url']['view'])) {
+			$this->Session->write("comments.viewType.discussion", $this->params['url']['view']);
+			$this->redirect($this->here, null, true);
 		}
 		$BIG_LIMIT = 10;
 		$this->Tag->contain('Comment');

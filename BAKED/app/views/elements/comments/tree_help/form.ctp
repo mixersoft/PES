@@ -25,7 +25,12 @@
 	/*
 	 * hide title from comments
 	 */
-	echo $form->input('Comment.title');
+	?>
+	<div class="input text">
+		<label for="CommentTitle" onclick="this.className='hide';">Title</label>
+		<input class='' type="text" id="CommentTitle" maxlength="255" name="data[Comment][title]">	
+	</div>
+	<?php
 	echo $form->input('Comment.body', array(
 		'label' => '',
 		'type' => 'textarea',

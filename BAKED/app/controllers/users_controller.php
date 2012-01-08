@@ -559,7 +559,6 @@ class UsersController extends UsersPluginController {
 
 	
 	function beforeRender() {
-		Configure::write('js.bootstrap_snappi', true);
 		parent::beforeRender(); 
 	}
 	

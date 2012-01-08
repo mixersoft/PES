@@ -124,7 +124,6 @@ class PersonController extends UsersController {
 	}	
 
 	function beforeRender() {
-		Configure::write('js.bootstrap_snappi', true);
 		try {
 			if (!($this->RequestHandler->isAjax() || $this->RequestHandler->ext=='json') && AppController::$uuid) {
 				$label = $this->viewVars['data']['User']['username'];

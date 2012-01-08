@@ -4,7 +4,7 @@ class AppController extends Controller {
 
 	public $scaffold;
 //	public $layout = 'default';
-	public $layout = 'snappi-aui-960';
+	public $layout = 'snappi';
 	public $components = array(
 		'Cookie',
 		'Session',
@@ -431,7 +431,7 @@ class AppController extends Controller {
 			if (!empty($this->params['url']['forcexhr'])) $controllerAttr['isXhr'] = 1; 
 			
 			$extras = array( 
-				'class'=>Inflector::singularize($this->name),		// ?? is this still used? replaced by keyName? 
+				'class'=>Inflector::singularize($this->name),		 
 				// 'label'=>isset($this->displayName) ? $this->displayName : '', 
 				'isWide'=>!empty($this->params['named']['wide']),
 			);
@@ -658,7 +658,7 @@ debug($context);
 		if (empty($type)) {
 	    	switch ($class) {
 				case 'discussion': $type = 'tree'; break;
-				case 'help': $type =  'tree'; break;
+				case 'help': $type =  'flat'; break;
 				default: $type =  'flat'; break;
 	    	}
 		}
@@ -718,7 +718,7 @@ debug($context);
 			);
 		$order = array(
 			'Comment.parent_id' => 'asc',
-			'Comment.created' => 'desc');
+			'Comment.created' => 'asc');
 		return $Comment->find('threaded', compact('conditions', 'fields', 'order'));
 	}	
 
@@ -742,7 +742,8 @@ debug($context);
 			'userData' => $this->Auth->user());
 		$conditions = $this->{$CommentsComponent->modelName}->commentBeforeFind(array_merge($params, $options));
 
-		$order = array('Comment.lft' => 'desc');
+		// $order = array('Comment.parent_id' => 'asc', 'Comment.lft' => 'desc');
+		$order = array('Comment.lft' => 'asc');
 		$limit = $COMMENTS_TREE_VIEW_LIMIT;
 		$fields = array(
 			'Comment.id', 'Comment.user_id', 'Comment.foreign_key', 'Comment.parent_id', 'Comment.approved',

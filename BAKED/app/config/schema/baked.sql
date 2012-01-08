@@ -564,6 +564,25 @@ update users set primary_group_id='role-----0123-4567-89ab--------guest' where S
 ALTER TABLE `groups_users` MODIFY COLUMN `lastVisit` TIMESTAMP,
  ADD COLUMN `modified` DATETIME DEFAULT null AFTER `lastVisit`;
  
+ 
+ 
+--
+-- Table structure for table `helps`
+--
+
+DROP TABLE IF EXISTS `help`;
+CREATE TABLE IF NOT EXISTS `help` (
+  `id` varchar(127) COLLATE utf8_unicode_ci NOT NULL,
+  `comment_count` MEDIUMINT(9) UNSIGNED DEFAULT 0,
+  `pageViews` int(11) UNSIGNED DEFAULT 0,
+  `lastVisit` datetime NULL DEFAULT NULL,
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+-- --------------------------------------------------------
+ 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;

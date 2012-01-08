@@ -186,8 +186,8 @@ header nav.primary li.focus a {
 
 header nav.user ul.right > li {
 	display: inline-block;
-	padding-left: 5px;
-	margin-left: 10px;
+	padding-left: 4px;
+	margin-left: 4px;
 }
 .header-btn {
 	border: 1px solid transparent;
@@ -204,12 +204,11 @@ header nav.user ul.right > li {
 }
 
 header nav.user ul.right > li > span.header-btn {
-	box-shadow: 2px 2px 1px #DDD inset;
-	color: #333 !important;
-}
-header nav.user ul.right > li:hover.menu-trigger-create > span.header-btn {
 	box-shadow: 2px 2px 1px #FFFFFF inset;
-	color: #000 !important;
+	color: #333;
+}
+header nav.user ul.right > li.help > span.header-btn {
+	box-shadow: 1px 1px 1px #FFFFFF inset;
 }
 header nav.user ul.right > li.normal-view > span.header-btn {
 	padding: 3px 8px;
@@ -221,7 +220,16 @@ header nav.user ul.right > li.menu-trigger-create > span.header-btn {
 	font-size: 1.1em;
     font-weight: 900;
 }
-
+header nav.user ul.right > li.help > span.header-btn {
+	padding: 1px 5px;
+    font-weight: 900;
+    -webkit-border-radius: 10px;
+	-moz-border-radius: 10px;
+	color: #FFF;
+}
+header nav.user ul.right > li.help > span.header-btn.selected {
+	color: 	#8ECC2A;
+}
 
 section#body-container {
 	-moz-box-shadow: 0 0 5px #888;
@@ -1790,10 +1798,50 @@ aside.related-content.grid_5 > section {
 	overflow: hidden;
 }
 
-/* Comments */
-section.discussion {
-	min-height: 20px;
+/* Comments for discussion & help */
+section.discussion .paging-content{
+	min-height: 40px;
 }
+section.discussion .FigureBox.Person figure > a > img {
+	box-shadow: 0 0 8px #8FB9D0 ;
+}
+section:not(#paging-help).help {
+	background-color: #FFF;
+	border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    box-shadow: 0 0 5px #888888;
+    margin-bottom: 10px;
+}
+section.help article.topic {
+	min-height: 30px;
+}
+section.help .post h3 span.page {
+	color: #0063DC;
+	cursor: default;
+}
+section.help form div.input.text {
+	display: block;
+	margin: 2px 0;
+	position: relative;
+	overflow: hidden;
+}
+section.help form label[for=CommentTitle] {
+	color: #888;
+	font-size: 12pt;
+	padding: 0 4px;
+	position:absolute;
+	width: 100%;
+	z-index: 10;
+}
+section.help form input#CommentTitle {
+	width: 100%;
+	padding: 0 4px;
+	font-size: 12pt;
+}
+section.help .FigureBox.Person figure > a > img {
+	box-shadow: 0 0 8px #8ECC2A ;
+}
+
 .comments-main .post {
 	margin: 2px;
 	padding: 2px 10px;
@@ -1852,6 +1900,11 @@ section.discussion {
 	padding-left: 8px;
 	font-weight: bold;
 	color: #888;
+}
+section.help .comments-main .FigureBox.Person span.title a {
+	padding-left: 8px;
+	font-weight: bold;
+	color: #006400;
 }
 /* unused ?*/
 .comments-main .FigureBox.Person .description {
@@ -1916,6 +1969,24 @@ section.discussion div.wrap {
 }
 .grid_11 .comments-main ul ul ul .comments .FigureBox.Person.sq  figcaption {
 	width: 473px;	
+}
+.grid_16 .comments-main .comments {
+	width: 940px;
+}
+.grid_16 .comments-main .comments .FigureBox.Person.sq  figcaption {
+	width: 868px;	
+}
+.grid_16 .comments-main ul ul .comments {
+	width: 890px;
+}
+.grid_16 .comments-main ul ul .comments .FigureBox.Person.sq  figcaption {
+	width: 833px;	
+}
+.grid_16 .comments-main ul ul ul .comments {
+	width: 840px;
+}
+.grid_16 .comments-main ul ul ul .comments .FigureBox.Person.sq  figcaption {
+	width: 783px;	
 }
 .comments-main ul.tree-block ul li .FigureBox.Person.sq.small figure img {
 	width:33px;
@@ -2003,7 +2074,7 @@ input[type='submit'], button[type='submit'] {
 /*
  * /groups/invitation CSS
  */
-#body-container.plain div.wrap, div.wrap-v {
+.wrap-v , #body-container.plain div.wrap {
 	margin-top: 10px;
 	margin-bottom: 10px;
 }
@@ -2268,4 +2339,16 @@ li:hover.white.focus, li:hover.white.selected
 	border: 1px solid #8fb9d0;
 	-webkit-box-shadow: 0px 0px 7px #fff inset;
 	-moz-box-shadow: 0px 0px 7px #fff inset;	
+}
+
+.blue-gloss {
+/*	http://www.colorzilla.com/gradient-editor/#6db3f2+0,54a3ee+50,3690f0+51,1e69de+100;Blue+Gloss+%233*/
+	background: rgb(109,179,242); /* Old browsers */
+	background: -moz-linear-gradient(top,  rgba(109,179,242,1) 0%, rgba(84,163,238,1) 50%, rgba(54,144,240,1) 51%, rgba(30,105,222,1) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(109,179,242,1)), color-stop(50%,rgba(84,163,238,1)), color-stop(51%,rgba(54,144,240,1)), color-stop(100%,rgba(30,105,222,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  rgba(109,179,242,1) 0%,rgba(84,163,238,1) 50%,rgba(54,144,240,1) 51%,rgba(30,105,222,1) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  rgba(109,179,242,1) 0%,rgba(84,163,238,1) 50%,rgba(54,144,240,1) 51%,rgba(30,105,222,1) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  rgba(109,179,242,1) 0%,rgba(84,163,238,1) 50%,rgba(54,144,240,1) 51%,rgba(30,105,222,1) 100%); /* IE10+ */
+	background: linear-gradient(top,  rgba(109,179,242,1) 0%,rgba(84,163,238,1) 50%,rgba(54,144,240,1) 51%,rgba(30,105,222,1) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#6db3f2', endColorstr='#1e69de',GradientType=0 ); /* IE6-9 */
 }

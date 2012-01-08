@@ -86,7 +86,6 @@ class AssetsController extends AppController {
 
 
 	function beforeRender() {
-		Configure::write('js.bootstrap_snappi', true);
 		if (!($this->RequestHandler->isAjax() || $this->RequestHandler->ext == 'json') && AppController::$uuid) {
 			$label = !empty($this->viewVars['data']['Asset']['caption']) ? $this->viewVars['data']['Asset']['caption'] : '';
 			if (Session::read("lookup.trail.{$this->displayName}.uuid") == AppController::$uuid) {
@@ -978,7 +977,11 @@ debug("WARNING: This code path is not tested");
 		if (!$id) {
 			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'Snap'));
 			$this->redirectSafe();
-		}		
+		}	
+		if (isset($this->params['url']['view'])) {
+			$this->Session->write("comments.viewType.discussion", $this->params['url']['view']);
+			$this->redirect($this->here, null, true);
+		}	
 		$BIG_LIMIT = 10;
 //		debug("$shotType, showHidden=$showHidden");
 		$options = array(

@@ -11,8 +11,8 @@
 <div class="comments-main">
 	<div class="post rounded-5 blue">
 <?php
-$discussion = array_merge(array('action'=>'discussion'), Configure::read('passedArgs.min'));
-$discussion['?'] = @mergeAsArray($discussion['?'], array('view'=>'flat') );
+$here = array_merge(array('action'=>'discussion'), Configure::read('passedArgs.min'));
+$here['?'] = @mergeAsArray($here['?'], array('view'=>'flat') );
 // show add form
 $isAddMode=1;  // always show add form
 if ($allowAddByAuth):
@@ -34,15 +34,13 @@ endif;
 	</div>
 	
 	<div>
-		<span class="comment-view right">Showing: <a href='<?php echo Router::url($discussion) ?>'>most recent</a> | <b>threaded</b></span>
+		<span class="comment-view right">Showing: <a href='<?php echo Router::url($here) ?>'>most recent</a> | <b>threaded</b></span>
 <?php 
-if (!$isAddMode || $isAddMode):
 	echo $commentWidget->element('paginator');
 	echo $tree->generate(${$viewComments}, array(
 		'callback' => array(&$commentWidget, 'treeCallback'),
 		'model' => 'Comment',
 		'class' => 'tree-block'));
-endif;
 ?>		
 	</div>
 	

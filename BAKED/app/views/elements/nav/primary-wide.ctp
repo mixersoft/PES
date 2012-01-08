@@ -64,8 +64,14 @@
 					<span class="grey">Welcome,</span>
 					<a id='userAccountBtn' class='menu-open'><?php echo $displayName ?></a>
 				</li>	
+				<li class="help" title="Ask questions or get help for this page.">
+					<span class="header-btn blue-gloss rounded-5"  onclick="SNAPPI.UIHelper.nav.showHelp(this);">?</span>
+				</li>
 				<li><a href="/users/logout">Sign out</a></li>				
 			<?php  } else { ?>
+				<li class="help" title="Ask questions or get help for this page." >
+					<span class="header-btn blue-gloss rounded-5"  onclick="SNAPPI.UIHelper.nav.showHelp(this);">?</span>
+				</li>
 				<li><a href="/users/login">Sign in</a></li>
 				<li><a href="/users/register">Sign up</a></li>
 			<?php  } ?>					

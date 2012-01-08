@@ -114,7 +114,6 @@ if (empty($this->passedArgs['wide'])) {
 						$xhrSrc = array('plugin'=>'', 'action'=>'discussion', $this->passedArgs[0]);
 						$xhrSrc = Router::url($xhrSrc);
 						echo "<div id='paging-comments' class='paging-content wrap xhr-get' xhrSrc='{$xhrSrc}'  xhrTarget='paging-comments'></div>";	
-						// echo $this->element('comments/discussion-fragment', array('xhrSrc'=>$xhrSrc));
 					?>	
 					</section>
 				</article>				

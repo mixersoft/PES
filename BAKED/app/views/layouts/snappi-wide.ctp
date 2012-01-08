@@ -142,7 +142,7 @@
 	<?php	
 		$this->Layout->blockEnd();
 		
-		if (Configure::read('js.bootstrap_snappi')) echo $this->Html->script('/js/snappi/base_aui.js');		
+		echo $this->Html->script('/js/snappi/base_aui.js');		
 		echo $scripts_for_layout;
 		$this->Layout->output($this->viewVars['javascript_for_layout']);
 	?>

@@ -144,7 +144,7 @@
 			var TRIGGER = cfg && cfg.TRIGGER ? cfg.TRIGGER : this.CSS_CLASS_TRIGGER;  
 			if (n && n.hasClass(TRIGGER)) {
 				// direct request, just fetch without delay
-				this.requestFragment(n);
+				this.requestFragment(n, cfg);
 			} else {
 				// searches page for xhr-gets, add delay as necessary
 				var wait = cfg.delay || this.XHR_PAGE_INIT_DELAY;
@@ -178,7 +178,7 @@
 		 * 
 		 * @param {Object} n - YUI3 node for 'div.xhr-get'
 		 */
-		requestFragment : function(n) {
+		requestFragment : function(n, cfg) {
 			
 			var target = n.getAttribute('xhrTarget');
 			var nodelay = n.getAttribute('nodelay');
@@ -192,7 +192,11 @@
 			//		target.io.after('IOPlugin:activeChange', 
 			// 	ParseContent._dispatch() runs from asyncQueue. happens async AFTER IOPlugin:success
 			
-			var args = {target: target, fragment: n};
+			var args = {
+				target: target, 
+				fragment: n,
+				cfg: cfg
+			};
 			if (!target.io) {
 				target.plug(_Y.Plugin.IO, {
 					uri: uri,
@@ -203,6 +207,9 @@
 					on: {
 						complete: function(e, id, o , args) {
 							args.fragment.removeClass('xhr-loading');
+							if (args.cfg && args.cfg.complete) {
+								args.cfg.complete(e, id, o , args);
+							}
 						},
 						// success: function(e, id, o , args) {
 							// console.warn("success");

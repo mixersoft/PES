@@ -8,7 +8,7 @@
  * Redistributions of files must retain the above copyright notice.
  */
 ?>
-<?php 
+<?php 	
 	$_actionLinks = array();
 	if (!empty($displayUrlToComment)) {
 		$_actionLinks[] = sprintf('<a href="%s">%s</a>', $urlToComment . '/' . $comment['Comment']['slug'], __d('comments', 'View', true));

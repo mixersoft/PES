@@ -14,7 +14,6 @@
 	</title>
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/reset.css" />
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/960.css" />	
-<!-- 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/style.css" /> -->
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/style.1.css" />
 	<?php
 		echo $this->Html->meta('favicon.ico', '/img/favicon.ico', array('type' => 'icon') );
