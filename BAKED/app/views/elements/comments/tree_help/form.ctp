@@ -22,9 +22,6 @@
 	} else {
 		echo $form->create(null, array('url' => array_merge($_url, array('comment' => $comment, '#' => 'comment' . $comment))));
 	}
-	/*
-	 * hide title from comments
-	 */
 	?>
 	<div class="input text">
 		<label for="CommentTitle" onclick="this.className='hide';">Title</label>

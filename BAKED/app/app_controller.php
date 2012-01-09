@@ -717,9 +717,10 @@ debug($context);
 			"{$UserModel}.src_thumbnail", "{$UserModel}.asset_count", "{$UserModel}.groups_user_count", "{$UserModel}.last_login"
 			);
 		$order = array(
-			'Comment.parent_id' => 'asc',
-			'Comment.created' => 'asc');
-		return $Comment->find('threaded', compact('conditions', 'fields', 'order'));
+			// 'Comment.parent_id' => 'asc',
+			'Comment.created' => 'desc');
+		$data = $Comment->find('threaded', compact('conditions', 'fields', 'order'));
+		return $data;
 	}	
 
 /**
@@ -741,8 +742,7 @@ debug($context);
 			'userModel' => $UserModel,
 			'userData' => $this->Auth->user());
 		$conditions = $this->{$CommentsComponent->modelName}->commentBeforeFind(array_merge($params, $options));
-
-		// $order = array('Comment.parent_id' => 'asc', 'Comment.lft' => 'desc');
+		
 		$order = array('Comment.lft' => 'asc');
 		$limit = $COMMENTS_TREE_VIEW_LIMIT;
 		$fields = array(
@@ -757,6 +757,8 @@ debug($context);
 		);
 		$this->paginate['Comment'] = compact('order', 'conditions', 'limit', 'fields');
 		$data = $this->paginate('Comment');
+		
+		
 		$parents = array();
 		if (isset($data[0]['Comment'])) {
 			$rec = $data[0]['Comment'];

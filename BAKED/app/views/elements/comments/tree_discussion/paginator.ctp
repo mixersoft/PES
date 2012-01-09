@@ -22,8 +22,8 @@
 
 <?php if (!empty(${$viewComments})): ?>
 	<div class="paging">
-		<?php echo $pager->prev('<< '.__d('comments', 'Most Recent', true), array(), null, array('class'=>'disabled'));?>
+		<?php echo $pager->prev('<< '.__d('comments', 'Oldest', true), array(), null, array('class'=>'disabled'));?>
 	 | 	<?php echo $pager->numbers();?>
-		<?php echo $pager->next(__d('comments', 'Oldest', true).' >>', array(), null, array('class'=>'disabled'));?>
+		<?php echo $pager->next(__d('comments', 'Most Recent', true).' >>', array(), null, array('class'=>'disabled'));?>
 	</div>
 <?php endif; ?>
