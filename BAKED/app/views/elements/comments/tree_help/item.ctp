@@ -17,6 +17,8 @@
 	if (!empty($isAuthorized)) {
 		$options = array('onclick'=>'return false;', 'class'=>'reply');
 		$_actionLinks[] = $commentWidget->link(__d('comments', 'Reply', true), array_merge($url, array('plugin'=>'', 'comment' => $comment['Comment']['id'], '#' => 'comment' . $comment['Comment']['id'])), $options);
+		$_actionLinks[] = $commentWidget->link(__d('comments', 'Up', true), array_merge($url, array('plugin'=>'', 'action'=>'up', 'comment' => $comment['Comment']['id'], '#' => 'comment' . $comment['Comment']['id'])));
+		$_actionLinks[] = $commentWidget->link(__d('comments', 'Down', true), array_merge($url, array('plugin'=>'', 'action'=>'down', 'comment' => $comment['Comment']['id'], '#' => 'comment' . $comment['Comment']['id'])));
 		if (!empty($isAdmin)) {
 			if (empty($comment['Comment']['approved'])) {
 				$_actionLinks[] = $commentWidget->link(__d('comments', 'Publish', true), array_merge($url, array('comment' => $comment['Comment']['id'], 'comment_action' => 'toggleApprove', '#' => 'comment' . $comment['id'])));
@@ -67,7 +69,7 @@
 				<div class="posted">
 					<?php echo String::insert(":new", $fields); ?>
 					<span ><?php __d('comments', 'Posted'); ?>&nbsp; <?php echo $time->timeAgoInWords($comment['Comment']['created']); ?></span>
-					<span > &nbsp;<?php echo join('&nbsp;', $_actionLinks);?></span>
+					<span > &nbsp;<?php echo join('&nbsp;|&nbsp;', $_actionLinks);?></span>
 				</div>
 			</div>	    		
 		</figure>
