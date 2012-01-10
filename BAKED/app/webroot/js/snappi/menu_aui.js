@@ -7,12 +7,13 @@
 		SNAPPI.MenuAUI = Menu;
 		
 		// SNAPPI.MenuAUI
-		// global lookup by CSS ID
+		// global lookup by CSS ID, or cfg.lookup_key
 		Menu.CFG = {
 			'menu-header-markup': CFG_Menu_Header,
 			'menu-header-create-markup': CFG_Menu_Header_Create,
 			'menu-item-header-markup': CFG_Menu_Item_Header,
 			'contextmenu-photoroll-markup': CFG_Context_Photoroll,
+			'menu-photoPreview-actions': CFG_Menu_PreviewPhoto_Actions,
 			'contextmenu-hiddenshot-markup': CFG_Context_HiddenShot,
 			'menu-pagemaker-selected-create-markup': CFG_Menu_Pagemaker_Create, 
 			'menu-select-all-markup': CFG_Menu_SelectAll,
@@ -25,7 +26,6 @@
 			'contextmenu-group-markup': CFG_Context_FigureBox,		
 			'contextmenu-person-markup': CFG_Context_FigureBox,
 		};		
-			
 	}
 
 	var DEFAULT_CFG_contextmenu = 	{
@@ -126,10 +126,10 @@
 		
 		menus = _Y.merge(defaultMenus, menus);
 		for (var i in menus) {
-			var CSS_ID = menus[i] ? i : null; 
+			var key = menus[i]!==false ? i : null; 
 			var cfg = _Y.Lang.isObject(menus[i]) ? menus[i] : null;
-	    	if (CSS_ID && !Menu.find[CSS_ID]) {
-	    		Menu.CFG[CSS_ID].load(cfg);
+	    	if (key && !Menu.find[key]) {
+	    		Menu.CFG[key].load(cfg);
 	    	}			
 		}
 		_Y.one('#markup').setStyle('display', 'block');
@@ -175,8 +175,8 @@
 		Menu.startListener(menu, cfg.handle_click);
 		
 		// lookup reference
-		
-		Menu.find[MARKUP.id] = menu;
+		var key = cfg.lookup_key || MARKUP.id;
+		Menu.find[key] = menu;
 		if (cfg.host) cfg.host.ContextMenu = menu; 		// add back reference
 		return menu;
 	};
@@ -552,6 +552,53 @@
 			}			
 		} catch (e) {}		
 	};	
+	MenuItems.preview_delete_beforeShow = function(menuItem, menu){
+		try {
+			var target = menu.get('currentNode'),	// target
+				enabled = true;
+			target = target.ancestor('.FigureBox');
+			var audition = SNAPPI.Auditions.find(target.uuid);
+			// TODO: add Audition.owner property to CastingCall
+			if (audition && audition.Audition.owner == SNAPPI.STATE.controller.userid) {
+				menuItem.removeClass('hide');
+				if (enabled) menuItem.removeClass('disabled');
+				else menuItem.addClass('disabled');
+			} else menuItem.addClass('disabled');
+		} catch (e) {
+			menuItem.addClass('hide');
+		}
+	};	
+	MenuItems.preview_delete_click = function(menuItem, menu){
+		// preview has no gallery association. delete directly
+		var node = menu.get('currentNode').ancestor('.FigureBox');
+		var aids = [node.uuid];
+		SNAPPI.AssetRatingController.deleteByUuid( node, {
+			ids: aids.join(','), 
+			actions: {'delete':1},
+			// context: ????,
+			callbacks: {
+				successJson: function(e, i, o,args){
+					var resp = o.responseJson;
+					// remove deleted auditions
+					var aud,  
+						auditions = SNAPPI.Auditions._auditionSH,
+						shots = SNAPPI.Auditions._shotsSH;
+					for (var i in aids) {
+						aud = SNAPPI.Auditions.find(aids[i]);
+						SNAPPI.Auditions.unbind(aud);
+						auditions.remove(aud);
+						try {
+							shots.remove(aud.Audition.Shot.id);	
+						} catch(e) {}
+					}
+console.error("PreviewPhoto delete is still incomplete");					
+					// refresh, move focus if filmstrip is available
+					// or redirect
+					return false;
+				}
+			}
+		});		
+	};		
 	// formerly _getPhotoRoll(), currently unused
 	MenuItems.getGalleryFromTarget = function(target){
 		if (target instanceof _Y.OverlayContext) {
@@ -1104,8 +1151,9 @@
 		};
 		
 		// reuse, if found
-		if (Menu.find[CSS_ID]) 
-			return Menu.find[CSS_ID];
+		var key = cfg.lookup_key || CSS_ID;
+		if (Menu.find[key]) 
+			return Menu.find[key];
 
 		var callback = function(){
 			Menu.initContextMenu(MARKUP, TRIGGER, cfg);
@@ -1138,7 +1186,7 @@
 		return _load_Single_Trigger_Menu(CSS_ID, TRIGGER, XHR_URI, cfg);
 	};
 	/**
-	 * not tested
+	 * not currently used. see UIHelper.nav.toggle_ItemMenu(); 
 	 * @param cfg
 	 * @return
 	 */
@@ -1150,6 +1198,19 @@
 		return _load_Single_Trigger_Menu(CSS_ID, TRIGGER, XHR_URI, cfg);
 	};
 	
+	var CFG_Menu_PreviewPhoto_Actions = function(){}
+	CFG_Menu_PreviewPhoto_Actions.load = function(cfg){
+		var CSS_ID = 'menu-photoPreview-actions';		
+		var TRIGGER = '.FigureBox.PhotoPreview li.icon.context-menu';
+		var XHR_URI = '/combo/markup/photoPreviewActionMenu'; 
+		var _cfg = {
+			align: { points:['tl', 'br'] },
+			init_hidden: false,
+			offset: {x:10, y:0},
+	    }
+		cfg = _Y.merge(_cfg, cfg);
+		return _load_Single_Trigger_Menu(CSS_ID, TRIGGER, XHR_URI, cfg);
+	};
 	var CFG_Menu_Pagemaker_Create = function(){}; 
 	/**
 	 * load Create menu for making PageGalleries from Selected

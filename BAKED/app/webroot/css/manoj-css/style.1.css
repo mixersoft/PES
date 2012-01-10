@@ -665,22 +665,17 @@ section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
 /* copied from section.gallery-display-options */
 .FigureBox.PhotoPreview figcaption .extras {
 	border: 1px solid #D2D2D2;
-	-moz-border-radius: 5px;
-	-webkit-border-radius: 5px;
 	background: -moz-linear-gradient(bottom, #E2E6EB, #f5f5f5);
 	background: -webkit-gradient(linear, center bottom, center top, from(#E2E6EB), to(#f5f5f5));
-	line-height: 20px !important;
+	line-height: 20px;
 	font-size: 10pt;
+	margin: 2px 0;
 	overflow: hidden;
-	padding: 4px 10px;
+	padding: 0 10px;
 }
 .FigureBox.PhotoPreview figcaption .extras > li {
-	float:left;
-	list-style-type: none;
 	font-size: 10pt;
 	margin: 0px 2px;
-	height: 23px;
-	line-height: 23px;
 	cursor: default;
 }
 .FigureBox.PhotoPreview figcaption .extras li.btn {
@@ -690,28 +685,36 @@ section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
 	-webkit-border-radius: 5px;	
 	color: #494949;
 }
-.FigureBox.PhotoPreview figcaption .extras li.rating.btn {
-	width: 156px;
+.FigureBox.PhotoPreview figcaption .extras li.caption{
+	font-weight: bold;
+	padding-right: 10px;
+	width: 200px;
+	xoverflow: hidden;
+}
+.FigureBox.PhotoPreview figcaption .extras li.rating {
+	height:20px;
 }
 .FigureBox.PhotoPreview figcaption .extras li div.ratingGroup {
-	margin: 2px 5px 2px
+	margin: 7px 5px;
 }
 .FigureBox.PhotoPreview .extras li.score {
 	font-size: 11px;
-	background: -moz-linear-gradient(bottom, #eeeeee, #fff);
-	background: -webkit-gradient(linear, center bottom, center top, from(#eeeeee), to(#fff));
-	border: 1px solid #e2e2e2;
+	background-color: #FFF;
+	border: 1px solid #E2E2E2;
 	-moz-border-radius: 3px;
 	-webkit-border-radius: 3px;
 	width: 25px;
 	height: 17px;
-	line-height: 17px;
 	text-align: center;
 	font-family: Arial, Helvetica, sans-serif;
 	cursor: default;
 }
+.FigureBox.PhotoPreview .extras li.icon img {
+	vertical-align: text-top;
+}
 .FigureBox.PhotoPreview figcaption .extras li .sizes li.btn {
-	margin: -1px 2px;
+	margin: 0 1px;
+	padding: 0 4px;
 }
 .FigureBox.PhotoPreview figcaption .extras li.btn:hover, .FigureBox.PhotoPreview figcaption .extras li.btn.selected {
 	background: -moz-linear-gradient(bottom, #fca22f, #ffc374);	 

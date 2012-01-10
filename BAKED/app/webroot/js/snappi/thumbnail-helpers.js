@@ -318,12 +318,13 @@
     	// TODO: update Sizes to use action="set-display-size:[size]" format
 		markup: '<article class="FigureBox PhotoPreview">'+
                 '<figure>'+
-                '    <figcaption><ul class="extras">'+
-                '    	 <li>My Rating</li><li class="rating"></li>'+
-                '        <li>Score</li><li class="score">0.0</li>'+
+                '    <figcaption><ul class="extras inline rounded-5">'+
+                '<li class="label caption"></li>' +
+                '    	 <li class="label">My Rating</li><li class="rating"></li>'+
+                '        <li class="label">Score</li><li class="score">0.0</li>'+
                 '		 <li><nav class="settings">' +
                 '        <ul class="sizes inline">' +
-                '<li class="label">Sizes</li><li class="btn" size="tn"><a>XS</a></li><li class="btn" size="bs"><a>S</a></li><li class="btn" size="bm"><a>M</a></li><li class="btn" size="bp"><a>L</a></li>' +
+                '<li class="label">Sizes</li> <li class="btn white" action="set-display-size:tn" size="tn">XS</li><li class="btn white" action="set-display-size:bs" size="bs">S</li><li class="btn white" action="set-display-size:bm" size="bm">M</li><li class="btn white" action="set-display-size:bp" size="bp">L</li>' +
                 ' 		 </ul>'+                
                 '		 </nav></li>' +
                 '        <li class="icon context-menu"><img alt="" title="actions" src="/css/images/icon2.png"></li>'+
@@ -389,14 +390,10 @@
 			}
 			
 			// show caption, 
-			exists = node.one("figcaption > .label");
+			exists = node.one("figcaption .caption");
 			if (this._cfg.showLabel) {
-				if (!exists) {
-					node.one('ul.extras').insert('<div class="label">' + this.trimLabel(title) + '</div>', 'before');
-				} else {
-					exists.set('innerHTML', this.trimLabel(title));
-					exists.removeClass('hide');
-				}
+				exists.set('innerHTML', this.trimLabel(title));
+				exists.removeClass('hide');
 			} else {
 				node.one('figure > img').set('title', title);
 				if (exists) exists.addClass('hide');
@@ -517,8 +514,13 @@
         	} catch(e) {}
         },
 		handle_ThumbsizeClick: function(e){
-			var target = e.currentTarget;
-			var size = target.getAttribute('size');
+			var size, action, target = e.currentTarget;
+			action = e.currentTarget.getAttribute('action').split(':');
+    		switch(action[0]) {
+    			case 'set-display-size':
+    				size = action[1];
+    				break;
+			}
 			this.Thumbnail.resize(size);
 			// set focus in renderElementsBySize()
 			
@@ -547,11 +549,9 @@
         	shotGallery.showShotGallery(selected);
 		},
 		handle_ActionsClick: function(e) {
-			// console.log("Preview Thumbnail Actions Click;");
-			// show navFilmstrip for now
-			var navFilmstrip = SNAPPI.Gallery.find['nav-'];  
-			navFilmstrip.render();
-			SNAPPI.Factory.Gallery.actions.setView(navFilmstrip, 'filmstrip');
+			if (!SNAPPI.MenuAUI.find['menu-photoPreview-actions']) {
+				SNAPPI.MenuAUI.initMenus({'menu-photoPreview-actions':1});	
+			}
 		},
 		set_AutoScroll: function(value, thumbnail, gallery) {
 			// node == previewThumbnail node, .FigureBox.PreviewPhoto
@@ -579,6 +579,9 @@
 	 * Photo Thumbnail
 	 */
 	ThumbnailFactory.Photo = {
+		// defaultCfg: {
+    		// listeners: ['ActionsClick'],  // initialized by GalleryFactory.listeners
+    	// },
 		markup: '<article class="FigureBox Photo">'+
                 '	<figure><img alt="" src="">'+
                 '    <figcaption><ul class="extras">'+
@@ -714,7 +717,10 @@
 				node.one('ul').addClass('hide');
 			}				
 			return this;
-		}
+		},
+		handle_ActionsClick: function(e) {
+			console.log("Photo Thumbnail Actions Click;");
+		},
 	};
 	ThumbnailFactory.PhotoAirUpload = {
 		markup: '<article class="FigureBox PhotoAirUpload">'+

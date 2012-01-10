@@ -144,7 +144,8 @@
 			var ID_LOOKUP = {
 				'group': 'contextmenu-group-markup',
 				'person': 'contextmenu-person-markup',
-				'photo': 'contextmenu-photoroll-markup',
+				// use 'div.preview .FigureBox.PhotoPreview li.icon.context-menu' instead
+				// 'photo': 'contextmenu-photoroll-markup',	// use div.preview .FigureBox.PhotoPreview li.icon.context-menu instead
 			}
 			var type = (SNAPPI.STATE.controller.label).toLowerCase();
 			var CSS_ID = ID_LOOKUP[ type ];
@@ -179,19 +180,22 @@
 				}
 	    	}	    	
 		},
-		toggle_ContextMenu : function(e) {
+		toggle_ContextMenu : function(e, cfg) {
+			cfg = cfg || {};
 			// copied from SNAPPI.Gallery
 			var ID_LOOKUP = {
 				'group': 'contextmenu-group-markup',
 				'person': 'contextmenu-person-markup',
+				'photo': 'contextmenu-photoroll-markup',
+				'photoPreview': 'contextmenu-photoroll-markup',
 			}
-			var type = UIHelper.listeners.getGalleryType(e.currentTarget);
+			type = cfg.type || UIHelper.listeners.getGalleryType(e.currentTarget);
 			// var isPreview = 0&& !e.currentTarget.test('.gallery.'+type+' .FigureBox');
 	    	var CSS_ID = ID_LOOKUP[ type ];
 	    	if (e==false && !SNAPPI.MenuAUI.find[CSS_ID]) return;
 	    	
 	    	// load/toggle contextmenu
-	    	var listenerNode = e.currentTarget.ancestor('.container');
+	    	var listenerNode = cfg.listenerNode || e.currentTarget.ancestor('.container');
 	    	if (!SNAPPI.MenuAUI.find[CSS_ID]) {
 	    		var contextMenuCfg = {
 	    			TRIGGER: ' .FigureBox',
@@ -200,7 +204,7 @@
 	    			triggerRoot:  listenerNode,
 	    			init_hidden: false,
 				};
-				
+				contextMenuCfg = _Y.merge(contextMenuCfg, cfg);
 	    		SNAPPI.MenuAUI.CFG[CSS_ID].load(contextMenuCfg);
 	    		// stop LinkToClickListener
 	    		listenerNode.listen['disable_LinkToClick'] = true;
