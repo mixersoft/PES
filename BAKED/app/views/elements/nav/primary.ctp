@@ -32,6 +32,7 @@
 	$focus = Session::read("nav.primary");
 	// $sections[$focus]['href'] = "javascript:;"; // unset href for section with focus
 	if ($focus) $sections[$focus]['class'] = 'class="focus"';
+	$help_status =  ($controllerAttr['name'] == 'Help') ? 'green' : 'blue-gloss'; 
 ?>
 <!--top header start-->
 <header class="head container_16">
@@ -62,12 +63,12 @@
 					<a id='userAccountBtn' class='menu-open'><?php echo $displayName ?></a>
 				</li>	
 				<li class="help" title="Ask questions or get help for this page.">
-					<span class="header-btn blue-gloss rounded-5"  onclick="SNAPPI.UIHelper.nav.showHelp(this);">?</span>
+					<span class="header-btn rounded-5 <?php echo $help_status; ?>"  onclick="SNAPPI.UIHelper.nav.showHelp(this);">?</span>
 				</li>
 				<li><a href="/users/logout">Sign out</a></li>				
 			<?php  } else { ?>
 				<li class="help" title="Ask questions or get help for this page." >
-					<span class="header-btn blue-gloss rounded-5"  onclick="SNAPPI.UIHelper.nav.showHelp(this);">?</span>
+					<span class="header-btn rounded-5 <?php echo $help_status; ?>"  onclick="SNAPPI.UIHelper.nav.showHelp(this);">?</span>
 				</li>
 				<li><a href="/users/login">Sign in</a></li>
 				<li><a href="/users/register">Sign up</a></li>
@@ -80,8 +81,6 @@
 <?php	if (Configure::read('controller.name')!=='Help') {
 			$controllerAttr = Configure::read('controller');
 			$topicId = "{$controllerAttr['name']}~{$controllerAttr['alias']}~{$controllerAttr['action']}"; 
-			// $xhrSrc = array('plugin'=>'', 'controller'=>'help', 'action'=>'topic', $topicId);
-			// $xhrSrc = Router::url($xhrSrc);
 		?>	
 <section class="help container_16 hide" topics="<?php echo $topicId; ?>">
 </section>

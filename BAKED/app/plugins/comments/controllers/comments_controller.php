@@ -17,6 +17,8 @@
  */
 class CommentsController extends CommentsAppController {
 
+	public $layout = 'snappi-wide';
+
 /**
  * Name
  *
