@@ -57,6 +57,9 @@
 			this.initRating(parent, value);
 			return parent;
     	},
+    	/*
+    	 * deprecate. use /photo/display-options.ctp
+    	 */
     	renderBar : function(filters){
     		if (!this.container) {
     			// this.container = _Y.one('#page-filters');	

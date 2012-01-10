@@ -336,7 +336,7 @@ section.gallery-header h1 {
 section.gallery-header ul {
 }
 section.gallery-header ul > li {
-	padding: 2px 4px;
+	zzpadding: 2px 4px;
 }
 section.filmstrip section.gallery-header ul > li {
 	padding: 2px 0;
@@ -393,43 +393,45 @@ section.gallery-display-options.wide nav.settings {
 	-webkit-border-radius: 5px;
 	-moz-border-radius: 5px;
 }
-section.gallery-display-options li, section.gallery-display-options ul.filter ul {
-	float:left;  /* hack: need to float here because of background images in rating */
-}
-section.gallery-display-options nav.settings > ul > li.btn {
-	margin-left: 4px;	/* adjust for float left hack above */
-}
 section.gallery-display-options nav.settings > ul {
-	padding-right: 4px; /* adjust for float left hack above */
-	overflow: hidden;
+	padding: 0 4px; 
 	display: inline-block;
 }
-section.gallery-display-options.wide nav.settings ul.sort {
-	float:none;
-}
 section.gallery-display-options ul li {
-	list-style-type: none;
-}
-
-section.gallery-display-options ul.filter li.btn a {
-	color: #494949;
-}
-section.gallery-display-options ul.filter li.btn.rating {
-	width: 156px;
-}
-section.gallery-display-options ul.filter li.btn.rating li {
 	padding:0;
 }
+
+section.gallery-display-options nav.settings > ul > li.btn.white {
+	margin-bottom: 1px;
+    padding: 2px 4px 3px;
+}
+section.gallery-display-options nav.settings > ul > li.btn.rating {
+	width: 170px;
+	padding: 2px 4px; 
+	margin: 2px 0;
+}
+section.gallery-display-options ul.filter li.btn.rating li {
+	margin: 0;
+	padding: 0 2px;
+}
+
 section.gallery-display-options ul.filter li.btn.rating li.remove {
-	padding: 0 4px;
-	font-size: 0.9em;
-	font-weight: bold;
+	line-height: 14px;
+	margin-left: 2px;
+    padding: 0 4px;
 }
 section.gallery-display-options li.btn.rating li.remove a {
 	color:red;
+	font-size: 0.9em;
+	font-weight: bold;
 }
-section.gallery-display-options ul li.btn.rating div.ratingGroup {
-	margin: 2px 5px 2px
+section.gallery-display-options ul.filter li.btn.rating li#filter-rating-parent {
+	position:relative;
+}
+section.gallery-display-options ul.filter li.btn.rating div.ratingGroup {
+	position: absolute;
+	top: -12px;
+	z-index: 1;
 }
 
 /*section.gallery-display-options ul.sort, section.wide.gallery-display-options ul.thumb-size  {*/
@@ -442,7 +444,7 @@ section.gallery-display-options ul.sort li select {
 }
 
 section.gallery-display-options ul > li.label {
-	padding: 4px;
+	zzpadding: 4px;
 	font-size: 1.0em;
 	color: black;
 }
@@ -695,7 +697,8 @@ section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
 	height:20px;
 }
 .FigureBox.PhotoPreview figcaption .extras li div.ratingGroup {
-	margin: 7px 5px;
+	margin: 0 5px;
+    padding-top: 7px;
 }
 .FigureBox.PhotoPreview .extras li.score {
 	font-size: 11px;
@@ -795,23 +798,23 @@ div.ratingGroup.r0 {
 }
 
 div.ratingGroup.r1 {
-    background-position: -56px 0;
+    background-position: -56px bottom;
 }
 
 div.ratingGroup.r2 {
-    background-position: -42px 0;
+    background-position: -42px bottom;
 }
 
 div.ratingGroup.r3 {
-    background-position: -28px 0;
+    background-position: -28px bottom;
 }
 
 div.ratingGroup.r4 {
-    background-position: -14px 0;
+    background-position: -14px bottom;
 }
 
 div.ratingGroup.r5 {
-    background-position: 0 0;
+    background-position: 0 bottom;
 }
 
 /*section {

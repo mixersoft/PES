@@ -55,7 +55,7 @@
 			mixed = mixed.node;
 		}
 		// 14 = width of 1 smiley -1 (i.e. 15-1=14)
-		var position = '-' + (70 - 14 * value) + 'px 0px';
+		var position = '-' + (70 - 14 * value) + 'px bottom';
 		mixed.setStyle('backgroundPosition', position);
 	};
 
@@ -321,7 +321,7 @@
 		setRatingSprite : function(value) {
 			if (!value) value = this.value;
 			// 14 = width of 1 smiley -1 (i.e. 15-1=14)
-			var position = '-' + (70 - 14 * value) + 'px 0px';
+			var position = '-' + (70 - 14 * value) + 'px bottom';
 			this.node.setStyle('backgroundPosition', position);
 		},
 		// DEPRECATE
