@@ -8,10 +8,12 @@
 		'class'=>'help',
 		'onclick'=>'this.value=null; this.className=null',
 		'label'=>'');
+	$orange = array('class'=>'orange');
 	echo $this->Form->input('strTags', $options);
 	echo $this->Form->hidden('foreignKey', array('value'=>$data[$model]['id']) );
 	echo $this->Form->hidden('class', array('value'=>$model) );
-	echo $this->Form->end('Go');
+	echo $this->Form->submit('Go', $orange );
+	echo $this->Form->end();
 	?>
 </div>
 	

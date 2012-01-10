@@ -1749,12 +1749,12 @@ section.trends form input[type="text"] {
 }
 
 #body-container section.trends {
-	padding: 10px 0;
+	padding: 10px;
 }
 #body-container section.trends ul:not(.toolbar) {
 	font-size: 16pt;
 }
-#body-container section.trends ul:not(.toolbar) li {
+#body-container aside:not(.related-content) section.trends ul:not(.toolbar) li {
 	line-height:36px;
 }
 #body-container section.trends .tag-header ul h1{
@@ -1870,7 +1870,7 @@ section.help .FigureBox.Person figure > a > img {
 }
 .comments-main .post form .submit {
 	float: right;
-	margin-top: 4px;
+	margin: 2px 0;
 }
 .comments-main span.comment-view {
 	font-weight: normal;
@@ -2021,7 +2021,14 @@ form div.submit {
 	padding: 4px 0;
 	border-top: 1px solid  #E2E6EB;
 }
-
+.related-content form div.submit  {
+	margin: 0 ;
+    padding: 2px;
+}
+.related-content input[type="submit"] {
+	font-size: 0.8em;
+    padding: 2px;
+}
 
 /*
  * PAGE: /users/login, /users/register, user auth pages
