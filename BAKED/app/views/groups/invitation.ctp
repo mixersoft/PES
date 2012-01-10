@@ -23,7 +23,8 @@
 	// debug($signin_redirect);
 	$title = String::insert("Please Join Us at Snaphappi", $tokens);
 	
-		
+	// add listeners to start
+	$this->viewVars['jsonData']['listeners']['WindowOptionClick'] = null;
 
 	$this->Layout->blockStart('itemHeader');
 		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
@@ -161,14 +162,6 @@
 		</article>
 	</div>
 </section>
-
-<?php $this->Layout->blockStart('javascript'); ?>
-	<script type="text/javascript">		
-		PAGE.listeners = {
-			'WindowOptionClick':null,
-		};
-	</script>	
-<?php $this->Layout->blockEnd(); ?> 
 
 
 <!-- <?php $this->Layout->blockStart('javascript'); ?>

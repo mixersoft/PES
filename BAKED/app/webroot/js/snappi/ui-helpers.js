@@ -76,6 +76,9 @@
 			try {
 				var container = node || _Y.one('section.help');
 				btn = _Y.one(btn);
+				if (/\/help\/topic/.test(window.location.href)) {
+					return;
+				}
 				if (btn.hasClass('green')) {
 					container.addClass('hide');
 					btn.replaceClass('green', 'blue-gloss');
@@ -137,6 +140,45 @@
 			var here = SNAPPI.IO.setNamedParams(SNAPPI.STATE.controller.here, {wide: value});
 			window.location.href = here;
 		},
+		toggle_ItemMenu : function(e) {
+			var ID_LOOKUP = {
+				'group': 'contextmenu-group-markup',
+				'person': 'contextmenu-person-markup',
+				'photo': 'contextmenu-photoroll-markup',
+			}
+			var type = (SNAPPI.STATE.controller.label).toLowerCase();
+			var CSS_ID = ID_LOOKUP[ type ];
+	    	if (e==false && !SNAPPI.MenuAUI.find[CSS_ID]) return;
+	    	// load/toggle menu
+	    	
+	    	var listenerNode = e.container;
+	    	if (!SNAPPI.MenuAUI.find[CSS_ID]) {
+	    		var itemMenuCfg = {
+	    			CSS_ID: CSS_ID,
+	    			// TRIGGER: 'div.item-class',
+	    			force_TRIGGER: 'div.item-class',
+	    			triggerType: type,		// NOTE: add .gallery.group to id=groups-preview-xhr
+	    			align: { points:['tl', 'tr'] },
+	    			init_hidden: false,
+	    			offset: {x:10, y:0},
+				};
+				
+	    		SNAPPI.MenuAUI.CFG[CSS_ID].load(itemMenuCfg);
+	    		// stop LinkToClickListener
+	    		listenerNode.listen['disable_LinkToClick'] = true;
+	    	} else {
+	    		var menu = SNAPPI.MenuAUI.toggleEnabled(CSS_ID, e);
+				if (menu.get('disabled')) {
+					menu.enable();
+					menu.show();
+					listenerNode.listen['disable_LinkToClick'] = false;
+				} else {
+					menu.disable();
+					menu.hide();
+					listenerNode.listen['disable_LinkToClick'] = true;
+				}
+	    	}	    	
+		},
 		toggle_ContextMenu : function(e) {
 			// copied from SNAPPI.Gallery
 			var ID_LOOKUP = {
@@ -152,8 +194,9 @@
 	    	var listenerNode = e.currentTarget.ancestor('.container');
 	    	if (!SNAPPI.MenuAUI.find[CSS_ID]) {
 	    		var contextMenuCfg = {
+	    			TRIGGER: ' .FigureBox',
 	    			triggerType: type,		// NOTE: add .gallery.group to id=groups-preview-xhr
-	    			currentTarget: e.currentTarget,
+	    			currentTarget: e.currentTarget,	// init TRIGGER is currentTarget
 	    			triggerRoot:  listenerNode,
 	    			init_hidden: false,
 				};
@@ -321,7 +364,29 @@
 			}
 			// back reference
 			UIHelper.listen[action] = node.listen[action];
-        },        
+        },   
+        /**
+         * @params cfg object, cfg.node, 
+         * 		deprecate: cfg.type = [group, photo, person], 
+         * 		i.e. .FigureBox.Group
+         */
+        ItemHeaderClick : function(cfg) {
+        	var node = cfg.node || _Y.one('section.item-header');
+        	var action = 'ItemHeaderClick';
+        	var selector = '*';
+        	// if (cfg.type) selector += '.'+cfg.type ;
+        	
+        	node.listen = node.listen || {};
+            if (node.listen[action] == undefined) {
+				node.listen[action] = node.delegate('click', 
+	                function(e){
+	                	e.halt();
+	                	UIHelper.nav.toggle_ItemMenu(e);
+	                }, selector, UIHelper);
+			}
+			// back reference
+			UIHelper.listen[action] = node.listen[action];
+        },             
         /**
          * @params cfg object, cfg.node, cfg.type = [group, photo, person], 
          * 		i.e. .FigureBox.Group

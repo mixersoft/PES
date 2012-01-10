@@ -11,6 +11,7 @@
 		Menu.CFG = {
 			'menu-header-markup': CFG_Menu_Header,
 			'menu-header-create-markup': CFG_Menu_Header_Create,
+			'menu-item-header-markup': CFG_Menu_Item_Header,
 			'contextmenu-photoroll-markup': CFG_Context_Photoroll,
 			'contextmenu-hiddenshot-markup': CFG_Context_HiddenShot,
 			'menu-pagemaker-selected-create-markup': CFG_Menu_Pagemaker_Create, 
@@ -148,9 +149,12 @@
 		cfg = cfg || {};	// closure
 		
 		// set the correct TRIGGER
-		if (cfg.triggerRoot && cfg.triggerRoot instanceof _Y.Node) TRIGGER = '#'+cfg.triggerRoot.get('id')+' '+ TRIGGER;
-		else if (cfg.triggerRoot) TRIGGER = cfg.triggerRoot +' '+ TRIGGER;
-		else if (cfg.triggerType) TRIGGER = '.gallery.'+cfg.triggerType + TRIGGER;
+		if (cfg.force_TRIGGER) TRIGGER = cfg.force_TRIGGER;	// hack: for UIHelper.toggle_ItemMenu to use contextmenu as normal menu
+		else {
+			if (cfg.triggerRoot && cfg.triggerRoot instanceof _Y.Node) TRIGGER = '#'+cfg.triggerRoot.get('id')+' '+ TRIGGER;
+			else if (cfg.triggerRoot) TRIGGER = cfg.triggerRoot +' '+ TRIGGER;
+			else if (cfg.triggerType) TRIGGER = '.gallery.'+cfg.triggerType + TRIGGER;
+		}
 		
 		var _cfg = {
 				trigger: TRIGGER,
@@ -193,7 +197,7 @@
 	}
 	
 	/*
-	 * toggle menu enable/disable by changing trigger
+	 * toggle .FigureBox context menu enable/disable by changing trigger
 	 */
 	Menu.toggleEnabled = function(menu_ID, e) {
 		var menu = Menu.find[menu_ID];
@@ -1133,6 +1137,18 @@
 		var XHR_URI = '/combo/markup/headerMenuCreate'; 
 		return _load_Single_Trigger_Menu(CSS_ID, TRIGGER, XHR_URI, cfg);
 	};
+	/**
+	 * not tested
+	 * @param cfg
+	 * @return
+	 */
+	var CFG_Menu_Item_Header = function(){}
+	CFG_Menu_Item_Header.load = function(cfg){
+		var CSS_ID = 'menu-item-header-markup';
+		var TRIGGER = 'section.item-header';
+		var XHR_URI = '/combo/markup/itemMenu'; 
+		return _load_Single_Trigger_Menu(CSS_ID, TRIGGER, XHR_URI, cfg);
+	};
 	
 	var CFG_Menu_Pagemaker_Create = function(){}; 
 	/**
@@ -1194,7 +1210,7 @@
 		
 		var callback = function(){
 			var menu = Menu.initContextMenu(MARKUP, TRIGGER, cfg);
-			var offset = {x:-20, y:20};
+			var offset = cfg.offset || {x:-20, y:20};
 			menu.set('xy', Menu.moveIfUnconstrained(menu, null, offset));
 			menu.on('xyChange', function(e){
 					e.newVal = Menu.moveIfUnconstrained(this, e.newVal, offset);
@@ -1487,14 +1503,14 @@
 		return Menu.getMarkup(MARKUP , callback);
 	};		
 	
-	var CFG_Context_FigureBox = function(){}; 
 	/**
 	 * load .FigureBox contextmenu .gallery.[type] > .FigureBox contextmenu 
 	 * @param cfg. cfg.triggerType = [group, person, etc.]
 	 * @return
 	 */
+	var CFG_Context_FigureBox = function(){}; 
 	CFG_Context_FigureBox.load = function(cfg){
-		var TRIGGER = ' .FigureBox';
+		var TRIGGER = cfg.force_TRIGGER || cfg.TRIGGER || ' .FigureBox';
 		// if (cfg.triggerType) TRIGGER = '.gallery.'+cfg.triggerType + TRIGGER;
 		var TYPE_LOOKUP = {
 			'photo': {
@@ -1513,7 +1529,7 @@
 		var typeDefaults = TYPE_LOOKUP[ cfg.triggerType ];
 if (!typeDefaults && console) console.error("ERROR: missing contextmenu type for CFG_Context_FigureBox.load()"); 
 
-		var CSS_ID = typeDefaults.CSS_ID;
+		var CSS_ID = cfg.CSS_ID || typeDefaults.CSS_ID;
 		var defaultCfg = {
 				// constrain: true,
 			on: {
@@ -1556,7 +1572,7 @@ if (!typeDefaults && console) console.error("ERROR: missing contextmenu type for
 		
 		var callback = function(){
 			var menu = Menu.initContextMenu(MARKUP, TRIGGER, cfg);
-			var offset = {x:-20, y:20};
+			var offset = cfg.offset || {x:-20, y:20};
 			menu.set('xy', Menu.moveIfUnconstrained(menu, null, offset));
 			menu.on('xyChange', function(e){
 					e.newVal = Menu.moveIfUnconstrained(this, e.newVal, offset);

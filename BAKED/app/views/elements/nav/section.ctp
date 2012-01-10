@@ -149,6 +149,9 @@ switch ($classLabel) {
 		$label = AppController::$uuid;
 		break;
 }
+
+if (AppController::$uuid) $this->viewVars['jsonData']['listeners']['ItemHeaderClick'] = 1;
+
 ?>
 <section class='item-header container_16'>
 	<div class='wrap'>

@@ -77,6 +77,10 @@
 			'WindowOptionClick': null,
 			'DragDrop': 1,
 		};
+		if (PAGE.jsonData && PAGE.jsonData.listeners) {
+			listeners = Y.merge(listeners, PAGE.jsonData.listeners);
+			delete PAGE.jsonData.listeners;
+		}
 		for (var listen in listeners) {
 			if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
 		}        	
@@ -341,7 +345,10 @@
 					// 'WindowOptionClick':null,
 					'ContentMenuClick': false, 
 				};
-				listeners = Y.merge(listeners, PAGE.listeners);
+				if (PAGE.jsonData && PAGE.jsonData.listeners) {
+					listeners = Y.merge(listeners, PAGE.jsonData.listeners);
+					delete PAGE.jsonData.listeners;
+				}
 				for (var listen in listeners) {
 					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
 				}
@@ -366,7 +373,10 @@
 					'WindowOptionClick':null,
 					'ContentMenuClick': false, 
 				};
-				listeners = Y.merge(listeners, PAGE.listeners);
+				if (PAGE.jsonData && PAGE.jsonData.listeners) {
+					listeners = Y.merge(listeners, PAGE.jsonData.listeners);
+					delete PAGE.jsonData.listeners;
+				}
 				for (var listen in listeners) {
 					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
 				}

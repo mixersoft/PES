@@ -22,7 +22,10 @@
 	// debug($signin_redirect);
 	$title = String::insert("Join :circle", $tokens);
 	$body = String::insert("Join the <b>:circle</b> :group_type at Snaphappi. As a member, you will be able share Snaps and connect with other members of this :group_type.", $tokens);
-
+	
+	// add listeners to start
+	$this->viewVars['jsonData']['listeners']['WindowOptionClick'] = null;
+	
 	$this->Layout->blockStart('itemHeader');
 		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
 		echo $this->element('nav/section', 
@@ -128,11 +131,3 @@
 	</div>
 </section>
 
-
-<?php $this->Layout->blockStart('javascript'); ?>
-	<script type="text/javascript">		
-		PAGE.listeners = {
-			'WindowOptionClick':null,
-		};
-	</script>	
-<?php $this->Layout->blockEnd(); ?> 

@@ -23,7 +23,8 @@
 		'?'=>array('uuid'=>AppController::$userid),
 	), true);
 	
-
+	// add listeners to start
+	$this->viewVars['jsonData']['listeners']['WindowOptionClick'] = null;
 
 	$this->Layout->blockStart('itemHeader');
 		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
@@ -122,11 +123,3 @@
 		</div>		
 	</div>
 </section>
-
-<?php $this->Layout->blockStart('javascript'); ?>
-	<script type="text/javascript">		
-		PAGE.listeners = {
-			'WindowOptionClick':null,
-		};
-	</script>
-<?php $this->Layout->blockEnd(); ?> 
