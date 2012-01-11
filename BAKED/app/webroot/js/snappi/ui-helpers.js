@@ -58,20 +58,6 @@
 			}  
 			return false;
 		},
-		/**
-		 * old-style 'snappi-tabs' nav
-		 */
-		'gotoTab' : function(dom){
-			var _Y = SNAPPI.Y;
-			var n = _Y.one(dom);
-			var href = n.getAttribute('href');
-			if (/\/cancel/.test(href)) return false;
-			PAGE.section = n.get('id');
-			SNAPPI.TabNav.selectByName(PAGE);
-			var container = SNAPPI.Y.one("#tab-section").setAttribute('xhrSrc', href);
-			SNAPPI.xhrFetch.requestFragment(container);
-			return false;
-		},
 		'showHelp': function(btn, node){
 			try {
 				var container = node || _Y.one('section.help');

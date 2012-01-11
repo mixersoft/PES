@@ -1,6 +1,5 @@
 <script type="text/javascript">
-PAGE.section = "tab-details";
-SNAPPI.TabNav.selectByName(PAGE);
+SNAPPI.tabSection.setFocus("#tab-details");
 SNAPPI.EditMode.init();
 </script>
 	<div id='fields' class="setting ">

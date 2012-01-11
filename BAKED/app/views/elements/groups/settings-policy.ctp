@@ -1,6 +1,5 @@
 <script type="text/javascript">
-PAGE.section = "tab-policy";
-SNAPPI.TabNav.selectByName(PAGE);
+SNAPPI.tabSection.setFocus("#tab-policy");
 SNAPPI.EditMode.init();
 </script>
 	<div id='policies' class="setting">

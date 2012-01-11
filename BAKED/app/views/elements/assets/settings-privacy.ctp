@@ -1,6 +1,5 @@
 <script type="text/javascript">
-PAGE.section = "tab-privacy";
-SNAPPI.TabNav.selectByName(PAGE);
+SNAPPI.tabSection.setFocus("#tab-privacy"");
 SNAPPI.EditMode.init();
 </script>
 	<div id='privacy' class="setting ">

@@ -60,7 +60,7 @@
 
 <div class="groups view main-div ">
 
-<div id='section-tabs'>
+<div id='tab-list'>
 <ul class='inline'>
 <?php 	
 	$xhrSrc = Router::url(array('plugin'=>'', 'action'=>'settings', AppController::$uuid));
@@ -78,9 +78,9 @@
 		else $xhrFrom['view'] = "settings-details";
 	}
 ?>	
-	<li class='btn'><a id='tab-details' href='<?php echo $detailsSrc ?>' onclick='return SNAPPI.UIHelper.nav.gotoTab(this);'>Details</a></li>
-	<li class='btn'><a id='tab-privacy' href='<?php echo $privacySrc ?>' onclick='return SNAPPI.UIHelper.nav.gotoTab(this);'>Privacy</a></li>
-	<li class='btn'><a id='tab-policy' href='<?php echo $policySrc ?>' onclick='return SNAPPI.UIHelper.nav.gotoTab(this);'>Policies</a></li>
+	<li class='tab btn'><a id='tab-details' href='<?php echo $detailsSrc ?>' onclick='return SNAPPI.tabSection.selectByCSS(this);'>Details</a></li>
+	<li class='tab btn'><a id='tab-privacy' href='<?php echo $privacySrc ?>' onclick='return SNAPPI.tabSection.selectByCSS(this);'>Privacy</a></li>
+	<li class='tab btn'><a id='tab-policy' href='<?php echo $policySrc ?>' onclick='return SNAPPI.tabSection.selectByCSS(this);'>Policies</a></li>
 </ul>
 </div>	
 

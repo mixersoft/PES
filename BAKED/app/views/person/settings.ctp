@@ -30,7 +30,7 @@
 ?>
 <div class="users view">
 	<div class="users ">
-		<div id='section-tabs'>
+		<div id='tab-list'>
 			<ul class='inline'>
 <?php 	
 	$xhrSrc = Router::url(array('plugin'=>'', 'action'=>'settings'));
@@ -49,12 +49,12 @@
 		else $xhrFrom['view'] = "settings-identity";
 	}
 ?>			
-				<li class='btn'><a id='tab-identity' href='<?php echo $identitySrc ?>' onclick='return SNAPPI.UIHelper.nav.gotoTab(this);'>Identity & Profile</a></li>
-				<li class='btn'><a id='tab-emails' href='<?php echo $emailsSrc ?>' onclick='return SNAPPI.UIHelper.nav.gotoTab(this);'>Emails & Notifications</a></li>
-				<li class='btn'><a id='tab-privacy' href='<?php echo $privacySrc ?>' onclick='return SNAPPI.UIHelper.nav.gotoTab(this);'>Privacy</a></li>
-				<li class='btn'><a id='tab-moderator' href='<?php echo $moderatorSrc ?>' onclick='return SNAPPI.UIHelper.nav.gotoTab(this);'>Moderation</a></li>
+				<li class='tab btn'><a id='tab-identity' href='<?php echo $identitySrc ?>' onclick='return SNAPPI.tabSection.selectByCSS(this);'>Identity & Profile</a></li>
+				<li class='tab btn'><a id='tab-emails' href='<?php echo $emailsSrc ?>' onclick='return SNAPPI.tabSection.selectByCSS(this);'>Emails & Notifications</a></li>
+				<li class='tab btn'><a id='tab-privacy' href='<?php echo $privacySrc ?>' onclick='return SNAPPI.tabSection.selectByCSS(this);'>Privacy</a></li>
+				<li class='tab btn'><a id='tab-moderator' href='<?php echo $moderatorSrc ?>' onclick='return SNAPPI.tabSection.selectByCSS(this);'>Moderation</a></li>
 			</ul>
 		</div>	
-		<div id='tab-section' class="setting xhr-get prefix_1 grid_14 suffix_1"  xhrSrc='<?php echo $xhrSrc."?xhrview={$xhrFrom['view']}" ?>' nodelay='1'></div>	
+		<div id='tab-section' class="setting tab-view xhr-get prefix_1 grid_14 suffix_1"  xhrSrc='<?php echo $xhrSrc."?xhrview={$xhrFrom['view']}" ?>' nodelay='1'></div>	
 	</div>	
 </div>

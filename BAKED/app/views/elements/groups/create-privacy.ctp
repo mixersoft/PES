@@ -1,4 +1,4 @@
-	<div id='privacy' class="create  tab-panel hide">
+	<div id='panel-privacy' class="create  tab-panel hide">
 		<h3>Privacy Settings</h3>
 		<?php $radio_attrs = array('legend'=> false);?>
 		<p>These settings control who can see this Group, and reflect your prior choice for group type. However, you can change the group privacy here.</p>
@@ -18,6 +18,6 @@
 		<p>Show Secret Keys to:</p>
 		<?php echo $form->radio('privacy_secret_key', $privacy['SecretKey'], $radio_attrs );?>			
 			<div class='submit'>
-				<input id="privacy" type="submit" class='orange' value="Next" onclick='return PAGE.gotoStep(this, "policy");'></input>
+				<input id="privacy" type="button" class='orange' value="Next" onclick='return SNAPPI.tabSection.selectByCSS("#tab-policy");'></input>
 			</div>	
 	</div>

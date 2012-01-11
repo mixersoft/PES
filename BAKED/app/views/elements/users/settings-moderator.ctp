@@ -1,11 +1,6 @@
 <script type="text/javascript">
-PAGE.section = "tab-moderator";
-SNAPPI.TabNav.selectByName(PAGE);
-// nextTab = {
-		// href:'/my/settings?xhrview=settings-identity',
-		// className: "tab-identity"
-// };
-Session::write('settings.tabName', 'moderator');
+SNAPPI.tabSection.setFocus("#tab-moderator");
+Session::write('settings.tabName', 'moderator');	// deprecate?
 SNAPPI.EditMode.init();
 </script>
 

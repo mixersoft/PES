@@ -1,13 +1,7 @@
 <script type="text/javascript">
-PAGE.section = "tab-emails";
-SNAPPI.TabNav.selectByName(PAGE);
-// nextTab = {
-		// href:'/my/settings?xhrview=settings-privacy',
-		// className: "tab-privacy"
-// };
+SNAPPI.tabSection.setFocus("#tab-emails");
 SNAPPI.EditMode.init();
 </script>
-
 	<div id='email' class="setting ">
 		<h3>Emails and Notifications</h3>
 		<?php	

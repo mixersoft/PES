@@ -12,7 +12,7 @@ PAGE.disablePolicyDefaults = function(){
 	PAGE.setPolicyDefaults = function(){return};
 }
 </script>
-	<div id='policy' class="create  tab-panel hide ">
+	<div id='panel-policy' class="create  tab-panel hide ">
 		<h3>Policy Settings</h3>
 		<?php $radio_attrs = array('legend'=> false,'onclick'=>'PAGE.disablePolicyDefaults();'); ?>
 			
@@ -31,6 +31,5 @@ PAGE.disablePolicyDefaults = function(){
 		<p>Contributed Photos are:</p>
 		<?php echo $form->radio('submission_policy', $policy['submission'], $radio_attrs );?>	
 			<div class='submit'>
-				<input id="policy" type="submit" class='orange' value="Next" onclick='return PAGE.gotoStep(this, "finish");'></input>
+				<input id="policy" type="button" class='orange' value="Next" onclick='return PAGE.finish();'></input>
 			</div>			
-	</div>

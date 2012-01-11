@@ -2032,6 +2032,20 @@ form div.submit {
 	font-size: 0.8em;
     padding: 2px;
 }
+/*
+ * PAGE: /groups/create
+ */
+form#create-choose div.submit {
+	border-top: none;
+}
+
+form input[type="button"] {
+	font-size: 0.8em;
+    font-weight: normal;
+    padding: 2px;
+    text-shadow: none
+}
+
 
 /*
  * PAGE: /users/login, /users/register, user auth pages
@@ -2228,35 +2242,38 @@ ul.term-condition h1 {
 /*
  * tabs
  */
-div#section-tabs {
+div#tab-list {
     color: white;
 }
-div#section-tabs ul {
+div#tab-list ul {
     border-bottom: 1px solid #538FB3;
     line-height: 20px;
     text-align: center;
 }
-div#section-tabs li {
+div#tab-list li {
     background-color: white;
     border: 1px solid #538FB3;
     margin: 0;
     padding: 2px 15px;
 }
-div#section-tabs a {
+div#tab-list li.tab.focus {
+	background-color: green;
+}
+div#tab-list a {
     color: #538FB3;
     cursor: pointer;
     margin: 0;
     padding: 0;
     text-decoration: none;
 }
-div#section-tabs a:hover {
+div#tab-list a:hover {
     color: #D04098;
     text-decoration: underline;
 }
-div#section-tabs li.selected {
+div#tab-list li.selected {
     border-bottom: 1px solid white;
 }
-div#section-tabs li.selected a {
+div#tab-list li.selected a {
     color: #D04098;
     cursor: default;
     text-decoration: none !important;

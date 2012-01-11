@@ -1,10 +1,5 @@
 <script type="text/javascript">
-PAGE.section = "tab-privacy";
-SNAPPI.TabNav.selectByName(PAGE);
-// nextTab = {
-		// href:'/my/settings?xhrview=settings-moderator',
-		// className: "tab-moderator"
-// };
+SNAPPI.tabSection.setFocus("#tab-privacy");
 SNAPPI.EditMode.init();
 </script>
 

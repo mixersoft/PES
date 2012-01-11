@@ -20,6 +20,17 @@
  *
  * tab navigation
  *
+ * example:
+ * UL#tab-list.inline
+ * 		LI#tab-{label}.tab
+ * SECTION.tab-view
+ * 		ARTICLE#panel-{label}.tab-panel 
+ * 
+ * or 
+ * 
+ * UL#tab-list.inline
+ * 		LI#tab-{label}.tab A[href={target}]
+ * SECTION.tab-view[xhrsrc={target}]
  *
  */
 (function(){
@@ -31,130 +42,207 @@
 		/*
 	     * make global
 	     */
-	    SNAPPI.TabNav = new TabNav();
+	    var cfg = {
+	    	tabList: '#tab-list',
+	    	tabView: '#tab-section'
+	    }
+	    SNAPPI.tabSection = new TabNav();
 	}
 	
     /*
      * protected
      */
     var defaultCfg = {
-        top: '#top',
-        menu: '#tabs',
-        nested: '#nested',
-        section: '#section-tabs',	// used in /my/settings
+        tabList: '#tab-list',
+        tabLabel: '.tab-label',
+        tabView: '.tab-view',
+        tabPanel: '.tab-panel',
+            	
+        section: '#tab-list',	// used in /my/settings
         selected: {
             menu: null,
             nested: null
         }
     }
-    
+    /*
+     * 
+{tabList} ul.tab-list
+ul{tabList}.tab-list li.tab.focus     
+ul{tabList}.tab-list li.tab a.tab-label
+*{tabView}
+     * 
+     */
     var TabNav = function(cfg){
-    	this.selected = {
-            menu: {},
-            nested: {},
-            section: {},
-		};
-		this.lookup = {
-            menu: [],
-            nested: [],
-            section: [],
-        };
+    	this.cfg = {};
+    	this.id = null;
+    	this.disabled = false;
+    	this.container = {};
+    	this.focus = {};
         this.init(cfg);
     };
+    
 	TabNav.listen = {};
-	TabNav.find = {};	
+	TabNav.find = {};	// static property, lookup active tabs
+	
+	
+	
     TabNav.prototype = {
     	init : function(cfg){
+    		cfg = _Y.merge(defaultCfg, cfg);
+    		this.cfg = cfg;
+    		this.id = this.cfg.tabList.replace(/\s+/g,'-');
+    		this.container = {
+    			tabList: _Y.one(this.cfg.tabList),
+    			tabView: _Y.one(this.cfg.tabView),
+    		}
+    		this.focus = {};
+    		// register this tab for lookup
+    		TabNav.find[this.id] = this;
 		},
-        selectByName : function(page, isWizard){
-            if (page.section) {
-            	var container = _Y.one(defaultCfg.section);
-                var section = container.one('#'+ page.section);
-                if (section) {
-					container.all("li.focus").removeClass('focus');
-					var tab = section.get('parentNode');
-                    tab.addClass('focus');
-                    this.selected.section.id = page.section;
-                    this.selected.section.name = section.get('innerHTML');
-                }
-            }
-            // for the moment, nested menus are not being used
-            if (page.menu) {
-                var parts = page.menu.split(':');
-                var tab = _Y.one(defaultCfg.menu + " li > a." + parts[0]);
-                if (tab) {
-					_Y.all(defaultCfg.menu + " .FigureBox.selected").removeClass('selected');
-                    tab.get('parentNode').addClass('selected');
-                    this.selected.menu.id = parts[0];
-                    this.selected.menu.name = tab.get('innerHTML');
-                }
-                var nested = _Y.one(defaultCfg.nested + " > ul#" + this.selected.menu.id);
-                if (nested) {
-                    nested.addClass('selected').removeClass('hide');
-                    // test for nested tab select
-                    if (parts.length > 1 && parts[1]) {
-                        nested.all("a").some(function(n2, i){
-                            if (n2.get('innerHTML') == parts[1]) {
-                                n2.get('parentNode').addClass('selected');
-                                return true;
-                            }
-                            else 
-                                return false;
-                        }, this);
-                    }
-                }
-            }
+		/**
+		 * @params selector string, CSS selector for either 
+		 * 		LI{selector}.tab or 
+		 * 		LI.tab > A{selector}, used by container.one()
+		 * @params isWizard boolean, if true, use show/hide steps, otherwise load href
+		 * TODO: isWizard is the wrong name
+		 */
+        selectByCSS : function(selector){
+        	if (this.disabled) return false;
+        	if (selector.id) selector = '#'+selector.id;	// dom
+        	if (selector instanceof _Y.Node) selector = '#'+selector.get('id'); // node
+        	// else 
+            this.setFocus(selector);
+            return this.showTabView();
         },
-        select : function(cfg){
-            // select tab
-            if (cfg && cfg.tab) {
-                if (_Y.Lang.isString(cfg.tab)) {
-                
-                }
-                else 
-                    this.selected.menu.index = cfg.tab;
-            }
-            this.selected.menu.index = defaultCfg.selected.menu;
-            // select tab
-            _Y.all(defaultCfg.menu + " li > a").each(function(n, i){
-                if (i == this.selected.menu.index) {
-                    n.get('parentNode').addClass('selected');
-                    this.selected.menu.id = n.get('className');
-                    this.selected.menu.name = n.get('innerHTML');
-                }
-                else {
-                    n.removeClass('selected');
-                }
-            }, this);
-            // show/hide nested UL
-            _Y.all(defaultCfg.nested + " > ul").each(function(n, i){
-                if (this.selected.menu.id == n.get('id')) {
-                    n.addClass('selected').removeClass('hide');
-                    
-                    // select nested LI
-                    if (cfg && cfg.nested) {
-                        if (_Y.Lang.isString(cfg.nested)) {
-                        
-                        }
-                        else 
-                            this.selected.nested.index = cfg.nested;
-                    }
-                    else 
-                        this.selected.nested.index = defaultCfg.selected.nested;
-                    
-                    n.all("li").each(function(n2, i){
-                        if (i == this.selected.nested.index) {
-                            n2.addClass('selected').removeClass('hide');
-                        }
-                        else {
-                            n2.removeClass('selected').addClass('hide');
-                        }
-                    }, this);
-                }
-                else {
-                    n.removeClass('selected').addClass('hide');
-                }
-            }, this);
+        /*
+         * @return false if focus not changed
+         */
+        setFocus: function(selector) {
+        	if (this.disabled) return false;
+        	if (!selector || _Y.Lang.isNumber(selector)) {
+        		return this.setFocusByIndex(selector);
+        	}
+        	if (this.focus.selector == selector) {
+        		return false;	// unchanged
+        	} else {
+        		var tabList, tab, name_node;
+        		if (!this.container.tabList) {
+	        		// re-init if node not available
+	        		this.container.tabList = _Y.one(this.cfg.tabList);
+	        		this.container.tabView = _Y.one(this.cfg.tabView);
+	        	}
+        		
+	        	tabList = this.container.tabList;
+	        	tab = tabList.one(selector+'.tab') || tabList.one('.tab '+selector);
+	        	if (!tab.hasClass('tab')) tab = tab.get('parentNode');
+	        	
+	        	if (tab) {
+	        		try {
+	        			tabList.all(".tab.focus").removeClass('focus');	
+	        		} catch(e) {}
+	        		tab.addClass('focus');
+	        		this.focus.selector = selector;
+	        		this.focus.id = selector.replace(/\s+/,'-');
+	        		this.focus.node = tab;
+	        		
+	        		name_node = tab.one('a') || tab;
+	                this.focus.name = name_node.get('innerHTML');
+	        	} 
+        	}
+        	return this.focus;
         },
+        /*
+         * @return false if focus not changed
+         */
+        setFocusByIndex: function(num) {
+        	if (this.disabled) return false;
+        	num = num || 0;
+        	var tabs, tab, name_node;
+        	if (!this.container.tabList) {
+        		// re-init if node not available
+        		this.container.tabList = _Y.one(this.cfg.tabList);
+        		this.container.tabView = _Y.one(this.cfg.tabView);
+        	}
+        	
+        	try {
+        		tabs = this.container.tabList.all(".tab");
+    			tab = tabs.item(num);	
+    			if (tab.hasClass('focus')) {
+    				return false;  	// unchanged
+    			} else {
+    				tabs.removeClass('focus');
+	    			tab.addClass('focus');
+		    		this.focus.selector = num;
+		    		this.focus.id = tab.get('id');
+		    		this.focus.node = tab;
+		    		
+		    		name_node = tab.one('a') || tab;
+		            this.focus.name = name_node.get('innerHTML');
+		            return this.focus;
+		        }
+    		} catch(e) {}
+    		return false;
+        },
+        /*
+         * show/hide tabView by selector or focus
+         * - checks for exiting panel by tabView.one(selector)
+         * - selector can be found in 
+         * 		- selector
+         *  	- tab.getAttribute('panel')
+         * 		- this.focus.id == tab.get('id')
+         * 		- this.focus.selector
+         * 	automatically replaces #tab{string} with #panel{string}
+         * 
+         * - if selector is not found, then try loadTabView() via XHR
+         * 
+         */
+        showTabView : function(focus, selector) {
+        	if (this.disabled) return false;
+        	focus = focus || this.focus;
+        	if (!focus.node) focus = this.setFocus(0);
+        	
+        	var href, tabView, selector, panel;
+        	
+        	tabView = this.container.tabView;
+        	selector = selector || this.focus.node.getAttribute('panel') || this.focus.id || this.focus.selector;
+			if (/^\#tab/.test(selector)) selector = selector.replace(/tab/, 'panel');
+			panel = tabView.one(selector);
+        	if (panel) {
+    			tabView.all(this.cfg.tabPanel).addClass('hide');	
+    			panel.removeClass('hide');
+    			return false;
+    		}
+    		// else 
+    		return this.loadTabView(focus);
+        }, 
+		/*
+         * load by XHR
+         * 
+         * href = LI.tab A[href]
+         * target = this.container.tabView
+         */
+        loadTabView : function(focus) {
+        	if (this.disabled) return false;
+        	focus = focus || this.focus;
+        	if (!focus.node) focus = this.setFocus(0);
+        	
+        	var href, tabView;
+        	
+        	try {
+	        	href = focus.node.one('a').getAttribute('href');
+	        	if (/\/cancel/.test(href)) return false;	// deprecate
+	        	if (/(\?|\&)disabled/.test(href)) return false;
+	        	
+	        	tabView = this.container.tabView;
+	        	if ((tabView.getAttribute('xhrSrc') == href)) return false;
+	        	
+	        	tabView.setAttribute('xhrSrc', href);
+	        	SNAPPI.xhrFetch.requestFragment(tabView);	
+        	} catch (e) {}     	
+			return false;
+        }, 
+        disable: function() {
+        	this.disabled = true;
+        }        
     }
 })();

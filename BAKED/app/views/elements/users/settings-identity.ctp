@@ -1,10 +1,5 @@
 <script type="text/javascript">
-PAGE.section = "tab-identity";
-SNAPPI.TabNav.selectByName(PAGE);
-// nextTab = {
-		// href:'/my/settings?xhrview=settings-emails',
-		// className: "tab-emails"
-// };
+SNAPPI.tabSection.setFocus("#tab-identity");
 SNAPPI.EditMode.init();
 </script>
 	<div id='profile' class="setting">

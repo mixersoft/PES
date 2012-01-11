@@ -1,26 +1,15 @@
 <script type="text/javascript">
 PAGE=PAGE || {};	// namespace for page functions
-PAGE.gotoStep = function(dom, show){
-	try {
-		// if we are on the finish tab, disable tab nav
-		if (SNAPPI.TabNav.selected.section.name=='Finish') return false;
-	} catch(e) {
-	} 
+PAGE.finish = function(){
+	SNAPPI.tabSection.selectByCSS("#tab-finish");
+	SNAPPI.tabSection.disable();
 	var Y = SNAPPI.Y;
-	if (show == 'finish') {
-		// show all sections
-		Y.all('form div.submit').addClass('hide');	// hide section buttons
-		Y.all('form  .create.tab-panel').removeClass('hide'); // show all sections
-		Y.all('form > div#choose').addClass('hide'); // except 1st panel, choose
-		// Y.all('form > div#create-finish').removeClass('hide');
-		
-	}
-	else {
-		Y.all('form .create.tab-panel').addClass('hide');
-		Y.one('form  div#'+show).removeClass('hide');
-	}
-	SNAPPI.TabNav.selectByName({section: 'tab-'+show});
-	return dom.id ? (dom.id=='finish') : false;
+	// show all sections
+	Y.all('form div.submit').addClass('hide');	// hide section buttons
+	Y.all('form  .create.tab-panel').removeClass('hide'); // show all sections
+	Y.all('form > div#panel-choose').addClass('hide'); // except 1st panel, choose
+	// Y.all('form > div#create-finish').removeClass('hide');
+	return false;
 }
 PAGE.saveChoice = function(o) {
 	var Y = SNAPPI.Y;
@@ -28,14 +17,14 @@ PAGE.saveChoice = function(o) {
 	Y.one('#GroupPrivacyGroups'+privacy).set('checked', true);
 	// set default policy
 	PAGE.setPolicyDefaults(privacy);
-	Y.all('form#create-choose #choose > div').addClass('hide');
-	Y.one('form#create-choose #choose > div#Group'+privacy).removeClass('hide');
+	Y.all('form#create-choose #panel-choose > div').addClass('hide');
+	Y.one('form#create-choose #panel-choose > div#Group'+privacy).removeClass('hide');
 }
 </script>
 <div class="groups view ">
 	<h2><?php printf(__('Create a New %s', true), __('Group', true)); ?></h2>
 	<div class='groups'>
-		<div id='section-tabs'>
+		<div id='tab-list'>
 			<ul class='inline'>
 	<?php 	
 		$xhrSrc = Router::url(array('plugin'=>'', 'action'=>'create'));
@@ -54,11 +43,11 @@ PAGE.saveChoice = function(o) {
 			else $xhrFrom['view'] = "create-choose";
 		}
 	?>			
-				<li class='btn focus'><a id='tab-choose' href='<?php echo $chooseSrc ?>' onclick='return PAGE.gotoStep(this, "choose");'>Choose Group Type</a></li>
-				<li class='btn'><a id='tab-details' href='<?php echo $detailsSrc ?>' onclick='return PAGE.gotoStep(this, "details");'>Add Details</a></li>
-				<li class='btn'><a id='tab-privacy' href='<?php echo $privacySrc ?>' onclick='return PAGE.gotoStep(this, "privacy");'>Privacy</a></li>
-				<li class='btn'><a id='tab-policy' href='<?php echo $policySrc ?>' onclick='return PAGE.gotoStep(this, "policy");'>Policies</a></li>
-				<li class='btn'><a id='tab-finish' href='#'  onclick='PAGE.gotoStep(this, "finish"); return false;'>Finish</a></li>
+				<li class='tab btn focus' ><a id='tab-choose' href='<?php echo $chooseSrc ?>' onclick='return SNAPPI.tabSection.selectByCSS(this);'>Choose Group Type</a></li>
+				<li class='tab btn'><a id='tab-details' href='<?php echo $detailsSrc ?>' onclick='return SNAPPI.tabSection.selectByCSS(this);'>Add Details</a></li>
+				<li class='tab btn'><a id='tab-privacy' href='<?php echo $privacySrc ?>' onclick='return SNAPPI.tabSection.selectByCSS(this);'>Privacy</a></li>
+				<li class='tab btn'><a id='tab-policy' href='<?php echo $policySrc ?>' onclick='return SNAPPI.tabSection.selectByCSS(this);'>Policies</a></li>
+				<li class='tab btn'><a id='tab-finish' href='#'  onclick='PAGE.finish(); return false;'>Finish</a></li>
 			</ul>
 		</div>
 		<?php 
@@ -66,7 +55,7 @@ PAGE.saveChoice = function(o) {
 			$formOptions['id']='create-choose';
 			echo $this->Form->create('Group', $formOptions); 
 		?>		
-		<div class=" prefix_1 grid_14 suffix_1 wrap-v">
+		<div class="tab-view prefix_1 grid_14 suffix_1 wrap-v">
 			<?php echo $this->element("/groups/create-choose"); ?>
 			<?php echo $this->element("/groups/create-details"); ?>
 			<?php echo $this->element("/groups/create-privacy"); ?>

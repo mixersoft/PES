@@ -1,9 +1,9 @@
-<div id='choose' class="create tab-panel alpha prefix_1 grid_12 suffix_1  omega ">
+<div id='panel-choose' class="create tab-panel alpha prefix_1 grid_12 suffix_1  omega ">
 	<h3><?php printf(__('%s', true), __('What type of Group do you want?', true));?></h3>
 	<div id='Group567' class="alpha grid_4">
 		<div class="center wrap-v">
 			<?php printf(__('%s', true), __('Public', true));?>
-			<div class='xsubmit'><input id="group-public"  class='orange' privacy='567' type="submit" value="Create" onclick='PAGE.saveChoice(this);return PAGE.gotoStep(this, "details");'></input></div>
+			<div class='submit'><input id="group-public"  class='orange' privacy='567' type="button" value="Create" onclick='PAGE.saveChoice(this);return SNAPPI.tabSection.selectByCSS("#tab-details");'></input></div>
 		</div>
 		<div class="instruction">
 			<ul>
@@ -20,7 +20,7 @@
 	<div id='Group119' class=" grid_4 ">
 		<div class="center wrap-v">
 			<?php printf(__('%s', true), __('Members Only', true));?>
-			<div class='xsubmit'><input id="group-members"  class='orange' privacy='119' type="submit" value="Create" onclick='PAGE.saveChoice(this);return PAGE.gotoStep(this, "details");'></input></div>
+			<div class='submit'><input id="group-members"  class='orange' privacy='119' type="button" value="Create" onclick='PAGE.saveChoice(this);return SNAPPI.tabSection.selectByCSS("#tab-details");'></input></div>
 		</div>
 		<div class="instruction">
 			<ul>
@@ -37,7 +37,7 @@
 	<div id='Group63' class=" grid_4 omega">
 		<div class="center wrap-v">
 			<?php printf(__('%s', true), __('Private', true));?>
-			<div class='xsubmit'><input id="group-private"  class='orange' privacy='63'  type="submit" value="Create" onclick='PAGE.saveChoice(this);return PAGE.gotoStep(this, "details");'></input></div>
+			<div class='submit'><input id="group-private"  class='orange' privacy='63'  type="button" value="Create" onclick='PAGE.saveChoice(this);return SNAPPI.tabSection.selectByCSS("#tab-details");'></input></div>
 			</div>
 		<div class="instruction">
 			<ul>
