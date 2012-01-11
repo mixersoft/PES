@@ -31,7 +31,7 @@ h1 {
 }
 </style>
 
-<div class="grid_16">
+<div class="grid_16 upload">
 	<h1>Upload Photos to Snaphappi</h1>
 	<section class="alpha grid_8">
 		<h2>Upload a Few Photos</h2>

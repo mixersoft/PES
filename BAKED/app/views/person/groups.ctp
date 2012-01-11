@@ -57,7 +57,7 @@ if (empty($this->passedArgs['wide'])) {
 
 <?php  $this->Layout->blockStart('markup');
 		if (Configure::read('controller.alias') == 'my') {	?>
-			<div class='empty-circle-gallery-message hide'><div class='related-content message blue rounded-5 wrap-v'>
+			<div class='empty-circle-gallery-message hide'><div class='message blue rounded-5 wrap-v'>
 				<h1>Circle Gallery</h1>
 				<p>This is where you find your Circles - the Groups or Events you have joined.</p>
 				<p>Join a Circle and share Snaps and Stories with other members. If you can't find one you like, create a new one now.</p>

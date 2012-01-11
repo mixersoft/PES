@@ -498,7 +498,7 @@ debug($context);
 			case 'Tag':
 			case 'Explore':
 			default: 
-				$focus = 'Explore'; break;				
+				$focus = ''; break;				
 		}
 		Session::write("nav.primary", $focus);
 	}

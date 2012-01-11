@@ -1044,22 +1044,22 @@ ul li.btn.disabled, ul li.btn.disabled:hover {
 	-moz-border-radius: 5px;	
 }
 
-.related-content.message {
+#markup .message {
 	font-size: 10pt;
 	overflow: hidden;
 	margin: 10px 20%;
 	padding: 10px;
 }
-.related-content.message h1 {
+#markup .message h1 {
     border-bottom: 1px solid #8fb9d0;
     font-size: 16pt;
     margin: 10px 0;
 }
-.related-content.message ul {
+#markup .message ul {
 	list-style-position: outside;
 	padding: 10px;
 }
-.related-content.message ul ol {
+#markup .message ul ol {
 	list-style-type: decimal;
 	list-style-position: outside;
 	padding-left:4px;

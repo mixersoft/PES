@@ -673,7 +673,7 @@ section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
 	font-size: 10pt;
 	margin: 2px 0;
 	overflow: hidden;
-	padding: 0 10px;
+	padding: 0 4px;
 }
 .FigureBox.PhotoPreview figcaption .extras > li {
 	font-size: 10pt;
@@ -690,11 +690,10 @@ section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
 .FigureBox.PhotoPreview figcaption .extras li.caption{
 	font-weight: bold;
 	padding-right: 10px;
-	width: 200px;
-	xoverflow: hidden;
+	width: 154px;
 }
 .FigureBox.PhotoPreview figcaption .extras li.rating {
-	height:20px;
+	xheight:20px;
 }
 .FigureBox.PhotoPreview figcaption .extras li div.ratingGroup {
 	margin: 0 5px;
@@ -728,47 +727,45 @@ section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
 	border: 1px solid #CD7708;
 }
 .FigureBox.PhotoPreview figcaption .extras nav.settings {
-	margin-left:2px;
 }
-.FigureBox.PhotoPreview figcaption .extras.wide nav.settings {
-	-webkit-border-radius: 5px;
-	border: 1px solid #D2D2D2;
-	-moz-border-radius: 5px;
-	-webkit-border-radius: 5px;
-	background: -moz-linear-gradient(bottom, #E2E6EB, #f5f5f5);
-	background: -webkit-gradient(linear, center bottom, center top, from(#E2E6EB), to(#f5f5f5));
-	line-height: 20px !important;
-	font-size: 10pt;
-	overflow: hidden;	
+.FigureBox.PhotoPreview figcaption .extras nav.settings > ul {
+	display: inline-block;
+}
+.FigureBox.PhotoPreview figcaption .extras nav.settings > ul input[type=checkbox] {
+	margin: 1px 0 0 2px;
+	vertical-align: text-top;	
 }
 .FigureBox.PhotoPreview figcaption .extras li.label {
-	xpadding: 4px 10px 0 4px;
 	font-size: 1.0em;
 	color: black;
 }
+.FigureBox.PhotoPreview figcaption .extras .bg-sprite-wrap {
+	height:20px;
+}
 .FigureBox.PhotoPreview div.hidden-shot {
-	background: url(../images/icon-hidden-shot-null.png) no-repeat scroll ;
+	background: url(../images/icon-hidden-shot-null.png) no-repeat scroll 0 bottom transparent;
 	width: 32px;
 	height: 18px;
+	padding-top: 5px;
 	cursor: pointer;
 }
 .FigureBox.PhotoPreview.ll div.hidden-shot {
 	bottom: 20px;
 }
 .FigureBox.PhotoPreview div.hidden-shot.c2 {
-	background: url(../images/icon-hidden-shot-2.png) no-repeat scroll ;
+	background-image: url(../images/icon-hidden-shot-2.png);
 }
 .FigureBox.PhotoPreview div.hidden-shot.c3 {
-	background: url(../images/icon-hidden-shot-3.png) no-repeat scroll ;
+	background-image: url(../images/icon-hidden-shot-3.png);
 }
 .FigureBox.PhotoPreview div.hidden-shot.c4 {
-	background: url(../images/icon-hidden-shot-4.png) no-repeat scroll ;
+	background-image: url(../images/icon-hidden-shot-4.png);
 }
 .FigureBox.PhotoPreview div.hidden-shot.c5 {
-	background: url(../images/icon-hidden-shot-5.png) no-repeat scroll ;
+	background-image: url(../images/icon-hidden-shot-5.png);
 }
 .FigureBox.PhotoPreview div.hidden-shot.c6 {
-	background: url(../images/icon-hidden-shot-6.png) no-repeat scroll ;
+	background-image: url(../images/icon-hidden-shot-6.png);
 }
 
 
@@ -832,16 +829,20 @@ ul.photo-roll {
 }*/
 
 #related-content {
-	background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0, rgb(197,232,250)),color-stop(1, rgb(232,246,253))	);
-	background-image: -moz-linear-gradient(center bottom,rgb(197,232,250) 0%,rgb(232,246,253) 100%);
-	border: 1px solid #8fb9d0;
-	-webkit-border-radius: 4px;
-	-moz-border-radius: 4px;
+	xbackground-image: -webkit-gradient(linear,left bottom,left top,color-stop(0, rgb(197,232,250)),color-stop(1, rgb(232,246,253))	);
+	xbackground-image: -moz-linear-gradient(center bottom,rgb(197,232,250) 0%,rgb(232,246,253) 100%);
+	xborder: 1px solid #8fb9d0;
+	x-webkit-border-radius: 4px;
+	x-moz-border-radius: 4px;
 	-webkit-box-shadow: 0px 0px 7px #fff inset;
 	-moz-box-shadow: 0px 0px 7px #fff inset;
 	padding: 10px 0 10px 0;	
 	margin: 20px auto;
 	overflow: hidden;
+}
+
+#body-container #related-content {
+	margin: 2px auto;
 }
 
 #related-content .body {
@@ -1330,7 +1331,7 @@ ul.circle-thumb li.selected {
 /*
  * Group/Circle thumbnails
  */
-.gallery.group {
+.gallery.group, .gallery.person, .gallery.tags {
 	padding: 4px;
 }
 .FigureBox.Group {
@@ -1667,16 +1668,18 @@ div.properties {
 
 /*  related content:  section headers & icons */
 aside.related-content .body-right section {
-	margin-bottom: 30px;
+	margin-bottom: 20px;
 	display: block;
 	overflow: hidden;
 	padding: 0px 0px 0px 5px;
 }
 aside.related-content .body-right section > h1 {
 /*	.right icons should be 24x24px, using placeholders for now */
-	height: 24px;	
-	padding: 4px 0 4px 28px;
-	margin-bottom: 4px	
+	xheight: 24px;	
+	padding: 4px;
+	padding-left: 28px;
+	margin-bottom: 4px;	
+	border-bottom: 1px solid #8FB9D0;
 }
 /*	TODO: update icons */
 aside.related-content section.recent > h1 {
@@ -2141,19 +2144,22 @@ div.link input.copy-paste {
 	-webkit-border-radius: 5px;
 	-moz-border-radius: 5px;	
 }
-.related-content.blue {
+.upload .related-content.blue {
 	font-size: 10pt;
 	overflow: hidden;
 	padding: 10px;
 }
-.related-content.blue h1 {
+.upload .related-content.blue h1, .gallery-container .message h1{
     border-bottom: 1px solid #8fb9d0;
     font-size: 16pt;
 }
-.related-content.message {
+.gallery-container .message {
 	margin: 20px 10%;
+	font-size: 10pt;
+	overflow: hidden;
+	padding: 10px;
 }
-.related-content.message p {
+.gallery-container .message p {
 	margin-bottom: 10px;
 }
 /*

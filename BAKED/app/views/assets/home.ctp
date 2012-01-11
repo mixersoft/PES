@@ -70,7 +70,7 @@
 			</section>
 		</aside>	
 	</div>
-	<aside id="related-content" class="related-content grid_5">
+	<aside id="related-content" class="related-content blue rounded-5 grid_5">
 		<div class=" alpha grid_5 omega body-right">
 			<section class='Sharing'>
 				<h1>Sharing</h1>
@@ -90,7 +90,7 @@
 			$xhrFrom = Configure::read('controller.xhrFrom');
 			$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom),'preview'=>1);
 			$xhrSrc = Router::url($xhrSrc);
-			echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
+			echo "<div id='tags-preview-xhr' class='gallery tags xhr-get' xhrSrc='{$xhrSrc}'></div>";
 		?>	
 		<?php echo $this->element('tags', array('domId'=>'assets-tags', 'data'=>$data))?>
 			</section>

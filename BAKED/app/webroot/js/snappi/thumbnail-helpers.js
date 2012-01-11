@@ -242,10 +242,10 @@
 						switch(thumbnail._cfg.type){
 							case 'PhotoPreview':
 								if (shotCount > 6) {
-									exists = '<li><div class="hidden-shot" title="'+tooltip+'"></div></li>';
+									exists = '<li class="bg-sprite-wrap"><div class="hidden-shot" title="'+tooltip+'"></div></li>';
 									thumbnail.node.one('figure figcaption li.context-menu').insert(exists, 'before');						
 								} else if (shotCount > 1) {
-									exists = '<li><div class="hidden-shot c'+shotCount+'" title="'+tooltip+'"></div></li>';
+									exists = '<li class="bg-sprite-wrap"><div class="hidden-shot c'+shotCount+'" title="'+tooltip+'"></div></li>';
 									thumbnail.node.one('figure figcaption li.context-menu').insert(exists, 'before');	
 								}							
 								break;
@@ -285,6 +285,11 @@
 					ThumbnailFactory[this._cfg.type].handle_ActionsClick
             	, this.node)			
 		},
+		AutoScrollClick: function() {
+			return this.node.one('figcaption .settings input[type=checkbox]').on('click',
+					ThumbnailFactory[this._cfg.type].handle_AutoScrollClick
+            	, this.node)			
+		},
 		RatingClick: function() {
 			var r = this.node.one('.rating');
 			return SNAPPI.Rating.startListeners(r);
@@ -313,18 +318,19 @@
     		showSizes: true,
     		draggable: true,
     		queue: false,
-    		listeners: ['ActionsClick', 'ThumbsizeClick', 'HiddenShotClick', 'RatingClick', 'PreviewImgLoad'],
+    		listeners: ['ActionsClick', 'AutoScrollClick', 'ThumbsizeClick', 'HiddenShotClick', 'RatingClick', 'PreviewImgLoad'],
     	},
     	// TODO: update Sizes to use action="set-display-size:[size]" format
 		markup: '<article class="FigureBox PhotoPreview">'+
                 '<figure>'+
                 '    <figcaption><ul class="extras inline rounded-5">'+
                 '<li class="label caption"></li>' +
-                '    	 <li class="label">My Rating</li><li class="rating"></li>'+
-                '        <li class="label">Score</li><li class="score">0.0</li>'+
+                '    	 <li class="label">My Rating</li><li class="rating"></li>' +
+                '        <li class="label">Score</li><li class="score">0.0</li>' +
                 '		 <li><nav class="settings">' +
+                '<ul class="inline"><li class="label" title="Automatically advance to the next Snap after each click">Auto</li><li><input type="checkbox" class="auto-advance" value="" title="Automatically advance to the next Snap after each click"></li></ul> ' +
                 '        <ul class="sizes inline">' +
-                '<li class="label">Sizes</li> <li class="btn white" action="set-display-size:tn" size="tn">XS</li><li class="btn white" action="set-display-size:bs" size="bs">S</li><li class="btn white" action="set-display-size:bm" size="bm">M</li><li class="btn white" action="set-display-size:bp" size="bp">L</li>' +
+                '<li class="label">Sizes</li><li class="btn white" action="set-display-size:tn" size="tn">XS</li><li class="btn white" action="set-display-size:bs" size="bs">S</li><li class="btn white" action="set-display-size:bm" size="bm">M</li><li class="btn white" action="set-display-size:bp" size="bp">L</li>' +
                 ' 		 </ul>'+                
                 '		 </nav></li>' +
                 '        <li class="icon context-menu"><img alt="" title="actions" src="/css/images/icon2.png"></li>'+
@@ -423,7 +429,7 @@
 				} else {
 					// attach Rating
 	            	var gallery = this._cfg.gallery || SNAPPI.Gallery.getFromDom(node);
-	            	SNAPPI.Rating.pluginRating(gallery, node.Thumbnail, audition.rating);
+	            	SNAPPI.Rating.pluginRating(gallery, node.Thumbnail, audition.rating, {id:'photoPreview-ratingGroup'});
 	            }
 	            if (exists) exists.removeClass('hide');	  
 	       } else {
@@ -521,6 +527,7 @@
     				size = action[1];
     				break;
 			}
+			SNAPPI.setPageLoading(true);
 			this.Thumbnail.resize(size);
 			// set focus in renderElementsBySize()
 			
@@ -530,6 +537,7 @@
 			}catch(e){}
 			// save preview size to Session, key='profile.previewSize'
 			SNAPPI.io.savePreviewSize(size);
+			SNAPPI.setPageLoading(false);
 			// PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
 		},
 		handle_HiddenShotClick: function(e) {
@@ -553,23 +561,35 @@
 				SNAPPI.MenuAUI.initMenus({'menu-photoPreview-actions':1});	
 			}
 		},
-		set_AutoScroll: function(value, thumbnail, gallery) {
+		handle_AutoScrollClick: function(e) {
+			try {
+				if (e.currentTarget.get('checked')) {
+					SNAPPI.setPageLoading(true);
+					var g = SNAPPI.Gallery.find['nav-'];
+					var f = SNAPPI.Factory.Gallery.NavFilmstrip;
+					f.handle_setDisplayView(g, 'one-row');
+				}
+			} catch(e){}
+		},
+		set_AutoScroll: function(value, node, gallery) {
 			// node == previewThumbnail node, .FigureBox.PreviewPhoto
 			value = value || false;
-			var node = thumbnail.node;
+			node = node || _Y.one('.FigureBox.PhotoPreview');
 			var listener = 'AutoScroll';
 			if (value && !node.listen[listener]) {
-				var previewBody = node.ancestor('.preview-body');
-				var g = gallery || SNAPPI.Gallery.find['nav-'];
-				node.listen[listener] = _Y.on('snappi:ratingChanged', 
-					function(r){
-						if (g && previewBody.one('.FigureBox.PhotoPreview').contains(r.node)) {
-							var selected = g.auditionSH.next();
-							g.scrollFocus(selected);
-							// TODO: debug g.next(), g.prev(), etc.
-							ThumbnailFactory.PhotoPreview.bindSelected(selected, previewBody);
-						}
-					});
+				try {
+					var previewBody = node.ancestor('.preview-body');
+					var g = gallery || SNAPPI.Gallery.find['nav-'];
+					node.listen[listener] = _Y.on('snappi:ratingChanged', 
+						function(r){
+							if (g && previewBody.one('.FigureBox.PhotoPreview').contains(r.node)) {
+								var selected = g.auditionSH.next();
+								g.scrollFocus(selected);
+								// TODO: debug g.next(), g.prev(), etc.
+								ThumbnailFactory.PhotoPreview.bindSelected(selected, previewBody);
+							}
+						});
+				} catch (e){}
 			}
 			if (!value) node.listen[listener].detach();		
 		},
@@ -585,7 +605,7 @@
 		markup: '<article class="FigureBox Photo">'+
                 '	<figure><img alt="" src="">'+
                 '    <figcaption><ul class="extras">'+
-                '    	 <li class="rating"></li>'+
+                '    	 <li class="rating bg-sprite-wrap"></li>'+
                 '        <li class="score">0.0</li>'+
                 '        <li class="icon context-menu"><img alt="" title="actions" src="/css/images/icon2.png"></li>'+
                 '        <li class="icon info"><img alt="more info" src="/css/images/icon1.png"></li>'+

@@ -99,6 +99,11 @@
 				thumbnail: r.thumbnail,
 				updateBestshot: 1
 			};
+		} else if (r.node.get('id')=='photoPreview-ratingGroup') {  
+			options = {
+				thumbnail: r.thumbnail,
+				updateBestshot: 1
+			};
 		}
 		SNAPPI.AssetRatingController.postRating(v, null, r, options);
 		return;
@@ -595,7 +600,7 @@
 	AssetRatingController.postRating = function(value, ids, r, options) {
 		// r = SNAPPI.Rating, node = r.node. for cleanup of loadingMask?
 			var node = r.node;
-			ids = ids || r.id;
+			ids = ids || node.getAttribute('uuid');
 			
 			var uri = "/photos/setprop/.json";
 			var data = {
@@ -725,14 +730,16 @@
 				}, this);
 				_Y.fire('snappi:ratingChanged', r);
 				break;
-			case "photos-home-rating": // rating for IMG.preview
-				// try {
-					// v = v || r.value;
-					// var auditionSH = _Y.one('section#nav-filmstrip .gallery.photo.filmstrip').Gallery.auditionSH;
-					// var audition = auditionSH.get(r.id);
-					// AssetRatingController._updateRatingChange(audition, v);
-				// } catch (e) {
-				// }
+			case "photoPreview-ratingGroup": // see ThumbnailFactory.PhotoPreview.renderElementsBySize()
+				// for autoScroll, see: Factory.Thumbnail.PhotoPreview.set_AutoScroll()
+				try {
+					var tn = r.node.ancestor('.FigureBox');
+					var audition = SNAPPI.Auditions.find(tn.uuid);
+					v = v || r.value;
+					AssetRatingController._updateRatingChange(audition, v);
+				} catch (e) {
+				}
+				_Y.fire('snappi:ratingChanged', r);
 				break;
 			case 'zoom_ratingGrp':
 				// try {

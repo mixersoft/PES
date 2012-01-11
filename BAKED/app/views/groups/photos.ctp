@@ -20,7 +20,7 @@ if (empty($this->passedArgs['wide'])) {
 ?>	
 <?php  if ( $data['Group']['assets_group_count']>0 ) {
 		$this->Layout->blockStart('markup'); 		?>
-			<div class='empty-photo-gallery-message hide'><div class='related-content message blue rounded-5 wrap-v'>
+			<div class='empty-photo-gallery-message hide'><div class='message blue rounded-5 wrap-v'>
 				<h1>Snap Gallery</h1>
 				<p>You must be a member of this Circle to see these Snaps from this Group.
 				Join this Circle to share Snaps, Stories, and more with other members.</p>

@@ -108,9 +108,11 @@
 		        		e.currentTarget.addClass('focus');
 	    			break;
 	    			case 'set-display-size':
+	    				SNAPPI.setPageLoading(false);
 	    				GalleryFactory.actions.setSize(this.Gallery, action[1]);
 	    				e.currentTarget.get('parentNode').all('li').removeClass('focus');
 		        		e.currentTarget.addClass('focus');
+		        		SNAPPI.setPageLoading(true);
 	    			break;	 
 	    			case 'toggle-display-options':
 	    				SNAPPI.UIHelper.nav.toggleDisplayOptions();
@@ -570,8 +572,9 @@
 			/*
 			 * load navFilmstrip if not already loaded
 			 */
-			var load = g.container.all('.FigureBox').size() < g.auditionSH.count();
-			if (uuid && load ){
+			var photoPreview = _Y.one('.preview-body .FigureBox.PhotoPreview');
+			var loadFilmStrip = g.container.all('.FigureBox').size() < g.auditionSH.count();
+			if (uuid && loadFilmStrip ){
 				try {
 					// var uri = PAGE.jsonData.castingCall.CastingCall.Request;
 					var uri = '/photos/neighbors/'+ PAGE.jsonData.castingCall.CastingCall.ID + '/.json';
@@ -581,17 +584,16 @@
 					var options = _Y.merge({
 						uuid: uuid,
 					}, named);
-					g.loadCastingCall(uri, options);				
+					g.loadCastingCall(uri, options);
+					// autoScroll default=true				
+					photoPreview.one('figcaption input[type=checkbox].auto-advance').set('checked', true);
 				} catch (e) {}	
-				
-				// activate autoScroll for now
-				// TODO: add checkbox to PhotoPreview, default active
-				try {
-					var previewThumbnail = _Y.one('.preview-body .FigureBox.PhotoPreview').Thumbnail;
-					SNAPPI.Factory.Thumbnail.PhotoPreview.set_AutoScroll(true, previewThumbnail, g);
-				} catch (e) {}
-				var check;			
 			}
+			// set PhotoPreview autoScroll, as necessary
+			try {
+				var isAutoScroll = photoPreview.one('figcaption input[type=checkbox].auto-advance').get('checked');
+				SNAPPI.Factory.Thumbnail.PhotoPreview.set_AutoScroll(isAutoScroll, photoPreview, g);
+			} catch (e) {}
 		}
 	}	
 	
