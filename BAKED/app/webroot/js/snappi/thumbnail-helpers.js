@@ -242,10 +242,10 @@
 						switch(thumbnail._cfg.type){
 							case 'PhotoPreview':
 								if (shotCount > 6) {
-									exists = '<li class="bg-sprite-wrap"><div class="hidden-shot" title="'+tooltip+'"></div></li>';
+									exists = '<li class="wrap-bg-sprite"><div class="hidden-shot" title="'+tooltip+'"></div></li>';
 									thumbnail.node.one('figure figcaption li.context-menu').insert(exists, 'before');						
 								} else if (shotCount > 1) {
-									exists = '<li class="bg-sprite-wrap"><div class="hidden-shot c'+shotCount+'" title="'+tooltip+'"></div></li>';
+									exists = '<li class="wrap-bg-sprite"><div class="hidden-shot c'+shotCount+'" title="'+tooltip+'"></div></li>';
 									thumbnail.node.one('figure figcaption li.context-menu').insert(exists, 'before');	
 								}							
 								break;
@@ -325,7 +325,7 @@
                 '<figure>'+
                 '    <figcaption><ul class="extras inline rounded-5">'+
                 '<li class="label caption"></li>' +
-                '    	 <li class="label">My Rating</li><li class="rating"></li>' +
+                '    	 <li class="label">My Rating</li><li class="rating wrap-bg-sprite"></li>' +
                 '        <li class="label">Score</li><li class="score">0.0</li>' +
                 '		 <li><nav class="settings">' +
                 '<ul class="inline"><li class="label" title="Automatically advance to the next Snap after each click">Auto</li><li><input type="checkbox" class="auto-advance" value="" title="Automatically advance to the next Snap after each click"></li></ul> ' +
@@ -605,7 +605,7 @@
 		markup: '<article class="FigureBox Photo">'+
                 '	<figure><img alt="" src="">'+
                 '    <figcaption><ul class="extras">'+
-                '    	 <li class="rating bg-sprite-wrap"></li>'+
+                '    	 <li class="rating wrap-bg-sprite"></li>'+
                 '        <li class="score">0.0</li>'+
                 '        <li class="icon context-menu"><img alt="" title="actions" src="/css/images/icon2.png"></li>'+
                 '        <li class="icon info"><img alt="more info" src="/css/images/icon1.png"></li>'+
