@@ -21,6 +21,17 @@ PAGE.saveChoice = function(o) {
 	Y.one('form#create-choose #panel-choose > div#Group'+privacy).removeClass('hide');
 }
 </script>
+<?php
+	$this->Layout->blockStart('itemHeader');
+		$type = 'Circle'; // Group Event Wedding
+		$badge_src = Stagehand::getSrc(null, 'sq', $type);
+		echo $this->element('nav/section', 
+			array('badge_src'=>$badge_src,
+				// 'classLabel'=>$type,
+				'label'=>"Create a New {$type}",
+		));
+	$this->Layout->blockEnd();
+?>
 <div class="groups view ">
 	<div class='groups'>
 		<div id='tab-list-settings'>

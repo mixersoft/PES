@@ -172,7 +172,7 @@
 			menu.set('trigger', TRIGGER);	// 'enabled' trigger
 			menu._stashTrigger = TRIGGER;
 		}
-		Menu.startListener(menu, cfg.handle_click);
+		Menu.startListener(menu, cfg.handle_click );
 		
 		// lookup reference
 		var key = cfg.lookup_key || MARKUP.id;
@@ -1070,6 +1070,18 @@ console.error("PreviewPhoto delete is still incomplete");
 		menu.hide();
 	};	
 	
+	
+	MenuItems.settings_beforeShow = function(menuItem, menu, properties){
+		var target = menu.get('currentNode');
+		if (properties.isOwner) menuItem.removeClass('disabled').show();
+		else menuItem.addClass('disabled');
+	};		
+	MenuItems.settings_click = function(menuItem, menu, properties){
+		var target = menu.get('currentNode');
+		menu.hide();
+		// POST to /groups/join
+		window.location.href = '/'+SNAPPI.STATE.controller.alias+'/settings/'+properties.id;
+	};	
 	/*
 	 * Group .FigureBox
 	 */
@@ -1120,7 +1132,7 @@ console.error("PreviewPhoto delete is still incomplete");
 		var target = menu.get('currentNode');
 		// TODO:
 	};	
-	
+
 	/*
 	 * MenuCfgs
 	 */
@@ -1204,9 +1216,34 @@ console.error("PreviewPhoto delete is still incomplete");
 		var TRIGGER = '.FigureBox.PhotoPreview li.icon.context-menu';
 		var XHR_URI = '/combo/markup/photoPreviewActionMenu'; 
 		var _cfg = {
-			align: { points:['tl', 'br'] },
+			align: { points:['tr', 'br'] },
 			init_hidden: false,
 			offset: {x:10, y:0},
+			on: {
+				show: function(e) {
+					 var menu = e.target;
+					 var target = menu.get('currentNode');
+					 var node = target.ancestor('.FigureBox.PhotoPreview');
+					 var audition = SNAPPI.Auditions.find(node.uuid); 
+					 Menu.menuItem_beforeShow(menu, audition);
+				},
+			},
+			handle_click : function(e){
+				var menuItem = e.currentTarget;
+				var target = this.get('currentNode');
+				if (menuItem.hasClass('disabled')) {
+					// check for disabled
+					e.preventDefault();
+					return;
+				} 
+				var node = target.ancestor('.FigureBox.PhotoPreview');
+				var audition = SNAPPI.Auditions.find(node.uuid); 
+				var methodName = menuItem.getAttribute('action')+'_click';
+				if (MenuItems[methodName]) {
+					e.preventDefault();
+					MenuItems[methodName](menuItem, this, audition);
+				}
+			}
 	    }
 		cfg = _Y.merge(_cfg, cfg);
 		return _load_Single_Trigger_Menu(CSS_ID, TRIGGER, XHR_URI, cfg);

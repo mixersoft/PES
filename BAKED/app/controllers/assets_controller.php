@@ -613,6 +613,7 @@ debug("WARNING: This code path is not tested");
 			$this->redirectSafe();
 		} else {
 			$this->set('data', $data);	
+			$this->viewVars['jsonData']['Asset'][]=$data['Asset'];
 			Session::write('lookup.owner_names', Set::merge(Session::read('lookup.owner_names'), Set::combine($data, '/Owner/id', '/Owner/username')));
 			if (empty($castingCall['CastingCall'])) {
 				// cache miss, build a new castingCall with one photo

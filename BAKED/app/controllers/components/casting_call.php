@@ -108,6 +108,7 @@ class CastingCallComponent extends Object {
 		$lastPerformed = @ifed($local['lastPerformed'], null);
 		//		$id = "snappi-audition-{$row['id']}";
 		$id = $row['id'];
+		$isOwner = $row['owner_id'] == AppController::$userid;
 		$exif = (array)json_decode($row['json_exif']);
 		if (!@empty($row[0]['FocusCenter'])) {
 			$x=$row[0]['FocusCenter']['X'];
@@ -180,7 +181,7 @@ class CastingCallComponent extends Object {
 		$Keyword = (!empty($row['keyword'])) ? $row['keyword'] : '';
 		$Created = (!empty($row['created'])) ? $row['created'] : '';
 
-		$Photo = compact('id','W','H','Fix','Img','DateTaken','TS','ExifColorSpace','ExifFlash','ExifOrientation', 'Caption','origSrc','CameraId',
+		$Photo = compact('id','W','H','Fix','Img','isOwner','DateTaken','TS','ExifColorSpace','ExifFlash','ExifOrientation', 'Caption','origSrc','CameraId',
 			/*
 			 * extended properties
 			 */

@@ -2,7 +2,7 @@
 SNAPPI.tabSection.setFocus("#tab-policy");
 SNAPPI.EditMode.init();
 </script>
-	<div id='policies' class="setting">
+	<div id='policies' class="setting  tab-panel">
 		<h3>Policy Settings</h3>
 		<?php $formOptions['id']='GroupForm-policy'; 
 			$formOptions['url']=array('action'=>'edit');  

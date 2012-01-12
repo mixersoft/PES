@@ -19,7 +19,7 @@
 			?>
 	</div>	
 	
-	<div id='fields' class="setting placeholder">
+	<div id='fields' class="setting  tab-panel">
 		<h3>Description</h3>
 		<?php
 			$formOptions['url']=$formOptions['url']=Router::url(array('controller'=>'photos', 'action'=>'edit', $this->Form->value('Asset.id')));

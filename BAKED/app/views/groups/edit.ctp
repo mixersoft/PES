@@ -2,7 +2,7 @@
 echo $this->element('nav/section', array('icon_src'=>$data['Group']['src_thumbnail']));
 ?>
 <div class="groups view main-div placeholder">
-	<div id='fields' class="setting placeholder">
+	<div id='fields' class="setting  tab-panel">
 		<h3>Description</h3>
 		<?php	
 			$formOptions['url']=Router::url(array('controller'=>Configure::read('controller.alias'), 'action'=>'edit', $this->Form->value('Group.id')));

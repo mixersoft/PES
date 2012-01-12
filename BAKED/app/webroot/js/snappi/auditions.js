@@ -168,6 +168,7 @@
     Auditions.extractSnappiAuditionAttr = function(o, schemaParser) {
     	try {
             o.id = o.Audition.id;
+            o.isOwner = o.Audition.Photo.isOwner;
             o.pid = o.Audition.Photo.id;
             // dim for $exif['COMPUTED'] or hosted/preview file, 
             // AFTER autorotate for preview file, $exif['COMPUTED'] (?)

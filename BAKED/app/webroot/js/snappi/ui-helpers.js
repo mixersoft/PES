@@ -143,14 +143,16 @@
 	    		var itemMenuCfg = {
 	    			CSS_ID: CSS_ID,
 	    			// TRIGGER: 'div.item-class',
-	    			force_TRIGGER: 'div.item-class',
+	    			// force_TRIGGER: 'div.item-class',
+	    			force_TRIGGER: '.icon.context-menu',
 	    			triggerType: type,		// NOTE: add .gallery.group to id=groups-preview-xhr
-	    			align: { points:['tl', 'tr'] },
+	    			align: { points:['tr', 'br'] },
 	    			init_hidden: false,
 	    			offset: {x:10, y:0},
 				};
 				
 	    		SNAPPI.MenuAUI.CFG[CSS_ID].load(itemMenuCfg);
+	    		e.container.one(itemMenuCfg.force_TRIGGER).setAttribute('uuid', SNAPPI.STATE.controller.xhrFrom.uuid);
 	    		// stop LinkToClickListener
 	    		listenerNode.listen['disable_LinkToClick'] = true;
 	    	} else {
@@ -215,7 +217,7 @@
 		},
 		getProperties : function(triggerType, node) {
 			var data = [], 
-				uuid = node.get('id');
+				uuid = node.getAttribute('uuid') || node.get('id');
 			switch(triggerType) {
 				case 'group':
 					data = PAGE.jsonData.Group || PAGE.jsonData.Membership; 

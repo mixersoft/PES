@@ -687,13 +687,12 @@ section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
 	-webkit-border-radius: 5px;	
 	color: #494949;
 }
-.FigureBox.PhotoPreview figcaption .extras li.caption{
+/*.FigureBox.PhotoPreview figcaption .extras li.caption{
 	font-weight: bold;
 	padding-right: 10px;
 	width: 154px;
-}
+}*/
 .FigureBox.PhotoPreview figcaption .extras li.rating {
-	xheight:20px;
 }
 .FigureBox.PhotoPreview figcaption .extras li div.ratingGroup {
 	margin: 0 5px;
@@ -2299,7 +2298,6 @@ div#tab-list-settings li.tab.focus a {
 	margin-bottom: 40px;
 }
 #tab-view-settings .tab-panel {
-	xoverflow: hidden;
 	margin: 10px 0;
 }
 
@@ -2327,6 +2325,24 @@ div#tab-list-settings li.tab.focus a {
 #tab-view-settings input[type='checkbox'] {
 	margin-right: 8px;
 }
+#tab-view-settings .tab-panel div.input.text {
+	display: block;
+	margin: 2px 0;
+	position: relative;
+	overflow: hidden;
+}
+#tab-view-settings .tab-panel  div.input.text label {
+	display: inline-block;
+	font-size: 12pt;
+	padding: 0 4px;
+	min-width: 100px;
+}
+#tab-view-settings .tab-panel div.input.text  input[type=text] {
+	display: inline-block;
+	font-size: 12pt;
+	padding: 0 4px;
+	width: 480px;
+}
 /*
  * for /create/group
  */
@@ -2345,15 +2361,7 @@ div#tab-list-settings li.tab.focus a {
 	list-style-type: none;
 }
 
-#tab-view-settings .tab-panel div.input.text {
-	display: block;
-	margin: 2px 0;
-	position: relative;
-	overflow: hidden;
-}
-#tab-view-settings .tab-panel  div.input.text label {
-	font-size: 12pt;
-	padding: 0 4px;
+#tab-view-settings .tab-panel  div.input.text label[for=GroupTitle] {
 	width: 100%;
 }
 #tab-view-settings .tab-panel  input#GroupTitle {
@@ -2361,7 +2369,7 @@ div#tab-list-settings li.tab.focus a {
 	padding: 0 4px;
 	font-size: 12pt;
 }
-#tab-view-settings .tab-panel div.input.textarea {
+#tab-view-settings  div.input.textarea {
 	display: block;
 	width: 100%;
 }

@@ -8,7 +8,7 @@
 		<div class="menu-item-group">
 			<li action='express_upload' class='before-show selected'>Express Upload</li>
 			<li action='privacy' class='disabled before-show'>Privacy...</li>
-			<li action='setting' class='disabled before-show'>Settings...</li>
+			<li action='settings' class='disabled before-show'>Settings</li>
 		</div>
 		<div class="menu-item-group">
 			<li action='leave' class='disabled before-show'>Leave this group</li>

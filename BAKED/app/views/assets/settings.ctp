@@ -72,23 +72,8 @@
 			-->		
 	</div>
 <?php	$this->Layout->blockEnd(); ?>
-<div class="assets view main-div placeholder">
+<div class="assets view main-div ">
 <div class="assets">
-	<div class='img placeholder'>
-		<ul class='sizes inline'>
-			<li><h3 style='display:inline'>Sizes:</h3></li>
-			<?php $sizes = array('sq'=>'Square', 'tn'=>'Thumbnail', 'bs'=>'Small', 'bm'=>'Medium', 'bp'=>'Preview'); 
-				foreach($sizes as $size=>$label) {
-					echo "<li>{$this->Html->link($label, setNamedParam($this->params['url'], 'size', $size))}</li>";
-				}
-			?>
-		</ul>
-		<?php $size = isset($this->params['named']['size'])  ? $this->params['named']['size'] : 'bm';
-				$src = Stagehand::getSrc($data['Asset']['src_thumbnail'], $size);
-				echo $this->Html->image($src);
-			?>
-	</div>	
-	
 <div id='tab-list-settings'>
 <ul class='inline'>
 	<?php 		

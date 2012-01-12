@@ -324,7 +324,6 @@
 		markup: '<article class="FigureBox PhotoPreview">'+
                 '<figure>'+
                 '    <figcaption><ul class="extras inline rounded-5">'+
-                '<li class="label caption"></li>' +
                 '    	 <li class="label">My Rating</li><li class="rating wrap-bg-sprite"></li>' +
                 '        <li class="label">Score</li><li class="score">0.0</li>' +
                 '		 <li><nav class="settings">' +
@@ -397,12 +396,14 @@
 			
 			// show caption, 
 			exists = node.one("figcaption .caption");
-			if (this._cfg.showLabel) {
-				exists.set('innerHTML', this.trimLabel(title));
-				exists.removeClass('hide');
-			} else {
-				node.one('figure > img').set('title', title);
-				if (exists) exists.addClass('hide');
+			if (exists) {
+				if (this._cfg.showLabel) {
+					exists.set('innerHTML', this.trimLabel(title));
+					exists.removeClass('hide');
+				} else {
+					node.one('figure > img').set('title', title);
+					if (exists) exists.addClass('hide');
+				}
 			}
 			
 			// set size focus

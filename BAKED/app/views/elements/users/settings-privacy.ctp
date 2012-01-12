@@ -3,7 +3,7 @@ SNAPPI.tabSection.setFocus("#tab-privacy");
 SNAPPI.EditMode.init();
 </script>
 
-	<div id='privacy' class="setting ">
+	<div id='privacy' class="setting  tab-panel">
 		<h3>Default Privacy Settings</h3>
 		<?php
 			$formOptions['id']='UserForm-privacy'; 

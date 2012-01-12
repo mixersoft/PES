@@ -2,7 +2,7 @@
 SNAPPI.tabSection.setFocus("#tab-emails");
 SNAPPI.EditMode.init();
 </script>
-	<div id='email' class="setting ">
+	<div id='email' class="setting  tab-panel">
 		<h3>Emails and Notifications</h3>
 		<?php	
 			$formOptions['id']='UserForm-emails'; 

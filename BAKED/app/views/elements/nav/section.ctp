@@ -33,6 +33,7 @@ switch ($classLabel) {
 		$badgeType = 'person';
 		break;
 	case 'Groups':
+	case 'Circles':
 //	case 'events':
 		$home = array('action'=>'all');
 		$actions['Most Recent'] = array('action'=>'most_recent');
@@ -151,7 +152,9 @@ switch ($classLabel) {
 }
 
 if (AppController::$uuid) $this->viewVars['jsonData']['listeners']['ItemHeaderClick'] = 1;
-
+if (in_array($classLabel, array('Person', 'Group', 'Event', 'Wedding'))) {
+	$showAction = null;
+} else $showAction = 'hide';
 ?>
 <section class='item-header container_16'>
 	<div class='wrap'>
@@ -171,10 +174,11 @@ if (AppController::$uuid) $this->viewVars['jsonData']['listeners']['ItemHeaderCl
 					echo ucwords($label);
 					?>
 				</h1>
-				</li>
+			</li>
 		</ul>
 		<nav class="window-options grid_2 omega hide">
 			<ul class="inline right">
+				<li class="icon context-menu <?php echo $showAction;  ?>"><img alt="" title="actions" src="/css/images/icon2.png"></li>
 				<li action="set-display-view:minimize"><img src="/css/images/img_zoomin.gif"></li><li action="set-display-view:maximize"><img src="/css/images/img_zoomout.gif"></li>
 			</ul>
 		</nav>	

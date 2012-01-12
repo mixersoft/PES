@@ -4,7 +4,7 @@ Session::write('settings.tabName', 'moderator');	// deprecate?
 SNAPPI.EditMode.init();
 </script>
 
-	<div id='moderator' class="setting ">
+	<div id='moderator' class="setting  tab-panel">
 		<h3>Moderator Settings</h3>
 		<?php $formOptions['id']='UserForm-moderator';
 			$formOptions['url']=Router::url(array('controller'=>'my', 'action'=>'edit'));

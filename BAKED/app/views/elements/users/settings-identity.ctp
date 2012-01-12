@@ -2,7 +2,7 @@
 SNAPPI.tabSection.setFocus("#tab-identity");
 SNAPPI.EditMode.init();
 </script>
-	<div id='profile' class="setting">
+	<div id='profile' class="setting tab-panel">
 		<h3>Identity and Personal Profile</h3>
 		<?php	
 			$orange = array('class'=>'orange'); 

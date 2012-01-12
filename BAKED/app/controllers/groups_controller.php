@@ -825,6 +825,7 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 			} else {
 				$this->set('browseContentOk', $this->__browseContentOk($data));
 				$this->set('data', $data);
+				$this->viewVars['jsonData']['Group'][]=$data['Group'];
 				/*
 				 * get Lookups
 				 */

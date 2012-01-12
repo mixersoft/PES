@@ -2,7 +2,7 @@
 SNAPPI.tabSection.setFocus("#tab-details");
 SNAPPI.EditMode.init();
 </script>
-	<div id='fields' class="setting ">
+	<div id='fields' class="setting  tab-panel">
 		<h3>Description</h3>
 		<?php	
 			$formOptions['url']=Router::url(array(
