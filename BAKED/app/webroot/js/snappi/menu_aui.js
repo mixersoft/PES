@@ -325,7 +325,7 @@
 	};		
 	MenuItems.select_all_click = function(menuItem, menu){
 		var target = menu.get('currentNode');	// target
-		var cb = target.previous('input[type="checkbox"]');
+		var cb = target.one('input[type="checkbox"]');
 		if (cb) {
 			cb.set('checked', true);
 			var container, gallery = cb.ancestor('section').next('section.gallery');
@@ -343,7 +343,7 @@
 	};
 	MenuItems.clear_all_click = function(menuItem, menu){
 		var target = menu.get('currentNode');	// target
-		var cb = target.previous('input[type="checkbox"]');
+		var cb = target.one('input[type="checkbox"]');
 		if (cb) {
 			cb.set('checked', false);
 			var container, gallery = cb.ancestor('section').next('section.gallery');
@@ -1369,16 +1369,18 @@ console.error("PreviewPhoto delete is still incomplete");
 					var target = this.get('currentNode');
 					if (target.ancestor('#lightbox')) {	// up for lightbox
 						this.set('align', { points:['bl', 'tl']})
-					} else {
+						this.enable();
+					} else if (target.hasClass('menu-open')) {
+						this.enable();
 						this.set('align', { points:['tl', 'bl']});	
-					}
+					} else this.disable();
 					Menu.menuItem_beforeShow(e.target);
 				}
 			}
 		};
 		cfg = _Y.merge(defaultCfg, cfg);
 		var CSS_ID = 'menu-select-all-markup';
-		var TRIGGER = cfg.trigger || 'li.select-all span.menu-open';
+		var TRIGGER = cfg.trigger || 'li.select-all';
 		var MARKUP = {
 			id: CSS_ID,
 			selector: '#'+CSS_ID,

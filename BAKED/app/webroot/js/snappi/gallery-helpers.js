@@ -255,18 +255,20 @@
 	        MultiSelect : function () {
 	        	SNAPPI.multiSelect.listen(this.container, true);
 	        	// select-all checkbox listener
-	        	if (this.node.get('parentNode') && !this.node.listen['selectAll']) {
-		        	this.node.listen['selectAll'] = this.node.get('parentNode').delegate('click', 
-		        	function(e){
-		        		var checked = e.currentTarget.get('checked');
-		        		if (checked) this.Gallery.container.all('.FigureBox').addClass('selected');
-		        		else {
-		        			this.Gallery.container.all('.FigureBox').removeClass('selected');
-		        			SNAPPI.STATE.selectAllPages = false;
-		        		}
-		        	},'li.select-all input[type="checkbox"]', this.node);
-		        	// enable select-all menu
-		        	// TODO: currently done in gallery.init
+	        	if (this.node.previous().hasClass('gallery-header')) {
+	        		var selectAll = this.node.previous().one('li.select-all input');
+	        	}
+	        	if (selectAll && !this.node.listen['selectAll']) {
+		        	this.node.listen['selectAll'] = selectAll.on('click', 
+			        	function(e){
+			        		var checked = e.currentTarget.get('checked');
+			        		if (checked) this.Gallery.container.all('.FigureBox').addClass('selected');
+			        		else {
+			        			this.Gallery.container.all('.FigureBox').removeClass('selected');
+			        			SNAPPI.STATE.selectAllPages = false;
+			        		}
+			        		e.stopImmediatePropagation();
+		        	}, this.node);
 					// SNAPPI.MenuAUI.initMenus({'menu-select-all-markup':1});
 	        	}
 	        	return;
