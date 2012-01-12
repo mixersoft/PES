@@ -628,6 +628,7 @@ LIMIT 5;";
 			$this->redirectSafe();
 		} else {
 			$this->set('data', $data);
+			$this->viewVars['jsonData']['Group'][]=$data['Group'];
 			Session::write('lookup.owner_names', Set::merge(Session::read('lookup.owner_names'), Set::combine($data, '/Owner/id', '/Owner/username')));
 		}
 		$this->set(array('assets'=>$data,'class'=>'Asset'));			
@@ -875,6 +876,7 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 			$this->redirectSafe();
 		} else {
 			$this->set('data', $data);
+			$this->viewVars['jsonData']['Group'][]=$data['Group'];
 			Session::write('lookup.owner_names', Set::merge(Session::read('lookup.owner_names'), Set::combine($data, '/Owner/id', '/Owner/username')));
 		}
 		$this->set(array('assets'=>$data,'class'=>'Asset'));
@@ -917,6 +919,7 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 			$this->redirectSafe();
 		} else {
 			$this->set('data', $data);
+			$this->viewVars['jsonData']['Group'][]=$data['Group'];
 			Session::write('lookup.owner_names', Set::merge(Session::read('lookup.owner_names'), Set::combine($data, '/Owner/id', '/Owner/username')));
 		}
 	}
@@ -975,6 +978,7 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 			// add $pageData to $data, until we render providerAccounts in JS from jsonData
 			$data['ProviderAccount'] = $pageData['ProviderAccount'];			
 			$this->set('data', $data);
+			$this->viewVars['jsonData']['Group'][]=$data['Group'];
 			$owner_lookup = Set::combine($data, '/ProviderAccount/user_id', '/ProviderAccount/display_name');			
 			Session::write('lookup.owner_names', Set::merge(Session::read('lookup.owner_names'),$owner_lookup ));
 //			debug(Session::read('lookup.owner_names'));
@@ -999,6 +1003,7 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 			$this->redirectSafe();
 		} else {
 			$this->set('data', $data);
+			$this->viewVars['jsonData']['Group'][]=$data['Group'];
 		}
 	}
 		
@@ -1016,6 +1021,7 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 		$options = array('conditions'=>array('Group.id'=>$id));
 		$data = $this->Group->find('first', $options);	
 		$this->set('data', $data);
+		$this->viewVars['jsonData']['Group'][]=$data['Group'];
 		if (isset($this->params['url']['view'])) {
 			$this->Session->write("comments.viewType.discussion", $this->params['url']['view']);
 		}
@@ -1208,12 +1214,7 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 		$this->__decodeGroupPerms($data);
 		$this->data = $data;
 		$this->set('data', $data);
-		//		$owners = $this->Group->Owner->find('list');
-		//		$assets = $this->Group->Asset->find('list');
-		//		$collections = $this->Group->Collection->find('list');
-		//		$members = $this->Group->Member->find('list');
-		//		$this->set(compact('owners', 'assets', 'collections', 'members'));
-		
+		$this->viewVars['jsonData']['Group'][]=$data['Group'];
 		
 		$xhrFrom = Configure::read('controller.xhrFrom');
 		if ($xhrFrom) {
@@ -1268,6 +1269,7 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 		$data = @$this->Group->find('first', $options);	
 		$this->data = $data;
 		$this->set('data', $data);
+		$this->viewVars['jsonData']['Group'][]=$data['Group'];
 	}
 
 	function delete($id = null) {

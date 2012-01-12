@@ -222,6 +222,9 @@
 				case 'group':
 					data = PAGE.jsonData.Group || PAGE.jsonData.Membership; 
 					break;
+				case 'person':
+					data = PAGE.jsonData.User || PAGE.jsonData.Member; 
+					break;	
 			}
 			for (var i in data ) {
 				if (uuid == data[i].id) {

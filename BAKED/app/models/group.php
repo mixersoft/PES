@@ -61,7 +61,6 @@ class Group extends AppModel {
 				$member_owner_group_ids = Permissionable::getGroupIds();
 				foreach ($results as $i => & $data) {
 					if (isset($data[$permAlias]['perms'])) $data[$model]['perms'] = $data[$permAlias]['perms'];
-					// add isOwner, isMember
 					$data[$model]['isMember'] = in_array($data[$model]['id'], $member_owner_group_ids );  
 					if (!empty($data[$model]['owner_id'])) $data[$model]['isOwner'] = $data[$model]['owner_id'] == AppController::$userid;
 				}

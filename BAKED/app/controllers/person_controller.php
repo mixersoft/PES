@@ -261,6 +261,7 @@ class PersonController extends UsersController {
 		} else {
 			$data['Asset'] = $pageData;
 			$this->set('data', $data);
+			$this->viewVars['jsonData']['User'][]=$data['User'];
 		}
 	}
 
@@ -303,6 +304,7 @@ class PersonController extends UsersController {
 		} else {
 			$data['Asset'] = $pageData;
 			$this->set('data', $data);
+			$this->viewVars['jsonData']['User'][]=$data['User'];
 		}
 	}
 	
@@ -361,6 +363,7 @@ class PersonController extends UsersController {
 			// add $pageData to $data, until we render providerAccounts in JS from jsonData
 			$data['ProviderAccount'] = $pageData['ProviderAccount'];			
 			$this->set('data', $data);
+			$this->viewVars['jsonData']['User'][]=$data['User'];
 			$owner_lookup = Set::combine($data, '/ProviderAccount/user_id', '/ProviderAccount/display_name');			
 			Session::write('lookup.owner_names', Set::merge(Session::read('lookup.owner_names'),$owner_lookup ));
 //			debug(Session::read('lookup.owner_names'));
@@ -414,6 +417,7 @@ class PersonController extends UsersController {
 		} else {
 			$data[$paginateModel] = $pageData;
 			$this->set('data', $data);
+			$this->viewVars['jsonData']['User'][]=$data['User'];
 		}
 	}
 	
@@ -432,7 +436,8 @@ class PersonController extends UsersController {
 			$this->Session->setFlash("Member not found.");
 			$this->redirectSafe();
 		} else {
-			$this->set('data', $data);			
+			$this->set('data', $data);	
+			$this->viewVars['jsonData']['User'][]=$data['User'];		
 		}
 	}
 		
