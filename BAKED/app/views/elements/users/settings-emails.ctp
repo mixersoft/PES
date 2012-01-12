@@ -8,7 +8,7 @@ SNAPPI.EditMode.init();
 			$formOptions['id']='UserForm-emails'; 
 			$formOptions['url']=Router::url(array('controller'=>'my', 'action'=>'edit'));
 			$checkbox_attrs = array('legend'=> false, 'onclick'=>'return false;');
-			$radio_attrs = array('legend'=> false,'onclick'=>'return false;' );
+			$radio_attrs = array('legend'=> false,'onclick'=>'return false;', 'separator'=>'<br />' );
 					
 			echo $this->Form->create('Profile', $formOptions);?>
 		<h4>Email Address</h4>

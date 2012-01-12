@@ -1,10 +1,10 @@
-<div id='panel-choose' class="create tab-panel alpha prefix_1 grid_12 suffix_1  omega ">
+<div id='panel-choose' class="create tab-panel alpha grid_14 omega ">
 	<h3>What type of Circle do you want to create?</h3>
 	<p>The sharing and privacy settings of your Circle are important to consider. 
 		Please review the descriptions below and choose the type of Circle you would like to create. 
 		We'll set the default settings to match. 
 		However, you will be able to change any of these settings in the following screens.</p>
-	<div id='Group567' class="alpha grid_4">
+	<div id='Group567' class="alpha grid_triple">
 		<div class="center wrap-v">
 			<b><?php printf(__('%s', true), __('Public', true));?></b>
 			<div class='submit'><input id="group-public"  class='orange' privacy='567' type="button" value="Create" onclick='PAGE.saveChoice(this);return SNAPPI.tabSection.selectByCSS("#tab-details");'></input></div>
@@ -22,7 +22,7 @@
 		</div>
 	</div>
 	
-	<div id='Group119' class=" grid_4 ">
+	<div id='Group119' class=" grid_triple ">
 		<div class="center wrap-v">
 			<b><?php printf(__('%s', true), __('Members Only', true));?></b>
 			<div class='submit'><input id="group-members"  class='orange' privacy='119' type="button" value="Create" onclick='PAGE.saveChoice(this);return SNAPPI.tabSection.selectByCSS("#tab-details");'></input></div>
@@ -45,7 +45,7 @@
 		</div>
 	</div>
 	
-	<div id='Group63' class=" grid_4 omega">
+	<div id='Group63' class=" grid_triple omega">
 		<div class="center wrap-v">
 			<b><?php printf(__('%s', true), __('Private', true));?></b>
 			<div class='submit'><input id="group-private"  class='orange' privacy='63'  type="button" value="Create" onclick='PAGE.saveChoice(this);return SNAPPI.tabSection.selectByCSS("#tab-details");'></input></div>

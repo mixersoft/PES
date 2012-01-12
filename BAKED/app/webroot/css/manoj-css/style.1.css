@@ -1862,14 +1862,15 @@ section.help .FigureBox.Person figure > a > img {
 .comments-main form > div {
 	display: inline-block;
 }
-.comments-main form textarea {
-	width: 100%;
-	height: 40px;
-	
-}
+
 .comments-main .post form .input.textarea {
 	display: block;
 	width: 100%;
+}
+.comments-main .post form textarea {
+	width: 100%;
+	height: 40px;
+	
 }
 .comments-main .post form .submit {
 	float: right;
@@ -2040,7 +2041,6 @@ form#create-choose div.submit {
 }
 
 form input[type="button"] {
-	font-size: 0.8em;
     font-weight: normal;
     padding: 2px;
     text-shadow: none
@@ -2244,6 +2244,8 @@ ul.term-condition h1 {
  */
 div#tab-list-settings {
     color: white;
+    margin-top: 20px;
+    margin-bottom: 4px;
 }
 div#tab-list-settings ul {
     border-bottom: 1px solid #8BC3E4;
@@ -2251,19 +2253,26 @@ div#tab-list-settings ul {
     text-align: center;
 }
 div#tab-list-settings li.tab {
-    background-color: white;
+	background: #e8f6fd; /* Old browsers */
+	background: -moz-linear-gradient(top,  #e8f6fd 0%, #c5e8fa 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#e8f6fd), color-stop(100%,#c5e8fa)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #e8f6fd 0%,#c5e8fa 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #e8f6fd 0%,#c5e8fa 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #e8f6fd 0%,#c5e8fa 100%); /* IE10+ */
+	background: linear-gradient(top,  #e8f6fd 0%,#c5e8fa 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e8f6fd', endColorstr='#c5e8fa',GradientType=0 ); /* IE6-9 */
     border: 1px solid #8BC3E4;
     margin: 0;
     padding: 2px 15px;
     border-radius: 5px 5px 0 0;
     position: relative;
     bottom: -1px;
-    color: #888;
+    color: #555;
     cursor: pointer;
     
 }
 div#tab-list-settings li.tab a {
-    color: #888;
+    color: #555;
     cursor: pointer;
     margin: 0;
     padding: 0;
@@ -2273,6 +2282,7 @@ div#tab-list-settings li.tab:hover a {
     color: #000;
 }
 div#tab-list-settings li.tab.focus {
+	background: #FFF;
 	color: #000;
 	border-bottom: 1px solid transparent; 
 	cursor: default;
@@ -2282,25 +2292,86 @@ div#tab-list-settings li.tab.focus a {
 	cursor: default;
 }
 
+/*
+ * for tab content
+ */
+#tab-view-settings {
+	margin-bottom: 40px;
+}
+#tab-view-settings .tab-panel {
+	xoverflow: hidden;
+	margin: 10px 0;
+}
 
+#tab-view-settings h3 {
+	font-size:1.2em;
+	margin: 20px 0;
+}
+#tab-view-settings .review h3 {
+	border-bottom: 1px solid #E2E6EB;
+}
+#tab-view-settings h4 {
+	border-bottom: 1px solid #E2E6EB;
+	margin: 10px 0;
+}
+#tab-view-settings .radio-group {
+}
+.radio-group input[type=radio] {
+	width: 40px;
+}
+.radio-group  label {
+	display: inline-block;
+	vertical-align: text-top;
+    width: 640px;
+}
+#tab-view-settings input[type='checkbox'] {
+	margin-right: 8px;
+}
+/*
+ * for /create/group
+ */
+#panel-choose .grid_triple {
+	display: inline;
+    float: left;
+    margin-left: 10px;
+    margin-right: 10px;
+    position: relative;
+    width: 252px;
+}
 #panel-choose .description {
-	font-size: 0.8em;
+	font-size: 0.9em;
 }
 #panel-choose .description li {
 	list-style-type: none;
 }
 
-div#tab-view-settings h3 {
-	font-size:1.2em;
-	margin: 20px 0;
+#tab-view-settings .tab-panel div.input.text {
+	display: block;
+	margin: 2px 0;
+	position: relative;
+	overflow: hidden;
 }
-div#tab-view-settings h4 {
-	border-bottom: 1px solid #E2E6EB;
-	margin: 10px 0;
+#tab-view-settings .tab-panel  div.input.text label {
+	font-size: 12pt;
+	padding: 0 4px;
+	width: 100%;
 }
-
-div#tab-view-settings input[type='checkbox'] {
-	margin-right: 8px;
+#tab-view-settings .tab-panel  input#GroupTitle {
+	width: 100%;
+	padding: 0 4px;
+	font-size: 12pt;
+}
+#tab-view-settings .tab-panel div.input.textarea {
+	display: block;
+	width: 100%;
+}
+#tab-view-settings .tab-panel div.input.textarea label {
+	display: block;
+}
+#tab-view-settings .tab-panel  textarea {
+	width: 100%;
+	height: 60px;
+	
 }
 
 /* http://www.colorzilla.com/gradient-editor/ */

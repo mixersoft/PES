@@ -24,7 +24,7 @@
 		<?php
 			$formOptions['url']=$formOptions['url']=Router::url(array('controller'=>'photos', 'action'=>'edit', $this->Form->value('Asset.id')));
 			$formOptions['id']='AssetForm-fields';
-			$radio_attrs = array('legend'=> false);
+			$radio_attrs = array('legend'=> false, 'separator'=>'<br />');
 			echo $this->Form->create('Asset', $formOptions);?>
 			
 		<?php echo $this->Form->input('caption', array('label'=>'Caption'));?>
@@ -45,17 +45,22 @@
 		
 		<h4>Photos</h4>
 		<p>This Photo is:</p>
+		<div class="radio-group">
 		<?php echo $form->radio('privacy_assets', $privacy['Asset'], $radio_attrs );?>
-			
+		</div>	
 		<h4>Group and Event Contents</h4>
 		<p>When this Photo is shared with a Group:</p>
+		<div class="radio-group">
 		<?php echo $form->radio('privacy_groups', $privacy['Groups'], $radio_attrs );?>	
+		</div>
 					
 		<h4>Secret Key Sharing</h4>
 		<p>Regardless of privacy settings, content can also be accessed by secret key. These keys are added to special links which can be selectively shared by email, IM or the web. Note that content accessed by Secret Key will not include links to related content.</p>
 		<br></br>
 		<p>Show Secret Keys to:</p>
+		<div class="radio-group">
 		<?php echo $form->radio('privacy_secret_key', $privacy['SecretKey'], $radio_attrs );?>			
+		</div>
 					
 		<?php 	echo $this->Form->hidden('id');?>
 		<?php echo $this->Form->end(__('Edit', true));?>					

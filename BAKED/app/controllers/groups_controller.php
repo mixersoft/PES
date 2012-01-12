@@ -1025,6 +1025,7 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 
 	function create() {
 		$this->layout = 'snappi';
+		$this->set('title_for_layout',"Create New Circle");
 		$step = @ifed($this->data['Group']['step'], 'create-choose');
 		if (!empty($this->data)) {
 				$this->Group->create();

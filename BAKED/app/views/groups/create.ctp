@@ -6,7 +6,7 @@ PAGE.finish = function(){
 	var Y = SNAPPI.Y;
 	// show all sections
 	Y.all('form div.submit').addClass('hide');	// hide section buttons
-	Y.all('form  .create.tab-panel').removeClass('hide'); // show all sections
+	Y.all('form .create.tab-panel').removeClass('hide').addClass('review'); // show all sections
 	Y.all('form > div#panel-choose').addClass('hide'); // except 1st panel, choose
 	// Y.all('form > div#create-finish').removeClass('hide');
 	return false;
@@ -42,7 +42,7 @@ PAGE.saveChoice = function(o) {
 			else $xhrFrom['view'] = "create-choose";
 		}
 	?>			
-				<li class='tab btn focus' ><a id='tab-choose' href='<?php echo $chooseSrc ?>' onclick='return SNAPPI.tabSection.selectByCSS(this);'>Choose Group Type</a></li>
+				<li class='tab btn focus' ><a id='tab-choose' href='<?php echo $chooseSrc ?>' onclick='return SNAPPI.tabSection.selectByCSS(this);'>Choose Type</a></li>
 				<li class='tab btn'><a id='tab-details' href='<?php echo $detailsSrc ?>' onclick='return SNAPPI.tabSection.selectByCSS(this);'>Add Details</a></li>
 				<li class='tab btn'><a id='tab-privacy' href='<?php echo $privacySrc ?>' onclick='return SNAPPI.tabSection.selectByCSS(this);'>Privacy</a></li>
 				<li class='tab btn'><a id='tab-policy' href='<?php echo $policySrc ?>' onclick='return SNAPPI.tabSection.selectByCSS(this);'>Policies</a></li>
@@ -54,7 +54,7 @@ PAGE.saveChoice = function(o) {
 			$formOptions['id']='create-choose';
 			echo $this->Form->create('Group', $formOptions); 
 		?>		
-		<div class="tab-view prefix_1 grid_14 suffix_1 wrap-v">
+		<div id='tab-view-settings' class="tab-view-settings prefix_1 grid_14 suffix_1 wrap-v">
 			<?php echo $this->element("/groups/create-choose"); ?>
 			<?php echo $this->element("/groups/create-details"); ?>
 			<?php echo $this->element("/groups/create-privacy"); ?>

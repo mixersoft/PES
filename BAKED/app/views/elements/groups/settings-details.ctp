@@ -11,7 +11,7 @@ SNAPPI.EditMode.init();
 				$this->Form->value('Group.id')));
 			$formOptions['id']='GroupForm-fields';
 			$checkbox_attrs = array('legend'=> false, 'onclick'=>'return false;');
-			$radio_attrs = array('legend'=> false,'onclick'=>'return false;' );
+			$radio_attrs = array('legend'=> false,'onclick'=>'return false;', 'separator'=>'<br />' );
 			echo $this->Form->create('Group', $formOptions);?>
 			
 		<?php echo $this->Form->input('title', array('label'=>'Title', 'readOnly'=>true));?>
