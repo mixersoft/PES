@@ -30,7 +30,7 @@
 ?>
 <div class="users view">
 	<div class="users ">
-		<div id='tab-list'>
+		<div id='tab-list-settings'>
 			<ul class='inline'>
 <?php 	
 	$xhrSrc = Router::url(array('plugin'=>'', 'action'=>'settings'));
@@ -55,6 +55,6 @@
 				<li class='tab btn'><a id='tab-moderator' href='<?php echo $moderatorSrc ?>' onclick='return SNAPPI.tabSection.selectByCSS(this);'>Moderation</a></li>
 			</ul>
 		</div>	
-		<div id='tab-section' class="setting tab-view xhr-get prefix_1 grid_14 suffix_1"  xhrSrc='<?php echo $xhrSrc."?xhrview={$xhrFrom['view']}" ?>' nodelay='1'></div>	
+		<div id='tab-view-settings' class="setting tab-view xhr-get prefix_1 grid_14 suffix_1"  xhrSrc='<?php echo $xhrSrc."?xhrview={$xhrFrom['view']}" ?>' nodelay='1'></div>	
 	</div>	
 </div>

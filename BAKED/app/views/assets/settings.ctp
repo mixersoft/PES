@@ -89,7 +89,7 @@
 			?>
 	</div>	
 	
-<div id='tab-list'>
+<div id='tab-list-settings'>
 <ul class='inline'>
 	<?php 		
 		$xhrSrc = Router::url(array('plugin'=>'', 'action'=>'settings', AppController::$uuid));
@@ -110,7 +110,7 @@
 	<li class='tab btn'><a id='tab-privacy' href='<?php echo $privacySrc ?>' onclick='return SNAPPI.tabSection.selectByCSS(this);'>Privacy</a></li>
 </ul>
 </div>	
-<div id='tab-section' class="setting  xhr-get  prefix_1 grid_14 suffix_1 wrap-v"  xhrSrc='<?php echo $xhrSrc."?xhrview={$xhrFrom['view']}" ?>' nodelay='1'>
+<div id='tab-view-settings' class="setting  xhr-get  prefix_1 grid_14 suffix_1 wrap-v"  xhrSrc='<?php echo $xhrSrc."?xhrview={$xhrFrom['view']}" ?>' nodelay='1'>
 </div>	
 
 

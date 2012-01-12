@@ -22,9 +22,8 @@ PAGE.saveChoice = function(o) {
 }
 </script>
 <div class="groups view ">
-	<h2><?php printf(__('Create a New %s', true), __('Group', true)); ?></h2>
 	<div class='groups'>
-		<div id='tab-list'>
+		<div id='tab-list-settings'>
 			<ul class='inline'>
 	<?php 	
 		$xhrSrc = Router::url(array('plugin'=>'', 'action'=>'create'));

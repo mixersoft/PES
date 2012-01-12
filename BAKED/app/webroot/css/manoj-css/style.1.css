@@ -2242,53 +2242,64 @@ ul.term-condition h1 {
 /*
  * tabs
  */
-div#tab-list {
+div#tab-list-settings {
     color: white;
 }
-div#tab-list ul {
-    border-bottom: 1px solid #538FB3;
+div#tab-list-settings ul {
+    border-bottom: 1px solid #8BC3E4;
     line-height: 20px;
     text-align: center;
 }
-div#tab-list li {
+div#tab-list-settings li.tab {
     background-color: white;
-    border: 1px solid #538FB3;
+    border: 1px solid #8BC3E4;
     margin: 0;
     padding: 2px 15px;
+    border-radius: 5px 5px 0 0;
+    position: relative;
+    bottom: -1px;
+    color: #888;
+    cursor: pointer;
+    
 }
-div#tab-list li.tab.focus {
-	background-color: green;
-}
-div#tab-list a {
-    color: #538FB3;
+div#tab-list-settings li.tab a {
+    color: #888;
     cursor: pointer;
     margin: 0;
     padding: 0;
     text-decoration: none;
 }
-div#tab-list a:hover {
-    color: #D04098;
-    text-decoration: underline;
+div#tab-list-settings li.tab:hover a {
+    color: #000;
 }
-div#tab-list li.selected {
-    border-bottom: 1px solid white;
+div#tab-list-settings li.tab.focus {
+	color: #000;
+	border-bottom: 1px solid transparent; 
+	cursor: default;
 }
-div#tab-list li.selected a {
-    color: #D04098;
-    cursor: default;
-    text-decoration: none !important;
+div#tab-list-settings li.tab.focus a {
+	color: #000;
+	cursor: default;
 }
 
-div#tab-section h3 {
+
+#panel-choose .description {
+	font-size: 0.8em;
+}
+#panel-choose .description li {
+	list-style-type: none;
+}
+
+div#tab-view-settings h3 {
 	font-size:1.2em;
 	margin: 20px 0;
 }
-div#tab-section h4 {
+div#tab-view-settings h4 {
 	border-bottom: 1px solid #E2E6EB;
 	margin: 10px 0;
 }
 
-div#tab-section input[type='checkbox'] {
+div#tab-view-settings input[type='checkbox'] {
 	margin-right: 8px;
 }
 

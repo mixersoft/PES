@@ -60,7 +60,7 @@
 
 <div class="groups view main-div ">
 
-<div id='tab-list'>
+<div id='tab-list-settings'>
 <ul class='inline'>
 <?php 	
 	$xhrSrc = Router::url(array('plugin'=>'', 'action'=>'settings', AppController::$uuid));
@@ -84,7 +84,7 @@
 </ul>
 </div>	
 
-	<div id='tab-section' class="setting xhr-get  prefix_1 grid_14 suffix_1 wrap-v"  xhrSrc='<?php echo $xhrSrc."?xhrview={$xhrFrom['view']}" ?>'  nodelay='1'></div>	
+	<div id='tab-view-settings' class="setting xhr-get  prefix_1 grid_14 suffix_1 wrap-v"  xhrSrc='<?php echo $xhrSrc."?xhrview={$xhrFrom['view']}" ?>'  nodelay='1'></div>	
 </div>
 
 

@@ -42,33 +42,28 @@
 		/*
 	     * make global
 	     */
-	    var cfg = {
-	    	tabList: '#tab-list',
-	    	tabView: '#tab-section'
+	    if (/(\/settings|\/create)/.test(window.location.href)) {
+		    SNAPPI.tabSection = new TabNav({
+		    	tabList: '#tab-list-settings',
+		    	tabView: '#tab-view-settings'
+		    });
 	    }
-	    SNAPPI.tabSection = new TabNav();
 	}
 	
     /*
      * protected
      */
     var defaultCfg = {
-        tabList: '#tab-list',
-        tabLabel: '.tab-label',
+        tabList: '.tab-list',
+        tabLabel: '.tab',
         tabView: '.tab-view',
         tabPanel: '.tab-panel',
-            	
-        section: '#tab-list',	// used in /my/settings
-        selected: {
-            menu: null,
-            nested: null
-        }
     }
     /*
      * 
-{tabList} ul.tab-list
-ul{tabList}.tab-list li.tab.focus     
-ul{tabList}.tab-list li.tab a.tab-label
+{tabList} ul.tab-list-settings
+ul{tabList}.tab-list-settings li.tab.focus     
+ul{tabList}.tab-list-settings li.tab a.tab-label
 *{tabView}
      * 
      */
