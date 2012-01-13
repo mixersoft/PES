@@ -33,16 +33,21 @@ class  StoryController extends AppController {
 	}	
 	
 	public function create() {
-		if (strpos(env('SERVER_NAME'), 'snaphappi.com')) Configure::write('debug', 0);   
-		if (empty($this->data)) {
-			$this->data = $this->params['url']['data'];
+		if (strpos(env('SERVER_NAME'), 'snaphappi.com')) {
+			Configure::write('debug', 0);
 		}
+		$forceXHR = setXHRDebug($this, 0);
+		if (empty($this->data) && !empty($this->params['url']['data'])) {
+			$this->data = $this->params['url']['data'];
+			$this->log("/story/create: using forcexhr=true, this->params['url']['data'] ", LOG_DEBUG);
+		}
+		
 		if (isset($this->data['photos'])) {
 			$photos = json_decode($this->data['photos'], true);
 		}
 $this->log($this->data, LOG_DEBUG);
 // $this->log($this->here, LOG_DEBUG);
-$this->log($this->params['data']['photos'], LOG_DEBUG);
+
 		
 		/*
 		 * create arrangement
@@ -101,7 +106,9 @@ $this->log($arrangement, LOG_DEBUG);
 		}
 	}
 
-	// same as /gallery/upload_share(?)
+	/*
+	 * deprecate: using aws.snaphappi.com/gallery/upload_share/.json
+	 */
 	function upload_share() {
 		$forceXHR = setXHRDebug($this, 0);
 		$data = $_POST ? $_POST : $this->data;

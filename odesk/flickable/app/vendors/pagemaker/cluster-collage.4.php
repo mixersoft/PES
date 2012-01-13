@@ -160,14 +160,14 @@ class ClusterCollage {
         	if (empty($photo['rating'])) $photo['rating'] = 0.2;	// fixes divide by zero error
             $ratingsSum += $photo['rating'];
         }
-debug($photos);		
+// debug($photos);		
 		if (true) {
 			/*
 			 * adjust resized photo to obey $minArea
 			 * */
 			$minArea = min(1/count($photos), 0.125);
 			$this->photos = $this->resizePhotosWithMinArea($photos, $ratingsSum, $minArea);
-debug($this->photos);			
+// debug($this->photos);			
 			// $this->partitionByTopRatedCutoff($this->photos, $topRated, $lowRated, 2, true);
 		} else {
 			/*
@@ -180,7 +180,7 @@ debug($this->photos);
 	                'id' => $photo['id'],
 	                'h' => $dimensions['h'],
 	                'w' => $dimensions['w'],
-	                'rating' => $photo['rating'],
+	                'rating' => $photo['rating'] ? $photo['rating'] : 0.2,
 	                'cost' => 0,
 	                'top' => false
 	            );
