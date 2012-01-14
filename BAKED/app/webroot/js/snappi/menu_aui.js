@@ -900,32 +900,59 @@ console.error("PreviewPhoto delete is still incomplete");
 			shotType: shotType
 		});
 	};	
-	
-	MenuItems.create_pagegallery_click = function(menuItem, menu){
-		var g = MenuItems.getGalleryFromTarget(menu);
-		var batch = g.getSelected();
-		if (!batch.count() && g._cfg.type=='Lightbox') {
-			// batch = g.getSelected(true);			
-		}		
-		if (batch.count()) {
-			var Y = SNAPPI.PM.Y || _Y;
-//			var stage = SNAPPI.PageGalleryPlugin.stage;
-//			var performance = stage ? stage.performance : null;
-			var stage2 = _Y.one('#stage-2');
-			if (!stage2) {
-				stage2 = g.container.create("<section class='container_16'><div id='stage-2' class='grid_16' style='position:absolute;top:200px;'></div></section>");
-				_Y.one('section#body-container').insert(stage2, 'after');
-				stage2 = _Y.one('#stage-2');
+	MenuItems.create_pagegallery_beforeShow = function(menuItem, menu){
+		try {
+			var g = SNAPPI.Gallery.find['uuid-'];
+			// check .gallery.photo, then lightbox for selected 
+			var batch = g.getSelected();
+			if (!batch.count() && SNAPPI.lightbox) {
+				batch = SNAPPI.lightbox.getSelected();
+			}	
+			if (batch.count()) {
+				menuItem.removeClass('disabled').show();
+			} else {
+				menuItem.addClass('disabled');
 			}
-			var sceneCfg = {
-				roleCount: batch.count(),
-				fnDisplaySize: {h:800},
-				stage: stage2,
-				noHeader: true,
-				useHints: true
-			};			
-			SNAPPI.PM.node.onPageGalleryReady(sceneCfg);
+		} catch(e) {
+			menuItem.addClass('disabled');
 		}
+	}
+	MenuItems.create_pagegallery_click = function(menuItem, menu){
+		
+		SNAPPI.UIHelper.create.launchPagemaker(_Y);
+		
+		return;
+		
+		try {
+			var g = SNAPPI.Gallery.find['uuid-'];
+			// check .gallery.photo, then lightbox for selected 
+			var batch = g.getSelected();
+			if (!batch.count() && SNAPPI.lightbox) {
+				batch = SNAPPI.lightbox.getSelected();
+			}	
+			if (batch.count()) {
+				var Y = SNAPPI.PM.Y || _Y;
+	//			var stage = SNAPPI.PM.pageMakerPlugin.stage;
+	//			var performance = stage ? stage.performance : null;
+				var stage2 = _Y.one('#stage-2');
+				if (!stage2) {
+					stage2 = g.container.create("<section class='container_16'><div id='stage-2' class='grid_16' style='position:absolute;top:200px;'></div></section>");
+					_Y.one('section#body-container').insert(stage2, 'after');
+					stage2 = _Y.one('#stage-2');
+				}
+				var sceneCfg = {
+					roleCount: batch.count(),
+					fnDisplaySize: {h:800},
+					stage: stage2,
+					noHeader: true,
+					useHints: true
+				};			
+				SNAPPI.setPageLoading(true);
+				SNAPPI.PM.node.onPageGalleryReady(sceneCfg);
+			}
+		} catch(e) {
+			menu.hide();
+		}		
 	};	
 	MenuItems.express_upload_beforeShow = function(menuItem, menu, properties){
 		// if this group is marked for express-upload, add .selected
@@ -1248,12 +1275,13 @@ console.error("PreviewPhoto delete is still incomplete");
 		cfg = _Y.merge(_cfg, cfg);
 		return _load_Single_Trigger_Menu(CSS_ID, TRIGGER, XHR_URI, cfg);
 	};
-	var CFG_Menu_Pagemaker_Create = function(){}; 
+	
 	/**
 	 * load Create menu for making PageGalleries from Selected
 	 * @param cfg
 	 * @return
 	 */
+	var CFG_Menu_Pagemaker_Create = function(){}; 
 	CFG_Menu_Pagemaker_Create.load = function(cfg){
 		var defaultCfg = {
 			showOn: 'click',	

@@ -1322,7 +1322,7 @@
 			SNAPPI.flash.flash(resp.message);
 //			window.location.reload();
 		},
-		launchPageGallery : function() {
+		launchPagemaker : function() {
 			/*
 			 * get http request for casting call - supports either GET or POST -
 			 * POST can take a larger data payload, i.e. 100s of UUIDs

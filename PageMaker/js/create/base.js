@@ -399,7 +399,7 @@
                 			};
                 			
     						fnContinue();
-    						PM.Y.fire('snappi-pm:afterPagemakerPluginLoad');
+    						PM.Y.fire('snappi-pm:afterPagemakerLoad');
     					}
     		        }
     	    	);
@@ -455,7 +455,7 @@
     
     PageGalleryPlugin.baseurl = 'http://' + window.location.host + '/app/pagemaker/';
     
-    PageGalleryPlugin.launchPageGallery = function(e){
+    PageGalleryPlugin.launchPagemaker = function(e){
         var Y = PM.Y;
         // test for gallery init or Lightbox init
         SNAPPI.util.LoadingPanel.show();
@@ -583,7 +583,7 @@
         SNAPPI.node.addButton({
             name: 'Create Page Galleries',
             desc: 'Create Page Galleries for your friends and family',
-            onclick: SNAPPI.PageGalleryPlugin.launchPageGallery,
+            onclick: SNAPPI.PageGalleryPlugin.launchPagemaker,
             // elementId: id
             elementNode: node
         });

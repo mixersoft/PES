@@ -9,46 +9,39 @@
  * main3.js 
  * - main script for PageMaker module
  * - loads all PageMaker js scripts
- * - provides SNAPPI.PM.main.go()
+ * - provides PM.main.go()
  * - loaded by base.js, SNAPPI.PageMakerPlugin.load()
  *
  */
 // TODO: should rename to base.js for consistency in the naming scheme
 (function(){
-    var PM = SNAPPI.namespace('SNAPPI.PM');
-    var Y = PM.Y;
-    
+	/*
+     * shorthand
+     */
+    // var Y = PM.Y;
+	var _Y = null;
+	var PM = SNAPPI.namespace('SNAPPI.PM');
+	SNAPPI.namespace('PM.onYready');
+	// Yready init
+	PM.onYready.Main = function(Y){
+		if (_Y === null) _Y = Y;
+    	PM.main = main;
+	} 
     
     
     var main = new function() { 
     	var _self = this;
-        /*
-         * launch plugin
-         */
-    	this.go = function(ioCfg) {
-    		var Y = PM.Y;
-            if (ioCfg && ioCfg.method) 
-                this.ioCfg = ioCfg;    		
-            var stage = Y.one('#content > div#pagemaker');
-            if (!stage) {
-                stage = Y.Node.create('<div id="pagemaker" class="placeholder"></div>');
-                Y.one('#content').append(stage);
-            }    	
-            this.stage = stage;
-            SNAPPI.PageGalleryPlugin.stage = stage;
-			var asyncCfg = {
-				fn : _self.launch,
-				node : stage,
-				context : _self,
-				size: 'huge',
-				args : []
-			};
-			var async = new SNAPPI.AsyncLoading(asyncCfg);
-			stage.setStyle('height', '400px');
-			async.execute();            
-    	};
-    	
-    	this.launch = function(){
+    	this.launch = function(cfg){
+    		if (cfg.io) {
+    			this.ioCfg = cfg.io;
+    			delete cfg.io;
+    		}
+    		if (cfg.scene) {
+    			this.sceneCfg = cfg.scene;
+    			delete cfg.scene;
+    		}
+    		this.cfg = _Y.merge(this.cfg, cfg);
+    		
     		
             var retry = function() {
             	_self.launch.call(_self);
@@ -58,7 +51,7 @@
              * load Picasa catalog of arrangements
              * - Asynch Y.io, uses callbacks
              */
-            var catalogHost = SNAPPI.PageMakerPlugin.getHost();
+            var catalogHost = PM.pageMakerPlugin.getHost();
             var catalogCfg = {
                 provider: 'Snappi',
                 id: 'Picasa',
@@ -86,12 +79,12 @@
 			};	            
             
             if (this.catalogLoadStatus == undefined) {
-            	this.catalogLoadStatus = SNAPPI.PM.Catalog.getCatalog(catalogCfg);
+            	this.catalogLoadStatus = PM.Catalog.getCatalog(catalogCfg);
             }
             if (this.catalogLoadStatus == 'loading') {
                 return;	// retry
             }
-            var catalog = new SNAPPI.PM.Catalog(catalogCfg); // calls Catalog.getCatalog() in constructor
+            var catalog = new PM.Catalog(catalogCfg); // calls Catalog.getCatalog() in constructor
             // END loadCatalogAsynch synch/Asynch processing
 			
 			
@@ -123,7 +116,7 @@
 	                }
             } 
             // load auditions into SNAPPI.Tryout._pmAuditionSH(), master list
-            var tryout = new SNAPPI.PM.Tryout({
+            var tryout = new PM.Tryout({
                 sortedhash: this.tryoutSortedhash
             });
 			// END getTryout synch/Asynch processing, this.tryoutSortedhash = SH	
@@ -139,23 +132,21 @@
                 sortedhash: tryout.pmAuditionSH,
                 tryout: tryout
             };
-            
-            var stage = this.stage || SNAPPI.PageGalleryPlugin.stage;
-            SNAPPI.PM.node.startListeners();
+            PM.node.startListeners();
             
             // scene display config for designer mode
             var previewDisplayCfg = {
                 label: "Pagemaker",
-                stage: stage
+                // stage: sceneCfg.stage,
             };
-			try {
-                // NOTE: scale pageGallery with in production w/ NATIVE_PAGE_GALLERY_H constant
-				previewDisplayCfg.fnDisplaySize = PM.cfg.fn_DISPLAY_SIZE;
-			} catch (e) {
-				previewDisplayCfg.fnDisplaySize = _defaultCfg.fn_DISPLAY_SIZE;
-			}			
-            sceneCfg = Y.merge(sceneCfg, previewDisplayCfg);
+            sceneCfg = _Y.merge(this.sceneCfg, sceneCfg, previewDisplayCfg);
             
+            // double-checks
+            if (!sceneCfg.stage) sceneCfg.stage = this.stage || PM.pageMakerPlugin.stage
+            // NOTE: scale pageGallery with in production w/ NATIVE_PAGE_GALLERY_H constant
+            if (!sceneCfg.fnDisplaySize) sceneCfg.fnDisplaySize = PM.cfg.fn_DISPLAY_SIZE;
+            var stage = sceneCfg.stage;
+             
             /****
              * set Production staging params
              */
@@ -206,7 +197,7 @@
             });
             
             stage = performance.setStaging();
-            SNAPPI.PM.performance = performance;
+            PM.performance = performance;
             // performance.tryout == tryout;
             // performance.tryout.dataSource = original, parsed sortedhash of Auditions
             // performance.tryout.pmAuditionSH (copy) = performance.tryout.getAuditionsFromSortedHash(null)
@@ -217,21 +208,16 @@
             /*
              * Page Gallery Getting Started
              */
-            var pgGettingStarted = Y.Node.create("<div id='pg-getting-started'><div><h1>Getting Started with PageMaker</h1><p>Page Galleries are automatically generated photo collages based on page templates.</p><p>To get started, just choose how many photos you would like to see on a page. A matching page template will be randomly chosen and a Page Gallery automatically created using your top-rated photos. For now, we just offer a selection of simple page templates.</p><p>If you would like to try a different template, just click again.</p><p>Once you see a page you like, just click <b><i>Save Page</i></b> to add this page to an online album - new pages will be added to the end. You can view your album from the <b><i>Preview</i></b> tab, where you will also find a link for easy sharing.</p><p>To begin, just click one of the buttons above.</p><br /></div></div>");
+            var pgGettingStarted = _Y.Node.create("<div id='pg-getting-started'><div><h1>Getting Started with PageMaker</h1><p>Page Galleries are automatically generated photo collages based on page templates.</p><p>To get started, just choose how many photos you would like to see on a page. A matching page template will be randomly chosen and a Page Gallery automatically created using your top-rated photos. For now, we just offer a selection of simple page templates.</p><p>If you would like to try a different template, just click again.</p><p>Once you see a page you like, just click <b><i>Save Page</i></b> to add this page to an online album - new pages will be added to the end. You can view your album from the <b><i>Preview</i></b> tab, where you will also find a link for easy sharing.</p><p>To begin, just click one of the buttons above.</p><br /></div></div>");
             sceneCfg.stage.body.append(pgGettingStarted);
+            // use external_Y
+            _Y.fire('snappi-pm:after-launch', stage);
+            PM.pageMakerPlugin.external_Y.fire('snappi-pm:after-launch', stage);
             
-            SNAPPI.Y.fire('snappi-pm:after-launch', stage);
             
-			try {
-				SNAPPI.Y.fire('snappi:completeAsync', stage);
-				stage.dom().Async.removeLoading();
-			} catch (e) {
-				var check;
-			}
         };  
         
         this.getTryout = function(ioCfg, fnContinue){
-        	var Y = PM.Y;
             /*
              * fetch CastingCall as asynch JSON from server using 
              *  - Y.io, uri = /photos/getCC
@@ -315,18 +301,18 @@
         this.onCatalogReady = function(sceneCfg, catalogCfg){
             if (sceneCfg.roleCount) {
                 // make actual PageGallery
-                SNAPPI.PM.main.makePageGallery(sceneCfg, catalogCfg);
+                PM.main.makePageGallery(sceneCfg, catalogCfg);
             }
             else {
                 /*
                  * initialize PageGallery Module, "homepage"
                  */
-                var catalog = new SNAPPI.PM.Catalog(catalogCfg);
+                var catalog = new PM.Catalog(catalogCfg);
                 // just set Performance and show Create Tab
-                var performance = new SNAPPI.PM.Performance({
+                var performance = new PM.Performance({
                     sceneCfg: sceneCfg,
                     catalog: catalog,
-                    stack: sceneCfg.stack || SNAPPI.StackManager.getFocus()
+                    stack: sceneCfg.stack || SNAPPI.StackManager.getFocus(), //deprecate
                 });
                 
                 performance.setStaging();
@@ -346,14 +332,14 @@
         
         this.makePageGallery = function(sceneCfg, catalogCfg){
         	// moved from node3.js:_makePageGallery()
-			var stage = SNAPPI.PageGalleryPlugin.stage;
+			var stage = SNAPPI.PM.pageMakerPlugin.stage;
 			var performance = stage ? stage.performance : null;
             /*
              * produce and render Production
              */
             if (!performance) {
-                var catalog = new SNAPPI.PM.Catalog(catalogCfg);
-                performance = new SNAPPI.PM.Performance({
+                var catalog = new PM.Catalog(catalogCfg);
+                performance = new PM.Performance({
                     sceneCfg: sceneCfg,
                     catalog: catalog,
 //                    stack: sceneCfg.stack || SNAPPI.StackManager.getFocus()
@@ -366,9 +352,9 @@
             // NOTE: we should really have a performance.update(sceneCfg) method
 			var auditions = sceneCfg.auditions || SNAPPI.lightbox.getSelected();
 			try {
-				sceneCfg.tryout = new SNAPPI.PM.Tryout({
+				sceneCfg.tryout = new PM.Tryout({
 	                sortedhash: auditions,
-	                masterTryoutSH: SNAPPI.PM.Tryout._pmAuditionSH
+	                masterTryoutSH: PM.Tryout._pmAuditionSH
 	            });
 			} catch (e) {
 				sceneCfg.tryout = performance.tryout;
@@ -403,7 +389,5 @@
         };
         
     };
-    
-    PM.main = main;
     
 })();

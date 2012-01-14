@@ -161,7 +161,7 @@
 	    		snappi_comboBase: 'baked/app/webroot&',
 	    		air_comboBase: 'app/air&',
 	    		snappi_useCombo: 0,					// <-- TESTING SNAPPI useCombo
-	    		pagemaker_useCombo: true,
+	    		pagemaker_useCombo: 0,
 	    		alloy_useCombo: true,
 	    		yahoo_CDN: 0,
 	    		YUI_VERSION: '3.3.0',	// this is actually set in aui.js
@@ -740,26 +740,6 @@
         			path: 'paginator_aui.js',
         			requires:['aui-io', 'aui-paginator']
         		},              		
-        		'XXXsnappi-dialogbox': {
-        			path: 'dialogbox.js',
-        			requires:['node']
-        		},        		
-        		'XXXsnappi-dialogboxCfg': {
-           			path: 'dialogboxcfg.js',	
-           			requires:['node', 'snappi-dialogbox']
-           		},
-        		'xxxsnappi-menu': {
-        			path: 'menu.js',
-        			requires:['node']
-        		},
-        		'xxxsnappi-menuitem': {
-        			path: 'menuitem.js',
-        			requires:['node', 'substitute']
-        		},
-        		'XXXsnappi-menucfg': {
-        			path: 'menucfg.js',
-        			requires:['node', 'node-event-simulate', 'snappi-menu', 'snappi-menuitem']
-        		},
         		'snappi-zoom': {
     				path: 'zoom.js',
     				requires:['node']
@@ -809,10 +789,6 @@
                 'snappi-gallery-helpers': {
                     path: 'gallery-helpers.js',
                     requires: []
-                },
-                'XXXsnappi-domJsBinder': {
-                    path: 'domJsBinder.js',
-                    requires: ['node', 'event-custom', 'io', 'snappi-auditions', 'snappi-sort', 'snappi-gallery']
                 },
                 'snappi-lightbox': {
                     path: 'lightbox.js',
@@ -893,7 +869,7 @@
             root: 'js/create/',
             modules: {
                 'pagemaker-base': {
-                    path: 'base.js',
+                    path: 'base_aui.js',
                     requires: ['node', 'io', 'fleegix_xml']
                 }
             }

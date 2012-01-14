@@ -44,7 +44,7 @@ if (empty($this->passedArgs['wide'])) {
 				<ul class='inline' ><li class='btn orange rounded-5'><a href='/my/upload'>Get started now.<a></li></ul>
 			</div></div>
 	<?php } ?>		
-			<div class='empty-lightbox-gallery-message hide'><div class='message blue rounded-5 wrap-v'>
+			<div class='empty-lightbox-gallery-message grid_14 hide'><div class='message blue rounded-5 wrap-v'>
 				<p>Drag Snaps from above into the Lightbox. You can select multiple Snaps by pressing the Control or Shift key.</p>
 			</div></div>
 <?php 	$this->Layout->blockEnd(); ?>	

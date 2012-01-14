@@ -37,7 +37,10 @@
             this.sceneCfg = cfg.sceneCfg || null;
             this.label = cfg.sceneCfg.label;
             //                this.fnDisplayH = cfg.sceneCfg.fnDisplayH;
-            this.fnDisplaySize = cfg.sceneCfg.fnDisplaySize;
+            if (!Y.Lang.isFunction(cfg.sceneCfg.fnDisplaySize)) {
+            	this.fnDisplaySize = function(){return cfg.sceneCfg.fnDisplaySize;};
+            } 
+            else this.fnDisplaySize = cfg.sceneCfg.fnDisplaySize;
             this.roleCount = cfg.sceneCfg.roleCount;
             this.stage = cfg.sceneCfg.stage || null;
             if (this.stage) 
@@ -60,6 +63,7 @@
         },
         setStaging: function(stage, noHeader){
             stage = stage || this.stage;
+            // hack: sometimes we are passing a cfg ojbect
             var displaySize = this.fnDisplaySize();
             stage.setStyles({
                 'overflowY': 'auto',

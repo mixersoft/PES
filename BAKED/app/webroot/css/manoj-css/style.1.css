@@ -2162,6 +2162,10 @@ div.link input.copy-paste {
 	overflow: hidden;
 	padding: 10px;
 }
+.message {
+	width:100%
+	text-align:center;
+}
 .upload .related-content.blue h1, .gallery-container .message h1{
     border-bottom: 1px solid #8fb9d0;
     font-size: 16pt;
@@ -2477,4 +2481,16 @@ li:hover.white.focus, li:hover.white.selected
 	background: -ms-linear-gradient(top,  rgba(109,179,242,1) 0%,rgba(84,163,238,1) 50%,rgba(54,144,240,1) 51%,rgba(30,105,222,1) 100%); /* IE10+ */
 	background: linear-gradient(top,  rgba(109,179,242,1) 0%,rgba(84,163,238,1) 50%,rgba(54,144,240,1) 51%,rgba(30,105,222,1) 100%); /* W3C */
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#6db3f2', endColorstr='#1e69de',GradientType=0 ); /* IE6-9 */
+}
+
+
+
+/*
+ * Story
+ */
+
+.pagemaker-stage {
+	background-color: #000;
+	color: #FFF;
+	z-index: 999;
 }

@@ -1876,32 +1876,29 @@
         		return;
         	}
         	
-        	var detach = _Y.on('snappi-pm:after-launch', function(e) {
-        		detach.detach();
-        		// node.ynode().set('innerHTML', 'Create Page');
-        		var photoRoll = this;
-        		photoRoll.createPageGallery(photoRoll);
-        	}, this);
-        	
-			if (SNAPPI.PM.main) {
-				SNAPPI.PM.main.launch();
-			} else {
-				SNAPPI.PM.pageMakerPlugin = new SNAPPI.PageMakerPlugin();
-				SNAPPI.PM.pageMakerPlugin.load( 
-					function() {
-						SNAPPI.PM.main.go(this);
-					}
-				);
-				return;
-			}        	
+        	// var detach = _Y.on('snappi-pm:after-launch', function(e) {
+        		// detach.detach();
+        		// // node.ynode().set('innerHTML', 'Create Page');
+        		// var photoRoll = this;
+        		// photoRoll.createPageGallery(photoRoll);
+        	// }, this);
         },
         createPageGallery: function(photoRoll) {
+        	var sceneCfg = {};
+        	sceneCfg = _Y.merge(sceneCfg, SNAPPI.PM.pageMakerPlugin.scene);
+        	SNAPPI.PM.node.onPageGalleryReady(sceneCfg);
+        	return;
+        	
+        	
+        	
+        	
+        	
     		var batch;	// target
     		var audition = photoRoll.auditionSH.get(0);
     		batch = photoRoll.getSelected();
     		if (batch.count()) {
     			var Y = SNAPPI.PM.Y;
-    			var stage = SNAPPI.PageGalleryPlugin.stage;
+    			var stage = SNAPPI.PM.pageMakerPlugin.stage;
     			var performance = stage ? stage.performance : null;
     			
 //    			var stage2 = photoRoll.container.create("<div id='stage-2' class='grid_16' style='position:absolute;top:200px;'></div>");

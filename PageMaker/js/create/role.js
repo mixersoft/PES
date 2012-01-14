@@ -12,12 +12,26 @@
  *
  */
 (function(){
-    /*
+	/*
      * shorthand
      */
-    var PM = SNAPPI.namespace('SNAPPI.PM');
-    var Y = PM.Y;
-    
+    // var Y = PM.Y;
+	var _Y = null;
+	var PM = SNAPPI.namespace('SNAPPI.PM');
+	SNAPPI.namespace('SNAPPI.PM.onYready');
+	// Yready init
+	PM.onYready.Role = function(Y){
+		if (_Y === null) _Y = Y;
+		_Y.extend(SnappiCustomFitRole, Role, SnappiCustomFitRole.prototype);
+		_Y.extend(PicasaRole, Role, PicasaRole.prototype);
+		/*
+	     * publish
+	     */
+	    PM.Role = Role;
+	    PM.PicasaRole = PicasaRole;
+	    PM.SnappiCustomFitRole = SnappiCustomFitRole;
+	} 
+	
     /*
      * protected
      */
@@ -104,39 +118,41 @@
     	var cfg = {
     		arrangement: arrangement
     	};
-    	cfg = Y.merge(cfg, rawRole);
+    	cfg = _Y.merge(cfg, rawRole);
         SnappiCustomFitRole.superclass.constructor.call(this, cfg);
     };
-    Y.extend(SnappiCustomFitRole, Role);
-    SnappiCustomFitRole.prototype.init = function(cfg){
-        var R = this, A = cfg.arrangement, P = A.production;
-        R.arrangement = cfg.arrangement;
-        R.isCast = (cfg.isCast == 1); // boolean
-        R.id = R.makeId();
-        R.index = cfg.Index || null;
-        R.suggestedPhotoId = cfg.photo_id;
-        R.sizeNormalized = {
-            w: cfg.W,
-            h: cfg.H
-        };
-        R.position = {
-            x: cfg.X,
-            y: cfg.Y
-        };
-        if (cfg.arrangement) {
-            A = cfg.arrangement;
-            R.size = {
-                w: (R.sizeNormalized.w * A.w), // * cfg.Scale   ??????
-                h: (R.sizeNormalized.h * A.h)
-            };
-            
-            R.format = R.size.w / R.size.h;
-            R.isLandscape = R.format >= 1; //boolean
-            R.area = R.size.w * R.size.h;
-            //                R.prominence = R.area;
-//            R.scale = parseFloat(cfg.Scale);  // scale is deprecated(?)
-            R.prominence = R.area;
-        }
+    
+    SnappiCustomFitRole.prototype = {
+    	init : function(cfg){
+	        var R = this, A = cfg.arrangement, P = A.production;
+	        R.arrangement = cfg.arrangement;
+	        R.isCast = (cfg.isCast == 1); // boolean
+	        R.id = R.makeId();
+	        R.index = cfg.Index || null;
+	        R.suggestedPhotoId = cfg.photo_id;
+	        R.sizeNormalized = {
+	            w: cfg.W,
+	            h: cfg.H
+	        };
+	        R.position = {
+	            x: cfg.X,
+	            y: cfg.Y
+	        };
+	        if (cfg.arrangement) {
+	            A = cfg.arrangement;
+	            R.size = {
+	                w: (R.sizeNormalized.w * A.w), // * cfg.Scale   ??????
+	                h: (R.sizeNormalized.h * A.h)
+	            };
+	            
+	            R.format = R.size.w / R.size.h;
+	            R.isLandscape = R.format >= 1; //boolean
+	            R.area = R.size.w * R.size.h;
+	            //                R.prominence = R.area;
+	//            R.scale = parseFloat(cfg.Scale);  // scale is deprecated(?)
+	            R.prominence = R.area;
+	        }
+		},
     }; 
     
     
@@ -153,7 +169,7 @@
         // additional REQUIRED init properties
         this.sizeNormalized;
     };
-    Y.extend(PicasaRole, Role);
+    
     PicasaRole.prototype.init = function(cfg){
         this.arrangement = cfg.arrangement;
         var R = this, A = this.arrangement, P = A.production;
@@ -252,12 +268,7 @@
 ////    YAHOO.lang.augmentProto(PicasaRole, picasaRole_proto, true);
 //	PicasaRole.prototype.init = picasaRole_proto.init;
     
-    /*
-     * publish
-     */
-    SNAPPI.PM.Role = Role;
-    SNAPPI.PM.PicasaRole = PicasaRole;
-    SNAPPI.PM.SnappiCustomFitRole = SnappiCustomFitRole;
+    
     
 })();
 

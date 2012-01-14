@@ -240,7 +240,7 @@
             var renderedPerformance = this.getPerformance(cfg, scene);
     		this.stage.body.setContent(renderedPerformance);
     		renderedPerformance.unscaled_pageGallery = this.stage.body.get('innerHTML');
-    		SNAPPI.PageGalleryPlugin.startPlayer();
+    		SNAPPI.PM.PageMakerPlugin.startPlayer();
 //        	var url = this.postPageGallery(cfg, scene); // POST cmd to save on server
         },
         postPageGallery: function(cfg, scene){

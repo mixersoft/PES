@@ -11,11 +11,22 @@
  *
  */
 (function(){
-    /*
+	/*
      * shorthand
      */
-    var PM = SNAPPI.namespace('SNAPPI.PM');
-    var Y = PM.Y;
+    // var Y = PM.Y;
+	var _Y = null;
+	var PM = SNAPPI.namespace('SNAPPI.PM');
+	SNAPPI.namespace('SNAPPI.PM.onYready');
+	// Yready init
+	PM.onYready.NodeFactory = function(Y){
+		if (_Y === null) _Y = Y;
+		/*
+	     * publish
+	     */
+	    // Globals 
+    	PM.node = new NodeFactory(); // NodeFactory is in module scope only, singleton 	
+	} 
 		
     // class constructor, defined in module local scope only
     var NodeFactory = function(cfg){
@@ -34,16 +45,15 @@
         };
 		
         this.makeCreateHeader = function(cfg){
-        	var Y = PM.Y;
             var node, title;
-            if (node = Y.one('#tab_create-header')) {
+            if (node = _Y.one('#tab_create-header')) {
                 title = cfg.title || cfg.stack && cfg.stack.label || null;
                 if (title) {
-                   var header = Y.one('#tab_create-header > h1').set('innerHTML', title);
+                   var header = _Y.one('#tab_create-header > h1').set('innerHTML', title);
                 }
             }
             else {
-//                cfg = Y.merge({
+//                cfg = _Y.merge({
 //                    stack: SNAPPI.StackManager.getFocus()
 //                }, cfg);
                 // run once
@@ -52,13 +62,13 @@
                     title: cfg.title || ''
                 };
                 var tHeader = "<div class='photoSet-header' id='{id}'><h1>{title}</h1>Choose Photos per Page:<ul></ul></div>";
-                var node = Y.Node.create(Y.substitute(tHeader, tokens));
+                var node = _Y.Node.create(_Y.substitute(tHeader, tokens));
                 
                 var UL = node.one('ul');
                 var sButtons = "<li class='stack-productions' title='Create a Page Gallery from a template for {n} photos. <br><b>Note:</b> These templates are for demonstration only. The system can be configured to accomodate a wide variety of page templates.'>{n} Photos</li>";
                 var btnList = [5, 6, 7, 9, 10];
                 for (var n in btnList) {
-                    var li = Y.Node.create(Y.substitute(sButtons, {
+                    var li = _Y.Node.create(_Y.substitute(sButtons, {
                         n: btnList[n]
                     }));
                     li.dom().arrangement = {
@@ -78,7 +88,7 @@
 				if (SNAPPI.StackManager) {
 	                SNAPPI.StackManager.on('StackManager:changeFocus', function(stack){
 	                    // update title in header
-	                    Y.one('#tab_create-header > h1').set('innerHTML', stack.label);
+	                    _Y.one('#tab_create-header > h1').set('innerHTML', stack.label);
 	                });
 				}
             };
@@ -89,13 +99,12 @@
          * MOVE TO /audition/node3.js
          */
         var _makeCreateSettingsContainer = function(){
-        	var Y = PM.Y;
-            var UL = Y.Node.create("<div class='photoSet-settings'>Settings:<br></div>");
+            var UL = _Y.Node.create("<div class='photoSet-settings'>Settings:<br></div>");
             
             /*
              * use Hints checkbox
              */
-            var existingCb = Y.one('.use-hints .cb'); // get current value
+            var existingCb = _Y.one('.use-hints .cb'); // get current value
             var initialValue = (existingCb) ? existingCb.get('checked') : true;
             var sUseHintTip = "Choose to use/ignore photo ratings and other layout hints when making page. <br><b>Note:</b> Changing this setting also clears the list of already used photos.";
             var LI = _makeCbElement({
@@ -103,14 +112,14 @@
                 tooltip: sUseHintTip
             });
             LI.one('input.cb').set('checked', initialValue);
-            if (SNAPPI.util.TitleToolTip)  SNAPPI.util.TitleToolTip.push(Y.Node.getDOMNode(LI));
+            if (SNAPPI.util.TitleToolTip)  SNAPPI.util.TitleToolTip.push(_Y.Node.getDOMNode(LI));
             UL.append(LI);
             
             
             /*
              * hide repeats checkbox
              */
-            var existingCb = Y.one('.hide-repeats .cb'); // get current value
+            var existingCb = _Y.one('.hide-repeats .cb'); // get current value
             var initialValue = (existingCb) ? existingCb.get('checked') : true;
             var sToolTip = "hide duplicate photos";
             LI = _makeCbElement({
@@ -118,21 +127,20 @@
                 tooltip: sToolTip
             });
             LI.one('input.cb').set('checked', initialValue);
-            if (SNAPPI.util.TitleToolTip) SNAPPI.util.TitleToolTip.push(Y.Node.getDOMNode(LI));
+            if (SNAPPI.util.TitleToolTip) SNAPPI.util.TitleToolTip.push(_Y.Node.getDOMNode(LI));
             UL.append(LI);
             
             return UL;
         };
 		
 		var _makeCbElement = function(cfg){
-			var Y = PM.Y;
             var strCb = "<div class='cb-label-rt' {tooltip}><input class='cb' type='checkbox'/>{label}</div>";
             var tokens = {
                 id: cfg.id ? "id='" + cfg.id + "'" : '',
                 label: cfg.label,
                 tooltip: cfg.tooltip ? "title='" + cfg.tooltip + "'" : ''
             };
-            var el = Y.Node.create(Y.substitute(strCb, tokens));
+            var el = _Y.Node.create(_Y.substitute(strCb, tokens));
             if (cfg.label) 
                 el.addClass(cfg.label.replace(' ', '-').toLowerCase());
             return el;
@@ -146,7 +154,7 @@
             return;
         };
         var _hide_repeats_ClickedHandler = function(value){
-            SNAPPI.PM.Y.one('#lightbox ul.photo-roll').dom().PhotoRoll.toggleSubstitutes(value);
+            _Y.one('#lightbox ul.photo-roll').dom().PhotoRoll.toggleSubstitutes(value);
         };
 		
 		/**
@@ -156,7 +164,7 @@
             /*
              * add button to share this page
              */
-            var a = Y.Node.create('<li></li>');
+            var a = _Y.Node.create('<li></li>');
             a.setAttrs({
                 id: 'save-page-gallery',
 //                href: '#',
@@ -175,7 +183,7 @@
                 	filename = 'saved';
                 }
                 saved_src = '/gallery/story/'+filename+'?page=last';
-                var content = SNAPPI.PageGalleryPlugin.stage.body.one('div.pageGallery').unscaled_pageGallery;
+                var content = SNAPPI.PM.pageMakerPlugin.stage.body.one('div.pageGallery').unscaled_pageGallery;
                 var cfg = {
                 	content: content, 	// save pageGallery HTML of parent node
 //                  tmpfile: 'tmp',		// save from tmp file
@@ -184,7 +192,7 @@
                         /*
                          * mark scene as saved
                          */
-                        var Pr = SNAPPI.PageGalleryPlugin.stage.production;
+                        var Pr = SNAPPI.PM.pageMakerPlugin.stage.production;
                         Pr.saveScene();
                         window.open(saved_src, 'page gallery');
                     }
@@ -206,24 +214,23 @@
         this.startListeners = function(cfg){
         	if (this.listener) return;
         	this.listener = {};
-        	var Y = PM.Y;
 			//console.log('js/audition/node3.js startListeners()');
             /*
              * delegate event handlers
              */
 			var node;
-			if (node = Y.one('#content-tabview')){
+			if (node = _Y.one('#content-tabview')){
 				this.listener['tabview-cb-click'] = node.delegate('click', this.handleCbClick, 'div.cb-label-rt > input');
 				this.listener['tabview-li-click'] = node.delegate('click', this._makePageGallery, 'div.photoSet-header ul li');
 			}
-			if (node = Y.one('#filmstrip')) {
+			if (node = _Y.one('#filmstrip')) {
 				this.listener['filmstrip-cb-click'] =  node.delegate('click', this.handleCbClick, 'div.cb-label-rt > input');
 				this.listener['filmstrip-li-click'] = node.delegate('click', this._makePageGallery, 'div.photoSet-header ul li');
 			}
 			/*
 			 * lightbox event handlers
 			 */
-			if (node = Y.one('#pagemaker')){
+			if (node = _Y.one('#pagemaker')){
 				this.listener['pagemaker-cb-click'] = node.delegate('click', this.handleCbClick, 'div.cb-label-rt > input');
 				this.listener['pagemaker-li-click'] = node.delegate('click', 
 	            	function(e){
@@ -245,10 +252,9 @@
         };
 		
 		this._makePageGallery = function(e){
-			var Y = PM.Y;
 			if (SNAPPI.util.LoadingPanel) SNAPPI.util.LoadingPanel.show();
 			// assume Gallery is loaded here.
-			var stage = SNAPPI.PageGalleryPlugin.stage;
+			var stage = SNAPPI.PM.pageMakerPlugin.stage;
 			var performance = stage ? stage.performance : null;
 			var stack;
 			// get the current stack		// DEPRECATE: GALLERY APP
@@ -317,7 +323,7 @@
             var name = classNames.replace('cb-label-rt', '').trim();
             
             // synch all setting.cb of the same "name"
-            Y.all('div.' + name + ' > input').each(function(n){
+            _Y.all('div.' + name + ' > input').each(function(n){
                 n.set('checked', value);
             });
             
@@ -330,8 +336,8 @@
          * MOVE TO /audition/node3.js
          */
         this.addSaveToGalleryBtn = function(){
-			var div = Y.one('#tab_create-contentEl > div.photoSet-header');
-			if (!div) div = Y.one('#pagemaker > div.photoSet-header > ul');
+			var div = _Y.one('#tab_create-contentEl > div.photoSet-header');
+			if (!div) div = _Y.one('#pagemaker > div.photoSet-header > ul');
 			if (div && !div.one('#save-page-gallery')) {
                 // add save Btn
                 var a = _makeSaveToGalleryBtn();
@@ -341,7 +347,7 @@
                  * move gallery-name text field to current header, if it already exists
                  * ToDo: DON'T REUSE THIS FIELD
                  */
-                var t = Y.one('#gallery-name');
+                var t = _Y.one('#gallery-name');
                 if (t) 
                     div.appendChild(t);
             };
@@ -357,8 +363,6 @@
      */
     // none
     
-    // Globals 
-    SNAPPI.PM.node = new NodeFactory(); // NodeFactory is in module scope only, singleton 	
 })();
 
 

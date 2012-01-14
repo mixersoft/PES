@@ -12,12 +12,24 @@
  *
  */
 (function(){
-
-    /*
+	/*
      * shorthand
      */
-    var PM = SNAPPI.namespace('SNAPPI.PM');
-    var Y = PM.Y;
+    // var Y = PM.Y;
+	var _Y = null;
+	var PM = SNAPPI.namespace('SNAPPI.PM');
+	SNAPPI.namespace('SNAPPI.PM.onYready');
+	// Yready init
+	PM.onYready.Arrangement = function(Y){
+		if (_Y === null) _Y = Y;
+		_Y.extend(PicasaArrangement, Arrangement);
+    
+	    /*
+	     * publish to namespace
+	     */
+	    SNAPPI.PM.Arrangement = Arrangement;
+	    SNAPPI.PM.PicasaArrangement = PicasaArrangement;
+	} 
     
     //    SNAPPI._dsIO.sendRequest('../../matchmaker/catalog.xml?from=arrangement', {});
     
@@ -245,15 +257,7 @@
         this.init(cfg);
     };
 //    YAHOO.lang.extend(PicasaArrangement, Arrangement);
-	Y.extend(PicasaArrangement, Arrangement);
-    
-    
-    
-    /*
-     * publish to namespace
-     */
-    SNAPPI.PM.Arrangement = Arrangement;
-    SNAPPI.PM.PicasaArrangement = PicasaArrangement;
+	
     
 
 })();

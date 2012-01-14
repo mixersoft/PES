@@ -138,7 +138,7 @@ class PagemakerController extends AppController {
 	}
 	
 	function arrangement($count = 16) {
-		$forceXHR = setXHRDebug($this, 0);
+		$forceXHR = setXHRDebug($this, 0, true);
 		if ($forceXHR) {
 			// if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 			// $cc = $this->CastingCall->cache_MostRecent();
@@ -172,7 +172,7 @@ class PagemakerController extends AppController {
 		 * 	- seed
 		 * 	- index
 		 */
-		App::import('Vendor', 'pagemaker', array('file'=>'pagemaker'.DS.'cluster-collage.3.php'));
+		App::import('Vendor', 'pagemaker', array('file'=>'pagemaker'.DS.'cluster-collage.4.php'));
 		$cropVarianceMax = 0.20; 
 		$maxHeight = 900;
 		$maxWidth = 1600;
