@@ -289,13 +289,31 @@
 	}
 	UIHelper.create = {
 		getStage : function(){
-			var stage = _Y.one('#stage-2');
-			if (!stage) {
-				stage = _Y.Node.create("<section class='container_16'><div id='stage-2' class='grid_16' style='position:absolute;top:200px;'></div></section>");
-				_Y.one('section#body-container').insert(stage, 'after');
-				stage = _Y.one('#stage-2');
-				stage.addClass('pagemaker-stage');
-			}
+			var MAX_HEIGHT = 800;	
+			var PADDING_TOP = 140;	// header+offsets = 140px
+			var markup = "<div id='stage-2' class='pagemaker-stage' style='width:100%'></div>";
+			var cfg = {
+				// selector: '#stage-2',
+				markup: markup,
+    			// uri: '/combo/markup/importComplete',
+    			height: MAX_HEIGHT,
+    			width: 940,
+    			tokens: {},
+    		};
+    		var dialog = SNAPPI.Alert.load(cfg);
+    		
+    		_Y.on('snappi-pm:render', function(P, size, node){
+    			var h = Math.min(size.h, MAX_HEIGHT);
+    			if (h < MAX_HEIGHT) {
+    				dialog.getStdModNode('body').setStyle('overflowY', 'hidden');
+    			} else {
+    				dialog.getStdModNode('body').setStyle('overflowY', 'auto');
+    			}
+    			dialog.set('height', h + PADDING_TOP);
+    			SNAPPI.setPageLoading(false);
+    		})
+    		
+    		var stage = dialog.getStdModNode('body').one('#stage-2');
 			return stage;
 		},
 		/*
@@ -372,6 +390,7 @@
 			return sceneCfg;
 		},
 		getCreate: function(cfg) {
+			cfg = cfg || this.getCastingCall();
 			var g = cfg.gallery ? cfg.gallery : cfg;
 			var fn_create;
 			switch(g && g._cfg.type) {
@@ -398,13 +417,13 @@
 		 */
 		// load 'pagemaker-base' MODULE if SNAPPI.PM.PageMakerPlugin class does not exist
 		load_PageMakerPlugin: function(external_Y){
+			var PM = SNAPPI.PM;
 			// check plugin
-			if (!SNAPPI.PM || !SNAPPI.PM.pageMakerPlugin) {
-				var PM = null;
+			if (!PM || !PM.pageMakerPlugin) {
 				/*
 				 * lazyLoad PageMakerPlugin module
 				 */
-				var modules = ['pagemaker-base']
+				var modules = ['pagemaker-base','snappi-dialog-aui']
 				/*
 				 * (after PageMakerPlugin load,)
 				 * IMMEDIATELY lazyLoad PageMaker module
@@ -415,7 +434,6 @@
 					external_Y.fire('snappi-pm:afterPagemakerPluginLoad', Y);
 					
 					// TODO: put in 'snappi-pm:afterPagemakerPluginLoad' handler?
-					var PM = SNAPPI.PM;
 					PM.pageMakerPlugin = new PM.PageMakerPlugin(external_Y);
 					PM.pageMakerPlugin.load();
 				};
@@ -425,14 +443,26 @@
 				var launched = _Y.on('snappi-pm:after-launch', function(stage) {
 	        		launched.detach();
 	        		// node.ynode().set('innerHTML', 'Create Page');
-	        		fn_create();
+	        		var create = this.getCreate();
+	        		create();
 	        	}, g);
 		        	
 				// Plugin alread loaded, just launch Pagemaker
-				SNAPPI.PM.main.launch({io:ioCfg, scene:sceneCfg});
+				PM.main.launch({io:ioCfg, scene:sceneCfg});
 			} else {
-				// just call create
-				fn_create();
+				var post = false;// how do we know if we need to POST for new CC??
+				if (post) {
+				/*
+				 * if CC changed, then we need to launch/POST
+				 */	
+				} else {
+					// already launched, CC auditions are all available
+					// PM.pageMakerPlugin.setStage(sceneCfg.stage);
+					var sceneCfg = this.getSceneCfg(this.getCastingCall());
+					PM.pageMakerPlugin.setScene(sceneCfg);
+					var create = this.getCreate();
+	        		create();
+				} 
 			}			
 		},
 		// on 'snappi-pm:afterPagemakerLoad'
@@ -444,10 +474,7 @@
 			PM.pageMakerPlugin.setScene(sceneCfg);
 			PM.main.launch({io:ioCfg, scene:sceneCfg});	// 'Photo', ioCfg=null
 		},
-		XXXafterLaunch_PageMakerPlugin: function(cfg){
-			// node.ynode().set('innerHTML', 'Create Page');
-	        var create = this.getCreate(cfg.gallery);
-        	create();
+		afterLaunch_PageMakerPlugin: function(cfg){
 		},
 		launchPagemaker : function(){
 			var cfg = this.getCastingCall();
@@ -469,94 +496,6 @@
         	
         	this.load_PageMakerPlugin(_Y);
 		},
-		XXXlaunchPagemaker : function(cfg){
-			try{	
-				var g = SNAPPI.Gallery.find['uuid-'];
-				// check .gallery.photo, then lightbox for selected 
-				var batch = g && g.getSelected();
-				if (!batch || !batch.count()) {
-					g = SNAPPI.lightbox.Gallery;
-					batch = SNAPPI.lightbox.getSelected();
-				}
-				
-				var sceneCfg = {
-					roleCount: batch.count(),
-					fnDisplaySize: {h:800},
-					stage: UIHelper.create.getStage(),
-					noHeader: true,
-					useHints: true
-				};
-				
-				sceneCfg = _Y.merge(sceneCfg, cfg);
-			}catch(e){
-				
-			}
-			SNAPPI.setPageLoading(true);
-			
-// 			
-			// var ioCfg, fn_create;
-			// switch(g && g._cfg.type) {
-				// case 'Lightbox':  // use POST to get lightbox selected
-					// var uri = SNAPPI.lightbox._cfg.GET_CASTINGCALL_URI;
-					// var assetIds = new Array();
-					// batch.each(function(audition) {
-						// assetIds.push(audition.id);
-		            // }); 
-		            // var postData = {
-		            	// 'data[Asset][ids]': assetIds.join(","),
-		            // }   
-		            // // deprecate, use pluginIO_RespondAsJson
-		            // var aidsAsString = assetIds.join(",");
-					// var data = "data[Asset][ids]=" + aidsAsString;
-// 					
-					// ioCfg = {
-						// method : "POST",
-						// data : data,
-						// // qs : postData,	// for pluginIO_RespondAsJson
-						// uri : uri,
-					// };
-					// // SNAPPI.PM.main.launch(ioCfg);
-					// // SNAPPI.PM.main.go(this);
-					// break;
-				// case 'Photo':
-					// fn_create = function(){g.createPageGallery(g);};
-					// break;
-			// }
-			var launchCfg = {
-				io: UIHelper.create.postCastingCall(g),
-				scene: sceneCfg,
-			}
-			var fn_create = UIHelper.create.getCreate(g);
-			
-			var loaded = _Y.on('snappi-pm:afterPagemakerLoad', function(PM_Y) {
-        		loaded.detach();
-				PM.main.launch(launchCfg);	// 'Photo', ioCfg=null
-        	});
-			
-			// after-load: launch/create Pagemaker page 
-			var launched = _Y.on('snappi-pm:after-launch', function(stage) {
-        		launched.detach();
-        		// node.ynode().set('innerHTML', 'Create Page');
-        		fn_create();
-        	}, g);
-			
-			// check plugin
-			if (!SNAPPI.PM || !SNAPPI.PM.pageMakerPlugin) {
-				/*
-				 * lazyLoad PageMakerPlugin module
-				 */
-				var modules = ['pagemaker-base']
-				var callback = UIHelper.create.onReady_PageMakerPlugin;
-				SNAPPI.LazyLoad.use(modules, callback);
-			} else if (!SNAPPI.PM.main) {
-				// Plugin alread loaded, just launch Pagemaker
-				SNAPPI.PM.main.launch({io:ioCfg, scene:sceneCfg});
-			} else {
-				// just call create
-				fn_create();
-			}
-        	return;
-		}
 	}
 	UIHelper.util = {
 		checkSupportedBrowser : function(){

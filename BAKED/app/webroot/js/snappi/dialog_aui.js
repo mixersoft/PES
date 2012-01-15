@@ -319,7 +319,7 @@
 		    			added: 4
 	    			},
 	    		};
-	 * var alert = SNAPPI.Alert.load(cfg) or SNAPPI.Dialog.CFG_Dialog_Alert.load(cfg);
+	 * var alert = SNAPPI.Alert.load(cfg) or SNAPPI.Dialog.CFG['dialog-alert'].load(cfg);
 	 */
 	var CFG_Dialog_Alert = function(){}; 
 	CFG_Dialog_Alert.load = function(cfg){

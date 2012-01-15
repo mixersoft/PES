@@ -161,13 +161,18 @@
             });
             var scene = Pr.renderScene(cfg);
             if (scene) {
-                SNAPPI.PM.node.addSaveToGalleryBtn();
+                PM.node.addSaveToGalleryBtn();
             }
-            
-            // TODO: deprecate. legacy code
-            if (SNAPPI.TabView) SNAPPI.TabView.gotoTab('Create');
-            //				SNAPPI.util.LoadingPanel.hide();
-            var check;
+            var node = this.stage.one('div:not(hidden).pageGallery');
+            var size = {
+            	w: node.get('clientWidth'),
+            	h: node.get('clientHeight'),
+            }
+            /*
+             * fire event: 'snappi-pm:render'
+             */
+            PM.Y.fire('snappi-pm:render', this, size, node);
+            PM.pageMakerPlugin.external_Y.fire('snappi-pm:render', this, size, node);
         }
     };
     PM.Performance = Performance;
