@@ -108,5 +108,9 @@ div#pg-getting-started > div > p {
 
 div#pagemaker div.photoSet-header h1 {
 	background: none;
-	background-color: none;
+	background-color: transparent;
+}
+
+div.pageGallery {
+	position: relative;
 }

@@ -183,7 +183,7 @@
                 	filename = 'saved';
                 }
                 saved_src = '/gallery/story/'+filename+'?page=last';
-                var content = SNAPPI.PM.pageMakerPlugin.stage.body.one('div.pageGallery').unscaled_pageGallery;
+                var content = PM.pageMakerPlugin.stage.body.one('div.pageGallery').unscaled_pageGallery;
                 var cfg = {
                 	content: content, 	// save pageGallery HTML of parent node
 //                  tmpfile: 'tmp',		// save from tmp file
@@ -192,12 +192,12 @@
                         /*
                          * mark scene as saved
                          */
-                        var Pr = SNAPPI.PM.pageMakerPlugin.stage.production;
+                        var Pr = PM.pageMakerPlugin.production;
                         Pr.saveScene();
                         window.open(saved_src, 'page gallery');
                     }
                 };
-                SNAPPI.PM.util.saveToPageGallery(cfg);
+                PM.util.saveToPageGallery(cfg);
                 return false;
             });
             
@@ -254,7 +254,7 @@
 		this._makePageGallery = function(e){
 			if (SNAPPI.util.LoadingPanel) SNAPPI.util.LoadingPanel.show();
 			// assume Gallery is loaded here.
-			var stage = SNAPPI.PM.pageMakerPlugin.stage;
+			var stage = PM.pageMakerPlugin.stage;
 			var performance = stage ? stage.performance : null;
 			var stack;
 			// get the current stack		// DEPRECATE: GALLERY APP
@@ -279,7 +279,7 @@
 			};
 			
 			//TODO: FIRE onPageGalleryReady event 
-			SNAPPI.PM.node.onPageGalleryReady(sceneCfg);
+			PM.node.onPageGalleryReady(sceneCfg);
 			
 			try {
 				e.target.dom().Async.removeLoading();
@@ -300,7 +300,7 @@
 //				provider: 'Picasa',
 //				success: function(){
 //					//TODO: FIRE onCatalogReady event 
-//					SNAPPI.PM.main.onCatalogReady(sceneCfg, this);
+//					PM.main.onCatalogReady(sceneCfg, this);
 //				}
 //			};
 			var catalogCfg = {
@@ -309,9 +309,9 @@
 					label: 'CustomFit',
 					end: null
 				};			
-			var resp = SNAPPI.PM.Catalog.getCatalog(catalogCfg);
+			var resp = PM.Catalog.getCatalog(catalogCfg);
 			if (resp && resp != 'loading') {
-				SNAPPI.PM.main.onCatalogReady(sceneCfg, catalogCfg);
+				PM.main.onCatalogReady(sceneCfg, catalogCfg);
 			}
 		};
 		

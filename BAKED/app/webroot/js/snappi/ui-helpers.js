@@ -291,29 +291,33 @@
 		getStage : function(){
 			var MAX_HEIGHT = 800;	
 			var PADDING_TOP = 140;	// header+offsets = 140px
-			var markup = "<div id='stage-2' class='pagemaker-stage' style='width:100%'></div>";
+			var markup = "<div id='stage-2' class='pagemaker-stage'></div>";
 			var cfg = {
 				// selector: '#stage-2',
 				markup: markup,
     			// uri: '/combo/markup/importComplete',
-    			height: MAX_HEIGHT,
+    			height: MAX_HEIGHT,		// -> dialog.top
     			width: 940,
     			tokens: {},
     		};
     		var dialog = SNAPPI.Alert.load(cfg);
-    		
-    		_Y.on('snappi-pm:render', function(P, size, node){
-    			var h = Math.min(size.h, MAX_HEIGHT);
+    		var stage = dialog.getStdModNode('body').one('#stage-2');
+    		_Y.on('snappi-pm:render', function(P, node){
+    			var header = stage.one('.stage-header');
+    			var header_h = header ? header.get('clientHeight') : 0;
+    			var offset_top = 6 + 29 + 12    + 10;
+    			var h = Math.min(node.get('clientHeight'), MAX_HEIGHT);
     			if (h < MAX_HEIGHT) {
     				dialog.getStdModNode('body').setStyle('overflowY', 'hidden');
     			} else {
     				dialog.getStdModNode('body').setStyle('overflowY', 'auto');
     			}
-    			dialog.set('height', h + PADDING_TOP);
+    			stage.setStyle('height', 'auto');
+    			dialog.set('height', h + header_h + offset_top);
     			SNAPPI.setPageLoading(false);
     		})
     		
-    		var stage = dialog.getStdModNode('body').one('#stage-2');
+    		
 			return stage;
 		},
 		/*
@@ -380,11 +384,13 @@
 			var sceneCfg = {
 				roleCount: cfg.batch.count(),
 				auditions: cfg.batch, 
+				tryout: null,			// reset tryout
 				fnDisplaySize: {h:800},
-				stage: this.getStage(),
+				// stage: this.getStage(), 	// use PM.pageMakerPlugin.setStage()
 				noHeader: true,
 				useHints: true,
 				hideRepeats : false,
+				performance: null,		// reset performance
 			};
 			sceneCfg = _Y.merge(sceneCfg, cfg);
 			return sceneCfg;
@@ -399,7 +405,7 @@
 					// SNAPPI.PM.main.go(this);
 					break;
 				case 'Photo':
-					fn_create = function(){g.createPageGallery(g);};
+					fn_create = SNAPPI.PM.main.makePageGallery;
 					break;
 			}	
 			return 	fn_create;	
@@ -408,7 +414,7 @@
 		/*
 		 * load/load/init/create lifecycle 
 		 * 	1a) load EXTERNAL plugin module, load_PageMakerPlugin 
-		 * 		-> listen: afterPagemakerPluginLoad, or onReady_PageMakerPlugin()
+		 * 		-> listen: afterPageMakerPluginLoad, or onReady_PageMakerPlugin()
 		 *  1b) load PM Pagemaker modules, PM.pageMakerPlugin.load() 
 		 * 		-> listen:'snappi-pm:afterPagemakerLoad'
 		 *  2) init Pagemaker with castingCall, PM.main.launch() 
@@ -430,10 +436,10 @@
 				 * listen: snappi-pm:afterPagemakerLoad
 				 */
 				var callback = function(Y, result){
-					Y.fire('snappi-pm:afterPagemakerPluginLoad', Y);
-					external_Y.fire('snappi-pm:afterPagemakerPluginLoad', Y);
+					Y.fire('snappi-pm:afterPageMakerPluginLoad', Y);
+					external_Y.fire('snappi-pm:afterPageMakerPluginLoad', Y);
 					
-					// TODO: put in 'snappi-pm:afterPagemakerPluginLoad' handler?
+					// TODO: put in 'snappi-pm:afterPageMakerPluginLoad' handler?
 					PM.pageMakerPlugin = new PM.PageMakerPlugin(external_Y);
 					PM.pageMakerPlugin.load();
 				};
@@ -457,9 +463,9 @@
 				 */	
 				} else {
 					// already launched, CC auditions are all available
-					// PM.pageMakerPlugin.setStage(sceneCfg.stage);
 					var sceneCfg = this.getSceneCfg(this.getCastingCall());
 					PM.pageMakerPlugin.setScene(sceneCfg);
+					PM.pageMakerPlugin.setStage(this.getStage());
 					var create = this.getCreate();
 	        		create();
 				} 
@@ -472,6 +478,7 @@
 			var PM = SNAPPI.PM;
 			// PM.pageMakerPlugin.setStage(sceneCfg.stage);
 			PM.pageMakerPlugin.setScene(sceneCfg);
+			PM.pageMakerPlugin.setStage(this.getStage());
 			PM.main.launch({io:ioCfg, scene:sceneCfg});	// 'Photo', ioCfg=null
 		},
 		afterLaunch_PageMakerPlugin: function(cfg){

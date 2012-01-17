@@ -11,12 +11,20 @@
  *
  */
 (function(){
-    /*
+	/*
      * shorthand
      */
-    var PM = SNAPPI.namespace('SNAPPI.PM');
-    var Y = PM.Y;
-    
+	var _Y = null;
+	var PM = SNAPPI.namespace('SNAPPI.PM');
+	SNAPPI.namespace('SNAPPI.PM.onYready');
+	// Yready init
+	PM.onYready.Catalog = function(Y){
+		if (_Y === null) _Y = Y;
+		  /*
+	     * declare globals in namespace
+	     */
+	    PM.Catalog = Catalog;	
+	} 
     /*
      * protected
      */
@@ -32,6 +40,8 @@
      * Class Catalog
      */
     var Catalog = function(cfg){
+    	this.cfg = {};
+    	this.arrangements = [];
         this.init(cfg);
     };
     
@@ -45,10 +55,9 @@
      * 	SYNCHRONOUS XHR
      */
     Catalog.getCustomFitArrangement = function (Pr, roleCount, callback) {
-    	var Y = SNAPPI.PM.Y;
         /*
          * get arrangement from server, 
-         * TODO: move to Catalog
+         * resets Plugin.production here
          */
         var uri, auditions, baseurl, data, post_callback;
         auditions = new Array();
@@ -61,7 +70,7 @@
         	if (!o.parsedAudition.Audition.Substitutions) {
         		auditions.push(o.parsedAudition.Audition);
         	} else {
-	        	var copy = Y.merge(o.parsedAudition.Audition);
+	        	var copy = _Y.merge(o.parsedAudition.Audition);
 	        	delete(copy.Substitutions);
 	        	auditions.push(copy);
         	}
@@ -74,7 +83,7 @@
         		Audition: auditions,
         		Baseurl: baseurl
         };
-        var rawJsonAuditions = Y.JSON.stringify(Auditions);
+        var rawJsonAuditions = _Y.JSON.stringify(Auditions);
         data = {
         	'data[CastingCall][Auditions]':rawJsonAuditions,
         	'data[role_count]': auditions.length
@@ -97,11 +106,11 @@
                 for (var i in rawA.Roles) {
                     var rawRole = rawA.Roles[i];
                     if (rawRole !== undefined) {
-                        var r = new SNAPPI.PM.SnappiCustomFitRole(rawRole, A);
+                        var r = new PM.SnappiCustomFitRole(rawRole, A);
                         A.roleSH.add(r);
                     }
                 }
-                A.roleSH.setDefaultSort([SNAPPI.PM.Role.sort.PROMINENCE]);
+                A.roleSH.setDefaultSort([PM.Role.sort.PROMINENCE]);
                 A.roleSH.sort();
                 var i = 0;
                 A.roleSH.each(function(R){
@@ -134,8 +143,7 @@
     };    
     
     Catalog.loadCatalog = function(cfg){
-    	var Y = SNAPPI.PM.Y;
-        var _cfg = Y.merge({
+        var _cfg = _Y.merge({
             provider: 'Snappi',
             id: 'CustomFit',
             format: 'snappi',
@@ -202,7 +210,7 @@
     };
     
     Catalog.getCatalog = function(strOrCfg){
-        if (Y.Lang.isString(strOrCfg)) {
+        if (_Y.Lang.isString(strOrCfg)) {
             var key = strOrCfg;
             return _catalog[key] || null;
         }
@@ -212,13 +220,13 @@
             if (_catalog[key] === undefined) {
                 var cfg = strOrCfg;
                 if (!key) {
-                    if (Y.Lang.isFunction(cfg.failure)) {
+                    if (_Y.Lang.isFunction(cfg.failure)) {
                         cfg.failure();
                     } 
                     return null;
                 } else {
                 	cfg.key = key;
-                	return SNAPPI.PM.Catalog.loadCatalog(cfg);  
+                	return Catalog.loadCatalog(cfg);  
 //                	switch (key) {
 //	                	case 'SnappiCustomFit':
 ////	                		key += cfg.id;
@@ -233,17 +241,17 @@
 //	                		// ASYNC catalog load
 //	                        // load Catalog if callback is provided
 //	                        var onCatalogLoaded = function(resp){
-//	                            var resp = SNAPPI.PM.Catalog.getCatalog(key);
+//	                            var resp = Catalog.getCatalog(key);
 //	                            return cfg.success(resp);
 //	                        };
 //	                        
 //	                        /*
 //	                         * asynchronous XML load
 //	                         */
-//	                        var _cfg = Y.merge(cfg, {
+//	                        var _cfg = _Y.merge(cfg, {
 //	                            success: onCatalogLoaded
 //	                        });
-//	                        return SNAPPI.PM.Catalog.loadCatalog(_cfg);                		
+//	                        return Catalog.loadCatalog(_cfg);                		
 //                		break;
 //                	}
                 }
@@ -276,7 +284,7 @@
         return score;
     };
     Catalog.getArrangementScore = function(Arr, auditionSH){
-        // auditionSH sorted by sortedHash.sort([SNAPPI.PM.Audition.sort.RATING]); 
+        // auditionSH sorted by sortedHash.sort([PM.Audition.sort.RATING]); 
         var r, a, rFormat = null, aFormat = null, score = 0;
         // reset isScored
         var a = auditionSH.setFocus(0);
@@ -319,7 +327,7 @@
          */
         var As = this.catalog.arrangements[perpage];
         var random = Math.floor(Math.random() * As.length);
-        var A = Y.Lang.isArray(As) ? As[random] : As;
+        var A = _Y.Lang.isArray(As) ? As[random] : As;
         return A;
     };
     
@@ -348,15 +356,16 @@
      */
     Catalog.prototype = {
         init: function(cfg){
-            cfg = Y.merge(_defaultCfg, cfg);
+        	this.cfg = _Y.merge(_defaultCfg, cfg);
             // getCatalog will auto load catalog xml if not available
-            this.catalog = SNAPPI.PM.Catalog.getCatalog(cfg);
+            // note: key=catalog set in xmlArrangementParser_Snappi.parse()
+            this.catalog = Catalog.getCatalog(cfg);		
         },
         getArrangement_All: function(){
             return this.catalog.arrangements;
         },
         getArrangementByScore: function(sortedHash, roleCount){
-            sortedHash.sort([SNAPPI.PM.Audition.sort.RATING]); // sort by rating
+            sortedHash.sort([PM.Audition.sort.RATING]); // sort by rating
             // sort auditions by ratings so we get a rough idea of how many good photos
             var sortedByRating = [], o = sortedHash.setFocus(0), topRating = o.rating;
             do {
@@ -403,12 +412,6 @@
             return _initRawArrangement(rawA);
         }
     };
-    
-    
-    /*
-     * declare globals in namespace
-     */
-    PM.Catalog = Catalog;
     
     
 })();

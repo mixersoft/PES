@@ -13,25 +13,25 @@
  * - loaded by base.js, SNAPPI.PageMakerPlugin.load()
  *
  */
-// TODO: should rename to base.js for consistency in the naming scheme
 (function(){
 	/*
      * shorthand
      */
-    // var Y = PM.Y;
 	var _Y = null;
+	var Plugin = null;
 	var PM = SNAPPI.namespace('SNAPPI.PM');
 	SNAPPI.namespace('PM.onYready');
 	// Yready init
 	PM.onYready.Main = function(Y){
 		if (_Y === null) _Y = Y;
     	PM.main = main;
+    	Plugin = PM.PageMakerPlugin.instance;
 	} 
-    
-    
+	
     var main = new function() { 
     	var _self = this;
     	this.launch = function(cfg){
+    		var Plugin = PM.pageMakerPlugin;
     		if (cfg.io) {
     			this.ioCfg = cfg.io;
     			delete cfg.io;
@@ -84,10 +84,11 @@
             if (this.catalogLoadStatus == 'loading') {
                 return;	// retry
             }
-            var catalog = new PM.Catalog(catalogCfg); // calls Catalog.getCatalog() in constructor
+            Plugin.catalog = new PM.Catalog(catalogCfg); 
+            Plugin.catalogCfg = catalogCfg;		// TODO: save cfg and lookup
+            // calls Catalog.getCatalog() in constructor
+            // remember to call: Plugin.production.setCatalog(catalog);
             // END loadCatalogAsynch synch/Asynch processing
-			
-			
 			
 			
             /****
@@ -139,14 +140,15 @@
                 label: "Pagemaker",
                 // stage: sceneCfg.stage,
             };
-            sceneCfg = _Y.merge(this.sceneCfg, sceneCfg, previewDisplayCfg);
+            Plugin.sceneCfg = _Y.merge(this.sceneCfg, sceneCfg, previewDisplayCfg);
             
-            // double-checks
-            if (!sceneCfg.stage) sceneCfg.stage = this.stage || PM.pageMakerPlugin.stage
+            // hack: double-checks
+            sceneCfg = Plugin.sceneCfg;
+            
             // NOTE: scale pageGallery with in production w/ NATIVE_PAGE_GALLERY_H constant
             if (!sceneCfg.fnDisplaySize) sceneCfg.fnDisplaySize = PM.cfg.fn_DISPLAY_SIZE;
-            var stage = sceneCfg.stage;
-             
+            // hack: done
+            
             /****
              * set Production staging params
              */
@@ -164,11 +166,12 @@
                     },
                     minDpi: displayDpi,
                     borderColor: "lightgray",
-                    spacing: spacing,
-                    margin: margin,
-                    stage: stage,
+                    spacing: 3,		// img.border 
+                    margin: 10,		// pageGallery.margin-top/bottom
+                    stage: Plugin.stage,
                     useHints: this.useHints,
-                    //                    arrangement: Arr,
+                    // catalog: catalog,		// use Pr.setCatalog()
+                    // arrangement: Arr,
                     onLoadCallback: function(){
                        if (SNAPPI.util.LoadingPanel)  SNAPPI.util.LoadingPanel.hide();
                     }
@@ -182,22 +185,27 @@
                  */
                 productionCfg.minDpi = 40;
             }  
-            stage.productionCfg = productionCfg;
-            stage.production = new PM.Production(productionCfg);
             
+            Plugin.production = new PM.Production(productionCfg);
+            Plugin.production.setCatalog(Plugin.catalog);
+            Plugin.stage.production = Plugin.production;	// hack: save in Plugin, or recreate by stage.production.cfg?
             
             /****
              * set staging for Performance
              */
             // just set Performance and show Create Tab
-            var performance = new PM.Performance({
+            var performanceCfg = {
                 sceneCfg: sceneCfg,
-                catalog: catalog,
-                tryout: sceneCfg.tryout
-            });
+                stage: Plugin.stage,
+            }
+            // if (preload = 0) {	// not required for '#pg-getting-started'
+            	// performanceCfg.catalog = catalog;
+            	// performanceCfg.tryout = sceneCfg.tryout;
+            // }
+            var performance = new PM.Performance(performanceCfg);
             
-            stage = performance.setStaging();
-            PM.performance = performance;
+            performance.setStaging(Plugin.stage);
+            Plugin.performance = performance;
             // performance.tryout == tryout;
             // performance.tryout.dataSource = original, parsed sortedhash of Auditions
             // performance.tryout.pmAuditionSH (copy) = performance.tryout.getAuditionsFromSortedHash(null)
@@ -209,10 +217,10 @@
              * Page Gallery Getting Started
              */
             var pgGettingStarted = _Y.Node.create("<div id='pg-getting-started'><div><h1>Getting Started with PageMaker</h1><p>Page Galleries are automatically generated photo collages based on page templates.</p><p>To get started, just choose how many photos you would like to see on a page. A matching page template will be randomly chosen and a Page Gallery automatically created using your top-rated photos. For now, we just offer a selection of simple page templates.</p><p>If you would like to try a different template, just click again.</p><p>Once you see a page you like, just click <b><i>Save Page</i></b> to add this page to an online album - new pages will be added to the end. You can view your album from the <b><i>Preview</i></b> tab, where you will also find a link for easy sharing.</p><p>To begin, just click one of the buttons above.</p><br /></div></div>");
-            sceneCfg.stage.body.append(pgGettingStarted);
+            Plugin.stage.body.append(pgGettingStarted);
             // use external_Y
-            _Y.fire('snappi-pm:after-launch', stage);
-            PM.pageMakerPlugin.external_Y.fire('snappi-pm:after-launch', stage);
+            _Y.fire('snappi-pm:after-launch', Plugin.stage);
+            PM.pageMakerPlugin.external_Y.fire('snappi-pm:after-launch', Plugin.stage);
             
             
         };  
@@ -297,7 +305,10 @@
             }
         };
         
-        
+        /*
+         * called by node3.js:onPageGalleryReady()
+         * - not used by gallery
+         */
         this.onCatalogReady = function(sceneCfg, catalogCfg){
             if (sceneCfg.roleCount) {
                 // make actual PageGallery
@@ -312,9 +323,9 @@
                 var performance = new PM.Performance({
                     sceneCfg: sceneCfg,
                     catalog: catalog,
-                    stack: sceneCfg.stack || SNAPPI.StackManager.getFocus(), //deprecate
+                    // stack: sceneCfg.stack || SNAPPI.StackManager.getFocus(), //deprecate
                 });
-                
+                // PM.pageMakerPlugin.setScene({performance : performance});
                 performance.setStaging();
                 // NOTE: performance.getScene() will clear
                 // sceneCfg.stage.body
@@ -322,7 +333,7 @@
                  * Page Gallery Getting Started
                  */
                 var pgGettingStarted = Y.Node.create("<div id='pg-getting-started'><div><h1>Getting Started with Page Galleries</h1><p>Page Galleries are automatically generated photo collages based on page templates.</p><p>To get started, just choose how many photos you would like to see on a page. A matching page template will be randomly chosen and a Page Gallery automatically created using your top-rated photos. For now, we just offer a selection of simple page templates.</p><p>If you would like to try a different template, just click again.</p><p>Once you see a page you like, just click <b><i>Save Page</i></b> to add this page to an online album - new pages will be added to the end. You can view your album from the <b><i>Preview</i></b> tab, where you will also find a link for easy sharing.</p><p>To begin, just click one of the buttons above.</p><br /></div></div>");
-                sceneCfg.stage.body.append(pgGettingStarted);
+                Plugin.stage.body.append(pgGettingStarted);
                 
                 // why do we create the performance, but don't use it????
                 SNAPPI.TabView.gotoTab('Create');
@@ -331,60 +342,66 @@
         };
         
         this.makePageGallery = function(sceneCfg, catalogCfg){
-        	// moved from node3.js:_makePageGallery()
-			var stage = SNAPPI.PM.pageMakerPlugin.stage;
-			var performance = stage ? stage.performance : null;
-            /*
-             * produce and render Production
-             */
-            if (!performance) {
-                var catalog = new PM.Catalog(catalogCfg);
-                performance = new PM.Performance({
-                    sceneCfg: sceneCfg,
-                    catalog: catalog,
-//                    stack: sceneCfg.stack || SNAPPI.StackManager.getFocus()
-                    end: null
-                });
-            }
-			if (!sceneCfg.performance) sceneCfg.performance = performance;
+        	/*
+        	 * called AFTER main.launch()
+        	 * Pr = Plugin.production, set in main.launch()
+        	 * Pr.catalog  
+        	 * Pr.tryout
+        	 * Pr.sceneCfg.arrangement <- Pr.catalog
+        	 * Pr.sceneCfg.auditions <- Pr.tryout
+        	 */
+        	var Plugin = PM.pageMakerPlugin;
+        	if (sceneCfg) {
+        		sceneCfg = _Y.merge(sceneCfg, Plugin.sceneCfg);
+        		Plugin.sceneCfg = sceneCfg;
+        	} else sceneCfg = Plugin.sceneCfg;
+        	if (catalogCfg) {
+        		try {	// refresh catalog, as necessary
+        			catalogCfg = _Y.merge(Plugin.production.catalog.cfg, catalogCfg);
+        		}catch(e) {	}
+        		Plugin.production.catalog = new PM.Catalog(catalogCfg);
+        	}
+        	try {
+        		if (Plugin.production.catalog.cfg.label == "SnappiCustomFit") {
+        			// prepare for new performance
+        			// set in Catalog.getCustomFitArrangement()
+        			delete Plugin.production.tryout;
+        			delete Plugin.production.arrangement;
+        			delete Plugin.production.stage;		// delete this?
+        		} 
+        	} catch(e) {}
+        	
+			sceneCfg.performance = null;	// reset
+			var performance = new PM.Performance({
+                sceneCfg: sceneCfg,
+                production: Plugin.production,
+                catalog: Plugin.production.catalog,
+            });
+			sceneCfg.performance = performance;
 			
-			// get performance Tryout from Lightbox.getSelected();
             // NOTE: we should really have a performance.update(sceneCfg) method
-			var auditions = sceneCfg.auditions || SNAPPI.lightbox.getSelected();
-			try {
-				sceneCfg.tryout = new PM.Tryout({
-	                sortedhash: auditions,
-	                masterTryoutSH: PM.Tryout._pmAuditionSH
-	            });
-			} catch (e) {
-				sceneCfg.tryout = performance.tryout;
-			}  
-            
-            if (sceneCfg.stage) {
-                performance.setStaging(sceneCfg.stage, sceneCfg.noHeader);
-            }
+			var auditions = sceneCfg.auditions;
+			if (auditions) {
+				try {	// tryout from auditions
+					sceneCfg.tryout = new PM.Tryout({
+		                sortedhash: auditions,
+		                masterTryoutSH: PM.Tryout._pmAuditionSH
+		            });
+				} catch (e) {
+					sceneCfg.tryout = performance.tryout;
+				}  
+			} else sceneCfg.tryout = performance.tryout;
+            /*
+			 * set Stage from Plugin.stage
+			 */
+			// var stage = Plugin.stage;
+        	// stage.setContent('');		// empty stage
+            performance.setStaging(Plugin.stage, sceneCfg.noHeader);
             
             if (sceneCfg.roleCount) {
                 performance.roleCount = sceneCfg.roleCount;
-                // // remove getting-started div
-                // var n = Y.one('div#pg-getting-started')
-                // if (n)
-                // n.remove();
             }
-            
-//			//  DEPRECATE codepath for launch from gallery project DEPRECATE
-//            if (sceneCfg.stack) {
-//                performance.setAuditions({
-//					oStack: sceneCfg.stack
-//				});
-//            }
-//			//  DEPRECATE codepath for launch from BAKED
-//            if (sceneCfg.tryout && !sceneCfg.stack) {
-//				// refresh tryout.pmAuditionSH
-//				sceneCfg.tryout.getAuditionsFromSortedHash();
-//            }	
-            
-            performance.getScene(sceneCfg);
+            performance.getScene(sceneCfg);	// implicitly loads Plugin.production
             var check;
         };
         

@@ -1870,51 +1870,6 @@
 				this.loadCastingCall(uri, ioCfg);
         	}
         },
-        launchPagemaker: function (node){
-        	if (SNAPPI.PM && SNAPPI.PM.performance) {
-        		this.createPageGallery(this);
-        		return;
-        	}
-        	
-        	// var detach = _Y.on('snappi-pm:after-launch', function(e) {
-        		// detach.detach();
-        		// // node.ynode().set('innerHTML', 'Create Page');
-        		// var photoRoll = this;
-        		// photoRoll.createPageGallery(photoRoll);
-        	// }, this);
-        },
-        createPageGallery: function(photoRoll) {
-        	var sceneCfg = {};
-        	sceneCfg = _Y.merge(sceneCfg, SNAPPI.PM.pageMakerPlugin.scene);
-        	SNAPPI.PM.node.onPageGalleryReady(sceneCfg);
-        	return;
-        	
-        	
-        	
-        	
-        	
-    		var batch;	// target
-    		var audition = photoRoll.auditionSH.get(0);
-    		batch = photoRoll.getSelected();
-    		if (batch.count()) {
-    			var Y = SNAPPI.PM.Y;
-    			var stage = SNAPPI.PM.pageMakerPlugin.stage;
-    			var performance = stage ? stage.performance : null;
-    			
-//    			var stage2 = photoRoll.container.create("<div id='stage-2' class='grid_16' style='position:absolute;top:200px;'></div>");
-//    			_Y.one('#content').append(stage2);
-    			var sceneCfg = {
-    				roleCount: batch.count(),
-    				fnDisplaySize: {h:800},
-    				stage: stage,
-    				auditions: batch,
-    				noHeader: true,
-    				useHints: true,
-    				hideRepeats : false
-    			};
-    			SNAPPI.PM.node.onPageGalleryReady(sceneCfg);
-    		};
-        }
     };
     
 })();

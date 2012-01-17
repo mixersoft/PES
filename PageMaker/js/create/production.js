@@ -13,11 +13,22 @@
  *
  */
 (function(){
-    /*
+	/*
      * shorthand
      */
-    var PM = SNAPPI.namespace('SNAPPI.PM');
-    var Y = PM.Y;
+	var _Y = null;
+	var Plugin = null;
+	var PM = SNAPPI.namespace('SNAPPI.PM');
+	SNAPPI.namespace('SNAPPI.PM.onYready');
+	// Yready init
+	PM.onYready.Production = function(Y){
+		if (_Y === null) _Y = Y;
+	    /*
+	     * publish
+	     */
+	    PM.Production = Production;
+	    Plugin = PM.PageMakerPlugin.instance;
+	} 
     
     /*
      * protected
@@ -41,7 +52,7 @@
     
     
     Production = function(cfg){
-        cfg = SNAPPI.util.mergeObj(cfg, _defaultCfg);
+        this.cfg = _Y.merge(_defaultCfg, cfg);
         
         /*
          * properties
@@ -52,7 +63,7 @@
         this.minDpi;
         this.previewDpi; // proof dpi, i.e. display
         this.arrangement;
-        this.stage;
+        // this.stage;	// use Plugin.stage
         // scale multiplier to convert Arrangement/Role sizes to Production
         // sizes in pixels
         this.scale; // this.scale = P.w/Arr.w = P.minDpi * P.renderSize.w *
@@ -62,7 +73,7 @@
             current: null,
             saved: []
         };
-        this.init(cfg);
+        this.init(this.cfg);
     };
     
     
@@ -75,14 +86,14 @@
             provider: 'Picasa'
         };
         var onCatalogLoaded = function(resp){
-            var resp = SNAPPI.PM.Catalog.getCatalog(cfg.provider);
+            var resp = PM.Catalog.getCatalog(cfg.provider);
             var check;
         };
         
         /*
          * asynchronous XML load
          */
-        SNAPPI.PM.Catalog.loadCatalog({
+        PM.Catalog.loadCatalog({
             provider: cfg.provider,
             success: onCatalogLoaded,
             failure: function(resp){
@@ -117,39 +128,42 @@
                         w: displayConstraintInPx / this.displayDpi
                     };
                 }
-            this.renderUnitsPerInch = cfg.renderUnitsPerInch; // size in
-            // inches
+            this.renderUnitsPerInch = cfg.renderUnitsPerInch; // size in inches
+            
             this.minDpi = cfg.minDpi;
             this.previewDpi = cfg.previewDpi; // proof dpi, i.e. display
-            this.stage = cfg.stage;
+            // this.stage = cfg.stage;
             this.borderColor = cfg.borderColor;
             this.onLoadCallback = cfg.onLoadCallback;
             this.useHints = cfg.useHints || true;
             if (cfg.arrangement) 
                 this.setArrangement(cfg.arrangement);
         },
+        setCatalog: function(C) {
+        	this.catalog = C;
+        },
         setArrangement: function(Arr){
-            var P = this;
-            P.arrangement = Arr;
+            var Pr = this;
+            Pr.arrangement = Arr;
             Arr.production = this; // back reference used in
             // Casting.setMinSize()
             // are we attached to a Production yet?
-            if (P.renderSize.w) {
-                P.w = P.minDpi * P.renderSize.w * P.renderUnitsPerInch;
-                P.h = P.w / Arr.format;
+            if (Pr.renderSize.w) {
+                Pr.w = Pr.minDpi * Pr.renderSize.w * Pr.renderUnitsPerInch;
+                Pr.h = Pr.w / Arr.format;
             }
             else {
-                P.h = P.minDpi * P.renderSize.h * P.renderUnitsPerInch;
-                P.w = P.h * Arr.format;
+                Pr.h = Pr.minDpi * Pr.renderSize.h * Pr.renderUnitsPerInch;
+                Pr.w = Pr.h * Arr.format;
             }
             // scale multiplier to convert Arrangement/Role sizes to Production
             // sizes in pixels
-            // Arr.w in units, P.w in pixels
-            P.scale = P.w / (Arr.w); // = P.minDpi * P.renderSize.w *
-            // P.renderUnitsPerInch / Arr.w
-            P.size = {
-                w: P.scale * Arr.w + 2 * P.spacing,
-                h: P.scale * Arr.h + 2 * P.spacing
+            // Arr.w in units, Pr.w in pixels
+            Pr.scale = Pr.w / (Arr.w); // = Pr.minDpi * Pr.renderSize.w *
+            // Pr.renderUnitsPerInch / Arr.w
+            Pr.size = {
+                w: Pr.scale * Arr.w + 2 * Pr.spacing,
+                h: Pr.scale * Arr.h + 2 * Pr.spacing
             };
         },
         /*
@@ -176,8 +190,13 @@
             /*
              * TODO: fix hardcoded switch, pass by cfg
              */
-            var markOnlyCastList = true;
-            var productionAudition, masterCastList = SNAPPI.PM.performance.tryout.pmAuditionSH;
+            var tryout, 
+            	masterCastList,
+            	productionAudition,
+            	markOnlyCastList = true;
+            try {
+            	masterCastList = PM.pageMakerPlugin.production.tryout.pmAuditionSH;
+            } catch (e) {}	
             if (markOnlyCastList) {
 	            // mark scene cast list as cast
             	var castList = this.tryout.pmAuditionSH;
@@ -238,17 +257,18 @@
              */
             cfg.isRehearsal = true;
             var renderedPerformance = this.getPerformance(cfg, scene);
-    		this.stage.body.setContent(renderedPerformance);
-    		renderedPerformance.unscaled_pageGallery = this.stage.body.get('innerHTML');
-    		SNAPPI.PM.PageMakerPlugin.startPlayer();
+    		Plugin.stage.body.setContent(renderedPerformance);
+    		renderedPerformance.unscaled_pageGallery = Plugin.stage.body.get('innerHTML');
+    		PM.PageMakerPlugin.startPlayer();
 //        	var url = this.postPageGallery(cfg, scene); // POST cmd to save on server
+			return renderedPerformance;
         },
         postPageGallery: function(cfg, scene){
             /*
              * createStaticPageGallery will issue a POST to save page Gallery on Server
              */
-            var url = SNAPPI.PM.util.createStaticPageGallery({
-            	content: this.stage.body.one('div.pageGallery').unscaled_pageGallery,
+            var url = PM.util.createStaticPageGallery({
+            	content: Plugin.stage.body.one('div.pageGallery').unscaled_pageGallery,
                 filename: 'tmp',
                 replace: true
             });
@@ -258,16 +278,16 @@
          * getPerformance() is the method to actually render a scene into HTML
          */
         getPerformance: function(cfg, scene){
-            var P = this;
-            var img, extra, stageBody, scale2Rehearsal;
+            var Pr = this;
+            var img, extra, pageGallery, scale2Rehearsal;
             scale2Rehearsal = this.previewDpi / this.minDpi;
             
-            stageBody = P.stage.create('<div></div>').addClass('pageGallery hide').setStyles({
-                backgroundColor: cfg.borderColor,
+            pageGallery = Plugin.stage.create('<div></div>');
+            pageGallery.addClass('pageGallery hidden').setStyles({
+                // backgroundColor: cfg.borderColor,
                 margin: (cfg.margin) + "px auto"
             });
-            
-            scene = scene || P.scenes[P.scenes.length - 1];
+            scene = scene || Pr.scenes[Pr.scenes.length - 1];
             /*
              * absolute placement of each cast member
              */
@@ -279,7 +299,7 @@
                 img = document.createElement("IMG");
                 var cast = scene.cast[i];
                 if (cast.audition.orientation != 1) {
-                	// should always be 1, check SNAPPI.PM.Audition.init()
+                	// should always be 1, check PM.Audition.init()
                     var check;
                 }
                 if (cast.audition.rotate != 1) {
@@ -369,28 +389,28 @@
                 /*
                  * add rendered PageGallery to DIV
                  */
-                stageBody.append(img);
+                pageGallery.append(img);
             }
             /*
              * set size of wrapper to just fit pageGallery photos + margin
              */
-            stageBody.setStyles({
+            pageGallery.setStyles({
                 height: outerDim.b - cfg.spacing + 2 * cfg.margin + "px",
                 width: outerDim.r - cfg.spacing + 2 * cfg.margin + "px"
             });
-            //            Dom.setStyle(stageBody, 'height', outerDim.b - cfg.spacing + 2 * cfg.margin + "px");
-            //            Dom.setStyle(stageBody, 'width', outerDim.r - cfg.spacing + 2 * cfg.margin + "px");
+            //            Dom.setStyle(pageGallery, 'height', outerDim.b - cfg.spacing + 2 * cfg.margin + "px");
+            //            Dom.setStyle(pageGallery, 'width', outerDim.r - cfg.spacing + 2 * cfg.margin + "px");
             
             if (false && SNAPPI.util3.QUEUE_IMAGES) {
                 // just watch for img load, don't queue
-                SNAPPI.util3.ImageLoader.loadBySelector(stageBody, 'div#content img', null, 100);
+                SNAPPI.util3.ImageLoader.loadBySelector(pageGallery, 'div#content img', null, 100);
             }
             
-            return stageBody;
+            return pageGallery;
         },
         rehearse: function(cfg, scene){
             cfg.isRehearsal = true;
-            this.perform(cfg, scene);
+            return this.perform(cfg, scene);
         },
         _addPerformanceTab: function(id, name){
             id = id || 'tab_create';
@@ -417,7 +437,7 @@
                 cfg.borderColor = cfg.borderColor || this.borderColor;
                 cfg.label = cfg.label || this.label;
                 cfg.useHints = (cfg.useHints !== undefined) ? cfg.useHints : this.useHints;
-                cfg.stage = cfg.stage || this.stage;
+                cfg.stage = cfg.stage || Plugin.stage;
             }
             if (cfg.sceneIndex) {
                 // render a saved scene
@@ -443,6 +463,8 @@
                 var scene;
 //                scene = Casting.SimpleCast(Pr, cfg);
 //                scene = Casting.ChronoCast(Pr, cfg);
+// NOTE: CustomFitArrangement will reset Pr.tryout & Pr.arrangement here
+// called from Pr.renderScene: 
                 scene = Casting.CustomFitArrangement.call(Pr, Pr, cfg);
                 /***************************************************************
                  * end Casting
@@ -454,7 +476,7 @@
                 }
             }
             Pr.scene.current = scene;
-            Pr.rehearse(cfg, scene);
+            scene.performance = Pr.rehearse(cfg, scene);
             return scene;
         },
         resetCastOnToggle: function(checked){
@@ -468,10 +490,6 @@
         }
     };
     
-    /*
-     * publish
-     */
-    SNAPPI.PM.Production = Production;
     
 })();
 

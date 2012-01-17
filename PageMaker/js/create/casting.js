@@ -147,7 +147,7 @@
         
         var noMoreRoles = true, noMoreAuditions;
         var R = Pr.arrangement.roleSH.setFocus(0);
-        var Aud, crop;
+        var Aud, cropOk;
         Aud = auditionSH.setFocus(0);
         while (R && Aud) {
         
@@ -161,15 +161,16 @@
             c.audition = Aud;
             c.role = R;
             c.setMinSize();
-            crop = false;
+            cropOk = false;
             while (
             	c.audition.parsedAudition.isCast			// cast in saved Scene 
             	|| (c.audition.isCast)	// cast in current Scene
-				|| (crop = c.setCropSize(cfg)) == false) 	// crop won't fit role
+				|| (cropOk = c.setCropSize(cfg)) == false) 	// crop won't fit role
             	
 			{
 				if (R.suggestedPhotoId) {
 					noMoreRoles = true;	// using suggested photos, don't iterate
+					cropOk = true;
 					break; 				// done when we are done
 				}
                 c.audition = auditionSH.next();
@@ -177,7 +178,7 @@
                     break; // no more auditions                        
                 }
             }
-            if (crop) {
+            if (cropOk) {		// set by c.setCropSize(cfg);
                 //                    Pr.addToCast(c);
                 c.role.isCast = true;
                 c.audition.isCast = true;
@@ -238,9 +239,9 @@
     };
     /*
      * uses SimpleCast with custom arrangement from server
+     * 		SYNCHRONOUS XHR
      */
     Casting.CustomFitArrangement = function (Pr, cfg) {
-//    	var A = Casting.getArrangementFromServer.call(Pr, Pr, cfg.roleCount, {
     	var A = SNAPPI.PM.Catalog.getCustomFitArrangement.call(Pr, Pr, cfg.roleCount, {
     		success:function(A){
     			var check;
@@ -275,7 +276,12 @@
             Pr.tryout.clearCast();
             return null;
         }
-        if (Pr.arrangement == undefined) {
+        /*
+         *  pick Arrangement from Catalog
+         * 		- skip for dynamic catalogs, i.e. SnappiCustomFit;
+         */
+        var pickArr = Pr.catalog.arrangements.length;	
+        if (pickArr && Pr.arrangement == undefined) {
             /*
              * find matching arrangement from catalog 
              */
@@ -353,21 +359,21 @@
          */
         setMinSize: function(){
             var R = this.role;
-            var P = this.role.arrangement.production;
+            var Pr = this.role.arrangement.production;
             if (!this.scaleRole2Production) 
                 this.setProductionScale();
-            this.minSize.w = R.size.w * P.scale;
+            this.minSize.w = R.size.w * Pr.scale;
             this.minSize.h = this.minSize.w / R.format;
             
             // size in Production rendered units, i.e. inches
-            this.renderSize.w = this.minSize.w / P.minDpi;
-            this.renderSize.h = this.minSize.h / P.minDpi;
+            this.renderSize.w = this.minSize.w / Pr.minDpi;
+            this.renderSize.h = this.minSize.h / Pr.minDpi;
             
             
             // also set position of Role in Production
             this.position = {
-                x: R.position.x * R.arrangement.w * P.scale,
-                y: R.position.y * R.arrangement.h * P.scale
+                x: R.position.x * R.arrangement.w * Pr.scale,
+                y: R.position.y * R.arrangement.h * Pr.scale
             };
             
         },

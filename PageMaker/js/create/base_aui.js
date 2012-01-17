@@ -50,18 +50,19 @@
      * init player, attach to plugin instance
      */
     PageMakerPlugin.startPlayer = function() {
-    	var o = PM.pageMakerPlugin;	// instance
-    	if (!o.player) {
-    		o.player = new PM.Player({
-    			content: o.stage.body.get('parentNode'),
-    			container: o.stage.body,
+    	var Plugin = PM.pageMakerPlugin;	// instance
+    	if (!Plugin.player) {
+    		Plugin.player = new PM.Player({
+    			container: Plugin.stage,
+    			content: Plugin.stage.body,
     			isPreview: true,
-    			FOOTER_H: 20
+    			FOOTER_H: 20,
+    			Y: Plugin.external_Y,
     		});
+    	} else {
+    		Plugin.player.setStage(Plugin.stage, Plugin.stage.body);
     	}
-    	try {
-    		o.player.init();
-    	} catch(e) {}
+    	Plugin.player.init();
     };
     
     
@@ -69,13 +70,17 @@
     	external_Y: null,
     	stage: null,
     	scene: {},
-    	setStage: function(n) {
+    	setStage: function(n) {	// currently not used
     		this.stage = n;
+    		/*
+    		 * NEW node!!! 
+    		 * reset all existing references to Plugin.stage
+    		 */
     		return this;
     	},
     	setScene: function(sceneCfg) {
-    		this.scene = sceneCfg;
-    		if (sceneCfg.stage) this.stage = sceneCfg.stage;
+    		this.sceneCfg = _Y.merge(this.sceneCfg, sceneCfg);
+    		// if (sceneCfg.stage) this.stage = sceneCfg.stage;	// deprecate
     		return this;
     	},
     	load: function(cfg){

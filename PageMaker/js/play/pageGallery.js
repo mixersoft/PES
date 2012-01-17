@@ -136,28 +136,63 @@
 	};
 
 	var Player = function(cfg) {
-		var Y = SNAPPI.PM.Y;
-		this.cfg = Y.merge(CONFIG, cfg);
-		this.container = Y.one(this.cfg.container);
-		this.content = Y.one(this.cfg.content); // parent of div.pageGallery
+		cfg = cfg || {};
+		this.container = null; 		// outer node, default 'BODY'
+		this.content = null;		// child of this.container, parent of .pageGallery
+		var Y = cfg.Y || SNAPPI.PM.Y;		// check: external_Y from Plugin instance
+		cfg = Y.merge(CONFIG, cfg);
+		try {	// set container, content nodes
+			if (cfg.container instanceof Y.Node) {
+				this.container = cfg.container;
+			} else {
+				this.container = Y.one(cfg.container);
+			}
+			delete cfg.container;
+
+			if (cfg.content instanceof Y.Node && cfg.content.one('> .pageGallery')) {
+				this.content = cfg.content;	
+			} else {
+				this.content = this.container.one(cfg.content); 
+			}
+			delete cfg.content;
+		} catch (e){}
+		this.cfg = cfg;
+		
+		// parent of div.pageGallery
 		this.isPreview = this.cfg.isPreview
 				|| SNAPPI.PM.Player.bootstrap == false;
 
 		// content
 		this.listen = {}; // detach handlers for active listener
-		this.init = function(e) {
+
+	};
+	/*
+	 * end constructor for Player
+	 */
+	Player.prototype = {
+		setStage : function (container, content) {
+			this.container = container;
+			if (content) {
+				this.content = content;
+			} else {
+				var child = this.container.one('.pageGallery');
+				if (child) this.content = child.get('parentNode');
+			}
+		},
+		init : function(e) {
 			var containerH = 0 - this.cfg.FOOTER_H, containerW = 0 - this.cfg.MARGIN_W;
 			if (this.container.get('tagName') == 'BODY') {
 				containerH += this.container.get('winHeight');
 				containerW += this.container.get('winWidth');
 			} else {
-				containerH += _px2i(this.container.getComputedStyle('height'));
-				containerW += _px2i(this.container.getComputedStyle('width'));
+				containerH += this.container.get('clientHeight');
+				containerW += this.container.get('clientWidth');
 			}
 			indexedPhotos = this.indexPhotos();
 
 			_totalPages = 0;
-			var offset, origRect, pages = this.content.all('div.pageGallery');
+			var offset, origRect, 
+				pages = this.content.all('div.pageGallery');
 			pages.each(function(page, i) {
 				var Y = SNAPPI.PM.Y;
 				if (page.get('id') == 'share')
@@ -171,16 +206,28 @@
 					H : _px2i(page.getStyle('height'))
 				};
 				if (this.isPreview) {
-					page.addClass('hidden');
-					page.removeClass('hide');
+					if (page.hasClass('hide')) {
+						page.addClass('hidden');
+						page.removeClass('hide');
+						var restoreHide = true;
+					}
 					// need to get layout info for this page
-					offset = {
-						X : page.get('offsetLeft'),
-						Y : page.get('offsetTop')
-					};
-					origRect = Y.merge(origRect, offset);
-					page.addClass('hide');
-					page.removeClass('hidden');
+					offset={X:0,Y:0};	// use position:relative for this.content
+					if (restoreHide) {
+						page.addClass('hide');
+						page.removeClass('hidden');
+					}
+									
+					// page.addClass('hidden');
+					// page.removeClass('hide');
+					// // need to get layout info for this page
+					// offset = {
+						// X : page.get('offsetLeft'),
+						// Y : page.get('offsetTop')
+					// };
+					// origRect = Y.merge(origRect, offset);
+					// page.addClass('hide');
+					// page.removeClass('hidden');
 				}
 				page.origRect = origRect;
 
@@ -236,9 +283,9 @@
 				this.container.one('#glass').addClass('hide');
 				this.container.one('#glass > .loading').remove();
 			}
-		};
+		},
 
-		this.startListeners = function(start) {
+		startListeners : function(start) {
 			if (start === false) {
 				this.stopListeners();
 			} else {
@@ -263,9 +310,9 @@
 				this.listen.winResize = Y.on('resize', this.winResize,
 						window, this);
 			}
-		};
+		},
 
-		this.stopListeners = function(name) {
+		stopListeners : function(name) {
 			if (name) {
 				try {
 					this.listen[name].detach();
@@ -276,12 +323,12 @@
 					this.listen[name].detach();
 				}
 			}
-		};
+		},
 
 		/*
 		 * called on next page click
 		 */
-		this.showPage = function(index) {
+		showPage : function(index) {
 			var Y = SNAPPI.PM.Y;
 			if (!this.isPreview) {
 				this.container.one('#pagenum').set('innerHTML',
@@ -301,29 +348,29 @@
 				if (page.get('id') == 'share')
 					return;
 				if (i == index) {
-					page.removeClass('hide');
+					page.removeClass('hidden').removeClass('hide');
 				} else {
 					page.addClass('hide');
 				}
 			}, this);
-		};
+		},
 
-		this.nextPageClick = function(e) {
+		nextPageClick : function(e) {
 			if (_pageIndex < _totalPages - 1) {
 				this.showPage(++_pageIndex);
 			}
-		};
+		},
 
 		/*
 		 * called on previous page click
 		 */
-		this.prevPageClick = function(e) {
+		prevPageClick : function(e) {
 			if (_pageIndex > 0) {
 				this.showPage(--_pageIndex);
 			}
-		};
+		},
 
-		this.indexPhotos = function() {
+		indexPhotos : function() {
 			var indexedPhotos = [];
 			var t, l, page, img;
 			this.content.all('div.pageGallery').each(function(page, p) {
@@ -340,11 +387,11 @@
 				});
 			}, this);
 			return indexedPhotos.sort(_sortByIndexASC);
-		};
+		},
 
 		/* Called on click of a photo */
 
-		this.activateLightBox = function(e) {
+		activateLightBox : function(e) {
 			var Y = SNAPPI.PM.Y;
 			if (!this.container.one("#centerbox").hasClass('hide'))
 				return;
@@ -363,9 +410,9 @@
 			player.showPhoto(indexedPhotos[i], 'animate');
 			this.animateOpacity(1, this.cfg.animation.overlayDuration,
 					centerBox);			
-		};
+		},
 
-		this.handleLightboxClick = function(e) {
+		handleLightboxClick : function(e) {
 			var target = e.target;
 			var id = target.get('id');
 			switch (id) {
@@ -383,13 +430,13 @@
 				return;
 			}
 			e.halt();
-		};
+		},
 
 		/*
 		 * Called on centerbox close , called by both close button & overlay
 		 * click
 		 */
-		this.closeLightBox = function(e) {
+		closeLightBox : function(e) {
 			var Y = SNAPPI.PM.Y;
 			if (this.container.one("#centerbox").hasClass('hide'))
 				return;
@@ -405,9 +452,9 @@
 					_container.one("#lightBoxPhoto").set("src", "");
 					_container.one("#glass").addClass('hide');
 				});
-		};
+		},
 
-		this.showPhoto = function(photo, animate) {
+		showPhoto : function(photo, animate) {
 			var Y = SNAPPI.PM.Y;
 			var src = _stripCrop(photo.img.get('src'));
 			var isCached = _isSrcCached(src);
@@ -443,9 +490,9 @@
 					this.animateBox.call(this, dim.W, dim.H, delta);
 				}, this, lightBoxPhoto, this.cfg.animation, Y);					
 			}
-		};
+		},
 
-		this.nextPhotoClick = function() {
+		nextPhotoClick : function() {
 			var Y = SNAPPI.PM.Y;
 			var page = 0, top = 1, left = 2;
 			if (_curPhotoIndex + 1 == indexedPhotos.length)
@@ -463,8 +510,8 @@
 				this.container.one("#nextPage").removeClass('hide');
 			}
 			this.showPhoto(nextPhoto);
-		};
-		this.prevPhotoClick = function() {
+		},
+		prevPhotoClick : function() {
 			var Y = SNAPPI.PM.Y;
 			var page = 0, top = 1, left = 2;
 			if (_curPhotoIndex == 0)
@@ -482,20 +529,22 @@
 				this.container.one("#prevPage").removeClass('hide');
 			}
 			this.showPhoto(nextPhoto);
-		};
+		},
 
 		/*
 		 * NOTE: when deployed in "Designer", containerH != containerH
 		 */
-		this.winResize = function(e) {
+		winResize : function(e) {
 			var Y = SNAPPI.PM.Y;
 			var containerH = 0 - this.cfg.FOOTER_H, containerW = 0 - this.cfg.MARGIN_W;
 			if (this.container.get('tagName') == 'BODY') {
 				containerH += this.container.get('winHeight');
 				containerW += this.container.get('winWidth');
 			} else {
-				containerH += _px2i(this.container.getComputedStyle('height'));
-				containerW += _px2i(this.container.getComputedStyle('width'));
+				// containerH += _px2i(this.container.getComputedStyle('height'));
+				// containerW += _px2i(this.container.getComputedStyle('width'));
+				containerH += this.container.get('clientHeight');
+				containerW += this.container.get('clientWidth');
 			}			
 			
 			var pages = this.content.all('div.pageGallery');
@@ -518,9 +567,9 @@
 					}
 				}
 			}, this);
-		};
+		},
 
-		this.scale = function(cfg) {
+		scale : function(cfg) {
 			var nativeMaxRes, MAX_HEIGHT = this.cfg.NATIVE_PAGE_GALLERY_H;
 			var page = cfg.element;
 
@@ -555,10 +604,7 @@
 					var restoreHide = true;
 				}
 				// need to get layout info for this page
-				offset = {
-					X : page.get('offsetLeft'),
-					Y : page.get('offsetTop')
-				};
+				offset={X:0,Y:0};	// use position:relative for this.content
 				if (restoreHide) {
 					page.addClass('hide');
 					page.removeClass('hidden');
@@ -585,12 +631,12 @@
 					}
 					photo.setStyles(scaledRect);
 				}, this);
-		};
+		},
 
 		/*
 		 * animate opacity of the overlay
 		 */
-		this.animateOpacity = function(opacity, duration, node, onEndCallback) {
+		animateOpacity : function(opacity, duration, node, onEndCallback) {
 			var Y = SNAPPI.PM.Y;
 			var animation = new Y.Anim( {
 				node : node,
@@ -606,13 +652,13 @@
 				}, this);
 			}
 			animation.run();
-		};
+		},
 
 		/*
 		 * Animates the center box with enlarged image Accepts element object of
 		 * the image to enlarged
 		 */
-		this.animateBox = function(W, H, delta) {
+		animateBox : function(W, H, delta) {
 			var Y = SNAPPI.PM.Y;
 			var lightBoxPhoto = this.container.one("#lightBoxPhoto");
 			lightBoxPhoto.setStyle('opacity', 0.5);
@@ -632,12 +678,12 @@
 				this.animateOpacity(1, duration,lightBoxPhoto);
 			}, this);
 			boxAnim.run();
-		};
+		},
 
 		/*
 		 * Key press functionality of next & previous buttons
 		 */
-		this.keyAccelerate = function(e) {
+		keyAccelerate : function(e) {
 			var Y = SNAPPI.PM.Y;
 			if (!this.container.one("#centerbox").hasClass('hide')) {
 				// change Photo
@@ -660,11 +706,8 @@
 					this.prevPageClick();
 				}
 			}
-		};
-	};
-	/*
-	 * end constructor for Player
-	 */
+		},		
+	}
 
 	/*
 	 * global variables
