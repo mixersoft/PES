@@ -238,7 +238,8 @@
 		before_LazyLoad : function(){
 			// BEFORE Y instance, Y.node is available
 			// initialize wait
-			document.body.className += ' wait';
+			var className = document.body.className;
+			if (!/wait/.test(className)) document.body.className += ' wait';
 		},
 		before_LazyLoadCallback : function(Y, result){
 			// SNAPPI.Y = Y;	// update global with new modules

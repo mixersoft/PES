@@ -26,20 +26,35 @@
 		if (_Y === null) _Y = Y;
     	PM.main = main;
     	Plugin = PM.PageMakerPlugin.instance;
+    	
+    	try {
+	    	// setup PM cfg defaults, currently set in snappi-base:main()
+	    	_sceneCfg.fnDisplaySize = PM.cfg.fn_DISPLAY_SIZE;
+    	} catch(e) {}
 	} 
+	
+	var _sceneCfg = { 
+		// defaults
+	}
 	
     var main = new function() { 
     	var _self = this;
-    	this.launch = function(cfg){
-    		var Plugin = PM.pageMakerPlugin;
-    		if (cfg.io) {
-    			this.ioCfg = cfg.io;
-    			delete cfg.io;
-    		}
-    		if (cfg.scene) {
-    			this.sceneCfg = cfg.scene;
-    			delete cfg.scene;
-    		}
+    	this.sceneCfg = _sceneCfg;
+    	
+    	this.launch = function(Plugin, cfg){
+    		Plugin = Plugin || PM.pageMakerPlugin;
+    		cfg = cfg || {};
+    		this.ioCfg = _Y.merge(this.ioCfg, Plugin.ioCfg);
+    		this.sceneCfg = _Y.merge(this.sceneCfg, Plugin.sceneCfg);
+    		
+    		// if (cfg.io) {
+    			// this.ioCfg = cfg.io;
+    			// delete cfg.io;
+    		// }
+    		// if (cfg.scene) {
+    			// this.sceneCfg = _Y.merge(this.sceneCfg, cfg.scene);
+    			// delete cfg.scene;
+    		// }
     		this.cfg = _Y.merge(this.cfg, cfg);
     		
     		
@@ -94,13 +109,10 @@
             /****
              * get sortedhash, Tryout from SNAPPI.Auditions._auditionSH, if available, 
              * 		or from datasource (Asynch Y.io)
+             * Note: make_pageGallery: sceneCfg.auditions > performance.tryout
              */
             var datasource = this.target ? this.target : this.ioCfg;
-            try {
-            	// check if we already have a tryout from /my/pagemaker
-            	if (SNAPPI.Auditions._auditionSH.count() == 0) throw new Exception();
-            	this.tryoutSortedhash = SNAPPI.Auditions._auditionSH;
-            } catch(e) {
+            if (datasource && (datasource.id || datasource.method)) {
 	            if (this.tryoutLoadStatus == undefined) {
 	            	console.log('this codepath has not completed refactor for SNAPPI.Auditions.');
 	            	/*
@@ -115,24 +127,26 @@
 	                if (this.tryoutLoadStatus == 'loading') {
 	                    return;
 	                }
-            } 
-            // load auditions into SNAPPI.Tryout._pmAuditionSH(), master list
-            var tryout = new PM.Tryout({
-                sortedhash: this.tryoutSortedhash
-            });
-			// END getTryout synch/Asynch processing, this.tryoutSortedhash = SH	
-            
-        
-		
-		
+	            // load auditions into SNAPPI.Tryout._pmAuditionSH(), master list
+	            var tryout = new PM.Tryout({
+	                sortedhash: this.tryoutSortedhash
+	            });
+	            this.sceneCfg = _Y.merge(this.sceneCfg, {
+	                sortedhash: tryout.pmAuditionSH,
+	                tryout: tryout,
+	                roleCount: tryout.pmAuditionSH.count(),
+	            });
+	            Plugin.ioCfg = {complete: true};
+				// END getTryout synch/Asynch processing, this.tryoutSortedhash = SH	
+            } else {
+            	// use sceneCfg.auditions in make_pageGallery()
+            	// to build tryout on the fly
+            }
 		    
             /***
+             * ASYNC processing complete 
              * show PageGallery home page
              */
-            var sceneCfg = {
-                sortedhash: tryout.pmAuditionSH,
-                tryout: tryout
-            };
             PM.node.startListeners();
             
             // scene display config for designer mode
@@ -140,14 +154,8 @@
                 label: "Pagemaker",
                 // stage: sceneCfg.stage,
             };
-            Plugin.sceneCfg = _Y.merge(this.sceneCfg, sceneCfg, previewDisplayCfg);
-            
-            // hack: double-checks
-            sceneCfg = Plugin.sceneCfg;
-            
-            // NOTE: scale pageGallery with in production w/ NATIVE_PAGE_GALLERY_H constant
-            if (!sceneCfg.fnDisplaySize) sceneCfg.fnDisplaySize = PM.cfg.fn_DISPLAY_SIZE;
-            // hack: done
+            this.sceneCfg = _Y.merge(this.sceneCfg, previewDisplayCfg);
+            Plugin.sceneCfg = this.sceneCfg;
             
             /****
              * set Production staging params
@@ -173,7 +181,7 @@
                     // catalog: catalog,		// use Pr.setCatalog()
                     // arrangement: Arr,
                     onLoadCallback: function(){
-                       if (SNAPPI.util.LoadingPanel)  SNAPPI.util.LoadingPanel.hide();
+                       // if (SNAPPI.util.LoadingPanel)  SNAPPI.util.LoadingPanel.hide();
                     }
                 }; 
             /*
@@ -195,7 +203,7 @@
              */
             // just set Performance and show Create Tab
             var performanceCfg = {
-                sceneCfg: sceneCfg,
+                sceneCfg: Plugin.sceneCfg,
                 stage: Plugin.stage,
             }
             // if (preload = 0) {	// not required for '#pg-getting-started'
@@ -219,6 +227,7 @@
             var pgGettingStarted = _Y.Node.create("<div id='pg-getting-started'><div><h1>Getting Started with PageMaker</h1><p>Page Galleries are automatically generated photo collages based on page templates.</p><p>To get started, just choose how many photos you would like to see on a page. A matching page template will be randomly chosen and a Page Gallery automatically created using your top-rated photos. For now, we just offer a selection of simple page templates.</p><p>If you would like to try a different template, just click again.</p><p>Once you see a page you like, just click <b><i>Save Page</i></b> to add this page to an online album - new pages will be added to the end. You can view your album from the <b><i>Preview</i></b> tab, where you will also find a link for easy sharing.</p><p>To begin, just click one of the buttons above.</p><br /></div></div>");
             Plugin.stage.body.append(pgGettingStarted);
             // use external_Y
+console.error("3) main.launch(): complete. before create()"); 
             _Y.fire('snappi-pm:after-launch', Plugin.stage);
             PM.pageMakerPlugin.external_Y.fire('snappi-pm:after-launch', Plugin.stage);
             
@@ -238,7 +247,7 @@
                     // parse o.response to get sortedhash
                     var sh = new SNAPPI.SortedHash();
                     // finish init here
-                    var response = eval('(' + o.responseText + ')');
+                    var response = o.responseJson.response;
                     // parse castingCall into auditions
                     
                     // case "snappi":
@@ -259,31 +268,14 @@
                     
                     _self.tryoutSortedhash = sh;
                     fnContinue();
+                    return;
                 }
             };
             
             
             if (ioCfg && ioCfg.method) {
-                // this is an ioCfg
-                var _ioCfg = {
-                    method: "POST",
-                    data: '',
-                    on: {
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        complete: callback.success
-                    },
-                    timeout: 2000,
-                    context: this,
-                    arguments: {}
-                };
-                ioCfg = Y.merge(_ioCfg, ioCfg);
-                
-                ioCfg.arguments.uri = ioCfg.uri;
-                ioCfg.arguments.ioCfg = ioCfg;
-                Y.io(ioCfg.uri, ioCfg);
-                return "loading";
+            	SNAPPI.io.post(ioCfg.uri, ioCfg.postData, callback);
+            	return "loading";
             }
             else {
 				// TODO: this is a legacy codepath. DEPRECATE
@@ -332,7 +324,7 @@
                 /*
                  * Page Gallery Getting Started
                  */
-                var pgGettingStarted = Y.Node.create("<div id='pg-getting-started'><div><h1>Getting Started with Page Galleries</h1><p>Page Galleries are automatically generated photo collages based on page templates.</p><p>To get started, just choose how many photos you would like to see on a page. A matching page template will be randomly chosen and a Page Gallery automatically created using your top-rated photos. For now, we just offer a selection of simple page templates.</p><p>If you would like to try a different template, just click again.</p><p>Once you see a page you like, just click <b><i>Save Page</i></b> to add this page to an online album - new pages will be added to the end. You can view your album from the <b><i>Preview</i></b> tab, where you will also find a link for easy sharing.</p><p>To begin, just click one of the buttons above.</p><br /></div></div>");
+                var pgGettingStarted = _Y.Node.create("<div id='pg-getting-started'><div><h1>Getting Started with Page Galleries</h1><p>Page Galleries are automatically generated photo collages based on page templates.</p><p>To get started, just choose how many photos you would like to see on a page. A matching page template will be randomly chosen and a Page Gallery automatically created using your top-rated photos. For now, we just offer a selection of simple page templates.</p><p>If you would like to try a different template, just click again.</p><p>Once you see a page you like, just click <b><i>Save Page</i></b> to add this page to an online album - new pages will be added to the end. You can view your album from the <b><i>Preview</i></b> tab, where you will also find a link for easy sharing.</p><p>To begin, just click one of the buttons above.</p><br /></div></div>");
                 Plugin.stage.body.append(pgGettingStarted);
                 
                 // why do we create the performance, but don't use it????
@@ -380,17 +372,24 @@
 			sceneCfg.performance = performance;
 			
             // NOTE: we should really have a performance.update(sceneCfg) method
+            /*
+             * either use sceneCfg.auditions or sceneCfg.tryout for performance
+             */
 			var auditions = sceneCfg.auditions;
-			if (auditions) {
+			if (sceneCfg.auditions) {
 				try {	// tryout from auditions
 					sceneCfg.tryout = new PM.Tryout({
 		                sortedhash: auditions,
 		                masterTryoutSH: PM.Tryout._pmAuditionSH
 		            });
 				} catch (e) {
-					sceneCfg.tryout = performance.tryout;
+					console.error("main.js: error creating tryout from auditions");
 				}  
-			} else sceneCfg.tryout = performance.tryout;
+			} else if (sceneCfg.tryout) {
+				// skip
+			} else console.error("main.js: no audition or tryout for performance.");
+			performance.tryout = sceneCfg.tryout;
+			
             /*
 			 * set Stage from Plugin.stage
 			 */

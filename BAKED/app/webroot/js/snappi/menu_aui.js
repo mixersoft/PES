@@ -918,41 +918,11 @@ console.error("PreviewPhoto delete is still incomplete");
 		}
 	}
 	MenuItems.create_pagegallery_click = function(menuItem, menu){
-		
-		SNAPPI.UIHelper.create.launchPagemaker(_Y);
-		
-		return;
-		
-		try {
-			var g = SNAPPI.Gallery.find['uuid-'];
-			// check .gallery.photo, then lightbox for selected 
-			var batch = g.getSelected();
-			if (!batch.count() && SNAPPI.lightbox) {
-				batch = SNAPPI.lightbox.getSelected();
-			}	
-			if (batch.count()) {
-				var Y = SNAPPI.PM.Y || _Y;
-	//			var stage = SNAPPI.PM.pageMakerPlugin.stage;
-	//			var performance = stage ? stage.performance : null;
-				var stage2 = _Y.one('#stage-2');
-				if (!stage2) {
-					stage2 = g.container.create("<section class='container_16'><div id='stage-2' class='grid_16' style='position:absolute;top:200px;'></div></section>");
-					_Y.one('section#body-container').insert(stage2, 'after');
-					stage2 = _Y.one('#stage-2');
-				}
-				var sceneCfg = {
-					roleCount: batch.count(),
-					fnDisplaySize: {h:800},
-					stage: stage2,
-					noHeader: true,
-					useHints: true
-				};			
-				SNAPPI.setPageLoading(true);
-				SNAPPI.PM.node.onPageGalleryReady(sceneCfg);
-			}
-		} catch(e) {
+		var delayed = new _Y.DelayedTask( function() {
 			menu.hide();
-		}		
+		});
+		delayed.delay(1000);
+		SNAPPI.UIHelper.create.launchPagemaker(_Y);
 	};	
 	MenuItems.express_upload_beforeShow = function(menuItem, menu, properties){
 		// if this group is marked for express-upload, add .selected

@@ -59,7 +59,7 @@
 	    SNAPPI.FlickrXmlCastingCall = FlickrXmlCastingCall;
 	    
 		// TEMP: publish parser for baked render
-		AuditionParser.snappi.getImgSrcBySize = SNAPPI.util.getImgSrcBySize;
+		AuditionParser_Snappi.getImgSrcBySize = SNAPPI.util.getImgSrcBySize;
 		SNAPPI.AuditionParser_Snappi = AuditionParser_Snappi;	  
 		
 	    //        _Y.extend(FacebookXmlCastingCall, SNAPPI.XmlDatasource);

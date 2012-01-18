@@ -436,6 +436,7 @@
 		 * USERID? Is this secure?, this is not avail by JS or SESSIONID?
 		 */
         save: function(property, where){
+        	_Y.fire('snappi:lightbox-content-changed', this);
             var where = where || 'server';
             if (where == 'server') 
                 this.saveLightboxOnServer();
@@ -556,48 +557,12 @@
         		perpage: LIMIT,
         		castingCall: castingCall,
         	});
+        	if ( 0 || castingCall.auditionSH.count() > LIMIT) {
+        		this.node.addClass('is-preview');
+        	} else {
+        		this.node.removeClass('is-preview');
+        	} 
         	return;
-        	
-        	
-			// get auditions from castingCall
-			var parsedCastingCall_AuditionSH = this.get_auditionSHfromCastingCall(castingCall);
-			
-			if (!this.Gallery) {
-	            /**
-	             * NEW codepath to create Gallery from castingCall
-	             */
-				// use castingCall from drop source
-//						var pr = nodeList.item(0).ancestor('section.gallery.photo').Gallery;
-	            var cfg = {
-	            	type: 'Lightbox',
-	            	castingCall: castingCall,
-	            	// shots: castingCall.shots,
-	            };
-	            switch (SNAPPI.STATE.controller.action) {
-		            case 'lightbox':
-		            	cfg.size = 'tn';
-		            	break;
-		            case 'pagemaker':
-		            	cfg.size = 'tn';
-		            	break;
-	            	default:
-	            		cfg.size = 'lbx-tiny';	            	
-	            		// cfg.hideHiddenShotByCSS = true;
-		            	break;
-	            };
-	            this.Gallery = new SNAPPI.Gallery(cfg);			// does NOT render here
-	            // this.Gallery.listen(true, ['MultiSelect']);	
-			} else {
-				// add new auditions to existing Gallery.auditionSH
-				parsedCastingCall_AuditionSH.each(function(audition){
-					this.Gallery.auditionSH.add(audition);
-				}, this);
-				// TODO: use GalleryFactory pattern
-	            this.Gallery.render( {
-					page : 1,
-					perpage : LIMIT
-				});				
-			}
          },
         /*
          * render popup menus
@@ -625,11 +590,7 @@
         	
         },
         create: function(e) {
-        	if (!_Y.one('#menu-createBtn')){
-        		SNAPPI.cfg.MenuCfg.renderLightboxCreate();
-    		}
         },
-                        
 		clear : function() {
         	// NOTE: in this method, we do NOT want to use getSelected();
 			var set = this.Gallery.container.all('.FigureBox.selected');

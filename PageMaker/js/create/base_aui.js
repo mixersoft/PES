@@ -24,8 +24,8 @@
      */    
     var PM = namespace('SNAPPI.PM');
     PM.name = 'Snaphappi PageMaker';
-	PM.namespace = namespace
-    
+	PM.namespace = namespace;
+    PM.cfg = {};
     if (!SNAPPI.id) {
 		SNAPPI.id = PM.name;
     }
@@ -69,7 +69,8 @@
     PageMakerPlugin.prototype = {
     	external_Y: null,
     	stage: null,
-    	scene: {},
+    	sceneCfg: {},	// sceneCfg??
+    	ioCfg: {},
     	setStage: function(n) {	// currently not used
     		this.stage = n;
     		/*
@@ -80,6 +81,11 @@
     	},
     	setScene: function(sceneCfg) {
     		this.sceneCfg = _Y.merge(this.sceneCfg, sceneCfg);
+    		// if (sceneCfg.stage) this.stage = sceneCfg.stage;	// deprecate
+    		return this;
+    	},
+    	setPost: function(ioCfg) {
+    		this.ioCfg = _Y.merge(this.ioCfg, ioCfg);
     		// if (sceneCfg.stage) this.stage = sceneCfg.stage;	// deprecate
     		return this;
     	},

@@ -134,7 +134,7 @@
 	<div id="menu-pagemaker-selected-create-markup" class="menu yui3-aui-overlaycontext-hidden hide">
 		<ul>
 			<li action='create_pagegallery' >
-				<a>Create PageGallery</a>
+				<a>New Story</a>
 			</li>
 		</ul>
 	</div>	

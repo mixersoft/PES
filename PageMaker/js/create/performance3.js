@@ -184,6 +184,7 @@
              */
             PM.Y.fire('snappi-pm:render', this, node);
             PM.pageMakerPlugin.external_Y.fire('snappi-pm:render', this, node);
+            var check;
         }
     };
     

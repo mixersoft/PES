@@ -332,9 +332,16 @@
 		}
 		cfg = cfg || {};
 		_cfg = _Y.merge(DEFAULT_CFG_modal, _cfg, cfg);
-		var alert = new _Y.Dialog(_cfg).render();
+		var alert = Dialog.find[_cfg.id];
+		if (alert) {
+			alert.getStdModNode('body').setContent('').destroy();
+		} 
+		alert = new _Y.Dialog(_cfg).render();
+		
 		var body = alert.getStdModNode('body');
-		if (_cfg.selector) {
+		if (_cfg.bodyNode) {
+			body.setContent(_cfg.bodyNode);
+		} else if (_cfg.selector) {
 			var markup = _Y.one(_cfg.selector).get('parentNode.innerHTML');
 			if (_cfg.tokens) markup = _Y.substitute(markup, _cfg.tokens);
 			body.setContent(markup);
