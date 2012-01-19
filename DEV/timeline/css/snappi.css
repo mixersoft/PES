@@ -1,0 +1,603 @@
+
+/* more snaphappi */
+/*
+ * colors
+ * blue-border: #538fb3
+ * pink: #d04098
+ * blue: #43adeb
+ * green: #8cbe4b
+ * red: #be2a3a
+ * yellow: #e5c122;
+ *
+ */
+body {
+    background: #538fb3;
+}
+
+#header h1 {
+    background: inherit;
+    color: #fff;
+    padding: 0;
+    margin: 0;
+}
+
+#header #subtitle {
+    font-weight: bold;
+    position: relative;
+    top: -3px;
+    cursor: default;
+}
+
+#header #startup {
+    position: relative;
+    top: -30px;
+    left: -267px;
+    color: #E5C122;
+    font-size: 2.5em;
+    font-weight: bold;
+    font-family: tahoma;
+}
+
+ul.inline {
+    margin: 0;
+    padding: 0;
+}
+
+ul.inline > li {
+    display: inline;
+    list-style-type: none;
+}
+
+.center {
+    text-align: center;
+}
+
+.placeholder {
+    border: 1px solid red;
+}
+
+div.element-roll {
+    margin: 4px;
+    padding: 0;
+}
+
+div.element-roll > ul {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+li.thumbnail {
+    float: left;
+    list-style-type: none;
+    white-space: nowrap;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+div.thumb {
+    width: 83px;
+    overflow: hidden;
+}
+
+div.thumb a {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+div.thumb img {
+    border: 1px solid white;
+    padding: 3px;
+    background-color: white;
+}
+
+div.thumb img:hover {
+    margin: 0;
+    border: 1px solid black;
+    background-color: yellow;
+}
+
+li.thumbnail > p.thumb-label {
+    width: auto;
+    overflow: hidden;
+    color: #666666;
+    font: 11px Arial, Helvetica, sans-serif;
+}
+
+p.thumb-label span.new {
+    color: red;
+}
+
+li.thumbnail.sq div.thumb {
+    width: 83px;
+}
+
+li.thumbnail.sq div.thumb img {
+    width: 75px;
+    height: 75px;
+}
+
+li.thumbnail.tn > p.thumb-label {
+    font-size: 11px;
+}
+
+li.thumbnail.tn div.thumb {
+    width: 128px;
+}
+
+li.thumbnail.tn div.thumb img {
+    width: auto;
+    height: auto;
+}
+
+li.thumbnail.tn > p.thumb-label {
+    font-size: 14px;
+}
+
+div.element-member-roll {
+    clear: both;
+    margin: 4px;
+    padding: 0;
+    overflow: hidden;
+}
+
+div.element-member-roll > ul {
+    margin: 0;
+    padding: 0;
+}
+
+ul.member-roll > li {
+    float: left;
+    list-style-type: none;
+    white-space: nowrap;
+    margin: 0;
+    padding-right: 8px;
+    text-align: center;
+}
+
+div#context {
+    border: 1px solid red;
+}
+
+span.tag a:link, a:visited {
+    text-decoration: none;
+}
+
+div.float-left {
+    float: left;
+}
+
+div.float-right {
+    float: right;
+}
+
+.XXXmain-div {
+    width: 100%;
+    float: left;
+}
+
+h2 a {
+    color: #1057AE;
+    padding-bottom: 10px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+div.intro {
+    overflow: hidden;
+}
+
+div.intro img {
+    margin: 4px;
+    float: left;
+}
+
+div.intro p.title {
+    font-weight: bold;
+}
+
+.ash_backgroud {
+    background-color: #F5F5F5;
+    width: 100%;
+    text-align: center;
+    font-weight: bold;
+    font-style: italic;
+}
+
+.spacing {
+    width: 15px;
+    float: left;
+}
+
+.clear_div {
+    clear: both;
+    width: 100%;
+}
+
+.common_group {
+    float: left;
+    width: 28%;
+}
+
+div.comments {
+    padding: 5px 0px 5px 0px;
+    width: 100%;
+    overflow: hidden;
+}
+
+div.comments li.thumbnail {
+    padding: 0 10px;
+}
+
+div.comments span.user {
+    font-weight: bold;
+}
+
+div.comments span.user a {
+    width: 100%;
+    font-size: 14px;
+    font-weight: bold;
+    color: #0063DC;
+}
+
+div.comments span.title {
+    padding-top: 5px;
+    font-weight: bold;
+    font-size: 13px;
+    color: #000000;
+}
+
+div.comments > div.item {
+    width: 90%;
+    padding: 5px;
+}
+
+div.comments div.body {
+    padding: 5px 0px 10px 0px;
+    font-size: 13px;
+    color: #000000;
+}
+
+div.comments div.instruction {
+    font-size: 12px;
+    width: 100%;
+    color: #878787;
+}
+
+/** Paging **/
+div.paging {
+    text-align: center;
+    background: #fff;
+    color: #ccc;
+    margin: 1em 0 1em 0;
+    overflow: hidden;
+    padding: 3px 6px 4px;
+    cursor: default;
+}
+
+div.paging span {
+    margin-right: 5px;
+    font-weight: bold;
+    display: inline;
+}
+
+div.paging span.disabled {
+    padding: 2px 6px;
+    color: #ddd;
+    border: 1px solid #CACACA;
+}
+
+div.paging span.current {
+    padding: 2px 6px;
+    background: #538fb3;
+    color: white;
+    border: 1px solid #538fb3;
+}
+
+div.paging span a {
+    padding: 2px 6px;
+    color: #538fb3;
+    background: white;
+    border: 1px solid #CACACA;
+    text-decoration: none;
+    cursor: default;
+}
+
+div.paging a:hover {
+    padding: 1px 5px;
+    color: #538fb3;
+    border: 2px solid #538fb3;
+}
+
+/** YUI Paging **/
+div.paging-numbers {
+    text-align: center;
+    background: #fff;
+    color: #ccc;
+    margin: 1em 0 1em 0;
+    overflow: hidden;
+    padding: 3px 6px 4px;
+    cursor: default;
+}
+
+div.paging-numbers span {
+    margin-right: 5px;
+    font-weight: bold;
+    display: inline;
+}
+
+div.paging-numbers span.disabled {
+    padding: 2px 6px;
+    color: #ddd;
+    border: 1px solid #CACACA;
+}
+
+div.paging-numbers span.current {
+    padding: 2px 6px;
+    background: #538fb3;
+    color: white;
+    border: 1px solid #538fb3;
+}
+
+div.paging-numbers span a {
+    padding: 2px 6px;
+    color: #538fb3;
+    background: white;
+    border: 1px solid #CACACA;
+    text-decoration: none;
+    cursor: default;
+}
+
+div.paging-numbers a:hover {
+    padding: 1px 5px;
+    color: #538fb3;
+    border: 2px solid #538fb3;
+}
+
+/*
+ * forms
+ */
+form {
+    margin-left: 40px;
+    width: 85%;
+}
+
+form h4 {
+    margin-top: 1em;
+}
+
+form input {
+    font-weight: normal;
+}
+
+form p {
+    margin-bottom: 3px;
+}
+
+blockquote {
+    margin-left: 40px;
+    width: 85%;
+}
+
+input, textarea, select[multiple = multiple] {
+    clear: both;
+    font-size: 100%;
+    font-family: arial, helvetica, sans-serif, 'Gill Sans', 'lucida grande';
+    padding: .5%;
+    width: 98%;
+    border: 1px solid #81CDE9;
+}
+
+/** Scaffold View **/
+dl {
+    line-height: 2em;
+    margin: 0em 0em;
+    width: 100%;
+    border: 2px solid #F4F4F4;
+    margin: 15px 0px;;
+}
+
+dl .altrow {
+    background: #f4f4f4;
+    font-style: italic;
+}
+
+dt {
+    font-weight: bold;
+    padding-left: 4px;
+    vertical-align: top;
+    font-style: italic;
+}
+
+dd {
+    margin-left: 10em;
+    margin-top: -2em;
+    vertical-align: top;
+}
+
+/*
+ * Ratings
+ */
+div.ratingGroup {
+    margin: 0 auto;
+    background: url('/img/smileyGrp.png') no-repeat;
+    background-position-x: 70px; /* init to 0 stars */
+    width: 71px; /* width of 5 stars */
+    height: 15px;
+}
+
+div.ratingGroup.r0 {
+    background-position-x: -70px;
+}
+
+div.ratingGroup.r1 {
+    background-position: -56px 0;
+}
+
+div.ratingGroup.r2 {
+    background-position: -42px 0;
+}
+
+div.ratingGroup.r3 {
+    background-position: -28px 0;
+}
+
+div.ratingGroup.r4 {
+    background-position: -14px 0;
+}
+
+div.ratingGroup.r5 {
+    background-position: 0 0;
+}
+
+/*
+ * navigation
+ */
+div#nav {
+    margin-bottom: 5px;
+}
+
+/*  	top nav  	 */
+div#top {
+    color: white;
+    position: absolute;
+    top: 5px;
+    right: 15px;
+    font-size: 0.8em;
+}
+
+div#top a {
+    text-decoration: none;
+    margin: 0;
+    padding: 0;
+    color: white;
+    cursor: pointer;
+}
+
+div#top a:hover {
+    text-decoration: underline;
+}
+
+/*  	main tabs  	 */
+div#tabs {
+    color: white;
+    position: absolute;
+    top: 64px;
+    right: 20px;
+}
+
+div#tabs {
+    color: white;
+}
+
+div#tabs ul {
+    text-align: center;
+    line-height: 20px;
+}
+
+div#tabs li {
+    margin: 0;
+    padding: 2px 15px;
+    border: 1px solid #538fb3;
+    background-color: white;
+}
+
+div#tabs a {
+    text-decoration: none;
+    margin: 0;
+    padding: 0;
+    color: #538fb3;
+    cursor: pointer;
+}
+
+div#tabs a:hover {
+    color: #d04098;
+    text-decoration: underline;
+}
+
+div#tabs li.selected {
+    border-bottom: 1px solid white;
+}
+
+div#tabs li.selected a {
+    color: #d04098;
+    text-decoration: none !important;
+    cursor: default;
+}
+
+/*  	nested tabs  	 */
+div#nested {
+    color: #538fb3;
+    height: 18 px;
+    font-size: 0.8em;
+    text-align: center;
+    xposition: absolute;
+    xtop: 88px;
+    xwidth: 95%;
+}
+
+div#nested ul {
+    border-bottom: 1px solid #538fb3;
+    line-height: 20px;
+}
+
+div#nested li {
+    margin: 0;
+    padding: 2px 5px;
+    border: 1px solid #538fb3;
+}
+
+div#nested a {
+    text-decoration: none;
+    margin: 0;
+    padding: 0;
+    color: #538fb3;
+    cursor: pointer;
+}
+
+div#nested a:hover {
+    color: #d04098;
+    text-decoration: underline;
+}
+
+div#nested li.selected {
+    border-bottom: 1px solid white !important;
+}
+
+div#nested li.selected a {
+    color: #d04098;
+    text-decoration: none !important;
+    cursor: default;
+}
+
+.hide {
+    display: none;
+}
+
+.hidden {
+    visibility: hidden;
+}
+
+/*
+ * rating highlight
+ */
+#rating-highlight-label {
+    position: absolute;
+    z-index: 10;
+    background-color: yellow;
+    font-weight: bold;
+	text-align: center;
+	padding: 4px;
+	border: 2px solid black;
+	left: -100px;	/* offscreen */
+	overflow-y:hidden;
+}
+#rating-highlight-label > div {
+	position: absolute;
+	z-index: 10;
+	background-color: yellow;
+	left:-100px;
+	width:3px;
+}

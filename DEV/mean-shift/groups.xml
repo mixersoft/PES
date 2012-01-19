@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>	<sn:CastingCall xmlns:sn='snaphappi.com' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='snaphappi.com W:\www\matchmaker-svn\matchmaker.xsd'>
+<sn:ID Class="CastingCall">1256996089</sn:ID>
+<sn:Auditions page='1' perpage='2202' pages='1' Baseurl='http://js.demo.snaphappi.com/svc/ORIGINALS/' ></sn:Auditions>
+<sn:Substitutions></sn:Substitutions>
+<sn:Clusters></sn:Clusters>
+<sn:Tags></sn:Tags>	
+</sn:CastingCall>

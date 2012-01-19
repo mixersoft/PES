@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>Timeline</title>
+        <link href="/img/favicon.ico" type="image/x-icon" rel="icon" />
+        <link href="/img/favicon.ico" type="image/x-icon" rel="shortcut icon" />
+        <script type="text/javascript" src="http://yui.yahooapis.com/3.1.1/build/yui/yui-min.js">
+        </script>
+        <script type="text/javascript" src="js/base.js">
+        </script>
+		
+        <!---->
+		<script type="text/javascript" src="js/dojo/dojo/dojo.js" djConfig="isDebug: false, parseOnLoad: true">
+        </script>
+		
+		<!--
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/dojo/1.4/dojo/dojo.xd.js" 
+			djConfig="isDebug: false, parseOnLoad: false, dojoBlankHtmlUrl:'/js/dojo.xd.html'">
+        </script>
+		-->
+        <link rel="stylesheet" type="text/css" href="css/cake.generic.css" id="css-start" />
+        <link rel="stylesheet" type="text/css" href="css/snappi.css" />
+        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.4/dojo/resources/dojo.css" />
+        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.4/dijit/themes/tundra/tundra.css" />
+        <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.4/dijit/tests/css/dijitTests.css" />
+    </head>
+    <body>
+        <div id="container">
+        <div id="header">
+            <h1><a href="#"><img src="/img/snaphappi.blue.gif" alt="Snaphappi" /></a></h1>
+        </div>
+        <div id="content">
+            <div class='center' style="width:800px;margin: 0 auto;">
+                <div id="rating" style="width: 800px; height: 300px;">
+                </div>
+                <div id="volume" style="width: 800px; height: 100px; ">
+                </div>
+				<div id='zoom' class='hide'>
+					<ul class='inline'>
+						<li>[<a period='m=1' href='#month'>1 month</a>]</li>
+						<li>[<a period='w=1' href='#week'>1 week</a>]</li>
+						<li>[<a period='MM=1440' href='#day'>1 day</a>]</li>
+						<li>[<a period='MM=360' href='#6hour'>6 hours</a>]</li>
+						<li>[<a period='MM=60'  href='#hour'>1 hour</a>]</li>
+						<li>[<a period='MM=15' href='#15min'>15 min</a>]</li>
+					</ul>
+				</div>
+                <div class='element-roll photo placeholder'>
+                    <ul class='photo-roll'>
+                    </ul>
+                </div>
+                <div id='json-response'>
+                    <ul>
+                    </ul>
+                </div>
+            </div>
+            <div id="footer">
+                <span style="font-size:0.8em;vertical-align:text-top;">&copy; 2008-2010 Snaphappi</span>
+                <a href="http://www.cakephp.org/" target="_blank"><img src="/img/cake.power.gif" alt="CakePHP: the rapid development php framework" border="0" /></a>
+            </div>
+        </div>
+    </body>
+</html>
