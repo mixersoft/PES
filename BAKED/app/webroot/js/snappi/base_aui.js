@@ -540,8 +540,15 @@
     			 * domready init
     			 */
     			Y.on('domready', function(){
-    				SNAPPI.AIR.Helpers.go();
-    				SNAPPI.AIR.UIHelper.listeners.ImportComplete();
+    				try {
+    					var detach = Y.on('snappi-air:markup-loaded', function(){
+							detach.detach();
+							SNAPPI.AIR.Helpers.go();
+    						SNAPPI.AIR.UIHelper.listeners.ImportComplete();
+    						SNAPPI.AIR.XhrHelper.checkUpdate();
+    					});
+    					SNAPPI.AIR.XhrHelper.getMarkup();
+    				} catch (e) {}
 	    		});
 		}
 		

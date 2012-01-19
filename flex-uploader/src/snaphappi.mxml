@@ -120,6 +120,7 @@
 				domParent.domWindow.htmlctrl = this;	// deprecate
 				// init API bridge, expose flex to javascript
 				domParent.domWindow.flexAPI_UI = Config.UI;
+				domParent.domWindow.flex_app_version = Config.version;
 				domParent.domWindow.flexAPI_Datasource = Config.Datasource;	
 				domParent.domWindow.flex_onYuiDomReady = onYuiDomReady;
 				domParent.domWindow.flex_setDropTarget = Config.UI.setDropTarget;
@@ -140,8 +141,8 @@
 			private function bootstrap_html(domParent:HTML, location:String = 'prod'):void {
 				switch (location) {
 					case 'prod':
-						Config.HOST = "dev2.snaphappi.com";
-						Config.HOST = "aws.snaphappi.com";
+						Config.HOST = "dev.snaphappi.com";
+//						Config.HOST = "aws.snaphappi.com";
 						break;
 					case 'dev':
 					default:				

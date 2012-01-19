@@ -857,6 +857,58 @@ LOG(postData);
 		}		
 		SNAPPI.io.get.call(this, url, callback);
 	}
+	/*
+	 * sign out, close session
+	 */
+	XhrHelper.checkUpdate = function(){
+		var url = '/snappi/uploader_version';
+		var callback = {
+			complete : function(id, o, args) {
+				var latest_version = o.responseText;
+				// flex_app_version set in snaphappi.mxml::init()
+// LOG('>>> uploader version check:  '+  latest_version +'=='+ flex_app_version);
+				if (o.status == 0) return;	// hack: not returning correct response
+								
+				var isCurrent = function(o, n) {
+					o = o.split('.');
+					n = n.split('.');
+					for (var i=0;i<n.length; i++){
+						try {
+// LOG('>>> uploader version check   :  '+  n[i] +'>'+ o[i]);							
+							if ((n[i]||0) > (o[i]||0)) return false;	
+						}
+						catch(e) {
+							return true;
+						}
+					}
+					return true;
+				}
+				if (isCurrent(flex_app_version, latest_version)) return;
+				// else
+				// show Dialog.alert with link to new version
+				try {
+					// show dialog-alert .upload-complete 
+		 			SNAPPI.Alert.load({
+	    				selector: '#markup .alert-newer-version',
+		    		});
+				} catch (e){}
+			}
+		}		
+		SNAPPI.io.get.call(this, url, callback);
+	}
+	
+	XhrHelper.getMarkup = function(){
+		var url = '/combo/markup/uploaderMarkup';
+		var callback = {
+			// complete : function(id, o, args) {	},
+			complete : function(id, o ,args) {
+				var markup = o.responseText;
+				_Y.one('#markup').setContent('').append(markup);
+				_Y.fire('snappi-air:markup-loaded');
+			}
+		}		
+		SNAPPI.io.get.call(this, url, callback);		
+	}
 	
 	/**
 	 * change a.href to openPage() to open in browser

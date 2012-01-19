@@ -229,17 +229,22 @@
 //		            		o.responseJson = _Y.JSON.parse(o.responseText);
 		            		o.responseJson = eval('('+o.responseText+')');
 		            	}
-	        			callback.complete.call(this, id, o, args);
+	        			if (callback.complete) return callback.complete.call(this, id, o, args);
+	        			else return true;
 	        		},
 	        		success: function(id, o, args) {
 	        			console.warn('io:success');
+	        			if (callback.success) return callback.success.call(this, id, o, args);
+	        			else return true;
 	        		},
                     failure: callback.failure ||
                     function(id, o, args){
-                        var check;
+                        console.warn('io:failure');
+	        			if (callback.failure) return callback.failure.call(this, id, o, args);
+	        			else return true;
                     }
                 },
-                timeout: 2000,
+                timeout: 3000,
                 context: this
             };
             if (args != undefined) 

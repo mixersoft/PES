@@ -28,6 +28,9 @@ $config['register'] = array(
 	'auth_on_success' => 1,
 );
 
+$config['desktop.uploader'] = array(
+	'version'=>'1.8.4'
+);
 
 /*
  * OS dependent config here

@@ -640,6 +640,7 @@ package api
 			if (name == 'register') url += "/users/register"; 
 			if (name == 'my-photos') url += "/my/photos";
 			if (name == 'my-home') url += "/my/home";
+			if (name == 'pages-downloads') url += "/pages/downloads";
 			if (name.indexOf('/groups/home/')===0) url += name; 
 			req = new URLRequest(url);
 			navigateToURL( req  );

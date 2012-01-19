@@ -1,9 +1,10 @@
 package api
 {
+	import flash.desktop.NativeApplication;
 	import flash.filesystem.File;
 	import flash.system.Capabilities;
+	
 	import mx.core.FlexGlobals;
-	import api.SqlHandler;
 
 	public class Config
 	{
@@ -25,9 +26,17 @@ package api
 					Config.OS = 'unix';
 					break;
 			}
+			Config.nativeApp = NativeApplication.nativeApplication;
+			Config.descriptor = Config.nativeApp.applicationDescriptor;
+			var ns:Namespace = Config.descriptor.namespace();
+			Config.version = Config.descriptor.ns::versionNumber
+			trace("Version " + descriptor.ns::versionNumber);
 		}
 		
 		// static reference to Uploader application, snaphappi.mxml
+		public static var nativeApp:NativeApplication; 
+		public static var descriptor:XML;
+		public static var version:String;
 		public static var Uploader:Object = FlexGlobals.topLevelApplication;
 		public static var sql:SqlHandler;
 		public static var logger:Logger = null;
