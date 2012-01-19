@@ -775,6 +775,7 @@ console.error("4) launchPagemaker(): snappi-pm:after-launch");
          */
         WindowOptionClick : function(node) {
         	node = node || _Y.one('.item-header');        	
+        	if (!node) return;
         	var action = 'WindowOptionClick';
         	node.listen = node.listen || {};
         	var delegate_container = node.one('.window-options');

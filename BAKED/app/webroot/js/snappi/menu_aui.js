@@ -1368,7 +1368,7 @@ console.error("PreviewPhoto delete is still incomplete");
 					if (target.ancestor('#lightbox')) {	// up for lightbox
 						this.set('align', { points:['bl', 'tl']})
 						this.enable();
-					} else if (target.hasClass('menu-open')) {
+					} else if (target.one('span.menu-open')) {
 						this.enable();
 						this.set('align', { points:['tl', 'bl']});	
 					} else this.disable();

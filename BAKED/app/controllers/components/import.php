@@ -132,7 +132,9 @@ $this->log(">> exif_Orientation={$exif['Orientation']}", LOG_DEBUG);
 		 * 	- HANDLED IN casting_call.php
 		 */
 		$previewExif = array_filter_keys($exif, array('imageWidth','imageHeight', 'isRGB', 'Orientation'));
-		if (!empty($options['autoRotate']) && $previewExif['Orientation'] > 4) {	// 6 or 8
+		if (!empty($options['autoRotate']) 
+			&& (empty($previewExif['Orientation']) || $previewExif['Orientation'] > 4)) // null, 6 or 8 
+		{	
 			// add this if exif[COMPUTED] is NOT autorotated
 			// manually change dimension because preview is auto-rotated
 //			$previewExif['imageWidth'] = $exif['imageHeight'];

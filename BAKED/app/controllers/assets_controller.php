@@ -816,7 +816,7 @@ debug("WARNING: This code path is not tested");
 
 	}
 	function delete ($id = null) {
-		$forceXHR = 0;
+		$forceXHR = setXHRDebug($this, 0);
 		if ($forceXHR) {
 			if (isset($this->params['url']['data'])) $this->data = $this->params['url']['data'];
 		}
@@ -854,7 +854,7 @@ debug("WARNING: This code path is not tested");
 						$gids_1 = $gids;
 					}
 // debug($gids_1);	
-					if (!empty($gids_1)) {		// unshare
+					if (!empty($gids_1[0])) {		// unshare
 						$resp1 = $this->__unshare($aid, $gids_1, true, true);
 						$retval = $retval && ($resp1['success'] && $resp1['success']!=='false');
 					}
