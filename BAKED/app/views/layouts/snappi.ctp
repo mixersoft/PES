@@ -37,9 +37,7 @@
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/style.1.css" />
 	<?php
 		echo $this->Html->meta('favicon.ico', '/img/favicon.ico', array('type' => 'icon') );
-		// echo $this->Html->css('cake.generic', null);
-		// echo $this->Html->css('snappi-aui-960');
-		// echo $this->Html->css('menu-skin');
+		echo $this->element('analytics');
 	?>
 </head>
 <body>

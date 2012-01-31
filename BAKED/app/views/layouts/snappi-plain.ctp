@@ -17,6 +17,7 @@
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/style.1.css" />
 	<?php
 		echo $this->Html->meta('favicon.ico', '/img/favicon.ico', array('type' => 'icon') );
+		echo $this->element('analytics');
 	?>
 </head>
 <body class='simple'>

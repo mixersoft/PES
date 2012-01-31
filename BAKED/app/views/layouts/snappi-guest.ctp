@@ -37,6 +37,7 @@
 	<?php
 		echo $this->Html->meta('favicon.ico', '/img/favicon.ico', array('type' => 'icon') );
 		$this->Layout->output($this->viewVars['HEAD_for_layout']);
+		echo $this->element('analytics');
 	?>
 </head>
 <body class='simple'>
