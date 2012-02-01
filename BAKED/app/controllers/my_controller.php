@@ -120,6 +120,7 @@ class MyController extends PersonController {
 		if (isset($profile['Profile']['privacy_assets'])) {
 			$data['Asset']['perms'] = $profile['Profile']['privacy_assets'];
 		}	
+// $this->log("MyController::__importPhoto, asset=".print_r($paData, true), LOG_DEBUG);			
 		$assetData = $this->Asset->addIfNew($data['Asset'], $paData['ProviderAccount'], $baseurl, $photoPath, $response);		
 // $this->log("MyController::__importPhoto, asset=".print_r($assetData, true), LOG_DEBUG);		
 		// move file to staging server 
@@ -173,11 +174,12 @@ class MyController extends PersonController {
 		$data = array();
 		$data['Asset']['id'] = null;
 		$data['Asset']['asset_hash'] = null;
-		$data['Asset']['json_exif'] = $meta['exif'];
-		$data['Asset']['iptc_exif'] = $meta['iptc'];
+		// $data['Asset']['json_exif'] = $meta['exif'];	// deprecate: moved to $Asset->addIfNew() 
+		// $data['Asset']['iptc_exif'] = $meta['iptc'];	// deprecate: moved to $Asset->addIfNew()
 		$data['Asset']['batchId'] = $BATCH_ID;
-		$data['Asset']['rel_path'] = '';
+		$data['Asset']['rel_path'] = basename($photoPath);
 		$data['ProviderAccount']['provider_name']=$PROVIDER_NAME;
+// $this->log($data['Asset'], LOG_DEBUG);		
 		/*
 		 * import into DB
 		 */

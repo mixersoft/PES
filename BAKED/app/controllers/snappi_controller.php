@@ -301,5 +301,31 @@ $this->log("version={$version}", LOG_DEBUG);
 		$this->set('plain', $version);
 		$this->render('/elements/plain');
 	}
+	
+	/*
+	 * use importComponent to read exif in debug mode
+	 */
+	function exif($id){
+		$this->autoRender = false;
+		$this->layout = 'plain';
+		
+		$data = ClassRegistry::init('Asset')->findById($id);
+		if (empty($data)) {
+			$path = "F:\Milan 2012\LesArc 2012 179.JPG";
+		} else {
+			$wwwroot = Configure::read('path.wwwroot');
+			$src = Stagehand::getSrc($data['Asset']['src_thumbnail'], '');
+			$path = $wwwroot.$src;
+		}
+debug($path);
+		$Import = loadComponent('Import', $this);
+		$meta = $Import->getMeta($path);
+		$data['Asset']['json_exif'] = json_decode($data['Asset']['json_exif'], true);
+		$data['Asset']['json_exif'] = $meta['exif'] + $data['Asset']['json_exif'];
+debug(getAssetHash($data['Asset'], $path));	
+
+		$this->set('plain', null);
+		$this->render('/elements/plain');
+	}
 }
 ?>

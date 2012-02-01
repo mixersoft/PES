@@ -459,7 +459,8 @@ class Asset extends AppModel {
 		 */
 
 		$file_relpath = cleanPath(substr($photoPath,strlen($baseurl)),'http');
-		$filename_no_counter = isset($asset['rel_path']) ? $asset['rel_path'] : $file_relpath;	
+		$filename_no_counter = preg_replace('/(.*)(~\d+)(\.jpg)/i','${1}${3}',$asset['rel_path']);	
+// $this->log('$filename_no_counter =>'.$filename_no_counter,LOG_DEBUG);		
 		$uuid = !empty($asset['id']) ? $asset['id'] : String::uuid();
 		$shardPath = $Import->shardKey($uuid, $uuid);
 		$src['orig']= cleanPath($providerAccount['baseurl'].DS.$asset['rel_path'], 'http');		// original relpath in the clear
@@ -471,19 +472,31 @@ class Asset extends AppModel {
 		 * get extended exif from asset
 		 */
 		if (empty($asset['json_exif'])) {
-			//  make an exif array to capture ORIGINAL dimensions
+			$meta = $Import->getMeta($photoPath);
+			$asset['json_exif'] = $meta['exif'];
+			$asset['json_iptc'] = $meta['iptc'];
+		} else {	
+			// json_exif from desktop-uploader
+			if (is_string($asset['json_exif'])) {	
+				// process json_exif from v1.8.3 snappi-uploader
+				$asset['json_exif'] = json_decode($asset['json_exif'], true);
+			} 
+			// process json_exif from v1.8.3 snappi-uploader
+			$options = array('filepath'=>$photoPath, 'autoRotate'=>1);
+			$exif = $Import->augmentExif($asset['json_exif'], $options);
+			$asset['json_exif'] = Set::merge($asset['json_exif'], $exif);
+		}
+		if (empty($asset['json_exif'])) {	
+			//  if exif STILL not available, make an exif array to capture ORIGINAL dimensions
 			$options['filepath'] = $photoPath;
 			$options['width'] = $asset['width'];
 			$options['height'] = $asset['height'];
-			$meta['exif'] = $Import->augmentExif(null, $options);
-		} else {
-			$options = array('filepath'=>$photoPath, 'autoRotate'=>1);
-			$exif = is_string($asset['json_exif']) ? json_decode($asset['json_exif'], true) : $asset['json_exif'] ;
-			$meta['exif'] = $Import->augmentExif($exif, $options);
+			$asset['json_exif'] = $Import->augmentExif(null, $options);
 		}
 
-		$asset_hash = getAssetHash($meta['exif'], $photoPath, $filename_no_counter );
-//$this->log("asset_hash={$asset_hash}", LOG_DEBUG);		
+		// add provider_account_id for generating asset_hash
+		$asset['provider_account_id'] = $providerAccount['id'];
+		$asset_hash = getAssetHash($asset, $photoPath, $filename_no_counter );
 		/*
 		 *  check if asset already exists, by asset.id OR asset_hash 
 		 */
@@ -518,32 +531,34 @@ class Asset extends AppModel {
 			'batchId' => $asset['batchId'],
 			'uploadId' => $timestamp,
 		);		
-		$asset = array(
+		$newAsset = array(
 			'id' => $uuid,
 			'provider_key' => $uuid,
 			'asset_hash' =>  $asset_hash,	
 			'json_src' => $src,
 			'src_thumbnail' => $src['thumb'],
-			'json_exif' => $meta['exif'],
-			'json_preview_exif' => $meta['exif']['preview'],
+			'json_exif' => $asset['json_exif'],
+			'json_preview_exif' => $asset['json_exif']['preview'],
 //			'json_iptc' => $meta['iptc'],
-			'dateTaken' => !empty($meta['exif']['DateTimeOriginal']) ? $meta['exif']['DateTimeOriginal'] : null,
-			'isFlash' => $meta['exif']['isFlash'],
-			'isRGB' => $meta['exif']['isRGB'],
+			'dateTaken' => !empty($asset['json_exif']['DateTimeOriginal']) ? $asset['json_exif']['DateTimeOriginal'] : null,
+			'isFlash' => $asset['json_exif']['isFlash'],
+			'isRGB' => $asset['json_exif']['isRGB'],
 		);
-		if (isset($meta['iptc']['Keyword'])) $asset['keyword']= $meta['iptc']['Keyword'];
-		if (isset($meta['iptc']['Caption'])) $asset['caption']= $meta['iptc']['Caption'];
+		if (isset($asset['json_iptc']['Keyword'])) $newAsset['keyword']= $asset['json_iptc']['Keyword'];
+		if (isset($asset['json_iptc']['Caption'])) $newAsset['caption']= $asset['json_iptc']['Caption'];
 		if (empty($asset['caption']))   {
-			$asset['caption'] = pathinfo($filename_no_counter, PATHINFO_FILENAME);
+			$newAsset['caption'] = pathinfo($filename_no_counter, PATHINFO_FILENAME);
 		}
 
 		/*
 		 * set default Asset perms from Profile
 		 *		override Plugin default set in Asset model
 		 */
-		pack_json_keys($asset);
-		$asset = array_merge($assetTemplate, $asset);
-		$data = array('Asset'=>$asset);
+		pack_json_keys($newAsset);		// from php_lib
+		$newAsset = array_merge($assetTemplate, $newAsset);
+		$data = array('Asset'=>$newAsset);
+$this->log("insert newAsset", LOG_DEBUG);		
+$this->log($newAsset, LOG_DEBUG);
 		/*
 		 * $asset is correct
 		 *************************************************************/

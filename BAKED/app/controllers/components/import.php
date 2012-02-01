@@ -8,17 +8,26 @@ class ImportComponent extends Object
 	public static $importpath; //  Configure::read('path.local.original.basepath');
 	public static $stagepath;
 	protected $shard;
-	
 
 	static $EXIF_FIELDS = array(
 		'ExifImageWidth',
 		'ExifImageLength', 
+		// 'PixelXDimension', 'PixelYDimension',		
 		'Orientation', 
 		'DateTimeOriginal', 
 		'Flash', 
 		'ColorSpace', 
 		'InterOperabilityIndex', 
 		'InterOperabilityVersion', 
+// extra fields
+		'Make', 'Model', 
+		'ISOSpeedRatings', 'FNumber',
+		'ExposureTime', 
+		'ImageUniqueID',
+		'ExifVersion',
+		'GPSVersion', 'GPSLatitudeRef', 'GPSLatitude', 'GPSLongitudeRef', 'GPSLongitude', 
+		'GPSDateStamp', 'GPSTimeStamp',
+		'GPSAreaInformation',
 	);
 
 	static $IPTC_FIELDS = array(
@@ -160,8 +169,11 @@ $this->log(">> exif_Orientation={$exif['Orientation']}", LOG_DEBUG);
 
 		// get EXIF data
 		$exif = @exif_read_data($path);
-		$data['exif'] = array_filter_keys($exif, ImportComponent::$EXIF_FIELDS);
-		$data['exif'] = $this->augmentExif($data['exif'], array('filepath'=>$path));
+		if (!empty($exif)) {
+			$data['exif'] = array_filter_keys($exif, ImportComponent::$EXIF_FIELDS);
+			$data['exif'] = $this->augmentExif($data['exif'], array('filepath'=>$path));
+		} 
+
 		
 //		if(!empty($exif))
 //		{

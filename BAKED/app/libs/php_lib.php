@@ -101,7 +101,7 @@ function pack_json_keys(& $arr) {
 	$keys = array_keys($arr);
 	foreach ($keys as $key) {
 		if (substr($key, 0, 5)==='json_'){
-			$arr[$key] = json_encode($arr[$key]);
+			if (!is_string($arr[$key])) $arr[$key] = json_encode($arr[$key]);
 		}
 	}
 }
@@ -376,12 +376,13 @@ class Stagehand {
 		return cleanPath($path_parts['dirname'].'/'.$asset_basename, 'http'); //only forward-slash
 	}
 	/**
+	 * @params prefix String, use '' to strip prefix
 	 * @params badgeType String [person, group, event, wedding];
 	 */
 	public static function getSrc($relpath, $prefix = null, $badgeType = null) {
 		if ($badgeType && empty($relpath)) {
 			return Stagehand::$default_badges[$badgeType];
-		} else if ($prefix) {
+		} else if ($prefix!==null) {
 			$relpath = Stagehand::getImageSrcBySize($relpath, $prefix);
 		}
 		return Stagehand::$stage_baseurl.$relpath;
@@ -466,22 +467,72 @@ FROM snappi_air:src/api/ImageScanner.as
  * @params filepath - filepath on server
  * @params filename string - original filename (in case index added to filepath on duplicate)
  * 
- * NOTE: does this method have to be the same as the one used in AIR desktop loader????
+ * NOTE: use SAME implementation as AIR Desktop Uploader: ImageScanner.getAssetHash()
  */ 
-function getAssetHash($exif, $filepath,  $filename=null ){
-	$string = $filename ? pathinfo($filename, PATHINFO_FILENAME ) : pathinfo($filepath, PATHINFO_FILENAME );
-	if (is_array($exif)) {
+function getAssetHash($asset, $filepath,  $filename=null ){
+	// $string = $filename ? pathinfo($filename, PATHINFO_FILENAME ) : pathinfo($filepath, PATHINFO_FILENAME );
+	$string = $asset['provider_account_id'];
+	
+	// get $filename_no_counter
+	if ($filename) {
+		// skip
+	} else if (isset($asset['rel_path'])) {
+		$filename = basename($asset['rel_path']);		// from desktop-uploader
+	} else if (isset($asset['json_src'])) {
+		// $src['orig']= cleanPath($providerAccount['baseurl'].DS.$asset['rel_path'], 'http');
+		$src = json_decode($asset['json_src'], true);	// from db
+		$filename = basename($src['orig']);
+	} else {
+		$filename = $asset['caption'];
+	}
+	$filename_no_counter = preg_replace('/(.*)(~\d+)(\.jpg)/i','${1}${3}',$filename);
+	$string .= $filename_no_counter;
+	
+	
+	$json_exif = is_string($asset['json_exif']) ? json_decode($asset['json_exif'], true) : $asset['json_exif'];
+// debug($json_exif);	
+	if (is_array($json_exif)) {
 		// make assetHash from exif data
-		$keys = array('DateTimeOriginal', 'Make', 'Model', 'ExposureTime', 'ShutterSpeedValue', 'ApertureValue');
+		$keys = array(
+			'DateTimeOriginal', 
+			'Make', 
+			'Model', 
+			'ISOSpeedRatings',
+			'FNumber',
+			'ExposureTime', 
+			'ImageUniqueID',
+			'GPSLongitude',
+		);
+		// $data['exif'] = array_filter_keys($exif, ImportComponent::$EXIF_FIELDS);
+		$json_exif = array_filter_keys($json_exif, $keys);
+// debug($json_exif);		
 		foreach ($keys as $key) {
-			$string .= !empty($exif[$key]) ? $exif[$key] : '';
+			if (isset($json_exif[$key])) $string .= serialize_exif($json_exif[$key]);
+			else $string .= '~';
 		}
 	} else {
-		// TODO: assetHash(): this is the time on server, not initial upload. 
 		$string .= date("Y-m-d H:i:s", filectime($filepath));	
 		$string .= filesize($filepath);
 	}
+// debug($string);	
+AppController::log("php_lib::getAssetHash() UUID={$asset['id']}", LOG_DEBUG);
+AppController::log("raw asset_hash={$string}", LOG_DEBUG);
+AppController::log("asset_hash=".md5($string, false), LOG_DEBUG);
 	return md5($string, false);
+}
+
+function serialize_exif($value = null) {
+	if (is_array($value)) {
+		$s = '';
+		foreach ($value as $k=>$v) {
+			$s .= serialize_exif($v);
+		}
+	} else if (preg_match('/(\d*)\/(\d*)/', $value, $matches)) { 
+		$s = $matches[1]/$matches[2];
+	} else if ($value === null) {
+		$s = '~';
+	} else $s = $value;
+	return $s;
 }
 
 /**

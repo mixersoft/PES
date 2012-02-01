@@ -5,8 +5,10 @@ package api
 	
 	import com.adobe.crypto.MD5;
 	import com.adobe.serialization.json.JSON;
-	import com.gnstudio.nabiro.utilities.exif.Exif;
-	import com.gnstudio.nabiro.utilities.exif.IFD;
+	
+//	import com.gnstudio.nabiro.utilities.exif.Exif;
+//	import com.gnstudio.nabiro.utilities.exif.IFD;
+	import jp.shichiseki.exif.*
 	
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
@@ -42,6 +44,23 @@ package api
 		 * getAssetHash
 		 *	- create a unique asset_hash to allow duplicate photo detection 
 		 *  - check uniqueness across local desktop only 
+		 * 
+		 * NOTE: use SAME implementation as php_lib: getAssetHash()
+		 * PHP exif_read_data() 		<-> extractExifInfo_shichiseki()
+		 * [ExposureTime] => 10/600   	<->	0.016666666666666666
+		 * [FNumber] => 33/10			<->	3.3
+		 * [GPSLongitude] => Array		<->	45,34,17.19
+                (
+                    [0] => 45/1
+                    [1] => 34/1
+                    [2] => 1719/100
+                )
+		 * [GPSLongitude] => Array		<->	6,46,43.92
+                (
+                    [0] => 6/1
+                    [1] => 46/1
+                    [2] => 4392/100
+                )
 		 */
 		public function getAssetHash(f:File,json_exif:Object):String{
 			//if datetimeOriginal = null or exif is null, then
@@ -55,9 +74,11 @@ package api
 			 * 		+ json_exif.DateTimeOriginal 
 			 * 			+ json_exif.Make
 			 * 			+ json_exif.Model
+			 * 			+ json_exif.ISOSpeedRatings
 			 * 			+ json_exif.ExposureTime
-			 * 			+ json_exif.ShutterSpeedValue
-			 * 			+ json_exif.ApertureValue
+			 * 			+ json_exif.FNumber
+			 * 			+ json_exif.ImageUniqueID
+			 * 			+ json_exif.Latitude
 			 * OR
 			 * 		+ f.creationDate 
 			 * 			+ file size
@@ -68,16 +89,41 @@ package api
 				asset_hash += f.size;
 			}else{
 				//Installed desktop's uuid, datetimeOriginal,  Make, Model,  ExposureTime or null,  shutterSpeedValue or null, ApertureValue or null
-				asset_hash += json_exif.DateTimeOriginal +
-					(json_exif.Make || '') + 
-					(json_exif.Model || '') + 
-					(json_exif.ExposureTime || '')+ 
-					(json_exif.ShutterSpeedValue || '') + 
-					(json_exif.ApertureValue || '');
+				var keys:Array = [
+					'DateTimeOriginal', 
+					'Make', 
+					'Model', 
+					'ISOSpeedRatings',
+					'FNumber',
+					'ExposureTime', 
+					'ImageUniqueID',
+					'GPSLongitude',
+				];
+				for (var i:String in keys){
+					if (json_exif.hasOwnProperty(keys[i])) {
+						asset_hash += this.serialize_exif(json_exif[keys[i]]);
+					} else asset_hash += '~';
+				}
 			}
-			
+trace(asset_hash);
 			return applyMd5(asset_hash);
 		}
+		public function serialize_exif(value:Object=null):String {
+			if (typeof(value)=='object' && value!==null) {
+				var s:String = '';
+				for (var i:String in value) {
+					s += serialize_exif(value[i]);
+				}
+//			} else if (var matches:Array = value.match(/(\n*)\/(\n*)/g)) {
+//				s = (matches[0]/matches[1]).toString();
+			} else if (!value && value !== 0) {
+				s = '~';
+			} else if (typeof(value)=='number') {
+				s = value.toString().substr(0,17);
+			} else s = value.toString();
+			return s;
+		}
+		
 		public function applyMd5(source:String):String{
 			return MD5.hash(source);
 		}		
@@ -368,35 +414,67 @@ package api
 				return;
 			}			
 			if(this.supported_pics.test('.'+f.extension)){
-				// using closures
 				var self:ImageScanner = this;
-				var onParsingErrors:Function = function (e:Event):void{
-					var exif:Exif = (e.target as Exif);
-					exif.removeEventListener(Exif.PARSE_FAILED, onParsingErrors);
-					// TODO: shouldn't we import photo EVEN IF THERE IS NO EXIF? when does PARSE_FAILED fire?
-					Config.logger.writeLog("Error", '-onExifParsingErrors');
-					self.importFilesThenFolders(filesThenFolders, null, fnComplete);
-				}
-				var onExifDataReady:Function = function (e:Event):void{
-					var exif:Exif = (e.target as Exif);
-					exif.removeEventListener(Exif.DATA_READY, onExifDataReady);
-					// get json_exif, then save to DB
-					var json_exif:Object = ImageScanner.extractExifInfo(exif);
-					try {
-						self.saveImageInfoToDB(f, json_exif);
-					} catch (e:Error) {
-						// cancelImport
+				if (1) {
+					var loader:ExifLoader = new ExifLoader();
+					// shichiseki Exif parser
+					var onComplete_ExifLoader:Function = function (e:Event):void {
+//						var displayIFD:Function = function (ifd:IFD):void {
+//							trace(" --- " + ifd.level + " --- ");
+//							for (var entry:String in ifd) {
+//								trace(entry + ": " + ifd[entry]);
+//							}
+//						}						
+//						if (loader.exif.ifds.primary)
+//							displayIFD(loader.exif.ifds.primary);
+//						if (loader.exif.ifds.exif)
+//							displayIFD(loader.exif.ifds.exif);
+//						if (loader.exif.ifds.gps)
+//							displayIFD(loader.exif.ifds.gps);
+//						if (loader.exif.ifds.interoperability)
+//							displayIFD(loader.exif.ifds.interoperability);
+						
+						var json_exif:Object = ImageScanner.extractExifInfo_shichiseki(loader.exif);
+						try {
+							self.saveImageInfoToDB(f, json_exif);
+						} catch (e:Error) {
+							// cancelImport
+						}
+						self.importFilesThenFolders(filesThenFolders, null, fnComplete); // put on timer?
 					}
-					self.importFilesThenFolders(filesThenFolders, null, fnComplete); // put on timer?
-				}
-				var exif:Exif = new Exif();
-				exif.addEventListener(Exif.PARSE_FAILED, onParsingErrors);
-				exif.addEventListener(Exif.DATA_READY, onExifDataReady);
-				try {
-					exif.load(new URLRequest(f.url));
-				} catch (e:Error){
-					Config.logger.writeLog("Error", '-saveImagesErrors');
-				}
+					
+					loader.addEventListener(Event.COMPLETE, onComplete_ExifLoader);
+					loader.load(new URLRequest(f.url));
+				} else {
+					// nabiro Exif parser
+//					var onParsingErrors:Function = function (e:Event):void{
+//						var exif:Exif = (e.target as Exif);
+//						exif.removeEventListener(Exif.PARSE_FAILED, onParsingErrors);
+//						// TODO: shouldn't we import photo EVEN IF THERE IS NO EXIF? when does PARSE_FAILED fire?
+//						Config.logger.writeLog("Error", '-onExifParsingErrors');
+//						self.importFilesThenFolders(filesThenFolders, null, fnComplete);
+//					}
+//					var onExifDataReady:Function = function (e:Event):void{
+//						var exif:Exif = (e.target as Exif);
+//						exif.removeEventListener(Exif.DATA_READY, onExifDataReady);
+//						// get json_exif, then save to DB
+//						var json_exif:Object = ImageScanner.extractExifInfo_nabiro(exif);
+//						try {
+//							self.saveImageInfoToDB(f, json_exif);
+//						} catch (e:Error) {
+//							// cancelImport
+//						}
+//						self.importFilesThenFolders(filesThenFolders, null, fnComplete); // put on timer?
+//					}
+//					var exif:Exif = new Exif();
+//					exif.addEventListener(Exif.PARSE_FAILED, onParsingErrors);
+//					exif.addEventListener(Exif.DATA_READY, onExifDataReady);
+//					try {
+//						exif.load(new URLRequest(f.url));
+//					} catch (e:Error){
+//						Config.logger.writeLog("Error", '-saveImagesErrors');
+//					}
+				}				
 			}else{
 				// unsupported filetype
 				this.importFilesThenFolders(filesThenFolders, null, fnComplete);
@@ -442,46 +520,99 @@ package api
 			}
 			return is2update;	
 		}
-
-		private static var extractExifInfo:Function = function (exif:Exif):Object{
+		
+		/*
+		* uses jp.shichiseki.exif.* lib
+		*/
+		private static var extractExifInfo_shichiseki:Function = function (exif:Object):Object{
 			var json_exif:Object = {
-				ExifImageWidth : '',
-				ExifImageLength: '',
+				ExifImageWidth : '',		// PixelXDimension
+				ExifImageLength: '',		// PixelYDimension
 				Orientation: '',
 				DateTimeOriginal: '',
+				Make: '',
+				Model: '',
+				ISOSpeedRatings: '',
+				FNumber: '',
+				ExposureTime: '',
+				ImageUniqueID: '',
+				GPSLongitude: '',
 				Flash: '',
 				ColorSpace: '',
 				InterOperabilityIndex: '',
 				InterOperabilityVersion: '',
+				
 				xfaltuIsNull : true
 			};
 			try{
-				var ifds:Array = exif.availableIFDs;
-				var limit:int = ifds.length;
-				var tagObjects:Array = [];
-				for(var i:int = 0; i < limit; i++){
-					var tags:Array = (ifds[i] as IFD).entries;
-					var tagsCount:int = tags.length;
-					for(var k:int = 0; k < tagsCount; k++){
-						if (tags[k].name =='MakerNote') continue;	// skip
-						if (tags[k].name =='PrintMode') continue;	// skip
-						var value:* = tags[k].rawValue;
-						if(typeof(value)=='string'){
-							var str:String = (value as String);
-							value = (str.charAt(str.length-1)<' ')?str.substr(0,str.length-1):str;
-						}
-						json_exif[tags[k].name] = value;
-						json_exif.xfaltuIsNull = false; //if any value then not is null
-					}
-				}			
+				json_exif.Orientation = exif.ifds.primary.Orientation;
+				json_exif.Make = exif.ifds.primary.Make;
+				json_exif.Model = exif.ifds.primary.Model;
+				json_exif.xfaltuIsNull = false;
+				if (exif.ifds.exif) {
+					json_exif.ExifImageWidth = exif.ifds.exif.PixelXDimension;
+					json_exif.ExifImageLength = exif.ifds.exif.PixelYDimension;
+					json_exif.DateTimeOriginal = exif.ifds.exif.DateTimeOriginal;
+					json_exif.ISOSpeedRatings = exif.ifds.exif.ISOSpeedRatings;
+					json_exif.FNumber = exif.ifds.exif.FNumber;
+					json_exif.ExposureTime = exif.ifds.exif.ExposureTime;
+					json_exif.ImageUniqueID = exif.ifds.exif.ImageUniqueID;
+					json_exif.Flash = exif.ifds.exif.Flash;
+					json_exif.ColorSpace = exif.ifds.exif.ColorSpace;
+				}
+				if (exif.ifds.gps) {
+					json_exif.GPSLongitude = exif.ifds.gps.GPSLongitude;
+				}
+//				json_exif.InterOperabilityVersion = exif.ifds.exif.interoperability;
 			}catch(e:Error){
-				Config.logger.writeLog("Error",e.message + '-extractExifInfo');
+				Config.logger.writeLog("Error",e.message + '-extractExifInfo_shichiseki');
 			}
 			return json_exif;
 		}
+			
+		/*
+		 * uses com.gnstudio.nabiro.utilities.exif.*
+		 */
+//		private static var extractExifInfo_nabiro:Function = function (exif:Exif):Object{
+//			var json_exif:Object = {
+//				ExifImageWidth : '',
+//				ExifImageLength: '',
+//				Orientation: '',
+//				DateTimeOriginal: '',
+//				Flash: '',
+//				ColorSpace: '',
+//				InterOperabilityIndex: '',
+//				InterOperabilityVersion: '',
+//				xfaltuIsNull : true
+//			};
+//			try{
+//				var ifds:Array = exif.availableIFDs;
+//				var limit:int = ifds.length;
+//				var tagObjects:Array = [];
+//				for(var i:int = 0; i < limit; i++){
+//					var tags:Array = (ifds[i] as IFD).entries;
+//					var tagsCount:int = tags.length;
+//					for(var k:int = 0; k < tagsCount; k++){
+//						if (tags[k].name =='MakerNote') continue;	// skip
+//						if (tags[k].name =='PrintMode') continue;	// skip
+//						var value:* = tags[k].rawValue;
+//						if(typeof(value)=='string'){
+//							var str:String = (value as String);
+//							value = (str.charAt(str.length-1)<' ')?str.substr(0,str.length-1):str;
+//						}
+//						json_exif[tags[k].name] = value;
+//						json_exif.xfaltuIsNull = false; //if any value then not is null
+//					}
+//				}			
+//			}catch(e:Error){
+//				Config.logger.writeLog("Error",e.message + '-extractExifInfo_nabiro');
+//			}
+//			return json_exif;
+//		}
 		private function saveImageInfoToDB(f:File, json_exif:Object):void{
 			//get current image file
-//			var f:File = this.fileOrFolders[this.fileOrFolderIndex];
+
+			//			var f:File = this.fileOrFolders[this.fileOrFolderIndex];
 			var rel_path:String = f.nativePath.replace(this.curr_baseurl + File.separator,'');
 			var width:String =  json_exif.ExifImageWidth;	
 			var height:String = json_exif.ExifImageLength;
