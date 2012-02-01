@@ -88,7 +88,7 @@
 	            replace: false,
 	            callback: {
 	                success: function(src, args){	
-	//        			LOG(">>>>>>>>>>>>>> SUCCESS src=" + src);
+	        			// LOG(">>>>>>>>>>>>>>getImgSrcBySize SUCCESS src=" + src);
 	        			args.img.set('src', src);
 	                },
 	                failure: function(src){

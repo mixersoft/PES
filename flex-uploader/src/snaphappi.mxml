@@ -93,7 +93,7 @@
 			private function init():void{
 				Config.init();
 				MagickUtils.init();
-				var MODE:String = 'prod';	// dev2.snaphappi.com
+				var MODE:String = 'prod';	// dev.snaphappi.com
 //				MODE = 'dev';				// git.3:88
 				// see: bootstrap_html() for actual host values
 				

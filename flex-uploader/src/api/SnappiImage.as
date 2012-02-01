@@ -193,7 +193,7 @@ package api
 						Config.logger.writeLog("Error", errorMsg + '-IM-resizeOrRotateImage');
 					} else {
 						// exit 0
-						callback.success.call(context, dest, args);	
+						callback.success.call(context, dest.url, args);	
 					}
 				}
 					

@@ -6,18 +6,17 @@ package api
 	import com.adobe.crypto.MD5;
 	import com.adobe.serialization.json.JSON;
 	
-//	import com.gnstudio.nabiro.utilities.exif.Exif;
-//	import com.gnstudio.nabiro.utilities.exif.IFD;
-	import jp.shichiseki.exif.*
-	
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.Loader;
 	import flash.events.Event;
+	import flash.events.IOErrorEvent;
 	import flash.filesystem.File;
 	import flash.net.URLRequest;
 	import flash.utils.clearTimeout;
 	import flash.utils.setTimeout;
+	
+	import jp.shichiseki.exif.*;
 	
 	import mx.utils.StringUtil;
 	/*
@@ -34,6 +33,7 @@ package api
 		private var cb:Function;
 		private var scope:Object;
 		private var params:Object;
+		private var exifLoader:ExifLoader;
 		public var newImages:int = 0;
 		public var updatedImages:int = 0;
 		public var existingImages:int = 0;
@@ -105,7 +105,7 @@ package api
 					} else asset_hash += '~';
 				}
 			}
-trace(asset_hash);
+//trace(asset_hash);
 			return applyMd5(asset_hash);
 		}
 		public function serialize_exif(value:Object=null):String {
@@ -235,6 +235,7 @@ trace(asset_hash);
 		}		
 		// for topLevel, queued folders only
 		public function doScan():void{
+//Config.jsGlobal.firebugLog("doScan");			
 			clearTimeout(this.scanTimer);
 			if(this.queuedFolderIndex<this.queuedFolders.length){
 				var folder:File = this.queuedFolders[this.queuedFolderIndex];
@@ -365,6 +366,7 @@ trace(asset_hash);
 		
 		// scan files in this.fileOrFolders, should be sorted Files first, then Folders, see prepareFolder()
 		private function importFilesThenFolders(filesThenFolders:Array, parent:File, fnComplete:Function):void{
+//Config.jsGlobal.firebugLog("importFilesThenFolders");			
 			if (parent) {
 				clearTimeout(ImageScanner.timers[parent.nativePath]);
 				delete ImageScanner.timers[parent.nativePath];
@@ -381,6 +383,7 @@ trace(asset_hash);
 			
 			var fileOrFolder:File = filesThenFolders.shift();
 			if (filesThenFolders.length % 10 == 0) {
+//Config.jsGlobal.firebugLog("importFilesThenFolders >>> logImportProgress");				
 				Config.UI.logImportProgress();
 				// TODO: fire event to import into uploadQueue, 
 				// but what about batchId????
@@ -391,7 +394,7 @@ trace(asset_hash);
 			} if ( fileOrFolder.isDirectory == false){
 				// import this photo
 				this.scannedImages++;
-				ImageScanner.timers[fileOrFolder.nativePath] = setTimeout(this.saveImages,100, fileOrFolder, filesThenFolders, fnComplete);
+				ImageScanner.timers[fileOrFolder.nativePath] = setTimeout(this.saveImages,10, fileOrFolder, filesThenFolders, fnComplete);
 			} else {
 				// after all files have been imported, process folders, isCounting==false
 				var self:ImageScanner = this;
@@ -405,6 +408,7 @@ trace(asset_hash);
 		}		
 		
 		public function saveImages(f:File, filesThenFolders:Array, fnComplete:Function):void{
+//Config.jsGlobal.firebugLog("saveImages:"+f.nativePath);			
 			if (f) {
 				clearTimeout(ImageScanner.timers[f.nativePath]);
 				delete ImageScanner.timers[f.nativePath];
@@ -416,35 +420,52 @@ trace(asset_hash);
 			if(this.supported_pics.test('.'+f.extension)){
 				var self:ImageScanner = this;
 				if (1) {
-					var loader:ExifLoader = new ExifLoader();
+					if (!this.exifLoader) {
+						this.exifLoader = new ExifLoader();
+					}
+					var exifLoader:ExifLoader = this.exifLoader;	// closure
 					// shichiseki Exif parser
 					var onComplete_ExifLoader:Function = function (e:Event):void {
-//						var displayIFD:Function = function (ifd:IFD):void {
-//							trace(" --- " + ifd.level + " --- ");
-//							for (var entry:String in ifd) {
-//								trace(entry + ": " + ifd[entry]);
-//							}
-//						}						
-//						if (loader.exif.ifds.primary)
-//							displayIFD(loader.exif.ifds.primary);
-//						if (loader.exif.ifds.exif)
-//							displayIFD(loader.exif.ifds.exif);
-//						if (loader.exif.ifds.gps)
-//							displayIFD(loader.exif.ifds.gps);
-//						if (loader.exif.ifds.interoperability)
-//							displayIFD(loader.exif.ifds.interoperability);
-						
-						var json_exif:Object = ImageScanner.extractExifInfo_shichiseki(loader.exif);
+						exifLoader.removeEventListener(Event.COMPLETE, onComplete_ExifLoader);
+						exifLoader.removeEventListener(IOErrorEvent.IO_ERROR, onParsingErrors);
+						var json_exif:Object = ImageScanner.extractExifInfo_shichiseki(exifLoader.exif);
 						try {
 							self.saveImageInfoToDB(f, json_exif);
 						} catch (e:Error) {
-							// cancelImport
+//							var displayIFD:Function = function (ifd:IFD):void {
+//								trace(" --- " + ifd.level + " --- ");
+//								for (var entry:String in ifd) {
+//									trace(entry + ": " + ifd[entry]);
+//								}
+//							}	
+//							 log exif
+//							if (exifLoader.exif.ifds.primary)
+//								displayIFD(exifLoader.exif.ifds.primary);
+//							if (exifLoader.exif.ifds.exif)
+//								displayIFD(exifLoader.exif.ifds.exif);
+//							if (exifLoader.exif.ifds.gps)
+//								displayIFD(exifLoader.exif.ifds.gps);
+//							if (exifLoader.exif.ifds.interoperability)
+//								displayIFD(exifLoader.exif.ifds.interoperability);								
 						}
 						self.importFilesThenFolders(filesThenFolders, null, fnComplete); // put on timer?
 					}
+					var onParsingErrors:Function = function (e:Event):void{
+						exifLoader.removeEventListener(Event.COMPLETE, onComplete_ExifLoader);
+						exifLoader.removeEventListener(IOErrorEvent.IO_ERROR, onParsingErrors);
+Config.jsGlobal.firebugLog("saveImages.IOErrorEvent:"+e.toString());								
+						Config.logger.writeLog("Error", '-onExifParsingErrors_shichiseki');
+						self.importFilesThenFolders(filesThenFolders, null, fnComplete);
+					}	
 					
-					loader.addEventListener(Event.COMPLETE, onComplete_ExifLoader);
-					loader.load(new URLRequest(f.url));
+					this.exifLoader.addEventListener(IOErrorEvent.IO_ERROR, onParsingErrors);
+					this.exifLoader.addEventListener(Event.COMPLETE, onComplete_ExifLoader);
+					
+					try {
+						this.exifLoader.load(new URLRequest(f.url));
+					} catch (e:Error) {
+						var check:String;
+					}					
 				} else {
 					// nabiro Exif parser
 //					var onParsingErrors:Function = function (e:Event):void{
@@ -563,7 +584,11 @@ trace(asset_hash);
 				if (exif.ifds.gps) {
 					json_exif.GPSLongitude = exif.ifds.gps.GPSLongitude;
 				}
-//				json_exif.InterOperabilityVersion = exif.ifds.exif.interoperability;
+//				json_exif.InterOperabilityVersion = exif.ifds.interoperability.unknown;
+				if (exif.ifds.interoperability){
+					json_exif.InterOperabilityVersion = exif.ifds.interoperability.UnknownTag_0x2;
+					json_exif.InterOperabilityIndex = exif.ifds.interoperability.InterOperabilityIndex;
+				}
 			}catch(e:Error){
 				Config.logger.writeLog("Error",e.message + '-extractExifInfo_shichiseki');
 			}

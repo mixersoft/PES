@@ -296,6 +296,7 @@ package api
 		
 		
 		public function getImportProgress(flag:String=''):Object{
+//Config.jsGlobal.firebugLog("getImportProgress");			
 			var ret:Object;
 			try{
 				var scanner:Object = this.photoScanner;
@@ -320,6 +321,7 @@ package api
 		}	
 		
 		public function logImportProgress(flag:String=''):void {
+//Config.jsGlobal.firebugLog("logImportProgress");			
 			var progress:Object = Config.UI.getImportProgress();
 			var output:String = '';
 			output += "Scanning Photos: Total="+progress.total;
@@ -328,6 +330,7 @@ package api
 			output += ", updated="+progress.updated;
 			output += ", existing="+progress.existing;
 			Config.jsGlobal.firebugLog(output);
+//trace(output);			
 			try {
 				Config.jsUploadQueue.view_setImportTotalProgress();
 			} catch (e:Error) {
@@ -463,8 +466,11 @@ package api
 			}
 			return arr;
 		}
-		
+		/*
+		 * FileProgress.js constructor -> api_bridge.js/SNAPPI.DATASOURCE -> UploaderUI.as
+		 */
 		public function getImgSrcBySize(id:String,size:String,options:Object):String{
+//Config.jsGlobal.firebugLog("UploaderUI.as:getImgSrcBySize(), id="+id);				
 			var f:File = SnappiImage.getImgSrcBySize(id, size, options);
 			return f ? f.url: null;
 		}
