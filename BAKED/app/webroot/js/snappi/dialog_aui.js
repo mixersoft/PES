@@ -71,7 +71,7 @@
 		return detach;
 	}
 	Dialog.listen_close = function(d) {
-		var detach = d.get('closeChange', function(e){
+		var detach = d.on('closeChange', function(e){
 			for (var i in this.listen) {
 				this.listen[i].detach();
 			}

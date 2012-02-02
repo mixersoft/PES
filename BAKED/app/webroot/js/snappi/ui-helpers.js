@@ -318,6 +318,7 @@
     			var d = SNAPPI.Dialog.find['dialog-alert'];
     			var header = stage.one('.stage-header');
     			var header_h = header ? header.get('clientHeight') : 0;
+    			var body_border = 20;	// margin: 10px 0 on node
     			var offset_top = 6 + 29 + 12    + 10;
     			var h = Math.min(node.get('clientHeight'), MAX_HEIGHT);
     			if (h < MAX_HEIGHT) {
@@ -326,7 +327,7 @@
     				stage.setStyle('overflowY', 'auto');
     			}
     			stage.setStyle('height', 'auto');
-    			d.set('height', h + header_h + offset_top);
+    			d.set('height', h + body_border + header_h + offset_top);
     			SNAPPI.setPageLoading(false);
     		})
     		

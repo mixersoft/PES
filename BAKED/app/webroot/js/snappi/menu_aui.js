@@ -1180,7 +1180,7 @@ console.error("PreviewPhoto delete is still incomplete");
 		var CSS_ID = 'menu-header-markup';
 		var TRIGGER = '#userAccountBtn';
 		var XHR_URI = '/combo/markup/headerMenu'; 
-		return _load_Single_Trigger_Menu(CSS_ID, TRIGGER, cfg);
+		return _load_Single_Trigger_Menu(CSS_ID, TRIGGER, XHR_URI, cfg);
 	};	
 	/**
 	 * load user Create menu

@@ -38,6 +38,7 @@
     var PageMakerPlugin = function(external_Y){
     	if (PageMakerPlugin.instance) return PageMakerPlugin.instance;	// singleton
     	this.external_Y = external_Y;
+    	this.listen = {};
     	PageMakerPlugin.instance = this;
     }
     SNAPPI.PM.PageMakerPlugin = PageMakerPlugin;
@@ -59,10 +60,33 @@
     			FOOTER_H: 20,
     			Y: Plugin.external_Y,
     		});
+    		
+    		/*
+	    	 * start toolbar edit
+	    	 */
+	    	PM.Menu.initMenus({
+	    		'menu-pm-toolbar-edit': 1
+	    	});
+	    	
     	} else {
     		Plugin.player.setStage(Plugin.stage, Plugin.stage.body);
+    		var detach = _Y.on('snappi-pm:render', function(P, node){
+    			detach.detach();
+    			var m = PM.Menu.find['menu-pm-toolbar-edit'];
+	    		// m.set('currentNode', node.get('parentNode'));
+	    		m.refreshAlign();
+	    		m.show();
+    		})
     	}
     	Plugin.player.init();
+    	// if (!Plugin.listen['toolbar_edit']) {
+    		// Plugin.listen['toolbar_edit'] = _Y.on('snappi-pm:render', function(P, node){
+    			// PM.Menu.init({
+    				// 'menu-pm-toolbar-edit': 1
+    			// });
+    		// })
+    	// }
+    	
     };
     
     
@@ -117,7 +141,7 @@
 				'snappi-pm-datasource3','snappi-pm-casting','snappi-pm-audition',
 	    		'snappi-pm-arrangement','snappi-pm-role','snappi-pm-production',
 	    		'snappi-pm-tryout','snappi-pm-performance3',
-	    		'snappi-pm-play',
+	    		'snappi-pm-play', 'snappi-pm-menu', 'snappi-pm-dialog',
 	    		'snappi-io', 'snappi-auditions'
 			];
 	
@@ -632,6 +656,14 @@
 			    'snappi-pm-performance3': {
 			        path: 'create/performance3.js',
 			        requires: ['node','snappi-pm-tryout','snappi-pm-node3']
+			    },
+			    'snappi-pm-dialog': {
+			        path: 'create/dialog.js',
+			        requires:['node', 'aui-skin-classic-all', 'aui-aria', 'aui-dialog', 'aui-overlay-manager', 'dd-constrain']
+			    },
+			    'snappi-pm-menu': {
+			        path: 'create/menu.js',
+			        requires:['event-mouseenter', 'aui-io', 'aui-aria', 'aui-overlay-context', 'aui-overlay-manager']
 			    },
 			    'snappi-pm-play': {
 			        path: 'play/pageGallery.js',
