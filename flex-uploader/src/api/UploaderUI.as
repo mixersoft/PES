@@ -250,11 +250,22 @@ package api
 		
 		
 		/**
-		* Callback function, execute after finish of scanfolders queue, but before callback.success
-		*	- on complete, start the updateServerUrl() queue ??? 
-		* */
+		 * Callback function, execute after finish of scanfolders queue, but before callback.success
+		 *	- on complete, start the updateServerUrl() queue ??? 
+		 *  - resp = {success:, message:, response:{
+		 * 				folders: Array of File, array of scanned folders 
+		 * 				count: total count
+		 * 			}
+		 * 	- listener in UIHelper.js: ImportComplete()
+		 */
 		public function onScanFoldersComplete(resp:Object, params:Object=null):void{
 			this.photoScanner.isScanning = false;
+			// convert array of File to array of String, scanned folder paths for JS
+			var folderpaths:Array = new Array();
+			for (var i:int=0; i< resp.response.folders.length; i++){
+				folderpaths.push(resp.response.folders[i].nativePath);
+			}
+			resp.response.folderpaths = folderpaths;
 			try {
 				Config.jsGlobal.SNAPPI.Y.fire('snappi-air:import-complete', resp.response);
 			} catch (e:Error) {
@@ -274,8 +285,7 @@ package api
 			if(!scanner.isScanning){
 				// NOTE: should we still queue callback.success when the scanner is ALREADY scanning????
 				var _callbackWrapper:Function = function(resp:Object, params:Object):void{
-					params.count = scanner.totalCount[params.baseurl];
-					this.onScanFoldersComplete(resp, params);
+					this.onScanFoldersComplete(resp);
 					
 					if(callback){
 						try {

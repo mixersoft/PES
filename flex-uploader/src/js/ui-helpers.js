@@ -286,6 +286,11 @@ LOG("toggle CONTEXT MENU, E="+e);
 	        },
 	        /**
 	         * 'snappi-air:import-complete' fired by UploaderUI.as: onScanFoldersComplete()
+	         * 	@params args Object {		// from ImageScanner.as:doScan()
+	         * 			count: int, total count of scan
+	         * 			folders: array of File (Flash objects)
+	         * 			folderpaths: array of string, baseurls
+	         * 	}
 	         */
 	        ImportComplete : function(node)	{
 	        	var action = 'ImportComplete';
@@ -294,16 +299,26 @@ LOG("toggle CONTEXT MENU, E="+e);
 	            if (node.listen[action] == undefined) {
 	            	node.listen[action] = _Y.on('snappi-air:import-complete', 
 	            	function(args){
-						// LOG('ON snappi-air:import-complete');	
-	            		try {	// show folder baseurl
-	            			var added = UIHelper.actions.addToUploader(SNAPPI.AIR.uploadQueue, args.baseurl);
-	            		} catch (e) {}
+						var importedFolders = args.folderpaths.join(', ');
+						var added = 0,
+							scanned = args.count,
+							showFolder = false,
+							targetFolder = args.folderpaths.length==1 ? args.folderpaths[0] : '';	// '' = open to all folders
+							
+						for (var i=0; i<args.folderpaths.length; i++) {
+							showFolder = (i==args.folderpaths.length-1) ? targetFolder : false;
+		            		try {	// show folder baseurl
+		            			added += UIHelper.actions.addToUploader(SNAPPI.AIR.uploadQueue, args.folderpaths[i], showFolder);
+		            		} catch (e) {
+								LOG('exception Import Complete.');		            			
+		            		}
+						}
 	            		
 	            		// show next steps
 	            		// var uri = "http://" + SNAPPI.AIR.host + '/combo/markup/importComplete';
 	            		var tokens = {
-	            			folder: args.baseurl,
-	            			count: args.count,
+	            			folder: importedFolders,
+	            			count: scanned,
 	            			added: added,
 	            		}
 	            		// show dialog-alert .alert-import-complete 
@@ -350,9 +365,11 @@ LOG("toggle CONTEXT MENU, E="+e);
 		 * add imported photos (by baseurl) to uploadQueue, creates a new batchid
 		 *	@params uploader OPTIONAL, uses global SNAPPI.AIR.UploadQueue
 		 *	@params baseurl string OPTIONAL, add all baseurls if null 
+		 *  @params showFolder string, OPTIONAL, the folder to open on completion
+		 * 		if showFolder == false, then do NOT open a folder
 		 *	@return int - count of photos added
 		 */
-		addToUploader : function(uploader, baseurl){
+		addToUploader : function(uploader, baseurl, showFolder){
 	//  baseurl = baseurl || 'C:\\USERS\\michael\\Pictures\\importTest';
 			uploader = uploader || SNAPPI.AIR.uploadQueue;
 	        var query = {	
@@ -361,7 +378,7 @@ LOG("toggle CONTEXT MENU, E="+e);
 	                baseurl: baseurl  
 	            };
 	        var added = 0;
-LOG("SNAPPI.AIR.UIHelper.actions.addToUploader  ****************************************************");
+LOG("SNAPPI.AIR.UIHelper.actions.addToUploader, baseurl="+baseurl+"   *************************************");
 	        var datasource = uploader.ds;
 	        datasource.getAuditions_all(query, function (auditions) {
 	        	LOG("datasource.getAuditions_all");
@@ -372,17 +389,21 @@ LOG("added to uploadQueue, count="+added+", open batchId="+batchId);
 	            uploader.show("reload");
 	        }, datasource, false);
 	        // open added folder
-			var delayed = new _Y.DelayedTask( function() {
-				var uploader = SNAPPI.AIR.uploadQueue;
-				uploader.initQueue('pending', {
-					folder: baseurl, 				// folder='all' => baseurl=''
-					page: 1,
+	        if (showFolder !== false) {
+		        if (showFolder === undefined) showFolder = baseurl;
+				var delayed = new _Y.DelayedTask( function() {
+					var uploader = SNAPPI.AIR.uploadQueue;
+					
+					uploader.initQueue('pending', {
+						folder: showFolder, 				// folder='all' => baseurl=''
+						page: 1,
+					});
+					uploader.view_showPage();
+					delete delayed;		
+					_Y.one('body').removeClass('wait');
 				});
-				uploader.view_showPage();
-				delete delayed;		
-				_Y.one('body').removeClass('wait');
-			});
-			delayed.delay(100);  // wait 100 ms	        
+				delayed.delay(100);  // wait 100 ms	        
+			}
 	        return added;
 	    },
 		setDisplayView : function(view) {

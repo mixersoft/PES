@@ -39,6 +39,12 @@ package api
 		public var existingImages:int = 0;
 		public var scannedImages:int = 0;
 		public var isScanning:Boolean=false;
+		private var fileOrFolders:Array = [];
+		private var folders:Array = [];
+		public var totalCount:Object = {};
+		private static var timers:Object = {};
+		private var fileOrFolderIndex:int = -1;
+		private var subTimer:uint;
 		
 		/**************************************************************
 		 * getAssetHash
@@ -253,16 +259,22 @@ package api
 				this.isScanning = false;
 				//finish all scanning
 				if(typeof(this.cb)=='function'){
-					var count:int = this.totalCount[this.params.baseurl];
+					// TODO: check this.queuedFolders, response should be array of scanned Folders
+					var count:int = 0;
+					for (var j:int = 0; j<this.queuedFolders.length; j++) {
+						count += this.totalCount[this.queuedFolders[j].nativePath];	
+					}
+					
 					var resp:Object = {
 						success: true,
 						message: 'scan folder complete',
 						response: {
-							baseurl:this.params.baseurl,
-							count: count
+//							baseurl:this.params.baseurl,
+							count: count,
+							folders: this.queuedFolders
 						}
 					}
-					this.cb.call(this.scope, resp, this.params);
+					this.cb.call(this.scope, resp, this.params);	// callback to UploaderUI.importPhotos()
 				}
 			}
 		}
@@ -287,12 +299,7 @@ package api
 		}
 		
 		
-		private var fileOrFolders:Array = [];
-		private var folders:Array = [];
-		public var totalCount:Object = {};
-		private static var timers:Object = {};
-		private var fileOrFolderIndex:int = -1;
-		private var subTimer:uint;
+
 		public var getTotalCount:Function = function():int {
 			var total:int = 0;
 			for (var i:String in this.totalCount) {
@@ -305,7 +312,7 @@ package api
 		 * for top level of recursion, start with isCounting==false
 		 * */
 		public function prepareFolder(f:File, isCounting:Boolean, fnComplete:Function=null):void{
-			if (this.isScanning = false ) {
+			if (this.isScanning = false ) {	// TODO: this line makes no sense
 				if (fnComplete is Function) fnComplete();
 				return;
 			}
@@ -586,7 +593,13 @@ Config.jsGlobal.firebugLog("saveImages.IOErrorEvent:"+e.toString());
 				}
 //				json_exif.InterOperabilityVersion = exif.ifds.interoperability.unknown;
 				if (exif.ifds.interoperability){
-					json_exif.InterOperabilityVersion = exif.ifds.interoperability.UnknownTag_0x2;
+					try {
+						if (typeof exif.ifds.interoperability.UnknownTag_0x2 !== 'string'){
+							for (var i:int=0; i<exif.ifds.interoperability.UnknownTag_0x2.length; i++){
+								json_exif.InterOperabilityVersion += String.fromCharCode( exif.ifds.interoperability.UnknownTag_0x2[i] );	
+							}
+						} else json_exif.InterOperabilityVersion=exif.ifds.interoperability.UnknownTag_0x2;
+					} catch (e:Error) {}
 					json_exif.InterOperabilityIndex = exif.ifds.interoperability.InterOperabilityIndex;
 				}
 			}catch(e:Error){
