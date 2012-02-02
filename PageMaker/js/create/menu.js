@@ -369,13 +369,20 @@
 	
 	// called on menu.show()
 	MenuItems.play_beforeShow = function(menuItem, menu){
-		var STORY_ID = menuItem.one('#story_id').get('value');
+		var STORY_ID = menuItem.get('parentNode').one('#story_id').get('value');
 		if (STORY_ID) {
 			menuItem.removeClass('disabled');
 			return;
 		}
 		menuItem.addClass('disabled');
 	};			
+	MenuItems.play_click = function(menuItem, menu){
+		var STORY_ID = menuItem.get('parentNode').one('#story_id').get('value');
+		if (STORY_ID) {
+			var saved_src = '/gallery/story/'+STORY_ID;
+			window.open(saved_src, 'page gallery');
+		}
+	};		
 		
 	
 	/*
