@@ -8,7 +8,7 @@
 	PM.onYready.Menu = function(Y){
 		if (_Y === null) _Y = Y;
 		PM.Menu = Menu;
-		
+		Plugin = PM.PageMakerPlugin.instance;
 		// global lookup by CSS ID, or cfg.lookup_key
 		Menu.CFG = {
 			'menu-pm-toolbar-edit': CFG_Menu_PageMaker_Create,
@@ -318,12 +318,11 @@
 		menuItem.delegate('click', function(e){
 			e.stopImmediatePropagation();
 		}, '#story_id');
-		menuItem.delegate('click', function(e){
-			e.stopImmediatePropagation();
-		}, '#story_id');
 		menuItem.delegate('change', function(e){
 			try {
-				var parent = menu.get('contentBox').all('li.btn').some(
+				var parent = menu.get('contentBox');
+				var STORY_ID = menuItem.one('#story_id').get('value');
+				parent.all('li.btn').some(
 					function(n,i,l){
 						if (n.getAttribute('action')=='play') {
 							if (STORY_ID) n.removeClass('disabled');
@@ -340,9 +339,45 @@
 		var parent = menuItem.get('parentNode');
 		var STORY_ID = parent.one('#story_id').get('value');
 		if (STORY_ID) {
-			
-		}
+            var userid, filename, saved_src;
+            try { 
+            	userid = PAGE.jsonData.controller.xhrFrom.uuid;
+            	filename = STORY_ID || userid;
+            } catch (e){
+            	filename = STORY_ID || 'saved';
+            }
+            saved_src = '/gallery/story/'+filename+'?page=last';
+            var content = Plugin.stage.body.one('div.pageGallery').unscaled_pageGallery;
+            var cfg = {
+            	content: content, 	// save pageGallery HTML of parent node
+//                  tmpfile: 'tmp',		// save from tmp file
+                filename: filename,
+                success: function(){
+                    /*
+                     * mark scene as saved
+                     */
+                    var Pr = Plugin.production;
+                    Pr.saveScene();
+                    window.open(saved_src, 'page gallery');
+                }
+            };
+            PM.util.saveToPageGallery(cfg);
+            return false;
+        }			
 	}
+	
+	
+	// called on menu.show()
+	MenuItems.play_beforeShow = function(menuItem, menu){
+		var STORY_ID = menuItem.one('#story_id').get('value');
+		if (STORY_ID) {
+			menuItem.removeClass('disabled');
+			return;
+		}
+		menuItem.addClass('disabled');
+	};			
+		
+	
 	/*
 	 * incomplete. use PM.Dialog to choose from existing Stories
 	 * adapted from select-circles
@@ -421,16 +456,7 @@
 		SNAPPI.setPageLoading(true);   			
 		dialog.io.start();	
 	};
-	
-	// called on menu.show()
-	MenuItems.play_beforeShow = function(menuItem, menu){
-		if (menu.STORY_ID) {
-			menuItem.removeClass('disabled');
-			return;
-		}
-		menuItem.addClass('disabled');
-	};			
-	
+
 
 
 	/*

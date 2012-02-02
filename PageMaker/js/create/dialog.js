@@ -8,6 +8,7 @@
 		if (_Y === null) _Y = Y;
 		PM.Dialog = Dialog;
 		PM.Alert = CFG_Dialog_Alert;
+		Plugin = PM.PageMakerPlugin.instance;
 	} 	    
     
 
