@@ -222,7 +222,7 @@
 		    			added: 4
 	    			},
 	    		};
-	 * var alert = SNAPPI.Alert.load(cfg) orPM.Dialog.CFG['dialog-alert'].load(cfg);
+	 * var alert = SNAPPI.Alert.load(cfg) or PM.Dialog.CFG['dialog-alert'].load(cfg);
 	 */
 	var CFG_Dialog_Alert = function(){}; 
 	CFG_Dialog_Alert.load = function(cfg){

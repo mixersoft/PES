@@ -493,49 +493,6 @@
         toggle_ContextMenu : function(e) {
         	SNAPPI.Factory.Gallery.nav.toggle_ContextMenu(this, e);
         	return;
-        	
-	        e.preventDefault();
-        	var CSS_ID, TRIGGER;
-        	switch(this._cfg.type){
-        		case 'Photo':
-        		case 'NavFilmstrip': 
-        			CSS_ID = 'contextmenu-photoroll-markup';
-        			break;
-        		case 'DialogHiddenShot': 
-        		case 'ShotGallery': 
-        			CSS_ID = 'contextmenu-hiddenshot-markup';	
-        			break;
-				default:
-					return;        			
-        	}
-        	if (this.node.hasClass('hiddenshots') || this.node.hasClass('hidden-shot')) {
-        		CSS_ID = 'contextmenu-hiddenshot-markup';
-        	} 
-        	
-        	// load/toggle contextmenu
-        	if (!SNAPPI.MenuAUI.find[CSS_ID]) {
-        		var contextMenuCfg = {
-        			// triggerType: 'photo',				// .gallery.photo
-        			triggerRoot: this.container,
-        			currentTarget:e.currentTarget,
-        			init_hidden: false,
-				}; 
-        		SNAPPI.MenuAUI.CFG[CSS_ID].load(contextMenuCfg);        		
-        		this.node.listen['disable_LinkToClick'] = true;
-        	} else {
-        		var menu = SNAPPI.MenuAUI.toggleEnabled(CSS_ID, e);
-        		if (this._cfg.listeners.indexOf('LinkToClick')> -1) {
-        			// toggle LinkToClick listener
-	        		if (menu.get('disabled')) {
-	        			// TODO: nav to attribute "linkTo"
-	        			// Factory.listeners.LinkToClick.call(this);
-	        			this.node.listen['disable_LinkToClick'] = false;
-	        		} else {
-	        			// this.stopLinkToClickListener();
-	        			this.node.listen['disable_LinkToClick'] = true;
-	        		}
-        		}
-        	}
         },
         stopLinkToClickListener : function(){
         	try {

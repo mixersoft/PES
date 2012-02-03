@@ -1,6 +1,7 @@
 <div id="contextmenu-photoroll-markup" class="menu yui3-aui-overlaycontext-hidden">
 	<ul>
 		<li action='rating' class='before-show'></li>
+		<li action='zoom'>Zoom</li>
 		<hr>
 		<li action='showHiddenShot' class='before-show'>Show Hidden</li>
 		<li action='ungroupShot'  class='before-show'>Ungroup Shot</li>			

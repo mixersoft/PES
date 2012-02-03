@@ -328,6 +328,7 @@
     			}
     			stage.setStyle('height', 'auto');
     			d.set('height', h + body_border + header_h + offset_top);
+    			d.centered();
     			SNAPPI.setPageLoading(false);
     		})
     		

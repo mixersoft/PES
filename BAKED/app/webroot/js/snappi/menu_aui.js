@@ -227,7 +227,7 @@
 			var methodName = menuItem.getAttribute('action')+'_click';
 			if (MenuItems[methodName]) {
 				e.preventDefault();
-				MenuItems[methodName](menuItem, this);
+				MenuItems[methodName](menuItem, this, e);
 			} else {
 				// default
 				try {
@@ -659,7 +659,39 @@ console.error("PreviewPhoto delete is still incomplete");
 			input.set('value', 'Enter tags').addClass('help');
 		}
 	};	
-	
+	MenuItems.zoom_click = function(menuItem, menu, e){
+		// menu.hide();
+		var thumbnail = menu.get('currentNode');	// target
+		var g = MenuItems.getGalleryFromTarget(thumbnail);
+		SNAPPI.Factory.Gallery.nav.toggle_ContextMenu(g, e);
+		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
+		var cfg = {
+			// selector: [CSS selector, copies outerHTML and substitutes tokens as necessary],
+			markup: "<div id='preview-zoom'></div>",
+			uri: '/combo/markup/null',
+			height: 400,
+			width: 400,
+		};
+		var dialog = SNAPPI.Alert.load(cfg);
+		var previewBody = dialog.get('contentBox').one('#preview-zoom');
+		/*
+		 * resize,center dialog for .FigureBox.PreviewZoom
+		 */
+		var detach = _Y.on('snappi:preview-zoom-loaded', function(img){
+			detach.detach();
+			previewBody.loadingmask.hide();
+			var h = img.get('height');
+			var w = img.get('width');
+			var offset_top = 6 + 29 + 12    + 10  + 30;
+			var body_border = 20;	// margin: 10px 0 on node
+			// set dialog size
+			dialog.set('width', w + body_border);
+			dialog.set('height', h + offset_top);	
+			dialog.centered();
+			SNAPPI.setPageLoading(false);
+		});		
+		SNAPPI.Factory.Thumbnail.PhotoZoom.bindSelected(audition, previewBody);
+	}
 	MenuItems.rotate_click = function(menuItem, menu){
 		var rotate = menuItem.getAttribute('rotate');
 		var thumbnail = menu.get('currentNode');

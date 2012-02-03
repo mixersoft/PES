@@ -308,6 +308,178 @@
 				}, this.node)			
 		},	
 	};
+	ThumbnailFactory.PhotoZoom = {
+		defaultCfg: {
+			type: 'PhotoZoom',
+    		ID_PREFIX: 'zoom-',
+    		size: 'bp',
+    		showExtras: true,
+    		showRatings: true,
+    		showLabel: true,
+    		addClass: 'PhotoPreview', 	// inherit CSS props of PhotoPreview
+    		showHiddenShot: false,		// ???: show icon, but don't listen for click?
+    		showSizes: false,
+    		draggable: false,
+    		queue: false,
+    		listeners: ['RatingClick', 'PreviewImgLoad'],
+    	},
+    	// TODO: update Sizes to use action="set-display-size:[size]" format
+		markup: '<article class="FigureBox PhotoZoom">'+
+                '<figure>'+
+                '    <figcaption><ul class="extras inline rounded-5">'+
+                '<li class="label caption"></li>' +
+                '    	 <li class="label">My Rating</li><li class="rating wrap-bg-sprite"></li>' +
+                '        <li class="label">Score</li><li class="score">0.0</li>' +
+				'	</ul></figcaption>' +
+				'	<img alt="" src="">' +
+				'</figure>'+
+				'</article>',
+		renderElementsBySize : function (size, audition, cfg){
+			cfg = cfg || {};
+			/*
+			 * set attributes based on thumbnail size
+			 */
+			audition = audition || SNAPPI.Auditions.find(this.id);
+			var node = this.node;
+			
+			var src, linkTo, title, score, votes, exists, tooltip, shotCount, sizeCfg;
+			SNAPPI.Auditions.bind(node, audition);
+			// linkTo = '/photos/home/' + audition.id;
+			// add ?ccid&shotType in photoroll.listenClick()
+			title = audition.label;
+			score = audition.Audition.Photo.Fix.Score;
+			votes = audition.Audition.Photo.Fix.Votes;	
+	
+			// set CSS classNames
+			var sizeCfg = _Y.merge(this.defaultCfg, cfg);
+			sizeCfg.size = size || sizeCfg.size;
+			node.set('className', 'FigureBox').addClass(this._cfg.type).addClass(sizeCfg.size);
+			if (sizeCfg.addClass) node.addClass(sizeCfg.addClass);
+			delete(sizeCfg.addClass);		// keep size classes local
+			
+			// addClass from this._cfg
+			this._cfg = _Y.merge(this._cfg, sizeCfg, cfg);
+			if (this._cfg.addClass) node.addClass(this._cfg.addClass);
+
+			// set src to the correct size
+			var img = node.one('figure > img');
+			var detach = img.on('load', function(e){
+				detach.detach();
+				_Y.fire('snappi:preview-zoom-loaded', img);
+			});
+			src = audition.getImgSrcBySize(audition.urlbase + audition.src, sizeCfg.size);
+			if (this._cfg.queue && SNAPPI.Imageloader.QUEUE_IMAGES) {
+				img.qSrc = src;
+				// SNAPPI.util3.ImageLoader.queueOneImg(img); // defer,
+				// queue by selector
+			} else {
+				img.set('src', src);
+			}		
+			// img.setAttribute('linkTo', linkTo);
+			
+			// set draggable	
+			if (this._cfg.draggable) {
+				img.addClass('drag');
+			} else {
+				img.removeClass('drag');
+			}
+			
+			// show caption, 
+			exists = node.one("figcaption .caption");
+			if (exists) {
+				if (this._cfg.showLabel) {
+					exists.set('innerHTML', this.trimLabel(title));
+					exists.removeClass('hide');
+				}
+			} else {
+					node.one('figure > img').set('title', title);
+					if (exists) exists.addClass('hide');
+			}
+            			
+			// show hidden shot icons
+			ThumbnailFactory.setHiddenShotNode(this, audition);
+			
+			// rating
+			exists = node.one('ul li.rating');
+			if (this._cfg.showRatings) {
+				if (exists && node.Rating) {
+					if (node.Rating.id != audition.id) {
+						// update rating
+						node.Rating.id = audition.id;
+						node.Rating.node.setAttribute('uuid', audition.id).set(
+								'id', audition.id + '_ratingGrp');
+						node.Rating.render(audition.rating);
+					}
+				} else {
+					// attach Rating
+	            	var gallery = this._cfg.gallery || SNAPPI.Gallery.getFromDom(node);
+	            	SNAPPI.Rating.pluginRating(gallery, node.Thumbnail, audition.rating, {id:'photoPreview-ratingGroup'});
+	            }
+	            if (exists) exists.removeClass('hide');	  
+	       } else {
+	       		if (exists) exists.addClass('hide');
+	       }
+	
+			// show extras, i.e. rating, score, info, menu
+			if (this._cfg.showExtras) {
+				// update Score, show hide in showExtras
+				ThumbnailFactory.setScoreNode(this, audition);
+				node.one('ul').removeClass('hide');
+			} else {
+				node.one('ul').addClass('hide');
+			}		
+			
+			return this;
+		},
+		bindSelected: function(selected, previewBody, size) {
+			if (!selected.id) {
+        		selected = SNAPPI.Auditions.get(selected);
+        	} 	    		
+    		var previewBody = previewBody || _Y.one('#dialog-alert #preview-zoom');
+    		if (!previewBody) return;
+    		
+    		var cfg, uuid, size, auditionSH;
+    		cfg = {
+    			type: 'PhotoZoom',
+    		}
+    		// create/reuse Thumbnail
+    		var t, node = previewBody.one('.FigureBox.PhotoZoom');
+    		if (!node) {
+	    		try {
+	    			// TODO: get initial size, save size as property of Thumbnail object
+	    			cfg.size = size || PAGE.jsonData.profile.thumbSize[cfg.type];
+	    		} catch (e) {
+	    			// default init size
+	    			if ( previewBody.getAttribute('size')) cfg.size = previewBody.getAttribute('size');	
+	    		}
+	    		// create PhotoPreview thumbnail	    		
+    			t = new SNAPPI.Thumbnail(selected, cfg);	
+    			previewBody.prepend(t.node);
+    			node = t.node;
+    			
+    			// check if image is loaded
+	    		if (!previewBody.loadingmask) {
+	    			var loadingmaskTarget = node;
+					// plugin loadingmask to Thumbnail.PreviewPhoto
+					previewBody.plug(_Y.LoadingMask, {
+						strings: {loading:''}, 	// BUG: A.LoadingMask
+						target: loadingmaskTarget,
+						end: null
+					});
+					// BUG: A.LoadingMask does not set target properly
+					previewBody.loadingmask._conf.data.value['target'] = loadingmaskTarget;
+					previewBody.loadingmask.overlayMask._conf.data.value['target'] = previewBody.loadingmask._conf.data.value['target'];
+					previewBody.loadingmask.set('zIndex', 10);
+		    		previewBody.loadingmask.overlayMask.set('zIndex', 10);    			
+	    		}    			
+    			
+    		} else {
+    			node.Thumbnail.reuse(selected);
+    		}
+    		previewBody.loadingmask.refreshMask();
+    		previewBody.loadingmask.show(); 
+        },	
+	};
 	ThumbnailFactory.PhotoPreview = {
 		defaultCfg: {
 			type: 'PhotoPreview',
@@ -375,7 +547,7 @@
 			this._cfg = _Y.merge(this._cfg, sizeCfg, cfg);
 			if (this._cfg.addClass) node.addClass(this._cfg.addClass);
 
-			// set src to the correct size
+			// set src to the correct size, and listen for onload
 			var img = node.one('figure > img');
 			src = audition.getImgSrcBySize(audition.urlbase + audition.src, sizeCfg.size);
 			if (this._cfg.queue && SNAPPI.Imageloader.QUEUE_IMAGES) {
@@ -400,10 +572,10 @@
 				if (this._cfg.showLabel) {
 					exists.set('innerHTML', this.trimLabel(title));
 					exists.removeClass('hide');
-				} else {
-					node.one('figure > img').set('title', title);
-					if (exists) exists.addClass('hide');
 				}
+			} else {
+				node.one('figure > img').set('title', title);
+				if (exists) exists.addClass('hide');
 			}
 			
 			// set size focus
