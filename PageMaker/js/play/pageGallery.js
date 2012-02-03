@@ -575,6 +575,7 @@
 					}
 				}
 			}, this);
+			this.showPage(_pageIndex);
 		},
 
 		scale : function(cfg) {
