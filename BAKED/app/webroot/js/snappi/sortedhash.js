@@ -39,7 +39,7 @@
      * protected functions
      */
     var _hash = function(key){
-        return (key.id) ? key.id : key.hashcode ? key.hashcode() : key;
+        return (key.hashcode && _Y.Lang.isFunction(key.hashcode)) ? key.hashcode() : (key.id) ? key.id : key;
     };
 	// merge properties of anonymous objects
 	var _merge = function(a, b){
@@ -221,10 +221,7 @@
             return this.add(key, value); // alias
         },
         remove: function(key){
-        	var hashedKey = key;
-        	if (hashedKey.hashcode) {
-        		hashedKey = _hash(hashedKey);
-        	}
+        	var hashedKey = _hash(key);
             delete this._data[hashedKey];
             for (var i in this._keys) {
                 if (this._keys[i] && _hash(this._keys[i]) === hashedKey) {

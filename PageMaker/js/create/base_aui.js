@@ -168,7 +168,7 @@
 	    		snappi_comboBase: 'baked/app/webroot&',
 	    		air_comboBase: 'app/air&',
 	    		pagemaker_comboBase: 'app/pagemaker&',
-	    		snappi_useCombo: 0,					// <-- TESTING SNAPPI useCombo
+	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
 	    		pagemaker_useCombo: 0,
 	    		alloy_useCombo: true,
 	    		yahoo_CDN: 0,
@@ -181,7 +181,7 @@
 	    		air_comboBase: 'app/air&',
 	    		pagemaker_comboBase: 'app/pagemaker&',
 	    		snappi_useCombo: 1,
-	    		pagemaker_useCombo: 0,
+	    		pagemaker_useCombo: 1,
 	    		alloy_useCombo: true,
 	    		yahoo_CDN: 0,
 	    		YUI_VERSION: '3.3.0',
