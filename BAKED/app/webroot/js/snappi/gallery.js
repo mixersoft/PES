@@ -322,6 +322,11 @@
 	            	var displayPage = this._cfg.page;
 	            	var displayOffset = (displayPage-1)*this._cfg.perpage;
 	            	offset = displayOffset - ccOffset;
+	            	try {
+	            		this._cfg.perpage = Math.min(SNAPPI.STATE.displayPage.perpage, ccAuditions.Perpage);	// should we get from cfg or paginator???
+            		} catch (e) {
+            			this._cfg.perpage = ccAuditions.Perpage;
+            		} 
 	                perpage = this._cfg.perpage;            
 	                this._cfg.start = 0;
 	                this._cfg.end = perpage;
