@@ -23,8 +23,11 @@
 		echo $link ?>"><?php echo $link ?></a></div>
 	<?php } ?>
 </div>
+<div id="header" class='<?php if ($isPreview) echo "hide"?>'> 
+	<a href="http://snaphappi.com" target="_new"><img src="/img/snappi/snappi-top.png"></a>.
+</div>
 <div id="footer" class='<?php if ($isPreview) echo "hide"?>'> 
 	<div>This Page Gallery was brought to you by <a
-		href="http://www.snaphappi.com" target="_new">Snaphappi</a>.
+		href="http://snaphappi.com" target="_new">Snaphappi</a>.
 		</div>
 </div>

@@ -518,7 +518,8 @@
 		var XHR_URI = '/combo/markup/pm_ToolbarEdit'; 
 		var _cfg = {
 			showOn: 'mouseenter',
-			hideOn: '',
+			hideOn: 'mouseleave',
+			hideDelay: 10000,
 			// hideOnDocumentClick: false,	// must set zIndex manually, and hide on dialog close
 			// zIndex: 5000,					
 			align: { points:['bl', 'tl'] },

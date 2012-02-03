@@ -2501,3 +2501,8 @@ li:hover.white.focus, li:hover.white.selected
 	background-color: #000;
 	color: #FFF;
 }
+
+#menu-pm-toolbar-edit ul.inline li.btn.disabled {
+	border-color: #888;
+	
+}

@@ -27,7 +27,5 @@
 	<?php } ?>
 </div>
 <div id="footer" class='<?php if ($isPreview) echo "hide"?>'> 
-	<div>This story was brought to you by <a
-		href="http://www.snaphappi.com" target="_new">Snaphappi</a>.
-		</div>
+	<a href="http://snaphappi.com" target="_new"><img src="/img/snappi/snappi-top.png"></a>
 </div>

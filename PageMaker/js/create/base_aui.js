@@ -70,23 +70,8 @@
 	    	
     	} else {
     		Plugin.player.setStage(Plugin.stage, Plugin.stage.body);
-    		var detach = _Y.on('snappi-pm:render', function(P, node){
-    			detach.detach();
-    			var m = PM.Menu.find['menu-pm-toolbar-edit'];
-	    		// m.set('currentNode', node.get('parentNode'));
-	    		m.refreshAlign();
-	    		m.show();
-    		})
     	}
     	Plugin.player.init();
-    	// if (!Plugin.listen['toolbar_edit']) {
-    		// Plugin.listen['toolbar_edit'] = _Y.on('snappi-pm:render', function(P, node){
-    			// PM.Menu.init({
-    				// 'menu-pm-toolbar-edit': 1
-    			// });
-    		// })
-    	// }
-    	
     };
     
     

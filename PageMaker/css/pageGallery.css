@@ -1,6 +1,5 @@
 body {
-    background-color: black;
-    cursor: pointer;
+	background: url("/img/snappi/snappi-top.png") no-repeat scroll 8px -150px black;
 }
 
 #glass {
@@ -166,7 +165,7 @@ div.pageGallery {
 
 div#share {
     margin: 20px;
-    font-size: 1em;
+    font-size: 10pt;
 }
 
 a#share-link:link, a#share-link:visited {
@@ -185,14 +184,6 @@ a#share-link:link, a#share-link:visited {
 }
 
 #footer {
-    margin: 0 auto;
-    width: 95%;
-    position: absolute;
-    bottom: 10px;
-    z-index: 1;
+    margin: 10px auto;
 }
 
-#footer > div {
-    font-size: 0.7em;
-    text-align: center;
-}

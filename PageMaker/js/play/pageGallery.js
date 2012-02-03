@@ -613,7 +613,7 @@
 					var restoreHide = true;
 				}
 				// need to get layout info for this page
-				offset={X:6,Y:6};	// space for preview offset
+				offset={X:0,Y:0};	// space for preview offset
 				if (restoreHide) {
 					page.addClass('hide');
 					page.removeClass('hidden');
