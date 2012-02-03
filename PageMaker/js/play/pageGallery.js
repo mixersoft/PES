@@ -199,6 +199,10 @@
 					return;
 				_totalPages++;
 
+				if (page.hasClass('hide')) {
+					page.removeClass('hide');
+					page.addClass('hidden');	// cant get offsets with page.hide
+				}
 				origRect = {
 					X : _px2i(page.getStyle('left')),
 					Y : _px2i(page.getStyle('top')),
@@ -267,7 +271,7 @@
 			if (pageNo == 'last') {
 				pageNo = _totalPages;
 				_pageIndex = pageNo - 1; // zero based index
-			}
+			} else if (parseInt(pageNo)) _pageIndex = parseInt(pageNo)-1;
 			if (this.isPreview) {
 				this.showPage(pageNo - 1);
 				this.startListeners();
@@ -548,7 +552,11 @@
 			}			
 			
 			var pages = this.content.all('div.pageGallery');
-			pages.each(function(page) {
+			pages.each(function(page, i) {
+				if (page.hasClass('hide')) {
+					page.removeClass('hide');
+					page.addClass('hidden');	// cant get offsets with page.hide
+				}
 				if (page.get('id') != "share") {
 					var pageRect = {
 						W : _px2i(page.getStyle('width')),
@@ -592,9 +600,9 @@
 			// scale pages relative to original layout
 			page.setStyles( {
 				// left, top set by CSS
-				width : origRect.W / scale + "px",
-				height : origRect.H / scale + "px",
-				backgroundColor : 'black'
+				width : (origRect.W) / scale + "px",
+				height : (origRect.H) / scale + "px",
+				backgroundColor : 'lightgray'
 			});
 			if (this.isPreview) {
 				// get actual offset AFTER scaled size is set
@@ -604,7 +612,7 @@
 					var restoreHide = true;
 				}
 				// need to get layout info for this page
-				offset={X:0,Y:0};	// use position:relative for this.content
+				offset={X:6,Y:6};	// space for preview offset
 				if (restoreHide) {
 					page.addClass('hide');
 					page.removeClass('hidden');
@@ -612,8 +620,13 @@
 			}
 			// scale photos relative to original layout
 			var photos = page.all("img");
+			var border_offset, bottomRight;	// space for border width
 			photos.each(function(photo) {
+				bottomRight = bottomRight || photo;
 				var scaledRect, origRect = photo.origRect;
+				// +5 to compensate for rounding errors
+				if (origRect.X+origRect.W > bottomRight.origRect.X+bottomRight.origRect.W+5) bottomRight = photo;
+				if (origRect.Y+origRect.H > bottomRight.origRect.Y+bottomRight.origRect.H+5) bottomRight = photo;
 				if (this.isPreview) { // move position by unscaled offset
 						scaledRect = {
 							left : origRect.X / scale + offset.X + "px",
@@ -621,16 +634,29 @@
 							width : origRect.W / scale + "px",
 							height : origRect.H / scale + "px"
 						};
-					} else {
-						scaledRect = {
-							left : origRect.X / scale + "px",
-							top : origRect.Y / scale + "px",
-							width : origRect.W / scale + "px",
-							height : origRect.H / scale + "px"
-						};
-					}
-					photo.setStyles(scaledRect);
-				}, this);
+				} else {
+					scaledRect = {
+						left : origRect.X / scale + "px",
+						top : origRect.Y / scale + "px",
+						width : origRect.W / scale + "px",
+						height : origRect.H / scale + "px"
+					};
+				}
+				photo.setStyles(scaledRect);
+			}, this);
+			border_offset= {
+				X: bottomRight.get('clientLeft'),
+				Y: bottomRight.get('clientTop'),
+			}
+			var br = {
+				bottom: ((bottomRight.origRect.Y + bottomRight.origRect.H) / scale + 2*border_offset.Y) ,
+				right: ((bottomRight.origRect.X + bottomRight.origRect.W)  / scale + 2*border_offset.X) ,
+			}
+			page.setStyles( {
+				// left, top set by CSS
+				width : br.right+border_offset.X +  "px",
+				height : br.bottom+border_offset.Y +  "px",
+			});
 		},
 
 		/*
