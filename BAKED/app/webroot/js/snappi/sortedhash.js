@@ -226,9 +226,10 @@
             for (var i in this._keys) {
                 if (this._keys[i] && _hash(this._keys[i]) === hashedKey) {
                     this._keys.splice(i, 1); // remove element i, and renumber
-                    break;
+                    return true;
                 }
             }
+            return false;
         },
         clear: function(){
             this._keys = [];

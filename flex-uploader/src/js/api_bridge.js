@@ -29,7 +29,7 @@
     	SNAPPI.AIR.CastingCallDataSource = AIRCastingCallDataSource;
 	}	
 	
-    var util = SNAPPI.coreutil;
+    var util = SNAPPI.coreutil;	// TODO: use _Y global object instead of coreutil. 
      
     /*
      * private methods

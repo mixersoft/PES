@@ -91,9 +91,9 @@ package api
 		* 			}
 		* 		}					
 		* 	} 
-		* @return : returns absolute url of the photo based on size e.g. file:///D:/downloads/1000pics/xyz.jpg
+		* @return : returns flash.File object of correctly sized photo.  use f.url for src of photo e.g. file:///D:/downloads/1000pics/xyz.jpg
 		* */			
-		public static var getImgSrcBySize:Function = function (id:String, size:String, options:Object):File{
+		public static var getImgSrcBySizeAsFile:Function = function (id:String, size:String, options:Object):File{
 			var f:File;
 			
 			// check if file by imageSize already exists, if so, return response directly
@@ -127,12 +127,15 @@ package api
 							// FLASH resize orig,resized,size,options
 							SnappiImage.FLASH_prepareResizeOrRotate(orig, resized, size, options, json_exif);
 						}
+					} else {
+Config.jsGlobal.firebugLog("Photo not found. Could it have been moved or deleted?   path="+path);						
+						throw new Error('Photo not found at path=' + path);
 					}
 				}else{
 					throw new Error('Photo not found with id=' + id);
 				}	
 			}catch(e:Error){
-				Config.logger.writeLog("Error",e.message + '-getImgSrcBySize');
+				Config.logger.writeLog("Error",e.message + '-getImgSrcBySizeAsFile');
 				if(callback){
 					callback.failure.call(callback.scope || Config.jsGlobal,e.message,params);
 				}
@@ -193,14 +196,14 @@ package api
 						Config.logger.writeLog("Error", errorMsg + '-IM-resizeOrRotateImage');
 					} else {
 						// exit 0
-						callback.success.call(context, dest.url, args);	
+						callback.success.call(context, dest, args);	
 					}
 				}
 					
 				var onIOError:Function = function(e:IOErrorEvent):void{
 					var context:Object = callback.scope || Config.jsGlobal;
-					callback.failure.call(context, e.toString(), args);
 					Config.logger.writeLog("Error", e.toString() + '-IM-resizeOrRotateImage');
+					callback.failure.call(context, e.toString(), args);
 				}
 					
 				if ("use MAX_CONCURRENT_PROCESSES") {

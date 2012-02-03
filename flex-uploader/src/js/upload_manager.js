@@ -52,7 +52,6 @@
 		this.progress = progress;		// FileProgress
 		this.uploadQueue = uploadQueue;	// back reference
 		this.hashcode = function(){
-//			return this.progress.node.get('id');
 			return this.row.photo_id;
 		}
 		UploadManager.add(this); // move to domready		
@@ -111,6 +110,7 @@
 		 * @params msg string - error msg
 		 */
 		uploadError_Callback : function(f, msg) {
+// LOG(" >>> uploadError_Callback: COUNT="+UploadManager.count()+" < MAX="+UploadManager.MAX_CONCURRENT_UPLOADS);			
 			var uploader = this.uploadQueue;
 			try {
 //				var row = uploader.uploadRows[uploader.uploadItemIndex];
@@ -126,6 +126,8 @@
 //					uploader.uploadRows[uploader.uploadItemIndex].status = 'cancelled';
 					this.row.status = 'pending';
 				} else {
+LOG("uploadError_Callback: upload failed with msg="+msg);		
+					UploadManager.remove(this);	// already removed?			
 					this.progress.setAlert("Warning: upload failed. " + msg);
 					_flexAPI_UI.datasource.setUploadStatus(row.photo_id, 'error', uploader.batch);
 //					uploader.uploadRows[uploader.uploadItemIndex].status = 'error';
@@ -167,7 +169,8 @@
 		 * @responseReceived 
 		 */
 		uploadSuccess_Callback : function(f, serverData, responseReceived) {
-//			LOG("uploadSuccess_Callback");			
+//			LOG("uploadSuccess_Callback");	
+// LOG(" >>> uploadSuccess_Callback: COUNT="+UploadManager.count()+" < MAX="+UploadManager.MAX_CONCURRENT_UPLOADS);			
 			var uploader = this.uploadQueue;
 			try {
 				this.progress.setComplete();
@@ -200,11 +203,10 @@
 		 */
 		uploadComplete_Callback : function(f) {
 //LOG("uploadComplete_Callback");			
-			var uploader = this.uploadQueue;
 			try {
-				UploadManager.remove(this);	// already removed?
-			} catch (e) {
-			}
+				var uploader = this.uploadQueue;
+				UploadManager.remove(this);
+			} catch (e) {}
 		},
 		/*
 		 * cancel in progress item

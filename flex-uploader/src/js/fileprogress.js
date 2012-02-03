@@ -87,8 +87,15 @@
 	            autorotate: true,
 	            replace: false,
 	            callback: {
+	            	/*
+	            	 * SNAPPI.DATASOURCE.getImgSrcBySize: success_callback()
+	            	 * api_bridge.js == SNAPPI.DATASOURCE
+	            	 * 	@params src String, converted from flash.File in UploaderUI.as: getImgSrcBySize()
+	            	 * 	@params args Object, callback arguments
+	            	 */
+	            	 
 	                success: function(src, args){	
-	        			// LOG(">>>>>>>>>>>>>>getImgSrcBySize SUCCESS src=" + src);
+// LOG(">>>>>>>>>>>>>>getImgSrcBySize SUCCESS src=" + src);
 	        			args.img.set('src', src);
 	                },
 	                failure: function(src){

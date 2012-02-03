@@ -592,6 +592,7 @@ LOG(">>>>>>>>>>>>  startUploadPage  ============================ page="+page);
 		doUpload : function() {
 			var UploadManager = SNAPPI.AIR.UploadManager;
 			var remaining = this.flexUploadAPI.getCountByStatus('pending',this.batchId, this.baseurl,'=');
+// LOG("REMAINING="+remaining+", COUNT="+UploadManager.count()+" < MAX="+UploadManager.MAX_CONCURRENT_UPLOADS);			
 			while (remaining && UploadManager.count() < UploadManager.MAX_CONCURRENT_UPLOADS) {
 				this.uploadItemIndex++;
 				if (this.uploadItemIndex < this.uploadRows.length) {
@@ -599,7 +600,7 @@ LOG(">>>>>>>>>>>>  startUploadPage  ============================ page="+page);
 					var status = row['status'];
 					if (status == 'pending') { // if pending then only start upload
 LOG(">>>>>>> upload index = "+ this.uploadItemIndex + ", status=" + status+ " row=" + row.photo_id);
-LOG("active count="+UploadManager.count());						
+// LOG("active count="+UploadManager.count());						
 							/*
 							 * configure uploadManager, start N uploads
 							 */						

@@ -194,7 +194,12 @@ package api
 				this.assumeSuccessTimer.stop();
 				this.assumeSuccessTimer = null;
 			}
-			var response:Object = JSON.decode(serverData);		// error
+			try {
+				var response:Object = JSON.decode(serverData);		// error
+			} catch (e:Error) {
+				response.success = false;
+Config.jsGlobal.firebugLog("JSONParse Error, raw="+serverData);				
+			}
 			responseReceived = response.success == true;
 			if (response.success == false) {
 				this.status = 'error';

@@ -480,8 +480,15 @@ package api
 		 * FileProgress.js constructor -> api_bridge.js/SNAPPI.DATASOURCE -> UploaderUI.as
 		 */
 		public function getImgSrcBySize(id:String,size:String,options:Object):String{
-//Config.jsGlobal.firebugLog("UploaderUI.as:getImgSrcBySize(), id="+id);				
-			var f:File = SnappiImage.getImgSrcBySize(id, size, options);
+//Config.jsGlobal.firebugLog("UploaderUI.as:getImgSrcBySizeAsFile(), id="+id);
+			if (options.callback.success) {
+				var success_as_string:Function = options.callback.success;
+				options.callback.success = function(f:File, args:Object):Object {
+					// wrapper function to convert flash.File to String (src) in callback
+					return success_as_string(f.url, args);
+				}
+			}
+			var f:File = SnappiImage.getImgSrcBySizeAsFile(id, size, options);	// good. gets tn~ imgs
 			return f ? f.url: null;
 		}
 		public function checkImgSrcBySize(id:String,size:String):String{
@@ -642,7 +649,7 @@ package api
 				}
 				resizeImg_Callback.callback = uploadFile_Callback;	
 				// upload preview size
-				f = SnappiImage.getImgSrcBySize(photo_id,'bp',resizeImg_Callback);
+				f = SnappiImage.getImgSrcBySizeAsFile(photo_id,'bp',resizeImg_Callback);
 				// start FileProgress while waiting for bp~uploadFile
 			}
 		}		
