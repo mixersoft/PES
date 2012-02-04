@@ -25,6 +25,7 @@
     var PM = namespace('SNAPPI.PM');
     PM.name = 'Snaphappi PageMaker';
 	PM.namespace = namespace;
+	PM.onYready = {};
     PM.cfg = {};
     if (!SNAPPI.id) {
 		SNAPPI.id = PM.name;

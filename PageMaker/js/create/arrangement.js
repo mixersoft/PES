@@ -17,8 +17,8 @@
      */
     // var Y = PM.Y;
 	var _Y = null;
+	var Plugin = null;
 	var PM = SNAPPI.namespace('SNAPPI.PM');
-	SNAPPI.namespace('SNAPPI.PM.onYready');
 	// Yready init
 	PM.onYready.Arrangement = function(Y){
 		if (_Y === null) _Y = Y;

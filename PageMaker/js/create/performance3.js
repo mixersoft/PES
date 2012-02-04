@@ -15,7 +15,6 @@
 	var _Y = null;
 	var Plugin = null;
 	var PM = SNAPPI.namespace('SNAPPI.PM');
-	SNAPPI.namespace('SNAPPI.PM.onYready');
 	PM.onYready.Performance = function(Y){
 		if (_Y === null) _Y = Y;
 	    /*

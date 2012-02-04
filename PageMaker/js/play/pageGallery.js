@@ -19,22 +19,48 @@
  *
  */
 (function() {
-	/*
-	 * protected methods and variables
-	 */
-	var _namespace = function() {
-		var a = arguments, o = null, i, j, d;
-		for (i = 0; i < a.length; i = i + 1) {
-			d = a[i].split(".");
-			o = window;
-			for (j = 0; j < d.length; j = j + 1) {
-				o[d[j]] = o[d[j]] || {};
-				o = o[d[j]];
-			}
+   	try {
+		// load from PageMakerPlugin
+		var _Y = null;
+		// var Plugin = null;
+		var PM = SNAPPI.namespace('SNAPPI.PM');
+		PM.namespace('PM.onYready');
+		// Yready init
+		PM.onYready.Play = function(Y){
+			if (_Y === null) _Y = Y;
+			PM.bootstrapY = false;
+		}  		
+   	} catch (e) {
+		// same as base_aui.js
+		namespace = function(){
+		    var a = arguments, o = null, i, j, d;
+		    for (i = 0; i < a.length; i = i + 1) {
+		        d = a[i].split(".");
+		        o = window;
+		        for (j = 0; j < d.length; j = j + 1) {
+		            o[d[j]] = o[d[j]] || {};
+		            o = o[d[j]];
+		        }
+		    }
+		    return o;
+		};
+		/*
+		 * init *GLOBAL* SNAPPI.PM as root for namespace
+		 */    
+		var PM = namespace('SNAPPI.PM');
+		PM.name = 'Snaphappi PageMaker';
+		PM.namespace = namespace;
+		PM.onYready = {};
+		PM.cfg = {};
+		if (!SNAPPI.id) {
+			SNAPPI.id = PM.name;
 		}
-		return o;
-	};
-	_namespace('SNAPPI.PM');
+		/*
+		 * yui bootstrap
+		 */
+		PM.bootstrapY = true;		
+   	}	
+
 
 	/*
 	 * Configuration object
@@ -75,7 +101,7 @@
 	var _px2i = function(sz) {
 		var nsz = sz.replace(/px/gi, "");
 		nsz = parseFloat(nsz);
-		return SNAPPI.PM.Y.Lang.isNumber(nsz) ? nsz : null;
+		return PM.Y.Lang.isNumber(nsz) ? nsz : null;
 	};
 
 	var _getFromQs = function(name) {
@@ -139,17 +165,17 @@
 		cfg = cfg || {};
 		this.container = null; 		// outer node, default 'BODY'
 		this.content = null;		// child of this.container, parent of .pageGallery
-		var Y = cfg.Y || SNAPPI.PM.Y;		// check: external_Y from Plugin instance
-		cfg = Y.merge(CONFIG, cfg);
+		_Y = cfg.Y || PM.Y;		// check: external_Y from Plugin instance
+		cfg = _Y.merge(CONFIG, cfg);
 		try {	// set container, content nodes
-			if (cfg.container instanceof Y.Node) {
+			if (cfg.container instanceof _Y.Node) {
 				this.container = cfg.container;
 			} else {
-				this.container = Y.one(cfg.container);
+				this.container = _Y.one(cfg.container);
 			}
 			delete cfg.container;
 
-			if (cfg.content instanceof Y.Node && cfg.content.one('> .pageGallery')) {
+			if (cfg.content instanceof _Y.Node && cfg.content.one('> .pageGallery')) {
 				this.content = cfg.content;	
 			} else {
 				this.content = this.container.one(cfg.content); 
@@ -160,16 +186,19 @@
 		
 		// parent of div.pageGallery
 		this.isPreview = this.cfg.isPreview
-				|| SNAPPI.PM.Player.bootstrap == false;
+				|| PM.bootstrapY == false;
 
 		// content
 		this.listen = {}; // detach handlers for active listener
 
 	};
+	PM.Player = Player;
+		
 	/*
 	 * end constructor for Player
 	 */
 	Player.prototype = {
+		indexedPhotos: [],
 		setStage : function (container, content) {
 			this.container = container;
 			if (content) {
@@ -188,13 +217,12 @@
 				containerH += this.container.get('clientHeight');
 				containerW += this.container.get('clientWidth');
 			}
-			indexedPhotos = this.indexPhotos();
+			this.indexedPhotos = this.indexPhotos();
 
 			_totalPages = 0;
 			var offset, origRect, 
 				pages = this.content.all('div.pageGallery');
 			pages.each(function(page, i) {
-				var Y = SNAPPI.PM.Y;
 				if (page.get('id') == 'share')
 					return;
 				_totalPages++;
@@ -229,7 +257,7 @@
 						// X : page.get('offsetLeft'),
 						// Y : page.get('offsetTop')
 					// };
-					// origRect = Y.merge(origRect, offset);
+					// origRect = _Y.merge(origRect, offset);
 					// page.addClass('hide');
 					// page.removeClass('hidden');
 				}
@@ -251,8 +279,7 @@
 				try {
 					var pageRect = page.origRect;
 				} catch (e) {
-					var Y = SNAPPI.PM.Y;
-					pageRect = Y.Node.getDOMNode(page);
+					pageRect = _Y.Node.getDOMNode(page);
 				}
 				if (containerH / containerW > pageRect.H / pageRect.W) {
 					this.scale( {
@@ -285,7 +312,11 @@
 				this.container.one('#paging').removeClass('hidden');
 				this.content.removeClass('hidden');
 				this.container.one('#glass').addClass('hide');
-				this.container.one('#glass > .loading').remove();
+				try {
+					this.container.one('#glass > div#bottom').setStyle('opacity', 0.7);
+					this.container.one('#glass > .loading').remove();					
+				} catch (e) {}
+
 			}
 		},
 
@@ -293,25 +324,32 @@
 			if (start === false) {
 				this.stopListeners();
 			} else {
-				var Y = SNAPPI.PM.Y;
 				if (!this.isPreview) {
 					// page nav
-					if (!this.listen['nextPageClick']) this.listen['nextPageClick'] = this.container.one(
-							'#nextPage').on('click', this.nextPageClick, this);
-					if (!this.listen['prevPageClick']) this.listen['prevPageClick'] = this.container.one(
-							'#prevPage').on('click', this.prevPageClick, this);
-					// photo nav
-					if (!this.listen['lightbox']) this.listen['lightbox'] = this.container.one('#glass')
+					if (!this.listen['pageClick']) {
+						this.listen['pageClick'] = this.container.delegate(
+							'click', 
+							this.handlePageClick, 
+							'#nextPage, #prevPage', 
+							this
+						);
+					}
+					// if (!this.listen['prevPageClick']) this.listen['prevPageClick'] = this.container.one(
+							// '#prevPage').on('click', this.prevPageClick, this);
+					// // photo nav
+					if (!this.listen['lightbox']) {
+						this.listen['lightbox'] = this.container.one('#glass')
 							.delegate('click', this.handleLightboxClick,
 									'div, span', this);
+					}
 					// TODO: use custom-hover to subscribe to keypress
-					if (!this.listen['keypress']) this.listen['keypress'] = Y.on('keypress', this.keyAccelerate,
+					if (!this.listen['keypress']) this.listen['keypress'] = _Y.on('keypress', this.keyAccelerate,
 							document, this);
 					if (!this.listen['activateLightBox']) this.listen['activateLightBox'] = this.content.delegate(
 							"click", this.activateLightBox,
 							'div.pageGallery > img', this);					
 				}
-				this.listen.winResize = Y.on('resize', this.winResize,
+				this.listen.winResize = _Y.on('resize', this.winResize,
 						window, this);
 			}
 		},
@@ -333,7 +371,6 @@
 		 * called on next page click
 		 */
 		showPage : function(index) {
-			var Y = SNAPPI.PM.Y;
 			if (!this.isPreview) {
 				this.container.one('#pagenum').set('innerHTML',
 						(index + 1) + "/" + (_totalPages));
@@ -358,24 +395,20 @@
 				}
 			}, this);
 		},
-
-		nextPageClick : function(e) {
-			if (_pageIndex < _totalPages - 1) {
-				this.showPage(++_pageIndex);
+		handlePageClick: function(e) {
+			var button = _Y.Lang.isString(e) ? _Y.one('#'+e) : e.currentTarget;
+			if (button.hasClass('disabled')) return;
+			switch (button.get('id')) {
+				case 'prevPage':
+					this.showPage(--_pageIndex);
+					break;		
+				case 'nextPage':
+					this.showPage(++_pageIndex);
+					break;
 			}
 		},
-
-		/*
-		 * called on previous page click
-		 */
-		prevPageClick : function(e) {
-			if (_pageIndex > 0) {
-				this.showPage(--_pageIndex);
-			}
-		},
-
 		indexPhotos : function() {
-			var indexedPhotos = [];
+			var indexed = [];
 			var t, l, page, img;
 			this.content.all('div.pageGallery').each(function(page, p) {
 				if (page.get('id') == 'share')
@@ -383,26 +416,25 @@
 				page.all('img').each(function(img, j) {
 					t = Math.round(_px2i(img.getStyle('top')));
 					l = Math.round(_px2i(img.getStyle('left')));
-					indexedPhotos.push( {
+					indexed.push( {
 						index : [ p, t, l ],
 						page : p,
 						img : img
 					});
 				});
 			}, this);
-			return indexedPhotos.sort(_sortByIndexASC);
+			return indexed.sort(_sortByIndexASC);
 		},
 
 		/* Called on click of a photo */
 
 		activateLightBox : function(e) {
-			var Y = SNAPPI.PM.Y;
-			if (!this.container.one("#centerbox").hasClass('hide'))
+			if (this.container.one("#centerbox").get('clientHeight')>0)
 				return;
 			var target = e.target;
 			// find index of clicked photo
-			for ( var i in indexedPhotos) {
-				if (target == indexedPhotos[i].img) {
+			for ( var i in this.indexedPhotos) {
+				if (target == this.indexedPhotos[i].img) {
 					_curPhotoIndex = i;
 					break;
 				}
@@ -411,7 +443,7 @@
 			var centerBox = this.container.one("#centerbox").setStyle('opacity',0)
 					.removeClass('hide');
 			var player = this;
-			player.showPhoto(indexedPhotos[i], 'animate');
+			player.showPhoto(this.indexedPhotos[i], 'animate');
 			this.animateOpacity(1, this.cfg.animation.overlayDuration,
 					centerBox);			
 		},
@@ -441,7 +473,6 @@
 		 * click
 		 */
 		closeLightBox : function(e) {
-			var Y = SNAPPI.PM.Y;
 			if (this.container.one("#centerbox").hasClass('hide'))
 				return;
 
@@ -459,78 +490,82 @@
 		},
 
 		showPhoto : function(photo, animate) {
-			var Y = SNAPPI.PM.Y;
+			var animation = this.cfg.animation;
+			var img = this.container.one("#centerbox > img");
 			var src = _stripCrop(photo.img.get('src'));
 			var isCached = _isSrcCached(src);
-			var animation = this.cfg.animation;
-			var lightBoxPhoto = this.container.one("#lightBoxPhoto");
-			lightBoxPhoto.set('src', src);
-			if (isCached) {
-				// immediately available, load photo from browser cache
-				var dim = _getNaturalDim(lightBoxPhoto, animation);
+			var _animateOnDelta = function(){
+				var dim = _getNaturalDim(img, animation);
 				var delta, centerbox = this.container.one("#centerbox");
 				delta = Math.abs(centerbox.get('clientWidth') - dim.W)
 						+ Math.abs(centerbox.get('clientHeight') - dim.H);
 				if (animate || delta >= 50) {
-					lightBoxPhoto.setStyle('opacity', 0.5);
+					img.setStyle('opacity', 0.5);
 					this.animateBox.call(this, dim.W, dim.H, 1000);
+					_Y.later(2000, img, function(){
+						img.setStyle('opacity', 1);		// timeout
+					})	
 				} else {
 					centerbox.setStyles( {
 						width : dim.W,
 						height : dim.H
 					});
 					this.container.one("#closeBox").removeClass('hidden');
-				}
+					img.setStyle('opacity', 1);
+				}				
+			}
+			if (isCached) {
+				img.set('src', src);
+				_Y.later(50, this, function(){
+					return _animateOnDelta.call(this);
+				})
 			} else {
 				// async load img from server
-				lightBoxPhoto.setStyle('opacity', 0.5);
-				var detach = lightBoxPhoto.on('load', function(e, lightBoxPhoto, animation,
-						Y) {
+				img.setStyle('opacity', 0.5);
+				var detach = img.on('load', function(e, img, animation) {
 					detach.detach();
-					var dim = _getNaturalDim(lightBoxPhoto, animation);
-					var delta, centerbox = this.container.one("#centerbox");
-					delta = Math.abs(centerbox.get('clientWidth') - dim.W)
-							+ Math.abs(centerbox.get('clientHeight') - dim.H);
-					this.animateBox.call(this, dim.W, dim.H, delta);
-				}, this, lightBoxPhoto, this.cfg.animation, Y);					
+					return _animateOnDelta.call(this);
+				}, this, img, this.cfg.animation);					
+				img.set('src', src);
 			}
+			if (_curPhotoIndex == this.indexedPhotos.length - 1) {
+				// at last IMG, disable Next
+				this.container.one("#nextPhoto").addClass('hide');
+			} else {
+				this.container.one("#nextPhoto").removeClass('hide');
+			}	
+			if (_curPhotoIndex == 0) {
+				// at first IMG, disable Prev
+				this.container.one("#prevPhoto").addClass('hide');
+			} else {
+				this.container.one("#prevPhoto").removeClass('hide');
+			}			
 		},
 
 		nextPhotoClick : function() {
-			var Y = SNAPPI.PM.Y;
 			var page = 0, top = 1, left = 2;
-			if (_curPhotoIndex + 1 == indexedPhotos.length)
+			if (_curPhotoIndex + 1 == this.indexedPhotos.length)
 				return;
-			var thisPhoto = indexedPhotos[_curPhotoIndex];
-			var nextPhoto = indexedPhotos[++_curPhotoIndex];
+				
+			var thisPhoto = this.indexedPhotos[_curPhotoIndex];
+			var nextPhoto = this.indexedPhotos[++_curPhotoIndex];
 			if (thisPhoto.index[page] != nextPhoto.index[page]) {
 				// we are on last IMG of current page
-				this.nextPageClick();
+				this.handlePageClick('nextPage');
 			}
-			if (_curPhotoIndex == indexedPhotos.length - 1) {
-				// at last IMG, disable Next
-				this.container.one("#nextPage").addClass('hide');
-			} else if (this.container.one("#nextPage").hasClass('hide')) {
-				this.container.one("#nextPage").removeClass('hide');
-			}
+			
 			this.showPhoto(nextPhoto);
 		},
 		prevPhotoClick : function() {
-			var Y = SNAPPI.PM.Y;
 			var page = 0, top = 1, left = 2;
-			if (_curPhotoIndex == 0)
+			if (_curPhotoIndex == 0) 
 				return;
-			var thisPhoto = indexedPhotos[_curPhotoIndex];
-			var nextPhoto = indexedPhotos[--_curPhotoIndex];
+			
+			var thisPhoto = this.indexedPhotos[_curPhotoIndex];
+			var nextPhoto = this.indexedPhotos[--_curPhotoIndex];
 			if (thisPhoto.index[page] != nextPhoto.index[page]) {
 				// we are on first IMG of current page
-				this.prevPageClick();
-			}
-			if (_curPhotoIndex == 0) {
-				// at last IMG, disable Prev
-				this.container.one("#prevPage").addClass('hide');
-			} else if (this.container.one("#prevPage").hasClass('hide')) {
-				this.container.one("#prevPage").removeClass('hide');
+				this.handlePageClick('prevPage');;
 			}
 			this.showPhoto(nextPhoto);
 		},
@@ -539,7 +574,6 @@
 		 * NOTE: when deployed in "Designer", containerH != containerH
 		 */
 		winResize : function(e) {
-			var Y = SNAPPI.PM.Y;
 			var containerH = 0 - this.cfg.FOOTER_H, containerW = 0 - this.cfg.MARGIN_W;
 			if (this.container.get('tagName') == 'BODY') {
 				containerH += this.container.get('winHeight');
@@ -597,6 +631,7 @@
 			}
 			// do not scale larger than native resolution
 			scale = Math.max(scale, nativeMaxRes);
+			scale = (scale > 1) ? scale : 1;
 
 			// scale pages relative to original layout
 			page.setStyles( {
@@ -664,15 +699,14 @@
 		 * animate opacity of the overlay
 		 */
 		animateOpacity : function(opacity, duration, node, onEndCallback) {
-			var Y = SNAPPI.PM.Y;
-			var animation = new Y.Anim( {
+			var animation = new _Y.Anim( {
 				node : node,
 				to : {
 					opacity : opacity
 				}
 			});
 			animation.set('duration', duration);
-			animation.set('easing', Y.Easing.bounceBoth);
+			animation.set('easing', _Y.Easing.bounceBoth);
 			if (onEndCallback != undefined && onEndCallback instanceof Function) {
 				animation.on('end', function(e) {
 					onEndCallback.call(this);
@@ -686,10 +720,9 @@
 		 * the image to enlarged
 		 */
 		animateBox : function(W, H, delta) {
-			var Y = SNAPPI.PM.Y;
-			var lightBoxPhoto = this.container.one("#lightBoxPhoto");
-			lightBoxPhoto.setStyle('opacity', 0.5);
-			var boxAnim = new Y.Anim( {
+			var img = this.container.one("#centerbox > img");
+			img.setStyle('opacity', 0.5);
+			var boxAnim = new _Y.Anim( {
 				node : this.container.one("#centerbox"),
 				to : {
 					width : W,
@@ -697,12 +730,12 @@
 				}
 			});
 			var duration = Math.min(delta / 1000, this.cfg.animation.overlayDuration);
-			boxAnim.set('easing', Y.Easing.bounceBoth);
+			boxAnim.set('easing', _Y.Easing.bounceBoth);
 			boxAnim.set('duration', duration);
 			var detach2 = boxAnim.on('end', function(e) {
 				detach2.detach();
 				this.container.one("#closeBox").removeClass('hidden');
-				this.animateOpacity(1, duration,lightBoxPhoto);
+				this.animateOpacity(1, duration, img);
 			}, this);
 			boxAnim.run();
 		},
@@ -711,7 +744,6 @@
 		 * Key press functionality of next & previous buttons
 		 */
 		keyAccelerate : function(e) {
-			var Y = SNAPPI.PM.Y;
 			if (!this.container.one("#centerbox").hasClass('hide')) {
 				// change Photo
 				e.preventDefault();
@@ -736,22 +768,14 @@
 		},		
 	}
 
-	/*
-	 * global variables
-	 */
-	SNAPPI.PM.Player = Player;
-
-	/*
-	 * yui bootstrap
-	 */
-	SNAPPI.PM.Player.bootstrap = SNAPPI.yuiConfig == undefined;
-	if (SNAPPI.PM.Player.bootstrap) {
+	
+	if (PM.bootstrapY) {
 		/*
 		 * yui3 config
 		 */
-		if (SNAPPI.PM.yuiConfig == undefined) {
-			_namespace('SNAPPI.PM.yuiConfig.yui');
-			SNAPPI.PM.yuiConfig.yui = { // GLOBAL
+		if (PM.yuiConfig == undefined) {
+			PM.namespace('SNAPPI.PM.yuiConfig');
+			PM.yuiConfig.yui = { // GLOBAL
 				base : "http://yui.yahooapis.com/combo?3.3.0/build/",
 				timeout : 10000,
 				loadOptional : false,
@@ -762,22 +786,23 @@
 			};
 		}
 
-		YUI(SNAPPI.PM.yuiConfig.yui).use("event-delegate", "node", "anim",
+		YUI(PM.yuiConfig.yui).use("event-delegate", "node", "anim",
 		/*
 		 * yui callback
 		 */
 		function(Y, result) {
 			if (!result.success) {
-				Y.log('Load failure: ' + result.msg, 'warn', 'Example');
+				_Y.log('Load failure: ' + result.msg, 'warn', 'Example');
 			} else {
-				SNAPPI.PM.Y = Y;
+				PM.Y = Y;
+				if (_Y === null) _Y = Y;
 				/*
-				 * Y.Node/DOM Element Helper Functions
+				 * _Y.Node/DOM Element Helper Functions
 				 */
-				Y.Node.prototype.dom = function() {
-					return Y.Node.getDOMNode(this);
+				_Y.Node.prototype.dom = function() {
+					return _Y.Node.getDOMNode(this);
 				};
-				Y.Node.prototype.ynode = function() {
+				_Y.Node.prototype.ynode = function() {
 					return this;
 				};
 				try {
@@ -785,16 +810,16 @@
 						return this;
 					};
 					HTMLElement.prototype.ynode = function() {
-						return Y.one(this);
+						return _Y.one(this);
 					};
 				} catch (e) {
 				}
-				var player = new SNAPPI.PM.Player();
-				Y.on('contentready', function(e){
+				var player = new PM.Player();
+				_Y.on('contentready', function(e){
 					player.init();
 				},'#content > div:first-child', this )
 
-				Y.on("domready", function() {
+				_Y.on("domready", function() {
 					player.init();
 				});
 			}

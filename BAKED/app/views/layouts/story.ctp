@@ -1,7 +1,12 @@
+<?php echo header('Pragma: no-cache');
+	  echo header('Cache-control: no-cache');
+	  echo header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); 
+?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
     <head>
         <!--[if IE]><style> img {behavior: url(/app/pagemaker/js/fixnaturalwh.htc)}</style><![endif]-->
+        <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge" /><![endif]-->
         <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
         <link href="http://snaphappi.com/img/favicon.ico" type="image/x-icon" rel="icon" />
         <title>Snaphappi Page Gallery</title>

@@ -26,7 +26,7 @@ body {
 	xfont-family: 'HelveticaNeueRoman';
 	font: 1em Arial,Helvetica,Verdana,sans-serif;
 	font-family: Arial;
-	background: url(../images/body_bg.jpg) no-repeat center top;
+	background: url(../images/body_bg.jpg) no-repeat center top #CEE9F0;
 }
 
 body.wait, body.wait a {

@@ -14,10 +14,9 @@
 	/*
      * shorthand
      */
-    // var Y = PM.Y;
 	var _Y = null;
+	var Plugin = null;
 	var PM = SNAPPI.namespace('SNAPPI.PM');
-	SNAPPI.namespace('SNAPPI.PM.onYready');
 	// Yready init
 	PM.onYready.NodeFactory = function(Y){
 		if (_Y === null) _Y = Y;

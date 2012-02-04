@@ -3,7 +3,6 @@
 	var _Y = null;
 	var Plugin = null;
 	var PM = SNAPPI.namespace('SNAPPI.PM');
-	SNAPPI.namespace('PM.onYready');
 	// Yready init
 	PM.onYready.Menu = function(Y){
 		if (_Y === null) _Y = Y;

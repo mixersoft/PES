@@ -11,11 +11,9 @@
 	/*
      * shorthand
      */
-    // var Y = PM.Y;
 	var _Y = null;
-	var PM = SNAPPI.namespace('SNAPPI.PM');
-	SNAPPI.namespace('SNAPPI.PM.onYready');
-	// Yready init
+	var Plugin = null;
+	var PM = SNAPPI.namespace('SNAPPI.PM');	// Yready init
 	PM.onYready.Datasource = function(Y){
 		if (_Y === null) _Y = Y;
 		_Y.extend(SnappiXmlCatalog, SNAPPI.XmlDatasource);
