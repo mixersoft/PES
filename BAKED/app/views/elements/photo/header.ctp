@@ -11,14 +11,19 @@
 		'lm'=>'/css/images/img_2.gif',
 		'll'=>'/css/images/img_3.gif',
 	);
+	$xhrFrom = Configure::read('controller.xhrFrom');
+	$passedArgs = Configure::read('passedArgs.min');
+	$next = array('controller'=>$xhrFrom['alias'],'action'=>'photos', $xhrFrom['uuid']) + $passedArgs;
+	$tokens['total'] = $total; 
 	if ($isPreview) {
-		$xhrFrom = Configure::read('controller.xhrFrom');
-		$passedArgs = Configure::read('passedArgs.min');
-		$next = array('controller'=>$xhrFrom['alias'],'action'=>'photos', $xhrFrom['uuid']) + $passedArgs;
-		$tokens['total'] = $total; 
+		$tokens['type'] = ($total==1 ? "Snap. " : "Snaps. ");		
 		$tokens['linkTo'] = $this->Html->link('Show all', $next); 
-		$tokens['type'] = ($total==1 ? "Snap. " : "Snaps. ");
 		$header_content = String::insert("Total <span class=''>:total</span> :type :linkTo", $tokens);
+	} else {
+		// NOT isPreview	
+		$tokens['type'] = ($total==1 ? "Snap " : "Snaps ");		
+		$tokens['linkTo'] = Router::url($next);
+		$btn_snaps= String::insert("<a href=':linkTo'>:total :type</a>", $tokens); 
 	}
 	$isRelated = empty($this->params['url']['gallery']);
 	if ($isPreview && $isRelated) {
@@ -46,7 +51,7 @@
 	
 	<ul class="toolbar inline grid_3">
 		<li class="btn white select-all"><span class="menu-open"><input type="checkbox" value="" name=""></span></li>
-		<li><h1><?php echo $total; ?>  Snaps</h1></li>
+		<li class='btn orange snap-count'><?php echo $btn_snaps; ?></li>
 	</ul>	
 <?php  } ?>
     <nav class="settings window-options push_6 grid_7">

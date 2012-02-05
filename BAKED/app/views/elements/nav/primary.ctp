@@ -11,7 +11,8 @@
 	$passed = array_intersect_key($this->passedArgs, array('sort'=>1, 'direction'=>1, 'page'=>1, 'perpage'=>1));	// copy of array
 	$controllerAttr = Configure::read('controller');
 	$sections = array();
-	if ( AppController::$userid) { 
+// debug($controllerAttr);	
+	if ( AppController::$userid ) {	// authenticated
 		$sections['Home']=array('label'=>'Home','href'=>'/my/home');
 		$sections['Circles']=array('label'=>'Circles','href'=>'/my/groups');
 		$sections['Snaps']=array('label'=>'Snaps','href'=>'/my/photos');
@@ -21,7 +22,7 @@
 		$exploreAction = ($controllerAttr['alias'] == 'my') ? $controllerAttr['action'] : $controllerAttr['alias'] ;
 		if ( $exploreAction == 'home' ) $exploreAction = 'photos';
 		$sections['Explore']=array('label'=>'Explore','href'=>"/{$exploreAction}/all");
-	} else {
+	} else { // visitor
 		$sections['Circles']=array('label'=>'Circles','href'=>'/groups/all');
 		$sections['Snaps']=array('label'=>'Snaps','href'=>'/photos/all');
 		$sections['People']=array('label'=>'People','href'=>'/person/all');		
@@ -29,7 +30,7 @@
 	}
 	
 	
-	$focus = Session::read("nav.primary");
+	$focus = Session::read("nav.primary");	// [Home,Circles,Snaps,People,'']
 	// $sections[$focus]['href'] = "javascript:;"; // unset href for section with focus
 	if ($focus) $sections[$focus]['class'] = 'class="focus"';
 	$help_status =  ($controllerAttr['name'] == 'Help') ? 'green' : 'blue-gloss'; 
