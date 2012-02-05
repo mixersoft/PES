@@ -682,7 +682,7 @@ console.error("4) launchPagemaker(): snappi-pm:after-launch");
         ItemHeaderClick : function(cfg) {
         	var node = cfg.node || _Y.one('section.item-header');
         	var action = 'ItemHeaderClick';
-        	var selector = '*';
+        	var selector = 'li.icon.context-menu';
         	// if (cfg.type) selector += '.'+cfg.type ;
         	
         	node.listen = node.listen || {};
