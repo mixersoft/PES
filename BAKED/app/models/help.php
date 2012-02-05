@@ -1,7 +1,7 @@
 <?php
 class Help extends AppModel {
 	public $name = 'Help';
-	public $useTable = 'Help';
+	public $useTable = 'help';
 	public $actsAs = array(
 		'Comments.Sluggable' => array('label' => 'title'),	
 	);	

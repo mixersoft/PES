@@ -25,6 +25,7 @@ class AppController extends Controller {
 	 * @access public
 	 */
 	function beforeFilter() {
+		$this->helpers[] = 'Layout';
 		$this->__check_browserRedirect();
 		//Set application wide actions which do not require authentication
 
@@ -364,7 +365,6 @@ class AppController extends Controller {
 		Stagehand::$stage_baseurl =  '/'.Configure::read('path.stageroot.httpAlias').'/';
 		
 		// $this->viewVars['jsonData']['named'] = $this->params['named'];
-		$this->helpers[] = 'Layout';
 	}
 	
 	/*
