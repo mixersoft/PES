@@ -34,9 +34,8 @@
 <table cellpadding="0" cellspacing="0">
 	<tr>
 		<th><?php echo $this->Paginator->sort('name');?></th>
+		<th><?php echo $this->Paginator->sort('body');?></th>
 		<th><?php echo $this->Paginator->sort('author_name');?></th>
-		<th><?php echo $this->Paginator->sort('author_email');?></th>
-		<th><?php echo $this->Paginator->sort('author_url');?></th>
 		<th><?php echo $this->Paginator->sort('created');?></th>
 		<th><?php echo $this->Paginator->sort('is_spam');?></th>
 		<th><?php echo $this->Paginator->sort('approved');?></th>
@@ -53,16 +52,13 @@
 	?>
 		<tr<?php echo $class;?>>
 			<td>
-				<?php echo h($comment['Comment']['title']); ?>
+				<?php echo h($this->Text->truncate($comment['Comment']['title'], 40)); ?>
 			</td>
 			<td>
-				<?php echo h($comment['Comment']['author_name']); ?>
-			</td>
+				<?php echo h($this->Text->truncate($comment['Comment']['body'],60)); ?>
+			</td>			
 			<td>
-				<?php echo h($comment['Comment']['author_email']); ?>
-			</td>
-			<td>
-				<?php echo h($comment['Comment']['author_url']); ?>
+				<?php echo h($comment['Comment']['user_id']); ?>
 			</td>
 			<td>
 				<?php echo $comment['Comment']['created']; ?>
