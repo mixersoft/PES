@@ -568,6 +568,7 @@ section.gallery-display-options.wide ul > li.label {
 .FigureBox.lm > figure > img , .FigureBox.lm > figure > a > img {
 	width: 144px;
 	height: 96px;
+	display: inline-block;
 }
 
 /*
@@ -1547,7 +1548,7 @@ section.item-header .window-options ul {
 	margin-bottom: 10px;
 }
 .FigureBox.Person.sq figure {
-	margin:2px;
+	xmargin:2px;
 	padding:2px;
 	-webkit-border-radius: 4px;
 	-moz-border-radius: 4px;		
@@ -1555,6 +1556,7 @@ section.item-header .window-options ul {
 .FigureBox.Person.sq figure > a > img {
 	width: 75px;
 	height: 75px;
+	display: inline-block;
 }
 .FigureBox.Person.sq.small figure > a > img {
 	width: 48px;
@@ -1583,6 +1585,7 @@ section.item-header .window-options ul {
 .FigureBox.Person.lm figure > a > img {
 	width: 144px;
 	height: 96px;
+	display: inline-block;
 }
 .FigureBox.Person.lm  figcaption {
 	display: block;

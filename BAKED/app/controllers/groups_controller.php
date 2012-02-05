@@ -69,7 +69,7 @@ class GroupsController extends AppController {
 			
 			'limit' => 8,
 			'big_limit' =>36,
-			'order'=>array('Member.created'=>'ASC'),
+			'order'=>array('Member.lastVisit'=>'DESC'),
 			'recursive'=> -1,
 			'fields' =>'Member.*',
 			'joins' => array()
