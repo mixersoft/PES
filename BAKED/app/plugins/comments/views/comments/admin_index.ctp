@@ -58,7 +58,7 @@
 					switch($comment['Comment']['model']) {
 						case "Help":
 							$next = "/help/topic/{$uuid}#comment{$comment['Comment']['id']}";
-							$label = $uuid;
+							$label = substr($uuid, strpos($uuid,'~')+1);
 							break;
 						case "Asset":
 							$next = "/photos/discussion/{$uuid}#comment{$comment['Comment']['id']}";
@@ -70,7 +70,7 @@
 							break;
 					}
 					echo $this->Html->link($label, $next, array('target'=>'_blank')); 
-				?>
+				?>&nbsp;
 			</td>
 			<td>
 				<?php echo h($this->Text->truncate($comment['Comment']['title'], 40)); ?>
@@ -101,12 +101,12 @@
 			</td>
 			<td class="actions">
 				<?php echo $this->Html->link(__d('comments', 'Approve', true), array('action' => 'approve', $comment['Comment']['id'])); ?>
-				<?php echo $this->Html->link(__d('comments', 'Mark as spam', true), array('action' => 'spam', $comment['Comment']['id'])); ?>
-				<?php echo $this->Html->link(__d('comments', 'Mark as ham', true), array('action' => 'ham', $comment['Comment']['id'])); ?>
-				<?php echo $this->Html->link(__d('comments', 'Disapprove', true), array('action' => 'disapprove', $comment['Comment']['id'])); ?>
-				<?php echo $this->Html->link(__d('comments', 'View', true), array('action' => 'view', $comment['Comment']['id'])); ?>
-				<?php echo $this->Html->link(__d('comments', 'Edit', true), array('action' => 'edit', $comment['Comment']['id'])); ?>
-				<?php echo $this->Html->link(__d('comments', 'Delete', true), array('action' => 'delete', $comment['Comment']['id']), null, sprintf(__d('comments', 'Are you sure you want to delete # %s?', true), $comment['Comment']['id'])); ?>
+				| <?php echo $this->Html->link(__d('comments', 'Mark as spam', true), array('action' => 'spam', $comment['Comment']['id'])); ?>
+				| <?php echo $this->Html->link(__d('comments', 'Mark as ham', true), array('action' => 'ham', $comment['Comment']['id'])); ?>
+				| <?php echo $this->Html->link(__d('comments', 'Disapprove', true), array('action' => 'disapprove', $comment['Comment']['id'])); ?>
+				| <?php echo $this->Html->link(__d('comments', 'View', true), array('action' => 'view', $comment['Comment']['id'])); ?>
+				| <?php echo $this->Html->link(__d('comments', 'Edit', true), array('action' => 'edit', $comment['Comment']['id'])); ?>
+				| <?php echo $this->Html->link(__d('comments', 'Delete', true), array('action' => 'delete', $comment['Comment']['id']), null, sprintf(__d('comments', 'Are you sure you want to delete # %s?', true), $comment['Comment']['id'])); ?>
 			</td>
 		</tr>
 	<?php endforeach; ?>
