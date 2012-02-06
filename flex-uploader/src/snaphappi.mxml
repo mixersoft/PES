@@ -19,7 +19,7 @@
 							   horizontalCenter="0" verticalCenter="0">
 				<s:Label id="loading" color="#FFFFFF" fontSize="16" horizontalCenter="0" 
 						 paddingBottom="20" paddingLeft="10" paddingRight="10" paddingTop="20"
-						 verticalCenter="0">Please wait while we load the application...</s:Label>
+						 verticalCenter="0" textAlign="center" text="{waitLabel}"></s:Label>
 			</s:BorderContainer>
 		</s:BorderContainer>
 	</s:BorderContainer>
@@ -55,6 +55,8 @@
 			
 			public var UI:UploaderUI;
 			public var Datasource:UploaderDatasource;
+			[Bindable]
+			private var waitLabel = "Please wait while we \nconnect to the internet and load the application..."
 			
 			/**
 			 *	set appRoot folder inside project folder if DEBUG=true 
@@ -91,6 +93,13 @@
 			}
 			
 			private function init():void{
+				var appXml:XML = NativeApplication.nativeApplication.applicationDescriptor;
+				var ns:Namespace = appXml.namespace();
+				/*
+				* update Version Number
+				*/
+				waitLabel += "\n(v "+appXml.ns::versionNumber+")";
+				
 				Config.init();
 				MagickUtils.init();
 				var MODE:String = 'prod';	// dev.snaphappi.com
@@ -223,16 +232,11 @@
 				// start dragdrop listener
 				Config.UI.nativeDDAllowed(true);
 				
-		Config.jsGlobal.firebugLog("Before getDbFile()");
 				// DEV show db file
 				var dbFile:File = File.applicationDirectory.resolvePath(Config.sql.getDbFile());
 				Config.jsGlobal.firebugLog('>>>>>>>>>> using DB File=' + dbFile.nativePath );
-				Config.jsGlobal.firebugLog('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    flex:onYuiDomReady COMPLETE' );
-				var appXml:XML = NativeApplication.nativeApplication.applicationDescriptor;
+//				Config.jsGlobal.firebugLog('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>    flex:onYuiDomReady COMPLETE' );
 				Config.jsGlobal.firebugLog('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>  NativeAppliction:');
-				var ns:Namespace = appXml.namespace();
-				Config.jsGlobal.firebugLog("Version: " + appXml.ns::versionNumber);
-				Config.jsGlobal.firebugLog(NativeApplication.nativeApplication.publisherID);
 //				Config.jsGlobal.firebugLog(appXml);
 			}
 			
