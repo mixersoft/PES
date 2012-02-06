@@ -56,7 +56,7 @@
 			public var UI:UploaderUI;
 			public var Datasource:UploaderDatasource;
 			[Bindable]
-			private var waitLabel = "Please wait while we \nconnect to the internet and load the application..."
+			private var waitLabel:String = "Please wait while we \nconnect to the internet and load the application..."
 			
 			/**
 			 *	set appRoot folder inside project folder if DEBUG=true 
