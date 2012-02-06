@@ -33,6 +33,7 @@
 
 <table cellpadding="0" cellspacing="0">
 	<tr>
+		<th><?php echo $this->Paginator->sort( 'Target','foreign_key');?></th>
 		<th><?php echo $this->Paginator->sort('name');?></th>
 		<th><?php echo $this->Paginator->sort('body');?></th>
 		<th><?php echo $this->Paginator->sort('author_name');?></th>
@@ -51,6 +52,26 @@
 		}
 	?>
 		<tr<?php echo $class;?>>
+			<td>
+				<?php 
+					$uuid = $comment['Comment']['foreign_key'];
+					switch($comment['Comment']['model']) {
+						case "Help":
+							$next = "/help/topic/{$uuid}#comment{$comment['Comment']['id']}";
+							$label = $uuid;
+							break;
+						case "Asset":
+							$next = "/photos/discussion/{$uuid}#comment{$comment['Comment']['id']}";
+							$label = 'Photo';
+							break;
+						case "Group":
+							$next = "/groups/discussion/{$uuid}#comment{$comment['Comment']['id']}";
+							$label = "Group";
+							break;
+					}
+					echo $this->Html->link($label, $next, array('target'=>'_blank')); 
+				?>
+			</td>
 			<td>
 				<?php echo h($this->Text->truncate($comment['Comment']['title'], 40)); ?>
 			</td>

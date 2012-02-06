@@ -70,19 +70,19 @@ class CommentsController extends CommentsAppController {
 			$this->Comment->filterArgs = array(
 				array('name' => 'is_spam', 'type' => 'value'),
 				array('name' => 'approved', 'type' => 'value'),
+				array('name' => 'model', 'type' => 'value'),
 			);
 			$this->Prg->commonProcess();
-			$this->Comment->parseCriteria($this->passedArgs);
+			$conditions = $this->Comment->parseCriteria($this->passedArgs);
 		}
-
 		$this->paginate['Comment'] = array(
 			'conditions' => $conditions,
 			'contain' => array('UserModel'),
 			'order' => 'Comment.created DESC'); 
 		if ($type == 'spam') {
-			$this->paginate['Comment']['conditions'] = array('Comment.is_spam' => array('spam', 'spammanual'));
+			$this->paginate['Comment']['conditions'] = mergeAsArray(array('Comment.is_spam' => array('spam', 'spammanual')), $conditions);
 		} elseif ($type == 'clean') {
-			$this->paginate['Comment']['conditions'] = array('Comment.is_spam' => array('ham', 'clean'));
+			$this->paginate['Comment']['conditions'] = mergeAsArray(array('Comment.is_spam' => array('ham', 'clean')),$conditions);
 		}
 		$this->set('comments', $this->paginate('Comment'));
 	}
