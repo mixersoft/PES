@@ -176,7 +176,7 @@
             _Y.io(uri, ioCfg);
         },
         
-        post : function(uri, postData, callback, args, sync){	
+        post : function(uri, postData, callback, args, sync, timeout){	
             // POST to uri
             var v, post = [];
             // stringify post params
@@ -202,7 +202,7 @@
                         var check;
                     }
                 },
-                timeout: 6000,
+                timeout: timeout || 6000,
                 context: this
             };
             if (args != undefined) 

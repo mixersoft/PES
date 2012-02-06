@@ -242,12 +242,15 @@
      * 		SYNCHRONOUS XHR
      */
     Casting.CustomFitArrangement = function (Pr, cfg) {
+    	// this is a syncronous call
     	var A = SNAPPI.PM.Catalog.getCustomFitArrangement.call(Pr, Pr, cfg.roleCount, {
     		success:function(A){
     			var check;
     		},
     		failure:function(o) {
     			// timeout
+    			var check;
+    			alert("Sorry, there was a problem building this Story. Please try again with a different mix of Snaps");
     		}
     	});
 		var check;

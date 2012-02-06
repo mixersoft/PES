@@ -129,7 +129,7 @@
         /*
          * use SNAPPI.IO.getIORequest if we need a loading mask
          */
-        var o = SNAPPI.io.post.call(this, uri, data, post_callback, {}, sync = true);
+        var o = SNAPPI.io.post.call(this, uri, data, post_callback, {}, sync = true, 2000);
         // A set in post_callback via closure
         return A;
     };
