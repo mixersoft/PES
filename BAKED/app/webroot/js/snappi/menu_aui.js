@@ -954,7 +954,7 @@ console.error("PreviewPhoto delete is still incomplete");
 			menu.hide();
 		});
 		delayed.delay(1000);
-		SNAPPI.UIHelper.create.launchPagemaker(_Y);
+		SNAPPI.UIHelper.create.load_then_launch_PageMaker(_Y);
 	};	
 	MenuItems.express_upload_beforeShow = function(menuItem, menu, properties){
 		// if this group is marked for express-upload, add .selected

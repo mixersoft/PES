@@ -104,9 +104,9 @@
     			this._lazyLoad(cfg);
     		}
     		else {
-    			_Y.fire('snappi-pm:afterPagemakerLoad', _Y);
-    			this.external_Y.fire('snappi-pm:afterPagemakerLoad', _Y);
-    			// fire('snappi-pm:afterPagemakerLoad', PM.Y);
+    			_Y.fire('snappi-pm:pagemaker-load-complete', _Y);
+    			this.external_Y.fire('snappi-pm:pagemaker-load-complete', _Y);
+    			// fire('snappi-pm:pagemaker-load-complete', PM.Y);
     		}
     	},
     	_lazyLoad: function(cfg){
@@ -114,7 +114,7 @@
 			var self = this;
 			// supports WindowOptionClick, primary header menu, xhr init
 			var modules_1 = [
-				'node', 'event', 'event-custom',
+				// 'node', 'event', 'event-custom',
 				/*
 				 * for datasource3.js.
 				 * TODO: refactor to delay init of _queue until class init
@@ -122,7 +122,7 @@
 				'async-queue',
 			];
 			var modules_2 = [
-				'snappi-event-hover',
+				// 'snappi-event-hover',
 				'snappi-pm-main','snappi-pm-util','snappi-pm-catalog3','snappi-pm-node3',
 				'snappi-pm-datasource3','snappi-pm-casting','snappi-pm-audition',
 	    		'snappi-pm-arrangement','snappi-pm-role','snappi-pm-production',
@@ -136,9 +136,12 @@
 			 * callback
 			 */
 			var onlazyload = function(Y, result){
-				PageMakerPlugin.loaded = true;
-				Y.fire('snappi-pm:afterPagemakerLoad', Y);
-				self.external_Y.fire('snappi-pm:afterPagemakerLoad', Y);
+				// wait for LazyLoad.helpers.after_LazyLoadCallback()
+				var detach = Y.on('snappi-pm:lazyload-complete', function(){
+					PageMakerPlugin.loaded = true;
+					Y.fire('snappi-pm:pagemaker-load-complete', Y);
+					self.external_Y.fire('snappi-pm:pagemaker-load-complete', Y);
+				})
 			}
 			LazyLoad.use(modules, onlazyload, null );
 		},
@@ -163,6 +166,7 @@
      */
     
 	var Config = function(){};    
+	Config._name = 'snappi-pm';
 	PM.Config = Config;	// make global
 	var _CFG = {		// frequently used startup Config params 
 			DEBUG : {	// default when hostname==git*
@@ -170,7 +174,7 @@
 	    		air_comboBase: 'app/air&',
 	    		pagemaker_comboBase: 'app/pagemaker&',
 	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
-	    		pagemaker_useCombo: 0,
+	    		pagemaker_useCombo: SNAPPI.Y ? 0 : 1,
 	    		alloy_useCombo: true,
 	    		yahoo_CDN: 0,
 	    		YUI_VERSION: '3.3.0',	// this is actually set in aui.js
@@ -208,12 +212,12 @@
 	    	// AUI will set base for yui load	
 	     	// yui3 base for alloy_useCombo=false
 	    	// base: "/svc/lib/yui3/",		 
-	        timeout: 10000,
+	        timeout: 10500,
 	        loadOptional: false,
 	        combine: hostCfg.alloy_useCombo,	// yui & alloy combine values will match 
 	        allowRollup: true,
 	//      filter: "MIN",		// ['MIN','DEBUG','RAW'], default='RAW'        
-	//		filter: "DEBUG",
+			// filter: "DEBUG",
 	        filter: hostCfg.alloy_useCombo ? 'MIN' : "RAW",
 	        insertBefore: 'css-start',
 			groups: {
@@ -239,6 +243,7 @@
     * LazyLoad Static Class
     */
 	var LazyLoad = function(){}
+	LazyLoad._name = "snappi-pm";
 	PM.LazyLoad = LazyLoad;
 	/*	
 	 * Helper Functions for managing async state of Y.use()
@@ -247,7 +252,8 @@
 		before_LazyLoad : function(){
 			// BEFORE Y instance, Y.node is available
 			// initialize wait
-			document.body.className += ' wait';
+			var className = document.body.className;
+			if (!/wait/.test(className)) document.body.className += ' wait';
 		},
 		before_LazyLoadCallback : function(Y, result){
 			// SNAPPI.Y = Y;	// update global with new modules
@@ -272,15 +278,14 @@
 			SNAPPI.setPageLoading = LazyLoad.helpers.setPageLoading;
 		},
 		after_LazyLoadCallback : function(Y){
-			LazyLoad.helpers.setPageLoading(false);
+			LazyLoad.helpers.setPageLoading(false, Y);
 		},		
-		setPageLoading : function (value) {
+		setPageLoading : function (value, Y) {
         	try {
 	        	if (value == undefined) return _Y.one('body').hasClass('wait');
 	        	if (value) _Y.one('body').addClass('wait');
 	        	else {
 	        		_Y.one('body').removeClass('wait');
-	        		_Y.one('#related-content').removeClass('hide');
 	        	}
         	} catch (e) {}
         	return value ? true : false;
@@ -321,26 +326,30 @@
 	LazyLoad.use = function(modules, onlazyload, cfg) {
 		// before/after calling onlazyload callback
 		cfg = cfg || {};
-		before = cfg.before || LazyLoad.helpers.before_LazyLoadCallback;
-		after = cfg.after || LazyLoad.helpers.after_LazyLoadCallback;
-		var wrappedCallback = function(Y, result){
+		var before = cfg.before || LazyLoad.helpers.before_LazyLoadCallback;
+		var after = cfg.after || LazyLoad.helpers.after_LazyLoadCallback;
+		var wrappedCallback = function(Y, result){	// PAGEMAKER
 			if (!result.success) {
 				
 				Y.log('Load failure: ' + result.msg, 'warn', 'Example')
 				
-			}
+			} else 	PM.Y = _Y = Y;
 			if (before) before(Y, result);
 			onlazyload(Y, result);
 			if (after) after(Y, result);
+			_Y.fire('snappi-pm:lazyload-complete');
 		}
-		modules.push(wrappedCallback);
+		modules.push(wrappedCallback);		// snappi-pm
 		
 		if (_Y===null) {
-			_Y = AUI(Config.getYuiConfig());
+			if (0 && SNAPPI.Y) {
+				_Y = SNAPPI.Y;
+				_Y.applyConfig(Config.getYuiConfig());
+			} else _Y = AUI(Config.getYuiConfig());
 			PM.Y = _Y;
 		} 
 		LazyLoad.helpers.before_LazyLoad();
-		
+console.info("snappi-pm: SNAPPI.PM.Y.use()");		
 		// begin loading modules
 		_Y.use.apply(_Y, modules);
 	}

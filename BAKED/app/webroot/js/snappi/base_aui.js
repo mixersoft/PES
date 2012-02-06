@@ -154,14 +154,15 @@
     /***********************************************************************************
      * Config - bootstrap config methods
      */
-	var Config = function(){};    
+	var Config = function(){};  
+	Config._name = 'snappi';  
 	SNAPPI.Config = Config;	// make global
 	var _CFG = {		// frequently used startup Config params 
 			DEBUG : {	// default when hostname==git*
 	    		snappi_comboBase: 'baked/app/webroot&',
 	    		air_comboBase: 'app/air&',
-	    		snappi_useCombo: 0,					// <-- TESTING SNAPPI useCombo
-	    		pagemaker_useCombo: 0,
+	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
+	    		pagemaker_useCombo: 1,
 	    		alloy_useCombo: true,
 	    		yahoo_CDN: 0,
 	    		YUI_VERSION: '3.3.0',	// this is actually set in aui.js
@@ -266,7 +267,9 @@
 	        		_Y.one('body').removeClass('wait');
 	        		_Y.one('#related-content').removeClass('hide');
 	        	}
-        	} catch (e) {}
+        	} catch (e) {
+        		var check;
+        	}
         	return value ? true : false;
         },		
 		add_ynode : function(Y) {
@@ -305,17 +308,18 @@
 	LazyLoad.use = function(modules, onlazyload, cfg) {
 		// before/after calling onlazyload callback
 		cfg = cfg || {};
-		before = cfg.before || LazyLoad.helpers.before_LazyLoadCallback;
-		after = cfg.after || LazyLoad.helpers.after_LazyLoadCallback;
-		var wrappedCallback = function(Y, result){
+		var before = cfg.before || LazyLoad.helpers.before_LazyLoadCallback;
+		var after = cfg.after || LazyLoad.helpers.after_LazyLoadCallback;
+		var wrappedCallback = function(Y, result){	// SNAPPI
 			if (!result.success) {
 				
 				Y.log('Load failure: ' + result.msg, 'warn', 'Example')
 				
-			}
+			} else SNAPPI.Y = _Y = Y;
 			if (before) before(Y, result);
 			onlazyload(Y, result);
 			if (after) after(Y, result);
+			_Y.fire('snappi:lazyload-complete');
 		}
 		modules.push(wrappedCallback);
 		
@@ -469,6 +473,7 @@
 			/*
 			 * all script files loaded, begin init
 			 */
+			// TODO: listen for Y.on('snappi-pm:lazyload-complete' ????
 			Y.on("domready", function() {
 		    	_main(Y);
 		    });

@@ -13,6 +13,7 @@
  * - loaded by base.js, SNAPPI.PageMakerPlugin.load()
  *
  */
+console.log("PM.main - start");
 (function(){
 	/*
      * shorthand
@@ -227,8 +228,8 @@
             Plugin.stage.body.append(pgGettingStarted);
             // use external_Y
 console.error("3) main.launch(): complete. before create()"); 
-            _Y.fire('snappi-pm:after-launch', Plugin.stage);
-            PM.pageMakerPlugin.external_Y.fire('snappi-pm:after-launch', Plugin.stage);
+            _Y.fire('snappi-pm:pagemaker-launch-complete', Plugin.stage);
+            PM.pageMakerPlugin.external_Y.fire('snappi-pm:pagemaker-launch-complete', Plugin.stage);
             
             
         };  
@@ -406,3 +407,4 @@ console.error("3) main.launch(): complete. before create()");
     };
     
 })();
+console.log("PM.main - end");

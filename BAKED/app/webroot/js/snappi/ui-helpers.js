@@ -474,61 +474,61 @@
 			}
 			
 			return;
-			/*
-			 * 
-			 */
-			switch(g && g._cfg.type) {
-				case 'Lightbox':  // use POST to get lightbox selected
-					// SNAPPI.PM.main.launch(ioCfg);
-					var lightbox = g.container.ancestor('#lightbox');
-					if (lightbox.hasClass('is-preview')) {
-						// use ioCfg and POST for auditions
-						// use sceneCfg.tryout
-						PM.pageMakerPlugin.sceneCfg.auditions = null; 
-						
-						if (!PM.pageMakerPlugin.ioCfg.complete) {
-							// Plugin already loaded, just launch with Post
-							var ioCfg = this.postCastingCall(cfg);
-							PM.pageMakerPlugin.setPost(ioCfg);
-							fn_create = function() {
-								SNAPPI.PM.main.launch(PM.pageMakerPlugin);
-							}
-						} else {
-							// TODO: remember to invalidate after lightbox drop
-							var check = PM.pageMakerPlugin.sceneCfg.tryout;
-							PM.pageMakerPlugin.setStage(this.getStage());
-							fn_create = SNAPPI.PM.main.makePageGallery;
-						}
-						return fn_create;
-						/*
-						 * 	return ******************************
-						 */
-					} else {
-						// simple case. use lightbox.Gallery.auditionSH 
-						fn_create = SNAPPI.PM.main.makePageGallery;
-					}
-					break;
-				case 'Photo':
-					// simple case. use sceneCfg.auditions to render performance
-					fn_create = SNAPPI.PM.main.makePageGallery;
-					break;
-			}	
-			
-			// prepare for simple case
-			var sceneCfg = this.getSceneCfg(cfg);
-			PM.pageMakerPlugin.setScene(sceneCfg);
-			PM.pageMakerPlugin.setStage(this.getStage());
-			
-			return 	fn_create;	
+			// /*
+			 // * 
+			 // */
+			// switch(g && g._cfg.type) {
+				// case 'Lightbox':  // use POST to get lightbox selected
+					// // SNAPPI.PM.main.launch(ioCfg);
+					// var lightbox = g.container.ancestor('#lightbox');
+					// if (lightbox.hasClass('is-preview')) {
+						// // use ioCfg and POST for auditions
+						// // use sceneCfg.tryout
+						// PM.pageMakerPlugin.sceneCfg.auditions = null; 
+// 						
+						// if (!PM.pageMakerPlugin.ioCfg.complete) {
+							// // Plugin already loaded, just launch with Post
+							// var ioCfg = this.postCastingCall(cfg);
+							// PM.pageMakerPlugin.setPost(ioCfg);
+							// fn_create = function() {
+								// SNAPPI.PM.main.launch(PM.pageMakerPlugin);
+							// }
+						// } else {
+							// // TODO: remember to invalidate after lightbox drop
+							// var check = PM.pageMakerPlugin.sceneCfg.tryout;
+							// PM.pageMakerPlugin.setStage(this.getStage());
+							// fn_create = SNAPPI.PM.main.makePageGallery;
+						// }
+						// return fn_create;
+						// /*
+						 // * 	return ******************************
+						 // */
+					// } else {
+						// // simple case. use lightbox.Gallery.auditionSH 
+						// fn_create = SNAPPI.PM.main.makePageGallery;
+					// }
+					// break;
+				// case 'Photo':
+					// // simple case. use sceneCfg.auditions to render performance
+					// fn_create = SNAPPI.PM.main.makePageGallery;
+					// break;
+			// }	
+// 			
+			// // prepare for simple case
+			// var sceneCfg = this.getSceneCfg(cfg);
+			// PM.pageMakerPlugin.setScene(sceneCfg);
+			// PM.pageMakerPlugin.setStage(this.getStage());
+// 			
+			// return 	fn_create;	
 		},		
 		/*
 		 * load/load/init/create lifecycle 
 		 * 	1a) load EXTERNAL plugin module, load_PageMakerPlugin 
 		 * 		-> listen: afterPageMakerPluginLoad, or onReady_PageMakerPlugin()
 		 *  1b) load PM Pagemaker modules, PM.pageMakerPlugin.load() 
-		 * 		-> listen:'snappi-pm:afterPagemakerLoad'
+		 * 		-> listen:'snappi-pm:pagemaker-load-complete'
 		 *  2) init Pagemaker with castingCall, PM.main.launch() 
-		 * 		-> listen:'snappi-pm:after-launch' 
+		 * 		-> listen:'snappi-pm:pagemaker-launch-complete' 
 		 *  3) create Story: Gallery.createPageGallery()
 		 */
 		// load 'pagemaker-base' MODULE if SNAPPI.PM.PageMakerPlugin class does not exist
@@ -540,15 +540,19 @@
 				 * lazyLoad PageMakerPlugin module
 				 */
 				var modules = ['pagemaker-base','snappi-dialog-aui']
-				/*
-				 * (after PageMakerPlugin load,)
-				 * IMMEDIATELY lazyLoad PageMaker module
-				 * listen: snappi-pm:afterPagemakerLoad
-				 */
 				var callback = function(Y, result){
-					Y.fire('snappi-pm:afterPageMakerPluginLoad', Y);
-					external_Y.fire('snappi-pm:afterPageMakerPluginLoad', Y);
-					
+					/*
+					 * (after PageMakerPlugin load,)
+					 * DO NOT wait for 'snappi:lazyload-complete', 
+					 * 		i.e. after LazyLoad.helpers.after_LazyLoadCallback()
+					 * IMMEDIATELY lazyLoad PageMaker module
+					 * listen: snappi-pm:pagemaker-load-complete
+					 */
+					Y.fire('snappi-pm:PageMakerPlugin-load-complete', Y);
+					external_Y.fire('snappi-pm:PageMakerPlugin-load-complete', Y);
+					// Y.fire('snappi-pm:afterPageMakerPluginLoad', Y);
+					// external_Y.fire('snappi-pm:afterPageMakerPluginLoad', Y);
+console.info("snappi-pm:PageMakerPlugin-load-complete");					
 					// TODO: put in 'snappi-pm:afterPageMakerPluginLoad' handler?
 					PM.pageMakerPlugin = new PM.PageMakerPlugin(external_Y);
 					PM.pageMakerPlugin.load();
@@ -556,12 +560,12 @@
 				SNAPPI.LazyLoad.use(modules, callback);
 			} else if (!SNAPPI.PM.main) {
 				// after-load: launch/create Pagemaker page 
-				var launched = _Y.on('snappi-pm:after-launch', function(stage) {
+				var launched = _Y.on('snappi-pm:pagemaker-launch-complete', function(stage) {
 	        		launched.detach();
 	        		// node.ynode().set('innerHTML', 'Create Page');
 	        		var create = this.getCreate();
 	        		create();
-	        	}, g);
+	        	}, this);
 		        	
 				// Plugin alread loaded, just launch Pagemaker
 				var sceneCfg = this.getSceneCfg(this.getCastingCall());
@@ -572,9 +576,9 @@
 	        	create();
 			}			
 		},
-		// on 'snappi-pm:afterPagemakerLoad'
-		afterLoad_PageMakerPlugin: function(cfg){
-console.error("2) afterLoad_PageMakerPlugin");			
+		// on 'snappi-pm:pagemaker-load-complete'
+		launch_PageMaker: function(cfg){
+console.error("2a) on 'snappi-pm:pagemaker-load-complete'");			
 			var ioCfg, sceneCfg = this.getSceneCfg(cfg);
 			if (this.isPost(cfg)) ioCfg = this.postCastingCall(cfg);
 			var PM = SNAPPI.PM;
@@ -584,21 +588,21 @@ console.error("2) afterLoad_PageMakerPlugin");
 console.error("2b) FIRST call to PM.main.launch. ioCfg set");			
 			PM.main.launch(PM.pageMakerPlugin);	// 'Photo', ioCfg=null
 		},
-		afterLaunch_PageMakerPlugin: function(cfg){
+		launchComplete_PageMakerPlugin: function(cfg){
 		},
-		launchPagemaker : function(){
+		load_then_launch_PageMaker : function(){
 			var cfg = this.getCastingCall();
 			var g = cfg.gallery;
 			
-        	var loaded = _Y.on('snappi-pm:afterPagemakerLoad', function(PM_Y) {
-console.error("1) launchPagemaker(): snappi-pm:afterPagemakerLoad");        		
+        	var loaded = _Y.on('snappi-pm:pagemaker-load-complete', function(PM_Y) {
+console.error("1) load_then_launch_PageMaker(): snappi-pm:pagemaker-load-complete");        		
         		loaded.detach();
-				UIHelper.create.afterLoad_PageMakerPlugin(cfg);
+				UIHelper.create.launch_PageMaker(cfg);
         	});
 			
 			// after-load: launch/create Pagemaker page 
-			var launched = _Y.on('snappi-pm:after-launch', function(stage) {
-console.error("4) launchPagemaker(): snappi-pm:after-launch"); 				
+			var launched = _Y.on('snappi-pm:pagemaker-launch-complete', function(stage) {
+console.error("4) load_then_launch_PageMaker(): snappi-pm:pagemaker-launch-complete"); 				
         		launched.detach();
         		// node.ynode().set('innerHTML', 'Create Page');
         		// fn_create();

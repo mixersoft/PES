@@ -1283,7 +1283,7 @@
 			SNAPPI.flash.flash(resp.message);
 //			window.location.reload();
 		},
-		launchPagemaker : function() {
+		load_then_launch_PageMaker : function() {
 			/*
 			 * get http request for casting call - supports either GET or POST -
 			 * POST can take a larger data payload, i.e. 100s of UUIDs

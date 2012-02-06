@@ -89,7 +89,7 @@ var initOnce = function() {
 					SNAPPI.DragDrop.pluginDrag(n);
 				}, this);
 				SNAPPI.DragDrop.startListeners();
-				this.launchPagemaker();
+				this.load_then_launch_PageMaker();
 
 				// additional lightbox attrs
 				SNAPPI.MenuAUI.initMenus({'menu-pagemaker-selected-create-markup':1});
