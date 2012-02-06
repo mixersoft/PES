@@ -977,23 +977,28 @@ SET `User`.asset_count = t.asset_count, `User`.groups_user_count = t.groups_user
 		);
 		$row = $this->find('first', $options);
 		// $gids = Set::extract('/User/id', $data);
-		if (empty($row['User']['src_thumbnail'])) { 
-			$uid = $row['User']['id'];
-			$this->id = $uid;
-			$sql = "
+		if (!empty($row['User']['src_thumbnail'])) {
+			$wwwroot = Configure::read('path.wwwroot');
+			$imgFilepath = $wwwroot.Stagehand::getSrc($row['User']['src_thumbnail'], '');
+			if (file_exists($imgFilepath)) {
+				return; 	// already set and valid, skip
+			} 			
+		}  
+		$uid = $row['User']['id'];
+		$this->id = $uid;
+		$sql = "
 SELECT Asset.src_thumbnail, SharedEdit.score, Asset.id
 FROM assets Asset
 LEFT JOIN shared_edits AS `SharedEdit` ON (`SharedEdit`.`asset_hash` = `Asset`.`asset_hash`)
 WHERE Asset.owner_id='{$uid}'
 order by score desc
 LIMIT 5;";
-			$asset = $this->query($sql);
-			if ($asset) {
-				$srcs = Set::extract('/Asset/src_thumbnail', $asset);
-				shuffle($srcs);
-				$ret = $this->saveField('src_thumbnail', array_shift($srcs));
-			}
-		}
+		$asset = $this->query($sql);
+		if ($asset) {
+			$srcs = Set::extract('/Asset/src_thumbnail', $asset);
+			shuffle($srcs);
+			$ret = $this->saveField('src_thumbnail', array_shift($srcs));
+		} else $ret = $this->saveField('src_thumbnail', '');	// set to null
 		return;
 	}		
 	

@@ -155,11 +155,13 @@ if (AppController::$uuid) $this->viewVars['jsonData']['listeners']['ItemHeaderCl
 if (in_array($classLabel, array('Person', 'Group', 'Event', 'Wedding'))) {
 	$showAction = null;
 } else $showAction = 'hide';
+
+$setIconHelp =  !empty($controllerAttrs['isOwner']) ? "Just drop a thumbnail here to change this image, or click to open the home page." : "Click to open the home page for this item." ;
 ?>
 <section class='item-header container_16'>
 	<div class='wrap'>
 		<ul class="inline grid_14">
-			<li class='thumbnail sq droppable'><?php 
+			<li class='thumbnail sq droppable' title="<?php echo $setIconHelp; ?>"><?php 
 					$img = $this->Html->image($badge_src, array('width'=>75, 'height'=>75));
 					$uuid = AppController::$userid  == AppController::$uuid ? array() : array(AppController::$uuid);
 					echo $this->Html->link($img, array('action'=>'home')+$uuid , array('escape'=>false)); 

@@ -492,21 +492,22 @@ class UsersController extends UsersPluginController {
 	}
 	
 	function update_count($id = null) {
+		$this->autoRender = false;
 		if (!Permissionable::isRoot() && $id===null) {
 			echo "Root permission required.";
 			exit;
 		}
 		if ($id) {
 			$ret = $this->User->updateCounter($id);
-			$this->__setRandomGroupCoverPhoto($id);
+			$this->__setRandomBadgePhoto($id);
 		} else {
 			$this->User->updateAllCounts();
-			$this->__setRandomGroupCoverPhoto();
+			$this->__setRandomBadgePhoto();
 		}
-		if ($id) $this->redirect(array('action'=>'home', $id));
+		if ($id) $this->redirect(array('controller'=>'person','action'=>'home', $id));
 		else $this->redirect('/person/all');
 	}
-	function __setRandomGroupCoverPhoto($id = null){
+	function __setRandomBadgePhoto($id = null){
 		if ($id) {
 			$this->User->setRandomBadgePhoto($id);
 		} else {
@@ -517,8 +518,15 @@ class UsersController extends UsersPluginController {
 			if ($id) $options['conditions']['User.id'] = $id;
 			$data = $this->User->find('all', $options);
 			// $gids = Set::extract('/User/id', $data);
+			$wwwroot = Configure::read('path.wwwroot');
 			foreach ($data as $row) {
-				if (!empty($row['User']['src_thumbnail'])) continue;	// skip 
+				if (!empty($row['User']['src_thumbnail'])) {
+					// check if file exists
+					$imgFilepath = $wwwroot.Stagehand::getSrc($row['User']['src_thumbnail'], '');
+					if (file_exists($imgFilepath)) {
+						continue; 	// already set and valid, skip
+					} 
+				} 
 				$uid = $row['User']['id'];
 				$this->User->id = $uid;
 				$sql = "

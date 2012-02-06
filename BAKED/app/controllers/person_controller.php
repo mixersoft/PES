@@ -477,7 +477,9 @@ class PersonController extends UsersController {
 		return $moderator;
 	}
 
-
+	function update_count($id) {
+		parent::update_count( $id );
+	}
 
 }
 ?>

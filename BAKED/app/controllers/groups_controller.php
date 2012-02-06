@@ -141,8 +141,15 @@ class GroupsController extends AppController {
 		if ($id) $options['conditions']['Group.id'] = $id;
 		$data = $this->Group->find('all', $options);
 		// $gids = Set::extract('/Group/id', $data);
+		$wwwroot = Configure::read('path.wwwroot');
 		foreach ($data as $row) {
-			if (!empty($row['Group']['src_thumbnail'])) continue;	// skip 
+			if (!empty($row['Group']['src_thumbnail'])) {;	// skip 
+				// check if file exists
+				$imgFilepath = $wwwroot.Stagehand::getSrc($row['Group']['src_thumbnail'], '');
+				if (file_exists($imgFilepath)) {
+					continue; 	// already set and valid, skip
+				} 
+			} 
 			$gid = $row['Group']['id'];
 			$this->Group->id = $gid;
 			$sql = "
@@ -154,9 +161,11 @@ WHERE group_id='{$gid}'
 order by score desc
 LIMIT 5;";
 			$asset = $this->Group->query($sql);
-			$srcs = Set::extract('/Asset/src_thumbnail', $asset);
-			shuffle($srcs);
-			$ret = $this->Group->saveField('src_thumbnail', array_shift($srcs));
+			if ($asset) {
+				$srcs = Set::extract('/Asset/src_thumbnail', $asset);
+				shuffle($srcs);
+				$ret = $this->Group->saveField('src_thumbnail', array_shift($srcs));
+			} else $ret = $this->Group->saveField('src_thumbnail', '');	// set to null
 		}
 		return;
 	}
