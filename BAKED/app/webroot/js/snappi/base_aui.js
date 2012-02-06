@@ -162,6 +162,7 @@
 	    		snappi_comboBase: 'baked/app/webroot&',
 	    		air_comboBase: 'app/air&',
 	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
+	    		pagemaker_comboBase: 'PageMaker&',	// filepath, not baseurl
 	    		pagemaker_useCombo: 1,
 	    		alloy_useCombo: true,
 	    		yahoo_CDN: 0,
@@ -173,6 +174,7 @@
 	    		snappi_comboBase: 'app/webroot&',
 	    		air_comboBase: 'app/air&',
 	    		snappi_useCombo: 1,
+	    		pagemaker_comboBase: 'PAGEMAKER&',	// filepath, not baseurl
 	    		pagemaker_useCombo: true,
 	    		alloy_useCombo: true,
 	    		yahoo_CDN: 0,
@@ -878,7 +880,7 @@
 	    var yuiConfig_pagemaker = {
             combine: hostCfg.pagemaker_useCombo,
             base: 'http://' + hostCfg.host + '/app/pagemaker/js/create/',
-            comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl=PAGEMAKER&',
+            comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl='+hostCfg.pagemaker_comboBase,
             root: 'js/create/',
             modules: {
                 'pagemaker-base': {

@@ -13,7 +13,6 @@
  * - loaded by base.js, SNAPPI.PageMakerPlugin.load()
  *
  */
-console.log("PM.main - start");
 (function(){
 	/*
      * shorthand
@@ -227,7 +226,7 @@ console.log("PM.main - start");
             var pgGettingStarted = _Y.Node.create("<div id='pg-getting-started'><div><h1>Getting Started with PageMaker</h1><p>Page Galleries are automatically generated photo collages based on page templates.</p><p>To get started, just choose how many photos you would like to see on a page. A matching page template will be randomly chosen and a Page Gallery automatically created using your top-rated photos. For now, we just offer a selection of simple page templates.</p><p>If you would like to try a different template, just click again.</p><p>Once you see a page you like, just click <b><i>Save Page</i></b> to add this page to an online album - new pages will be added to the end. You can view your album from the <b><i>Preview</i></b> tab, where you will also find a link for easy sharing.</p><p>To begin, just click one of the buttons above.</p><br /></div></div>");
             Plugin.stage.body.append(pgGettingStarted);
             // use external_Y
-console.error("3) main.launch(): complete. before create()"); 
+// console.error("3) main.launch(): complete. before create()"); 
             _Y.fire('snappi-pm:pagemaker-launch-complete', Plugin.stage);
             PM.pageMakerPlugin.external_Y.fire('snappi-pm:pagemaker-launch-complete', Plugin.stage);
             
@@ -407,4 +406,3 @@ console.error("3) main.launch(): complete. before create()");
     };
     
 })();
-console.log("PM.main - end");

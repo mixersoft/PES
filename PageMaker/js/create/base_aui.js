@@ -114,16 +114,14 @@
 			var self = this;
 			// supports WindowOptionClick, primary header menu, xhr init
 			var modules_1 = [
-				// 'node', 'event', 'event-custom',
-				/*
-				 * for datasource3.js.
-				 * TODO: refactor to delay init of _queue until class init
-				 */
+				// '*',
+				'node', 'event', 'event-custom',
 				'async-queue',
 			];
 			var modules_2 = [
-				// 'snappi-event-hover',
-				'snappi-pm-main','snappi-pm-util','snappi-pm-catalog3','snappi-pm-node3',
+				'snappi-event-hover',
+				'snappi-pm-main',
+				'snappi-pm-util','snappi-pm-catalog3','snappi-pm-node3',
 				'snappi-pm-datasource3','snappi-pm-casting','snappi-pm-audition',
 	    		'snappi-pm-arrangement','snappi-pm-role','snappi-pm-production',
 	    		'snappi-pm-tryout','snappi-pm-performance3',
@@ -172,9 +170,9 @@
 			DEBUG : {	// default when hostname==git*
 	    		snappi_comboBase: 'baked/app/webroot&',
 	    		air_comboBase: 'app/air&',
-	    		pagemaker_comboBase: 'app/pagemaker&',
 	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
-	    		pagemaker_useCombo: SNAPPI.Y ? 0 : 1,
+	    		pagemaker_comboBase: 'PageMaker&',	// filepath, not baseurl
+	    		pagemaker_useCombo: 1,		
 	    		alloy_useCombo: true,
 	    		yahoo_CDN: 0,
 	    		YUI_VERSION: '3.3.0',	// this is actually set in aui.js
@@ -184,8 +182,8 @@
 	    	PROD : {	// use for unix/server testing
 	    		snappi_comboBase: 'app/webroot&',
 	    		air_comboBase: 'app/air&',
-	    		pagemaker_comboBase: 'app/pagemaker&',
 	    		snappi_useCombo: 1,
+	    		pagemaker_comboBase: 'PAGEMAKER&',	// filepath, not baseurl
 	    		pagemaker_useCombo: 1,
 	    		alloy_useCombo: true,
 	    		yahoo_CDN: 0,
@@ -342,14 +340,11 @@
 		modules.push(wrappedCallback);		// snappi-pm
 		
 		if (_Y===null) {
-			if (0 && SNAPPI.Y) {
-				_Y = SNAPPI.Y;
-				_Y.applyConfig(Config.getYuiConfig());
-			} else _Y = AUI(Config.getYuiConfig());
+			_Y = AUI(Config.getYuiConfig());
 			PM.Y = _Y;
 		} 
 		LazyLoad.helpers.before_LazyLoad();
-console.info("snappi-pm: SNAPPI.PM.Y.use()");		
+// console.info("snappi-pm: SNAPPI.PM.Y.use()");		
 		// begin loading modules
 		_Y.use.apply(_Y, modules);
 	}

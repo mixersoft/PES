@@ -474,52 +474,6 @@
 			}
 			
 			return;
-			// /*
-			 // * 
-			 // */
-			// switch(g && g._cfg.type) {
-				// case 'Lightbox':  // use POST to get lightbox selected
-					// // SNAPPI.PM.main.launch(ioCfg);
-					// var lightbox = g.container.ancestor('#lightbox');
-					// if (lightbox.hasClass('is-preview')) {
-						// // use ioCfg and POST for auditions
-						// // use sceneCfg.tryout
-						// PM.pageMakerPlugin.sceneCfg.auditions = null; 
-// 						
-						// if (!PM.pageMakerPlugin.ioCfg.complete) {
-							// // Plugin already loaded, just launch with Post
-							// var ioCfg = this.postCastingCall(cfg);
-							// PM.pageMakerPlugin.setPost(ioCfg);
-							// fn_create = function() {
-								// SNAPPI.PM.main.launch(PM.pageMakerPlugin);
-							// }
-						// } else {
-							// // TODO: remember to invalidate after lightbox drop
-							// var check = PM.pageMakerPlugin.sceneCfg.tryout;
-							// PM.pageMakerPlugin.setStage(this.getStage());
-							// fn_create = SNAPPI.PM.main.makePageGallery;
-						// }
-						// return fn_create;
-						// /*
-						 // * 	return ******************************
-						 // */
-					// } else {
-						// // simple case. use lightbox.Gallery.auditionSH 
-						// fn_create = SNAPPI.PM.main.makePageGallery;
-					// }
-					// break;
-				// case 'Photo':
-					// // simple case. use sceneCfg.auditions to render performance
-					// fn_create = SNAPPI.PM.main.makePageGallery;
-					// break;
-			// }	
-// 			
-			// // prepare for simple case
-			// var sceneCfg = this.getSceneCfg(cfg);
-			// PM.pageMakerPlugin.setScene(sceneCfg);
-			// PM.pageMakerPlugin.setStage(this.getStage());
-// 			
-			// return 	fn_create;	
 		},		
 		/*
 		 * load/load/init/create lifecycle 
@@ -552,7 +506,7 @@
 					external_Y.fire('snappi-pm:PageMakerPlugin-load-complete', Y);
 					// Y.fire('snappi-pm:afterPageMakerPluginLoad', Y);
 					// external_Y.fire('snappi-pm:afterPageMakerPluginLoad', Y);
-console.info("snappi-pm:PageMakerPlugin-load-complete");					
+// console.info("snappi-pm:PageMakerPlugin-load-complete");					
 					// TODO: put in 'snappi-pm:afterPageMakerPluginLoad' handler?
 					PM.pageMakerPlugin = new PM.PageMakerPlugin(external_Y);
 					PM.pageMakerPlugin.load();
@@ -578,14 +532,14 @@ console.info("snappi-pm:PageMakerPlugin-load-complete");
 		},
 		// on 'snappi-pm:pagemaker-load-complete'
 		launch_PageMaker: function(cfg){
-console.error("2a) on 'snappi-pm:pagemaker-load-complete'");			
+// console.error("2a) on 'snappi-pm:pagemaker-load-complete'");			
 			var ioCfg, sceneCfg = this.getSceneCfg(cfg);
 			if (this.isPost(cfg)) ioCfg = this.postCastingCall(cfg);
 			var PM = SNAPPI.PM;
 			// PM.pageMakerPlugin.setStage(sceneCfg.stage);
 			PM.pageMakerPlugin.setScene(sceneCfg).setPost(ioCfg);
 			PM.pageMakerPlugin.setStage(this.getStage());
-console.error("2b) FIRST call to PM.main.launch. ioCfg set");			
+// console.error("2b) FIRST call to PM.main.launch. ioCfg set");			
 			PM.main.launch(PM.pageMakerPlugin);	// 'Photo', ioCfg=null
 		},
 		launchComplete_PageMakerPlugin: function(cfg){
@@ -595,14 +549,14 @@ console.error("2b) FIRST call to PM.main.launch. ioCfg set");
 			var g = cfg.gallery;
 			
         	var loaded = _Y.on('snappi-pm:pagemaker-load-complete', function(PM_Y) {
-console.error("1) load_then_launch_PageMaker(): snappi-pm:pagemaker-load-complete");        		
+// console.error("1) load_then_launch_PageMaker(): snappi-pm:pagemaker-load-complete");        		
         		loaded.detach();
 				UIHelper.create.launch_PageMaker(cfg);
         	});
 			
 			// after-load: launch/create Pagemaker page 
 			var launched = _Y.on('snappi-pm:pagemaker-launch-complete', function(stage) {
-console.error("4) load_then_launch_PageMaker(): snappi-pm:pagemaker-launch-complete"); 				
+// console.error("4) load_then_launch_PageMaker(): snappi-pm:pagemaker-launch-complete"); 				
         		launched.detach();
         		// node.ynode().set('innerHTML', 'Create Page');
         		// fn_create();
