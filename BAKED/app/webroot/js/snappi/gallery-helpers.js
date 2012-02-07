@@ -386,11 +386,23 @@
             cfg = cfg || {};
             // inherit javascript state information from current page, 
             // called AFTER SNAPPI.mergeSessionData();
-            // TODO: only merge SNAPPI.STATE.displayPage for "primary" gallery, with paging
-            cfg = _Y.merge(GalleryFactory[cfg.type].defaultCfg, SNAPPI.STATE.displayPage, cfg);	
+			try {	// merge SNAPPI.STATE.displayPage for primary gallery, Photo=photos, home
+				if (/[photos|snaps|home]/.test( SNAPPI.STATE.controller.action ) 
+					|| SNAPPI.STATE.controller.name+'/'+SNAPPI.STATE.controller.action == "Assets/all"
+				) {
+					cfg = _Y.merge(SNAPPI.STATE.displayPage, cfg);
+					// check for valid size, type=Photo
+					if (/^(sq|lm|ll)$/.test(SNAPPI.STATE.previewSize)) {
+						cfg.size = SNAPPI.STATE.previewSize;	// override
+						delete PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
+					}
+				}
+			} catch (e) { 	}
+            cfg = _Y.merge(GalleryFactory[cfg.type].defaultCfg, cfg);	
             try {
             	cfg.size = PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
-            } catch (e){}
+            } catch (e){  }
+            
             try {
             	if (!cfg.castingCall && cfg.castingCall !== false) cfg.castingCall = PAGE.jsonData.castingCall;
             } catch (e){}

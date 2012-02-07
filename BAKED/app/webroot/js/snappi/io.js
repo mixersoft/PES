@@ -137,7 +137,8 @@
 				}
 			};
 			var postData = [];
-			var photoSizeKeyName = 'profile.previewSize';
+			var photoSizeKeyName = 'profile.thumbSize';
+			// see PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX] in galleryHelpers.build()
 			postData[photoSizeKeyName] = size;
 			SNAPPI.io.writeSession(postData, callback, '');
 		},

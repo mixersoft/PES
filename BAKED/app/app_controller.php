@@ -436,7 +436,10 @@ class AppController extends Controller {
 				'isWide'=>!empty($this->params['named']['wide']),
 			);
 			$controllerAttr = array_merge($controllerAttr, $extras);
-			
+
+			if (!$controllerAttr['isXhr'] && isset($this->passedArgs['size'])) {
+				$this->viewVars['jsonData']['STATE']['previewSize'] = $this->passedArgs['size'];
+			}
 //			$this->viewVars['jsonData']['controller'] = $controllerAttr;	// moved to layout		
 		}	
 		Configure::write('controller', $controllerAttr);	
