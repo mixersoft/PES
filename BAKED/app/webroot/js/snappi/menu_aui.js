@@ -12,9 +12,7 @@
 			'menu-header-markup': CFG_Menu_Header,
 			'menu-header-create-markup': CFG_Menu_Header_Create,
 			'menu-item-header-markup': CFG_Menu_Item_Header,
-			'contextmenu-photoroll-markup': CFG_Context_Photoroll,
 			'menu-photoPreview-actions': CFG_Menu_PreviewPhoto_Actions,
-			'contextmenu-hiddenshot-markup': CFG_Context_HiddenShot,
 			'menu-pagemaker-selected-create-markup': CFG_Menu_Pagemaker_Create, 
 			'menu-select-all-markup': CFG_Menu_SelectAll,
 			'menu-lightbox-organize-markup': CFG_Menu_Lightbox_Organize,
@@ -23,6 +21,8 @@
 			'menu-uploader-batch-markup': CFG_Menu_Uploader_Batch,		
 			'menu-uploader-folder-markup': CFG_Menu_Uploader_Folder,
 			// context menus
+			'contextmenu-photoroll-markup': CFG_Context_Photoroll,
+			'contextmenu-hiddenshot-markup': CFG_Context_HiddenShot,
 			'contextmenu-group-markup': CFG_Context_FigureBox,		
 			'contextmenu-person-markup': CFG_Context_FigureBox,
 		};		
@@ -934,13 +934,13 @@ console.error("PreviewPhoto delete is still incomplete");
 	};	
 	MenuItems.create_pagegallery_beforeShow = function(menuItem, menu){
 		try {
-			var g = SNAPPI.Gallery.find['uuid-'];
+			var g = SNAPPI.Gallery.find['uuid-'] || SNAPPI.Gallery.find['nav-'];
 			// check .gallery.photo, then lightbox for selected 
 			var batch = g.getSelected();
 			if (!batch.count() && SNAPPI.lightbox) {
 				batch = SNAPPI.lightbox.getSelected();
 			}	
-			if (batch.count()) {
+			if (batch) {
 				menuItem.removeClass('disabled').show();
 			} else {
 				menuItem.addClass('disabled');
@@ -950,11 +950,32 @@ console.error("PreviewPhoto delete is still incomplete");
 		}
 	}
 	MenuItems.create_pagegallery_click = function(menuItem, menu){
-		var delayed = new _Y.DelayedTask( function() {
-			menu.hide();
-		});
-		delayed.delay(1000);
-		SNAPPI.UIHelper.create.load_then_launch_PageMaker(_Y);
+		try {
+			var g = SNAPPI.Gallery.find['uuid-'] || SNAPPI.Gallery.find['nav-'];
+			// check .gallery.photo, then lightbox for selected 
+			var batch = g.getSelected();
+			if (!batch.count() && SNAPPI.lightbox) {
+				batch = SNAPPI.lightbox.getSelected();
+			}	
+			if (batch.count()) {
+				// something selected. load then launch
+				var delayed = new _Y.DelayedTask( function() {
+					menu.hide();
+				});
+				delayed.delay(1000);
+				SNAPPI.UIHelper.create.load_then_launch_PageMaker(_Y);
+				return;
+			}
+		} catch(e) {		}
+		// nothing selected, show MultiSelect help
+		var cfg = {
+			// markup: "<div id='preview-zoom'></div>",
+			selector: '#hint-new-story',
+			uri: '/help/markup/hint_NewStory',
+			width: 600,
+			addToMarkup: true,
+		};
+		var dialog = SNAPPI.Alert.load(cfg);
 	};	
 	MenuItems.express_upload_beforeShow = function(menuItem, menu, properties){
 		// if this group is marked for express-upload, add .selected

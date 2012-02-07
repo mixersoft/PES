@@ -341,7 +341,7 @@
 		var body = alert.getStdModNode('body');
 		if (_cfg.bodyNode) {
 			body.setContent(_cfg.bodyNode);
-		} else if (_cfg.selector) {
+		} else if (_cfg.selector && _Y.one(_cfg.selector)) {
 			var markup = _Y.one(_cfg.selector).get('parentNode.innerHTML');
 			if (_cfg.tokens) markup = _Y.substitute(markup, _cfg.tokens);
 			body.setContent(markup);
@@ -352,6 +352,7 @@
 			// XHR content for dialog contentBox
     		var args = {
 	    		dialog: alert,
+	    		cfg: _cfg,
 	    	}
 	    	if (_cfg.tokens) args.tokens = _cfg.tokens;
 	    	if (alert.io) alert.unplug(SNAPPI.Y.Plugin.IO);
@@ -365,10 +366,20 @@
 				arguments: args,    					
 				on: {
 					success: _cfg.success || function(e, i, o, args) {
+						var content, markup;
 						if (args && args.tokens) {
-							var markup = _Y.substitute(o.responseText, args.tokens);
+							markup = _Y.substitute(o.responseText, args.tokens);
 						} else markup = o.responseText;
-						body.setContent(markup);	// closure
+						this.setStdModContent('body', markup);
+						content = this.getStdModNode('body').one('*');
+						// set size & center
+						var maxdim = {
+							h:Math.min(content.get('scrollHeight')+87, 640),
+							w:Math.min(content.get('scrollWidth')+20, 640),
+						}
+						this.set('height', maxdim.h);
+						this.set('width', maxdim.w);
+						this.centered();
 						return false; 
 					}					
 				}

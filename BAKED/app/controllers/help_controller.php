@@ -107,6 +107,16 @@ class HelpController extends AppController {
 	public function callback_commentsInitType(){
 		return parent::callback_commentsInitType('help');
 	}
+	
+	 /**
+     * renders raw HTML markup templates for use in javascript
+     * @param $name string - name of view file
+     */
+    function markup($name) {
+$this->log("/help/markup/{$name}", LOG_DEBUG);    	
+		$viewFile = DS."help".DS.$name;
+    	$this->render(null, 'markup', $viewFile);
+    }
 
 }
 ?>

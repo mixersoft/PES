@@ -342,9 +342,7 @@
 					return false;
 				}
 				auditionSH = this.Gallery.auditionSH;
-				if(auditionSH.size() == 0){ // no photos in lightbox
-					return false;
-				}
+				// should return an empty sortedHash
 			} else { // this uses visible selected only, probably less common use case
 				auditionSH = new SNAPPI.SortedHash();
 				batch.each(function(node){

@@ -1,13 +1,13 @@
 		<?php  
 			$userAgent =  env('HTTP_USER_AGENT');
 			if (isset($this->params['url']['platform']) && $this->params['url']['platform'] == 'all') {
-					$downloads['Windows'] = 'snappi-uploader.exe';
-					$downloads['Macintosh'] = 'snappi-uploader.dmg';
+					$downloads['Windows'] = array('file'=>'snappi-uploader.exe', 'os'=>'Windows 7/Vista/XP');
+					$downloads['Macintosh'] = array('file'=>'snappi-uploader.dmg', 'os'=>'OSX 10.5+');
 			} else {
 				if (strpos($userAgent, 'Windows') !== false) {
-					$downloads['Windows'] = 'snappi-uploader.exe';
+					$downloads['Windows'] = array('file'=>'snappi-uploader.exe', 'os'=>'Windows 7/Vista/XP');
 				} else if (strpos($userAgent, 'Macintosh') !== false) {
-					$downloads['Macintosh'] = 'snappi-uploader.dmg';
+					$downloads['Macintosh'] = array('file'=>'snappi-uploader.dmg', 'os'=>'OSX 10.5+');
 				}
 				$all_platforms=$this->here.'?platform=all';
 			}
@@ -24,10 +24,11 @@
 		<div id="download-uploader" >
 					<div class='center' >
 						<ul class='inline'>
-				<?php foreach ($downloads as $platform =>$file) { ?>
+				<?php foreach ($downloads as $platform =>$download) { ?>
 							<li class='btn orange rounded-5'>
-								<a href="/files/<?php echo $file ?>" >
+								<a href="/files/<?php echo $download['file'] ?>" >
 									Snaphappi Desktop Uploader for <b><?php echo $platform ?></b>
+									<span class="os"><br />(<?php echo $download['os'];  ?>)</span>
 									</a>
 							</li>
 				<?php } ?>	

@@ -1298,6 +1298,16 @@ form input[type='text'].help {
 	padding: 0 40px;
 }
 
+#dialog-alert li {
+	list-style-position: inside;
+	padding: 0 25px;
+	text-indent: -15px;
+}
+
+.hint .message {
+	padding: 4px;
+}
+
 
 /*TODO: deprecate ?*/
 ul.circle-thumb li.selected {
@@ -2139,7 +2149,11 @@ section.main div#download-uploader .center li {
 	display: block;
 	width: 320px;
 } 
-	
+
+div#download-uploader span.os {
+	font-size:0.7em;
+	line-height: 0.7;
+}	
 /*
  * /groups/invitation CSS
  */
@@ -2174,8 +2188,8 @@ div.link input.copy-paste {
 	padding: 10px;
 }
 .message {
-	width:100%
-	text-align:center;
+/*	width:100%;
+	text-align:center;*/
 }
 .upload .related-content.blue h1, .gallery-container .message h1{
     border-bottom: 1px solid #8fb9d0;

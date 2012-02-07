@@ -161,7 +161,7 @@
 			DEBUG : {	// default when hostname==git*
 	    		snappi_comboBase: 'baked/app/webroot&',
 	    		air_comboBase: 'app/air&',
-	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
+	    		snappi_useCombo: 0,					// <-- TESTING SNAPPI useCombo
 	    		pagemaker_comboBase: 'PageMaker&',	// filepath, not baseurl
 	    		pagemaker_useCombo: 1,
 	    		alloy_useCombo: true,
