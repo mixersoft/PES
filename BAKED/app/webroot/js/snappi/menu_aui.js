@@ -975,7 +975,16 @@ console.error("PreviewPhoto delete is still incomplete");
 			width: 600,
 			addToMarkup: true,
 		};
-		var dialog = SNAPPI.Alert.load(cfg);
+		var dialog = SNAPPI.Alert.load(cfg);;
+		var detach = _Y.on('snappi:dialog-alert-xhr-complete', function(d){
+			detach.detach();
+			if (_Y.UA.os === "macintosh") {
+				try {
+					var key = d.getStdModNode('body').one('span.multiselect-single');
+					key.setContent('Cmd-Click');	
+				} catch(e) {}
+			}
+		}, this);
 	};	
 	MenuItems.express_upload_beforeShow = function(menuItem, menu, properties){
 		// if this group is marked for express-upload, add .selected

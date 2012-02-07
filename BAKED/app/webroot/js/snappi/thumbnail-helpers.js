@@ -78,8 +78,9 @@
 		e.halt();	// intercepts/stops A.click action
 	};
 	MultiSelect.multiSelectHandler = function(e) {
-		var target = e.target;
-		if (!e.ctrlKey && !e.shiftKey) {
+		var active, target = e.target;
+		active = (_Y.UA.os == "macintosh") ? (e.metaKey || e_boundary.shiftKey) : (e.ctrlKey && e.shiftKey)
+		if (!active) {
 			if (target.get('parentNode').hasClass('context-menu')) {
 				// let ContextMenu listner handle this click.
 				return;
@@ -106,7 +107,7 @@
 		if (e.shiftKey) {
 			this.selectContiguousHandler(target);
 			e.stopImmediatePropagation(); 
-		} else if (e.ctrlKey) {
+		} else if (active) {	// either Win:ctrlKey or Mac:metaKey
 			// Check if the target is an image and select it.
 			target.toggleClass('selected');
 			// save selction to Session for lightbox

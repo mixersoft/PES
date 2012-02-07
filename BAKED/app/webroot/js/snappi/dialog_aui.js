@@ -340,14 +340,17 @@
 		
 		var body = alert.getStdModNode('body');
 		if (_cfg.bodyNode) {
-			body.setContent(_cfg.bodyNode);
+			// body.setContent(_cfg.bodyNode);
+			alert.setStdModContent('body', _cfg.bodyNode);
 		} else if (_cfg.selector && _Y.one(_cfg.selector)) {
 			var markup = _Y.one(_cfg.selector).get('parentNode.innerHTML');
 			if (_cfg.tokens) markup = _Y.substitute(markup, _cfg.tokens);
-			body.setContent(markup);
+			// body.setContent(markup);
+			alert.setStdModContent('body', _cfg.markup);
 		} else if (_cfg.markup) {	
 			if (_cfg.tokens) _cfg.markup = _Y.substitute(_cfg.markup, _cfg.tokens);
-			body.setContent(_cfg.markup);
+			// body.setContent(_cfg.markup);
+			alert.setStdModContent('body', _cfg.markup);
 		} else if (_cfg.uri) {
 			// XHR content for dialog contentBox
     		var args = {
@@ -380,6 +383,7 @@
 						this.set('height', maxdim.h);
 						this.set('width', maxdim.w);
 						this.centered();
+						_Y.fire('snappi:dialog-alert-xhr-complete', this);
 						return false; 
 					}					
 				}

@@ -1304,9 +1304,7 @@ form input[type='text'].help {
 	text-indent: -15px;
 }
 
-.hint .message {
-	padding: 4px;
-}
+
 
 
 /*TODO: deprecate ?*/
@@ -2507,8 +2505,21 @@ li:hover.white.focus, li:hover.white.selected
 	background: linear-gradient(top,  rgba(109,179,242,1) 0%,rgba(84,163,238,1) 50%,rgba(54,144,240,1) 51%,rgba(30,105,222,1) 100%); /* W3C */
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#6db3f2', endColorstr='#1e69de',GradientType=0 ); /* IE6-9 */
 }
+/*
+ * hints
+ */
 
+.hint .message {
+	padding: 4px;
+}
 
+#hint-new-story span.keypress {
+	border: 1px solid black;
+    font-family: courier;
+    font-size: 0.8em;
+    padding: 2px;
+    vertical-align: middle;
+}
 
 /*
  * Story
