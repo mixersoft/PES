@@ -346,7 +346,7 @@
 			var markup = _Y.one(_cfg.selector).get('parentNode.innerHTML');
 			if (_cfg.tokens) markup = _Y.substitute(markup, _cfg.tokens);
 			// body.setContent(markup);
-			alert.setStdModContent('body', _cfg.markup);
+			alert.setStdModContent('body', markup);
 		} else if (_cfg.markup) {	
 			if (_cfg.tokens) _cfg.markup = _Y.substitute(_cfg.markup, _cfg.tokens);
 			// body.setContent(_cfg.markup);
