@@ -64,14 +64,8 @@ $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 				SNAPPI.setPageLoading(true);
 				SNAPPI.mergeSessionData();
 				SNAPPI.UIHelper.nav.setDisplayOptions();
-				var ratingFilterNode = SNAPPI.Y.one('#filter-rating-parent');
-			        if (ratingFilterNode) {
-			        	SNAPPI.filter.initRating();
-			        }				
-			        
 			    var cfg = {type:'Photo'};     
 				new SNAPPI.Gallery(cfg);
-				// SNAPPI.filter.initRating();
 				
 				// add create listener
 				var create = SNAPPI.Y.one('header.head nav.user li.create');

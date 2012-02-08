@@ -71,25 +71,36 @@ Configure::write('debug',1);
 <?php 
 	if (isset($cloudTags)) {
 		// debug($xhrFrom);
-		
 		// set Context for tags
-		$route = array('plugin'=>'','controller' => 'tags', 'action'=>'home');
-		if ($ENABLED = 0) {
+		if ($xhrFrom['alias'] == 'my') {
+			// set Tag filter 
+			// TODO: currently using Context to set Tag Filter 
+			$route = array( 'plugin'=>'','controller' => $xhrFrom['alias'], 'action'=>$xhrFrom['action'] );
+			$options = array(
+				'url' => $route,
+				'named' => 'context',	// add tag as context:Tag~[tagId]
+				'named_prefix' => 'Tag~',
+			);
+		} else {
+			$route = array('plugin'=>'','controller' => 'tags', 'action'=>'home');
+		}
+		if ($ENABLED = 0) {	// set context:Tag on click, currently disabled
 			$context = array_shift(Session::read("lookup.context"));
 			if (!$context && in_array($xhrFrom['alias'], array('photos', 'circles', 'groups', 'events', 'weddings'))) {
 				$route['context']=Configure::read("lookup.xfr.{$xhrFrom['alias']}.ControllerLabel");
 			}
 		}
-
-		echo $this->TagCloud->display($cloudTags, array(
+		$cloudTag_options = array(
 			'url' => $route,
+			'named' => 0,
 			'before' => '<li><span style="font-size: %size%pt" class="tag">',
 			'after' => '</span></li>',
 			'minSize' => '8',
 			'maxSize' => $isRelated ? '16' : '24',
-			'named' => 0,
 			'shuffle' => 0
-		));
+		);
+		if (!empty($options)) $cloudTag_options = array_merge($cloudTag_options, $options);
+		echo $this->TagCloud->display($cloudTags, $cloudTag_options);
 	}
 ?>
 </ul>	

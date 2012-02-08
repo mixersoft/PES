@@ -477,7 +477,6 @@ class AppController extends Controller {
 		$navPrimary = (isset($this->displayName ) && $controllerAttr['action'] != 'all') ? $this->displayName : 'Explore';
 		if ($navPrimary == "Tag") {
 			if ($context = Session::read("lookup.context")) {
-debug($context);				
 				$context = array_shift($context);
 			} else {
 				$context = array();
@@ -570,6 +569,7 @@ debug($context);
 			unset($this->passedArgs['context']);
 				
 			//			$this->passedArgs['plugin'] = '';
+			if ($this instanceof MyController) unset($this->passedArgs[0]);
 			$here = Router::url($this->passedArgs);
 			// redirect, to remove context from url
 			$this->redirect($here, null, true);

@@ -73,7 +73,10 @@ class TagCloudHelper extends AppHelper {
 
 		$cloud = null;
 		foreach ($tags as $tag) {
-			$options['url'][$options['named']] = $tag['Tag']['keyname'];
+			if ($options['named'] == 'context') {
+				// set context using named: /context:Tag~[keyname]
+				$options['url'][$options['named']] = "{$options['named_prefix']}{$tag['Tag']['keyname']}";
+			} else $options['url'][$options['named']] = $tag['Tag']['keyname'];
 
 			$size = $options['minSize'] + (($tag['Tag']['weight'] - $minWeight) * (($options['maxSize'] - $options['minSize']) / ($spread)));
 			$size = ceil($size);
