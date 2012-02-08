@@ -325,26 +325,41 @@
     		}
     		dialog = SNAPPI.Alert.load(cfg);
     		stage = dialog.getStdModNode('body').one('#stage-2');
-    		stage.onrender = stage.onrender || _Y.on('snappi-pm:render', function(P, node){
-    			var d = SNAPPI.Dialog.find['dialog-alert'];
-    			var header = stage.one('.stage-header');
-    			var header_h = header ? header.get('clientHeight') : 0;
-    			var body_border = 20;	// margin: 10px 0 on node
-    			var offset_top = 6 + 29 + 12    + 10;
-    			var winH = stage.get('winHeight') - (offset_top+header_h+40);
-    			var h = Math.min(node.get('clientHeight'), MAX_HEIGHT, winH);
-    			if (h < MAX_HEIGHT) {
-    				stage.setStyle('overflowY', 'hidden');
-    			} else {
-    				stage.setStyle('overflowY', 'auto');
-    			}
-    			stage.setStyle('height', 'auto');
-    			d.set('height', h + body_border + header_h + offset_top);
-    			d.centered();
-    			SNAPPI.setPageLoading(false);
-    		})
-    		
-    		
+    		if (!stage.listen) {
+    			stage.listen = {};
+    			/*
+    			 * @params P Performance
+    			 * @params node div.pageGallery
+    			 */
+    			var _setStageDim = function(P, node){
+		    			var d = SNAPPI.Dialog.find['dialog-alert'];
+		    			var header = stage.one('.stage-header');
+		    			var header_h = header ? header.get('clientHeight') : 0;
+		    			var body_border = 20;	// margin: 10px 0 on node
+		    			var offset_top = 6 + 29 + 12    + 10;
+		    			var winH = stage.get('winHeight') - (offset_top+header_h+40);
+		    			var clientH = Math.min(node.get('clientHeight'), node.origRect.H);
+		    			var h = Math.min(clientH, MAX_HEIGHT, winH);
+		    			if (h < MAX_HEIGHT) {
+		    				stage.setStyle('overflowY', 'hidden');
+		    			} else {
+		    				stage.setStyle('overflowY', 'auto');
+		    			}
+		    			stage.setStyle('height', 'auto');
+		    			d.set('height', h + body_border + header_h + offset_top);
+		    			d.centered();
+		    			try {
+		    				if (h < node.origRect.H) PM.pageMakerPlugin.player.winResize(null);	
+		    			} catch(e){}
+		    			SNAPPI.setPageLoading(false);
+		    		};
+	    		stage.listen['render'] = _Y.on('snappi-pm:render', _setStageDim	);
+	    		stage.listen['resize'] = _Y.on('snappi-pm:resize', 
+	    			function(player, containerH){
+	    				var node = this.one('div.pageGallery');
+	    				_setStageDim(null, node);
+	    			}, stage);
+    		}
 			return stage;
 		},
 		/*

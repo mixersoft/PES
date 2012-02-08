@@ -579,10 +579,11 @@
 				containerH += this.container.get('winHeight');
 				containerW += this.container.get('winWidth');
 			} else {
-				// containerH += _px2i(this.container.getComputedStyle('height'));
-				// containerW += _px2i(this.container.getComputedStyle('width'));
-				containerH += this.container.get('clientHeight');
-				containerW += this.container.get('clientWidth');
+				// use .aui-dialog-bd to scale .pageGallery inside stage
+				// or this.container to SCROLL .pageGallery inside stage
+				var container = this.container.ancestor('.aui-dialog-bd') || this.container;
+				containerH +=  container.get('clientHeight');
+				containerW += container.get('clientWidth');
 			}			
 			
 			var pages = this.content.all('div.pageGallery');
@@ -610,6 +611,7 @@
 				}
 			}, this);
 			this.showPage(_pageIndex);
+			if (e) PM.pageMakerPlugin.external_Y.fire('snappi-pm:resize', this, containerH);
 		},
 
 		scale : function(cfg) {

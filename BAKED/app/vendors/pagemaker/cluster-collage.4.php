@@ -293,9 +293,12 @@ class ClusterCollage {
      */
     protected function resizeArrangement(&$arrangement) {
         // Check ratio:
-        
-        $orientation = $this->defineOrientation($arrangement['h'], $arrangement['w']);
-        $allowed = $this->getRatioByString($this->allowedRatios[$orientation]);
+	    $orientation = $this->defineOrientation($arrangement['h'], $arrangement['w']);
+		if (!isset($this->allowedRatios[$orientation])) {
+			throw new Exception('invalid ratio at ' . __CLASS__ . '::' . __FUNCTION__);
+		}			
+	    $allowed = $this->getRatioByString($this->allowedRatios[$orientation]);
+		
         $ratio = $arrangement['h'] / $arrangement['w'];
         if (('h' == $orientation && $ratio > $allowed) 
         || ('v' == $orientation && $ratio < $allowed))
