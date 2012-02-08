@@ -102,19 +102,12 @@
 		/*
 		 * restore open/closed state for Gallery display options
 		 */
-		setDisplayOptions : function(){
+		setDisplayOptions : function(value){
 			try {
+				if (value !== undefined) SNAPPI.STATE.showDisplayOptions = value ? 1 : 0;
 				if (SNAPPI.STATE.showDisplayOptions) {
 					_Y.one('section.gallery-header li.display-option').addClass('open');
 					_Y.one('section.gallery-display-options').removeClass('hide');
-
-					// for /photo/roll.ctp: init rating
-					// TODO: move to a better spot?
-					var ratingFilterNode = _Y.one('#filter-rating-parent');
-			        if (ratingFilterNode) {
-			        	SNAPPI.filter.initRating();
-			        }
-			        					
 				} else {
 					_Y.one('section.gallery-header li.display-option').removeClass('open');
 					_Y.one('section.gallery-display-options').addClass('hide');
@@ -207,7 +200,25 @@
 	    	}		
 		}		
 	};
-	
+	UIHelper.action = {
+		filter: {
+			tag: function(e){
+				if (e.target.test('input.tag')) {
+					e.halt();	// halt click on input[text] field
+					return;
+				}
+				var tag, href = window.location.href;
+				if (e.target.hasClass('selected')) {
+					// remove tag
+					window.location.href = SNAPPI.IO.setNamedParams(href, {'context':'remove'});
+				} else {
+					tag = e.currentTarget.one('input').get('value');
+					// TODO: using Context to set Tag filter for now. set directly?
+					window.location.href = SNAPPI.IO.setNamedParams(href, {'context':'Tag~'+tag});
+				}
+			}, 
+		}
+	}
 	UIHelper.groups = {
 		// groups, filter by groupType
 		// formerly: PAGE.myGroups()
@@ -715,12 +726,16 @@
 	                	// hide contextmenu when opening display option menus
 	                	UIHelper.nav.toggle_ContextMenu(false);	
 	                	var action = e.currentTarget.getAttribute('action').split(':');
+	                	try {
 			    		switch(action[0]) {
 			    			case 'filter':
+			    				UIHelper.action.filter[action[1]](e);
 			    				break;
 			    			case 'sort':
 			    				break;
-			    		}		                	
+			    		}} catch(e) {
+			    			console.error("UIHelper.listeners.DisplayOptionClick(): possible error on action name.");
+			    		}	                	
 	                }, 'ul > li.btn', UIHelper);
 			}
 			// back reference

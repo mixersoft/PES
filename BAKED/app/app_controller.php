@@ -173,9 +173,10 @@ class AppController extends Controller {
 				$contextControllerAlias = Configure::read("lookup.xfr.{$context['keyName']}.ControllerAlias");
 				$labelHref = array('controller'=>$contextControllerAlias,'action'=>'home', $context['uuid']);
 				$removeHref  = $this->passedArgs + array('plugin'=>'', 'context'=>'remove');
-				$extras['label'] = $context['label'];
+				$extras['label'] = !empty($context['label']) ? $context['label'] : $context['uuid'];
 				$extras['labelHref'] = Router::url($labelHref);
 				$extras['removeHref'] = Router::url($removeHref);
+				$context['class'] = $context['keyName'];	// deprecate keyName
 				$filter[] = array_merge($context , $extras);
 			}
 			if (!empty($this->passedArgs['q'])) {	// search
@@ -192,7 +193,7 @@ class AppController extends Controller {
 				$remove = $this->passedArgs;
 				unset($remove['rating']);
 				$filter[] = array(
-					'class'=>'Rating', 
+					'class'=>'Rating',	
 					'label'=>"at least {$this->passedArgs['rating']}", 
 					'value'=>$this->passedArgs['rating'], 
 					'removeHref'=>Router::url($remove)
@@ -551,17 +552,19 @@ debug($context);
 	}
 	/**
 	 * check passedArgs to set/clear Context
-	 * 		to set context, add named param, '/context:{$controllerAttr['label']}' 
+	 * 		to set context, add named param, '/context:{$controllerAttr['label']}~{$uuid}' 
 	 * 		keyName values: Me, Person, Group, Photo/Snap, Tag (section header)
 	 */
 	function __checkForContextChange() {
 			// check for explicit Context change, update and redirect if found
-		if (isset($this->params['named']['context'])) {
+		if (isset($this->passedArgs['context'])) {
+			list($context['keyName'], $context['uuid'] ) = explode('~',$this->passedArgs['context']);
+			
 			if ($this->action == 'search') $this->__setContext(null);
-			else if ($this->params['named']=='Asset') $this->__setContext(null);
-			else if ($this->params['named']['context'] == 'remove') $this->__setContext(null);
+			else if ($context['keyName']=='Asset') $this->__setContext(null);
+			else if ($context['keyName'] == 'remove') $this->__setContext(null);
 			else {
-				$this->__setContext($this->params['named']['context']); 
+				$this->__setContext($context['keyName'], $context['uuid']); 
 			}
 			// unset($this->params['named']['context']);
 			unset($this->passedArgs['context']);

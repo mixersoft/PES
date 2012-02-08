@@ -62,19 +62,20 @@
 	$this->Layout->blockStart('inner_DisplayOptions'); ?> 
 	    	<ul class="filter inline">
 	    		<li class='label'>Filter</li>
-				<li class='btn rating white <?php if ($btn_active['filter-rating']) echo "selected" ?>'>
+				<li class='btn rating white <?php if ($btn_active['filter-rating']) echo "selected" ?>' title='click on a star to filter by minimum rating'>
 					<ul class='inline'>
 						<li class='btn white <?php echo $ratingRemoved_class;  ?>'>
 							<a title='click here to REMOVE this filter' href='<?php echo $ratingRemoved_href ?>' >x</a>
 						</li>	
-						<li class="label">My Rating</li>
+						<li class="label" >My Rating</li>
 						<li id="filter-rating-parent">
 							<div class="<?php echo $ratingGroup_class;  ?>">
 							</div>
 						</li>
 					</ul>
 				</li>
-				<li class="btn white">Date Taken <a><img src="/css/images/arrow.png" alt=""></a></li>
+				<li class="btn white" action="filter:tag">Tag <input type='text' class='tag copy-paste' maxlength='40'  value='' /></li>
+				<li class="btn white disabled">Date Taken <a><img src="/css/images/arrow.png" alt=""></a></li>
 			</ul>
 	        <ul class="sort inline inline-break right">
 	        	<li class='label'>Sort</li>

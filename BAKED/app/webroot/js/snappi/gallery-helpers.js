@@ -24,11 +24,12 @@
 (function() {
 	var _Y = null;
 	var LIGHTBOX_PERPAGE_LIMIT;
-	
+	var UIHelper;
     SNAPPI.namespace('SNAPPI.onYready');
     SNAPPI.onYready.GalleryFactory = function(Y){
 		if (_Y === null) _Y = Y;
 		LIGHTBOX_PERPAGE_LIMIT = 72;
+		// UIHelper = SNAPPI.UIHelper;	// undefined
 	}
     
     var GalleryFactory = function(){};
@@ -252,6 +253,12 @@
 		                }, 'ul > li', this.node);
 				}
 	        },        
+	        DisplayOptionClick : function(node) {
+        		var action = 'DisplayOptionClick';
+        		UIHelper = SNAPPI.UIHelper;
+	        	UIHelper.listeners.DisplayOptionClick(node);
+	        	this.node.listen[action] = UIHelper.listen[action];
+	        },
 	        MultiSelect : function () {
 	        	SNAPPI.multiSelect.listen(this.container, true);
 	        	// select-all checkbox listener
@@ -352,7 +359,7 @@
         gallery.node.Gallery = gallery;				// use to avoid closure bug on SNAPPI.io 
         gallery.container.Gallery = gallery;		// is gallery reference necessary?
 		gallery.node.dom().Gallery = gallery; 		// for firebug introspection	        
-		gallery.header = node.siblings('.gallery-header');
+		gallery.header = node.previous('.gallery-header');
         delete cfg.node;				// use this.container from this point forward    		
     }
     
@@ -366,7 +373,7 @@
 	        			'</section>',
 			node: 'div.gallery-container > section.gallery.photo',
 			render: true,
-			listeners: ['Keypress', 'Mouseover', 'LinkToClick', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick'],
+			listeners: ['Keypress', 'Mouseover', 'LinkToClick', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick', 'DisplayOptionClick'],
 			draggable: true,
 			hideHiddenShotByCSS: true,
 			size: 'lm',
@@ -416,14 +423,36 @@
 			GalleryFactory._attachNodes(gallery, cfg);
 	        gallery.init(cfg);
 	        
-	        
-	        
+	        // apply SNAPPI.STATE.filters to section.gallery-display-options
+	        GalleryFactory[cfg.type].apply_filter_settings(SNAPPI.STATE.filters, gallery);
 	        
 	        // .gallery.photo AFTER init methods
 	        SNAPPI.Gallery.find[cfg.ID_PREFIX] = gallery;		// add to gallery lookup
 	        SNAPPI.Rating.startListeners(gallery.container);
 	        _Y.fire('snappi:after_PhotoGalleryInit', this); 
 	        return gallery;					// return instance of SNAPPI.Gallery
+        },
+        apply_filter_settings : function(filters, g) {
+        	try {
+        		var f, btn, open, 
+        			parent = g.header.one('section.gallery-display-options');
+	        	for ( var i in filters) {
+	        		open = open || filters[i]['class'];
+	        		switch(filters[i]['class']) {
+	        			case 'Tag':
+	        				f = parent.one('input.tag').set('value', filters[i]['label'] || filters[i]['uuid'])	
+	        				btn = f.ancestor('li.btn', true).addClass('selected');
+	        				break;
+	        			case 'Rating':
+	        				// markup is already initialized in display-options.ctp
+	        				f = parent.one('#filter-rating-parent');
+	        				SNAPPI.filter.initRating( f, filters[i]['value']);
+	        				btn = f.ancestor('li.btn.rating').addClass('selected');
+	        				break;
+	        		}
+	        	}
+        	} catch(e) {}
+        	if (open) UIHelper.nav.setDisplayOptions(open);
         },
         handle_hiddenShotClick : function(e){
         	var thumbnail = e.currentTarget.ancestor('.FigureBox');

@@ -448,7 +448,11 @@ section.gallery-display-options ul > li.label {
 	font-size: 1.0em;
 	color: black;
 }
-
+section.gallery-display-options ul.filter li.btn input.tag {
+	cursor:default;
+	height: 14px;
+	width: 80px;
+}
 #body-container .gallery-container .gallery {
 	margin-top: 2px;
 	border-top: 1px solid #D2D2D2;
