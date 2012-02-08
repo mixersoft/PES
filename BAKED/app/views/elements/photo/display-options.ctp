@@ -37,20 +37,9 @@
 	$needle = array('<a', 'href', 'a>'); 
 	$replace = array('<option', 'value', 'option>');
 	
-	$ratingGroup_class = "ratingGroup";
-	$ratingRemoved_class = 'remove';
-	if (!empty($passed['rating'])) {
-		$ratingGroup_class.= " r{$passed['rating']}";	// move to JS
-		$ratingRemoved_href = $passed;
-		unset($ratingRemoved_href['rating']);
-		unset($ratingRemoved_href['page']);
-		$ratingRemoved_href = Router::url($ratingRemoved_href);
-		$btn_active['filter-rating'] = 1;
-	} else {
-		$ratingRemoved_class .= ' hidden'; 				// move to JS
-		$ratingRemoved_href = $this->here;
-		$btn_active['filter-rating'] = 0;
-	}
+	$btn_state['filter-rating'] = !empty($passed['rating']) ? 'selected' : '';
+	$btn_state['filter-tag'] = (!empty($passed['Tag']) || Session::read('lookup.context.keyName')=='Tag') ? 'selected' : '';
+	
 	$isWide = !empty($this->params['named']['wide']);		// fluid layout
 	
 ?>
@@ -62,19 +51,19 @@
 	$this->Layout->blockStart('inner_DisplayOptions'); ?> 
 	    	<ul class="filter inline">
 	    		<li class='label'>Filter</li>
-				<li class='btn rating white <?php if ($btn_active['filter-rating']) echo "selected" ?>' title='click on a star to filter by minimum rating'>
+				<li class='btn rating white <?php echo $btn_state['filter-rating']; ?>' title='click on a star to filter by minimum rating'>
 					<ul class='inline'>
-						<li class='btn white <?php echo $ratingRemoved_class;  ?>'>
-							<a title='click here to REMOVE this filter' href='<?php echo $ratingRemoved_href ?>' >x</a>
-						</li>	
+						<span title="click to remove this filter" class="btn remove rounded-5   <?php echo $btn_state['filter-rating'] ? '' : 'hide'; ?>" action="filter:rating">x</span>
 						<li class="label" >My Rating</li>
 						<li id="filter-rating-parent">
-							<div class="<?php echo $ratingGroup_class;  ?>">
+							<div class="ratingGroup">
 							</div>
 						</li>
 					</ul>
 				</li>
-				<li class="btn white" action="filter:tag">Tag <input type='text' class='tag copy-paste' maxlength='40'  value='' /></li>
+				<li class="btn white  <?php echo $btn_state['filter-tag']; ?>"  action="filter:tag">
+					<span class="btn remove rounded-5  <?php echo $btn_state['filter-tag'] ? '' : 'hide'; ?>"  title="click to REMOVE this filter" action="filter:tag">x</span>
+					Tag&nbsp;<input type='text' class='tag copy-paste' maxlength='40'  value='' /></li>
 				<li class="btn white disabled">Date Taken <a><img src="/css/images/arrow.png" alt=""></a></li>
 			</ul>
 	        <ul class="sort inline inline-break right">

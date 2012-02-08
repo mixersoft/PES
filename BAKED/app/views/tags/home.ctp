@@ -1,7 +1,8 @@
 <?php
 if (empty($this->passedArgs['wide'])) {
 	$this->Layout->blockStart('itemHeader');
-		echo $this->element('nav/section', array('badge_src'=>null)); 
+		$badge_src = Stagehand::getSrc(null, 'sq', 'Tag');
+		echo $this->element('nav/section', array('badge_src'=>$badge_src)); 
 ?>
 <div class="properties hide container_16">
 	<dl class="grid_16">

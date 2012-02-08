@@ -70,6 +70,7 @@ switch ($config['Config.os']) {
 				'Group'=>'/img/providers/snappi.png',
 				'Event'=>'/img/providers/snappi.png',
 				'Wedding'=>'/img/providers/snappi.png',
+				'Tag'=>'/img/providers/snappi.png',
 			),
 
 //			'meanshift_tmp'=>'W:/usr/bin/meanshift/tmp',

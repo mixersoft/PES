@@ -401,8 +401,9 @@ section.gallery-display-options ul li {
 }
 
 section.gallery-display-options nav.settings > ul > li.btn.white {
+	height: 20px;
 	margin-bottom: 1px;
-    padding: 2px 4px 3px;
+    padding: 2px 4px;
 }
 section.gallery-display-options nav.settings > ul > li.btn.rating {
 	width: 170px;
@@ -443,7 +444,6 @@ section.gallery-display-options ul.sort li select {
 }
 
 section.gallery-display-options ul > li.label {
-	zzpadding: 4px;
 	font-size: 1.0em;
 	color: black;
 }
@@ -452,6 +452,17 @@ section.gallery-display-options ul.filter li.btn input.tag {
 	height: 14px;
 	width: 80px;
 }
+span.btn.remove {
+	background-color: #FFF;
+	border: 1px solid #D8D5D5;
+	color: red;
+    font-size: 0.9em;
+    font-weight: bold;
+    padding: 1px 4px;
+}
+
+
+
 #body-container .gallery-container .gallery {
 	margin-top: 2px;
 	border-top: 1px solid #D2D2D2;

@@ -202,14 +202,19 @@
 	};
 	UIHelper.action = {
 		filter: {
+			rating: function(e) {
+				var href = window.location.href;
+				if (e.target.hasClass('remove')) {  	// remove tag
+					window.location.href = SNAPPI.IO.setNamedParams(href, {'rating':null});
+				} 
+			},
 			tag: function(e){
 				if (e.target.test('input.tag')) {
 					e.halt();	// halt click on input[text] field
 					return;
 				}
 				var tag, href = window.location.href;
-				if (e.target.hasClass('selected')) {
-					// remove tag
+				if (e.target.hasClass('remove')) {		// remove tag
 					window.location.href = SNAPPI.IO.setNamedParams(href, {'context':'remove'});
 				} else {
 					tag = e.currentTarget.one('input').get('value');
@@ -752,7 +757,7 @@
 			    		}} catch(e) {
 			    			console.error("UIHelper.listeners.DisplayOptionClick(): possible error on action name.");
 			    		}	                	
-	                }, 'ul > li.btn', UIHelper);
+	                }, 'ul > li.btn, span.btn.remove', UIHelper);
 			}
 			// back reference
 			UIHelper.listen[action] = node.listen[action];  
