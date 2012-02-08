@@ -331,7 +331,8 @@
     			var header_h = header ? header.get('clientHeight') : 0;
     			var body_border = 20;	// margin: 10px 0 on node
     			var offset_top = 6 + 29 + 12    + 10;
-    			var h = Math.min(node.get('clientHeight'), MAX_HEIGHT);
+    			var winH = stage.get('winHeight') - (offset_top+header_h+40);
+    			var h = Math.min(node.get('clientHeight'), MAX_HEIGHT, winH);
     			if (h < MAX_HEIGHT) {
     				stage.setStyle('overflowY', 'hidden');
     			} else {
