@@ -1,3 +1,4 @@
+<!--  should be same as /views/elements/lightbox.ctp  -->
 <section class="lightbox drop container_16 hide" id="lightbox">
 	<section class="gallery-header grid_16">
 		<ul class="inline">

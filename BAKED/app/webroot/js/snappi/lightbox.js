@@ -761,6 +761,7 @@
 		/*
 		 * Tags
 		 */
+		// deprecate: moved to #menu-lightbox-organize-markup
 		renderTagInput : function(node) {
 			// TODO: for now, just add to the button. later, render in subMenu
 			var nTagForm = _Y.Node
@@ -768,8 +769,8 @@
 			node.append(nTagForm);
 		},
 		applyTagInBatch : function(submit) {
-			var parent = submit.ynode().ancestor('form');
-			var text = parent.one('input#lbx-tag-field');
+			var loadingNode = submit.get('parentNode');
+			var text = submit.previous('input#lbx-tag-field');
 			var tag = text.get('value');
 
 			// post Tags
@@ -789,11 +790,10 @@
 				'data[Asset][tags]' : tag
 			};
 			var args = {
-				node : parent,
+				node : text,
 				tag : tag
 			};
 			// use Plugin to add io request and loadingmask
-			var loadingNode = parent;
 			if (loadingNode.io == undefined) {
 				var ioCfg = SNAPPI.IO.pluginIO_RespondAsJson({
 					uri: uri ,

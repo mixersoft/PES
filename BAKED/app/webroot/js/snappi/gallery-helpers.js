@@ -434,7 +434,7 @@
         },
         apply_filter_settings : function(filters, g) {
         	try {
-        		var f, btn, open, 
+        		var f, btn, open, Rating,
         			parent = g.header.one('section.gallery-display-options');
 	        	for ( var i in filters) {
 	        		open = open || filters[i]['class'];
@@ -446,12 +446,13 @@
 	        			case 'Rating':
 	        				// markup is already initialized in display-options.ctp
 	        				f = parent.one('#filter-rating-parent');
-	        				SNAPPI.filter.initRating( f, filters[i]['value']);
+	        				Rating = SNAPPI.filter.initRating( f, filters[i]['value']);
 	        				btn = f.ancestor('li.btn.rating').addClass('selected');
 	        				break;
 	        		}
 	        	}
         	} catch(e) {}
+        	if (!Rating) SNAPPI.filter.initRating( parent.one('#filter-rating-parent'), 0);
         	if (open) UIHelper.nav.setDisplayOptions(open);
         },
         handle_hiddenShotClick : function(e){

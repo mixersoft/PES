@@ -118,7 +118,10 @@
 	<div id="menu-lightbox-organize-markup" class="menu yui3-aui-overlaycontext-hidden hide">
 		<ul>
 			<li action='batch_rating' class='before-show'>Apply rating:</li>
-			<li action='tag' class='before-show'></li>
+			<li action='tag' class='before-show'>
+				<input id='lbx-tag-field' class='help' type='text' size='16' maxlength='255' value='Enter tags' onclick='this.value=null; this.className=null;'>
+				<input type='submit' value='Go' class='orange'/>
+			</li>
 			<li action='lightbox_group_as_shot'>Group as Shot</li>
 		</ul>
 	</div>

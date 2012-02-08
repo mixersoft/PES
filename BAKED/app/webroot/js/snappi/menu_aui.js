@@ -652,11 +652,19 @@ console.error("PreviewPhoto delete is still incomplete");
 		
 	MenuItems.tag_beforeShow = function(menuItem, menu){
 		if (!menuItem.one('input#lbx-tag-field')) {
-			var self = SNAPPI.lightbox; 
-			self.renderTagInput(menuItem);
+			// var self = SNAPPI.lightbox; 
+			// self.renderTagInput(menuItem);
 		} else {
+			// reset tag
 			var input = menuItem.one('input#lbx-tag-field');
 			input.set('value', 'Enter tags').addClass('help');
+			menuItem.listen = menuItem.listen || {};
+			if (!menuItem.listen.click) 
+				menuItem.listen.click = menuItem.one('input[type=submit]').on(
+					'click',
+					function(e){
+						SNAPPI.lightbox.applyTagInBatch(e.currentTarget);
+					});
 		}
 	};	
 	MenuItems.zoom_click = function(menuItem, menu, e){

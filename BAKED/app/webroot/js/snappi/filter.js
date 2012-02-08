@@ -127,7 +127,7 @@
 				v : value,
 				'setDbValueFn': SNAPPI.filter.byRating
     		}
-    		SNAPPI.Rating.attach(parent, cfg);    			
+    		return SNAPPI.Rating.attach(parent, cfg);    			
     	},
     	byRating: function(v, target) {
     		SNAPPI.filter.active.Rating = v;

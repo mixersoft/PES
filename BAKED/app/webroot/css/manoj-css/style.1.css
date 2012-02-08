@@ -1762,7 +1762,7 @@ section.trends form > div {
 }
 section.trends form input[type="text"] {
 	margin: 4px 4px 4px 0;
-	width: 240px;
+	width: 223px;
 }
 
 #body-container section.trends {
@@ -2118,7 +2118,12 @@ input[type='submit'], button[type='submit'] {
 	font-weight: normal;
 	padding: 4px;
 }
-
+.menu input[type='submit'], .menu button[type='submit'] {
+	padding: 0;
+} 
+.related-content.grid_5 input[type='submit'], .related-content.grid_5 button[type='submit'] {
+	padding: 0;
+} 
 #body-container.plain #UserMagic {
 	margin-top: 40px;
 }
