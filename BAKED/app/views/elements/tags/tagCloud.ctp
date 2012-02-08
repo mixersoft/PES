@@ -93,7 +93,7 @@ Configure::write('debug',1);
 		$cloudTag_options = array(
 			'url' => $route,
 			'named' => 0,
-			'before' => '<li><span style="font-size: %size%pt" class="tag">',
+			'before' => '<li><span style="font-size: %size%pt" class="tag" title="%count% item(s)">',
 			'after' => '</span></li>',
 			'minSize' => '8',
 			'maxSize' => $isRelated ? '16' : '24',

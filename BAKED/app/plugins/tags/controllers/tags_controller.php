@@ -647,6 +647,70 @@ class TagsController extends TagsAppController {
 			return;
 		}
 	}
-
-			
+	// INCOMPLETE, COPIED FROM GROUP
+	function __setRandomCoverPhoto($id = null){
+		$options = array('conditions'=>array('isSystem'=>0), 
+			'recursive' => -1, 
+			'fields'=>array('Tag.id', 'Group.src_thumbnail'),
+		);
+		if ($id) $options['conditions']['Group.id'] = $id;
+		$data = $this->Group->find('all', $options);
+		// $gids = Set::extract('/Group/id', $data);
+		$wwwroot = Configure::read('path.wwwroot');
+		foreach ($data as $row) {
+			if (!empty($row['Group']['src_thumbnail'])) {;	// skip 
+				// check if file exists
+				$imgFilepath = $wwwroot.Stagehand::getSrc($row['Group']['src_thumbnail'], '');
+				if (file_exists($imgFilepath)) {
+					continue; 	// already set and valid, skip
+				} 
+			} 
+			$gid = $row['Group']['id'];
+			$this->Group->id = $gid;
+			$sql = "
+SELECT Asset.src_thumbnail, SharedEdit.score, Asset.id
+FROM assets Asset
+LEFT JOIN assets_groups ag on ag.asset_id = Asset.id
+LEFT JOIN shared_edits AS `SharedEdit` ON (`SharedEdit`.`asset_hash` = `Asset`.`asset_hash`)
+WHERE group_id='{$gid}'
+order by score desc
+LIMIT 5;";
+			$asset = $this->Group->query($sql);
+			if ($asset) {
+				$srcs = Set::extract('/Asset/src_thumbnail', $asset);
+				shuffle($srcs);
+				$ret = $this->Group->saveField('src_thumbnail', array_shift($srcs));
+			} else $ret = $this->Group->saveField('src_thumbnail', '');	// set to null
+		}
+		return;
+	}
+	function __setCounts($keyname= null){
+		if ($keyname) {
+			$where = "WHERE `Tag`.keyname = '{$keyname}'";
+		} else $where='';	
+		$sql = "SELECT `Tag`.id, `Tag`.name, count(t.id) as tagged_count
+FROM tagged t
+JOIN tags as `Tag` ON Tag.id = t.tag_id
+{$where}
+GROUP BY Tag.id, Tag.name;";
+		
+		$data = $this->Tag->query($sql);
+		// $gids = Set::extract('/Group/id', $data);
+		foreach ($data as $row) {
+			$this->Tag->id = $row['Tag']['id'];
+			$this->Tag->saveField('tagged_count', $row[0]['tagged_count']);
+		}		
+		return;
+	}
+	function update_count($keyname=null){
+		if (!Permissionable::isRoot() && $keyname===null) {
+			echo "Root permission required.";
+			exit;
+		}
+		$this->autoRender = false;
+		// $this->__setRandomCoverPhoto($id);
+		$this->__setCounts($keyname);
+		if ($keyname) $this->redirect(array('action'=>'home', $keyname));
+		else $this->redirect(array('action'=>'all'));
+	}		
 }

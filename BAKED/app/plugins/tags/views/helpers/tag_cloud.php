@@ -70,18 +70,18 @@ class TagCloudHelper extends AppHelper {
 		if ($options['shuffle'] == true) {
 			shuffle($tags);
 		}
-
 		$cloud = null;
 		foreach ($tags as $tag) {
-			if ($options['named'] == 'context') {
+			if ($options['named'] === 'context') {
 				// set context using named: /context:Tag~[keyname]
 				$options['url'][$options['named']] = "{$options['named_prefix']}{$tag['Tag']['keyname']}";
 			} else $options['url'][$options['named']] = $tag['Tag']['keyname'];
 
 			$size = $options['minSize'] + (($tag['Tag']['weight'] - $minWeight) * (($options['maxSize'] - $options['minSize']) / ($spread)));
 			$size = ceil($size);
+			$count = $tag['Tag']['tagged_count'];
 
-			$cloud .= $this->_replace($options['before'], $size);
+			$cloud .= $this->_replace($options['before'], $size, $count);
 			$cloud .= $this->Html->link($tag['Tag']['name'], $options['url'], array('id' => 'tag-' . $tag['Tag']['id'])) . ' ';
 			$cloud .= $this->_replace($options['after'], $size);
 		}
@@ -93,7 +93,8 @@ class TagCloudHelper extends AppHelper {
  *
  * @return string
  */
-	protected function _replace($string, $size) {
+	protected function _replace($string, $size, $count=null) {
+		if ($count) $string = str_replace("%count%", $count, $string);
 		return str_replace("%size%", $size, $string);
 	}
 }

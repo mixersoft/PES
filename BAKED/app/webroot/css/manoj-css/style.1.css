@@ -352,10 +352,10 @@ section.gallery-header li.display-option {
 section.gallery-header li.display-option.open {
 	-webkit-border-radius: 5px 5px 0px 0px;
 	-moz-border-radius: 5px 5px 0px 0px;
-	border-bottom: 0 solid #f5f5f5;
+	border-bottom: 0 solid #f79621;
 	padding-bottom: 0;	
 	margin-bottom: 0;
-	height: 25px;	
+	height: 27px;	
 }
 
 /*section.gallery-header ul.thumb-size li.btn:hover, section.gallery-header ul.thumb-size li.btn.focus {
@@ -377,7 +377,7 @@ section.gallery-header  li.blue.label {
  * good
  */
 section.gallery-display-options nav.settings.grid_16 {
-	border: 1px solid #D2D2D2;
+	border: 1px solid #f79621;
 	width: 938px;
 }
 /*TODO: switch to correct gradient, .orange pattern */
