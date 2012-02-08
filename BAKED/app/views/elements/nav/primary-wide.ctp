@@ -58,7 +58,7 @@
 				</li>
 			<?php if ( AppController::$userid) { ?>
 				<li class="menu-trigger-create">
-					<span class="header-btn green rounded-5">+</span>
+					<span class="header-btn green rounded-5"><b>+</b>&nbsp;Create</span>
 				</li>
 				<li>
 					<span class="grey">Welcome,</span>

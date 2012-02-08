@@ -215,8 +215,7 @@ header nav.user ul.right > li.normal-view > span.header-btn {
 	font-size: 10pt;
     font-weight: normal;
 }
-header nav.user ul.right > li.menu-trigger-create > span.header-btn {
-	padding: 2px 6px;
+header nav.user ul.right > li.menu-trigger-create > span.header-btn b {
 	font-size: 1.1em;
     font-weight: 900;
 }
