@@ -211,7 +211,10 @@
 		
 		// plugin loading mask then call XHR POST
 		if (!r.node.loadingmask) {
-			var loadingmaskTarget = r.node.get('parentNode');
+			loadingmaskTarget = r.node.get('parentNode');
+			if (loadingmaskTarget.get('clientHeight') == 0) {
+				loadingmaskTarget = loadingmaskTarget.get('parentNode');		
+			}
 			r.node.plug(_Y.LoadingMask, {
 				strings: {loading:''}, 	// BUG: A.LoadingMask
 				target: loadingmaskTarget,
@@ -334,25 +337,6 @@
 			this.setRatingSprite (units);
 		},
 
-		/**
-		 * REPLACED BY Rating.handleClick() ?????
-		 * onClick() 
-		 * @param value
-		 * @param silent if TRUE, do not update DB, just render new value 
-		 */
-		xxxonClick : function(value, silent) {
-			silent = silent || false;
-			if (!silent && this.setDbValueFn) {
-				var uuid = this.node.getAttribute('uuid')
-						|| this.node.get('id');
-				this.setDbValueFn.call(this.node, value, this.id);
-				/*
-				 * set by DataElement, fires onChange event
-				 */
-			} else {
-				this.render(value);
-			}
-		},
 		render : function(value) {
 			this.setValue(value);
 			this.setRatingSprite();
