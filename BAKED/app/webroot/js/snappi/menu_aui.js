@@ -971,7 +971,7 @@ console.error("PreviewPhoto delete is still incomplete");
 					menu.hide();
 				});
 				delayed.delay(1000);
-				SNAPPI.UIHelper.create.load_then_launch_PageMaker(_Y);
+				SNAPPI.UIHelper.create.load_then_launch_PageMaker();
 				return;
 			}
 		} catch(e) {		}

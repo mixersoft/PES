@@ -17,8 +17,8 @@
 <nav class="section-header container_16">
 	<h1 class="grid_3"><?php echo $label ?></h1>
     <ul class="inline grid_9">
-		<li class="disabled"><a>Montage</a></li>                    
-		<li class="rounded-5 orange focus"><a>Gallery</a></li>
+		<li class="rounded-5 white" onclick="SNAPPI.UIHelper.create._GET_MONTAGE();"><a>Montage</a></li>                    
+		<li class="rounded-5 white focus"><a>Gallery</a></li>
 		<li class="disabled"><a>Timeline</a></li>
 		<li class="disabled"><a>Invites</a></li>
 		<li class="disabled"><a>Activity Feed</a></li>
