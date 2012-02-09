@@ -14,13 +14,14 @@ class ComboController extends AppController {
     }    
     
     function js() {
+    	$this->autorender = false;
+		Configure::write('debug', 0);
         $qs = $_GET; // $this->params;
         $baseurl = @if_e($qs['baseurl'], '');
         $wwwroot = Configure::read('path.wwwroot');       
         unset($qs['url'], $qs['baseurl']);
         if ( empty($qs)) {
             header('Content-Type: application/x-javascript');
-            return;
         } else {
             $scripts = array_keys($qs);
             
@@ -51,12 +52,15 @@ class ComboController extends AppController {
             //setExpiresHeader(3600*24*30);
             echo implode(' ', $comboAsArray);
         }
+		return;
+		exit(0);
     }
     /**
      * renders raw HTML markup templates for use in javascript
      * @param $name string - name of view file
      */
     function markup($name) {
+$this->log("/combo/markup/{$name}", LOG_DEBUG);    	
 		$viewFile = DS."combo".DS.$name;
     	$this->render(null, 'markup', $viewFile);
     }

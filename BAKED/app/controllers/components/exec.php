@@ -97,9 +97,9 @@ class ExecComponent extends Object
 		{
 			$cmd = "start \"{$options['title']}\" ".$cmd;
 //			$options['other_options']=array('bypass_shell'=>false);	
-			$this->log($options, LOG_DEBUG);		
+			// $this->log($options, LOG_DEBUG);		
 		}
-$this->log($options, LOG_DEBUG);		
+// $this->log($options, LOG_DEBUG);		
 		return $this->realExec($cmd, $options, $stdin);
 	}
 	
@@ -141,7 +141,7 @@ $this->log($options, LOG_DEBUG);
 			$this->log($cmd, LOG_DEBUG);
 			$this->log($stdin, LOG_DEBUG);
 		} 
-$this->log($env, LOG_DEBUG);
+// $this->log($env, LOG_DEBUG);
 
 		/*
 		 * Session close to keep Apache from hanging 
@@ -194,7 +194,8 @@ $this->log($env, LOG_DEBUG);
 //		session_start();
 		
 //if (strpos($cmd,'jhead')===false) 
-$this->log(compact('result','cmd','output','errors'),LOG_DEBUG);		
+$loc = "ExecComponent::realExec";
+$this->log(compact('loc','result','cmd','output','errors'),LOG_DEBUG);		
 		if ($result) return $errors;
 		else return $result;		
 	}
