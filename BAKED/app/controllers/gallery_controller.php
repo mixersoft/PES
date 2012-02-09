@@ -136,17 +136,11 @@ class GalleryController extends AppController {
         $this->set('page_gallery', $page_gallery);
         $this->set(compact('link', 'isPreview'));
         
-        $done = $this->renderXHRByRequest(null, '/gallery/page_gallery', null, 0);
+        $done = $this->renderXHRByRequest(null, '/gallery/story', null, 0);
         if ($done) return;
         
-        // render as http request, uses iFrame
-        $this->layout = "pageGallery";
-        /*
-         * do not cache for iframe
-         */
-        echo header('Pragma: no-cache');
-	  	echo header('Cache-control: no-cache');
-	  	echo header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");         
+        // render as http request
+        $this->layout = "story";
     }
     
     
@@ -201,14 +195,14 @@ class GalleryController extends AppController {
 		$data = $_POST ? $_POST : $this->data;
 		$this->autoRender = false;	
 // $this->log("POST _FILES['Filedata'] follow:", LOG_DEBUG);			
-// $this->log($_FILES['Filedata'], LOG_DEBUG);			
 		if (!empty($_FILES) && !isset($_FILES["Filedata"])) {
 			$fileDataERROR = !isset($_FILES["Filedata"]) || !is_uploaded_file($_FILES["Filedata"]["tmp_name"]) || $_FILES["Filedata"]["error"] != 0; 
 $this->log("fileDataERROR={$fileDataERROR}, is_uploaded_file=".is_uploaded_file($_FILES["Filedata"]["tmp_name"]) , LOG_DEBUG);			
 		}
 		if (!empty($data)){
-// $this->log("POST to /gallery/upload_share", LOG_DEBUG);
-// $this->log($data['data']['arrangement'], LOG_DEBUG);
+$this->log("POST to /gallery/upload_share", LOG_DEBUG);
+$this->log($_FILES['Filedata'], LOG_DEBUG);	
+$this->log($data['data']['photos'], LOG_DEBUG);
 
 
 		    /*
@@ -248,6 +242,7 @@ $this->log("fileDataERROR={$fileDataERROR}, is_uploaded_file=".is_uploaded_file(
 			$message = "POST data logged on server.";
 			// $response = $data;
 			$response['uploaded_file'] = $_FILES['Filedata'];
+			unset($response['uploaded_file']['type']);
 			unset($response['uploaded_file']['tmp_name']);
 			
 			/*
@@ -258,7 +253,7 @@ $this->log("fileDataERROR={$fileDataERROR}, is_uploaded_file=".is_uploaded_file(
 				$check_filepath = $dest_basepath.DS.$photo['photo_id'].$EXTENSION;
 				if (file_exists($check_filepath)) {
 					$count++;
-// $this->log(">>> UPLOAD COMPLETE uuid={$photo['photo_id']},  file={$check_filepath}" , LOG_DEBUG);
+$this->log(">>> UPLOAD COMPLETE uuid={$photo['photo_id']},  file={$check_filepath}" , LOG_DEBUG);
 				}
 			}
 			$response['story']['upload_complete'] = $count/$total;
@@ -268,13 +263,25 @@ $this->log("fileDataERROR={$fileDataERROR}, is_uploaded_file=".is_uploaded_file(
 				$response['story']['url'] = "{$story_baseurl}";
 				$response['arrangement'] = $arrangement;
 $this->log("StoryMaker: story upload complete. baseurl = {$story_baseurl}", LOG_DEBUG);					
-$this->log($response , LOG_DEBUG);					
+					
 			} else {
-				$message = "received {$count}/{$total} photos";
+				$message = "received {$count} of {$total} photos";
 				$response['story']['url'] = null;
 			}
+			$json_response = compact('success', 'message', 'response');
 			
-			$this->viewVars['jsonData'] = compact('success', 'message', 'response');
+$this->log($json_response , LOG_DEBUG);			
+			$this->viewVars['jsonData'] = $response['story']['upload_complete'];
+			
+			$json_response = json_encode($json_response);
+			$this->layout = '';
+			header('Content-type: application/json');
+			echo header('Pragma: no-cache');
+			echo header('Cache-control: no-cache');
+			echo header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); 
+			echo $json_response;
+			exit;
+
 			$done = $this->renderXHRByRequest('json', null, null , 0);			
 			if ($done) return; 
 		}

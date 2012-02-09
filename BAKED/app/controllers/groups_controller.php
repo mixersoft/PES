@@ -49,7 +49,7 @@ class GroupsController extends AppController {
 				'big_limit' =>48,
 				'photostream_limit' => 4,
 				// 'order' => array('dateTaken_syncd'=>'ASC'),
-				'order' => array('batchId'=>'DESC'),
+				'order' => array('batchId'=>'DESC', 'dateTaken_syncd'=>'ASC'),
 				'showSubstitutes'=>0,
 				'extras'=>array(
 					'show_edits'=>true,
