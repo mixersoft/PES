@@ -51,7 +51,10 @@ $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 			echo $this->element('/lightbox'); 
 		$this->Layout->blockEnd();
 		
+		// init section-header
+		$this->viewVars['jsonData']['listeners']['SectionOptionClick'] = null;
 		echo $this->element('/photo/section-header');
+		 
 
 		$this->Layout->blockStart('javascript'); 
 	?>
@@ -64,12 +67,9 @@ $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 				SNAPPI.setPageLoading(true);
 				SNAPPI.mergeSessionData();
 				SNAPPI.UIHelper.nav.setDisplayOptions();
-			    var cfg = {type:'Photo'};     
-				new SNAPPI.Gallery(cfg);
-				
-				// add create listener
-				var create = SNAPPI.Y.one('header.head nav.user li.create');
-				if (create) create.on('click', SNAPPI.UIHelper.create.launch_PageGallery);
+				SNAPPI.STATE.galleryType = 'Photo';
+				// load montage or gallery from UIHelper.listeners['SectionOptionClick']
+				SNAPPI.startListeners();	// catch any PAGE.jsonData.listeners by XHR
 			} catch (e) {}
 		};
 		try {

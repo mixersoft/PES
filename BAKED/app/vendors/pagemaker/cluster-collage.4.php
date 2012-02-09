@@ -139,6 +139,10 @@ class ClusterCollage {
         if ($end != $begin)
             $shuffleRatingGroup($photos, $begin, $end);
     }
+	
+	public function setAllowedRatios($ratios){
+		$this->allowedRatios = array_merge($this->allowedRatios, $ratios); 
+	}
     
     /**
      * Set photos to be used for arrangement, 
@@ -289,7 +293,12 @@ class ClusterCollage {
      * Resize arrangement calculated by $this->calculate(...)
      * 
      * @param array $arrangement
-     * @return int Result code. 0 - there is no need in resizing, 1 - successfully resized, 2 - does not feet ratio restrictions and resize is not allowed,   3 - does not feet ratio restrictions and can not resize due to crop restrictions
+     * @return int Result code. 
+	 * 		0 - there is no need in resizing, 
+	 * 		1 - successfully resized, 
+	 * 		2 - does not meet ratio restrictions and resize is not allowed,   
+	 * 		3 - does not meet ratio restrictions 
+	 * 				and cannot resize due to crop restrictions
      */
     protected function resizeArrangement(&$arrangement) {
         // Check ratio:
@@ -298,7 +307,6 @@ class ClusterCollage {
 			throw new Exception('invalid ratio at ' . __CLASS__ . '::' . __FUNCTION__);
 		}			
 	    $allowed = $this->getRatioByString($this->allowedRatios[$orientation]);
-		
         $ratio = $arrangement['h'] / $arrangement['w'];
         if (('h' == $orientation && $ratio > $allowed) 
         || ('v' == $orientation && $ratio < $allowed))

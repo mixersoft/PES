@@ -61,17 +61,15 @@
     			FOOTER_H: 20,
     			Y: Plugin.external_Y,
     		});
-    		
-    		/*
-	    	 * start toolbar edit
-	    	 */
-	    	PM.Menu.initMenus({
-	    		'menu-pm-toolbar-edit': 1
-	    	});
-	    	
     	} else {
     		Plugin.player.setStage(Plugin.stage, Plugin.stage.body);
     	}
+    	if (
+    		Plugin.sceneCfg.stageType != 'montage'		// no edit menu for 'montage'
+    		&& !PM.Menu.find['menu-pm-toolbar-edit']	// edit menu already loaded
+    	) {
+	    	PM.Menu.initMenus({ 'menu-pm-toolbar-edit': 1});
+	    }
     	Plugin.player.init();
     };
     

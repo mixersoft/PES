@@ -10,7 +10,7 @@
 		Plugin = PM.PageMakerPlugin.instance;
 		// global lookup by CSS ID, or cfg.lookup_key
 		Menu.CFG = {
-			'menu-pm-toolbar-edit': CFG_Menu_PageMaker_Create,
+			'menu-pm-toolbar-edit': CFG_Menu_PageMaker_Toolbar_Edit,
 			'menu-photoPreview-actions': CFG_Menu_PreviewPhoto_Actions,
 
 			// context menus
@@ -510,8 +510,8 @@
 	 * @param cfg
 	 * @return
 	 */
-	var CFG_Menu_PageMaker_Create = function(){};
-	CFG_Menu_PageMaker_Create.load = function(cfg){
+	var CFG_Menu_PageMaker_Toolbar_Edit = function(){};
+	CFG_Menu_PageMaker_Toolbar_Edit.load = function(cfg){
 		var CSS_ID = 'menu-pm-toolbar-edit';
 		var TRIGGER = '#stage-2';
 		var XHR_URI = '/combo/markup/pm_ToolbarEdit'; 

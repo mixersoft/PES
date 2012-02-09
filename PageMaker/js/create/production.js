@@ -344,7 +344,9 @@
                         cast.crop.w -= 2 * cfg.spacing;
                     }
                     cropRect = PM.util.getCropSpec(cast.crop, true);
-                    castSrcCropped = PM.util.addCropSpec(castSrc, cropRect, "bp");
+					// var thumbnail_prefix = cfg.thumbPrefix || 'bp';	// bp == 640px
+                	var thumbnail_prefix = this.getThumbPrefix(cast.crop, cfg);
+                    castSrcCropped = PM.util.addCropSpec(castSrc, cropRect, thumbnail_prefix);
                 }
                 else {
                     if (cfg.spacing) {
@@ -407,6 +409,16 @@
             
             return pageGallery;
         },
+        getThumbPrefix: function(crop, cfg){
+        	if (!cfg.isMontage) return cfg.isRehearsal ? 'bp' : '';
+        	try {
+        		var longest = Math.max(crop.minSize.h, crop.minSize.w);
+        		if (longest <= 120) return 'tn';
+        		if (longest <= 240) return 'bs';
+        		if (longest <= 320) return 'bm';
+        	} catch (e) {}
+			return 'bp';
+        },
         rehearse: function(cfg, scene){
             cfg.isRehearsal = true;
             return this.perform(cfg, scene);
@@ -464,7 +476,14 @@
 //                scene = Casting.ChronoCast(Pr, cfg);
 // NOTE: CustomFitArrangement will reset Pr.tryout & Pr.arrangement here
 // called from Pr.renderScene: 
-                scene = Casting.CustomFitArrangement.call(Pr, Pr, cfg);
+				if (cfg.arrangement) {
+					PM.Catalog.parseCustomFitArrangement(cfg.arrangement, Pr);
+					// delete cfg.arrangement;
+					scene = Casting.ChronoCast(Pr, cfg);
+				} else {
+					// get arrangement from server
+					scene = Casting.CustomFitArrangement.call(Pr, Pr, cfg);
+				}
                 /***************************************************************
                  * end Casting
                  **************************************************************/

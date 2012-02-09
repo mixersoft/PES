@@ -286,7 +286,17 @@ class PersonController extends UsersController {
 		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 		$castingCall = $this->CastingCall->getCastingCall($pageData);
 		$this->viewVars['jsonData']['castingCall'] = $castingCall;
-
+		
+		
+		/*
+		 * get montage
+		 * */
+		if (Session::read('section-header.Photo') == 'Montage') {
+ 			$this->Montage = loadComponent('Montage', $this);
+			$auditions = array_slice($castingCall['CastingCall']['Auditions'],0,16);
+			$this->viewVars['jsonData']['montage'] = $this->Montage->getArrangement($auditions);
+		}	
+			
 		$done = $this->renderXHRByRequest('json', '/elements/photo/roll', null, 0);
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
 		$options = array(

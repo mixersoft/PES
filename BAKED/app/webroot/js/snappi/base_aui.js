@@ -77,13 +77,14 @@
 			'WindowOptionClick': null,
 			'DragDrop': 1,
 		};
-		if (PAGE.jsonData && PAGE.jsonData.listeners) {
-			listeners = Y.merge(listeners, PAGE.jsonData.listeners);
-			delete PAGE.jsonData.listeners;
-		}
-		for (var listen in listeners) {
-			if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
-		}        	
+		SNAPPI.startListeners(listeners);
+		// if (PAGE.jsonData && PAGE.jsonData.listeners) {
+			// listeners = Y.merge(listeners, PAGE.jsonData.listeners);
+			// delete PAGE.jsonData.listeners;
+		// }
+		// for (var listen in listeners) {
+			// if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
+		// }        	
     	
         
         // ready now, or after Gallery init   
@@ -461,7 +462,7 @@
 			/*
 			 * pagemaker
 			 */
-			// 'pagemaker-base',
+			'pagemaker-base',
 		]
 		
 		// var onlazyload_1 = function(Y, result){
@@ -1088,13 +1089,17 @@
         } catch(e) {}
         	
         if (SNAPPI.STATE.controller === undefined) SNAPPI.STATE.controller = PAGE.jsonData.controller;
-        
-        
-        
-      
         return SNAPPI.STATE;
     };
-    
+    SNAPPI.startListeners = function(listeners){
+    	if (PAGE.jsonData && PAGE.jsonData.listeners) {
+			listeners = _Y.merge(listeners, PAGE.jsonData.listeners);
+			delete PAGE.jsonData.listeners;
+		}
+		for (var listen in listeners) {
+			if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
+		} 
+    }
     
     // LazyLoad.gallery();  // move to snappi and snappi-wide layout
     

@@ -222,6 +222,30 @@
 					window.location.href = SNAPPI.IO.setNamedParams(href, {'context':'Tag~'+tag});
 				}
 			}, 
+		},
+		'section-view': {
+			montage: function(e){
+				e.currentTarget.addClass('focus').siblings().removeClass('focus');
+				var montage = _Y.one('.montage-container div.pageGallery');
+				if (montage) montage.ancestor('.montage-container').removeClass('hide');
+				else SNAPPI.UIHelper.create._GET_MONTAGE();
+				_Y.one('.gallery-container').addClass('hide');
+				SNAPPI.io.writeSession({'section-header.Photo':'Montage'});
+			},
+			gallery: function(e){
+				e.currentTarget.addClass('focus').siblings().removeClass('focus');
+				// TODO: switch to g._cfg.type ??
+				var ID_PREFIX = SNAPPI.Factory.Gallery[SNAPPI.STATE.galleryType].defaultCfg.ID_PREFIX;
+				var g = SNAPPI.Gallery.find[ID_PREFIX];
+				if (SNAPPI.Gallery.find[ID_PREFIX]) {
+					g.container.ancestor('.gallery-container').removeClass('hide');
+				} else {
+					SNAPPI.setPageLoading(true);
+					new SNAPPI.Gallery({type:SNAPPI.STATE.galleryType});	
+				}
+				_Y.one('.montage-container').addClass('hide');
+				SNAPPI.io.writeSession({'section-header.Photo':'Gallery'});
+			},
 		}
 	}
 	UIHelper.groups = {
@@ -337,6 +361,8 @@
     			 * @params node div.pageGallery
     			 */
     			var _setStageDim = function(P, node){
+    					if (!node.ancestor('#stage-2')) return; 
+    					stage.removeClass('hide');
 		    			var d = SNAPPI.Dialog.find['dialog-alert'];
 		    			var header = stage.one('.stage-header');
 		    			var header_h = header ? header.get('clientHeight') : 0;
@@ -365,6 +391,7 @@
 	    				_setStageDim(null, node);
 	    			}, stage);
     		}
+    		stage.stageType = 'modal';
 			return stage;
 		},
 		/*
@@ -375,8 +402,10 @@
 				// check .gallery.photo, then lightbox for selected 
 			var batch = g && g.getSelected();
 			if (!batch || !batch.count()) {
-				g = SNAPPI.lightbox.Gallery;
-				batch = SNAPPI.lightbox.getSelected();
+				try {
+					g = SNAPPI.lightbox.Gallery;
+					batch = SNAPPI.lightbox.getSelected();
+				} catch (e) {}
 			}
 			var o = {
 				batch: batch,
@@ -425,7 +454,7 @@
 		 * cfg.batch, cfg.gallery
 		 */
 		getSceneCfg: function(cfg){
-			cfg = cfg || this.getCastingCall();
+			if (!cfg || !cfg.batch.count()) cfg = this.getCastingCall(); 
 			/*
 			 * check if we need to POST to get complete/updated results
 			 */
@@ -440,6 +469,7 @@
 				useHints: true,
 				hideRepeats : false,
 				performance: null,		// reset performance
+				// thumbPrefix: 'bm',	// use 'bm' for montage
 			};
 			sceneCfg = _Y.merge(sceneCfg, cfg);
 			return sceneCfg;
@@ -449,7 +479,7 @@
 		 */
 		isPost: function(cfg){
 			try {
-				cfg = cfg || this.getCastingCall();
+				if (!cfg || !cfg.batch.count()) cfg = this.getCastingCall();
 				var lightbox, g = cfg.gallery ? cfg.gallery : cfg;
 				var isPreview = isSelectAll = false;
 				lightbox = g.container.ancestor('#lightbox');
@@ -462,7 +492,7 @@
 			return false;
 		},
 		getCreate: function(cfg) {
-			cfg = cfg || this.getCastingCall();
+			if (!cfg || !cfg.batch.count()) cfg = this.getCastingCall();
 			var g = cfg.gallery ? cfg.gallery : cfg;
 			var fn_create;
 			if (this.isPost(cfg)) {
@@ -520,7 +550,7 @@
 		 *  3) create Story: Gallery.createPageGallery()
 		 */
 		// load 'pagemaker-base' MODULE if SNAPPI.PM.PageMakerPlugin class does not exist
-		load_PageMakerPlugin: function(external_Y){
+		load_PageMakerPlugin: function(external_Y, cfg){
 			PM = SNAPPI.PM;
 			// check plugin
 			if (!PM || !PM.pageMakerPlugin) {
@@ -546,7 +576,11 @@
 					PM.pageMakerPlugin.load();
 				};
 				SNAPPI.LazyLoad.use(modules, callback);
-			} else if (!SNAPPI.PM.main) {
+				return;
+			}
+			
+			if (!SNAPPI.PM.main) {
+				// should be same as this.launch_Pagemaker()
 				// after-load: launch/create Pagemaker page 
 				var launched = _Y.on('snappi-pm:pagemaker-launch-complete', function(stage) {
 	        		launched.detach();
@@ -559,14 +593,30 @@
 				var sceneCfg = this.getSceneCfg(this.getCastingCall());
 				PM.pageMakerPlugin.setScene(sceneCfg);
 				PM.main.launch(PM.pageMakerPlugin);
-			} else {
-				var create = this.getCreate();
-	        	create();
-			}			
+				return;
+			} 
+			
+			// Plugin loaded AND launched, ready to create()
+			var Plugin = PM.pageMakerPlugin;
+			if (Plugin.stage 
+				&& Plugin.stage.stageType
+				&& cfg.stageType
+				&& Plugin.stage.stageType != cfg.stageType){
+				// redo pre-launch
+				cfg = _Y.merge(cfg, this.getCastingCall());
+				var ioCfg, sceneCfg = this.getSceneCfg(cfg);
+				if (this.isPost(cfg)) ioCfg = this.postCastingCall(cfg);
+				PM.pageMakerPlugin.setScene(sceneCfg).setPost(ioCfg);
+				var stage = (cfg.getStage) ? cfg.getStage() : this.getStage_modal();
+				PM.pageMakerPlugin.setStage(stage);
+				// ready to create?
+			} 
+			var create = this.getCreate(cfg);
+        	create();
 		},
 		// on 'snappi-pm:pagemaker-load-complete'
 		launch_PageMaker: function(cfg){
-// console.error("2a) on 'snappi-pm:pagemaker-load-complete'");			
+// console.error("2a) on 'snappi-pm:pagemaker-load-complete'");	
 			var ioCfg, sceneCfg = this.getSceneCfg(cfg);
 			if (this.isPost(cfg)) ioCfg = this.postCastingCall(cfg);
 			var PM = SNAPPI.PM;
@@ -579,8 +629,12 @@
 		},
 		launchComplete_PageMakerPlugin: function(cfg){
 		},
+		// entry point for Stories
 		load_then_launch_PageMaker : function(cfg){
-			cfg = cfg || this.getCastingCall();
+			if (!cfg || !cfg.batch.count()) cfg = this.getCastingCall();
+			cfg.arrangement = null;
+			cfg.spacing = 3;		// border spacing
+			cfg.stageType = cfg.stageType || 'modal';
 			var g = cfg.gallery;
 			
         	var loaded = _Y.on('snappi-pm:pagemaker-load-complete', function(PM_Y) {
@@ -599,11 +653,15 @@
         		create();
         	}, g);
         	
-        	this.load_PageMakerPlugin(_Y);
+        	this.load_PageMakerPlugin(_Y, cfg);
 		},
 		// set cfg.batch, cfg.getStage, cfg.gallery???
 		load_then_launch_Montage : function(cfg){
 			var g = cfg.gallery;
+			cfg.stageType = 'montage';
+			cfg.isMontage = true;	// uses Pr.getThumbPrefix to get min thumb size by crop
+			// cfg.thumbPrefix = 'bm';	// use 320px for montage
+			cfg.spacing = 1;		// border spacing
 			
         	var loaded = _Y.on('snappi-pm:pagemaker-load-complete', function(PM_Y) {
         		loaded.detach();
@@ -619,15 +677,53 @@
         		create();
         	}, g);
         	
-        	this.load_PageMakerPlugin(_Y);
+        	this.load_PageMakerPlugin(_Y, cfg);
+		},
+		getStage_montage : function(cfg) {
+				cfg = cfg || {};
+				var selector = cfg.selector || '#content .montage-container';
+				var stage = _Y.one(selector);
+				if (!stage) {
+					var markup = "<section class='montage-container grid_16'><div class='stage-body'></div></section>";
+					_Y.one('nav.section-header').insert( markup ,'after');	
+					stage = _Y.one(selector);
+				}
+				stage.noHeader = true;
+				stage.listen = stage.listen || {};
+				stage.listen['render'] = _Y.on('snappi-pm:render', 
+					/*
+	    			 * @params P Performance
+	    			 * @params node div.pageGallery
+	    			 */
+					function(P, node){
+						if (!node.ancestor('.montage-container')) return; 
+						stage.removeClass('hide');
+						SNAPPI.setPageLoading(false);
+					});
+				stage.stageType = 'montage'; 
+				return stage;
 		},
 		_GET_MONTAGE : function(){
-			cfg = {};
-			var g = _Y.one('.gallery.photo').Gallery;
+			var cfg = {};
+			try {
+				var g = _Y.one('.gallery.photo').Gallery;
+				cfg.gallery = g;
+				cfg.batch = g.auditionSH.slice(0,16);	
+			} catch (e) {
+				var onDuplicate = SNAPPI.Auditions.onDuplicate_REPLACE;
+				var auditionSH = SNAPPI.Auditions.parseCastingCall(
+						PAGE.jsonData.castingCall, 
+						null, 
+						null, 
+						onDuplicate);
+				cfg.batch = auditionSH;		
+			}
 			
-			cfg.batch = g.auditionSH.slice(0,16);
-			cfg.gallery = g;
-			cfg.getStage = this.getStage_modal;
+			// skip slice, use Role.suggestedPhotoId
+			cfg.stageType = 'montage';
+			cfg.getStage = this.getStage_montage;
+			cfg.arrangement = PAGE.jsonData.montage;
+			SNAPPI.setPageLoading(true);
 			this.load_then_launch_Montage(cfg);
 		},
 	}
@@ -829,6 +925,45 @@
 				UIHelper.listen[action] = node.listen[action];	                
 			}
         },
+ 		SectionOptionClick : function(node) {
+        	node = node || _Y.one('nav.section-header');        	
+        	if (!node) return;
+        	var action = 'SectionOptionClick';
+        	node.listen = node.listen || {};
+        	var delegate_container = node;
+            if (delegate_container && node.listen[action] == undefined) {
+            	delegate_container.removeClass('hide');
+				node.listen[action] = delegate_container.delegate('click', 
+	                function(e){
+	                	// action=[section-view:[montage|gallery]
+	                	// context = node
+                		var action = e.currentTarget.getAttribute('action').split(':');
+                		try {
+			    		switch(action[0]) {
+			    			case 'section-view':
+			    				UIHelper.action['section-view'][action[1]](e);
+			    				break;
+			    			case 'xxx':
+			    				break;
+			    		}} catch(e) {
+			    			console.error("UIHelper.listeners.SectionOptionClick(): possible error on action name.");
+			    		}	
+	                }, 'ul > li', node);
+				// back reference
+				UIHelper.listen[action] = node.listen[action];	   
+				
+				// TODO: move to UIHelper.init.section{}
+				// initialize state
+				if (PAGE.jsonData.montage) {
+					// open montage view
+					node.one('li.montage').addClass('focus');
+					SNAPPI.UIHelper.create._GET_MONTAGE();
+				} else {
+					node.one('li.gallery').addClass('focus');  
+				    new SNAPPI.Gallery({type:SNAPPI.STATE.galleryType});
+				}				
+			}
+        },        
         DragDrop : function(){
         	SNAPPI.DragDrop.pluginDrop(_Y.all('.droppable'));
         	SNAPPI.DragDrop.startListeners();

@@ -93,30 +93,8 @@
         post_callback.success = function (id, o, args){
         	if (o.responseJson.success) {
         		rawA = o.responseJson.response.arrangement;
-        		/*
-        		 * create snappi Roles from rawRoles
-        		 */
-        		A = {
-    	            w: rawA.W,
-    	            h: rawA.H,
-    	            format: rawA.W/rawA.H,
-    	            roleSH: new SNAPPI.SortedHash()
-        		};
-        		var rawRole, snappiRole;
-                for (var i in rawA.Roles) {
-                    var rawRole = rawA.Roles[i];
-                    if (rawRole !== undefined) {
-                        var r = new PM.SnappiCustomFitRole(rawRole, A);
-                        A.roleSH.add(r);
-                    }
-                }
-                A.roleSH.setDefaultSort([PM.Role.sort.PROMINENCE]);
-                A.roleSH.sort();
-                var i = 0;
-                A.roleSH.each(function(R){
-                	R.index = i++;
-                });
-                Pr.setArrangement(A);
+        		Catalog.parseCustomFitArrangement(rawA, Pr);
+                var A = Pr.arrangement;
         		callback.success.call(this, A);
         	} else 
         		callback.failure.call(this, o);
@@ -132,6 +110,33 @@
         var o = SNAPPI.io.post.call(this, uri, data, post_callback, {}, sync = true, 2000);
         // A set in post_callback via closure
         return A;
+    };
+    Catalog.parseCustomFitArrangement = function(rawA, Pr){
+		/*
+		 * create snappi Roles from rawRoles
+		 */
+		A = {
+            w: rawA.W,
+            h: rawA.H,
+            format: rawA.W/rawA.H,
+            roleSH: new SNAPPI.SortedHash()
+		};
+		var rawRole, snappiRole;
+        for (var i in rawA.Roles) {
+            var rawRole = rawA.Roles[i];
+            if (rawRole !== undefined) {
+                var r = new PM.SnappiCustomFitRole(rawRole, A);
+                A.roleSH.add(r);
+            }
+        }
+        A.roleSH.setDefaultSort([PM.Role.sort.PROMINENCE]);
+        A.roleSH.sort();
+        var i = 0;
+        A.roleSH.each(function(R){
+        	R.index = i++;
+        });
+        Pr.setArrangement(A);  
+        return Pr;  	
     };
 
     /*

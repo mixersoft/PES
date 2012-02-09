@@ -71,13 +71,13 @@
             stage.setStyles({
                 'overflowY': 'auto',
                 // 'height': displaySize.h + 'px',		// required for playback sizing
-                'width': '100%', // displaySize.w + 'px',
+                // 'width': '100%', // displaySize.w + 'px',
                 'backgroundColor': 'black'
             });
             /*
              * add Header to PageGallery
              */
-            if (noHeader) {
+            if (noHeader || stage.noHeader) {
             	try{
             		stage.one('.stage-header').remove();
             	} catch(e){}

@@ -177,7 +177,8 @@
             _Y.io(uri, ioCfg);
         },
         
-        post : function(uri, postData, callback, args, sync, timeout){	
+        post : function(uri, postData, callback, args, sync, timeout){
+        	callback = _Y.merge({success:null, failure:null, complete:null}, callback);	
             // POST to uri
             var v, post = [];
             // stringify post params
