@@ -2539,7 +2539,7 @@ li:hover.white.focus, li:hover.white.selected
  * Story
  */
 .montage-container {
-	background: black url('/img/pageGallery/ajax-loading-img-hg.black.gif') center center no-repeat;
+	xbackground: black url('/img/pageGallery/ajax-loading-img-hg.black.gif') center center no-repeat;
 	background-color: #000;
 	margin-bottom: 10px;
 	min-height: 100px;
@@ -2552,7 +2552,7 @@ li:hover.white.focus, li:hover.white.selected
 	overflow:hidden;
 }
 .pagemaker-stage .stage-body {
-	background: black url('/img/pageGallery/ajax-loading-img-hg.black.gif') center center no-repeat;
+	xbackground: black url('/img/pageGallery/ajax-loading-img-hg.black.gif') center center no-repeat;
 	background-color: #000;
 	height: auto;
 	width: 100%;

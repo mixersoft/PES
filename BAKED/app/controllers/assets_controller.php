@@ -320,6 +320,16 @@ class AssetsController extends AppController {
 		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 		$castingCall = $this->CastingCall->getCastingCall($pageData);
 		$this->viewVars['jsonData']['castingCall'] = $castingCall;
+		/*
+		 * get montage
+		 * */
+		if ((Session::read('section-header.Photo') == 'Montage' || !empty($this->passedArgs['montage']))
+			&& !$this->RequestHandler->isAjax() 
+		) {
+ 			$this->Montage = loadComponent('Montage', $this);
+			$auditions = array_slice($castingCall['CastingCall']['Auditions'],0,16);
+			if (!empty($auditions)) $this->viewVars['jsonData']['montage'] = $this->Montage->getArrangement($auditions);
+		}	
 		 
 		$this->getLookups(array('Users'=> array_keys(Set::combine($pageData, '/owner_id', ''))));
 		$done = $this->renderXHRByRequest('json', '/elements/photo/roll');

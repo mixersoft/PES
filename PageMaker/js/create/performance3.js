@@ -123,16 +123,6 @@
             if (!body) {
                 body = parent.create('<div class="stage-body"></div>');
                 body.set('id', id);
-                // body.setStyles({
-                    // // height: displayPixelsH + 'px',
-                    // width: '100%', //displaySize.w + 'px',
-                    // backgroundColor: backgroundColor,
-                    // overflow: 'hidden' // avoids scrollbars around iFrame
-                // });
-            }
-            else {
-                // just update height
-                // body.setStyle('height', displayPixelsH + 'px');
             }
             return body;
         },

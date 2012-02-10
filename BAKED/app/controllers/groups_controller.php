@@ -866,6 +866,16 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 		$castingCall = $this->CastingCall->getCastingCall($pageData);
 		$this->viewVars['jsonData']['castingCall'] = $castingCall;
 
+		/*
+		 * get montage
+		 * */
+		if (Session::read('section-header.Photo') == 'Montage' || !empty($this->passedArgs['montage']))
+		{
+ 			$this->Montage = loadComponent('Montage', $this);
+			$auditions = array_slice($castingCall['CastingCall']['Auditions'],0,16);
+			if (!empty($auditions)) $this->viewVars['jsonData']['montage'] = $this->Montage->getArrangement($auditions);
+		}	
+		
 		if (Session::read('lookup.context.keyName')!='person')  {
 			// add owner_names to lookup.
 			$this->getLookups(array('Users'=> array_keys(Set::combine($pageData, '/owner_id', ''))));

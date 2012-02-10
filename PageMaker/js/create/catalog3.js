@@ -100,7 +100,7 @@
 						context: this,	
 						// arguments: args, 
 						// sync: true,								/* SYNCRONOUS XHR CALL */
-						timeout: 12000,
+						timeout: 20000,
 						on: {
 							successJson:  function(e, id, o, args) {
 								if (o.responseJson.success) {
@@ -125,6 +125,8 @@
 			// loadingNode.io.set('arguments', args);
 			loadingNode.io.start();
         }
+        _Y.fire('snappi-pm:arrangement-xhr-start', loadingNode);
+        Plugin.external_Y.fire('snappi-pm:arrangement-xhr-start', loadingNode);
     };
     Catalog.parseCustomFitArrangement = function(rawA, Pr){
 		/*
