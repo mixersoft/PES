@@ -170,7 +170,7 @@
 	    		air_comboBase: 'app/air&',
 	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
 	    		pagemaker_comboBase: 'PageMaker&',	// filepath, not baseurl
-	    		pagemaker_useCombo: 1,		
+	    		pagemaker_useCombo: 0,		
 	    		alloy_useCombo: true,
 	    		yahoo_CDN: 0,
 	    		YUI_VERSION: '3.3.0',	// this is actually set in aui.js
@@ -599,7 +599,7 @@
                 },
 			    'snappi-pm-main': {
 			        path: 'create/main3.js',
-			        requires: ['snappi-pm-snappi-css','node','snappi-pm-catalog3','snappi-pm-performance3']
+			        requires: ['snappi-pm-create-css','node','snappi-pm-catalog3','snappi-pm-performance3']
 			    },
 			    'snappi-pm-node3': {
 			        path: 'create/node3.js',
@@ -711,8 +711,8 @@
 			comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl='+hostCfg.pagemaker_comboBase,
 	        root: 'css',			// base for combo loading, combo load uri = comboBase+root+[module-name]
             modules: {
-            	'snappi-pm-snappi-css': {
-	                path: 'snappi.css',
+            	'snappi-pm-create-css': {
+	                path: 'create.css',
 	                type: 'css'
 	            }       		     	        
             }

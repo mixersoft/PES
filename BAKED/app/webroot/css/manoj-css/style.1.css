@@ -777,7 +777,12 @@ section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
 	background-image: url(../images/icon-hidden-shot-6.png);
 }
 
-
+/*
+ * montage
+ */
+.FigureBox.Montage.selected > figure > img {
+	border: 2px solid red !important;
+}
 
 
 

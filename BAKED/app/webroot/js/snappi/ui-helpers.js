@@ -24,6 +24,7 @@
 (function() {
 	var _Y = null;
 	var PM = null;
+	var PMPlugin = null;		// PM.pageMakerPlugin on load
     SNAPPI.namespace('SNAPPI.onYready');
     SNAPPI.onYready.UIHelper = function(Y){
 		if (_Y === null) _Y = Y;
@@ -377,7 +378,7 @@
 		    			d.set('height', h + body_border + header_h + offset_top);
 		    			d.centered();
 		    			try {
-		    				if (h < node.origRect.H) PM.pageMakerPlugin.player.winResize(null);	
+		    				if (h < node.origRect.H) PMPlugin.player.winResize(null);	
 		    			} catch(e){}
 		    			SNAPPI.setPageLoading(false);
 		    		};
@@ -461,7 +462,7 @@
 				tryout: null,			// reset tryout, using auditions instead
 				sortedhash: null,		// deprecate: reset tryout, using auditions instead
 				fnDisplaySize: {h:800},
-				// stage: this.getStage_modal(), 	// use PM.pageMakerPlugin.setStage()
+				// stage: this.getStage_modal(), 	// use PMPlugin.setStage()
 				noHeader: true,
 				useHints: true,
 				hideRepeats : false,
@@ -496,28 +497,28 @@
 				// #Lightbox.is-preview
 				// use ioCfg and POST for auditions
 				// use sceneCfg.tryout
-				PM.pageMakerPlugin.sceneCfg.auditions = null; 
+				PMPlugin.sceneCfg.auditions = null; 
 				if (!g.node.listen['content-changed']) {
 					g.node.listen['content-changed'] = _Y.on('snappi:lightbox-content-changed', function(L){
 						try {
 							// mark as stale
-							PM.pageMakerPlugin.ioCfg.complete = false;
+							PMPlugin.ioCfg.complete = false;
 							delete PM.main.tryoutLoadStatus;
 							delete PM.main.tryoutSortedhash;
 						} catch (e){}
 					});
 				}
-				if (!PM.pageMakerPlugin.ioCfg.complete) {
+				if (!PMPlugin.ioCfg.complete) {
 					// Plugin already loaded, just launch with Post
 					var ioCfg = this.postCastingCall(cfg);
-					PM.pageMakerPlugin.setPost(ioCfg);
+					PMPlugin.setPost(ioCfg);
 					fn_create = function() {
 						SNAPPI.PM.main.launch(PM.pageMakerPlugin);
 					}
 				} else {
-					var check = PM.pageMakerPlugin.sceneCfg.tryout;
+					var check = PMPlugin.sceneCfg.tryout;
 					var stage = (cfg.getStage) ? cfg.getStage() : this.getStage_modal();
-					PM.pageMakerPlugin.setStage(stage);
+					PMPlugin.setStage(stage);
 					fn_create = SNAPPI.PM.main.makePageGallery;
 				}
 				return fn_create;
@@ -527,9 +528,9 @@
 			} else {
 				// prepare for simple case
 				var sceneCfg = this.getSceneCfg(cfg);
-				PM.pageMakerPlugin.setScene(sceneCfg);
+				PMPlugin.setScene(sceneCfg);
 				var stage = (cfg.getStage) ? cfg.getStage() : this.getStage_modal();
-				PM.pageMakerPlugin.setStage(stage);
+				PMPlugin.setStage(stage);
 				fn_create = SNAPPI.PM.main.makePageGallery
 				return fn_create;
 			}
@@ -540,7 +541,7 @@
 		 * load/load/init/create lifecycle 
 		 * 	1a) load EXTERNAL plugin module, load_PageMakerPlugin 
 		 * 		-> listen: afterPageMakerPluginLoad, or onReady_PageMakerPlugin()
-		 *  1b) load PM Pagemaker modules, PM.pageMakerPlugin.load() 
+		 *  1b) load PM Pagemaker modules, PMPlugin.load() 
 		 * 		-> listen:'snappi-pm:pagemaker-load-complete'
 		 *  2) init Pagemaker with castingCall, PM.main.launch() 
 		 * 		-> listen:'snappi-pm:pagemaker-launch-complete' 
@@ -569,8 +570,8 @@
 					// external_Y.fire('snappi-pm:afterPageMakerPluginLoad', Y);
 // console.info("snappi-pm:PageMakerPlugin-load-complete");					
 					// TODO: put in 'snappi-pm:afterPageMakerPluginLoad' handler?
-					PM.pageMakerPlugin = new PM.PageMakerPlugin(external_Y);
-					PM.pageMakerPlugin.load();
+					PMPlugin = PM.pageMakerPlugin = new PM.PageMakerPlugin(external_Y);
+					PMPlugin.load();
 				};
 				SNAPPI.LazyLoad.use(modules, callback);
 				return;
@@ -588,7 +589,7 @@
 		        	
 				// Plugin alread loaded, just launch Pagemaker
 				var sceneCfg = this.getSceneCfg(this.getCastingCall());
-				PM.pageMakerPlugin.setScene(sceneCfg);
+				PMPlugin.setScene(sceneCfg);
 				PM.main.launch(PM.pageMakerPlugin);
 				return;
 			} 
@@ -603,9 +604,9 @@
 				cfg = _Y.merge(cfg, this.getCastingCall());
 				var ioCfg, sceneCfg = this.getSceneCfg(cfg);
 				if (this.isPost(cfg)) ioCfg = this.postCastingCall(cfg);
-				PM.pageMakerPlugin.setScene(sceneCfg).setPost(ioCfg);
+				PMPlugin.setScene(sceneCfg).setPost(ioCfg);
 				var stage = (cfg.getStage) ? cfg.getStage() : this.getStage_modal();
-				PM.pageMakerPlugin.setStage(stage);
+				PMPlugin.setStage(stage);
 				// ready to create?
 			} 
 			var create = this.getCreate(cfg);
@@ -617,10 +618,10 @@
 			var ioCfg, sceneCfg = this.getSceneCfg(cfg);
 			if (this.isPost(cfg)) ioCfg = this.postCastingCall(cfg);
 			var PM = SNAPPI.PM;
-			// PM.pageMakerPlugin.setStage(sceneCfg.stage);
-			PM.pageMakerPlugin.setScene(sceneCfg).setPost(ioCfg);
+			// PMPlugin.setStage(sceneCfg.stage);
+			PMPlugin.setScene(sceneCfg).setPost(ioCfg);
 			var stage = (cfg.getStage) ? cfg.getStage() : this.getStage_modal();
-			PM.pageMakerPlugin.setStage(stage);
+			PMPlugin.setStage(stage);
 // console.error("2b) FIRST call to PM.main.launch. ioCfg set");			
 			PM.main.launch(PM.pageMakerPlugin);	// 'Photo', ioCfg=null
 		},
@@ -655,11 +656,7 @@
 		// set cfg.batch, cfg.getStage, cfg.gallery???
 		load_then_launch_Montage : function(cfg){
 			var g = cfg.gallery;
-			cfg.stageType = 'montage';
-			cfg.isMontage = true;	// uses Pr.getThumbPrefix to get min thumb size by crop
-			// cfg.thumbPrefix = 'bm';	// use 320px for montage
-			cfg.spacing = 1;		// border spacing
-			
+
         	var loaded = _Y.on('snappi-pm:pagemaker-load-complete', function(PM_Y) {
         		loaded.detach();
 				UIHelper.create.launch_PageMaker(cfg);
@@ -682,23 +679,12 @@
 				var selector = cfg.selector || '#content .montage-container';
 				var stage = _Y.one(selector);
 				if (!stage) {
-					var markup = "<section class='montage-container grid_16'><div class='stage-body'></div></section>";
+					var markup = "<section class='montage-container container grid_16'><div class='stage-body'></div></section>";
 					_Y.one('nav.section-header').insert( markup ,'after');	
 					stage = _Y.one(selector);
-				}
-				stage.noHeader = true;
-				stage.listen = stage.listen || {};
-				stage.listen['render'] = _Y.on('snappi-pm:render', 
-					/*
-	    			 * @params P Performance
-	    			 * @params node div.pageGallery
-	    			 */
-					function(P, node){
-						if (!node.ancestor('.montage-container')) return; 
-						stage.removeClass('hide');
-						SNAPPI.setPageLoading(false);
-					});
-				stage.stageType = 'montage'; 
+					stage.noHeader = cfg.noHeader;
+					stage.stageType = 'montage';
+				} 
 				return stage;
 		},
 		_GET_MONTAGE : function(){
@@ -719,8 +705,41 @@
 			
 			// skip slice, use Role.suggestedPhotoId
 			cfg.stageType = 'montage';
+			cfg.noHeader = true;
 			cfg.getStage = this.getStage_montage;
+			cfg.thumbnailMarkup = '<article class="FigureBox Montage"><figure><img src="{src}" title="{title}" linkTo="{linkTo}" style="height:{height}px;width:{width}px;left:{left}px;top:{top}px;border:{borderSpacing}px solid transparent;"></figure></article>';
+			cfg.stageType = 'montage';
+			cfg.isMontage = true;	// uses Pr.getThumbPrefix to get min thumb size by crop
+			cfg.spacing = 1;		// border spacing
 			cfg.arrangement = PAGE.jsonData.montage;
+			cfg.listeners = ['LinkToClick', 'MultiSelect', 'Contextmenu'];
+						
+			// initialize stage and reuse later
+			var listener, stage = cfg.getStage(cfg);
+			if (!stage.listen) { 
+				/*
+				 * 
+				 */
+				stage.listen = {};
+				listener = 'MultiSelect';
+				stage.listen[listener] = UIHelper.listeners[listener](stage);
+				listener = 'LinkToClick';
+				stage.listen[listener] = UIHelper.listeners[listener]({node: stage});
+
+				// listener = 'Contextmenu';
+				// stage.listen[listener] = UIHelper.listeners[listener]({node: stage});
+				listener = 'render';
+				stage.listen[listener] = _Y.on('snappi-pm:render', 
+						/*
+		    			 * @params P Performance
+		    			 * @params node div.pageGallery
+		    			 */
+						function(P, node){
+							if (!node.ancestor('.montage-container')) return; 
+							stage.removeClass('hide');
+							SNAPPI.setPageLoading(false);
+						});        
+			}
 			SNAPPI.setPageLoading(true);
 			this.load_then_launch_Montage(cfg);
 		},
@@ -838,12 +857,12 @@
         	var container = node;
         	var action = 'MultiSelect';
         	
-        	node.listen = node.listen || {};
-            if (node.listen[action] == undefined) {
-            	SNAPPI.multiSelect.listen(node, true);
+        	container.listen = container.listen || {};
+            if (container.listen[action] == undefined) {
+            	SNAPPI.multiSelect.listen(container, true);
 			}
 			// back reference
-			UIHelper.listen[action] = node.listen[action];	        	
+			UIHelper.listen[action] = container.listen[action];	        	
         	
         	// select-all checkbox listener
         	var galleryHeader = _Y.one('.gallery-container .gallery-header');

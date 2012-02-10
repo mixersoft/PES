@@ -291,13 +291,10 @@
             /*
              * absolute placement of each cast member
              */
-            var outerDim = {
-                r: 0,
-                b: 0
-            };
+            var outerDim = { r: 0, b: 0};
             var cropRect, src, castSrc, castSrcCropped, thumbnail_prefix;
             var tokens, node;
-            var MARKUP = '<img src="{src}" title="{title}" linkTo="{linkTo}" style="height:{height}px;width:{width}px;left:{left}px;top:{top}px;border:{borderSpacing}px solid transparent;">';
+            var MARKUP = cfg.thumbnailMarkup || '<img src="{src}" title="{title}" linkTo="{linkTo}" style="height:{height}px;width:{width}px;left:{left}px;top:{top}px;border:{borderSpacing}px solid transparent;">';
             for (var i = 0; i < scene.cast.length; i++) {
                 cast = scene.cast[i];
                 snappiAud = cast.audition.parsedAudition;
@@ -370,7 +367,7 @@
                 
                 tokens = {
                 	src: castSrcCropped,
-                	title: cast.role.id + '-' + cropRect,
+                	title: snappiAud.label,
                 	linkTo: '/photos/home/'+ snappiAud.id,
                     height: (cast.minSize.h),
                     width: (cast.minSize.w),
