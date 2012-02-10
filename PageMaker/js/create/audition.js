@@ -87,7 +87,7 @@
     		// preview orientation, NOT exifOrientation
     		var orientation = photo.Img.Src.Orientation,
     			rotate = photo.Fix.Rotate || 1;
-    		o.orientation = SNAPPI.PM.util.orientationSum(orientation, rotate);
+    		o.orientation = PM.util.orientationSum(orientation, rotate);
 //    		o.size = {W:photo.Img.Src.W, H:photo.Img.Src.H};  // use original or preview???
     		/*
     		 * use o.orientation to rotate o.size, o.focusCenter to orientation=1
@@ -95,7 +95,7 @@
     		if (o.orientation > 4) {
     			// we need to rotate o.size, o.focusCenter from "up" 
     			// to match the orientation of the "rotated" preview image
-				o.size = SNAPPI.PM.util.rotateDimensions(o.size, o.orientation);
+				o.size = PM.util.rotateDimensions(o.size, o.orientation);
 				var tempX = this.focusCenter.X;
 				o.focusCenter.X = o.focusCenter.Y; 
 				o.focusCenter.Y = tempX; 
@@ -163,7 +163,7 @@
 				} catch (e) {
 					rotate = 1;
 				}
-                this.orientation = SNAPPI.PM.util.orientationSum(orientation, rotate);
+                this.orientation = PM.util.orientationSum(orientation, rotate);
 				
 				// we assume previews are already auto-rotated. just apply rotate
                 if (cfg.previewOnly) { // previewOnly is deprecated
@@ -171,7 +171,7 @@
                         w: o.imageWidth,
                         h: o.imageHeight
                     };
-					this.size = SNAPPI.PM.util.rotateDimensions(this.size, rotate);
+					this.size = PM.util.rotateDimensions(this.size, rotate);
                 }
                 else {
                 	try {
@@ -196,7 +196,7 @@
                         };
                 	}
                 	// exif sizes, rotated to orientation=1
-					this.size = SNAPPI.PM.util.rotateDimensions(this.size, this.orientation);
+					this.size = PM.util.rotateDimensions(this.size, this.orientation);
    	            }
                 // rotate focusCenter, if necessary
                 this.focusCenter = o.Audition.LayoutHint.FocusCenter;

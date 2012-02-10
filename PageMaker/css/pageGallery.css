@@ -149,6 +149,14 @@ div#content {
 div.pageGallery {
     position: relative;
 }
+div.pageGallery > img, div.pageGallery figure > img,  {
+	position: absolute;
+	cursor: pointer;
+	border-spacing: 2px;
+	border-style: solid;
+	border-color: transparent;
+
+}
 
 /*
  * use Y.Node.toggleClass() to show/hide

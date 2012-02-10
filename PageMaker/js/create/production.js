@@ -278,13 +278,14 @@
          */
         getPerformance: function(cfg, scene){
             var Pr = this;
-            var img, extra, pageGallery, scale2Rehearsal;
+            var cast, snappiAud, token, extra, pageGallery, scale2Rehearsal;
             scale2Rehearsal = this.previewDpi / this.minDpi;
             
             pageGallery = Plugin.stage.create('<div></div>');
             pageGallery.addClass('pageGallery hidden').setStyles({
                 // backgroundColor: cfg.borderColor,
-                margin: (cfg.margin) + "px auto"
+                margin: (cfg.margin) + "px auto",
+                backgroundColor: cfg.borderColor,
             });
             scene = scene || Pr.scenes[Pr.scenes.length - 1];
             /*
@@ -294,33 +295,29 @@
                 r: 0,
                 b: 0
             };
+            var cropRect, src, castSrc, castSrcCropped, thumbnail_prefix;
+            var tokens, node;
+            var MARKUP = '<img src="{src}" title="{title}" linkTo="{linkTo}" style="height:{height}px;width:{width}px;left:{left}px;top:{top}px;border:{borderSpacing}px solid transparent;">';
             for (var i = 0; i < scene.cast.length; i++) {
-                img = document.createElement("IMG");
-                var cast = scene.cast[i];
+                cast = scene.cast[i];
+                snappiAud = cast.audition.parsedAudition;
                 if (cast.audition.orientation != 1) {
                 	// should always be 1, check PM.Audition.init()
+                	// orientation = PM.util.orientationSum(orientation, rotate);
                     var check;
                 }
-                if (cast.audition.rotate != 1) {
-                    // manually rotate
-                    // should be able to combine orientation and rotate
-                    var check;
-                }
-                var cropRect, castSrc, castSrcCropped;
-                if (cast.audition.parsedAudition.base64RootSrc) {
-                    castSrc = cast.audition.parsedAudition.base64RootSrc;
+                if (snappiAud.base64RootSrc) {
+                    castSrc = snappiAud.base64RootSrc;
                 }
                 else {
                     castSrc = cast.audition.base64Src ? cast.audition.base64Src : cast.audition.src;
                 }
                 
                 if (cfg.isRehearsal) {
-                	if (cast.audition.parsedAudition.Audition.Photo.Img.previewSrc) {
-                	// use cast.audition.parsedAudition.Audition.Photo.Img.Src
-                		var a = cast.audition.parsedAudition;
-                		var baseurl = a.urlbase;
-                		var src = a.Audition.Photo.Img.Src.previewSrc;
-	                	castSrc = baseurl + src;
+                	if (snappiAud.Audition.Photo.Img.previewSrc) {
+                	// use snappiAud.Audition.Photo.Img.Src
+                		src = snappiAud.Audition.Photo.Img.Src.previewSrc;
+	                	castSrc = snappiAud.urlbase + src;
                 	}
                     cast.minSize.h *= scale2Rehearsal;
                     cast.minSize.w *= scale2Rehearsal;
@@ -345,7 +342,7 @@
                     }
                     cropRect = PM.util.getCropSpec(cast.crop, true);
 					// var thumbnail_prefix = cfg.thumbPrefix || 'bp';	// bp == 640px
-                	var thumbnail_prefix = this.getThumbPrefix(cast.crop, cfg);
+                	thumbnail_prefix = this.getThumbPrefix(cast.crop, cfg);
                     castSrcCropped = PM.util.addCropSpec(castSrc, cropRect, thumbnail_prefix);
                 }
                 else {
@@ -370,37 +367,32 @@
                     cropRect = PM.util.getCropSpec(cast.crop);
                     castSrcCropped = PM.util.addCropSpec(castSrc, cropRect);
                 }
-                img.ynode().setStyles({
-                    height: (cast.minSize.h) + "px",
-                    width: (cast.minSize.w) + "px",
-                    left: (cast.position.x) + "px",
-                    top: (cast.position.y) + "px",
-                    position: "absolute",
-                    border: cfg.spacing + "px solid " + cfg.borderColor,
-                    cursor: 'pointer'
-                });
-                img.ynode().setAttrs({
-                    src: castSrcCropped,
-//                    linkTo: castSrc,
-                    title: cast.role.id + '-' + cropRect
-                });
-                outerDim.r = Math.max(outerDim.r, cast.position.x + cast.minSize.w);
-                outerDim.b = Math.max(outerDim.b, cast.position.y + cast.minSize.h);
                 
-                /*
-                 * add rendered PageGallery to DIV
-                 */
-                pageGallery.append(img);
+                tokens = {
+                	src: castSrcCropped,
+                	title: cast.role.id + '-' + cropRect,
+                	linkTo: '/photos/home/'+ snappiAud.id,
+                    height: (cast.minSize.h),
+                    width: (cast.minSize.w),
+                    left: (cast.position.x),
+                    top: (cast.position.y),
+                    borderSpacing: cfg.spacing,
+                }
+                node = _Y.Node.create(_Y.substitute(MARKUP,tokens));
+                node.aud = snappiAud;
+                pageGallery.append(node);
+                
+                // track total outside dimensions
+                outerDim.r = Math.max(outerDim.r, cast.position.x + cast.minSize.w + (2*cfg.spacing));
+                outerDim.b = Math.max(outerDim.b, cast.position.y + cast.minSize.h + (2*cfg.spacing));
             }
             /*
              * set size of wrapper to just fit pageGallery photos + margin
              */
             pageGallery.setStyles({
-                height: outerDim.b - cfg.spacing + 2 * cfg.margin + "px",
-                width: outerDim.r - cfg.spacing + 2 * cfg.margin + "px"
+                height: outerDim.b + (cfg.spacing + cfg.margin)*2 + "px",
+                width: outerDim.r + (cfg.spacing + cfg.margin)*2 + "px",
             });
-            //            Dom.setStyle(pageGallery, 'height', outerDim.b - cfg.spacing + 2 * cfg.margin + "px");
-            //            Dom.setStyle(pageGallery, 'width', outerDim.r - cfg.spacing + 2 * cfg.margin + "px");
             
             if (false && SNAPPI.util3.QUEUE_IMAGES) {
                 // just watch for img load, don't queue

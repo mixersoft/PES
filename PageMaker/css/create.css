@@ -1,0 +1,12 @@
+.pageGallery {
+    position: relative;
+    margin: 10px auto;
+}
+.pageGallery > img, .pageGallery figure > img {
+	position: absolute;
+	cursor: pointer;
+	border-spacing: 2px;
+	border-style: solid;
+	border-color: transparent;
+
+}

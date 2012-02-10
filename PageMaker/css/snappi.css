@@ -112,5 +112,11 @@ div#pagemaker div.photoSet-header h1 {
 }
 
 div.pageGallery {
-	position: relative;
+    position: relative;
+    margin: 10px auto;
+    background-color: black;
+}
+div.pageGallery > img, div.pageGallery figure > img  {
+	position: absolute;
+	cursor: pointer;
 }
