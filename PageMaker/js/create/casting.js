@@ -13,11 +13,20 @@
  *
  */
 (function(){
-    /*
+	/*
      * shorthand
      */
-    var PM = SNAPPI.namespace('SNAPPI.PM');
-    var Y = PM.Y;
+	var _Y = null;
+	var Plugin = null;
+	var PM = SNAPPI.namespace('SNAPPI.PM');
+	// Yready init
+	PM.onYready.Casting = function(Y){
+		if (_Y === null) _Y = Y;
+		  /*
+	     * declare globals in namespace
+	     */
+	    PM.Casting = Casting;	
+	} 
     /*
      * protected
      */
@@ -33,7 +42,7 @@
     
     
     Casting = function(cfg){
-        cfg = SNAPPI.util.mergeObj(cfg, _defaultCfg);
+        cfg = _Y.merge(_defaultCfg, cfg);
         
         /*
          * properties
@@ -89,7 +98,6 @@
         this.init();
     };
     
-    
     /*
      * Static Methods
      */
@@ -114,11 +122,11 @@
         var auditionSH = cfg.pmAuditionSH || (cfg.tryout && cfg.tryout.pmAuditionSH) || Pr.tryout.pmAuditionSH;
         switch (cfg.sort) {
             case 'name':
-                auditionSH.sort([SNAPPI.PM.Audition.sort.NAME]);
+                auditionSH.sort([PM.Audition.sort.NAME]);
                 break;
             case 'rating':
             default:
-                auditionSH.sort([SNAPPI.PM.Audition.sort.RATING]);
+                auditionSH.sort([PM.Audition.sort.RATING]);
                 break;
         }
         
@@ -126,12 +134,12 @@
         // higher up is the stack
         if (cfg.anyMatch == undefined) {
             if (cfg.useHints) {
-                localCfg = Y.merge(cfg, {
+                localCfg = _Y.merge(cfg, {
                     anyMatch: false
                 });
             }
             else {
-                localCfg = Y.merge(cfg, {
+                localCfg = _Y.merge(cfg, {
                     anyMatch: true
                 });
             }
@@ -219,8 +227,8 @@
     
     Casting.TwoPassSimpleCast = function(Pr, cfg){
         var auditionSH = cfg.pmAuditionSH || (cfg.tryout && cfg.tryout.pmAuditionSH) || Pr.tryout.pmAuditionSH;
-        auditionSH.sort([SNAPPI.PM.Audition.sort.RATING]); // default sort is by Rating
-        localCfg = Y.merge(cfg, {
+        auditionSH.sort([PM.Audition.sort.RATING]); // default sort is by Rating
+        localCfg = _Y.merge(cfg, {
             anyMatch: false,
             sort: 'rating'
         });
@@ -239,32 +247,36 @@
     };
     /*
      * uses SimpleCast with custom arrangement from server
-     * 		SYNCHRONOUS XHR
+     * 		ASYNCHRONOUS XHR
      */
     Casting.CustomFitArrangement = function (Pr, cfg) {
     	// this is a syncronous call
-    	var A = SNAPPI.PM.Catalog.getCustomFitArrangement.call(Pr, Pr, cfg.roleCount, {
-    		success:function(A){
-    			var check;
-    		},
-    		failure:function(o) {
-    			// timeout
-    			var check;
-    			alert("Sorry, there was a problem building this Story. Please try again with a different mix of Snaps");
-    		}
-    	});
-		var check;
-		if (Pr.arrangement) {
-			var scene = Casting.ChronoCast(Pr, cfg);
-	    	return scene;
-		} else return null;		
+    	var callback = {
+			success: function(A){
+				var scene = null;
+				if (Pr.arrangement) scene = Casting.ChronoCast(Pr, cfg);
+				if (cfg.callback && cfg.callback.success) cfg.callback.success(scene);
+			    else return scene;
+			},
+			failure: function(o){
+				console.error("Error: unable to get valid arrangement. "+o.statusText);
+				if (cfg.callback && cfg.callback.failure) cfg.callback.failure();
+				if (o.statusText == "timeout") {
+					alert("Sorry, it took too long to build this Story. Please try again with a different mix of Snaps or Ratings");
+				} else {
+					alert("Sorry, there was a problem building this Story. Please try again, maybe with a different mix of Snaps");
+				}
+			}
+		} 
+		var cfg2 = _Y.merge(cfg, {callback:callback});
+    	PM.Catalog.getCustomFitArrangement.call(Pr, Pr, cfg.roleCount, callback);
     };
 
     /*
      * Cast by chunk chronologically
      */
     Casting.ChronoCast = function(Pr, cfg){
-        if (cfg.hideRepeats == undefined) cfg.hideRepeats = Y.one('.hide-repeats .cb').get('checked');
+        if (cfg.hideRepeats == undefined) cfg.hideRepeats = _Y.one('.hide-repeats .cb').get('checked');
         
         /*
          * need to use mean-shift to determine optimal chuncksize
@@ -298,7 +310,7 @@
         }
         
         // SimpleCast that chunk
-        var localCfg = Y.merge(cfg, {
+        var localCfg = _Y.merge(cfg, {
             auditionSH: chunk,
             anyMatch: !cfg.useHints,
             sort: 'rating'
@@ -387,7 +399,7 @@
          * @return
          */
         setCropSize: function(cfg){
-        	if (cfg.isRehearsal) SNAPPI.PM.Audition.usePreview(this.audition);
+        	if (cfg.isRehearsal) PM.Audition.usePreview(this.audition);
         	
             // find best crop
             var crops, bestCrop, bestMatch, formatDiff, cropVariance, anyMatch;
@@ -567,16 +579,11 @@
         }
     };
     
-    /*
-     * publish
-     */
-    SNAPPI.PM.Casting = Casting;
     
     /*
      * Static Methods
      */
     Casting.test = function(){
-        var PM = SNAPPI.PM;
         var P = {
             renderSize: {
                 w: 6.5 // only 1 value, w or h, required

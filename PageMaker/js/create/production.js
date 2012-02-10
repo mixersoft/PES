@@ -454,8 +454,7 @@
                 // render a saved scene
                 if (cfg.sceneIndex < this.scene.saved.length) 
                     scene = this.scene.saved[cfg.sceneIndex];
-            }
-            else {
+            } else {
                 // cast a new scene
                 /*
                  * hack: clearCast on useHints change
@@ -476,26 +475,34 @@
 //                scene = Casting.ChronoCast(Pr, cfg);
 // NOTE: CustomFitArrangement will reset Pr.tryout & Pr.arrangement here
 // called from Pr.renderScene: 
-				if (cfg.arrangement) {
-					PM.Catalog.parseCustomFitArrangement(cfg.arrangement, Pr);
-					// delete cfg.arrangement;
-					scene = Casting.ChronoCast(Pr, cfg);
-				} else {
-					// get arrangement from server
-					scene = Casting.CustomFitArrangement.call(Pr, Pr, cfg);
+				if (!cfg.arrangement) {
+					// get arrangement from server XHR
+					var callback = {
+						success: function(scene){
+							Pr.scene.current = scene;
+            				scene.performance = Pr.rehearse(cfg, scene);
+							if (cfg.callback && cfg.callback.success) cfg.callback.success(scene);
+						},
+						failure: function(){
+							if (cfg.callback && cfg.callback.failure) cfg.callback.failure();
+						}
+					}
+					var cfg2 = _Y.merge(cfg, {callback:callback});
+					Casting.CustomFitArrangement.call(Pr, Pr, cfg2);
+					return;	// XHR async return using callback
 				}
+				PM.Catalog.parseCustomFitArrangement(cfg.arrangement, Pr);
+				// delete cfg.arrangement;
+				scene = Casting.ChronoCast(Pr, cfg);
                 /***************************************************************
                  * end Casting
                  **************************************************************/
-                if (scene == null) {
-                    if (SNAPPI.util.LoadingPanel) 
-                        SNAPPI.util.LoadingPanel.hide();
-                    return;
-                }
             }
             Pr.scene.current = scene;
             scene.performance = Pr.rehearse(cfg, scene);
-            return scene;
+            // syncronous return path, no XHR
+            if (cfg.callback && cfg.callback.success) cfg.callback.success(scene);	
+            else return scene;
         },
         resetCastOnToggle: function(checked){
             /*

@@ -228,7 +228,10 @@
 				e.currentTarget.addClass('focus').siblings().removeClass('focus');
 				var montage = _Y.one('.montage-container div.pageGallery');
 				if (montage) montage.ancestor('.montage-container').removeClass('hide');
-				else SNAPPI.UIHelper.create._GET_MONTAGE();
+				else {
+					SNAPPI.setPageLoading(true);
+					SNAPPI.UIHelper.create._GET_MONTAGE();
+				}
 				_Y.one('.gallery-container').addClass('hide');
 				SNAPPI.io.writeSession({'section-header.Photo':'Montage'});
 			},
@@ -237,12 +240,11 @@
 				// TODO: switch to g._cfg.type ??
 				var ID_PREFIX = SNAPPI.Factory.Gallery[SNAPPI.STATE.galleryType].defaultCfg.ID_PREFIX;
 				var g = SNAPPI.Gallery.find[ID_PREFIX];
-				if (SNAPPI.Gallery.find[ID_PREFIX]) {
-					g.container.ancestor('.gallery-container').removeClass('hide');
-				} else {
+				if (!g) {
 					SNAPPI.setPageLoading(true);
-					new SNAPPI.Gallery({type:SNAPPI.STATE.galleryType});	
+					g = new SNAPPI.Gallery({type:SNAPPI.STATE.galleryType});	
 				}
+				if (g) g.container.ancestor('.gallery-container').removeClass('hide');
 				_Y.one('.montage-container').addClass('hide');
 				SNAPPI.io.writeSession({'section-header.Photo':'Gallery'});
 			},
@@ -332,7 +334,7 @@
 		getStage_modal : function(){
 			var MAX_HEIGHT = 800;	
 			var PADDING_TOP = 140;	// header+offsets = 140px
-			var markup = "<div id='stage-2' class='pagemaker-stage'></div>";
+			var markup = "<div id='stage-2' class='pagemaker-stage'><div class='stage-body'></div></div>";
 			var cfg = {
 				// selector: '#stage-2',
 				markup: markup,
@@ -354,6 +356,7 @@
     		}
     		dialog = SNAPPI.Alert.load(cfg);
     		stage = dialog.getStdModNode('body').one('#stage-2');
+    		stage.noHeader = true;
     		if (!stage.listen) {
     			stage.listen = {};
     			/*
@@ -371,12 +374,6 @@
 		    			var winH = stage.get('winHeight') - (offset_top+header_h+40);
 		    			var clientH = Math.min(node.get('clientHeight'), node.origRect.H);
 		    			var h = Math.min(clientH, MAX_HEIGHT, winH);
-		    			if (h < MAX_HEIGHT) {
-		    				stage.setStyle('overflowY', 'hidden');
-		    			} else {
-		    				stage.setStyle('overflowY', 'auto');
-		    			}
-		    			stage.setStyle('height', 'auto');
 		    			d.set('height', h + body_border + header_h + offset_top);
 		    			d.centered();
 		    			try {
@@ -612,7 +609,7 @@
 				// ready to create?
 			} 
 			var create = this.getCreate(cfg);
-        	create();
+			_Y.later(100, this, create);
 		},
 		// on 'snappi-pm:pagemaker-load-complete'
 		launch_PageMaker: function(cfg){
@@ -633,7 +630,7 @@
 		load_then_launch_PageMaker : function(cfg){
 			if (!cfg || !cfg.batch.count()) cfg = this.getCastingCall();
 			cfg.arrangement = null;
-			cfg.spacing = 3;		// border spacing
+			cfg.spacing = 2;		// border spacing
 			cfg.stageType = cfg.stageType || 'modal';
 			var g = cfg.gallery;
 			
@@ -650,7 +647,7 @@
         		// node.ynode().set('innerHTML', 'Create Page');
         		// fn_create();
         		var create = UIHelper.create.getCreate(cfg);
-        		create();
+        		_Y.later(100, this, create);
         	}, g);
         	
         	this.load_PageMakerPlugin(_Y, cfg);
@@ -674,7 +671,8 @@
         		// node.ynode().set('innerHTML', 'Create Page');
         		// fn_create();
         		var create = UIHelper.create.getCreate(cfg);
-        		create();
+        		// SNAPPI.setPageLoading(true);
+        		_Y.later(100, this, create);
         	}, g);
         	
         	this.load_PageMakerPlugin(_Y, cfg);
@@ -958,9 +956,11 @@
 					// open montage view
 					node.one('li.montage').addClass('focus');
 					SNAPPI.UIHelper.create._GET_MONTAGE();
+					_Y.one('.gallery-container').addClass('hide');
 				} else {
 					node.one('li.gallery').addClass('focus');  
 				    new SNAPPI.Gallery({type:SNAPPI.STATE.galleryType});
+				    _Y.one('.montage-container').addClass('hide');
 				}				
 			}
         },        

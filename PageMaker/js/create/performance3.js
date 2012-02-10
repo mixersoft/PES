@@ -68,12 +68,6 @@
             stage = stage || Plugin.stage;
             
             var displaySize = this.fnDisplaySize();
-            stage.setStyles({
-                'overflowY': 'auto',
-                // 'height': displaySize.h + 'px',		// required for playback sizing
-                // 'width': '100%', // displaySize.w + 'px',
-                'backgroundColor': 'black'
-            });
             /*
              * add Header to PageGallery
              */
@@ -127,14 +121,14 @@
             id = id || 'tab_create-bodyEl';
             var body = parent.one('.stage-body') || parent.one('#' + id);
             if (!body) {
-                body = parent.create('<div></div>');
-                body.set('id', id).addClass('stage-body');
-                body.setStyles({
-                    // height: displayPixelsH + 'px',
-                    width: '100%', //displaySize.w + 'px',
-                    backgroundColor: backgroundColor,
-                    overflow: 'hidden' // avoids scrollbars around iFrame
-                });
+                body = parent.create('<div class="stage-body"></div>');
+                body.set('id', id);
+                // body.setStyles({
+                    // // height: displayPixelsH + 'px',
+                    // width: '100%', //displaySize.w + 'px',
+                    // backgroundColor: backgroundColor,
+                    // overflow: 'hidden' // avoids scrollbars around iFrame
+                // });
             }
             else {
                 // just update height
@@ -145,6 +139,7 @@
         clearBody: function(n){
         	n = n.hasClass('stage-body') ? n : n.one('stage-body');
             n.setContent('');
+            // TODO: Plugin.stage.dialog refreshAlign() 
         },
         getScene: function(cfg){
             if (SNAPPI.setPageLoading) SNAPPI.setPageLoading(true);
@@ -172,18 +167,24 @@
                 useHints: this.useHints,
                 isRehearsal: true,				// TODO: for now, use preview when casting
                 // roleCount: parseInt(this.roleCount)
+                callback: {
+                	success: function(scene){
+                		if (scene) {
+			                PM.node.addSaveToGalleryBtn();
+			            }
+			            var node = scene.performance;
+			            /*
+			             * fire event: 'snappi-pm:render'
+			             */
+			            PM.Y.fire('snappi-pm:render', this, node);
+			            PM.pageMakerPlugin.external_Y.fire('snappi-pm:render', this, node);
+                	},
+                	failure: function(){
+                		console.error('Error: performance.getScene()');
+                	}
+                }
             });
-            var scene = Pr.renderScene(cfg);
-            if (scene) {
-                PM.node.addSaveToGalleryBtn();
-            }
-            var node = scene.performance;
-            /*
-             * fire event: 'snappi-pm:render'
-             */
-            PM.Y.fire('snappi-pm:render', this, node);
-            PM.pageMakerPlugin.external_Y.fire('snappi-pm:render', this, node);
-            var check;
+            Pr.renderScene(cfg);
         }
     };
     

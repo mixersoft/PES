@@ -29,11 +29,6 @@ body {
 	background: url(../images/body_bg.jpg) no-repeat center top #CEE9F0;
 }
 
-body.wait, body.wait a {
-	cursor: wait;
-}
-
-
 section, aside, #content {
 	overflow: hidden;
 }
@@ -2543,13 +2538,32 @@ li:hover.white.focus, li:hover.white.selected
 /*
  * Story
  */
+.montage-container {
+	background: black url('/img/pageGallery/ajax-loading-img-hg.black.gif') center center no-repeat;
+	background-color: #000;
+	margin-bottom: 10px;
+	min-height: 100px;
+}
 
 .pagemaker-stage {
 	background-color: #000;
 	color: #FFF;
+	height:100%;
+	overflow:hidden;
+}
+.pagemaker-stage .stage-body {
+	background: black url('/img/pageGallery/ajax-loading-img-hg.black.gif') center center no-repeat;
+	background-color: #000;
+	height: auto;
+	width: 100%;
 }
 
 #menu-pm-toolbar-edit ul.inline li.btn.disabled {
 	border-color: #888;
 	
+}
+
+/* keep at bottom */
+body.wait, body.wait a {
+	cursor: wait; !important;
 }

@@ -210,7 +210,7 @@
             performance.setStaging(Plugin.stage);
             Plugin.performance = performance;
             
-			if (!Plugin.sceneCfg.isMontage) {
+			if (!Plugin.stage.noHeader) {
 	            /*
 	             * Page Gallery Getting Started
 	             */
@@ -310,11 +310,13 @@
                 performance.setStaging();
                 // NOTE: performance.getScene() will clear
                 // sceneCfg.stage.body
-                /*
-                 * Page Gallery Getting Started
-                 */
-                var pgGettingStarted = _Y.Node.create("<div id='pg-getting-started'><div><h1>Getting Started with Page Galleries</h1><p>Page Galleries are automatically generated photo collages based on page templates.</p><p>To get started, just choose how many photos you would like to see on a page. A matching page template will be randomly chosen and a Page Gallery automatically created using your top-rated photos. For now, we just offer a selection of simple page templates.</p><p>If you would like to try a different template, just click again.</p><p>Once you see a page you like, just click <b><i>Save Page</i></b> to add this page to an online album - new pages will be added to the end. You can view your album from the <b><i>Preview</i></b> tab, where you will also find a link for easy sharing.</p><p>To begin, just click one of the buttons above.</p><br /></div></div>");
-                Plugin.stage.body.append(pgGettingStarted);
+                if (!Plugin.stage.noHeader) {
+	                /*
+	                 * Page Gallery Getting Started
+	                 */
+	                var pgGettingStarted = _Y.Node.create("<div id='pg-getting-started'><div><h1>Getting Started with Page Galleries</h1><p>Page Galleries are automatically generated photo collages based on page templates.</p><p>To get started, just choose how many photos you would like to see on a page. A matching page template will be randomly chosen and a Page Gallery automatically created using your top-rated photos. For now, we just offer a selection of simple page templates.</p><p>If you would like to try a different template, just click again.</p><p>Once you see a page you like, just click <b><i>Save Page</i></b> to add this page to an online album - new pages will be added to the end. You can view your album from the <b><i>Preview</i></b> tab, where you will also find a link for easy sharing.</p><p>To begin, just click one of the buttons above.</p><br /></div></div>");
+	                Plugin.stage.body.append(pgGettingStarted);
+                }
                 
                 // why do we create the performance, but don't use it????
                 SNAPPI.TabView.gotoTab('Create');

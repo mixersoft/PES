@@ -88,28 +88,43 @@
         	'data[CastingCall][Auditions]':rawJsonAuditions,
         	'data[role_count]': auditions.length
         };
-        var A, rawA;
-        post_callback = {};
-        post_callback.success = function (id, o, args){
-        	if (o.responseJson.success) {
-        		rawA = o.responseJson.response.arrangement;
-        		Catalog.parseCustomFitArrangement(rawA, Pr);
-                var A = Pr.arrangement;
-        		callback.success.call(this, A);
-        	} else 
-        		callback.failure.call(this, o);
-        };
-        post_callback.failure = function (id, o, args){
-        	// timeout
-        	callback.failure.call(this, o);
-        };
-        
-        /*
-         * use SNAPPI.IO.getIORequest if we need a loading mask
-         */
-        var o = SNAPPI.io.post.call(this, uri, data, post_callback, {}, sync = true, 2000);
-        // A set in post_callback via closure
-        return A;
+        var Plugin = PM.pageMakerPlugin;
+        var loadingNode = Pr.cfg.stage;
+        if (loadingNode.io == undefined) {
+	        var ioCfg = SNAPPI.IO.pluginIO_RespondAsJson({
+						uri: uri ,
+						parseContent:true,
+						method: 'POST',
+						qs: data,
+						dataType: 'json',
+						context: this,	
+						// arguments: args, 
+						// sync: true,								/* SYNCRONOUS XHR CALL */
+						timeout: 12000,
+						on: {
+							successJson:  function(e, id, o, args) {
+								if (o.responseJson.success) {
+					        		var rawA = o.responseJson.response.arrangement;
+					        		Catalog.parseCustomFitArrangement(rawA, Pr);
+					                var A = Pr.arrangement;
+					        		callback.success.call(this, A);
+					        	} else callback.failure.call(this, o);
+					        	return false;
+							},
+							failure: function (e, id, o, args){
+					        	callback.failure.call(this, o);
+					        }
+						}
+					});
+	        loadingNode.plug(Plugin.external_Y.Plugin.IO, ioCfg );
+        } else {
+        	loadingNode.loadingmask.refreshMask();
+	        loadingNode.io.set('data', data);
+			loadingNode.io.set('context', this);
+			loadingNode.io.set('uri', uri);
+			// loadingNode.io.set('arguments', args);
+			loadingNode.io.start();
+        }
     };
     Catalog.parseCustomFitArrangement = function(rawA, Pr){
 		/*
