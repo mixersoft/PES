@@ -394,6 +394,7 @@
             // inherit javascript state information from current page, 
             // called AFTER SNAPPI.mergeSessionData();
 			try {	// merge SNAPPI.STATE.displayPage for primary gallery, Photo=photos, home
+				// TODO: use SNAPPI.STATE.galleryType = Photo consistently, starting here
 				if (/[photos|snaps|home]/.test( SNAPPI.STATE.controller.action ) 
 					|| SNAPPI.STATE.controller.name+'/'+SNAPPI.STATE.controller.action == "Assets/all"
 				) {
@@ -424,7 +425,10 @@
 	        gallery.init(cfg);
 	        
 	        // apply SNAPPI.STATE.filters to section.gallery-display-options
-	        GalleryFactory[cfg.type].apply_filter_settings(SNAPPI.STATE.filters, gallery);
+	        try {	// not valid for NavFilmstrip
+	        	GalleryFactory[cfg.type].apply_filter_settings(SNAPPI.STATE.filters, gallery);	        	
+	        } catch(e) {}
+
 	        
 	        // .gallery.photo AFTER init methods
 	        SNAPPI.Gallery.find[cfg.ID_PREFIX] = gallery;		// add to gallery lookup
