@@ -492,11 +492,12 @@ ORDER BY photos DESC;";
 //		);
 		
 		$joins[] = 	array(
-			'table'=>'Permissions',
+			'table'=>'permissions',
+			'alias'=>'Public',
 			'type'=>'INNER',
-			'conditions'=>array("`Permissions`.`model` = '{$paginateModel}' 
-				AND `Permissions`.`foreignId` = `{$paginateModel}`.`id` 
-				AND `Permissions`.`perms` = 0567"),
+			'conditions'=>array("`Public`.`model` = '{$paginateModel}' 
+				AND `Public`.`foreignId` = `{$paginateModel}`.`id` 
+				AND `Public`.`perms` = 0567"),
 		);
 		
 		// check of context == controller
