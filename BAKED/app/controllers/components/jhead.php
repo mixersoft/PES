@@ -134,6 +134,10 @@ class JheadComponent extends Object
 			$cmd .=  "\"{$src}\"  \"{$dest}\"";
 		} else
 		{
+			if (!file_exists($src)) {
+				$orig = str_replace('/.thumbs/bp~','/',$src);
+				copy($orig, $src);
+			}
 			if ($src==$dest) {
 					$cmd .= "\"{$src}\" > \"{$src}.tmp\" ; mv -f \"{$src}.tmp\" \"{$dest}\"";
 			} else 	$cmd .= "\"{$src}\" > \"{$dest}\"";
