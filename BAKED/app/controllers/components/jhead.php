@@ -135,7 +135,7 @@ class JheadComponent extends Object
 		} else
 		{
 			if ($src==$dest) {
-					$cmd .= "\"{$src}\" > \"{$src}.tmp\" ; mv \"{$src}.tmp\" \"{$dest}\"";
+					$cmd .= "\"{$src}\" > \"{$src}.tmp\" ; mv -f \"{$src}.tmp\" \"{$dest}\"";
 			} else 	$cmd .= "\"{$src}\" > \"{$dest}\"";
 		}
 		
