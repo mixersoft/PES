@@ -129,12 +129,9 @@
     		}
     		return SNAPPI.Rating.attach(parent, cfg);    			
     	},
-    	byRating: function(v, target) {
+    	byRating: function(v, target, e) {
+    		if (e.ctrlKey) v = 0;	// ctrl-click of ratingGroup == 0
     		SNAPPI.filter.active.Rating = v;
-    		// load /rating:v
-    		// toggleRating to 'show' on reload
-//    		SNAPPI.STATE.showRatings = PAGE.jsonData.STATE.showRatings = 'show';
-    		
     		/*
     		 * BUG: have to move ?q=79 into named params 
     		 */

@@ -597,7 +597,10 @@ $this->log($newAsset, LOG_DEBUG);
 		 */
 		$filterConditions = array();
 		if (isset($options['rating'])) {
-			$filterConditions[] = "IF(UserEdit.rating, UserEdit.rating, SharedEdit.score)>={$options['rating']}";
+			if ($options['rating']==='0'){ 
+				$filterConditions[] = "SharedEdit.score IS NULL";
+			} else 
+				$filterConditions[] = "IF(UserEdit.rating, UserEdit.rating, SharedEdit.score)>={$options['rating']}";
 		}
 		if (isset($options['q'])) {
 			// text search, 

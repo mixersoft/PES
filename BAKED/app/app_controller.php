@@ -189,7 +189,7 @@ class AppController extends Controller {
 					'removeHref'=>Router::url($remove)
 				);
 			}
-			if (!empty($this->passedArgs['rating'])) {	// search
+			if (isset($this->passedArgs['rating'])) {	// search
 				$remove = $this->passedArgs;
 				unset($remove['rating']);
 				$filter[] = array(
@@ -198,6 +198,7 @@ class AppController extends Controller {
 					'value'=>$this->passedArgs['rating'], 
 					'removeHref'=>Router::url($remove)
 				);
+				if ($this->passedArgs['rating']==0) $filter['label'] = 'unrated Snaps'; 
 			}
 			$this->viewVars['jsonData']['filter'] = @mergeAsArray($this->viewVars['jsonData']['filter'],$filter);
 			/*

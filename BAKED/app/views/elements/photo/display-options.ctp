@@ -37,7 +37,7 @@
 	$needle = array('<a', 'href', 'a>'); 
 	$replace = array('<option', 'value', 'option>');
 	
-	$btn_state['filter-rating'] = !empty($passed['rating']) ? 'selected' : '';
+	$btn_state['filter-rating'] = isset($passed['rating']) ? 'selected' : '';
 	$btn_state['filter-tag'] = (!empty($passed['Tag']) || Session::read('lookup.context.keyName')=='Tag') ? 'selected' : '';
 	
 	$isWide = !empty($this->params['named']['wide']);		// fluid layout
@@ -51,7 +51,7 @@
 	$this->Layout->blockStart('inner_DisplayOptions'); ?> 
 	    	<ul class="filter inline">
 	    		<li class='label'>Filter</li>
-				<li class='btn rating white <?php echo $btn_state['filter-rating']; ?>' title='click on a star to filter by minimum rating'>
+				<li class='btn rating white <?php echo $btn_state['filter-rating']; ?>' title='Click on a star to filter by minimum rating or Ctrl-click for unrated Snaps'>
 					<ul class='inline'>
 						<span title="click to remove this filter" class="btn remove rounded-5   <?php echo $btn_state['filter-rating'] ? '' : 'hide'; ?>" action="filter:rating">x</span>
 						<li class="label" >My Rating</li>

@@ -236,7 +236,7 @@
 				/*
 				 * set by DataElement, fires onChange event
 				 */
-				r.setDbValueFn(v, r);
+				r.setDbValueFn(v, r, e);
 			} else {
 				r.render(v);
 			}
