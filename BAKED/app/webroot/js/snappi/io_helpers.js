@@ -28,7 +28,7 @@
 		if (_Y === null) _Y = Y;
 		
 		SNAPPI.flash = new Flash();
-		SNAPPI.timeout = {	};
+		SNAPPI.timeout = {};
 	}
 	var TIMEOUT = 5000;
 	/**************************************************************************
@@ -36,40 +36,34 @@
 	 */
 	
 	var Flash = function(content) {
-
 		var content = arguments;
-
 	};
 	Flash.prototype = {
 		flash : function(content) {
-			var msgNode = _Y.one('#content > div.messages');
-			if (!msgNode) {
-				var tokens = {
-					'class' : 'messages',
-					id : 'flashMessage'
-				};
-				var msgNode = _Y.Node.create(
-						_Y.substitute("<div id='{id}' class='{class}'></div>",
-								tokens)).dom();
-				_Y.one('#content').prepend(msgNode);
-				msgNode.setContent(null).append("<div class='message'>"+content+"</div>");
-			} else {
-				msgNode.setContent(null).append("<div class='message'>"+content+"</div>");
-				msgNode.removeClass('hide');
+			if (!content) return;
+			var parent = _Y.one('#content > div.messages');
+			if (!parent) {
+				_Y.one('#content').prepend("<div id='message' class='messages prefix_2 grid_12 suffix_2'></div>");
+				parent = _Y.one('#content > div.messages');
 			}
-
-			SNAPPI.timeout.flashMsg = _Y.later(TIMEOUT, {}, function() {
-				msgNode.addClass('hide');
+			if (parent.one('div:not(.hide).message')) {
+				parent.one('div:not(.hide).message').append(content);
+			} else {
+				parent.setContent("<div class='message'>"+content+"</div>");
+			}
+			SNAPPI.timeout.flashMsgs = SNAPPI.timeout.flashMsgs || [];
+			var hide = _Y.later(TIMEOUT, {}, function() {
+				parent.one('.message').addClass('hide');
+				var i = SNAPPI.timeout.flashMsgs.indexOf(hide);
+				SNAPPI.timeout.flashMsgs.splice(i, 1);
 			});
+			SNAPPI.timeout.flashMsgs.push(hide);
 		},
 		flashJsonResponse: function(o){
 			try {
 				var msg = o.responseJson.message || _Y.JSON.Stringify(o.responseJson);
 			} catch (e) {
 				msg = o.responseText;
-			}
-			if (SNAPPI.timeout && SNAPPI.timeout.flashMsg) {
-				SNAPPI.timeout.flashMsg.cancel();
 			}
 			SNAPPI.flash.flash(msg);			
 		},

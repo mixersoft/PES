@@ -729,7 +729,7 @@ console.error("PreviewPhoto delete is still incomplete");
 					args.loadingmask.hide();
 				},
 				failure : function (e, i, o, args) {
-					// post failure or timeout
+					// post failure or timeout, status=403 forbidden handled by pluginIO_RespondAsJson()
 					var resp = o.responseJson || o.responseText || o.response;
 					var msg = resp.message || resp;
 					// TODO: flash error message
