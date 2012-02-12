@@ -262,7 +262,6 @@ class Asset extends AppModel {
 	}
 	
 	public function afterFind($results, $primary){
-// debug($results);		
 		if ($primary && isset($results[0]['Asset'])) {
 //			$start = microtime(1);				
 			array_walk($results, 'Asset::mergeResults');
@@ -584,6 +583,74 @@ $this->log($newAsset, LOG_DEBUG);
 // $this->log( "AFTER save asset, data=".print_r($data, true), LOG_DEBUG);			
 		return $data; 			
 	}
+
+	/*
+	 *  update json_exif from $src['root'] file and delete any derived assets
+	 * 	$options['name'] Controller->name
+	 *  $options['uuid']
+	 */ 
+	function updateExif($options=array()) {
+		$os = Configure::read('os');
+		$find_options = array(
+			'fields'=>"Asset.id, Asset.json_src, Asset.json_exif",
+			'recursive'=>-1,
+			'permissionable'=>false
+		);
+		extract($options); 	// $name;$uuid;
+		switch($name){
+			case "Users": 
+				$find_options['conditions'] = array(
+					'Asset.owner_id'=>$uuid,
+					// 'Asset.owner_id'=>AppController::$userid,
+				); break;
+			case "Assets":
+				$find_options['conditions'] = array(
+					'Asset.id'=>$uuid,
+				); break;
+			case "Groups":	
+			default:
+				return false;
+		}
+		$this->Behaviors->detach('Taggable');
+		$this->belongsTo['Owner']['counterCache']=false;
+		$data = $this->find('all',$find_options);
+		// debug(Set::extract('/Asset/id', $data)); 
+		
+		if ($data) {
+			$ret = true;
+			$this->disablePermissionable(true);
+			foreach ($data as $row) {
+				$Import = loadComponent('Import', $this);
+				$src = json_decode($row['Asset']['json_src'], true);
+				$basepath = Configure::read('path.stageroot.basepath');
+				$rootpath = cleanpath($basepath.DS.$src['root'], $os);
+		// debug($rootpath); continue;
+				$meta = $Import->getMeta($rootpath);
+				if (!empty($meta['exif'])){
+		// debug($meta['exif']);
+					// debug(json_decode($data['Asset']['json_exif'],true));
+					$json_exif = json_encode($meta['exif']);
+		// debug($data['Asset']['json_exif']);
+		// debug($json_exif);
+					$this->id = $row['Asset']['id'];
+					$retval = $this->saveField('json_exif', $json_exif);
+					if ($retval) {
+						// delete all derived assets and re-render
+						$filename = pathinfo($rootpath, PATHINFO_FILENAME);
+						$derived = dirname($rootpath).DS.'.thumbs'.DS.'*'.$filename.'*';
+						foreach (GLOB($derived) AS $delete) {
+							// debug("delete, path={$delete}");
+							unlink($delete);
+						}
+					}
+					$ret = $ret && $retval;
+		// debug($ret);
+				}				
+			}
+			return $ret;
+		}
+		return $false;
+	}	
 			
 	function getByPhotostream($provider_account_id, $options){
 		

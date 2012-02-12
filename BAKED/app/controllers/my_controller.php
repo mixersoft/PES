@@ -25,6 +25,7 @@ class MyController extends PersonController {
 		parent::__construct();
 	}
 	function beforeFilter() {
+			
 		if (Session::check('Auth.User')) {
 			MyController::$userid = Session::read('Auth.User.id');
 			$this->passedArgs[0] = MyController::$userid;	// emulate request with UUID in the right position
@@ -39,7 +40,7 @@ class MyController extends PersonController {
 			/*
 			 * experimental
 			 */
-			'pagemaker'
+			'pagemaker', 'updateExif'
 		);
 		$this->Auth->allow( array_merge($this->Auth->allowedActions , $myAllowedActions));
 	

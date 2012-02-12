@@ -125,7 +125,10 @@ class PersonController extends UsersController {
 
 	function beforeRender() {
 		try {
-			if (!($this->RequestHandler->isAjax() || $this->RequestHandler->ext=='json') && AppController::$uuid) {
+			if (!($this->RequestHandler->isAjax() || $this->RequestHandler->ext=='json') 
+				&& AppController::$uuid
+				&& isset($this->viewVars['data']['User']['username'])
+			) {
 				$label = $this->viewVars['data']['User']['username'];
 				if (Session::read("lookup.trail.{$this->displayName}.uuid") == AppController::$uuid) {
 					Session::write("lookup.trail.{$this->displayName}.label", $label);	

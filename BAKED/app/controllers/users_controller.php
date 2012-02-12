@@ -490,7 +490,10 @@ class UsersController extends UsersPluginController {
 		AppController::$writeOk = AppController::$userid  == AppController::$uuid || AppController::$userid == Permissionable::getRootUserId();
 		if (get_class($this) == 'UsersController') Session::delete("nav.primary");
 	}
-	
+
+	function updateExif($uuid) {
+		return parent::__updateExif($uuid);
+	}
 	function update_count($id = null) {
 		$this->autoRender = false;
 		if (!Permissionable::isRoot() && $id===null) {

@@ -79,7 +79,7 @@ class AssetsController extends AppController {
 		 */'get_asset_info', 'shot',
 		/*
 		 * experimental
-		 */'test', 'addACL'
+		 */'test', 'addACL', 'updateExif'
 		);
 		AppController::$writeOk = $this->Asset->hasPermission('write', AppController::$uuid);
 	}
@@ -981,6 +981,11 @@ debug("WARNING: This code path is not tested");
 		$this->redirect($next, null, true);
 	}
 
+	
+	function updateExif($uuid) {
+		return parent::__updateExif($uuid);
+	}
+	
 	function discussion($id) {
 		$this->layout = 'snappi';
 		$this->helpers[] = 'Time';

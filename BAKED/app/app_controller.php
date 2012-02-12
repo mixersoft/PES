@@ -25,7 +25,8 @@ class AppController extends Controller {
 	 * @access public
 	 */
 	function beforeFilter() {
-		$this->helpers[] = 'Layout';
+		if (!isset($this->helpers['Layout'])) $this->helpers['Layout'] = null;
+		
 		$this->__check_browserRedirect();
 		//Set application wide actions which do not require authentication
 
@@ -80,9 +81,13 @@ class AppController extends Controller {
 	 * @access public
 	 */
 	function beforeRender() {
-		unset($this->passedArgs['comment_view_type']);
-		$this->__setPageTitle();
-		$this->__addFiltersAsJsonData();
+		if (in_array($this->name, array('Users', 'Groups', 'Assets', 'Tags'))) {
+			unset($this->passedArgs['comment_view_type']);
+			$this->__setPageTitle();
+			$this->__addFiltersAsJsonData();
+		} else if($this->name == 'CakeError') {
+			$this->layout = 'plain';
+		}
 	}
 	
 	function __check_browserRedirect() {
@@ -111,7 +116,7 @@ class AppController extends Controller {
 			if (isset($this->displayName)) {
 				$label = Session::read("lookup.trail.{$this->displayName}.label");
 			}  
-			$title = !empty($label) ? "{$label} ({$this->displayName})" : $this->titleName ;
+			$title = !empty($label) ? "{$label} ({$this->displayName})" : isset($this->titleName) ? $this->titleName : 'Snaphappi' ;
 		} else {
 			$title = isset($this->titleName) ? $this->titleName : '';
 		}
@@ -205,6 +210,17 @@ class AppController extends Controller {
 			 * end filter JSON
 			 */
 		}
+	}
+	
+	function __updateExif($uuid) {
+		if (!Permissionable::isRoot() && $uuid===null) {
+			echo "Root permission required.";
+			exit;
+		}		
+		$this->autoRender = false;
+		$ret = ClassRegistry::init('Asset')->updateExif(array('name'=>$this->name,'uuid'=>$uuid));
+		$this->render('/elements/sqldump', 'plain');
+		return;
 	}
 
 	/**
