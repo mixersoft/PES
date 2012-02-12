@@ -302,6 +302,10 @@ class ClusterCollage {
      */
     protected function resizeArrangement(&$arrangement) {
         // Check ratio:
+// AppController::log($arrangement, LOG_DEBUG);   
+		if (empty($arrangement)) {
+			throw new Exception('invalid arrangement[h] or [w] at ' . __CLASS__ . '::' . __FUNCTION__);
+		}     
 	    $orientation = $this->defineOrientation($arrangement['h'], $arrangement['w']);
 		if (!isset($this->allowedRatios[$orientation])) {
 			throw new Exception('invalid ratio at ' . __CLASS__ . '::' . __FUNCTION__);

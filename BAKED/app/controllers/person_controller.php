@@ -294,11 +294,13 @@ class PersonController extends UsersController {
 		/*
 		 * get montage
 		 * */
-		if (Session::read('section-header.Photo') == 'Montage' || !empty($this->passedArgs['montage']))
- 		{
+ 		if (empty($castingCall['CastingCall']['Auditions'])) $getMontage = false;
+		if ( isset($this->passedArgs['montage']) ) $getMontage = !empty($this->passedArgs['montage']);
+		else $getMontage = ( Session::read('section-header.Photo') == 'Montage' );
+		if ($getMontage) {	
  			$this->Montage = loadComponent('Montage', $this);
-			$auditions = array_slice($castingCall['CastingCall']['Auditions'],0,16);
-			if (!empty($auditions)) $this->viewVars['jsonData']['montage'] = $this->Montage->getArrangement($auditions);
+			$Auditions = $castingCall['CastingCall']['Auditions'];
+			$this->viewVars['jsonData']['montage'] = $this->Montage->getArrangement($Auditions);
 		}	
 			
 		$done = $this->renderXHRByRequest('json', '/elements/photo/roll', null, 0);

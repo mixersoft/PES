@@ -27,7 +27,8 @@ class AssetsController extends AppController {
 			// set limit in PageableBehavior->getPerpageLimit()	
 			'limit' => 16,
 			'big_limit' =>48,
-			'order'=>array('Asset.dateTaken'=>'ASC'),
+			// 'order'=>array('Asset.dateTaken'=>'ASC'),
+			'order'=>array('SharedEdit.score DESC', 'Asset.modified'=>'DESC'),
 			'extras'=>array(
 				'show_edits'=>true,
 				'join_shots'=>'Usershot', 
@@ -323,12 +324,22 @@ class AssetsController extends AppController {
 		/*
 		 * get montage
 		 * */
-		if ((Session::read('section-header.Photo') == 'Montage' || !empty($this->passedArgs['montage']))
+		if (empty($castingCall['CastingCall']['Auditions'])) $getMontage = false;
+		if ( isset($this->passedArgs['montage']) ) $getMontage = !empty($this->passedArgs['montage']);
+		else $getMontage = ( 
+			Session::read('section-header.Photo') == 'Montage' 
 			&& !$this->RequestHandler->isAjax() 
-		) {
+		);
+		if ($getMontage) {
  			$this->Montage = loadComponent('Montage', $this);
-			$auditions = array_slice($castingCall['CastingCall']['Auditions'],0,16);
-			if (!empty($auditions)) $this->viewVars['jsonData']['montage'] = $this->Montage->getArrangement($auditions);
+			$Auditions = $castingCall['CastingCall']['Auditions'];
+			// get a random slice, but remember to CACHE for N mins
+			$show = 9;
+			$Audition = $Auditions['Audition'];	// copy
+			shuffle($Audition);
+			$Audition = array_slice($Audition,0, $show);
+			$Baseurl = $Auditions['Baseurl'];
+			$this->viewVars['jsonData']['montage'] = $this->Montage->getArrangement(compact('Audition','Baseurl'));
 		}	
 		 
 		$this->getLookups(array('Users'=> array_keys(Set::combine($pageData, '/owner_id', ''))));
