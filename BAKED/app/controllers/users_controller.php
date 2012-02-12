@@ -96,7 +96,7 @@ class UsersPluginController extends AppController {
 					$this->redirect(array('action' => 'index', 'admin' => true));
 				} else {
 					$this->Session->setFlash(__d('users', 'You should receive an email shortly to help reset your password.', true));
-					$this->redirect(array('action' => 'login'));
+					$this->redirect($this->Auth->loginAction);
 				}
 			} else {
 				$this->Session->setFlash(__d('users', 'No user was found with that email.', true));
@@ -320,7 +320,7 @@ class UsersPluginController extends AppController {
 		if (isset($this->passedArgs['1'])){
 			$token = $this->passedArgs['1'];
 		} else {
-			$this->redirect(array('action' => 'login'), null, true);
+			$this->redirect($this->Auth->loginAction, null, true);
 		}
 
 		if ($type === 'email') {
@@ -359,12 +359,12 @@ class UsersPluginController extends AppController {
 					$content[] = $newPassword;
 					$this->Email->send($content);
 					$this->Session->setFlash(__d('users', 'Your password was sent to your registered email account', true));
-					$this->redirect(array('action' => 'login'));
+					$this->redirect($this->Auth->loginAction);
 				} else {
 					$this->User->Profile->id = $data['Profile']['id'];
 					$this->User->Profile->save($data);
 					$this->Session->setFlash(__d('users', 'Your e-mail has been verified!', true));
-					$this->redirect(array('action' => 'login'));
+					$this->redirect($this->Auth->loginAction);
 				}
 			} else {
 				$this->Session->setFlash(__d('users', 'There was an error trying to verify your e-mail address. Please check your e-mail for the link you should use to verify your e-mail address.', true));
@@ -449,7 +449,7 @@ class UsersController extends UsersPluginController {
 	 */
 	function beforeFilter() {
 		// only for snaphappi user login, not rpxnow
-		if ($this->action=='login' && !empty($this->data['User'])){
+		if (in_array($this->action, array('signin', 'login')) && !empty($this->data['User'])){
 			//Override default fields used by Auth component
 			$this->Auth->userModel = 'User';
 			//Extend auth component to include authorisation via isAuthorized action
@@ -467,6 +467,7 @@ class UsersController extends UsersPluginController {
 				$this->Auth->fields = array('username'=>'username', 'password'=>'password');
 			}
 		}
+		$this->Auth->loginAction = '/users/signin';
 		parent::beforeFilter();
 		/*
 		 *	These actions are allowed for all users
@@ -475,6 +476,7 @@ class UsersController extends UsersPluginController {
 			/*
 			 * main
 			 */
+			'signout', 'signin',
 			'logout', 'login', 
 			/*
 			 * from Users.Users plugin
@@ -723,7 +725,10 @@ class UsersController extends UsersPluginController {
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
 		
 	}
-
+	function signin() {
+		$this->login();
+		$this->render('login');
+	}
 	function login() {
 		$this->layout = $layout = 'snappi-guest';
 		$forceXHR = setXHRDebug($this, 0);		// xhr login is for AIR desktop uploader
@@ -761,7 +766,7 @@ $this->log("set guest_pass for AIR uploader login, guest_pass={$guest_pass}", LO
 			 * Note: magic logins for DEV overwrite $guest_pass logins
 			 */
 			if (empty($this->data['User']['username']) || !empty($this->data['User']['magic'])) {
-$this->log("check magic/cookie login for user=", LOG_DEBUG);
+$this->log("check magic/cookie signin for user=", LOG_DEBUG);
 //$this->log($this->data['User'], LOG_DEBUG);				
 				$this->User->recursive=0;
 				/*
@@ -770,7 +775,7 @@ $this->log("check magic/cookie login for user=", LOG_DEBUG);
 				if (!empty($this->data['User']['magic']) && strlen($this->data['User']['magic'])==36){
 //$this->log("using magic login for {$this->data['User']['magic']} ", LOG_DEBUG);
 					$this->data = $this->User->read(null, $this->data['User']['magic'] );
-					$this->log("magic login for user={$this->data['User']['username']}", LOG_DEBUG);
+					$this->log("magic signin for user={$this->data['User']['username']}", LOG_DEBUG);
 					// continue below
 				} else if (empty($this->data['User']['username']) && $allow_guest_login) {
 					/*
@@ -779,7 +784,7 @@ $this->log("check magic/cookie login for user=", LOG_DEBUG);
 					App::import('Component', 'Cookie');
 					$Cookie = new CookieComponent($this);
 					$guestid = $Cookie->read('guest_pass');
-$this->log("using Cookie guestpass login for {$guestid}", LOG_DEBUG);						
+$this->log("using Cookie guestpass signin for {$guestid}", LOG_DEBUG);						
 					/*
 					 * end read cookie
 					 */	
@@ -787,7 +792,7 @@ $this->log("using Cookie guestpass login for {$guestid}", LOG_DEBUG);
 					
 					// extend cookie another 2 weeks
 					$Cookie->write('guest_pass', $guestid, false, '2 week');
-					$this->log("returning Guest login for guestid={$this->data['User']['id']}", LOG_DEBUG);
+					$this->log("returning Guest signin for guestid={$this->data['User']['id']}", LOG_DEBUG);
 					// continue below					
 				}
 			}
@@ -796,11 +801,11 @@ $this->log("using Cookie guestpass login for {$guestid}", LOG_DEBUG);
 				/*
 				 * NEW Guest login
 				 */					
-				// confirm guest_pass was issued by /users/login?optional
+				// confirm guest_pass was issued by /users/signin?optional
 				// use magic login value, if available, if not, read from Session
 				if ($guest_pass == $this->Session->read('Auth.guest_pass')) {
 					$this->Session->delete('Auth.guest_pass');
-					$this->log("creating NEW Guest login for guest id={$guest_pass}", LOG_DEBUG);					
+					$this->log("creating NEW Guest signin for guest id={$guest_pass}", LOG_DEBUG);					
 					// create Guest Session, as necessary, and continue
 					$this->data = $this->__createGuestSession($guest_pass);
 					$login_ok = $this->__loginUser($this->data);
@@ -819,7 +824,7 @@ $this->log("using Cookie guestpass login for {$guestid}", LOG_DEBUG);
 				 * user, guest or magic login
 				 */
 				// delete existing Auth session before we try to authenticate a new user
-// $this->log("after /users/login for user={$this->data['User']['username']}", LOG_DEBUG);		
+// $this->log("after /users/signin for user={$this->data['User']['username']}", LOG_DEBUG);		
 // $this->log($this->data['User'], LOG_DEBUG);
 // $this->log($_COOKIE, LOG_DEBUG);	
 // $this->log("response cookie value above. ", LOG_DEBUG);
@@ -896,7 +901,10 @@ $this->log("using Cookie guestpass login for {$guestid}", LOG_DEBUG);
 		$this->set('userlist', $userlist);
 		
 	}
-
+	function signout() {
+		$this->logout();
+		$this->render('logout');
+	}
 	function logout() {
 		/*
 		 * delete everything
@@ -1162,7 +1170,7 @@ debug($data);
 				$this->set('user', $user);
 				$this->_sendVerificationEmail($user[$this->modelClass]['email'], $user);	
 				$this->Session->setFlash(__d('users', 'You should receive a new e-mail shortly to authenticate your account. Once validated you will be able to login.', true));
-				$this->redirect(array('action'=> 'login'));
+				$this->redirect($this->Auth->loginAction);
 			}
 		}
 	}	

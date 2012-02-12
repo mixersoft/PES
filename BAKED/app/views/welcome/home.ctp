@@ -42,7 +42,7 @@
             <li><?php $userid = Session::read('Auth.User.id'); echo $this->Html->link('my account', "/users/home/{$userid}");?></li>
             <li><?php echo $this->Html->link('browse groups', "/groups");?></li>
             <li><?php echo $this->Html->link('check ACLs', "/users/checkPermission");?></li>         
-            <li><?php echo $this->Html->link('logout', "/users/logout");?></li>     	
+            <li><?php echo $this->Html->link('logout', "/users/signout");?></li>     	
         	</ul>
         	<br>
         

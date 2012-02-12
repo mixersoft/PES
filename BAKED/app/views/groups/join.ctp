@@ -101,7 +101,7 @@
 						// );
 						// echo $this->Form->button("I'd like to join this group!", $options);
 						echo $this->Form->hidden('signin_redirect', array('value'=>$signin_redirect));
-						echo $this->Form->hidden('noauth_redirect', array('value'=>'/users/login'));
+						echo $this->Form->hidden('noauth_redirect', array('value'=>'/users/signin'));
 						echo $this->Form->button("I'd like to join this group!", array('value'=>"Sign In", 'name'=>'data[Group][action]', 'class'=>'orange'));
 					} else {
 						echo $this->Form->hidden('id', array('value'=>$id)); 

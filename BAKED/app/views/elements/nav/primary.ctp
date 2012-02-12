@@ -66,12 +66,12 @@
 				<li class="help" title="Ask questions or get help for this page.">
 					<span class="header-btn rounded-5 <?php echo $help_status; ?>"  onclick="SNAPPI.UIHelper.nav.showHelp(this);">?</span>
 				</li>
-				<li><a href="/users/logout">Sign out</a></li>				
+				<li><a href="/users/signout">Sign out</a></li>				
 			<?php  } else { ?>
 				<li class="help" title="Ask questions or get help for this page." >
 					<span class="header-btn rounded-5 <?php echo $help_status; ?>"  onclick="SNAPPI.UIHelper.nav.showHelp(this);">?</span>
 				</li>
-				<li><a href="/users/login">Sign in</a></li>
+				<li><a href="/users/signin">Sign in</a></li>
 				<li><a href="/users/register">Sign up</a></li>
 			<?php  } ?>					
 		</ul>

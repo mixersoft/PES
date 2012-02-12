@@ -34,12 +34,12 @@ class AppController extends Controller {
 		//		$this->Auth->allow('*');	// disable permissions, allow everything
 		//		debug($this->Auth->allowedActions);
 
-		//Set the default redirect for users who logout
-		$this->Auth->logoutRedirect = '/users/login?optional';
 		//Set the default redirect for users who login
 		$this->Auth->loginRedirect = '/my/home';
 		// login page
-		if (empty($this->Auth->loginAction)) $this->Auth->loginAction = '/users/login' . (Configure::read('AAA.allow_guest_login') ? '?optional' : '');
+		if (empty($this->Auth->loginAction)) $this->Auth->loginAction = '/users/signin' . (Configure::read('AAA.allow_guest_login') ? '?optional' : '');
+		//Set the default redirect for users who logout
+		$this->Auth->logoutRedirect = $this->Auth->loginAction;  // ?optional
 		
 		// call login() after auth for additional processing
 		$this->Auth->autoRedirect = false;
