@@ -165,8 +165,8 @@ $this->log(">> exif_Orientation={$exif['Orientation']}", LOG_DEBUG);
 	 */
 	function getMeta($path)
 	{
+		if (!file_exists($path)) return array();
 		$data = array('exif'=>NULL, 'iptc'=>NULL);
-
 		// get EXIF data
 		$exif = @exif_read_data($path);
 		if (!empty($exif)) {

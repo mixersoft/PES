@@ -43,6 +43,7 @@ class MontageComponent extends Object
 	 * sort by Rating DESC, then unixtime ASC
 	 */
 	function __sortPhotos($photos, $count = null){
+		if (empty($photos)) return $photos;
 		// Obtain a list of columns
 		foreach ($photos as $key => $row) {
 		    $rating[$key]  = $row['rating'];
@@ -84,6 +85,7 @@ class MontageComponent extends Object
 	}
 	
 	function getArrangement($Auditions, $count=16){
+		set_time_limit ( 5 );
 		if (isset($Auditions['CastingCall']['Auditions'])) $Auditions = $Auditions['CastingCall']['Auditions'];
 		$photos = $Auditions['Audition'];
 		$baseurl = $Auditions['Baseurl'];
