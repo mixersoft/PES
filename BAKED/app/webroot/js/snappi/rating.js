@@ -511,9 +511,10 @@
 	 * 
 	 * TODO: move to differnt class, io_helpers(?)
 	 * @params container _Y.Node, container for loadingmask 
-	 * @params ids Array, asset UUIDs
-	 * @params properties obj, {rating:, rotate:, }
-	 * @params actions obj, {updateBestshot:1, }
+	 * @params cfg.ids Array, asset UUIDs
+	 * @params cfg.properties obj, {rating:, rotate:, }
+	 * @params cfg.actions obj, {updateBestshot:1, }
+	 * @params cfg.callbacks
 	 */
 	AssetRatingController.setProp = function(container, cfg){
 		var uri = "/photos/setprop/.json";
@@ -586,59 +587,63 @@
 			var node = r.node;
 			ids = ids || node.getAttribute('uuid');
 			
-			var uri = "/photos/setprop/.json";
-			var data = {
-				'data[Asset][id]' : ids,
-				'data[Asset][rating]' : value
-			};
-			if (options && options.updateBestshot) {
-				data['data[updateBestshot]'] = 1;
+			var properties = {
+				id: ids,
+				rating: value,
 			}
-			// TODO: change to SNAPPI.IO.pluginIO_RespondAsJson()
-			var callback = {
-				complete : function(id, o, args) {
-					if (o.responseJson && o.responseJson.success == 'true') {
-						var msg = o.responseJson.message;
-						// if (SNAPPI.timeout && SNAPPI.timeout.flashMsg) {
-							// SNAPPI.timeout.flashMsg.cancel();
-						// }
-						// SNAPPI.flash.flash(msg); // don't flashMsg on success.
-						SNAPPI.AssetRatingController.onRatingChanged(r,	value);
-						 
+			var actions = {};
+			if (options && options.updateBestshot) {
+				actions['updateBestshot'] = 1;
+			}
+			var callbacks = {
+				failure: function(e, id, o, args) {
+					SNAPPI.flash.flashJsonResponse(o);
+					return false;
+				},
+				successJson : function(e, id, o, args) {
+					var msg = o.responseJson.message;
+					// if (SNAPPI.timeout && SNAPPI.timeout.flashMsg) {
+						// SNAPPI.timeout.flashMsg.cancel();
+					// }
+					// SNAPPI.flash.flash(msg); // don't flashMsg on success.
+					SNAPPI.AssetRatingController.onRatingChanged(r,	value);
+					 
+					try {
+						var audition, shotPhotoRoll;
 						try {
-							var audition, shotPhotoRoll;
-							try {
-								audition = SNAPPI.Auditions.find(r.node.ancestor('.FigureBox').uuid);
-								shotPhotoRoll = r.node.ancestor('ul.hiddenshots').Gallery;
-							} catch (e) {
-								audition = SNAPPI.Auditions.find(options.thumbnail.uuid);
-								shotPhotoRoll = options.thumbnail.ancestor('ul.hiddenshots').Gallery;
-							}
-							var bestShot = audition.Audition.Substitutions.best;
-							var selected = shotPhotoRoll.selected;
-							// confirm showHidden bestShot is in main photoroll
-							if (bestShot !== selected) {
-								var photoroll = _Y.one('section.gallery.photo').Gallery;
-								// splice into original location
-								var result = photoroll.auditionSH.replace(selected, bestShot);
-								if (result) {
-									shotPhotoRoll.selected = bestShot;
-									photoroll.render();	
-									for (var i in photoroll.shots) {
-										var shot = photoroll.shots[i]; 
-										photoroll.applyShotCSS(shot);
-									}
-									
+							audition = SNAPPI.Auditions.find(r.node.ancestor('.FigureBox').uuid);
+							shotPhotoRoll = r.node.ancestor('ul.hiddenshots').Gallery;
+						} catch (e) {
+							audition = SNAPPI.Auditions.find(options.thumbnail.uuid);
+							shotPhotoRoll = options.thumbnail.ancestor('ul.hiddenshots').Gallery;
+						}
+						var bestShot = audition.Audition.Substitutions.best;
+						var selected = shotPhotoRoll.selected;
+						// confirm showHidden bestShot is in main photoroll
+						if (bestShot !== selected) {
+							var photoroll = _Y.one('section.gallery.photo').Gallery;
+							// splice into original location
+							var result = photoroll.auditionSH.replace(selected, bestShot);
+							if (result) {
+								shotPhotoRoll.selected = bestShot;
+								photoroll.render();	
+								for (var i in photoroll.shots) {
+									var shot = photoroll.shots[i]; 
+									photoroll.applyShotCSS(shot);
 								}
 							}
-						} catch (e) {}
-					} else {
-						SNAPPI.flash.flashJsonResponse(o);
-					}
+						}
+					} catch (e) {}
+					return false;	// for Plugin.IO
 				}
 			};
-	
-			SNAPPI.io.post(uri, data, callback);
+			
+			// SNAPPI.io.post(uri, data, callbacks);
+			AssetRatingController.setProp(node, {
+				properties: properties,
+				actions: actions,
+				callbacks: callbacks
+			})
 			return;
 		};
 		/**
