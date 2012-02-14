@@ -116,13 +116,15 @@
 			auth = SNAPPI.STATE.controller.userid; // authenticated
 		} catch (e) {
 			auth = null;
-		}			
+		}	
+		defaultMenus = {
+			'menu-header-create-markup': 1,	
+		};		
 		if (auth) {
-			defaultMenus = {
+			defaultMenus = _Y.merge(defaultMenus,{
 				'menu-header-markup': 1,	
-				'menu-header-create-markup': 1,
-			};
-		}			
+			});
+		}		
 		
 		menus = _Y.merge(defaultMenus, menus);
 		for (var i in menus) {
@@ -954,6 +956,17 @@ console.error("PreviewPhoto delete is still incomplete");
 			shotType: shotType
 		});
 	};	
+	MenuItems.authenticated_beforeShow = function(menuItem, menu){
+		try {
+			if (SNAPPI.STATE.controller.userid) {
+				menuItem.removeClass('disabled').show();
+			} else {
+				menuItem.addClass('disabled').setAttribute('title','Please sign in to access this feature.');
+			}
+		} catch(e) {
+			menuItem.addClass('disabled').setAttribute('title','Please sign in to access this feature.');
+		}
+	}
 	MenuItems.create_pagegallery_beforeShow = function(menuItem, menu){
 		try {
 			var g = SNAPPI.Gallery.find['uuid-'] || SNAPPI.Gallery.find['nav-'];

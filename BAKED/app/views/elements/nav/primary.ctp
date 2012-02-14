@@ -55,10 +55,10 @@
 		</nav>
 		<nav class='user grid_7'>
 			<ul class="right rightlink">
-			<?php if ( AppController::$userid) { ?>
 				<li class="menu-trigger-create">
 					<span class="header-btn green rounded-5"><b>+</b>&nbsp;Create</span>
 				</li>
+			<?php if ( AppController::$userid) { ?>
 				<li>
 					<span class="grey">Welcome,</span>
 					<a id='userAccountBtn' class='menu-open'><?php echo $displayName ?></a>

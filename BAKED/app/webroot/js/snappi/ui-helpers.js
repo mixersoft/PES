@@ -240,7 +240,7 @@
 			},
 			gallery: function(e, view){
 				if (!e.currentTarget.hasClass('focus')) {
-					SNAPPI.io.writeSession({'section-header.Photo':'Gallery'}, callback);
+					SNAPPI.io.writeSession({'section-header.Photo':'Gallery'});
 				}
 				e.currentTarget.addClass('focus').siblings().removeClass('focus');
 				// TODO: switch to g._cfg.type ??
