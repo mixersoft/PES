@@ -66,22 +66,29 @@
         
         Pr.tryout.pmAuditionSH.some(function(o){
         	// make "simple" auditions for cluster_collage
-        	// remove Subsitition circular references
-        	if (!o.parsedAudition.Audition.Substitutions) {
-        		auditions.push(o.parsedAudition.Audition);
-        	} else {
-	        	var copy = _Y.merge(o.parsedAudition.Audition);
-	        	delete(copy.Substitutions);
-	        	auditions.push(copy);
+        	// bare minimum/flat obj for arrangement from cluster-collage.4.php
+        	var A = {
+        		id: o.id,
+        		Caption: o.label,
+        		TS: o.parsedAudition.ts,
+        		DateTaken: o.exif_DateTimeOriginal,
+        		Rating: o.rating,
+        		W: o.size.w,
+        		H: o.size.h,
+        		src: o.src,
         	}
-        	if (!baseurl) baseurl = o.parsedAudition.urlbase;
+        	auditions.push(A);
         	if (auditions.length >= roleCount) {
         		return true;
         	} else return false;
         });
+        if (!auditions.length) {
+        	console.error('Catalog.getCustomFitArrangement: no snaps selected');
+        	return;	// should have already shown dialog to select some Snaps
+        }
         var Auditions = {
         		Audition: auditions,
-        		Baseurl: baseurl
+        		Baseurl: '',
         };
         var rawJsonAuditions = _Y.JSON.stringify(Auditions);
         data = {

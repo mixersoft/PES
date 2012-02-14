@@ -21,13 +21,18 @@ class ImportComponent extends Object
 		'InterOperabilityVersion', 
 // extra fields
 		'Make', 'Model', 
-		'ISOSpeedRatings', 'FNumber',
+		'ISOSpeedRatings', 'FNumber', 'ApertureFNumber',
 		'ExposureTime', 
 		'ImageUniqueID',
 		'ExifVersion',
 		'GPSVersion', 'GPSLatitudeRef', 'GPSLatitude', 'GPSLongitudeRef', 'GPSLongitude', 
 		'GPSDateStamp', 'GPSTimeStamp',
 		'GPSAreaInformation',
+		'COMPUTED',
+	);
+	static $EXIF_COMPUTED_FIELDS = array(
+		'Height',
+		'Width',
 	);
 
 	static $IPTC_FIELDS = array(
@@ -96,22 +101,14 @@ class ImportComponent extends Object
 	 * @return array
 	 */
 	function augmentExif($exif, $options=array()) {
-		if(!empty($exif)) {
+		$rootSrcAttr = array();
+		if(isset($exif['COMPUTED'])) {
+// $this->log($exif['COMPUTED'], LOG_DEBUG);			
 			// these values are set by exif_read_data(), but NOT by AIR uploader
-			if(isset($exif['COMPUTED']['Width'])) {
-				// TODO: find out if this is BEFORE/AFTER autorotate
-$this->log("using exif['COMPUTED']", LOG_DEBUG);
-$this->log(">> computed width={$exif['COMPUTED']['Width']}, length={$exif['COMPUTED']['Height']}", LOG_DEBUG);
-$this->log(">> compared to exif width={$exif['ExifImageWidth']}, length={$exif['ExifImageLength']}", LOG_DEBUG);
-$this->log(">> exif_Orientation={$exif['Orientation']}", LOG_DEBUG);
-				$exif['imageWidth'] = $exif['COMPUTED']['Width'];
-			}
-			if(isset($exif['COMPUTED']['Height'])) {
-				$exif['imageHeight'] = $exif['COMPUTED']['Height'];
-			}
-//debug($exif['COMPUTED']);
-//debug($options);
-//debug('WARNING: test if exif[computed] is before/after autorotate. expecting AFTER');			
+			$rootSrcAttr['imageWidth'] = $exif['COMPUTED']['Width'];
+			$rootSrcAttr['imageHeight'] = $exif['COMPUTED']['Height'];
+			$exif['ApertureFNumber'] = $exif['COMPUTED']['ApertureFNumber']; 
+			// $exif['COMPUTED'] = array_filter_keys($exif['COMPUTED'], ImportComponent::$EXIF_COMPUTED_FIELDS);
 		} else {
 			// create bare minimum exif array
 			$exif = array();
@@ -120,7 +117,6 @@ $this->log(">> exif_Orientation={$exif['Orientation']}", LOG_DEBUG);
 				$exif['ExifImageWidth']=$options['width'];
 				$exif['ExifImageLength']=$options['height'];
 			}			
-			$exif['Orientation'] = 1;
 		}
 		// at the very minimum, get image width/height from actual file
 		// warning, this could be AFTER autorotate
@@ -130,29 +126,47 @@ $this->log(">> exif_Orientation={$exif['Orientation']}", LOG_DEBUG);
 			// look at preview file to get actual size
 			// typically used with AIR uploader
 			$attrs = getimagesize($options['filepath']);
-			$exif['imageWidth']=$attrs[0];
-			$exif['imageHeight']=$attrs[1];
+			$rootSrcAttr['imageWidth']=$attrs[0];
+			$rootSrcAttr['imageHeight']=$attrs[1];
 		} 
-		$exif['isRGB'] = !empty($exif['ColorSpace']) ? ($exif['ColorSpace'] == 1) : 0;
+		$rootSrcAttr['isRGB'] = !empty($exif['ColorSpace']) ? ($exif['ColorSpace'] == 1) : 0;
 		$exif['isFlash'] =  !empty($exif['Flash']) ? ($exif['Flash'] & 1) : 0;  // checks bit 0
-		
+// debug($exif['Orientation']);		
 		/*
-		 * add preview to exif
+		 * add Exif attributes for root Audition.Photo.Img on Server
 		 * 	- HANDLED IN casting_call.php
 		 */
-		$previewExif = array_filter_keys($exif, array('imageWidth','imageHeight', 'isRGB', 'Orientation'));
+		$rootExif = array_filter_keys($exif, array('imageWidth', 'imageHeight', 'isRGB', 'Orientation'));
 		if (!empty($options['autoRotate']) 
-			&& (empty($previewExif['Orientation']) || $previewExif['Orientation'] > 4)) // null, 6 or 8 
+			&& (empty($rootExif['Orientation']) || $rootExif['Orientation'] > 4)) // null, 6 or 8 
 		{	
 			// add this if exif[COMPUTED] is NOT autorotated
 			// manually change dimension because preview is auto-rotated
-//			$previewExif['imageWidth'] = $exif['imageHeight'];
-//			$previewExif['imageHeight'] = $exif['imageWidth'];
-			$previewExif['Orientation'] = 1;
-		}		
-		$exif['preview'] = $previewExif;
-		
-		
+//			$rootExif['imageWidth'] = $exif['imageHeight'];
+//			$rootExif['imageHeight'] = $exif['imageWidth'];
+			$rootExif['Orientation'] = 1;
+		}	
+		if (isset($exif['Orientation']) && $exif['Orientation'] == 1) {
+			// assume original ExifOrientation has be 'autorotated' & set =1
+			if (($exif['imageWidth']<$exif['imageHeight']) 
+				&& ($exif['ExifImageWidth']>$exif['ExifImageLength']) )
+			{	// flip values
+// debug("Flipped ExifImageWidth, ExifImageLength");			
+				$w = $exif['ExifImageLength'];
+				$exif['ExifImageLength'] = $exif['ExifImageWidth'];
+				$exif['ExifImageWidth'] = $w;
+			}
+		} 
+		if (!isset($exif['Orientation'])){	// missing Exif Orientation tag, assume =1
+			$exif['Orientation'] = 1;
+			$rootExif['Orientation'] = 1;
+		}
+		$exif['root'] = $rootExif;
+		unset ($exif['imageWidth']);
+		unset ($exif['imageHeight']);
+		unset ($exif['COMPUTED']);
+// debug($exif);		
+// $this->log($exif, LOG_DEBUG);		
 		return $exif;	
 	}
 
@@ -160,7 +174,7 @@ $this->log(">> exif_Orientation={$exif['Orientation']}", LOG_DEBUG);
 	 * 	Get exif and iptc meta data for image file,
 	 * 		get imageWidth, imageHeight at the very minimum
 	 *
-	 * @param string path - path to image file
+	 * @param string path - path to image file, src['root']
 	 * @return array
 	 */
 	function getMeta($path)
@@ -169,6 +183,7 @@ $this->log(">> exif_Orientation={$exif['Orientation']}", LOG_DEBUG);
 		$data = array('exif'=>NULL, 'iptc'=>NULL);
 		// get EXIF data
 		$exif = @exif_read_data($path);
+// $this->log($exif, LOG_DEBUG);		
 		if (!empty($exif)) {
 			$data['exif'] = array_filter_keys($exif, ImportComponent::$EXIF_FIELDS);
 			$data['exif'] = $this->augmentExif($data['exif'], array('filepath'=>$path));

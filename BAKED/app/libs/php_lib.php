@@ -387,21 +387,78 @@ class Stagehand {
 		}
 		return Stagehand::$stage_baseurl.$relpath;
 	} 
+	/**
+	 * delete all derived assets, then create a bp~ asset with autorender=true
+	 * 		bp~ asset will have exif_orientation=1, 
+	 * 		ready for JHead->exifRotate() operation
+	 * 
+	 * @params $derived_src String path, e.g. 
+	 * 		stage6/.thumbs/bp~4f386533-90b0-4838-8d90-0cd4f67883f5.jpg
+	 * 		/svc/STAGING/stage6/.thumbs/bp~4f386533-90b0-4838-8d90-0cd4f67883f5.jpg
+	 * 		stage6/4f386533-90b0-4838-8d90-0cd4f67883f5.jpg
+	 */
+	public static function reset_derived($derived_src) {
+		/*
+		 *  delete all derived assets, and 
+		 * 	re-render bp~ with autorotate enabled 
+		 */
+		$THUMBS_DIR = '.thumbs';
+		$stageroot = Configure::read('path.stageroot');
+		if (!defined('DEBUG')) DEFINE('DEBUG', false);
+		App::import('lib', 'autorender', null, null, Configure::read('path.autorender'));
+		$rootpath = str_replace('/'.$THUMBS_DIR,'', $derived_src);	// html form
+		$rootpath = Stagehand::getImageSrcBySize($rootpath, '');
+		if (strpos($rootpath, $stageroot['basepath']) !== 0 ) {
+			// change from baseurl to filepath
+			$i = strpos($rootpath, $stageroot['httpAlias']);	
+			if ($i!==false) $rootpath = substr($rootpath, $i+strlen($stageroot['httpAlias']));
+			$rootpath = cleanpath($rootpath);		
+			if (strpos($rootpath, DS)!==0) $rootpath = DS.$rootpath;
+			$rootpath = cleanpath($stageroot['basepath']).$rootpath;
+		} else $rootpath = cleanpath($rootpath);
+		
+		$filename = pathinfo($rootpath, PATHINFO_FILENAME);
+		$derived = dirname($rootpath).DS.$THUMBS_DIR.DS.'*~'.$filename.'*';
+// debug("delete $derived");		
+		foreach (GLOB($derived) AS $delete) {
+// debug("FOUND delete, path={$delete}");
+			unlink($delete);
+		}	// derived assets removed
+		
+		$preview = dirname($rootpath).DS.$THUMBS_DIR.DS.'bp~'.basename($rootpath);
+// debug("$rootpath > $preview");		
+		$dest_size = Snappi_Image::get_size("preview");
+		Snappi_Image::$autorotate = true;		// auto-orient
+		$result = Snappi_Image::_image_scale(null, $rootpath, $preview, $dest_size['width'], $dest_size['height'], null, null, null);				
+	}
+	
+	private static $orientation_lookup = array(
+		1=>array(1=>1,3=>3, 6=>6, 8=>8),
+		8=>array(1=>8,3=>6, 6=>1, 8=>3),
+		6=>array(1=>6,3=>8, 6=>3, 8=>1),
+		3=>array(1=>3,3=>1, 6=>6, 8=>8),
+	);
+	public static function orientation_sum($orientation, $rotate){
+		return Stagehand::$orientation_lookup[$orientation][$rotate];
+	}
+	public static function rotate_dimensions($dimOrPoint, $orientation, $rotate=1) {
+		if ($rotate > 1) {
+			$orientation = Stagehand::$orientation_lookup($orientation, $rotate);
+		}
+		if ($orientation <=3) return $dimOrPoint;
+		else {
+			$flipped = array();
+			if (isset($dimOrPoint['width'])) {
+				$flipped['width'] = $dimOrPoint['height'];
+				$flipped['height'] = $dimOrPoint['width'];
+			}
+			if (isset($dimOrPoint['X'])) {
+				// TODO: flip focusCenter. see PM.util.rotateDimensions()
+			}
+		}
+		return $flipped;
+	}
 }
-// 
-	// // deprecate: use Stagehand::getImageSrcBySize(), or Stagehand::getSrc()
-	// function getImageSrcBySize($relpath, $prefix) {
-		// if (strlen($prefix)==2) $prefix .= '~';
-		// $regexp = '/^(sq|br|bp|cr|ax|bs|bx|ap|as|ar|tn|bm|am)~/';
-		// $path_parts = pathinfo($relpath);
-		// // replace existing prefix, if any, and then prepend
-		// if (preg_match($regexp, $path_parts['basename'])) {
-			// $asset_basename = preg_replace($regexp, $prefix, $path_parts['basename'], 1);
-		// } else {
-			// $asset_basename = $prefix.$path_parts['basename'];
-		// }
-		// return cleanPath($path_parts['dirname'].'/'.$asset_basename, 'http'); //only forward-slash
-	// }
 
 
 function trimImagePrefix($url) {

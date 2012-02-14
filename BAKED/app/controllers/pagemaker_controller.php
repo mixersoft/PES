@@ -80,13 +80,23 @@ class PagemakerController extends AppController {
 		foreach ($photos as $photo) {
 			$p = array();
 			$p['id'] = $photo['id'];
-			$p['caption'] = $photo['Photo']['Caption'];
-			$p['unixtime'] = $photo['Photo']['TS'];
-			$p['dateTaken'] = $photo['Photo']['DateTaken'];
-			$p['rating'] = $photo['Photo']['Fix']['Rating'];
-			$p['width'] = $photo['Photo']['Img']['Src']['W'];
-			$p['height'] = $photo['Photo']['Img']['Src']['H'];
-			$p['src'] = $baseurl . $photo['Photo']['Img']['Src']['previewSrc'];
+			if (isset($photo['Photo'])) {	// from CastingCallComponent
+				$p['caption'] = $photo['Photo']['Caption'];
+				$p['unixtime'] = $photo['Photo']['TS'];
+				$p['dateTaken'] = $photo['Photo']['DateTaken'];
+				$p['rating'] = $photo['Photo']['Fix']['Rating'];
+				$p['width'] = $photo['Photo']['Img']['Src']['W'];
+				$p['height'] = $photo['Photo']['Img']['Src']['H'];
+				$p['src'] = $baseurl . $photo['Photo']['Img']['Src']['rootSrc'];
+			} else {	// flat object, from Catalog.getCustomFitArrangement()
+				$p['caption'] = $photo['Caption'];
+				$p['unixtime'] = $photo['TS'];
+				$p['dateTaken'] = $photo['DateTaken'];
+				$p['rating'] = $photo['Rating'];
+				$p['width'] = $photo['W'];
+				$p['height'] = $photo['H'];
+				$p['src'] = $photo['src'];				
+			}
 			$output[] = $p;
 		}
 	//	sort($output, );
@@ -160,7 +170,7 @@ class PagemakerController extends AppController {
 		$Auditions = json_decode($rawJson, true);
 		$photos = $Auditions['Audition'];
 		$baseurl = "http://{$appHost}".$Auditions['Baseurl'];
-// debug($photos);
+debug($photos);
 		$sortedPhotos = $this->__sortPhotos($this->__getPhotos($photos, $baseurl), null);
 		$layoutPhotos = count($sortedPhotos) > $count ? array_slice($sortedPhotos, 0, $count) : $sortedPhotos;
 		

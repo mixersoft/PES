@@ -109,7 +109,7 @@ class CastingCallComponent extends Object {
 		//		$id = "snappi-audition-{$row['id']}";
 		$id = $row['id'];
 		$isOwner = $row['owner_id'] == AppController::$userid;
-		$exif = (array)json_decode($row['json_exif']);
+		$exif = json_decode($row['json_exif'], true);
 		if (!@empty($row[0]['FocusCenter'])) {
 			$x=$row[0]['FocusCenter']['X'];
 			$y=$row[0]['FocusCenter']['Y'];
@@ -131,22 +131,23 @@ class CastingCallComponent extends Object {
 		$LayoutHint = compact('FocusCenter', 'FocusVector');
 
 		// Src Root
-		$W = $exif['imageWidth'];
-		$H = $exif['imageHeight'];
-		$src = (array)json_decode($row['json_src']);
-		$Src = $src['preview']; 	// TODO: deprecate. refactor to use $src['root'] here
+		$src = (array)json_decode($row['json_src'], true);
+		// $Src = $src['preview']; 	// TODO: deprecate. refactor to use $src['root'] here
 		if (isset($src['base64Src'])) $base64Src = $src['base64Src'];
 		if (isset($src['root'])) $rootSrc = $src['root'];
-		if (isset($src['preview']))	$previewSrc= $src['preview'];
-		$Src = compact('W', 'H', 'AutoRender', 'previewSrc', 'base64Src','rootSrc');
-		if (isset($exif['preview'])) {
-			// $exif['preview'] set in controllers/import.php
-			$Src['Orientation']  = isset($exif['preview']->Orientation) ? $exif['preview']->Orientation : 1;
-			if ( isset($exif['preview']->isRGB)) $Src['isRGB']  = $exif['preview']->isRGB;
+		// if (isset($src['preview']))	$previewSrc= $src['preview'];
+		if (isset($src['orig']))	$origSrc= $src['orig'];
+		if (isset($exif['root'])) { 	// $exif['root'] set in controllers/import.php
+			$W = $exif['root']['imageWidth'];
+			$H = $exif['root']['imageHeight'];
+			$Orientation  = isset($exif['root']['Orientation']) ? $exif['root']['Orientation'] : 1;
+			if ( isset($exif['root']['isRGB'])) $isRGB  = $exif['root']['isRGB'];
+		} else {
+			$W = $exif['ExifImageWidth'];
+			$H = $exif['ExifImageLength'];
+			$Orientation = $exif['Orientation'];
 		}
-//		$origSrc = $src['orig'];
-		// TODO: deprecate. legacy, for compatibility with flickr datasource???
-//		$Src['Src'] = $src['preview']; 	
+		$Src = compact('W', 'H', 'base64Src', 'rootSrc', 'Orientation', 'isRGB');
 		$Img = compact('Src');
 		
 		if (!empty($row['dateTaken_syncd'])) {

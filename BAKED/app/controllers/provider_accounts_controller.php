@@ -75,9 +75,9 @@ class ProviderAccountsController extends AppController {
 		);
 		$assets = array();
 		$prepare_to_move=array();
-		foreach($photos as $photoPath)
+		foreach($photos as $path_srcRoot)
 		{
-			$file_relpath = cleanPath(substr($photoPath,strlen($LOADPATH)),'http');
+			$file_relpath = cleanPath(substr($path_srcRoot,strlen($LOADPATH)),'http');
 			$filename_no_counter = $this->__stripCounterFromFilename($file_relpath);	
 			$uuid = String::uuid();
 			$shardPath = $Import->shardKey($uuid, $uuid);
@@ -95,11 +95,11 @@ class ProviderAccountsController extends AppController {
 			 * auto-rotated
 			 */
 				
-			$meta = $Import->getMeta($photoPath);
+			$meta = $Import->getMeta($path_srcRoot);
 			/*
 			 * update asset_hash function to match SNAPPI AIR, see php_lib.php
 			 */
-			$asset_hash = getAssetHash($meta['exif'], $photoPath, $filename_no_counter );
+			$asset_hash = getAssetHash($meta['exif'], $path_srcRoot, $filename_no_counter );
 			$asset = array(
 				'id' => $uuid,
 				'provider_key' => $uuid,
@@ -121,7 +121,7 @@ class ProviderAccountsController extends AppController {
 			}
 				
 			pack_json_keys($asset);
-			$prepare_to_move[$asset['id']]=array('src'=>$photoPath, 'dest'=>$src['root']);
+			$prepare_to_move[$asset['id']]=array('src'=>$path_srcRoot, 'dest'=>$src['root']);
 			$assets[] = array_merge($assetTemplate, $asset);
 		}
 //debug($assets); exit;

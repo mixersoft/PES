@@ -225,7 +225,10 @@
 			}, 
 		},
 		'section-view': {
-			montage: function(e){
+			montage: function(e, view){
+				if (!e.currentTarget.hasClass('focus')) {
+					SNAPPI.io.writeSession({'section-header.Photo':'Montage'});
+				}
 				e.currentTarget.addClass('focus').siblings().removeClass('focus');
 				var montage = _Y.one('.montage-container div.pageGallery');
 				if (montage) montage.ancestor('.montage-container').removeClass('hide');
@@ -234,9 +237,11 @@
 					SNAPPI.UIHelper.create._GET_MONTAGE();
 				}
 				_Y.one('.gallery-container').addClass('hide');
-				SNAPPI.io.writeSession({'section-header.Photo':'Montage'});
 			},
-			gallery: function(e){
+			gallery: function(e, view){
+				if (!e.currentTarget.hasClass('focus')) {
+					SNAPPI.io.writeSession({'section-header.Photo':'Gallery'}, callback);
+				}
 				e.currentTarget.addClass('focus').siblings().removeClass('focus');
 				// TODO: switch to g._cfg.type ??
 				var ID_PREFIX = SNAPPI.Factory.Gallery[SNAPPI.STATE.galleryType].defaultCfg.ID_PREFIX;
@@ -247,7 +252,6 @@
 				}
 				if (g) g.container.ancestor('.gallery-container').removeClass('hide');
 				_Y.one('.montage-container').addClass('hide');
-				SNAPPI.io.writeSession({'section-header.Photo':'Gallery'});
 			},
 		}
 	}
@@ -801,7 +805,17 @@
 		                	if (this.listen['disable_LinkToClick']) {
 		                		UIHelper.nav.toggle_ContextMenu(e);	// hide contextmenu
 		                		return;		// allows temp disabling of listener
-		                	}	            			
+		                	}
+	                		try {	     
+	                			// TODO: find CastingCall from Gallery OR Montage       	
+			                	if (this.Gallery.castingCall.CastingCall) {
+			                    	linkTo += '?ccid=' + this.Gallery.castingCall.CastingCall.ID;
+									var shotType = this.Gallery.castingCall.CastingCall.Auditions.ShotType;
+									if (shotType == 'Groupshot'){
+										linkTo += '&shotType=Groupshot';
+									}
+								}
+							} catch (e) {}
 	            			window.location.href = linkTo;
 	            		} 
 	                }, '.FigureBox > figure > img, figure > a > img', node);
@@ -958,7 +972,7 @@
                 		try {
 			    		switch(action[0]) {
 			    			case 'section-view':
-			    				UIHelper.action['section-view'][action[1]](e);
+			    				UIHelper.action['section-view'][ action[1] ](e, action[1]);
 			    				break;
 			    			case 'xxx':
 			    				break;

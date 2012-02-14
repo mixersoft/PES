@@ -240,9 +240,7 @@
                     // parse castingCall into auditions
                     
                     // case "snappi":
-                    // 1st parse from gallery/js/datasource3.js, in SNAPPI, *NOT* SNAPPI.PM
-                    var schemaParser = SNAPPI.AuditionParser_Snappi;
-                    var parsed = schemaParser.parse(response.castingCall);
+                    var parsed = SNAPPI.Auditions.parseCastingCall(response.castingCall);
                     var parsedResults = parsed.results;
                     
                     

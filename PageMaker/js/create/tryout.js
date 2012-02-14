@@ -14,10 +14,19 @@
  */
 (function() {
 	/*
-	 * shorthand
-	 */
-	var PM = SNAPPI.namespace('SNAPPI.PM');
-	var Y = PM.Y;
+     * shorthand
+     */
+	var _Y = null;
+	var Plugin = null;
+	var PM = SNAPPI.namespace('SNAPPI.PM');	// Yready init
+	PM.onYready.Tryout = function(Y){
+		if (_Y === null) _Y = Y;
+		
+		/*
+		 * publish
+		 */
+		SNAPPI.PM.Tryout = Tryout;
+	} 
 
 	/*
 	 * protected
@@ -29,7 +38,7 @@
 	};
 
 	Tryout = function(cfg) {
-		cfg = SNAPPI.util.mergeObj(cfg, _defaultCfg);
+		cfg = _Y.merge(_defaultCfg, cfg);
 		/*
 		 * properties
 		 */
@@ -63,7 +72,7 @@
 				T.pmAuditionSH.clear(); // clear ref to xmlSrc DataElements
 		} else
 			T.pmAuditionSH = new SNAPPI.SortedHash( {
-				'isDataElement' : true
+				'isDataElement' : true,					// TODO: IS isDataElement still valid?
 			// listen for changes to audition
 					});
 
@@ -122,8 +131,6 @@
 				// does not already exist, create new one
 				pmAudition = new PM.Audition( {
 					dataElement : o,
-					previewOnly : false
-				// (wo >3 ? true: false), adding scale to cropSpec
 						});
 				masterTryoutSH.add(pmAudition); // add to master copy
 			}
@@ -253,10 +260,5 @@
 		}
 	}
 	};
-
-	/*
-	 * publish
-	 */
-	SNAPPI.PM.Tryout = Tryout;
 
 })();

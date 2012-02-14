@@ -327,7 +327,7 @@ class AssetsController extends AppController {
 		if (empty($castingCall['CastingCall']['Auditions'])) $getMontage = false;
 		if ( isset($this->passedArgs['montage']) ) $getMontage = !empty($this->passedArgs['montage']);
 		else $getMontage = ( 
-			Session::read('section-header.Photo') == 'Montage' 
+			Session::read('section-header.Photo') == 'montage' 
 			&& !$this->RequestHandler->isAjax() 
 		);
 		if ($getMontage) {
@@ -1205,24 +1205,17 @@ debug("WARNING: This code path is not tested");
 								};
 								// get src for preview derived asset
 								$json_src = json_decode($data['Asset']['json_src'], true);
-								$thumb_src = $basepath.'/'.preg_replace('/\//', '/.thumbs/', $json_src['preview'], 1); 
-								
-								// update rotate preview
-								$previewSrc = Stagehand::getImageSrcBySize($thumb_src, 'bp');
-								if (!isset($this->Jhead)) $this->Jhead = loadComponent('Jhead', $this);
-								$errors =  $this->Jhead->exifRotate($rotate, $previewSrc);
-								
+								$previewSrc = $basepath.'/'.preg_replace('/\//', '/.thumbs/', $json_src['preview'], 1); 
+
 								// save asset data
 								$data['Asset']['json_exif']=json_encode($json_exif);
 								$this->Asset->id = $data['Asset']['id'];
 								$return = $this->Asset->saveField('json_exif', $data['Asset']['json_exif'], false);
 								
-								// delete other derived sizes
-								$sizes = array('tn', 'sq', 'lm', 'll', 'bm', 'bs');
-								foreach($sizes as $size) {
-									$delete = Stagehand::getImageSrcBySize($thumb_src, $size);
-									$r = @unlink($delete);	
-								}
+								// update rotate preview
+								// $previewSrc = Stagehand::getImageSrcBySize($thumb_src, 'bp');
+								if (!isset($this->Jhead)) $this->Jhead = loadComponent('Jhead', $this);
+								$errors =  $this->Jhead->exifRotate($new_rotate, $previewSrc);
 								
 								$response['rotate'] = $new_rotate;
 								$response['uuid'] = $data['Asset']['id'];

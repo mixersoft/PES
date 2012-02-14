@@ -102,7 +102,7 @@ class MyController extends PersonController {
 		return;
 	}
 
-	function __importPhoto($data, $baseurl, $photoPath){
+	function __importPhoto($data, $baseurl, $move_to_src_root){
 		$ret = true;
 		$Import = loadComponent('Import', $this);
 		if (!isset($this->ProviderAccount)) $this->ProviderAccount = ClassRegistry::init('ProviderAccount');
@@ -122,11 +122,11 @@ class MyController extends PersonController {
 			$data['Asset']['perms'] = $profile['Profile']['privacy_assets'];
 		}	
 // $this->log("MyController::__importPhoto, asset=".print_r($paData, true), LOG_DEBUG);			
-		$assetData = $this->Asset->addIfNew($data['Asset'], $paData['ProviderAccount'], $baseurl, $photoPath, $response);		
+		$assetData = $this->Asset->addIfNew($data['Asset'], $paData['ProviderAccount'], $baseurl, $move_to_src_root, $response);		
 // $this->log("MyController::__importPhoto, asset=".print_r($assetData, true), LOG_DEBUG);		
 		// move file to staging server 
 		$src = json_decode($assetData['Asset']['json_src'], true);
-		$stage=array('src'=>$photoPath, 'dest'=>$src['root']);
+		$stage=array('src'=>$move_to_src_root, 'dest'=>$src['root']);
 // $this->log("MyController::__importPhoto, ".print_r($stage, true), LOG_DEBUG);		
 	 	if ($ret3 = $Import->import2stage($stage['src'], $stage['dest'], null, $move = true)) {
 	 		$response['message'][]="file staged successfully, dest={$stage['dest']}";
@@ -161,24 +161,28 @@ class MyController extends PersonController {
 		
 		$uploader = new qqFileUploader($allowedExtensions, $sizeLimit);
 		$dest = $uploader->handleUpload($UPLOAD_FOLDER, false);
-		$photoPath = $dest;
+		$move_to_src_root = $dest;
 		
-		// autorotate
-		$Jhead = loadComponent('Jhead', $this);
-		$Jhead->autoRotate($photoPath);
+		/*
+		 * autorotate NO
+		 * 	- DO NOT AUTOROTATE Originals from JS loader
+		 * 	- NOTE: AIR will autorotate before uploading bp~
+		 */
+		// $Jhead = loadComponent('Jhead', $this);
+		// $Jhead->autoRotate($move_to_src_root);	// 
 		
 		// setup meta data
 		$BATCH_ID = $_GET['batchId'];
 		$PROVIDER_NAME = 'snappi';
 		$Import = loadComponent('Import', $this);
-		$meta = $Import->getMeta($photoPath);
+		$meta = $Import->getMeta($move_to_src_root);	// this is src['root']
 		$data = array();
 		$data['Asset']['id'] = null;
 		$data['Asset']['asset_hash'] = null;
 		// $data['Asset']['json_exif'] = $meta['exif'];	// deprecate: moved to $Asset->addIfNew() 
 		// $data['Asset']['iptc_exif'] = $meta['iptc'];	// deprecate: moved to $Asset->addIfNew()
 		$data['Asset']['batchId'] = $BATCH_ID;
-		$data['Asset']['rel_path'] = basename($photoPath);
+		$data['Asset']['rel_path'] = basename($move_to_src_root);
 		$data['ProviderAccount']['provider_name']=$PROVIDER_NAME;
 // $this->log($data['Asset'], LOG_DEBUG);		
 		/*
@@ -186,7 +190,7 @@ class MyController extends PersonController {
 		 */
 //$this->log("MyController::__upload_javascript() BEGIN VALUMS/JAVASCRIPT IMPORT", LOG_DEBUG);
 //		$this->log($data, LOG_DEBUG);
-		$response = $this->__importPhoto($data, $UPLOAD_FOLDER, $photoPath);
+		$response = $this->__importPhoto($data, $UPLOAD_FOLDER, $move_to_src_root);
 		if ($response['success'] && isset($response['response']['Asset']['id'])) {
 			/*
 			 * share via express uploads, as necessary
@@ -194,6 +198,7 @@ class MyController extends PersonController {
 			$groupIds = (array)explode(',',$_GET['groupIds']);
 			$resp1 = array();
 			foreach($groupIds as $gid){
+				if (empty($gid)) continue;
 				$asset_id = $response['response']['Asset']['id'];
 				$paid = $response['response']['Asset']['provider_account_id'];
 				$count = $this->User->Membership->contributePhoto($gid, $asset_id, $paid);
@@ -252,10 +257,10 @@ $this->log("upload FILES[Filedata] = {$_FILES['Filedata']['tmp_name']}", LOG_DEB
 			if ($this->Session->check('airUploader.uploadFolder') == null) {
 				Session::write('airUploader.uploadFolder', $UPLOAD_FOLDER);
 			}		    
-			$dest = cleanpath($UPLOAD_FOLDER.$userid.DS.$name);
-$this->log("__upload_AIRclient(): upload success, owner_id={$userid}, file dest={$dest}", LOG_DEBUG);				
-			if (!file_exists(dirname($dest))) mkdir(dirname($dest), 2775, true);
-			if( !move_uploaded_file($file_url, $dest) ){
+			$move_to_src_root = cleanpath($UPLOAD_FOLDER.$userid.DS.$name);
+$this->log("__upload_AIRclient(): upload success, owner_id={$userid}, file dest={$move_to_src_root}", LOG_DEBUG);				
+			if (!file_exists(dirname($move_to_src_root))) mkdir(dirname($move_to_src_root), 2775, true);
+			if( !move_uploaded_file($file_url, $move_to_src_root) ){
 				@unlink($file_url);
 				// return error
 				$response['success'] = 'false';
@@ -269,7 +274,7 @@ $this->log("__upload_AIRclient(): upload success, owner_id={$userid}, file dest=
 		
 		if ($forceXHR) {
 			$UPLOAD_FOLDER = Configure::Read('path.airUploader.folder_basepath');
-			$dest = cleanpath($UPLOAD_FOLDER.$userid.DS."xhrforce-file");
+			$move_to_src_root = cleanpath($UPLOAD_FOLDER.$userid.DS."xhrforce-file");
 		}
 		
 			
@@ -281,7 +286,7 @@ $this->log("__upload_AIRclient(): upload success, owner_id={$userid}, file dest=
 		 */
 $this->log("before __importPhoto  >>>>>>>>>>>>>>>", LOG_DEBUG);	
 $this->log($this->data['Asset'], LOG_DEBUG);
-		$response = $this->__importPhoto($this->data, $UPLOAD_FOLDER, $dest);
+		$response = $this->__importPhoto($this->data, $UPLOAD_FOLDER, $move_to_src_root);
 $this->log($response['message'], LOG_DEBUG);		
 		/*
 		 * share via express uploads, as necessary
@@ -531,6 +536,10 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			$this->set('data', $data);			
 		}
 		
+	}
+	
+	function updateExif() {
+		return parent::__updateExif(MyController::$userid);
 	}					
 }
 ?>

@@ -76,6 +76,7 @@ switch ($config['Config.os']) {
 //			'meanshift_tmp'=>'W:/usr/bin/meanshift/tmp',
 			'pageGalleryPrefix'=>'/svc/pages',
 			'pagemaker'=>array('catalog'=>$wwwroot.'\PAGEMAKER\arrangements'),
+			'autorender'=> $wwwroot.DS.'svc'.DS.'autorender'.DS.'Image.php',
 		);
 		$config['path']['fileUploader'] = array(
 				'vendorpath'=>$config['vendors']['fileUploader'],
@@ -135,6 +136,7 @@ switch ($config['Config.os']) {
 			),
 			'pageGalleryPrefix'=>'/svc/pages',
 			'pagemaker'=>array('catalog'=>$wwwroot.'/PAGEMAKER/arrangements'),
+			'autorender'=> $wwwroot.DS.'svc'.DS.'autorender'.DS.'Image.php',
 		);
 		$config['path']['fileUploader'] = array(
 				'vendorpath'=>$config['vendors']['fileUploader'],

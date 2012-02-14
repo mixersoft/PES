@@ -39,7 +39,7 @@
 			show: function(e) {
 				 // console.warn('contextmenu: on show', e);
 				 var menuTarget = e.target;
-				 Menu.menuItem_beforeShow(menuTarget);
+				 Menu.menuItem_beforeShow(menuTarget, e);
 			},
 			hide: function(e) {
 //				 console.warn('contextmenu: on hide', e);
@@ -667,6 +667,20 @@ console.error("PreviewPhoto delete is still incomplete");
 					});
 		}
 	};	
+	MenuItems.openJpg_beforeShow = function(menuItem, menu, e){
+		var thumbnail = menu.get('currentNode');	// target
+		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
+		if (e.ctrlKey) var src = audition.Audition.Photo.Img.Src.rootSrc;
+		else var src = audition.Audition.Photo.Img.Src.rootSrc;
+		menuItem.one('a').setAttribute('href', audition.urlbase+src);
+	};
+	MenuItems.autorotate_beforeShow = function(menuItem, menu, e){
+		var thumbnail = menu.get('currentNode');	// target
+		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
+		if (e.ctrlKey) var src = audition.Audition.Photo.Img.Src.rootSrc;
+		else var src = audition.Audition.Photo.Img.Src.rootSrc;
+		menuItem.one('a').setAttribute('href', audition.urlbase+src);
+	};
 	MenuItems.zoom_click = function(menuItem, menu, e){
 		// menu.hide();
 		var thumbnail = menu.get('currentNode');	// target

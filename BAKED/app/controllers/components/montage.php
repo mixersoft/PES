@@ -22,8 +22,12 @@ class MontageComponent extends Object
 		$this->controller = $controller;
 		App::import('Vendor', 'pagemaker', array('file'=>'pagemaker'.DS.'cluster-collage.4.php'));
 	}
+	/**
+	 * call by PHP on server only
+	 */
 	function __getPhotos($photos, $baseurl){
 		$output = array();
+		// montage from controller will ALWAYS BE preview, isRehearsal=true
 		foreach ($photos as $photo) {
 			$p = array();
 			$p['id'] = $photo['id'];
@@ -33,7 +37,14 @@ class MontageComponent extends Object
 			$p['rating'] = $photo['Photo']['Fix']['Rating'];
 			$p['width'] = $photo['Photo']['Img']['Src']['W'];
 			$p['height'] = $photo['Photo']['Img']['Src']['H'];
-			$p['src'] = $baseurl . $photo['Photo']['Img']['Src']['previewSrc'];
+			// flip dimensions to match orientation+rotate
+			$orientation = $photo['Photo']['Img']['Src']['Orientation'];
+			$rotate = $photo['Photo']['Fix']['Rotate'];
+			$p = array_merge($p, Stagehand::rotate_dimensions($p, $orientation, $rotate));
+			if (isset($photo['Photo']['Img']['Src']['previewSrc'])) {
+				// deprecate. used by StoryMaker iOS app
+				$p['src'] = $baseurl . $photo['Photo']['Img']['Src']['previewSrc'];
+			} else $p['src'] = $baseurl . $photo['Photo']['Img']['Src']['rootSrc'];
 			$output[] = $p;
 		}
 	//	sort($output, );
@@ -83,15 +94,27 @@ class MontageComponent extends Object
 		$arrangement['W'] /= $scale;
 		$arrangement['H'] /= $scale;
 	}
-	
+	/*
+	 * 
+	 * 
+	 * 
+	 * 
+	 * 
+	 * montage bug  *********  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	 *  TODO: getting values DIFFERENT FROM PM.Auditions in Catalog.getCustomFitArrangement
+	 * 
+	 * 
+	 * 
+	 */
 	function getArrangement($Auditions, $count=16){
-		set_time_limit ( 5 );
+		set_time_limit ( 10 );
 		if (isset($Auditions['CastingCall']['Auditions'])) $Auditions = $Auditions['CastingCall']['Auditions'];
 		$photos = $Auditions['Audition'];
 		$baseurl = $Auditions['Baseurl'];
 		$count = $count <= 16 ? $count : 16;
 		$sortedPhotos = $this->__sortPhotos($this->__getPhotos($photos, $baseurl), null);
 		$layoutPhotos = count($sortedPhotos) > $count ? array_slice($sortedPhotos, 0, $count) : $sortedPhotos;
+// debug($layoutPhotos); exit;		
 
 		/*
 		 * get arrangement from photos

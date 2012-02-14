@@ -34,7 +34,7 @@
     	_Y.extend(XmlDatasource, SnappiDatasource);
 		SNAPPI.XmlDatasource = XmlDatasource;
 		
-		if (AuditionParser_Snappi.uri.indexOf('.json?') != -1) {
+		if (SNAPPI.AuditionParser.snappi.uri.indexOf('.json?') != -1) {
 	        _Y.extend(SnappiCastingCall, JsonDatasource);
 	    }
 	    else {
@@ -49,7 +49,7 @@
 	        // check if class exists
 	        var check = _Y.Lang.isObject(SNAPPI.AIR.CastingCallDataSource);
 	        SNAPPI.AIRCastingCall = SNAPPI.AIR.CastingCallDataSource;
-	        SNAPPI.AIRCastingCall.prototype.schemaParser = AuditionParser_AIR;
+	        SNAPPI.AIRCastingCall.prototype.schemaParser = SNAPPI.AuditionParser.AIR;
 	    } 
 	    catch (ex) {
 	        //		SNAPPI.isAIR == false;
@@ -58,10 +58,6 @@
 	    _Y.extend(FlickrXmlCastingCall, SNAPPI.XmlDatasource);
 	    SNAPPI.FlickrXmlCastingCall = FlickrXmlCastingCall;
 	    
-		// TEMP: publish parser for baked render
-		AuditionParser_Snappi.getImgSrcBySize = SNAPPI.util.getImgSrcBySize;
-		SNAPPI.AuditionParser_Snappi = AuditionParser_Snappi;	  
-		
 	    //        _Y.extend(FacebookXmlCastingCall, SNAPPI.XmlDatasource);
 	    //        SNAPPI.FacebookXmlCastingCall = FacebookXmlCastingCall;
 	    
@@ -142,262 +138,11 @@
     var _queue = null;
     
     
-    /*
-     * parse Auditions for different  Datasources
-     */
-    /*
-     * Flickr Audition Parser
-     */
-    var AuditionParser_Flickr = {
-        uri: '../../flickr/castingCall.xml?',
-        xmlns: 'sn',
-        rootNode: 'CastingCall',
-        qsOverride: { //                perpage: '100',
-		},
-        parse: function(rootNode){
-            //            _xml2JsTidy(rootNode);
-            var p, audition, arrAuditions, baseurl, proxyCacheBaseurl, node, results = [];
-            if (rootNode.CastingCall && rootNode.CastingCall.Auditions && rootNode.CastingCall.Auditions.Audition) {
-                arrAuditions = rootNode.CastingCall.Auditions.Audition;
-                baseurl = rootNode.CastingCall.Auditions.Baseurl;
-                proxyCacheBaseurl = rootNode.CastingCall.Auditions.ProxyCacheBaseurl;
-                // organize catalog by number of photos
-                for (p in arrAuditions) {
-                    node = {};
-                    audition = arrAuditions[p];
-                    // extract additional properties from array
-                    node.hashcode = _hashcode;
-                    node.id = audition.id;
-                    node.pid = audition.Photo.id;
-                    node.imageWidth = parseInt(audition.Photo.Img.Src.W);
-                    node.imageHeight = parseInt(audition.Photo.Img.Src.H);
-                    node.exif_DateTimeOriginal = audition.Photo.DateTaken.replace(/T/, ' ');
-                    node.ts = parseInt(audition.Photo.TS);
-                    node.exif_ExifImageWidth = parseInt(audition.Photo.W);
-                    node.exif_ExifImageLength = parseInt(audition.Photo.H);
-                    node.exif_Orientation = parseInt(audition.Photo.ExifOrientation) || null;
-                    node.exif_Flash = audition.Photo.ExifFlash;
-                    node.src = audition.Photo.Img.Src.Src; // deprecate
-                    try {
-                    	node.src = audition.Photo.Img.Src.previewSrc; // should be flickr base url, size='m'
-                    } catch(e) {
-                    	alert('change flickr component to output audition.Photo.Img.Src.previewSrc');
-                    }
-                    node.base64Src = proxyCacheBaseurl + audition.Photo.Img.Src.base64Src; // for manipulating external imgs
-                    node.rootSrc = audition.Photo.Img.Src.rootSrc || node.src;
-                    node.base64RootSrc = proxyCacheBaseurl + (audition.Photo.Img.Src.base64RootSrc || audition.Photo.Img.Src.base64Src);
-                    node.rating = parseInt(audition.Photo.Fix.Rating || 0);
-                    node.tags = audition.Tags && audition.Tags.value || null;
-                    node.urlbase = baseurl || audition.Photo.Img.Src.Baseurl || '';
-                    node['Audition'] = audition;
-                    node['Fix'] = audition.Photo.Fix;
-                    node['LayoutHint'] = audition.LayoutHint;
-                    //                        node['Tags'] = audition.Tags && audition.Tags.Tag || [];
-                    node.albumName = this.getAlbumName(audition.Photo.Photoset);
-                    results.push(node);
-                }
-            }
-            return {
-                results: results
-            };
-        },
-        getAlbumName: function getAlbumName(photoset){
-            var account = SNAPPI.util.getFromQs('account');
-            var tags = SNAPPI.util.getFromQs('tags');
-            if (!account && !tags) 
-                tags = 'recent photos';
-            var arr = ['flickr'];
-            if (account) 
-                arr.push(account);
-            if (tags) 
-                arr.push(tags);
-            return arr.join(': ');
-        },
-        getImgSrcBySize: function(src, size, dataElement){
-            // should change suffixes if present
-            switch (size) {
-                case 's':
-                case 'sq':
-                    src = src.replace('.jpg', '_s.jpg');
-                    break;
-                case 't':
-                case 'tn':
-                    src = src.replace('.jpg', '_t.jpg');
-                    break;
-                case 'm':
-                case 'bs':
-                    src = src.replace('.jpg', '_m.jpg');
-                    break;
-                case 'o':
-                case 'b':
-                case 'br':
-                    if (dataelement) {
-                        src = (dataElement.rootSrc) ? dataElement.rootSrc : dataElement.src;
-                    }
-                    else {// just guess 'large' photo
-                        src = src.replace('.jpg', '_b.jpg');
-                    }
-                    break;
-                case 'bp':
-                default:
-                    // size m
-                    break;
-            };
-            return src;
-        }
-    };
-    
-    /*
-     * Facebook Audition Parser
-     */
-    var AuditionParser_Facebook = {};
-    
-    
-    
-    /*
-     * Snappi Audition Parser
-     */
-    var AuditionParser_Snappi = {
-//        uri: '../../snappi/castingCall.xml?',
-        uri: '../../snappi/castingCall.json?',
-        xmlns: 'sn',
-        rootNode: 'CastingCall',
-        qsOverride: { //                perpage: '100',
-		},
-        parse: function(rootNode){
-            //            _xml2JsTidy(rootNode);
-            var p, audition, arrAuditions, baseurl, node, results = [];
-            if (rootNode.CastingCall && rootNode.CastingCall.Auditions && rootNode.CastingCall.Auditions.Audition) {
-                arrAuditions = rootNode.CastingCall.Auditions.Audition;
-                baseurl = rootNode.CastingCall.Auditions.Baseurl;
-                // organize catalog by number of photos
-                for (p in arrAuditions) {
-                    node = {};
-                    audition = arrAuditions[p];
-                    // extract additional properties from array
-                    node.hashcode = _hashcode;
-                    node.id = audition.id;
-                    node.src = this.getImgSrcBySize(audition.Photo.Img.Src.previewSrc, 'tn');
-                    node.urlbase = baseurl || audition.Photo.Img.Src.Baseurl || '';
-                    node['Audition'] = audition;
-                    node.tags = audition.Tags && audition.Tags.value || null;
-                    node.label = audition.Photo.Caption;
-					try {
-						var src = audition.Photo.origSrc;
-						node.albumName = this.getAlbumName(node, src);
-//						if (node.albumName) {
-//							src = src.match(/\/(\w*)\.jpg/i);
-//							if (src[1]) node.label = src[1];
-//						} else {
-//							node.label = src;
-//						}
-					} catch(e) {
-						node.albumName = this.getAlbumName(node);
-					}
-                    results.push(node);
-                }
-            }
-            return {
-                results: results
-            };
-        },
-        getAlbumName: function getAlbumName(o, src){
-            var parts, name;
-			src = src || o.src;
-            parts = src.split('/');
-            parts.pop(); // discard filename
-            if ((name = parts[parts.length - 1]) == '.thumbs') 
-                parts.pop();
-            if (o.urlbase) {
-                return parts.join('/');
-            }
-            else {
-                return parts[parts.length - 1];
-            }
-        },
-        getImgSrcBySize: null, // set to SNAPPI.util.getImgSrcBySize
-    };
-    
-    var AuditionParser_AIR = {
-        datasource: null,
-        parse: function(rootNode){
-            /*
-             * this == AuditionParser_AIR
-             * rootNode == e.response
-             */
- console.log(" ************* AuditionParser_AIR ************");
-            var p, audition, arrAuditions, baseurl, node, results = [];
-            if (rootNode.CastingCall && rootNode.CastingCall.Auditions && rootNode.CastingCall.Auditions.Audition) {
-                arrAuditions = rootNode.CastingCall.Auditions.Audition;
-                baseurl = rootNode.CastingCall.Auditions.Baseurl;
-                // organize catalog by number of photos
-                for (p in arrAuditions) {
-                    node = {};
-                    audition = arrAuditions[p];
-                    // extract additional properties from array
-                    node.id = audition.id;
-                    node.hashcode = _hashcode;
-                    node.urlbase = baseurl || audition.Photo.Img.Src.Baseurl || '';
-                    node.src = audition.Photo.Img.Src.Src;
-                    try {
-                    	node.src = audition.Photo.Img.Src.previewSrc; // should be flickr base url, size='m'
-                    } catch(e) {
-                    	alert('change AIR db call to output audition.Photo.Img.Src.previewSrc');
-                    }                    
-                    node['Audition'] = audition;
-                    node.tags = audition.Tags && audition.Tags.value || null;
-                    node.albumName = this.getAlbumName(node);
-                    //                        console.log(" ************* albumName=" + node.albumName);
-                    results.push(node);
-                }
-                console.log(" ************* count=" + results.length);
-            }
-            return {
-                results: results
-            };
-        },
-        /**
-         * getImgSrcBySize() called by Thumbnail3.js to set IMG.src
-         * NOTE: this takes the unmangled/original audition.src as input for now,
-         * 			but it should be changedaudition.id
-         * @param {Object} or String node
-         * @param String size
-         */
-        getImgSrcBySize: function(node, size, callback){
-            var id = (node && node.id) ? node.id : node;
-			var options = {create:true, autorotate:true, replace:false};
-			if (callback) options.callback = callback;
-//console.log(" ***** datasource.getImgSrcBySize()  id="+id+"  size="+size+"  src=" + this.datasource.getImgSrcBySize(id, size, options));		
-            return this.datasource.getImgSrcBySize(id, size, options);
-        },
-        getAlbumName: function(node){
-            var parts, name;
-//console.log(" ***** datasource.getAlbumName()  src="+node.src);		
-            parts = (node.urlbase+'/'+node.src).replace(/\\/g, "/").split('/');
-            parts.pop(); // discard filename
-            if ((name = parts[parts.length - 1]) == '.thumbs') 
-                parts.pop();
-            if (node.urlbase) {
-                return parts.join('/');
-            }
-            else {
-                return parts.pop();
-            }
-        }
-    };
-    
-    
     /***************************************************************************************
      * New datasource class definition for AIRs
      */
     //    try {
     //        var testForAIR = SNAPPI.AIR.CastingCallDataSource;
-    //        
-    //        
-    //        _Y.augment(SNAPPI.AIR.CastingCallDataSource, AuditionParser_AIR);
-    //        SNAPPI.AIR.AuditionParser_AIR = AuditionParser_AIR;
-    //        
-    //        
     //        
     //        
     //        // this is mandatory, why?
@@ -744,7 +489,7 @@
      */
     var SnappiCastingCall = function(cfg){
         this.HOST = 'snappi';
-        this.schemaParser = AuditionParser_Snappi;
+        this.schemaParser = SNAPPI.AuditionParser.snappi;
         SnappiCastingCall.superclass.constructor.call(this, cfg);
     };
 
@@ -756,7 +501,7 @@
      */
     var FlickrXmlCastingCall = function(cfg){
         this.HOST = 'flickr'; // see SNAPPI.cfg.DS_HOST 
-        this.schemaParser = AuditionParser_Flickr;
+        this.schemaParser = SNAPPI.AuditionParser.flickr;
         FlickrXmlCastingCall.superclass.constructor.call(this, cfg);
     };
     

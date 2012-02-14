@@ -44,7 +44,10 @@ function getPhotos($photos, $baseurl){
 		$p['rating'] = $photo['Photo']['Fix']['Rating'];
 		$p['width'] = $photo['Photo']['Img']['Src']['W'];
 		$p['height'] = $photo['Photo']['Img']['Src']['H'];
-		$p['src'] = $baseurl . $photo['Photo']['Img']['Src']['previewSrc'];
+		if (isset($photo['Photo']['Img']['Src']['previewSrc'])) {
+			// deprecate. used by StoryMaker iOS app
+			$p['src'] = $baseurl . $photo['Photo']['Img']['Src']['previewSrc'];
+		} else $p['src'] = $baseurl . $photo['Photo']['Img']['Src']['rootSrc'];
 		$output[] = $p;
 	}
 //	sort($output, );

@@ -105,16 +105,37 @@
             orientationSum: function(orientation, rotate){
                 return this.orientationLookup[orientation][rotate];
             },
-            rotateDimensions: function(dim, orientation){
+            rotateDimensions: function(dimOrPoint, orientation){
                 if (orientation <= 3) { // exifOrient = 1,3
-                    return dim;
+                    return dimOrPoint;
+                } else {
+                	var flipped = {};
+                	if (dimOrPoint.h) {
+                        flipped.w = dimOrPoint.h,
+                        flipped.h = dimOrPoint.w
+                	} 
+                	if (dimOrPoint.X) {
+                		flipped.X = dimOrPoint.Y,
+						flipped.Y = dimOrPoint.X
+						if (dimOrPoint.Scale) flipped.Scale = dimOrPoint.Scale;
+                	}
+                    return flipped;
                 }
-                else {
-                    return {
-                        w: dim.h,
-                        h: dim.w
-                    }; // exifOrient = 6,8
-                }
+            },
+            scale2Preview: function(dimOrPoint){
+                var scaled = {};
+            	if (dimOrPoint.h) {
+            		scale = 640/Math.max(dimOrPoint.w, dimOrPoint.h);
+                    scaled.h = dimOrPoint.h * scale;
+                    scaled.w = dimOrPoint.w * scale;
+            	};
+            	if (dimOrPoint.X) {
+            		scale = 640/Math.max(dimOrPoint.Scale, dimOrPoint.X, dimOrPoint.Y);
+            		scaled.X = dimOrPoint.X * scale;
+            		scaled.Y = dimOrPoint.Y * scale;
+            		scaled.Scale = 640;
+            	};
+                return scaled;         	
             },
             addCropSpec: function(src, strCropRect, size){
                 // strip size prefix before adding prefix

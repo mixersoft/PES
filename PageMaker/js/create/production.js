@@ -299,23 +299,11 @@
                 cast = scene.cast[i];
                 snappiAud = cast.audition.parsedAudition;
                 if (cast.audition.orientation != 1) {
-                	// should always be 1, check PM.Audition.init()
-                	// orientation = PM.util.orientationSum(orientation, rotate);
-                    var check;
+					console.warn("Production.getPerformance: warning, expecting orientation=1 ");                	
                 }
-                if (snappiAud.base64RootSrc) {
-                    castSrc = snappiAud.base64RootSrc;
-                }
-                else {
-                    castSrc = cast.audition.base64Src ? cast.audition.base64Src : cast.audition.src;
-                }
+                castSrc = cast.audition.src;
                 
                 if (cfg.isRehearsal) {
-                	if (snappiAud.Audition.Photo.Img.previewSrc) {
-                	// use snappiAud.Audition.Photo.Img.Src
-                		src = snappiAud.Audition.Photo.Img.Src.previewSrc;
-	                	castSrc = snappiAud.urlbase + src;
-                	}
                     cast.minSize.h *= scale2Rehearsal;
                     cast.minSize.w *= scale2Rehearsal;
                     cast.position.x *= scale2Rehearsal;

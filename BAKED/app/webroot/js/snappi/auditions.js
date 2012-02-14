@@ -31,6 +31,7 @@
     SNAPPI.onYready.Audition = function(Y){
 		if (_Y === null) _Y = Y;
 		AuditionParser.snappi.getImgSrcBySize = SNAPPI.util.getImgSrcBySize;
+		SNAPPI.AuditionParser = AuditionParser;
     
 	    /*
 	     * Audition master list, key on AuditionREF
@@ -73,7 +74,36 @@
     Auditions.onDuplicate_REPLACE = function(a,b) {
 		return b; // return original, do not replace
 	}; 
-	
+	// do exif orientation math between exifOrientation, and subsequent rotate
+    Auditions.orientationLookup = {
+	        1: {
+	            1: 1,
+	            3: 3,
+	            6: 6, 
+	            8: 8
+	        },
+	        8: {
+	            1: 8,
+	            3: 6,
+	            6: 1,
+	            8: 3
+	        },
+	        6: {
+	            1: 6,
+	            3: 8,
+	            6: 3,
+	            8: 1
+	        },
+	        3: {
+	            1: 3,
+	            3: 1,
+	            6: 6,
+	            8: 8
+	        }
+	   };
+    Auditions.orientationSum = function(orientation, rotate){
+        return Auditions.orientationLookup[orientation][rotate];
+    };
     /**
      * @param castingCall (by reference)
      * @param providerName string, [snappi | flickr | or castingCall.providerName ]
@@ -169,21 +199,34 @@
     	try {
             o.id = o.Audition.id;
             o.isOwner = o.Audition.Photo.isOwner;
-            o.pid = o.Audition.Photo.id;
-            // dim for $exif['COMPUTED'] or hosted/preview file, 
-            // AFTER autorotate for preview file, $exif['COMPUTED'] (?)
+            o.pid = o.Audition.Photo.id;	// ???:how is this different from o.id?
+            o.rootSrc = o.Audition.Photo.Img.Src.rootSrc;
+            // dim from $exif['COMPUTED'] or hosted/preview file, 
+            // root W/H: preview/autorot for AIR upload, orig/NOautorot for JS upload
+            // checked against root file, still accurate after autorotate
+            // TODO: use rotate + orientation and swap W/H as necessary
             o.imageWidth = parseInt(o.Audition.Photo.Img.Src.W);
             o.imageHeight = parseInt(o.Audition.Photo.Img.Src.H);
-            o.exif_DateTimeOriginal = o.Audition.Photo.DateTaken.replace(/T/, ' ');
-            o.ts = parseInt(o.Audition.Photo.TS);
+            o.root_Orientation = parseInt(o.Audition.Photo.Img.Src.Orientation);
+            // ORIGINAL W/H: desktop for AIR upload, or root for JS upload 
+            //		if autorotate applied, Orientation correct, but 
+            // 		exif W/H will be WRONG in file, but corrected in DB  
             o.exif_ExifImageWidth = parseInt(o.Audition.Photo.W);
             o.exif_ExifImageLength = parseInt(o.Audition.Photo.H);
-            o.exif_Orientation = parseInt(o.Audition.Photo.ExifOrientation) || null;
-            o.Audition.Photo.Fix.Rating = parseFloat(o.Audition.Photo.Fix.Rating || 0);
-            o.rating = o.Audition.Photo.Fix.Rating;
-            o.Audition.Photo.Fix.Rotate = parseInt(o.Audition.Photo.Fix.Rotate || 1);
-            o.rootSrc = o.rootSrc ? o.rootSrc : o.src;
-    		o.getImgSrcBySize = schemaParser.getImgSrcBySize;
+            o.exif_Orientation = parseInt(o.Audition.Photo.ExifOrientation) || 1;
+            // Fix.Rotate in DB only, not in file
+            var Fix = o.Audition.Photo.Fix;
+            o.rotate = Fix.Rotate = parseInt(Fix.Rotate || 1);
+            o.rating = Fix.Rating  = parseFloat(Fix.Rating || 0);
+            o.score = Fix.Score = parseFloat(Fix.Score || 0);
+			o.votes = Fix.Votes = parseInt(Fix.Votes || 0);
+			o.orientation = Auditions.orientationSum(o.root_Orientation, o.rotate);
+			
+            o.exif_DateTimeOriginal = o.Audition.Photo.DateTaken.replace(/T/, ' ');
+            o.ts = parseInt(o.Audition.Photo.TS);
+            o.tags = o.Audition.Tags && o.Audition.Tags.value || null;
+            o.label = o.Audition.Photo.Caption;
+    		// o.getImgSrcBySize = schemaParser.getImgSrcBySize; // move to schemaParser.parse()
     	} catch(e) {
     		var check;
     	}    
@@ -488,11 +531,13 @@
                     // extract additional properties from array
                     node.hashcode = this.hashcode();
                     node.id = audition.id;
-                    node.src = this.getImgSrcBySize(audition.Photo.Img.Src.previewSrc, 'tn');
                     node.urlbase = baseurl || audition.Photo.Img.Src.Baseurl || '';
+                    node.getImgSrcBySize = this.getImgSrcBySize;
                     node['Audition'] = audition;
-                    node.tags = audition.Tags && audition.Tags.value || null;
-                    node.label = audition.Photo.Caption;
+                    
+                    // node.src = this.getImgSrcBySize(node.rootSrc, 'tn');	// deprecate
+                    // node.tags = audition.Tags && audition.Tags.value || null;
+                    // node.label = audition.Photo.Caption;
 					try {
 						var src = audition.Photo.origSrc;
 						node.albumName = this.getAlbumName(node, src);
@@ -545,12 +590,13 @@
                     node.id = audition.id;
                     node.hashcode = this.hashcode();
                     node.urlbase = baseurl || audition.Photo.Img.Src.Baseurl || '';
-                    node.src = audition.Photo.Img.Src.Src;
-                    try {
-                    	node.src = audition.Photo.Img.Src.previewSrc; // should be flickr base url, size='m'
-                    } catch(e) {
-                    	alert('change AIR db call to output audition.Photo.Img.Src.previewSrc');
-                    }                    
+                    node.rootSrc = audition.Photo.Img.Src.rootSrc;
+                    // node.src = audition.Photo.Img.Src.Src;
+                    // try {
+                    	// node.src = audition.Photo.Img.Src.rootSrc; // should be flickr base url, size='m'
+                    // } catch(e) {
+                    	// alert('change AIR db call to output audition.Photo.Img.Src.rootSrc');
+                    // }                    
                     node['Audition'] = audition;
                     node.tags = audition.Tags && audition.Tags.value || null;
                     node.albumName = this.getAlbumName(node);
@@ -624,14 +670,14 @@
                     node.exif_ExifImageLength = parseInt(audition.Photo.H);
                     node.exif_Orientation = parseInt(audition.Photo.ExifOrientation) || null;
                     node.exif_Flash = audition.Photo.ExifFlash;
-                    node.src = audition.Photo.Img.Src.Src; // deprecate
-                    try {
-                    	node.src = audition.Photo.Img.Src.previewSrc; // should be flickr base url, size='m'
-                    } catch(e) {
-                    	alert('change flickr component to output audition.Photo.Img.Src.previewSrc');
-                    }
+                    // node.src = audition.Photo.Img.Src.Src; // deprecate
+                    // try {
+                    	// node.src = audition.Photo.Img.Src.rootSrc; // should be flickr base url, size='m'
+                    // } catch(e) {
+                    	// alert('change flickr component to output audition.Photo.Img.Src.rootSrc');
+                    // }
                     node.base64Src = proxyCacheBaseurl + audition.Photo.Img.Src.base64Src; // for manipulating external imgs
-                    node.rootSrc = audition.Photo.Img.Src.rootSrc || node.src;
+                    node.rootSrc = audition.Photo.Img.Src.rootSrc;
                     node.base64RootSrc = proxyCacheBaseurl + (audition.Photo.Img.Src.base64RootSrc || audition.Photo.Img.Src.base64Src);
                     node.rating = parseInt(audition.Photo.Fix.Rating || 0);
                     node.tags = audition.Tags && audition.Tags.value || null;
@@ -697,31 +743,4 @@
 		
 	}
 		
-
-    /*
-     * Flickr Audition Parser
-     */
-    var AuditionParser_Flickr = {
- 
-    };
-    
-    /*
-     * Facebook Audition Parser
-     */
-    var AuditionParser_Facebook = {};
-    
-    
-    
-    /*
-     * Snappi Audition Parser
-     */
-    var AuditionParser_Snappi = {
-
-    };
-    
-    var AuditionParser_AIR = {
-
-    };
-    
-    	
 })();

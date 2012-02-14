@@ -12,11 +12,20 @@
  *
  */
 (function(){
-    /*
+	/*
      * shorthand
      */
-    var PM = SNAPPI.namespace('SNAPPI.PM');
-    var Y = PM.Y;
+	var _Y = null;
+	var Plugin = null;
+	var PM = SNAPPI.namespace('SNAPPI.PM');	// Yready init
+	PM.onYready.Audition = function(Y){
+		if (_Y === null) _Y = Y;
+		
+		/*
+	     * publish
+	     */
+	    SNAPPI.PM.Audition = Audition;
+	} 
     
     /*
      * protected
@@ -28,17 +37,16 @@
     var _count = 0;
     
     Audition = function(cfg){
-        cfg = SNAPPI.util.mergeObj(cfg, _defaultCfg);
+        cfg = _Y.merge(_defaultCfg, cfg);
         
         /*
          * properties
          */
-        this.src;
+        this.src; // this.src should be the complete (relative) uri
         
         // arrangement hints
         this.location;
         this.focus; // {a:0,b:0};		// (a,b) coordinates of "center" of photo
-        // ???: is the focus dependent on the crop???
         this.crops;
         this.tags;
         this.rating;
@@ -80,15 +88,13 @@
             order: 'asc'
         }
     };
-    
+    // deprecate. preview is the default. see PM.Audition.getAsOriginal
     Audition.usePreview = function(o){
+    	// o instance of PM.Audition, NOT SNAPPI.Audition
     	try {
     		var photo = o.parsedAudition.Audition.Photo;
     		// preview orientation, NOT exifOrientation
-    		var orientation = photo.Img.Src.Orientation,
-    			rotate = photo.Fix.Rotate || 1;
-    		o.orientation = PM.util.orientationSum(orientation, rotate);
-//    		o.size = {W:photo.Img.Src.W, H:photo.Img.Src.H};  // use original or preview???
+   			o.size = {W:photo.Img.Src.W, H:photo.Img.Src.H};  // use original or preview???
     		/*
     		 * use o.orientation to rotate o.size, o.focusCenter to orientation=1
     		 */
@@ -114,98 +120,42 @@
             this.isCast = false;
             var o = cfg.dataElement;
             if (o) {
-            	if ('use SNAPPI.Audition._auditionSH auditions') {
-            		/*
-            		 * use 2nd parse from SNAPPI.Auditions. 
-            		 * DELTA: bindTo = [nodes]
-            		 *  - use o.parsedAudition.urlbase + o.parsedAudition.src to get src
-            		 */
-            		this.id = o.id;
-            		this.parsedAudition = o;
-            		
-            		// expose for Tryout.sort()
-	                this.rating = o.rating;
-	                this.exif_DateTimeOriginal = o.exif_DateTimeOriginal;
-					this.label = o.label;            		
-					
-					this.src = o.urlbase + o.src; // deprecate
-            	} else {
-	            	/*
-	            	 * DEPRECATE
-	            	 * old PM.audition, 
-	            	 * 	= bindTo is an audition, not an array of Nodes
-	            	 */
-//	                this.bindTo = o; // this bindTo should still reference Nodes
-//	                /*
-//	                 * ??? by copy or reference
-//	                 * use reference for now
-//	                 */
-//	                this.id = (o.id) ? o.id : this.makeId();
-//	                this.src = o.urlbase + o.src;
-//	                if (o.base64Src) 
-//	                    this.base64Src = o.base64Src;
-//	                
-//	                this.rating = o.rating;
-//	                this.tags = o.tags;
-//	                this.exif_DateTimeOriginal = o.exif_DateTimeOriginal;
-//					this.label = o.label;
-            	}
+        		/*	PM.Audition, audition attr for PageMaker only
+        		 *  - also see PM.Audition.parsedAudition instanceof SNAPPI.Audition
+        		 *  - use src == o.parsedAudition.urlbase + o.parsedAudition.rootSrc
+        		 */
+        		this.id = o.id;
+        		this.parsedAudition = o;
+        		
+        		// expose for Tryout.sort()
+                this.rating = parseInt(o.rating);	// copy. allow local changes in Story 
+                this.exif_DateTimeOriginal = o.exif_DateTimeOriginal;
+				this.label = o.label;            		
 				
-				// find final exifOrientation
-				var orientation, rotate;
-				try {
-					orientation = o.Audition.Photo.ExifOrientation || 1;
-				} catch (e) {
-					orientation = 1;
-				}
-				try {
-					rotate = o.Audition.Photo.Fix.Rotate || 1;
-				} catch (e) {
-					rotate = 1;
-				}
-                this.orientation = PM.util.orientationSum(orientation, rotate);
+				// o.orientation = SNAPPI.Auditions.orientationSum(o.root_Orientation, o.rotate);
 				
-				// we assume previews are already auto-rotated. just apply rotate
-                if (cfg.previewOnly) { // previewOnly is deprecated
-                    this.size = {
+				// this.size: corrected value. this.size AFTER applying appropriate orientation value
+                if ('use-preview-as-default') { 	// default is preview
+                	// o.orientation = SNAPPI.Auditions.orientationSum(o.root_Orientation, o.rotate);
+                	this.orientation = o.orientation;	// bp~ orientation
+                    this.size = {		
                         w: o.imageWidth,
                         h: o.imageHeight
                     };
-					this.size = PM.util.rotateDimensions(this.size, rotate);
-                }
-                else {
-                	try {
-//	                	if (o.imageWidth > o.imageHeight && o.exif_ExifImageWidth < o.exif_ExifImageLength) {
-//	                		// if exif dimensions do NOT match image, then rotate to match
-//	                		this.size = {
-//	    	                        w: o.exif_ExifImageLength,
-//	    	                        h: o.exif_ExifImageWidth
-//	    	                };	                		
-//	                		
-//	                	} else {
-		                    this.size = {
-		                        w: o.exif_ExifImageWidth,
-		                        h: o.exif_ExifImageLength
-		                    };
-//	                	}
-                	} catch (e) {
-                		// exif dimensions undefined
-                		this.size = {
-                                w: o.imageWidth,
-                                h: o.imageHeight
-                        };
+					this.size = PM.util.rotateDimensions(this.size, this.orientation );
+					if (Math.max(o.imageWidth, o.imageHeight)>640) {
+                		console.warn('PM.Audition: warning, rootSrc is still original size from JS upload');	
+                		this.size = PM.util.scale2Preview(this.size);
                 	}
-                	// exif sizes, rotated to orientation=1
-					this.size = PM.util.rotateDimensions(this.size, this.orientation);
-   	            }
-                // rotate focusCenter, if necessary
-                this.focusCenter = o.Audition.LayoutHint.FocusCenter;
-                if (this.orientation > 4) {
-					var tempX = this.focusCenter.X;
-					this.focusCenter.X = this.focusCenter.Y; 
-					this.focusCenter.Y = tempX; 
+                	// this.src should be the complete (relative) uri
+                	this.src = o.base64Src ? o.base64Src : (o.urlbase + o.rootSrc);
+                	this.src = o.getImgSrcBySize(this.src, 'bp');
+                	
+    				// rotate focusCenter, if necessary
+	                this.focusCenter = PM.util.rotateDimensions(o.Audition.LayoutHint.FocusCenter, this.orientation);
+	                this.focusCenter = PM.util.scale2Preview(this.focusCenter);
                 }
-                // update orientation AFTER adjustments
+                // update orientation AFTER rotateDimensions() adjustments
                 this.orientation = 1; // original still at o.Audition.Photo.ExifOrientation
                 
                 this.crops = this.getScaledCrops(o.Audition.Photo.Fix.Crops);
@@ -213,6 +163,33 @@
                 //                this.crops = this.parseJsonCrop();
                 this.format = this.size.w / this.size.h;
             }
+        },
+        getAsOriginal: function(pm_Aud){
+        	pm_Aud = pm_Aud || this;
+	        if (Math.max(pm_Aud.imageWidth, pm_Aud.imageHeight)<=640) {
+        		console.warn('PM.Audition: warning, rootSrc is still preview size. fetch original from AIR???');	
+        	}
+        	var o = pm_Aud.parsedAudition;
+        	pm_Aud.orientation = PM.util.orientationSum(o.exif_Orientation, o.rotate);
+        	try {
+                pm_Aud.size = {
+                    w: o.exif_ExifImageWidth,
+                    h: o.exif_ExifImageLength
+                };
+        	} catch (e) {
+        		// exif dimensions undefined
+        		pm_Aud.size = {
+                        w: o.imageWidth,
+                        h: o.imageHeight
+                };
+        	}
+        	// exif sizes, rotated to orientation=1
+			pm_Aud.size = PM.util.rotateDimensions(pm_Aud.size, pm_Aud.orientation);
+			pm_Aud.crops = pm_Aud.getScaledCrops(o.Audition.Photo.Fix.Crops);
+			pm_Aud.src = o.base64RootSrc || o.base64Src || (o.urlbase + o.rootSrc);
+			pm_Aud.focusCenter = PM.util.rotateDimensions(o.Audition.LayoutHint.FocusCenter, this.orientation);
+			pm_Aud.crops = this.getScaledCrops(o.Audition.Photo.Fix.Crops);
+			return pm_Aud;
         },
         makeId: function(prefix){
             prefix = prefix || _prefix;
@@ -274,14 +251,6 @@
             return audition.crops;
         }
     };
-    
-    
-    
-    /*
-     * publish
-     */
-    SNAPPI.PM.Audition = Audition;
-    
     
     
 })();

@@ -148,7 +148,11 @@ class ClusterCollage {
      * Set photos to be used for arrangement, 
 	 * 	this is the top-level recursion
      * 
-     * @param array $photos Array of array('rating' => int = 0..5, 'width' => int > 0, 'height' => int > 0) Input photos should be arranged descending by ratings!
+     * @param array $photos Array of array(
+	 * 		'rating' => int = 0..5, 
+	 * 		'width' => int > 0, 
+	 * 		'height' => int > 0) 
+	 * Input photos should be arranged descending by ratings!
 	 * @param $shuffledPhotos
      * @return bool
      */

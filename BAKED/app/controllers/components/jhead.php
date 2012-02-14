@@ -92,7 +92,7 @@ class JheadComponent extends Object
 		
 		if (is_file($fileOrFolder)) {
 			$cmd = "{$jhead} \"{$fileOrFolder}\"" ;
-		}
+		} 
 		else {
 			if (JheadComponent::$OS=='win32') {
 				$options['title'] = 'noRotate';
@@ -113,35 +113,46 @@ class JheadComponent extends Object
 
 	/**
 	 * use jpegtran to autorotate to vertical from an EXTERNAL exif_Orientation tag value
+	 * - TODO: need to write updated Orientation value into file Exif for autorender to work
 	 *
 	 * @param $exif_Orientation [ 3 | 6 | 8 ]
 	 * @param string $src 
 	 * @param string $dest
+	 * @param $autoRotate boolean autoRotate, 
+	 * 		NOTE: if $src is a bp~ asset, do NOT autorotate
 	 * @return unknown
 	 */
-	function exifRotate($exif_Orientation, $src, $dest=null, $autoRotate=true, $spool=false)
+	function exifRotate($exif_Orientation, $src, $dest=null, $autoRotate=false, $spool=false, $force=false)
 	{
 		if ($dest===null) {
-			$dest = $src;
-			// if we copy in place, assume $exif_Orientation is the final orientation
+			$dest = Stagehand::getImageSrcBySize($src, 'bp');
 			$autoRotate = false;
 		}
 		$options = JheadComponent::$OPTIONS;
-		$rotate = array(8=>270, 6=>90, 3=>180);
+		$rotate = array(8=>270, 6=>90, 3=>180, 1=>false);
 		
+		/*
+		 *  delete all derived assets and re-render with 
+		 * 		NEW $json_exif['preview']['Orientation'] in place
+		 */
+		
+		Stagehand::reset_derived($src);	
+		if ($rotate[$exif_Orientation] ===false ) return;	// rebuild bp~ is enough;
+		
+		if (!file_exists($src)) {
+AppController::log("WARNING: JHead->exifRotate()  bp~ not ready yet. sleeping 2 secs", LOG_DEBUG);
+			sleep(2);
+		}
 		$cmd = "jpegtran -rotate {$rotate[$exif_Orientation]} -copy all ";
 		if (JheadComponent::$OS=="win32") {
 			$cmd .=  "\"{$src}\"  \"{$dest}\"";
-		} else
-		{
-			if (!file_exists($src)) {
-				$orig = str_replace('/.thumbs/bp~','/',$src);
-				copy($orig, $src);
-			}
+		} else {
 			if ($src==$dest) {
 					$cmd .= "\"{$src}\" > \"{$src}.tmp\" ; mv -f \"{$src}.tmp\" \"{$dest}\"";
 			} else 	$cmd .= "\"{$src}\" > \"{$dest}\"";
 		}
+// debug($cmd);		
+AppController::log($cmd, LOG_DEBUG);		
 		
 		/*
 		 * use shell and spool commands
@@ -158,12 +169,11 @@ class JheadComponent extends Object
 		 */
 		$ret = JheadComponent::$Exec->exec($cmd, $options);
 		if ($ret) $errors[] = $ret;
-	
 		// --copy all does not touch the exif_orient tag, 
 		// since Fotofix rotate values are all based on autoRotated/exif_orient=1 photos, 
 		// we must make sure the original is also auto-rotated 
 		if ($autoRotate) $ret = $this->autoRotate($dest);
-		else  $ret = $this->noRotate($dest);
+		// else  $ret = $this->noRotate($dest);
 		if ($ret) $errors[] = $ret;
 		if (!empty($errors)) return $errors;
 		

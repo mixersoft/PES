@@ -399,7 +399,10 @@
          * @return
          */
         setCropSize: function(cfg){
-        	if (cfg.isRehearsal) PM.Audition.usePreview(this.audition);
+        	if (!cfg.isRehearsal) {
+        		// PM.Audition.usePreview(this.audition);
+        		this.audition.getAsOriginal();
+        	}
         	
             // find best crop
             var crops, bestCrop, bestMatch, formatDiff, cropVariance, anyMatch;

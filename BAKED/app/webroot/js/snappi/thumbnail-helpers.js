@@ -368,7 +368,7 @@
 				detach.detach();
 				_Y.fire('snappi:preview-zoom-loaded', img);
 			});
-			src = audition.getImgSrcBySize(audition.urlbase + audition.src, sizeCfg.size);
+			src = audition.getImgSrcBySize(audition.urlbase + audition.rootSrc, sizeCfg.size);
 			if (this._cfg.queue && SNAPPI.Imageloader.QUEUE_IMAGES) {
 				img.qSrc = src;
 				// SNAPPI.util3.ImageLoader.queueOneImg(img); // defer,
@@ -550,7 +550,7 @@
 
 			// set src to the correct size, and listen for onload
 			var img = node.one('figure > img');
-			src = audition.getImgSrcBySize(audition.urlbase + audition.src, sizeCfg.size);
+			src = audition.getImgSrcBySize(audition.urlbase + audition.rootSrc, sizeCfg.size);
 			if (this._cfg.queue && SNAPPI.Imageloader.QUEUE_IMAGES) {
 				img.qSrc = src;
 				// SNAPPI.util3.ImageLoader.queueOneImg(img); // defer,
@@ -798,8 +798,8 @@
 			linkTo = '/photos/home/' + audition.id;
 			// add ?ccid&shotType in photoroll.listenClick()
 			title = audition.label;
-			score = audition.Audition.Photo.Fix.Score;
-			votes = audition.Audition.Photo.Fix.Votes;	
+			score = audition.Score;
+			votes = audition.Votes;	
 			sizeCfg = {
 				size: size,
 			};			
@@ -847,7 +847,7 @@
 
 			// set src to the correct size
 			var img = node.one('img');
-			src = audition.getImgSrcBySize(audition.urlbase + audition.src, sizeCfg.size);
+			src = audition.getImgSrcBySize(audition.urlbase + audition.rootSrc, sizeCfg.size);
 			if (this._cfg.queue && SNAPPI.Imageloader.QUEUE_IMAGES) {
 				img.qSrc = src;
 				// SNAPPI.util3.ImageLoader.queueOneImg(img); // defer,
@@ -970,7 +970,7 @@
 			var node = this.node;
 			
 			var src, linkTo, title, privacy, memberCount, snapCount, exists, tooltip, sizeCfg;
-			src = o.getImgSrcBySize(o.urlbase + o.src, size);
+			src = o.getImgSrcBySize(o.urlbase + o.rootSrc, size);
 			linkTo = '/groups/home/' + o.id;
 			title = o.label;
 			privacy = 'admin';
@@ -1060,7 +1060,7 @@
 			var node = this.node;
 			
 			var src, linkTo, title, privacy, memberCount, snapCount, exists, tooltip, sizeCfg;
-			src = o.getImgSrcBySize(o.urlbase + o.src, size);
+			src = o.getImgSrcBySize(o.urlbase + o.rootSrc, size);
 			linkTo = '/groups/home/' + o.id;
 			title = o.label;
 			privacy = 'admin';
@@ -1177,7 +1177,7 @@
 							_Y.fire('snappi:preview-change', container);
 						}); 
 					}		    		
-					var src = selected.getImgSrcBySize(selected.urlbase + selected.src, size);
+					var src = selected.getImgSrcBySize(selected.urlbase + selected.rootSrc, size);
 					container.loadingmask.show(); 
 					img.set('src', src).set('title', selected.label);
 				break;
