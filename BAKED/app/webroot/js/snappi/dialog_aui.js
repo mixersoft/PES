@@ -132,10 +132,10 @@
 	CFG_Dialog_Select_Circles.load = function(cfg){
 		var CSS_ID = 'dialog-select-circles';
 		var _cfg = {
-			title: 'My Circle',
+			title: 'My Circles',
 			id: CSS_ID,
-			width: 740,	// 3 columns, for now
-			height: 395,	// 3 rows
+			width: 650+20,	// 2 columns, /size:sq, plus VScroll
+			height: 255,	// 2 rows
 			destroyOnClose: false,
 			modal: true,
 			buttons: [
@@ -145,19 +145,19 @@
 				handler: function() {
 					var dialog = this;
 					var uri = dialog.io.get('uri');
-					if (uri != '/groups/open') {
+					if (uri != '/groups/open?preview=1') {
 						// toggle to public
 						var cfg = {
 							text: 'Show My Circles',
 							title: 'Public Circles',
-							uri: '/groups/open' 
+							uri: '/groups/open?preview=1' 
 						}
 					} else {
 						// toggle to memberships
 						cfg = {
 							text: 'Show Public Circles',
 							title: 'My Circles',
-							uri: '/my/groups' 
+							uri: '/my/groups?preview=1' 
 						}
 					}
 					dialog.set('title', cfg.text);
@@ -185,6 +185,7 @@
 						detach.detach();
 					}, this);
 					var options = {
+						batch: this.batch, 
 						data: {
 							'data[Asset][unshare]': 1
 						},
@@ -207,7 +208,10 @@
 						// update asset count in dialog
 						detach.detach();
 					}, this);
-					SNAPPI.lightbox.applyShareInBatch(gid, selected);
+					var options = {
+						batch: this.batch, 
+					}
+					SNAPPI.lightbox.applyShareInBatch(gid, selected, options);
 				}
 			}
 			]			

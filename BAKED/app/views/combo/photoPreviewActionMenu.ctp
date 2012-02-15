@@ -5,8 +5,7 @@
 		<li action='rotate' rotate='8'>Rotate CCW</li>		
 		<li action='rotate' rotate='6'>Rotate CW</li>
 		<hr>
-		<li action='preview_remove' class='disabled before-show'>Unshare from this Circle</li>
-		<li action='sharing' class='disabled before-show'>Sharing...</li>
+		<li action='share_with_circle'>Share with Circle...</li>
 		<li action='privacy' class='disabled before-show'>Privacy...</li>
 		<li action='settings' class='disabled before-show'>Settings</li>
 		<hr>

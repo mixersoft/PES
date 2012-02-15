@@ -82,6 +82,7 @@
             }];
         };
         this.init(cfg);
+        return this;	// make chainable
     };    
     /*
      * class prototype definitions, by category

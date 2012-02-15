@@ -763,7 +763,7 @@ console.error("PreviewPhoto delete is still incomplete");
 			},
 		}
 		SNAPPI.AssetRatingController.setProp(menuItem, options);
-	},
+	};
 	// deprecated. use click on hiddenshot icon instead
 	MenuItems.showHiddenShot_beforeShow = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
@@ -1056,64 +1056,81 @@ console.error("PreviewPhoto delete is still incomplete");
 			menuItem.addClass('disabled');
 		}
 	};	
-	MenuItems.share_with_this_circle_click = function(menuItem, menu){
+	MenuItems.share_with_this_circle_click = function(menuItem, menu, e){
 		try {
 			var gid = SNAPPI.STATE.controller.xhrFrom.uuid;	
 			SNAPPI.lightbox.applyShareInBatch(gid, menuItem);
 		} catch (e) {}
 	};	
-	MenuItems.share_with_circle_click = function(menuItem, menu){
-    		/*
-    		 * create or reuse Dialog
-    		 */
-    		var dialog_ID = 'dialog-select-circles';
-    		var dialog = SNAPPI.Dialog.find[dialog_ID];
-    		if (!dialog) {
-            	dialog = SNAPPI.Dialog.CFG[dialog_ID].load();
-            	var args = {
-            		dialog: dialog,
-            		menu: menu
-            	}
-            	// content for dialog contentBox
-    			var ioCfg = {
-   					uri: subUri,
-					parseContent: false,
-					autoLoad: false,
-					context: dialog,
-					dataType: 'html',
-					arguments: args,    					
-					on: {
-						success: function(e, i,o,args) {
-							args.menu.hide();
-							SNAPPI.setPageLoading(false);
-							// add content
-							var parent = args.dialog.getStdModNode('body');
-							parent.setContent(o.responseText);
-							// start multi-select listener
-							var container = parent.one('.container');
-							SNAPPI.multiSelect.listen(container, true, SNAPPI.MultiSelect.singleSelectHandler);
-							return false;
-						}					
-					}
-    			};
-    			ioCfg = SNAPPI.IO.pluginIO_RespondAsJson(ioCfg);
-    			dialog.plug(_Y.Plugin.IO, ioCfg);
-    			// dialog_ID == dialog.get('boundingBox').get('id')
-    			SNAPPI.Dialog.find[dialog_ID] = dialog;
-    		} else {
-    			if (!dialog.get('visible')) {
-    				dialog.setStdModContent('body','<ul />');
-    				dialog.show();
-    			}
-    			dialog.set('title', 'My Circles');
-    		}
-    		
-			// shots are NOT included. get shots via XHR and render
-			var subUri = '/my/groups';
-			dialog.io.set('uri', subUri );
-			// dialog.io.set('arguments', args ); 
-			SNAPPI.setPageLoading(true);   			
-			dialog.io.start();			
+	MenuItems.share_with_circle_click = function(menuItem, menu, e){
+		var batch, thumbnail = menu.get('currentNode');
+		if (thumbnail.hasClass('FigureBox')) {	// from PhotoContextMenu
+			if (e.shiftKey) {
+				batch = MenuItems.getGalleryFromTarget(thumbnail).getSelected();			
+			} else {
+				batch = new SNAPPI.SortedHash();
+				batch.add(SNAPPI.Auditions.find(thumbnail.uuid));
+			}
+		}
+			
+		/*
+		 * create or reuse Dialog
+		 */
+		var dialog_ID = 'dialog-select-circles';
+		var dialog = SNAPPI.Dialog.find[dialog_ID];
+		if (!dialog) {
+        	dialog = SNAPPI.Dialog.CFG[dialog_ID].load();
+        	var args = {
+        		batch: batch,	// id or array of ids
+        		dialog: dialog,
+        		menu: menu
+        	}
+        	// content for dialog contentBox
+			var ioCfg = {
+				uri: subUri,
+				parseContent: false,
+				autoLoad: false,
+				context: dialog,
+				dataType: 'html',
+				arguments: args,    					
+				on: {
+					success: function(e, i,o,args) {
+						args.menu.hide();
+						SNAPPI.setPageLoading(false);
+						// add content
+						var parent = args.dialog.getStdModNode('body');
+						parent.setContent('<div>'+o.responseText+'</div>');
+						// start multi-select listener
+						var body = parent.one('.container');
+						SNAPPI.multiSelect.listen(body, true, SNAPPI.MultiSelect.singleSelectHandler);
+						var d = args.dialog;
+						d.batch = args.batch;	// 
+						var clientH = Math.min(parent.one('div').get('clientHeight'), 360);
+						var offset_top = 6 + 29 + 12 + 10 + 20 + 20;
+						d.set('height', clientH + offset_top);
+						d.centered();
+						return false;
+					}					
+				}
+			};
+			ioCfg = SNAPPI.IO.pluginIO_RespondAsJson(ioCfg);
+			dialog.plug(_Y.Plugin.IO, ioCfg);
+			// dialog_ID == dialog.get('boundingBox').get('id')
+			SNAPPI.Dialog.find[dialog_ID] = dialog;
+		} else {
+			if (!dialog.get('visible')) {
+				dialog.setStdModContent('body','<ul />');
+				dialog.show();
+			}
+			dialog.set('title', 'My Circles');
+		}
+		
+		// shots are NOT included. get shots via XHR and render
+		var subUri = '/my/groups?preview=1';
+		dialog.io.set('uri', subUri );
+		// dialog.io.set('arguments', args ); 
+		SNAPPI.setPageLoading(true);   			
+		dialog.io.start();			
 	};	
 	MenuItems.photo_privacy_click = function(menuItem, menu){
     		/*

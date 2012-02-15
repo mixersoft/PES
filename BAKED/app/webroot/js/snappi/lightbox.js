@@ -935,7 +935,7 @@
 			if (this instanceof SNAPPI.Lightbox) self = this;
 			else self = SNAPPI.lightbox;
 			
-			var batch = self.getSelected();
+			var batch = options.batch || self.getSelected();
 	
 			var asset_ids = [];
 			batch.each(function(audition) {
