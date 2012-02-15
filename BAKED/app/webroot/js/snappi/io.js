@@ -480,12 +480,29 @@
     	return uri;
     };    
     IO.object2querystring = function(o) {
-            var qs = [];
-            // stringify qs params
-            for (var i in o) {
-                qs.push(i + '=' + o[i]);
+            var v, qs = [];
+            for (var i in o) {	// stringify qs params
+            	v = o[i];
+            	if (v instanceof SNAPPI.SortedHash) {
+            		v = IO.serializeSortedHash2IdString(v);
+            	}
+                qs.push(i + '=' + v);
             }            
             return qs.join('&');    	
+    };
+    /*
+     * SortedHash to comma delimited uuid/id string
+     */
+    IO.serializeSortedHash2IdString = function(o) {
+    	try {	// stringify SortedHash into id string
+            var cdf = [];
+			o.each(function(n){ 
+				cdf.push(n.uuid || n.id);
+			});           
+            return cdf.join(',');    	
+       } catch (e){
+       		return o;
+       }
     };
     IO.debug_ParseContent = function(plugin) {
     	plugin.io.afterHostMethod('insert', function(e){

@@ -674,7 +674,7 @@ console.error("PreviewPhoto delete is still incomplete");
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		if (e.ctrlKey) var src = audition.Audition.Photo.Img.Src.rootSrc;
 		else var src = audition.Audition.Photo.Img.Src.rootSrc;
-		menuItem.one('a').setAttribute('href', audition.urlbase+src);
+		menuItem.one('a').setAttribute('href', audition.getImgSrcBySize(audition.urlbase+src,'bp'));
 	};
 	MenuItems.autorotate_beforeShow = function(menuItem, menu, e){
 		var thumbnail = menu.get('currentNode');	// target
@@ -716,28 +716,35 @@ console.error("PreviewPhoto delete is still incomplete");
 		});		
 		SNAPPI.Factory.Thumbnail.PhotoZoom.bindSelected(audition, previewBody);
 	}
-	MenuItems.rotate_click = function(menuItem, menu){
+	MenuItems.rotate_click = function(menuItem, menu, e){
 		var rotate = menuItem.getAttribute('rotate');
 		var thumbnail = menu.get('currentNode');
+		var selected = thumbnail.uuid;
+		if (e.shiftKey) {
+			selected = MenuItems.getGalleryFromTarget(thumbnail).getSelected();			
+		} 
 		var options = {
-			ids: thumbnail.uuid,	// id or array of ids
+			ids: selected,	// id or array of ids
 			properties: {'rotate': rotate},
 			actions: null,
 			callbacks: {
 				successJson: function(e, i, o,args){
 					var resp = o.responseJson;
 					var uuid = resp.response.uuid;
+					if (_Y.Lang.isString(uuid)) uuid = [uuid];
 					// reset all .FigureBoxes
-					try {
-						var img, src, audition = SNAPPI.Auditions.find(uuid);
-						for (var i in audition.bindTo) {
-							if (audition.bindTo[i].hasClass('FigureBox')) {
-								img = audition.bindTo[i].one('figure > img');
-								src = img.get('src');
-								img.set('src', src + '?rand=' + Math.random());
+					for (var j in uuid) {
+						try {
+							var img, src, audition = SNAPPI.Auditions.find(uuid[j]);
+							for (var i in audition.bindTo) {
+								if (audition.bindTo[i].hasClass('FigureBox')) {
+									img = audition.bindTo[i].one('figure > img');
+									src = img.get('src');
+									img.set('src', src + '?rand=' + Math.random());
+								}
 							}
-						}
-					} catch (e) {}
+						} catch (e) {}
+					}
 					args.loadingmask.hide();
 					return false;
 				}, 

@@ -1118,6 +1118,7 @@ debug("WARNING: This code path is not tested");
 				//TODO: begin SQL transaction for batch commit
 				$updateBestShot_assetIds = array();
 				$activePerAssetFields = array_intersect(array('rating','rotate','tags','chunk','privacy','unshare'), $fields);
+debug($aids);				
 				foreach ($aids as $aid) {
 					if (count($activePerAssetFields)==0) break;	// skip if ther eare not active PerAssset Fields
 					/*
@@ -1172,7 +1173,7 @@ debug("WARNING: This code path is not tested");
 					if (in_array('rotate', $fields) && !empty($this->data['Asset']['rotate'])) {
 						// get exif data from DB
 						$options = array(
-							'conditions'=>array('Asset.id'=>$this->data['Asset']['id']), 
+							'conditions'=>array('Asset.id'=>$aid), 
 							'fields'=>array('id', 'json_exif', 'json_src'),
 							'extras' => array(
 								'join_shots'=>false,	// get ALL photos
@@ -1197,7 +1198,7 @@ debug("WARNING: This code path is not tested");
 								$json_exif['preview']['Orientation'] = $new_rotate;
 								$response['rotate'] = $new_rotate;
 								$repsonse['uuid'] = $data['Asset']['id'];
-// debug("new rotate = $new_rotate");								
+// debug("{$aid}: new rotate = $new_rotate");								
 								if (in_array($rotate, array(6,8)) && isset($json_exif['preview']['imageWidth'])) {
 									$temp = $json_exif['preview']['imageWidth'];
 									$json_exif['preview']['imageWidth'] = $json_exif['preview']['imageHeight'];
@@ -1218,7 +1219,7 @@ debug("WARNING: This code path is not tested");
 								$errors =  $this->Jhead->exifRotate($new_rotate, $previewSrc);
 								
 								$response['rotate'] = $new_rotate;
-								$response['uuid'] = $data['Asset']['id'];
+								$response['uuid'][] = $data['Asset']['id'];
 								$return = $return && empty($errors);
 							}
 						} else $return = false;
