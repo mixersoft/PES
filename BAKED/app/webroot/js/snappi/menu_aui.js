@@ -1062,6 +1062,18 @@ console.error("PreviewPhoto delete is still incomplete");
 			SNAPPI.lightbox.applyShareInBatch(gid, menuItem);
 		} catch (e) {}
 	};	
+	MenuItems.share_with_circle_beforeShow = function(menuItem, menu, e){
+		try {
+			var here = (SNAPPI.STATE.controller);	
+			if (here.alias == 'my' 
+				|| (here.userid == here.xhrFrom.uuid)
+			) {
+				menuItem.removeClass('disabled');
+				return;	
+			}
+		} catch(e){}
+		menuItem.addClass('disabled');
+	},
 	MenuItems.share_with_circle_click = function(menuItem, menu, e){
 		var batch, thumbnail = menu.get('currentNode');
 		if (thumbnail.hasClass('FigureBox')) {	// from PhotoContextMenu

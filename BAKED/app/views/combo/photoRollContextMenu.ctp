@@ -12,7 +12,7 @@
 		<li action='rotate' rotate='8'>Rotate CCW</li>		
 		<li action='rotate' rotate='6'>Rotate CW</li>
 		<hr>
-		<li action='share_with_circle'>Share with Circle...</li>
+		<li action='share_with_circle' class='before-show'>Share with Circle...</li>
 		<li action='privacy' class='disabled before-show'>Privacy...</li>
 		<hr>
 		<li action='delete' class='before-show'>Delete Snap</li>

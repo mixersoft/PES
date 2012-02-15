@@ -7,6 +7,6 @@
 		<li action='ungroupShot'  class='before-show'>Ungroup Shot</li>			
 		<li action='groupAsShot' class='before-show'>Group as Shot</li>
 		<hr>
-		<li action='share_with_circle'>Share with Circle...</li>
+		<li action='share_with_circle' class='before-show'>Share with Circle...</li>
 	</ul>
 </div>
