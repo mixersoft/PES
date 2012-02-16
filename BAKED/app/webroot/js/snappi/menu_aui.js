@@ -1115,12 +1115,7 @@ console.error("PreviewPhoto delete is still incomplete");
 						// start multi-select listener
 						var body = parent.one('.container');
 						SNAPPI.multiSelect.listen(body, true, SNAPPI.MultiSelect.singleSelectHandler);
-						var d = args.dialog;
-						d.batch = args.batch;	// 
-						var clientH = Math.min(parent.one('div').get('clientHeight'), 360);
-						var offset_top = 6 + 29 + 12 + 10 + 20 + 20;
-						d.set('height', clientH + offset_top);
-						d.centered();
+						_Y.fire('snappi:dialog-body-rendered', args.dialog);
 						return false;
 					}					
 				}
@@ -1170,7 +1165,10 @@ console.error("PreviewPhoto delete is still incomplete");
 							// use div#settings-asset-privacy-markup
 							var parent = _Y.Node.create(o.responseText); 
 							var markup = parent.one('div#settings-asset-privacy-markup');
-							return markup.removeClass('hide');
+							markup.removeClass('hide');
+							this.setStdModContent('body', markup);
+							_Y.fire('snappi:dialog-body-rendered', this);
+							return false;
 						}					
 					}
     			};

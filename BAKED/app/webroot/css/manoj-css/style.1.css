@@ -145,6 +145,7 @@ form .error-message {
 header {
 	overflow: hidden;
 	height: 44px;
+	background: url("../images/body_bg.jpg") no-repeat scroll center top #000000;
 }
 header li {
 	line-height: 40px !important;
@@ -437,7 +438,9 @@ section.gallery-display-options ul.sort li select {
 	height: 20px;
 	color: #888;
 }
-
+section.gallery-display-options ul.sort li.selected select {
+	color: #000;
+}
 section.gallery-display-options ul > li.label {
 	font-size: 1.0em;
 	color: black;

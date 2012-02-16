@@ -359,7 +359,7 @@
         gallery.node.Gallery = gallery;				// use to avoid closure bug on SNAPPI.io 
         gallery.container.Gallery = gallery;		// is gallery reference necessary?
 		gallery.node.dom().Gallery = gallery; 		// for firebug introspection	        
-		gallery.header = node.previous('.gallery-header');
+		gallery.header = node.siblings('.gallery-header').shift();
         delete cfg.node;				// use this.container from this point forward    		
     }
     

@@ -7,6 +7,11 @@
 		SNAPPI.Alert = CFG_Dialog_Alert;
 		SNAPPI.namespace('SNAPPI.Helper');
 		SNAPPI.Helper.Dialog = DialogHelper;
+		
+		Dialog.listen['body-rendered'] = _Y.on('snappi:dialog-body-rendered', function(d, cfg){
+			Dialog.refresh(d,cfg);
+		})
+		
 	}      
     
 
@@ -79,6 +84,52 @@
 		return detach;		
 	}
 	
+	/**
+	 * refresh Dialog, typically after 'snappi:dialog-body-render'
+	 * @params d instanceof Dialog
+	 * @params cfg, 
+	 * 	cfg.h, height of body 
+	 * 	cfg.w, width of body
+	 * 	cfg.center, default = true
+	 */
+	var _default_refresh_cfg = {
+		minH:120, minW:120,
+		marginH:0, marginW:0,
+		h:0, w:0,
+		center: true,
+		outerMargin: 100,	// dialog margin 
+		bodySelector: '*', 
+	};
+	Dialog.refresh = function(d, cfg){
+		cfg = _Y.merge(_default_refresh_cfg,cfg);
+		if (cfg.center !== false) cfg.center=true;
+		var h=0, w=0;
+		try {
+			h += d.getStdModNode('header').get('scrollHeight');
+			w = Math.max(w, d.getStdModNode('header').get('scrollWidth'));
+		} catch(e){}
+		try {
+			h += d.getStdModNode('footer').get('scrollHeight');
+			w = Math.max(w, d.getStdModNode('footer').get('scrollWidth'));
+		} catch(e){}
+		try {
+			var body_wrap = d.getStdModNode('body').one(cfg.bodySelector);
+			body_wrap.setStyle('overflow', 'hidden');
+			h += cfg.h || body_wrap.get('scrollHeight');
+			h = Math.max(h, cfg.minH);
+			h = Math.min(h, body_wrap.get('winHeight')-cfg.outerMargin); // max height limit 100
+			w = Math.max(w, cfg.minW, cfg.w, body_wrap.get('scrollWidth'));
+			w = Math.min(w, body_wrap.get('winWidth')-cfg.outerMargin); // max height limit 100
+		} catch(e){
+			console.warn('WARNING: Dialog.refresh(), dialog body not properly wrapped');
+		}		
+		d.set('height', h+12+11+cfg.marginH);	// add borders for dialog contentBox+bodyNode
+		d.set('width', w+12);
+		if (cfg.center) d.centered();
+		else {
+			// TODO: add listner for winResize()???	
+		}
+	}
 		
 	/*
 	 * DialogCfgs
@@ -106,19 +157,6 @@
 		dialog.cellOffsets = {
 			bodyNodeOffset: {w:64, h:64}, // +19 px for scrollbar
 		}		
-		// resize dialog to show .preview-body
-		dialog.refresh = function(previewBody){
-			previewBody = previewBody instanceof _Y.Node ? previewBody : dialog.getStdModNode('body').one('.preview-body');
-			if (previewBody) {
-	        	var delayed = new _Y.DelayedTask( function() {
-		        	var h = previewBody.get('clientHeight')+ this.cellOffsets.bodyNodeOffset.h;
-					this.set('height', h );	
-					delete delayed;					
-				}, dialog);
-				delayed.delay(100);  // wait 100 ms					
-			}
-		};
-
 		if (cfg.autoLoad !== false) dialog.render();
 		// save reference
 		Dialog.find[CSS_ID] = dialog;
@@ -379,14 +417,7 @@
 						} else markup = o.responseText;
 						this.setStdModContent('body', markup);
 						content = this.getStdModNode('body').one('*');
-						// set size & center
-						var maxdim = {
-							h:Math.min(content.get('scrollHeight')+87, 640),
-							w:Math.min(content.get('scrollWidth')+20, 640),
-						}
-						this.set('height', maxdim.h);
-						this.set('width', maxdim.w);
-						this.centered();
+						_Y.fire('snappi:dialog-body-rendered', this);
 						_Y.fire('snappi:dialog-alert-xhr-complete', this);
 						return false; 
 					}					
@@ -469,9 +500,11 @@
 			previewBody.loadingmask.set('zIndex', 10);
     		previewBody.loadingmask.overlayMask.set('zIndex', 10);
         } else {
+        	var doNotCenter = false;
         	// update/show dialog 
 			if (!dialog.get('visible')) {
 				dialog.show();
+				Dialog.refresh(dialog, {center:false});
 			}        	
 			previewBody = dialog.getStdModNode('body').one('.preview-body');
 			previewSize = null; // use size from existing Thumbnail.PhotoPreview
@@ -514,13 +547,12 @@
 	                    }
 	                    this.render( options);		// render shot directly	
 					}
-                    // use custom event here instead?				
-                    previewBody.Dialog.refresh(previewBody);
+                    _Y.fire('snappi:dialog-body-rendered', previewBody.Dialog, {center:doNotCenter});		
                     return false;					
 				}
     		}
     	);
-		dialog.refresh(); 	// resize Dialog, and again when shotGallery.render() complete
+    	_Y.fire('snappi:dialog-body-rendered', previewBody.Dialog, {center:doNotCenter});
 	};
 	
 	
