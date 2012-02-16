@@ -693,7 +693,7 @@ order by ProviderAccount.provider_name, ProviderAccount.created;
         'Profile' => array(
             'className'    => 'Profile',
 			'foreignKey' => 'user_id',
-			'type' => 'INNER',
+			'type' => 'LEFT',
             'conditions'   => '',
             'dependent'    => true
         )

@@ -165,12 +165,13 @@ switch (env('SERVER_NAME')) {
 /*
  * config lookup array
  */
-$lookup_roles['ADMIN']='role-----0123-4567-89ab--------admin';
-$lookup_roles['MANAGER']='role-----0123-4567-89ab------manager';
-$lookup_roles['EDITOR']='role-----0123-4567-89ab-------editor';
 $lookup_roles['USER']='role-----0123-4567-89ab---------user';
 $lookup_roles['GUEST']='role-----0123-4567-89ab--------guest';
 $lookup_roles['VISITOR']='role-----0123-4567-89ab------visitor';
+ $lookup_roles['ROOT']='role-----0123-4567-89ab-cdef----root';
+$lookup_roles['ADMIN']='role-----0123-4567-89ab--------admin';
+$lookup_roles['MANAGER']='role-----0123-4567-89ab------manager';
+$lookup_roles['EDITOR']='role-----0123-4567-89ab-------editor';
 $config['lookup.roles'] = $lookup_roles;
 
 /*

@@ -50,7 +50,7 @@ class Asset extends AppModel {
 		switch($class){
 			case 'User':
 				if (AppController::$userid == $uuid) return 'Usershot';	// ownership
-				if (in_array(Session::read('Auth.User.role'),array('EDITOR','MANAGER'))) return 'Usershot'; // backoffice editor
+				if (in_array(Session::read('Auth.User.role'),array('EDITOR','MANAGER','ADMIN','ROOT'))) return 'Usershot'; // backoffice editor
 				// TODO: check public
 				break;
 			case 'Group':
@@ -624,7 +624,7 @@ $this->log($newAsset, LOG_DEBUG);
 				$src = json_decode($row['Asset']['json_src'], true);
 				$basepath = Configure::read('path.stageroot.basepath');
 				$rootpath = cleanpath($basepath.DS.$src['root'], $os);
-		// debug($rootpath); continue;
+		debug("{$rootpath} from {$src['orig']}"); // continue;
 				$meta = $Import->getMeta($rootpath);
 				if (!empty($meta['exif'])){
 		// debug($meta['exif']);
