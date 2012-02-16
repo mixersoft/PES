@@ -306,6 +306,8 @@
 							this.ancestor('.preview-body').loadingmask.hide();							
 						} catch (e) {}
 					}
+					_Y.fire('snappi:preview-change', this);	
+					// also see PreviewHelper.DialogHiddenShot, which is currently not being used
 				}, this.node)			
 		},	
 	};

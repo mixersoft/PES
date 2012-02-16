@@ -154,9 +154,6 @@
 		
 		var dialog = new _Y.Dialog(_cfg);
 		dialog.listen = {};
-		dialog.cellOffsets = {
-			bodyNodeOffset: {w:64, h:64}, // +19 px for scrollbar
-		}		
 		if (cfg.autoLoad !== false) dialog.render();
 		// save reference
 		Dialog.find[CSS_ID] = dialog;
@@ -482,8 +479,8 @@
 	        } 
         	previewBody = _Y.Node.create('<section class="preview-body" />')
         	previewBody.setAttribute('size', previewSize);
-        	
         	dialog.setStdModContent('body', previewBody);
+        	
         	previewBody.Dialog = dialog;
         	dialog.show();
         	
@@ -499,6 +496,14 @@
 			previewBody.loadingmask.overlayMask._conf.data.value['target'] = previewBody.loadingmask._conf.data.value['target'];
 			previewBody.loadingmask.set('zIndex', 10);
     		previewBody.loadingmask.overlayMask.set('zIndex', 10);
+			// start listeners
+			
+	        dialog.listen['preview-change'] = _Y.on('snappi:preview-change', 
+	        	function(thumb){
+	        		_Y.fire('snappi:dialog-body-rendered', this);
+	        	}, '.FigureBox.PhotoPreview figure > img', dialog
+	        )
+    		
         } else {
         	var doNotCenter = false;
         	// update/show dialog 
@@ -509,7 +514,6 @@
 			previewBody = dialog.getStdModNode('body').one('.preview-body');
 			previewSize = null; // use size from existing Thumbnail.PhotoPreview
         }
-        // start listeners
         
 		// add preview markup to Dialog body, set initial preview size
 		previewBody.loadingmask.refreshMask();
