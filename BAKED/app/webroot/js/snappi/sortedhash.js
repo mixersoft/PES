@@ -156,6 +156,8 @@
                 this._data[hashedKey] = value;
             else {
                 if (this._data[hashedKey] !== value) {
+                	var replace = this._keys.indexOf(this._data[hashedKey]);
+                	this._keys[replace] = value;
                     this._data[hashedKey] = value;
                     changed = 'replaced';
                 }
