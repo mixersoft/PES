@@ -773,7 +773,7 @@ debug("WARNING: This code path is not tested");
 			 */
 			// check role permissions
 			$allowed = array('ADMIN');
-			if ( AppController::$writeOk || in_array(Session::read('Auth.User.role'), $allowed)) {
+			if ( AppController::$writeOk || in_array(AppController::$role, $allowed)) {
 				$this->__encodePerms($this->data);
 				if ($this->Asset->save($this->data)) {
 					$this->Session->setFlash(sprintf(__('The %s has been saved', true), Configure::read('controller.alias')));
@@ -841,6 +841,10 @@ debug("WARNING: This code path is not tested");
 		if ($forceXHR) {
 			if (isset($this->params['url']['data'])) $this->data = $this->params['url']['data'];
 		}
+		// TODO: allow delete by Role=EDITOR, etc.
+		if (in_array(AppController::$role,array('EDITOR','MANAGER','ADMIN','ROOT'))){
+			
+		} else $owner_id = AppController::$userid;		 
 		if (!empty($this->data)) {
 // debug($this->data);			
 // exit;
@@ -867,7 +871,9 @@ debug("WARNING: This code path is not tested");
 					// _unshare() -> remove from AssetsGroup, remove from GroupShots, update GroupCount 
 					if (empty($gids)){
 						// get all gids to updateCount
-						$options = array('conditions'=>array('asset_id'=>$aid), 'fields'=>'group_id', 'recursive'=>-1);
+						$options = array('conditions'=>array('asset_id'=>$aid), 
+							'fields'=>'group_id', 
+							'recursive'=>-1);
 						$result = ClassRegistry::init('AssetsGroup')->find('all',$options);
 						$gids_1 = Set::extract('/AssetsGroup/group_id', $result);					
 					} else {
@@ -882,11 +888,13 @@ debug("WARNING: This code path is not tested");
 					// remove from UserShots
 					if (isset($shotsByAssetId[$aid])) {
 						$shot = $shotsByAssetId[$aid]['Shot'];
-// debug($shot);						
+// debug($shot);			
+						//TODO: need $uuid of Asset.owner_id, check when role=EDITOR, etc.			
 						if ($shot['count'] > 2 ) {
-							$resp2 = $this->__removeFromShot(array($aid), $shot['shot_id'], 'Usershot');
+							$resp2 = $this->__removeFromShot(array($aid), $shot['shot_id'], 'Usershot', $owner_id);
 						} else {
-							$resp2 = $this->__ungroupShot(array($shot['shot_id']), 'Usershot');
+							
+							$resp2 = $this->__ungroupShot(array($shot['shot_id']), 'Usershot', $owner_id);	
 						}
 						$retval = $retval && ($resp2['success'] && $resp2['success']!=='false');
 						/*
@@ -908,12 +916,12 @@ debug("WARNING: This code path is not tested");
 				// update owner counterCache 			
 // Configure::write('debug',2);
 // $this->layout = false;
-// $this->render('/elements/sqldump'); 				
+// $this->render('/elements/dumpSQL'); 				
 				$done = $this->renderXHRByRequest('json', null, null, $forceXHR);
 				if ($done) return;
 			}
 // $this->layout = false;
-// $this->render('/elements/sqldump');
+// $this->render('/elements/dumpSQL');
 		} else {
 			// GET: no XHR, no JSON
 			if (!$id) {
@@ -1292,7 +1300,7 @@ debug($aids);
 		$done = $this->renderXHRByRequest('json', null, null, $forceXHR);
 		return;
 	}
-	
+	// from gallery.js: g.groupAsShot()
 	function shot(){
 		$forceXHR = setXHRDebug($this, 0);
 		$success = true; $message=$response=array();
@@ -1331,8 +1339,8 @@ debug($aids);
 					// update substitution group
 					$shotId = null;
 					$shotType = $this->data['shotType'];
-					$uuid = $this->data['shotUuid'];	// TODO: CHANGE TO "uuid"
-					$resp1 = $this->__groupAsShot($aids, $shotId, $shotType, $uuid);
+					$uuid =  $this->data['uuid'];	
+					$resp1 = $this->__groupAsShot($aids, $uuid, $shotType, $shotId);
 					$success = $success && $resp1['success'];
 					$resp0 = Set::merge($resp0, $resp1);
 					$resp0['success'] = $success;
@@ -1344,8 +1352,9 @@ debug($aids);
 						// ungroup the entire shot
 						$shotIds = explode(',',$this->data['Shot']['id']);
 						$shotType = $this->data['shotType'];
+						$uuid = ($shotType == 'Usershot') ? $this->data['uuid'] : null;
 						$hiddenShot_CC  = $this->__hiddenShots($shotIds, $shotType);
-						$resp1 = $this->__ungroupShot($shotIds, $shotType);
+						$resp1 = $this->__ungroupShot($shotIds, $shotType, $uuid);
 						$success = $success && $resp1['success'];
 						if ($resp1['success']) {
 							// add hiddenShots back to photoroll using castingcall
@@ -1369,9 +1378,10 @@ debug($aids);
 						$aids = explode(',',$this->data['Asset']['id']);
 						$shotId = $this->data['Shot']['id'];
 						$shotType = $this->data['shotType'];
+						$uuid = ($shotType == 'Usershot') ? $this->data['uuid'] : null;
 						// if data[Asset][id], just remove $aids from the Group
 						// update isBest for remaining Group
-						$resp1 = $this->__removeFromShot($aids, $shotId, $shotType);
+						$resp1 = $this->__removeFromShot($aids, $shotId, $shotType, $uuid);
 						$success = $success && $resp1['success'];
 						$resp0 = Set::merge($resp0, $resp1);
 						$resp0['success'] = $success;
@@ -1399,25 +1409,26 @@ debug($aids);
 	
 	/**
 	 * @params $assetIds string, CSV of asset uuids
-	 * @params $shotId string, uuid of shot, null to create new shot
+	 * @params $uuid string, Usershot=owner_id, Groupshot=group_id 
 	 * @params $shotType string, [Usershot | Groupshot]
-	 * @params $shotUuid string, Usershot=owner_id, Groupshot=group_id 
+	 * @params $shotId string, uuid of shot, null to create new shot
+	 * @params $userid string, for BestShotOwner, logged in user 
 	 * @return array('shotId', 'bestshotId') or false
 	 */
-	function __groupAsShot( $assetIds, $shotId = null, $shotType='Usershot', $shotUuid = null, $owner_id = null ){
+	function __groupAsShot( $assetIds, $uuid, $shotType='Usershot', $shotId = null,  $bestshot_ownerId = null ){
 //debug('/photos/setprop: groupAsShot');		
 		/*
 		 * TODO: snappi Editors must set $owner_id to Asset owner, NOT Auth user
 		 */
-		if (!isset($owner_id)) $owner_id = AppController::$userid;
+		if ($bestshot_ownerId = null) $bestshot_ownerid = AppController::$userid;
 		switch ($shotType) {
 			case 'Usershot':
 				$Usershot = ClassRegistry::init('Usershot');
-				$resp = $Usershot->groupAsShot($assetIds, $shotUuid);				
+				$resp = $Usershot->groupAsShot($assetIds, $uuid, $bestshot_ownerId);				
 				break;
 			case 'Groupshot':
 				$Groupshot = $this->Asset->Groupshot;
-				$resp = $Groupshot->groupAsShot($assetIds, $shotUuid, $owner_id);				
+				$resp = $Groupshot->groupAsShot($assetIds, $uuid, $bestshot_ownerId);				
 				break;
 		}
 		// mark ccid as stale
@@ -1426,23 +1437,27 @@ debug($aids);
 		return $resp;
 	}
 	
-	function __removeFromShot($assetIds, $shotId, $shotType='Usershot', $shotUuid = null, $owner_id = null ) {
+	function __removeFromShot($assetIds, $shotId, $shotType='Usershot', $owner_id = null ) {
 //		return $this->Asset->Shot->removeFromShot($assetIds, $shotIds);
-		if (!isset($owner_id)) $owner_id = AppController::$userid;
 		switch ($shotType) {
 			case 'Usershot':
+				if (!isset($owner_id)) $owner_id = AppController::$userid;
 				$Usershot = ClassRegistry::init('Usershot');
 				$resp = $Usershot->removeFromShot($assetIds, $shotId, $owner_id);				
 				break;
 			case 'Groupshot':
 				$Groupshot = $this->Asset->Groupshot;
-				$resp = $Groupshot->removeFromShot($assetIds, $shotId, $owner_id);				
+				$resp = $Groupshot->removeFromShot($assetIds, $shotId);				
 				break;
 		}		
 		return $resp;		
 	}
-	
-	function __ungroupShot($shotIds, $shotType='Usershot', $owner_id = null){
+	/**
+	 * @params $owner_id string, 
+	 * 		UserShot: $uuid of owner == Asset.owner_id, or /person/photos/[$uuid]
+	 * 		GroupShot: null
+	 */ 
+	function __ungroupShot($shotIds, $shotType='Usershot', $owner_id = null){ // $uuid?
 		if (!$owner_id) $owner_id = AppController::$userid;
 		switch ($shotType) {
 			case 'Usershot':
@@ -1451,7 +1466,7 @@ debug($aids);
 				break;
 			case 'Groupshot':
 				$Groupshot = $this->Asset->Groupshot;
-				$resp = $Groupshot->unGroupShot($shotIds, $owner_id);				
+				$resp = $Groupshot->unGroupShot($shotIds);				
 				break;
 		}		
 		return $resp;

@@ -199,7 +199,7 @@ WHERE Shot.id IN ";
 	 * @param uuid $shotId
 	 * @return aa array('success','bestShot')
 	 */
-	public function removeFromShot ($assetIds, $shotId, $owner_id) {
+	public function removeFromShot ($assetIds, $shotId) {
 		$success = false; $message=array(); $response=array();
 		if (!empty($assetIds)) {
 			$assetIds_IN = "('" . join("','", $assetIds)  ."')"; 

@@ -433,7 +433,7 @@ LIMIT 5;";
 			$message = "Only HTTP POST request allowed. data[Group][isExpress] cannot be NULL";
 		} else {
 			$isExpress = $this->data['Group']['isExpress'] ? true : false;
-			$role = Session::read('Auth.User.role');
+			$role = AppController::$role;
 			$join = $this->data['Group'];
 			$isMember = in_array($join['id'], Permissionable::getGroupIds());
 			if ($role != 'USER' ) {
@@ -1262,7 +1262,7 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 		if (!empty($this->data)) {
 			// check role permissions
 			$allowed = array('ADMIN');
-			if ( AppController::$writeOk || in_array(Session::read('Auth.User.role'), $allowed)) {
+			if ( AppController::$writeOk || in_array(AppController::$role, $allowed)) {
 				$this->__encodeGroupPerms($this->data);
 				$redirect = Router::url(array('action'=>'settings', $id));
 				if ($this->Group->save($this->data)) {

@@ -26,7 +26,6 @@ class AppController extends Controller {
 	 */
 	function beforeFilter() {
 		if (!isset($this->helpers['Layout'])) $this->helpers['Layout'] = null;
-		
 		$this->__check_browserRedirect();
 		//Set application wide actions which do not require authentication
 
@@ -221,7 +220,7 @@ class AppController extends Controller {
 		Configure::write('debug',2);
 debug("AppController::__updateExif");		
 		$ret = ClassRegistry::init('Asset')->updateExif(array('name'=>$this->name,'uuid'=>$uuid));
-		$this->render('/elements/sqldump', 'plain');
+		$this->render('/elements/dumpSQL', 'plain');
 		return;
 	}
 
@@ -235,7 +234,6 @@ debug("AppController::__updateExif");
 		if ($this->RequestHandler->isAjax() || $forceXHR) {
 			if ($forceXHR) header('Content-Type: text/html');		// force text/html to view in browser
 			else Configure::write('debug',0);
-			
 			if ($this->RequestHandler->ext == 'json') {
 				if (empty($json) || $json == 'json') {
 					if (!$forceXHR) header('Content-type: application/json');
@@ -259,8 +257,9 @@ debug("AppController::__updateExif");
 				$renderComplete = true;
 				
 			}
-			if ($forceXHR) 	$this->render('/elements/sqldump', false);
-			
+			if ($forceXHR) 	{
+				$this->render(null, null,'/elements/dumpSQL');
+			}			
 		} else if ($this->RequestHandler->ext !=='html') {
 			// NOTE: THIS IS FOR DEBUGGING XHR REQUESTS IN THE BROWSER
 			/*
@@ -287,7 +286,7 @@ debug("AppController::__updateExif");
 				$this->render($xml);
 				$renderComplete = true;
 			}
-			if (Configure::read('debug')) $this->render('/elements/sqldump');
+			if (Configure::read('debug')) $this->render('/elements/dumpSQL');
 		}
 		if ($renderComplete && $this->autoRender) $this->autoRender = false;
 		return $renderComplete;
@@ -408,7 +407,7 @@ debug("AppController::__updateExif");
 			$displayName = ($auth['User']['username']==$auth['User']['id']) ? 'Guest' : $auth['User']['username'];
 			$role = array_search($auth['User']['primary_group_id'], Configure::read('lookup.roles'), true);
 			$this->Session->write('Auth.User.displayname', $displayName);
-			$this->Session->write('Auth.User.role', $role);
+			// $this->Session->write('Auth.User.role', $role);		// deprecated
 			// TODO: refactor to use AppController::$userid instead of Session::read('Auth.User.id');
 			AppController::$userid = $auth['User']['id'];	
 			AppController::$role = $role;

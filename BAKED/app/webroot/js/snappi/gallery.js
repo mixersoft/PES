@@ -1169,7 +1169,7 @@
 				'data[Asset][group]' : '', // if '', then generate UUID on server
 				'data[ccid]' : SNAPPI.ShotController.getCCid(this),
 				'data[shotType]' : cfg.shotType,
-				'data[shotUuid]': cfg.uuid
+				'data[uuid]': cfg.uuid	// group or person UUID
 			};
 			var uri = '/photos/shot/.json';
 			var args = {
@@ -1513,6 +1513,19 @@
 						// if new bestShot is not in photoGallery, add it
 						photoGallery.auditionSH.add(bestShot);
 					}				
+					// render bestShot again
+					var i, t;
+					for (i in bestShot.bindTo) {
+						try {
+							t = bestShot.bindTo[i].Thumbnail;
+							if (t.node.one('.hidden-shot')) {
+								SNAPPI.Factory.Thumbnail.setHiddenShotNode(t, bestShot);
+							}
+							// also update '#dialog-photo-roll-hidden-shot .FigureBox.PhotoPreview'
+							t = _Y.one('.preview-body .FigureBox.PhotoPreview').Thumbnail;
+							SNAPPI.Factory.Thumbnail.setHiddenShotNode(t, bestShot);
+						} catch(e) {}
+					}
 					photoGallery.auditionSH.sort(args.sort);
 					photoGallery.render();								
 				}

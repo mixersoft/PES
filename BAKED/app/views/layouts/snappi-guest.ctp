@@ -106,7 +106,7 @@
 		?>		
 	</div>
 </div>
-<?php echo $this->element('sqldump');
+<?php echo $this->element('dumpSQL');
 	$this->Layout->blockStart('javascript'); ?>
 	<script type="text/javascript">		
 		// this has to be AFTER base_aui.js load

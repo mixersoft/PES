@@ -70,6 +70,6 @@
 			?>
 		</div>
 	</div>
-	<?php echo $this->element('sqldump'); ?>
+	<?php echo $this->element('dumpSQL'); ?>
 </body>
 </html>

@@ -4,4 +4,4 @@
  */
 echo $this->CastingCallJson->getCastingCall($assets);
 ?>
-<?php //  echo $this->element('sqldump'); ?>
+<?php //  echo $this->element('dumpSQL'); ?>

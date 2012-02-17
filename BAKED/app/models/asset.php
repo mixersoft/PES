@@ -50,7 +50,7 @@ class Asset extends AppModel {
 		switch($class){
 			case 'User':
 				if (AppController::$userid == $uuid) return 'Usershot';	// ownership
-				if (in_array(Session::read('Auth.User.role'),array('EDITOR','MANAGER','ADMIN','ROOT'))) return 'Usershot'; // backoffice editor
+				if (in_array(AppController::$role,array('EDITOR','MANAGER','ADMIN','ROOT'))) return 'Usershot'; // backoffice editor
 				// TODO: check public
 				break;
 			case 'Group':
@@ -64,7 +64,7 @@ class Asset extends AppModel {
 					if (in_array($context['keyName'], array('Group','Event','Wedding'))) return 'Groupshot';
 					if (in_array($context['keyName'], array('Me','Person'))) {
 						if (AppController::$userid == $context['uuid']) return 'Usershot';	// person is current user
-						if (in_array(Session::read('Auth.User.role'),array('EDITOR','MANAGER'))) return 'Usershot';
+						if (in_array(AppController::$role,array('EDITOR','MANAGER'))) return 'Usershot';
 					}  
 				}
 				break;

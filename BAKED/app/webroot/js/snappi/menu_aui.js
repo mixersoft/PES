@@ -520,7 +520,8 @@
 				var g = target.ancestor('section').next('section.gallery').Gallery;
 				enabled = g.getSelected().size();
 			} 			
-			// check if we have write permission
+			// TODO: how do you know if it is the ADMIN/EDITOR user from JS?
+			// check if we have write permission?
 			if (SNAPPI.STATE.controller.alias == 'my' ) {
 				switch (SNAPPI.STATE.controller.action) {
 					case 'home':
@@ -537,6 +538,11 @@
 		}
 	};	
 	MenuItems.delete_click = function(menuItem, menu){
+		if (SNAPPI.STATE.controller.alias != 'my' ) {
+			// TODO: allow delete by Role=EDITOR, etc.
+			menu.hide();
+			return;
+		}
 		try {
 			var g, response, isSelected, thumbnail = menu.get('currentNode');	// target
 			if (menuItem.ancestor('#contextmenu-photoroll-markup')) { 

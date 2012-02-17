@@ -51,21 +51,25 @@ class Usershot extends AppModel {
 	/**
 	 * groupAsShot
 	 * @param array $assetIds 
-	 * @param string $owner_id - uuid of assets' owner
+	 * @param string $owner_id - uuid of assets' owner, usually AppController::$userid, unless EDITOR
+	 * 		taken from /person/photos/[$uuid], used by ROLE=EDITOR/MANAGER/ADMIN/ROOT
+	 * @param string $bestshot_ownerId
  	 * 		sets BestShotOwner when same as AppController::$userid
 	 * @return array('shotId', 'bestshotId')  or FALSE on error
 	 */
-	public function groupAsShot ($assetIds, $owner_id = null) {
+	public function groupAsShot ($assetIds, $owner_id, $bestshot_ownerId = null) {
 		$success = false; $message=array(); $response=array();
 		
-		$owner_id = $owner_id ? $owner_id : AppController::$userid;
+		$bestshot_ownerId = $bestshot_ownerId ? $bestshot_ownerId : AppController::$userid;
 		$Asset = $this->AssetsUsershot->Asset;
 		$Asset->Behaviors->detach('Taggable');
 		$Asset->contain();
 		// filter $assetIds to check owner_id;
 		$options = array(
 			'fields'=>'`Asset`.id', 
-			'conditions'=>array('`Asset`.id'=>$assetIds, '`Asset`.owner_id'=>$owner_id),
+			'conditions'=>array('`Asset`.id'=>$assetIds, 
+				'`Asset`.owner_id'=>$owner_id
+			),
 			'order'=>'`SharedEdit`.score DESC, `Asset`.dateTaken ASC',		
 			'extras'=>array(
 				'show_edits' => true,
@@ -113,7 +117,7 @@ class Usershot extends AppModel {
 			$insert['BestUsershotSystem']['asset_id'] = $assetIds[0];
 			// now sort by UserEdit.rating
 			$byRating = Set::sort($data, '/Asset/rating', 'DESC');
-			if ($owner_id == AppController::$userid) {
+			if ($bestshot_ownerId == AppController::$userid) {
 				// set BestUsershotOwner by UserEdit.rating	
 				$bestshotAlias='BestUsershotOwner';
 			} else {
@@ -121,7 +125,7 @@ class Usershot extends AppModel {
 				$bestshotAlias='BestUsershotMember';
 			}
 			$insert[$bestshotAlias]['asset_id'] = $byRating[0]['Asset']['id'];
-			$insert[$bestshotAlias]['user_id'] = $owner_id;
+			$insert[$bestshotAlias]['user_id'] = $bestshot_ownerId;
 			
 			// save to AssetsUsershot, BestUsershot, etc.
 			$ret = $this->saveAll($insert, array('validate'=>'first'));
@@ -151,6 +155,7 @@ class Usershot extends AppModel {
 	/**
 	 * remove Delete Shot and related AssetsShots, BestShots
 	 * @param array $deleteShotIds array of UUIDs
+	 * @param string $owner_id - uuid of assets' owner, usually AppController::$userid, unless EDITOR
 	 * @return false on error
 	 */
 	public function unGroupShot ($deleteShotIds, $owner_id) {
@@ -176,6 +181,8 @@ WHERE `Shot`.owner_id = '{$owner_id}' AND `Shot`.id IN ";
 	 * remove Asset from Shot, but keep shot
 	 * @param array $assetIds, uuids should belong to shot 
 	 * @param uuid $shotId
+	 * @param string $owner_id - uuid of assets' owner, usually AppController::$userid, unless EDITOR
+	 * 		taken from /person/photos/[$uuid], used by ROLE=EDITOR/MANAGER/ADMIN/ROOT
 	 * @return aa array('success','bestShot')
 	 */
 	public function removeFromShot ($assetIds, $shotId, $owner_id) {

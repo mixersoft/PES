@@ -28,7 +28,7 @@ class JsonView extends View {
 
 		}
 		$output = json_encode($response);
-		if (Configure::read('debug')>=2) $output .= $this->element('sql_dump');
+		$output .= $this->element('dumpSQL');
 		JsonView::$once = true;
 		return $output; 
 	}
