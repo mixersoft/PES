@@ -39,7 +39,7 @@
         <div class='text'>
         	<h3>Quick Links (for DEV)</h3>
         	<ul class='inline'>
-            <li><?php $userid = Session::read('Auth.User.id'); echo $this->Html->link('my account', "/users/home/{$userid}");?></li>
+            <li><?php $userid = AppController::$ownerid; echo $this->Html->link('my account', "/users/home/{$userid}");?></li>
             <li><?php echo $this->Html->link('browse groups', "/groups");?></li>
             <li><?php echo $this->Html->link('check ACLs', "/users/checkPermission");?></li>         
             <li><?php echo $this->Html->link('logout', "/users/signout");?></li>     	

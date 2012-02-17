@@ -11,7 +11,7 @@
 	$passed = array_intersect_key($this->passedArgs, array('sort'=>1, 'direction'=>1, 'page'=>1, 'perpage'=>1));	// copy of array
 	$controllerAttr = Configure::read('controller');
 	$sections = array();
-	if ( AppController::$userid) { 
+	if ( AppController::$ownerid) { 
 		$sections['Home']=array('label'=>'Home','href'=>'/my/home');
 		$sections['Circles']=array('label'=>'Circles','href'=>'/my/groups');
 		$sections['Snaps']=array('label'=>'Snaps','href'=>'/my/photos');
@@ -56,7 +56,7 @@
 				<li class="normal-view">
 					<span class="header-btn orange rounded-5" onclick="SNAPPI.UIHelper.nav.toggle_fullscreen();">Normal View</span>
 				</li>
-			<?php if ( AppController::$userid) { ?>
+			<?php if ( AppController::$ownerid) { ?>
 				<li class="menu-trigger-create">
 					<span class="header-btn green rounded-5"><b>+</b>&nbsp;Create</span>
 				</li>

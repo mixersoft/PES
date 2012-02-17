@@ -103,8 +103,6 @@ class PersonController extends UsersController {
 		$this->Auth->allow( array_merge($this->Auth->allowedActions , $myAllowedActions));
 		// TODO: edit allowed for  'role-----0123-4567-89ab---------user'
 		// TODO: groups allowed for  'role-----0123-4567-89ab--------guest', 'role-----0123-4567-89ab---------user'
-//		$authUserid = Session::read('Auth.User.id');
-//		AppController::$writeOk = $authUserid == AppController::$uuid || $authUserid == Permissionable::getRootUserId();
 	}
 	/*
 	 * WARNING: backdoor action for oDesk project
@@ -232,6 +230,22 @@ class PersonController extends UsersController {
 		if (!$id) {
 			$this->Session->setFlash("ERROR: invalid Photo id.");
 			$this->redirect(array('action' => 'all'));
+		}
+		/*
+		 * IF WE ARE ADMIN, Set active user here
+		 */ 
+		if ($this instanceof PersonController && in_array(AppController::$role,array('EDITOR','MANAGER','ADMIN','ROOT'))){
+			// act as person
+			AppController::$ownerid = AppController::$uuid;
+			Session::write('Auth.User.acts_as_ownerid', AppController::$ownerid);
+			Configure::write('controller.userid', AppController::$ownerid);
+$this->log("/users/photos: acts_as_ownerid", 	LOG_DEBUG);					
+			Permissionable::setGroupOwnershipsMemberships(AppController::$ownerid);  
+			Session::write('Auth.Permissions.group_ids', Permissionable::$group_ids);
+$this->log(Permissionable::$group_ids, 	LOG_DEBUG);
+$this->log("role = ".AppController::$role, 	LOG_DEBUG);			
+			// Permissionable::setGroupIds();
+			$this->Session->setFlash("Privileged Access: acting as userid=".AppController::$ownerid);
 		}
 		
 		// paginate 
@@ -411,7 +425,7 @@ class PersonController extends UsersController {
 		
 		// add express uploads to PAGE.jsonData.expressUploadGroups
 		if (Configure::read('controller.alias') == 'my') {
-			$expressUploadGroups = Set::extract($this->__getExpressUploads(AppController::$userid),'/id');
+			$expressUploadGroups = Set::extract($this->__getExpressUploads(AppController::$ownerid),'/id');
 			$expressUploadGroups = array_flip($expressUploadGroups);
 			$this->viewVars['jsonData']['expressUploadGroups'] = $expressUploadGroups;
 		}

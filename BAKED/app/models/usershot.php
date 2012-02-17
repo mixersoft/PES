@@ -51,7 +51,7 @@ class Usershot extends AppModel {
 	/**
 	 * groupAsShot
 	 * @param array $assetIds 
-	 * @param string $owner_id - uuid of assets' owner, usually AppController::$userid, unless EDITOR
+	 * @param string $owner_id - uuid of assets' owner, AppController::$ownerid, from 'acts_as_owner'
 	 * 		taken from /person/photos/[$uuid], used by ROLE=EDITOR/MANAGER/ADMIN/ROOT
 	 * @param string $bestshot_ownerId
  	 * 		sets BestShotOwner when same as AppController::$userid
@@ -155,7 +155,7 @@ class Usershot extends AppModel {
 	/**
 	 * remove Delete Shot and related AssetsShots, BestShots
 	 * @param array $deleteShotIds array of UUIDs
-	 * @param string $owner_id - uuid of assets' owner, usually AppController::$userid, unless EDITOR
+	 * @param string $owner_id - uuid of assets' owner, usually AppController::$ownerid, unless EDITOR
 	 * @return false on error
 	 */
 	public function unGroupShot ($deleteShotIds, $owner_id) {
@@ -181,7 +181,7 @@ WHERE `Shot`.owner_id = '{$owner_id}' AND `Shot`.id IN ";
 	 * remove Asset from Shot, but keep shot
 	 * @param array $assetIds, uuids should belong to shot 
 	 * @param uuid $shotId
-	 * @param string $owner_id - uuid of assets' owner, usually AppController::$userid, unless EDITOR
+	 * @param string $owner_id - uuid of assets' owner, usually AppController::$ownerid, unless EDITOR
 	 * 		taken from /person/photos/[$uuid], used by ROLE=EDITOR/MANAGER/ADMIN/ROOT
 	 * @return aa array('success','bestShot')
 	 */

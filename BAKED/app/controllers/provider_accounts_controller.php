@@ -30,7 +30,7 @@ class ProviderAccountsController extends AppController {
     function import()
 	{
 		set_time_limit(600);
-		$userid = Session::read('Auth.User.id');
+		$userid = AppController::$userid;
 		if ($this->Session->check('fileUploader.uploadFolder') == null) {
 				$UPLOAD_FOLDER = Configure::read('path.wwwroot').DS.'svc'.DS.'upload'.DS.$userid.DS;
 				Session::write('fileUploader.uploadFolder', $UPLOAD_FOLDER);

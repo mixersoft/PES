@@ -108,7 +108,7 @@ class CastingCallComponent extends Object {
 		$lastPerformed = @ifed($local['lastPerformed'], null);
 		//		$id = "snappi-audition-{$row['id']}";
 		$id = $row['id'];
-		$isOwner = $row['owner_id'] == AppController::$userid;
+		$isOwner = $row['owner_id'] == AppController::$ownerid;
 		$exif = json_decode($row['json_exif'], true);
 		if (!@empty($row[0]['FocusCenter'])) {
 			$x=$row[0]['FocusCenter']['X'];
@@ -439,7 +439,7 @@ class CastingCallComponent extends Object {
 					// end paginate
 				break;						
 			case 'my':	
-				$id = AppController::$userid;
+				$id = AppController::$ownerid;
 			case 'person':
 			case 'people':
 			case 'users':	

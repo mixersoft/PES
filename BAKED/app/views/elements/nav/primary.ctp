@@ -12,7 +12,7 @@
 	$controllerAttr = Configure::read('controller');
 	$sections = array();
 // debug($controllerAttr);	
-	if ( AppController::$userid ) {	// authenticated
+	if ( AppController::$ownerid ) {	// authenticated
 		$sections['Home']=array('label'=>'Home','href'=>'/my/home');
 		$sections['Circles']=array('label'=>'Circles','href'=>'/my/groups');
 		$sections['Snaps']=array('label'=>'Snaps','href'=>'/my/photos');
@@ -58,7 +58,7 @@
 				<li class="menu-trigger-create">
 					<span class="header-btn green rounded-5"><b>+</b>&nbsp;Create</span>
 				</li>
-			<?php if ( AppController::$userid) { ?>
+			<?php if ( AppController::$ownerid) { ?>
 				<li>
 					<span class="grey">Welcome,</span>
 					<a id='userAccountBtn' class='menu-open'><?php echo $displayName ?></a>

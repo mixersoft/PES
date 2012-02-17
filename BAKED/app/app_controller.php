@@ -15,6 +15,7 @@ class AppController extends Controller {
 
 	static $uuid = null;
 	static $userid = null;
+	static $ownerid = null;
 	static $role = null;
 	static $writeOk = false;
 
@@ -62,7 +63,7 @@ class AppController extends Controller {
 	function __loadProfile(){
 		if(!$this->Session->check('profile')){
 			$this->User = ClassRegistry::init('User');
-			$this->User->id = Session::read('Auth.User.id');
+			$this->User->id = AppController::$userid;
 			$getMetaData = $this->User->getMeta('profile');
 			if($getMetaData){
 				$this->Session->write('profile', $getMetaData);
@@ -406,11 +407,10 @@ debug("AppController::__updateExif");
 		if (!empty($auth)) {
 			$displayName = ($auth['User']['username']==$auth['User']['id']) ? 'Guest' : $auth['User']['username'];
 			$role = array_search($auth['User']['primary_group_id'], Configure::read('lookup.roles'), true);
+			AppController::$role = $role;
 			$this->Session->write('Auth.User.displayname', $displayName);
 			// $this->Session->write('Auth.User.role', $role);		// deprecated
-			// TODO: refactor to use AppController::$userid instead of Session::read('Auth.User.id');
 			AppController::$userid = $auth['User']['id'];	
-			AppController::$role = $role;
 			//Pass auth component data over to view files
 			if ($this->Auth->user()) $this->set('Auth', $this->Auth->user());
 		}
@@ -429,10 +429,16 @@ debug("AppController::__updateExif");
 			'here'=>$this->here,
 			'userid'=>AppController::$userid,
 			'isXhr'=>$this->RequestHandler->isAjax(),			
-		);		
+		);	
 		if (in_array($this->name, array('Assets', 'Groups', 'Users', 'Tags'))) {
-			
 			AppController::$uuid = isset($this->passedArgs[0]) ? $this->passedArgs[0] : null;
+			if (in_array(AppController::$role, array('EDITOR','MANAGER','ADMIN','ROOT'))) {
+				// set in /person/photos for now
+				AppController::$ownerid = Session::read('Auth.User.acts_as_ownerid');
+				if (!AppController::$ownerid) AppController::$ownerid =  AppController::$userid;
+				$controllerAttr['userid'] = AppController::$ownerid;
+				$controllerAttr['ROLE'] =  AppController::$role;
+			} else AppController::$ownerid = AppController::$userid; 
 			/*
 			 * sluggable processing. this method requires 2 DB calls. (cached)
 			 */
@@ -596,7 +602,7 @@ debug("AppController::__updateExif");
 
 
 	function getProfile($id=null) {
-		$id= $id? $id : Session::read('Auth.User.id');
+		$id= $id? $id : AppController::$userid;
 		$options=array('recursive'=>-1, 'conditions'=>array('Profile.user_id'=>$id));
 		return ClassRegistry::init('Profile')->find('first',$options);
 	}

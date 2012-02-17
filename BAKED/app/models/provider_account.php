@@ -106,7 +106,6 @@ class ProviderAccount extends AppModel {
 		// refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for GroupId
 		$conditions = $joins = array();
@@ -154,7 +153,6 @@ class ProviderAccount extends AppModel {
 		// refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for GroupId
 		$conditions = $joins = array();

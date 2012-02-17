@@ -530,7 +530,7 @@ debug("WARNING: This code path is not tested");
 					default:
 						if (isset($from[5])) {
 							$id = $from[5];
-						} else $id = AppController::$userid;
+						} else $id = AppController::$ownerid;
 						// paginate
 						$paginateModel = 'Asset';
 						$Model = $this->User->{$paginateModel};
@@ -842,8 +842,8 @@ debug("WARNING: This code path is not tested");
 			if (isset($this->params['url']['data'])) $this->data = $this->params['url']['data'];
 		}
 		// TODO: allow delete by Role=EDITOR, etc.
-		if (in_array(AppController::$role,array('EDITOR','MANAGER','ADMIN','ROOT'))){
-			
+		if (in_array(AppController::$role,array('MANAGER','ADMIN','ROOT'))){
+			$owner_id = AppController::$ownerid;		
 		} else $owner_id = AppController::$userid;		 
 		if (!empty($this->data)) {
 // debug($this->data);			
@@ -968,7 +968,7 @@ debug("WARNING: This code path is not tested");
 		$this->Asset->id = $id;
 		$src = $this->Asset->field('src_thumbnail');
 		$User = ClassRegistry::init('User');
-		$User->id = Session::read('Auth.User.id');
+		$User->id = AppController::$ownerid;
 		$ret = $User->saveField('src_thumbnail', Stagehand::getImageSrcBySize($src, 'sq'));
 		if ($ret) $this->Session->setFlash('Your photo was successfully set to this photo');
 		else $this->Session->setFlash('There was an error setting your photo. Please try again.');
@@ -1106,7 +1106,7 @@ debug("WARNING: This code path is not tested");
 	}
 
 	function setprop(){
-		$forceXHR = setXHRDebug($this, 0);
+		$forceXHR = setXHRDebug($this, 0, 1);
 		$success = true; $message=array(); $response=array();
 		$resp0 = compact('success', 'message', 'response'); 
 		if ($this->RequestHandler->isAjax() || $forceXHR) {		
@@ -1169,7 +1169,8 @@ debug($aids);
 						$data['SharedEdit']['score'] = $points/$data['SharedEdit']['votes'];
 						$data['UserEdit']['rating'] = $newRating;
 						$data['UserEdit']['id'] = String::uuid();
-						$data['UserEdit']['owner_id'] = Session::read('Auth.User.id');
+						$data['UserEdit']['owner_id'] = AppController::$userid;
+						$data['UserEdit']['isEditor'] = AppController::$userid!=AppController::$ownerid;
 						$data['UserEdit']['asset_hash'] = $asset_hash;
 						$data['SharedEdit']['asset_hash'] = $asset_hash;
 						unset($data['AssetPermission']);
@@ -1262,7 +1263,7 @@ debug($aids);
 				if (!empty($this->data['updateBestshot']) && count($updateBestShot_assetIds)) {
 					// updateBestshot
 					$Usershot = ClassRegistry::init('Usershot');
-					$Usershot->updateBestShotFromTopRated(AppController::$userid, null, $updateBestShot_assetIds); 
+					$Usershot->updateBestShotFromTopRated(AppController::$owner_id, null, $updateBestShot_assetIds); 
 					$Groupshot = ClassRegistry::init('Groupshot');
 					$Groupshot->updateBestShotFromTopRated(AppController::$userid, null, $updateBestShot_assetIds); 
 				}
@@ -1441,7 +1442,7 @@ debug($aids);
 //		return $this->Asset->Shot->removeFromShot($assetIds, $shotIds);
 		switch ($shotType) {
 			case 'Usershot':
-				if (!isset($owner_id)) $owner_id = AppController::$userid;
+				if (!isset($owner_id)) $owner_id = AppController::$ownerid;
 				$Usershot = ClassRegistry::init('Usershot');
 				$resp = $Usershot->removeFromShot($assetIds, $shotId, $owner_id);				
 				break;
@@ -1458,7 +1459,7 @@ debug($aids);
 	 * 		GroupShot: null
 	 */ 
 	function __ungroupShot($shotIds, $shotType='Usershot', $owner_id = null){ // $uuid?
-		if (!$owner_id) $owner_id = AppController::$userid;
+		if (!$owner_id) $owner_id = AppController::$ownerid;
 		switch ($shotType) {
 			case 'Usershot':
 				$Usershot = ClassRegistry::init('Usershot');

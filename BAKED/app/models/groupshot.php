@@ -67,13 +67,13 @@ class Groupshot extends AppModel {
 	 * @param array $assetIds 
 	 * @param $group_id - uuid of group, FK for groupshots
 	 * @param string $owner_id - uuid of group owner, 
-	 * 		sets BestShotOwner when same as AppController::$userid 
+	 * 		sets BestShotOwner when same as AppController::$ownerid 
 	 * @return array('shotId', 'bestshotId')  or FALSE on error
 	 */
 	public function groupAsShot ($assetIds, $group_id, $owner_id = null) {
 		$success = false; $message=array(); $response=array();
 		
-		$owner_id = $owner_id ? $owner_id : AppController::$userid;
+		$owner_id = $owner_id ? $owner_id : AppController::$ownerid;
 		$Asset = $this->AssetsGroupshot->Asset;
 		$Asset->Behaviors->detach('Taggable');
 //		$Asset->contain('AssetsGroup.group_id');
@@ -130,8 +130,8 @@ class Groupshot extends AppModel {
 			$insert['BestGroupshotSystem']['asset_id'] = $assetIds[0];
 			// now sort by UserEdit.rating
 			$byRating = Set::sort($data, '/Asset/rating', 'DESC');
-			if ($owner_id == "Group Moderator or Admin") {
-				// if group moderator/admin, then set Owner
+			$admins = $this->Group->getUserIdsByRole($group_id);
+			if (in_array(AppController::$userid, $admins)) {
 				// set BestGroupshotOwner by UserEdit.rating	
 				$bestshotAlias='BestGroupshotOwner';
 			} else {
@@ -139,7 +139,7 @@ class Groupshot extends AppModel {
 				$bestshotAlias='BestGroupshotMember';
 			}
 			$insert[$bestshotAlias]['asset_id'] = $byRating[0]['Asset']['id'];
-			$insert[$bestshotAlias]['user_id'] = $owner_id;
+			$insert[$bestshotAlias]['user_id'] = AppController::$userid;
 			
 			// save to DB
 			$ret = $this->saveAll($insert, array('validate'=>'first'));

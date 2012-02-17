@@ -26,7 +26,7 @@ if (empty($lightbox['auditions'])) {
 	$options = array(
 		'recursive'=> -1,
 		'fields'=>'id',
-		'conditions'=>array('Asset.owner_id'=>AppController::$userid),
+		'conditions'=>array('Asset.owner_id'=>AppController::$ownerid),
 		'order'=>array('Asset.dateTaken'=> 'ASC'),
 //		'showEdits'=>true,
 		'permissionable' => false,

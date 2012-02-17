@@ -28,7 +28,7 @@ class GalleryController extends AppController {
      */
     function __getSecretKey($seed = '') {
     	$salt = Configure::read('Security.salt');
-    	$userid = $this->Session->read('Auth.User.id');
+    	$userid = AppController::$ownerid;		// stories saved to owner's account, not Editor
     	$key = sha1($userid.$seed.$salt);
 //    	if (!$key) $key = sha1(time().'-'.rand().$salt); 		// guest user in designer mode. deprecate
         return $key;
@@ -53,7 +53,7 @@ class GalleryController extends AppController {
             /*
              * POST - save/append/delete PageGallery file
              */        	
-        	if (empty(AppController::$userid) || empty($this->data['content'])) {
+        	if (empty(AppController::$ownerid) || empty($this->data['content'])) {
         		$check = false;
         		$ret = 0;
         	} else {
@@ -154,7 +154,7 @@ class GalleryController extends AppController {
             /*
              * POST - save/append/delete PageGallery file
              */        	
-        	if (AppController::$userid) {
+        	if (AppController::$ownerid) {
 	            $content = $this->data['content'];		// page content
 	            $dest = $this->data['dest'];	// dest	file, book
         		// TODO: use seed to reset secretKey. get seed from DB

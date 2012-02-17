@@ -35,7 +35,7 @@ if (empty($this->passedArgs['wide'])) {
 			$fields['stream'] = $stream['display_name'].'@'.$stream['provider_name'];
 			$fields['owner_id'] = $stream['user_id'];
 //			$context = Callback::$paid.':'.Callback::$batchId;
-			$url = Router::url(array('controller' => (($fields['owner_id'] == AppController::$userid) ? 'my' : 'person'), 'action'=>'photostreams', $fields['owner_id']));
+			$url = Router::url(array('controller' => (($fields['owner_id'] == AppController::$ownerid) ? 'my' : 'person'), 'action'=>'photostreams', $fields['owner_id']));
 			$ownerLink = $this->Html->link($fields['stream'], $url);
 			// $ownerLink = $this->Html->link($fields['stream'], "/person/home/{$fields['owner_id']}?photostream={$stream['id']}");
 			echo "<h4> {$ownerLink} ({$stream['found_rows']} photos)</h4>";

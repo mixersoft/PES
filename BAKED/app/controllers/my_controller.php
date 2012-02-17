@@ -27,10 +27,10 @@ class MyController extends PersonController {
 	function beforeFilter() {
 			
 		if (Session::check('Auth.User')) {
-			MyController::$userid = Session::read('Auth.User.id');
-			$this->passedArgs[0] = MyController::$userid;	// emulate request with UUID in the right position
+			$this->passedArgs[0] = Session::read('Auth.User.id');	// emulate request with UUID in the right position
 		}
 		parent::beforeFilter();
+		MyController::$userid = AppController::$ownerid;
 		$myAllowedActions = array( 
 			/*
 			 * main
@@ -363,7 +363,7 @@ $this->log($response['message'], LOG_DEBUG);
 		
 		Configure::write('debug', $forceXHR);
 		$this->autoRender = false;
-		$userid = AppController::$userid;
+		$userid = AppController::$ownerid;
 		$expressUploadGroups =$this->__getExpressUploads($userid);  	// sets  viewVars['expressUploadGroups']		
 		$this->set(compact('expressUploadGroups'));
 		$done = $this->renderXHRByRequest('json', '/elements/group/express-upload', null, $forceXHR);

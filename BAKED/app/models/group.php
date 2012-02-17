@@ -62,14 +62,14 @@ class Group extends AppModel {
 				foreach ($results as $i => & $data) {
 					if (isset($data[$permAlias]['perms'])) $data[$model]['perms'] = $data[$permAlias]['perms'];
 					$data[$model]['isMember'] = in_array($data[$model]['id'], $member_owner_group_ids );  
-					if (!empty($data[$model]['owner_id'])) $data[$model]['isOwner'] = $data[$model]['owner_id'] == AppController::$userid;
+					if (!empty($data[$model]['owner_id'])) $data[$model]['isOwner'] = $data[$model]['owner_id'] == AppController::$ownerid;
 				}
 			}
 		} catch (Exception $e) {}
 
 		if ($primary && !Configure::read('controller.isXhr')  && isset($results[0]['Group']['owner_id'])){
 			if ($results[0]['Group']['id'] == Configure::read('controller.xhrFrom.uuid')) {
-				Configure::write('controller.isOwner', $results[0]['Group']['owner_id'] == AppController::$userid);	
+				Configure::write('controller.isOwner', $results[0]['Group']['owner_id'] == AppController::$ownerid);	
 			}
 		}
 		return $results;
@@ -257,7 +257,7 @@ ORDER BY photos DESC;";
 			$filterConditions[] = array("`{$this->alias}`.type"=>$options['filter-type']);
 		}
 		if (isset($options['filter-me'])) {
-			$filterConditions[] = array("`{$this->alias}`.owner_id"=>AppController::$userid);
+			$filterConditions[] = array("`{$this->alias}`.owner_id"=>AppController::$ownerid);
 		}
 		return @mergeAsArray( $conditions, $filterConditions);
 	}
@@ -269,7 +269,6 @@ ORDER BY photos DESC;";
 		// refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for photo/asset_id
 		$conditions = $joins = array();
@@ -297,7 +296,6 @@ ORDER BY photos DESC;";
 		// refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for photo/asset_id
 		$conditions = $joins = array();
@@ -316,7 +314,7 @@ ORDER BY photos DESC;";
 			if (in_array($context['keyName'], array('Me', 'Person'))) {
 				$assocModel = 'Group';
 				//photos/groups
-				if ($context['uuid'] != $currentUserid) {
+				if ($context['uuid'] != AppController::$ownerid) {
 					// HERE. CONTEXT USER != $current_userid USER
 					$joins[] =  array(
 								'table'=>'groups_users',
@@ -362,12 +360,11 @@ ORDER BY photos DESC;";
 		// add context, refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for UserId
 		$conditions = $joins = array();
 
-		if ( $userid != $currentUserid) {
+		if ( $userid != AppController::$ownerid) {
 			// if we are not looking at the Permissionable user, we have to add join
 			// unless we are superuser
 			$joins[] = array(
@@ -431,7 +428,6 @@ ORDER BY photos DESC;";
 		// add context, refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for UserId
 		$conditions = $joins = array();
@@ -476,7 +472,6 @@ ORDER BY photos DESC;";
 		// add context, refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for UserId
 		$conditions = $joins = array();
@@ -552,6 +547,16 @@ ORDER BY photos DESC;";
 		// TODO: use placeholder for Group membershipPolicy for now.
 		return true;
 	}
+	function getUserIdsByRole($id, $role='admin'){
+		$sql = "
+SELECT `Group`.`owner_id`, GroupsUser.user_id, GroupsUser.role
+FROM `groups` AS `Group`
+JOIN groups_users AS GroupsUser ON GroupsUser.group_id=`Group`.`id` AND GroupsUser.isActive=1
+WHERE `Group`.`id` = '{$id}' AND GroupsUser.role='{$role}'";
+		$result = $this->Group->query($sql);
+		$userids = Set::extract($result, '/GroupsUser/user_id');
+		return $userids;
+	}
 	/**
 	 * add array of asset_ids to group using assets_groups 
 	 * @params $groupId, Group uuid
@@ -564,7 +569,7 @@ ORDER BY photos DESC;";
 		if (is_string($assets))  $assets = explode(',', $assets );
 // $this->log($assets, LOG_DEBUG);
 // $this->log(Debugger::trace(), LOG_DEBUG);				
-		$userid = Session::read('Auth.User.id');
+		$userid = AppController::$ownerid;
 		$saveAll_assets = array();
 		foreach($assets as $asset) {
 			$VALUES_assets_groups[] = "( UUID(), '{$asset}', '{$groupId}', '{$isApproved}', '{$userid}', null, now() )";

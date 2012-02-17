@@ -49,7 +49,7 @@ class Asset extends AppModel {
 	public function hasGroupAsShotPerm($class, $uuid) {
 		switch($class){
 			case 'User':
-				if (AppController::$userid == $uuid) return 'Usershot';	// ownership
+				if (AppController::$ownerid== $uuid) return 'Usershot';	// ownership
 				if (in_array(AppController::$role,array('EDITOR','MANAGER','ADMIN','ROOT'))) return 'Usershot'; // backoffice editor
 				// TODO: check public
 				break;
@@ -63,7 +63,7 @@ class Asset extends AppModel {
 				if (!empty($context['keyName'])) {
 					if (in_array($context['keyName'], array('Group','Event','Wedding'))) return 'Groupshot';
 					if (in_array($context['keyName'], array('Me','Person'))) {
-						if (AppController::$userid == $context['uuid']) return 'Usershot';	// person is current user
+						if (AppController::$ownerid == $context['uuid']) return 'Usershot';	// person is current user
 						if (in_array(AppController::$role,array('EDITOR','MANAGER'))) return 'Usershot';
 					}  
 				}
@@ -116,7 +116,8 @@ class Asset extends AppModel {
 				'table'=>'user_edits',
 				'alias'=>'UserEdit',
 				'type'=>'LEFT',
-				'conditions'=>array("UserEdit.asset_hash=Asset.asset_hash",'UserEdit.owner_id'=>Session::read('Auth.User.id')),
+				'conditions'=>array("UserEdit.asset_hash=Asset.asset_hash",
+					'UserEdit.owner_id'=>AppController::$userid),
 			),
 		);
 		$queryData['joins'] = @mergeAsArray($queryData['joins'], $joins );
@@ -184,13 +185,13 @@ class Asset extends AppModel {
 						'table'=>'best_groupshots',
 						'alias'=>'BestShotOwner',
 						'type'=>'LEFT',
-						'conditions'=>array('`BestShotOwner`.groupshot_id = `Shot`.id','`BestShotOwner`.user_id = `Asset`.owner_id'),
+						'conditions'=>array('`BestShotOwner`.groupshot_id = `Shot`.id','`BestShotOwner`.user_id = `Group`.owner_id'),
 					);	
 				$joins[] =  array(
 						'table'=>'best_groupshots',
 						'alias'=>'BestShotMember',
 						'type'=>'LEFT',
-						'conditions'=>array('`BestShotMember`.groupshot_id = `Shot`.id','`BestShotMember`.user_id = `Group`.owner_id'),
+						'conditions'=>array('`BestShotMember`.groupshot_id = `Shot`.id','`BestShotMember`.user_id'=>AppController::$userid),
 					);	
 			}
 			$fields = array('`Shot`.id AS `shot_id`', '`Shot`.assets_groupshot_count AS `shot_count`');
@@ -270,7 +271,7 @@ class Asset extends AppModel {
 		if ($primary && !Configure::read('controller.isXhr') && isset($results[0]['Asset']['owner_id'])){
 			if ($results[0]['Asset']['id'] == Configure::read('controller.xhrFrom.uuid')) {
 				// establish ownership of this particular Asset
-				Configure::write('controller.isOwner', $results[0]['Asset']['owner_id'] == AppController::$userid);
+				Configure::write('controller.isOwner', $results[0]['Asset']['owner_id'] == AppController::$ownerid);
 				Configure::write('controller.owner', $results[0]['ProviderAccount']['display_name']);
 				Configure::write('controller.photostream', $results[0]['ProviderAccount']['display_name'].'@'.$results[0]['Asset']['provider_name']);
 			}
@@ -596,12 +597,12 @@ $this->log($newAsset, LOG_DEBUG);
 			'recursive'=>-1,
 			'permissionable'=>false
 		);
-		extract($options); 	// $name;$uuid;
+		extract($options); 	// $name; $uuid;
 		switch($name){
 			case "Users": 
 				$find_options['conditions'] = array(
 					'Asset.owner_id'=>$uuid,
-					// 'Asset.owner_id'=>AppController::$userid,
+					// 'Asset.owner_id'=>AppController::$ownerid,
 				); break;
 			case "Assets":
 				$find_options['conditions'] = array(
@@ -703,7 +704,6 @@ $this->log($newAsset, LOG_DEBUG);
 //debug($paginateModel);	 
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$currentUserid = Session::read('Auth.User.id');
 		
 		$conditions = $joins = array();
 		
@@ -729,7 +729,6 @@ $this->log($newAsset, LOG_DEBUG);
 		
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$currentUserid = Session::read('Auth.User.id');
 		
 		$conditions = $joins = array();
 		$conditions = array('`Shot`.`id`'=> $shotId);	// Shot alias for Usershot or Groupshot
@@ -768,7 +767,6 @@ $this->log($newAsset, LOG_DEBUG);
 		// refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for GroupId
 		$conditions = $joins = array();
@@ -820,7 +818,6 @@ $this->log($newAsset, LOG_DEBUG);
 		// add context, refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for UserId
 		$conditions = $joins = array();
@@ -859,7 +856,7 @@ $this->log($newAsset, LOG_DEBUG);
 		}
 		if (!empty($joins)) $paginate['joins'] = @mergeAsArray($paginate['joins'], $joins);
 		if (!empty($conditions)) $paginate['conditions'] = @mergeAsArray($paginate['conditions'], $conditions);
-		if ($currentUserid == $userid) $paginate['extras']['group_as_shot_permission']='Usershot';
+		if (AppController::$ownerid == $userid) $paginate['extras']['group_as_shot_permission']='Usershot';
 		$paginate['extras']['group_as_shot_permission'] = $this->hasGroupAsShotPerm('User', $userid);
 		return $paginate;
 	}
@@ -870,7 +867,6 @@ $this->log($newAsset, LOG_DEBUG);
 		// add context, refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for UserId
 		$conditions = $joins = array();
@@ -924,7 +920,6 @@ $this->log($newAsset, LOG_DEBUG);
 		// refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for GroupId
 		$conditions = $joins = array();

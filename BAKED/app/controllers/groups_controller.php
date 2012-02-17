@@ -336,7 +336,7 @@ LIMIT 5;";
 			$data = $this->Group->find('first', $options);			
 			
 			$isMember = in_array(AppController::$uuid, Permissionable::getGroupIds());
-			$isOwner = $data['Group']['owner_id'] == AppController::$userid;
+			$isOwner = $data['Group']['owner_id'] == AppController::$ownerid;
 			if ($isMember || $isOwner ) {
 				$this->Session->setFlash('You are already a member of this group.');
 				$this->redirect(array('action'=>'home', $id));
@@ -461,10 +461,9 @@ LIMIT 5;";
 		// TODO:  check permission to write to group before adding
 
 		$isApproved = $this->Group->submissionPolicy($groupId);
-		$userid = Session::read('Auth.User.id');
 		$options = array(
 			'conditions'=>array('Asset.provider_account_id'=>$providerAccountId, 
-									'Asset.owner_id'=>$userid),
+									'Asset.owner_id'=>AppController::$userid),
 			'fields'=>array('Asset.id'),
 		//			'limit'=>5,
 			'order'=>'Asset.dateTaken ASC',
@@ -784,19 +783,14 @@ LIMIT 5;";
 				//		$this->Group->recursive=-1;
 				//		$result = $this->Group->read(array('owner_id', 'id'), $groupId);
 		
-				$sql = "
-SELECT `Group`.`owner_id`, GroupsUser.user_id, GroupsUser.role
-FROM `groups` AS `Group`
-JOIN groups_users AS GroupsUser ON GroupsUser.group_id=`Group`.`id` AND GroupsUser.isActive=1
-WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";			
-				$result = $this->Group->query($sql);
-				if (Session::read('Auth.User.id') == $result[0]['Group']['owner_id']) {
+				if (AppController::$ownerid == $data['Group']['owner_id']) {
 					return true;
 				}
-				$admins = (array)Set::extract($result, '/GroupsUser[role=admin]/user_id');
-				if (in_array(Session::read('Auth.User.id'), $admins)) {
+				$admins = $this->Group->getUserIdsByRole($group_id);
+				if (in_array(AppController::$ownerid, $admins)) {
 					return true;
 				}
+				if (in_array(AppController::$role, array('ADMIN','ROOT'))) return true;
 				return false;		
 		} else if ($privacy == 'members') {
 			// check if member
@@ -1057,7 +1051,7 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 		$step = @ifed($this->data['Group']['step'], 'create-choose');
 		if (!empty($this->data)) {
 				$this->Group->create();
-				$this->data['Group']['owner_id'] = Session::read('Auth.User.id');
+				$this->data['Group']['owner_id'] = AppController::$ownerid;
 //				$this->Group->Behaviors->Permissionable->settings['Group']['defaultBits'] = $this->data['Group']['privacy_groups'];
 				$this->data['Permission']['perms'] = $this->data['Group']['privacy_groups'];
 				if ($this->Group->save($this->data)) {
@@ -1306,7 +1300,7 @@ WHERE `Group`.`id` = '{$groupId}' AND GroupsUser.role='admin'";
 			} else {
 				if ($this->Group->delete($id)) {
 					$this->Session->setFlash(sprintf(__('%s deleted', true), 'Group'));
-					$this->redirect(array('controller'=>'users','action' => 'groups', Session::read('Auth.User.id')));
+					$this->redirect(array('controller'=>'users','action' => 'groups', AppController::$ownerid));
 				}
 				$this->Session->setFlash(sprintf(__('%s was not deleted', true), 'Group'));
 			}

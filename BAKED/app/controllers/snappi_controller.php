@@ -69,7 +69,7 @@ class SnappiController extends AppController {
 			$this->autoRender=false;
 			$this->User = ClassRegistry::init('User'); 
 			foreach($this->data as $key => $value){
-				$this->User->id = Session::read('Auth.User.id');
+				$this->User->id = AppController::$userid;
 				$getMetaData = $this->User->getMeta($key);
 				$mergedMetaData = Set::merge($getMetaData, $value);
 				if($this->User->setMeta($key, $mergedMetaData)){
@@ -125,7 +125,7 @@ class SnappiController extends AppController {
 					$response = '';
 				}
 			}else{
-				$this->User->id = Session::read('Auth.User.id');
+				$this->User->id = AppController::$userid;
 				$getMetaData = $this->User->getMeta($key);
 				if($getMetaData){
 					$success = 'true';

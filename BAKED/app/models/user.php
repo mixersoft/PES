@@ -664,7 +664,7 @@ class User extends UserPlugin {
 	public function afterFind($results, $primary) {
 		if ($primary && !Configure::read('controller.isXhr')  && isset($results[0]['User']['id'])){
 			if ($results[0]['User']['id'] == Configure::read('controller.xhrFrom.uuid')) {
-				Configure::write('controller.isOwner', $results[0]['User']['id'] == AppController::$userid);
+				Configure::write('controller.isOwner', $results[0]['User']['id'] == AppController::$ownerid);
 			}
 		}
 		return $results;
@@ -676,7 +676,7 @@ class User extends UserPlugin {
 	 * since we are using owner key, we can ignore permissionable 
 	 */
 	function getOwnBatches() {
-		$owner_id = Session::read('Auth.User.id');
+		$owner_id = AppController::$ownerid;
 		$uniqueBatchSql = "select DISTINCT ProviderAccount.id, ProviderAccount.provider_name, Asset.batchId
 from provider_accounts ProviderAccount
 join assets Asset on Asset.provider_account_id = ProviderAccount.id
@@ -829,7 +829,6 @@ GROUP BY ProviderAccount.id, Asset.batchId ORDER BY photos DESC;";
 		// refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for GroupId
 		$conditions = $joins = array();
@@ -857,7 +856,6 @@ GROUP BY ProviderAccount.id, Asset.batchId ORDER BY photos DESC;";
 		// refactor
 		$context = Session::read('lookup.context');
 		$controller = Configure::read('controller.alias');
-		$currentUserid = Session::read('Auth.User.id');
 		
 		// add conditions for GroupId
 		$conditions = $joins = array();

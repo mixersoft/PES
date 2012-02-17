@@ -489,7 +489,7 @@ class UsersController extends UsersPluginController {
 		);
 		// TODO: edit allowed for  'role-----0123-4567-89ab---------user'
 		// TODO: groups allowed for  'role-----0123-4567-89ab--------guest', 'role-----0123-4567-89ab---------user'
-		AppController::$writeOk = AppController::$userid  == AppController::$uuid || AppController::$userid == Permissionable::getRootUserId();
+		AppController::$writeOk = AppController::$ownerid  == AppController::$uuid || AppController::$userid == Permissionable::getRootUserId();
 		if (get_class($this) == 'UsersController') Session::delete("nav.primary");
 	}
 
@@ -1083,9 +1083,8 @@ debug($data);
 			 * update
 			 */
 			// check role permissions
-			$allowed = array('ADMIN');
 			$userid = AppController::$userid;
-			if ( $userid== $id || in_array(AppController::$role, $allowed)) {
+			if ( $userid== $id || in_array(AppController::$role, array('ADMIN', 'ROOT'))) {
 				if (empty($this->data['User']['password'])) unset($this->data['User']['password']);
 				if (empty($this->data['User'])) {
 					$this->data['User']['id'] = $userid;

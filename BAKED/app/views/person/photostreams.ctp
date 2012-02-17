@@ -35,7 +35,7 @@
 			$fields['owner_id'] = $stream['Assets'][0]['owner_id'];
 			
 //			$context = Callback::$paid.':'.Callback::$batchId;
-			$url = Router::url(array('controller' => (($fields['owner_id'] == AppController::$userid) ? 'my' : 'person'), 'action'=>'photostreams', $stream['id']));
+			$url = Router::url(array('controller' => (($fields['owner_id'] == AppController::$ownerid) ? 'my' : 'person'), 'action'=>'photostreams', $stream['id']));
 			$ownerLink = $this->Html->link($fields['stream'], $url);
 			echo "<h4> {$ownerLink} ({$stream['found_rows']} photos)</h4>";
 			echo $this->element('/photo/photostream_roll', array('photos'=>(array)$photos, 'labelField'=>'owner_id', 'lookupField'=>Session::read('lookup.owner_names')));
