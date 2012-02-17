@@ -223,6 +223,9 @@
 			// BUG: A.LoadingMask does not set target properly
 			r.node.loadingmask._conf.data.value['target'] = loadingmaskTarget;
 			r.node.loadingmask.overlayMask._conf.data.value['target'] = r.node.loadingmask._conf.data.value['target'];
+		} else {
+			r.node.setStyle('zIndex', 0);
+			r.node.loadingmask.set('zIndex', 20);
 		}
 		r.node.loadingmask.show();
 					
@@ -538,7 +541,8 @@
     	var args = {
     		node: container,
     		uri: uri,
-    	};			
+    	};	
+    	args = _Y.merge(args, cfg.properties);		
 		if (!container.io) {
 			ioCfg = {
    					// uri: args.uri,
@@ -606,17 +610,19 @@
 						// SNAPPI.timeout.flashMsg.cancel();
 					// }
 					// SNAPPI.flash.flash(msg); // don't flashMsg on success.
-					SNAPPI.AssetRatingController.onRatingChanged(r,	value);
+					SNAPPI.AssetRatingController.onRatingChanged(r,	args.rating);
 					 
-					try {
+					try { // update shot, if necessary
 						var audition, shotPhotoRoll;
 						try {
 							audition = SNAPPI.Auditions.find(r.node.ancestor('.FigureBox').uuid);
 							shotPhotoRoll = r.node.ancestor('ul.hiddenshots').Gallery;
-						} catch (e) {
-							audition = SNAPPI.Auditions.find(options.thumbnail.uuid);
+						} catch (e) {}
+						try {
+							audition = audition || SNAPPI.Auditions.find(options.thumbnail.uuid);
 							shotPhotoRoll = options.thumbnail.ancestor('ul.hiddenshots').Gallery;
-						}
+						} catch (e) {}
+
 						var bestShot = audition.Audition.Substitutions.best;
 						var selected = shotPhotoRoll.selected;
 						// confirm showHidden bestShot is in main photoroll

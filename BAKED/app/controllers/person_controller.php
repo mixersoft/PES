@@ -242,9 +242,8 @@ class PersonController extends UsersController {
 $this->log("/users/photos: acts_as_ownerid", 	LOG_DEBUG);					
 			Permissionable::setGroupOwnershipsMemberships(AppController::$ownerid);  
 			Session::write('Auth.Permissions.group_ids', Permissionable::$group_ids);
-$this->log(Permissionable::$group_ids, 	LOG_DEBUG);
+// $this->log(Permissionable::$group_ids, 	LOG_DEBUG);
 $this->log("role = ".AppController::$role, 	LOG_DEBUG);			
-			// Permissionable::setGroupIds();
 			$this->Session->setFlash("Privileged Access: acting as userid=".AppController::$ownerid);
 		}
 		

@@ -1162,7 +1162,7 @@ debug($aids);
 						$votes = ($newRating == 0) ? $votes-1 : $votes;
 						$data['SharedEdit']['votes'] = $votes;
 						// adjust points
-						
+						if (empty($data['SharedEdit']['score'])) $data['SharedEdit']['score'] = 0;
 						$points = $oldVotes * $data['SharedEdit']['score'] + $delta;
 						$data['SharedEdit']['points'] = $points;
 						// adjust score
