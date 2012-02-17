@@ -1263,7 +1263,7 @@ debug($aids);
 				if (!empty($this->data['updateBestshot']) && count($updateBestShot_assetIds)) {
 					// updateBestshot
 					$Usershot = ClassRegistry::init('Usershot');
-					$Usershot->updateBestShotFromTopRated(AppController::$owner_id, null, $updateBestShot_assetIds); 
+					$Usershot->updateBestShotFromTopRated(AppController::$ownerid, null, $updateBestShot_assetIds); 
 					$Groupshot = ClassRegistry::init('Groupshot');
 					$Groupshot->updateBestShotFromTopRated(AppController::$userid, null, $updateBestShot_assetIds); 
 				}
