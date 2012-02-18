@@ -129,6 +129,7 @@
         clearBody: function(n){
         	n = n.hasClass('stage-body') ? n : n.one('stage-body');
             n.setContent('');
+            n.get('parentNode').setContent(n);
             // TODO: Plugin.stage.dialog refreshAlign() 
         },
         getScene: function(cfg){

@@ -238,7 +238,7 @@
 					menuItem.addClass('clicked');
 					SNAPPI.setPageLoading(true);
 					var delayed = new _Y.DelayedTask( function() {
-						Menu.hide();
+						menu.hide();
 						menuItem.removeClass('clicked');
 						window.location.href = next;
 					});
@@ -1002,7 +1002,9 @@ console.error("PreviewPhoto delete is still incomplete");
 					menu.hide();
 				});
 				delayed.delay(1000);
-				SNAPPI.UIHelper.create.load_then_launch_PageMaker();
+				try {
+					SNAPPI.UIHelper.create.load_then_launch_PageMaker();	
+				}catch (e) {}
 				return;
 			}
 		} catch(e) {		}

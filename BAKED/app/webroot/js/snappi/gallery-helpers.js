@@ -411,6 +411,7 @@
             	// PAGE.jsonData.profile.thumbSize=='bp'
             	cfg.size = cfg.size || PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
             } catch (e){  }
+            if (!cfg.size) delete cfg.size;	// merging undefined causes prob with default setting
             cfg = _Y.merge(GalleryFactory[cfg.type].defaultCfg, cfg);
             
             try {

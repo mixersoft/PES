@@ -10,7 +10,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
         <link href="http://snaphappi.com/img/favicon.ico" type="image/x-icon" rel="icon" />
         <title>Snaphappi Page Gallery</title>
-       	<link media="screen" type="text/css" href="/app/pagemaker/css/pageGallery.css" rel="stylesheet">
+       	<link media="screen" type="text/css" href="/app/pagemaker/css/play.css" rel="stylesheet">
         <script type="text/javascript" src="http://yui.yahooapis.com/combo?3.3.0/build/yui/yui-min.js">
         </script>
         <script type="text/javascript" src="/app/pagemaker/js/play/pageGallery.js">

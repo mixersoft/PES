@@ -358,7 +358,7 @@
 			votes = audition.Audition.Photo.Fix.Votes;	
 	
 			// set CSS classNames
-			var sizeCfg = _Y.merge(this.defaultCfg, cfg);
+			var sizeCfg = _Y.merge(ThumbnailFactory.PhotoZoom.defaultCfg, cfg);
 			sizeCfg.size = size || sizeCfg.size;
 			node.set('className', 'FigureBox').addClass(this._cfg.type).addClass(sizeCfg.size);
 			if (sizeCfg.addClass) node.addClass(sizeCfg.addClass);
@@ -448,6 +448,7 @@
     		var cfg, uuid, size, auditionSH;
     		cfg = {
     			type: 'PhotoZoom',
+    			size: 'bp',
     		}
     		// create/reuse Thumbnail
     		var t, node = previewBody.one('.FigureBox.PhotoZoom');
@@ -459,6 +460,7 @@
 	    			// default init size
 	    			if ( previewBody.getAttribute('size')) cfg.size = previewBody.getAttribute('size');	
 	    		}
+	    		if (!cfg.size) delete cfg.size;
 	    		// create PhotoPreview thumbnail	    		
     			t = new SNAPPI.Thumbnail(selected, cfg);	
     			previewBody.prepend(t.node);

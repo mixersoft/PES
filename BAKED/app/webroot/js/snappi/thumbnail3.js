@@ -145,6 +145,7 @@
 		create : function(audition, cfg) {
 			// node.addClass(this._cfg.type);
 			// set id
+			this._cfg = _Y.merge(this._cfg,cfg);
 			var id = audition.id;
 			this.id = id;	// deprecate
 			var node = _Y.Node.create(Factory[this._cfg.type].markup);
