@@ -893,6 +893,9 @@
         	}
         	return;
         },		
+        /*
+         *  display options including filter and sort
+         */
         DisplayOptionClick : function(node) {
         	node = node || _Y.one('.gallery-display-options');
         	var action = 'DisplayOptionClick';
@@ -954,6 +957,9 @@
 				UIHelper.listen[action] = node.listen[action];	                
 			}
         },
+        /*
+         * Montage or Gallery
+         */
  		SectionOptionClick : function(node) {
         	node = node || _Y.one('nav.section-header');        	
         	if (!node) return;

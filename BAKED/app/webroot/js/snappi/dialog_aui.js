@@ -373,10 +373,17 @@
 		_cfg = _Y.merge(DEFAULT_CFG_modal, _cfg, cfg);
 		var alert = Dialog.find[_cfg.id];
 		if (alert) {
-			alert.getStdModNode('body').setContent('').destroy();
-		} 
+			try {	// destroy existing alert box
+				alert.getStdModNode('body').setContent('');	
+			}catch(e){}
+			for (var i in alert.listen) {
+				alert.listen[i].detach();
+				delete alert.listen[i];
+			}
+		}
 		alert = new _Y.Dialog(_cfg).render();
-		
+		alert.listen = {};
+			
 		var body = alert.getStdModNode('body');
 		if (_cfg.bodyNode) {
 			// body.setContent(_cfg.bodyNode);
@@ -422,7 +429,8 @@
 			};
 			ioCfg = SNAPPI.IO.getIORequestCfg(cfg.uri, ioCfg.on, ioCfg);
 			alert.plug(SNAPPI.Y.Plugin.IO, ioCfg);
-		}		
+		}	
+		
 		Dialog.find[_cfg.id] = alert;		// save reference for lookup
 		return alert;		
 	}	
@@ -500,7 +508,8 @@
 			
 	        dialog.listen['preview-change'] = _Y.on('snappi:preview-change', 
 	        	function(thumb){
-	        		_Y.fire('snappi:dialog-body-rendered', this);
+	        		if (thumb.Thumbnail._cfg.type == 'PhotoPreview' ) 
+	        			_Y.fire('snappi:dialog-body-rendered', dialog, {center:false});
 	        	}, '.FigureBox.PhotoPreview figure > img', dialog
 	        )
     		

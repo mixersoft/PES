@@ -1,4 +1,8 @@
 <?php
+	/*
+	 * @params $isPreview, $isRelated, $total, $state
+	 */
+
 	$focus = 'll';
 	if (isset($this->passedArgs['thumbSize'])) {
 		$focus = $this->passedArgs['thumbSize'];		
@@ -8,8 +12,38 @@
 		'lm'=>'/css/images/img_2.gif',
 		'll'=>'/css/images/img_3.gif',
 	);
+	if ($isPreview) {
+		$xhrFrom = Configure::read('controller.xhrFrom');
+		$passedArgs = Configure::read('passedArgs.min');
+		$next = array('controller'=>$xhrFrom['alias'],'action'=>'groups', $xhrFrom['uuid']) + $passedArgs;
+		$tokens['total'] = $total; 
+		$tokens['linkTo'] = $this->Html->link('Show all', $next); 
+		$tokens['type'] = ($total==1 ? "Circle. " : "Circles. ");
+		$header_content = String::insert("Total <span class=''>:total</span> :type :linkTo", $tokens);
+	}
+	$isRelated = empty($this->params['url']['gallery']);
+	if ($isPreview && $isRelated) {
+		if ($total==0) {
+			$header_content = String::insert("There are <span class='count'>no</span> :type for this item.", $tokens);
+		} else {
+			$header_content = String::insert("Total <span class='count'>:total</span> :type :linkTo", $tokens);
+		}
+		echo "<h2>{$header_content}</h2>";
+		return;
+	}
 ?>
 <section class="wide gallery-header gallery-display-options container_16">
+<?php  if ($isPreview) { ?>
+	
+	<ul class="toolbar inline grid_3">
+		<li class='blue label'><h1><?php echo $header_content;  ?></h1></li>
+	</ul>	
+
+	
+	
+<?php  } else { ?>	
+	
+	
 	<ul class="toolbar inline grid_2">
 		<li class="btn white select-all"><span class="menu-open"><input type="checkbox" value="" name=""></span></li>
 		<li><h1><?php echo $total; ?>  Circles</h1></li>
@@ -31,5 +65,7 @@
 				}
 			?>
 		</ul>
-	</nav>      
+	</nav>    
+
+<?php  } ?>	
 </section> 

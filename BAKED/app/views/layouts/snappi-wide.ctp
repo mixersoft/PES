@@ -68,7 +68,7 @@
 		?>
 	</script>	
 <?php $this->Layout->blockEnd();?>	
-
+<div class="anchor-bottom"></div>
 <div id='markup' style="display:none;">
 	<div id="menu-header-markup" class="menu yui3-aui-overlaycontext-hidden hide">
 		<ul>

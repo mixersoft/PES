@@ -429,16 +429,10 @@ debug("AppController::__updateExif");
 			'here'=>$this->here,
 			'userid'=>AppController::$userid,
 			'isXhr'=>$this->RequestHandler->isAjax(),			
-		);	
+		);
+		$extended_controllerAttr = $extras = array();	
 		if (in_array($this->name, array('Assets', 'Groups', 'Users', 'Tags'))) {
 			AppController::$uuid = isset($this->passedArgs[0]) ? $this->passedArgs[0] : null;
-			if (in_array(AppController::$role, array('EDITOR','MANAGER','ADMIN','ROOT'))) {
-				// set in /person/photos for now
-				AppController::$ownerid = Session::read('Auth.User.acts_as_ownerid');
-				if (!AppController::$ownerid) AppController::$ownerid =  AppController::$userid;
-				$controllerAttr['userid'] = AppController::$ownerid;
-				$controllerAttr['ROLE'] =  AppController::$role;
-			} else AppController::$ownerid = AppController::$userid; 
 			/*
 			 * sluggable processing. this method requires 2 DB calls. (cached)
 			 */
@@ -452,23 +446,30 @@ debug("AppController::__updateExif");
 				'titleName'=>isset($this->titleName) ? $this->titleName : '',
 //				'uuid'=>AppController::$uuid, // see ['xhrFrom']['uuid'] or PAGE.jsonData.controller.xhrFrom.uuid
 			);
-			$controllerAttr = array_merge( $controllerAttr , $extended_controllerAttr);
-			if (!empty($this->params['url']['forcexhr'])) $controllerAttr['isXhr'] = 1; 
-			
-			$extras = array( 
-				'class'=>Inflector::singularize($this->name),		 
-				// 'label'=>isset($this->displayName) ? $this->displayName : '', 
-				'isWide'=>!empty($this->params['named']['wide']),
-			);
-			$controllerAttr = array_merge($controllerAttr, $extras);
+		}			
+		$extras = array( 
+			'class'=>Inflector::singularize($this->name),		 
+			// 'label'=>isset($this->displayName) ? $this->displayName : '', 
+			'isWide'=>!empty($this->params['named']['wide']),
+		);
+		if (!empty($this->params['url']['forcexhr'])) $controllerAttr['isXhr'] = 1; 
+		$controllerAttr = array_merge( $controllerAttr , $extended_controllerAttr, $extras);
 
-			if (!$controllerAttr['isXhr'] && isset($this->passedArgs['size'])) {
-				$this->viewVars['jsonData']['STATE']['previewSize'] = $this->passedArgs['size'];
-			}
-//			$this->viewVars['jsonData']['controller'] = $controllerAttr;	// moved to layout		
-		}	
-		Configure::write('controller', $controllerAttr);	
-	}
+		if (!$controllerAttr['isXhr'] && isset($this->passedArgs['size'])) {
+			$this->viewVars['jsonData']['STATE']['previewSize'] = $this->passedArgs['size'];
+		}
+//			$this->viewVars['jsonData']['controller'] = $controllerAttr;	// moved to layout
+		
+
+		if (in_array(AppController::$role, array('EDITOR','MANAGER','ADMIN','ROOT'))) {
+			// set in /person/photos for now
+			AppController::$ownerid = Session::read('Auth.User.acts_as_ownerid');
+			if (!AppController::$ownerid) AppController::$ownerid =  AppController::$userid;
+			$controllerAttr['userid'] = AppController::$ownerid;
+			$controllerAttr['ROLE'] =  AppController::$role;
+		} else AppController::$ownerid = AppController::$userid; 	
+		Configure::write('controller', $controllerAttr);
+	}	
 	
 	function __getFromSlug($slug = null) {
 		// how do I know if this is NOT a uuid?

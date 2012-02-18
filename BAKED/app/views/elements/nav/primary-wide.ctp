@@ -15,7 +15,7 @@
 		$sections['Home']=array('label'=>'Home','href'=>'/my/home');
 		$sections['Circles']=array('label'=>'Circles','href'=>'/my/groups');
 		$sections['Snaps']=array('label'=>'Snaps','href'=>'/my/photos');
-		$sections['People']=array('label'=>'People','href'=>'/my/friends');
+		$sections['People']=array('label'=>'People','href'=>'/person/all');
 		
 		// explore action
 		$exploreAction = ($controllerAttr['alias'] == 'my') ? $controllerAttr['action'] : $controllerAttr['alias'] ;

@@ -297,14 +297,18 @@
 		},
 		PreviewImgLoad: function() {
 			// plugin/show loadingmask in SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected()
+			// BUG: PhotoZoom, img does not yet exist. use delegate
 			return this.node.one('figure > img').on('load',
 				function(e) {
 					// hide loading indicator
-					if (this.loadingmask) this.loadingmask.hide();
-					else {
-						try {
-							this.ancestor('.preview-body').loadingmask.hide();							
-						} catch (e) {}
+					var node = this;
+					if (node.loadingmask) node.loadingmask.hide();
+					else if ((node = this.get('parentNode')) && node &&  node.loadingmask){
+						node.loadingmask.hide();
+					} else if ((node = this.ancestor('.preview-body')) && node && node.loadingmask){
+						node.loadingmask.hide();
+					} else if ((node = this.ancestor('.preview-zoom')) && node && node.loadingmask){
+						node.loadingmask.hide();
 					}
 					_Y.fire('snappi:preview-change', this);	
 					// also see PreviewHelper.DialogHiddenShot, which is currently not being used

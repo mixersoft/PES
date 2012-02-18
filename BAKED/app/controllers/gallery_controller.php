@@ -145,9 +145,11 @@ class GalleryController extends AppController {
     
     
     /*
+	 * move to pagemaker or story controller
      * SAVE/APPEND PageGallery PAGE to PageGallery BOOK. 
      */
     function save_page() {
+    	$forceXHR = setXHRDebug($this, 0);
         $this->layout = null;
         $ret = 0;
         if ($this->data) {

@@ -703,23 +703,14 @@ console.error("PreviewPhoto delete is still incomplete");
 			width: 400,
 		};
 		var dialog = SNAPPI.Alert.load(cfg);
-		var previewBody = dialog.get('contentBox').one('#preview-zoom');
-		/*
-		 * resize,center dialog for .FigureBox.PreviewZoom
-		 */
-		var detach = _Y.on('snappi:preview-zoom-loaded', function(img){
-			detach.detach();
-			previewBody.loadingmask.hide();
-			var h = img.get('height');
-			var w = img.get('width');
-			var offset_top = 6 + 29 + 12    + 10  + 30;
-			var body_border = 20;	// margin: 10px 0 on node
-			// set dialog size
-			dialog.set('width', w + body_border);
-			dialog.set('height', h + offset_top);	
-			dialog.centered();
-			SNAPPI.setPageLoading(false);
-		});		
+		var previewBody = dialog.getStdModNode('body').one('#preview-zoom');
+		var detach = _Y.on('snappi:preview-change', 
+	        	function(thumb){
+	        		detach.detach();
+	        		if (thumb.Thumbnail._cfg.type == 'PhotoZoom' ) 
+	        			_Y.fire('snappi:dialog-body-rendered', dialog);
+	        	}, '.FigureBox.PhotoZoom figure > img', dialog
+	        )		
 		SNAPPI.Factory.Thumbnail.PhotoZoom.bindSelected(audition, previewBody);
 	}
 	MenuItems.rotate_click = function(menuItem, menu, e){

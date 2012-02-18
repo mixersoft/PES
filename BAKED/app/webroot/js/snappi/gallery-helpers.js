@@ -400,16 +400,18 @@
 				) {
 					cfg = _Y.merge(SNAPPI.STATE.displayPage, cfg);
 					// check for valid size, type=Photo
-					if (/^(sq|lm|ll)$/.test(SNAPPI.STATE.previewSize)) {
+					if (/^(sq|tn|lm|ll)$/.test(SNAPPI.STATE.previewSize)) {
 						cfg.size = SNAPPI.STATE.previewSize;	// override
 						delete PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
 					}
 				}
 			} catch (e) { 	}
-            cfg = _Y.merge(GalleryFactory[cfg.type].defaultCfg, cfg);	
             try {
-            	cfg.size = PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
+            	// TODO: warning, somewhere this was set wrong,  to 
+            	// PAGE.jsonData.profile.thumbSize=='bp'
+            	cfg.size = cfg.size || PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
             } catch (e){  }
+            cfg = _Y.merge(GalleryFactory[cfg.type].defaultCfg, cfg);
             
             try {
             	if (!cfg.castingCall && cfg.castingCall !== false) cfg.castingCall = PAGE.jsonData.castingCall;
@@ -439,7 +441,7 @@
         apply_filter_settings : function(filters, g) {
         	try {
         		var f, btn, open, Rating,
-        			parent = g.header.one('section.gallery-display-options');
+        			parent = g.header.one('ul.filter');
 	        	for ( var i in filters) {
 	        		open = open || filters[i]['class'];
 	        		switch(filters[i]['class']) {
