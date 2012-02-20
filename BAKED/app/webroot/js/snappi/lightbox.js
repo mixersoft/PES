@@ -88,7 +88,7 @@
 			} catch (e) {}
 			size = size || 'lbx-tiny';
 			try {
-				var view = SNAPPI.STATE.profile.view['-lightbox'];
+				var view = SNAPPI.STATE.profile.view['Lightbox'];
 			} catch (e) {
 				// if not set, use smart default
 				try {			
@@ -285,12 +285,12 @@
 				if (!this.Gallery) {
 		            /**
 		             * NEW codepath to create Gallery from castingCall
-		             * TODO: use GalleryFactory pattern
 		             */
 					// use castingCall from drop source
 		            var cfg = {
 		            	type: 'Lightbox',
-		            	node:  this.node.one('section.gallery.lightbox'), 
+		            	node:  this.node.one('section.gallery.lightbox'),
+		            	view: 'one-row',  
 		            };
 		            this.Gallery = new SNAPPI.Gallery(cfg);
 		            // this.Gallery.listen(true, ['MultiSelect']);
@@ -319,7 +319,10 @@
 						cb.set('checked', false);
 					} catch (e) {}
 				}
-	            
+	            // set View if necessary
+	            if (this.Gallery.view == 'minimize') {
+	            	SNAPPI.Factory.Gallery.actions.setView(this.Gallery, 'one-row');	
+	            }
 				this.save();
 				this.updateCount();					
 				return lastLI;

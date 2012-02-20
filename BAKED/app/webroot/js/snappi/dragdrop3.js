@@ -163,12 +163,12 @@
                 });
             };
             
-            if (dropTarget.Lightbox) {
+            if (dropTarget.Lightbox || (dropTarget.Gallery && dropTarget.Gallery._cfg.type=='Lightbox')) {
             	// try {
             		// dropTarget = dropTarget.lightbox.Gallery.container.all('.FigureBox').pop();
             	// }catch(e){
             	// }
-            	done = dropTarget.Lightbox.processDrop(nodeList, _clearSelected);
+            	done = SNAPPI.Lightbox.instance.processDrop(nodeList, _clearSelected);
             } else if (dropTarget.Gallery) {
             	// still need to initialize shot-gallery.Gallery
             	done = dropTarget.Gallery.processDrop(nodeList, _clearSelected);

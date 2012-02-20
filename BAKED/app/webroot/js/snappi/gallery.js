@@ -181,8 +181,9 @@
 	        	break;	        	
 	        case 'lightbox-':
 	        	this.container.addClass('one-row'); // these are all filmstrips, init in filmstrip mode
-	        	if (renderOnInit) this.render(_cfg);
-        		else {
+	        	if (renderOnInit) {
+	        		this.render(_cfg);
+        		} else {
                 	var emptyMsg = _Y.one('#markup .empty-lightbox-gallery-message');
                 	SNAPPI.util.setForMacintosh(emptyMsg);
                 	if (emptyMsg) this.container.append(emptyMsg.removeClass('hide'));

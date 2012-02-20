@@ -489,6 +489,7 @@
 			// listeners: ['Keypress', 'Mouseover', 'LinkToClick', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick'],
 			listeners: ['MultiSelect', 'WindowOptionClick'],
 			draggable: false,
+			// droppable: true,			// make Lightbox.node droppable instead
 			hideHiddenShotByCSS: false,
 			size: 'lbx-tiny',
 			perpage: LIGHTBOX_PERPAGE_LIMIT, 
