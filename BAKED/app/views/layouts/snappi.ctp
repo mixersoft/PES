@@ -108,11 +108,11 @@
 	</div>		
 	<div id="menu-select-all-markup" class="menu yui3-aui-overlaycontext-hidden hide">
 		<ul>
-			<li action='select_all'>Select All</li>
+			<li action='select_all' title='Select All Snaps visible on this page. Use Ctrl/Cmd- or Shift-Click to select individual thumbnails.'>Select All</li>
 			<li action='select_all_pages' class='before-show'>Select All Pages</li>
-			<li action='clear_all'>Clear All</li>
-			<li action='remove_selected' class='before-show'>Remove Selected Snaps</li>
-			<li action='delete' class='before-show'>Delete Selected Snaps</li>
+			<li action='clear_all' title='Clear selection'>Clear All</li>
+			<li action='remove_selected' title='Remove Snaps from the Lightbox.' class='before-show'>Remove Selected Snaps</li>
+			<li action='delete' title='DELETE photo(s) from your Snaphappi account.' class='before-show'>Delete...</li>
 		</ul>
 	</div>	
 	<div id="menu-lightbox-organize-markup" class="menu yui3-aui-overlaycontext-hidden hide">

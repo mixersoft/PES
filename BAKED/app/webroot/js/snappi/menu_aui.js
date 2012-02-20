@@ -513,16 +513,19 @@
 	MenuItems.delete_beforeShow = function(menuItem, menu){
 		try {
 			var target = menu.get('currentNode'),	// target
-				enabled = true;
-			if (menuItem.ancestor('#contextmenu-photoroll-markup')) {
+				enabled = true,
+				isLightbox, g, 
+				isContextMenu = menuItem.ancestor('#contextmenu-photoroll-markup');
+			if (isContextMenu) {
 				// context menu
-			} else {
-				var g = target.ancestor('section').next('section.gallery').Gallery;
+			} else { // from selectAll
+				g = target.ancestor('section').next('section.gallery').Gallery;
 				enabled = g.getSelected().size();
+				isLightbox = !isContextMenu && g._cfg.type == "Lightbox";
 			} 			
 			// TODO: how do you know if it is the ADMIN/EDITOR user from JS?
 			// check if we have write permission?
-			if (SNAPPI.STATE.controller.alias == 'my' ) {
+			if (isLightbox || SNAPPI.STATE.controller.alias == 'my' ) {
 				switch (SNAPPI.STATE.controller.action) {
 					case 'home':
 					case 'photos':
@@ -538,27 +541,38 @@
 		}
 	};	
 	MenuItems.delete_click = function(menuItem, menu){
-		if (SNAPPI.STATE.controller.alias != 'my' ) {
+		var g, response, selected, isSelected, isContextMenu, isLightbox,
+			thumbnail = menu.get('currentNode');	// target
+		// contextmenu or selectall menu
+		isContextMenu = menuItem.ancestor('#contextmenu-photoroll-markup');
+		try {
+			g = (isContextMenu) ? 
+				MenuItems.getGalleryFromTarget(thumbnail)
+				: thumbnail.ancestor('section').next('section.gallery').Gallery;  // from Gallery.selectAll
+			isLightbox = !isContextMenu && g._cfg.type == "Lightbox";
+		} catch(e) {
+			console.warn("Error: parsing attributes for MenuItem.delete_click");
+			g=null;
+			isLightbox = false;
+		}
+		if (!isLightbox && SNAPPI.STATE.controller.alias != 'my' ) {
 			// TODO: allow delete by Role=EDITOR, etc.
 			menu.hide();
 			return;
 		}
-		try {
-			var g, response, isSelected, thumbnail = menu.get('currentNode');	// target
-			if (menuItem.ancestor('#contextmenu-photoroll-markup')) { 
-				// from context menu
-				g = MenuItems.getGalleryFromTarget(thumbnail);
-				response = confirm('Are you sure you want to remove this Snap from your account?');
-				if (response)  g.deleteThumbnail(thumbnail, thumbnail);
-				menu.hide();
-			} else {
-				// from selectAll
-				g = thumbnail.ancestor('section').next('section.gallery').Gallery;
-				response = confirm('Are you sure you want to remove ALL selected Snaps from your account?');
-				if (response)  g.deleteThumbnail(null, menuItem);
-				// menu.hide();
-			}			
-		} catch (e) {}		
+		// single or batch operation
+		if (g && isContextMenu && e.shiftKey == false) {
+			// single select. delete 1 item
+			response = confirm('Are you sure you want to remove this Snap from your Snaphappi account?');
+			if (response)  g.deleteThumbnail(thumbnail, thumbnail);
+		} else {	// multiSelect
+			selected = g.getSelected();
+			// TODO: convert to SNAPPI.Alert()
+			response = confirm('Are you sure you want to remove ALL selected Snaps from your Snaphappi account?');
+			if (selected.count()>3 && response) response = confirm('This cannot action be undone. Are you sure you mean to DELETE '+selected.count()+' photos from Snaphappi?');
+			if (response)  g.deleteThumbnail(selected, menuItem);
+		}
+		menu.hide();
 	};	
 	MenuItems.preview_delete_beforeShow = function(menuItem, menu){
 		try {

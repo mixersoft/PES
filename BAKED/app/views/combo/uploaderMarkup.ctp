@@ -47,7 +47,7 @@
 		<li action='retry_selected' class='before-show'>Retry Selected</li>
 		<li action='cancel_selected' class='before-show'>Cancel Selected</li>
 		<hr>
-		<li action='remove_from_uploader_selected' >Remove Selected</li>
+		<li action='remove_from_uploader_selected' title='Remove imported photo(s) from the Snaphappi Desktop Uploader.' >Delete...</li>
 	</ul>
 </div>	
 <div class='empty-photo-gallery-message hide'><div class='message blue rounded-5 wrap-v'>

@@ -184,6 +184,7 @@
 	        	if (renderOnInit) this.render(_cfg);
         		else {
                 	var emptyMsg = _Y.one('#markup .empty-lightbox-gallery-message');
+                	SNAPPI.util.setForMacintosh(emptyMsg);
                 	if (emptyMsg) this.container.append(emptyMsg.removeClass('hide'));
                 }	        	
 	        	// this.scrollFocus( cfg.uuid );
@@ -1635,20 +1636,20 @@
 		},
 		/**
 		 * delete Thumbnail, .FigureBox, and refresh gallery page
-		 * @params node _Y.Node .FigureBox, or null for getSelected()
+		 * @params nodeOrselected Thumbnail node or SortedHash of thumbnails
 		 * @params loadingmask _Y.Node, node for loading mask. NOTE: uses node for now.
 		 */
-		deleteThumbnail: function(node, loadingmask) {
+		deleteThumbnail: function(nodeOrselected, loadingmask) {
 			var sh, aids = [], gids=[];
-			if (node && node.uuid) {
-				aids = [node.uuid];
+			if (nodeOrselected && nodeOrselected.uuid) {
+				aids = [nodeOrselected.uuid];
 			} else {
-				this.getSelected().each(function(o){
+				nodeOrselected.each(function(o){
 					aids.push(o.id);
 				});
 			}
 			// get gids, if any
-			SNAPPI.AssetRatingController.deleteByUuid(loadingmask || node, {
+			SNAPPI.AssetRatingController.deleteByUuid(loadingmask || nodeOrselected, {
 				ids: aids.join(','), 
 				actions: {'delete':1},
 				context: this,
