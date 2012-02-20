@@ -468,12 +468,22 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 			 */
 			// render page
 			var pageNode = this.view_getBlankPage(page);  // '.gallery .container'
-			if (pageNode && this.status=='all' && rows.length == 0) {
+			if (pageNode && !this.baseurl && this.status=='all' && rows.length == 0) {
 				// show '.empty-photo-gallery-message'
 				try {
-					var n = _Y.one('#markup .empty-photo-gallery-message').removeClass('hide');
-					pageNode.append(n);
+					var n = _Y.one('#markup .empty-photo-gallery-message');
+					pageNode.append(n.get('innerHTML'));
 				} catch (e) {}
+			} else if (pageNode && this.baseurl && rows.length == 0) {	
+				try {	// show '.empty-filtered-photo-gallery-message'
+					var n = _Y.one('#markup .empty-filtered-photo-gallery-message');
+					var status = this.status;
+					if (status=='pending') status='ready'; 
+					n.one('b.status').setContent(status);
+					n.one('b.folder').setContent(this.baseurl);
+					SNAPPI.AIR.UIHelper.actions.toggleDisplayOptions(true);
+					pageNode.append(n.get('innerHTML'));
+				} catch (e) {}	
 			} else if (pageNode) {
 				// reset/render new page with array of Progress tiles
 				pageNode.removeClass('hide');

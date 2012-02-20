@@ -2215,13 +2215,13 @@ div.link input.copy-paste {
     border-bottom: 1px solid #8fb9d0;
     font-size: 16pt;
 }
-.gallery-container .message {
+.gallery .container .message {
 	margin: 20px 10%;
 	font-size: 10pt;
 	overflow: hidden;
 	padding: 10px;
 }
-.gallery-container .message p {
+.gallery .container .message p {
 	margin-bottom: 10px;
 }
 /*
@@ -2535,7 +2535,7 @@ li:hover.white.focus, li:hover.white.selected
 	padding: 4px;
 }
 
-#hint-new-story span.keypress {
+span.keypress {
 	border: 1px solid black;
     font-family: courier;
     font-size: 0.8em;

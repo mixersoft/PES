@@ -12,6 +12,8 @@
 			</div></div>
 	<?php } ?>		
 			<div class='empty-lightbox-gallery-message hide'><div class=' message blue rounded-5 wrap-v'>
-				<p>Drag Snaps from above into the Lightbox. You can select multiple Snaps by pressing the Control or Shift key.</p>
+				<p>Drag selected Snaps from above into the Lightbox. 
+					Use <span class='keypress multiselect-single'>Ctrl-Click</span> or <span class='keypress'>Shift-Click</span> to select multiple Snaps.
+				</p>
 			</div></div>
 <?php 	$this->Layout->blockEnd(); ?>	

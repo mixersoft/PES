@@ -1033,12 +1033,7 @@ console.error("PreviewPhoto delete is still incomplete");
 		var dialog = SNAPPI.Alert.load(cfg);;
 		var detach = _Y.on('snappi:dialog-alert-xhr-complete', function(d){
 			detach.detach();
-			if (_Y.UA.os === "macintosh") {
-				try {
-					var key = d.getStdModNode('body').one('span.multiselect-single');
-					key.setContent('Cmd-Click');	
-				} catch(e) {}
-			}
+			SNAPPI.util.setForMacintosh(d.getStdModNode('body'));
 		}, this);
 	};	
 	MenuItems.express_upload_beforeShow = function(menuItem, menu, properties){

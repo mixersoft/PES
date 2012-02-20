@@ -341,6 +341,17 @@
 				var num = Math.round((number * exponent)).toString();
 				return num.slice(0,-1*decimal_points) + "." + num.slice(-1*decimal_points)
 			},
+			/**
+			 * apply changes for macintosh platorms
+			 * 	- Ctrl-Click to Cmd-Click
+			 */
+			setForMacintosh: function (node) {
+				try {
+					if (_Y.UA.os === "macintosh") {
+						node.one('span.multiselect-single').setContent('Cmd-Click');	
+					}
+				} catch(e) {}
+			},
         };
         
 })();

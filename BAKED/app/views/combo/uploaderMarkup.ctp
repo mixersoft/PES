@@ -63,6 +63,10 @@
 		When you restart the uploader, it will automatically continue from the last upload.</p>
 	<ul class='inline' ><li class='btn orange rounded-5'><a onclick='SNAPPI.AIR.Flex_UploadAPI.selectFolder(); return false;'>Get started now.</a></li></ul>
 </div></div>
+<div class='empty-filtered-photo-gallery-message hide'><div class='message blue rounded-5 wrap-v'>
+	<p>There are no Snaps in this View.</p>
+	<p>Currently showing Snaps with status='<b class='status'></b>' in folder='<b class='folder'>'</b>. Adjust your filter settings to change this view.</p>
+</div></div>
 <div class="hide"><div class="alert-import-complete container_x">
 	<h1>Scan Complete (Yay!)</h1>
 	<p>We found <b>{count}</b> files in the following folder(s):</p>

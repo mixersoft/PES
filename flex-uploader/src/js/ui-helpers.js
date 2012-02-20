@@ -414,10 +414,12 @@ LOG("added to uploadQueue, count="+added+", open batchId="+batchId);
 			// flex_setDropTarget: js global defined in snaphappi.mxml,
 			flex_setDropTarget();		 // reset dropTarget in Flex
 		},
-		toggleDisplayOptions  : function(o){
-			
+		toggleDisplayOptions  : function(value){
 			SNAPPI.AIR.UIHelper.toggle_ContextMenu(false);	// hide contextmenu
 			try {
+				if (value != undefined) {
+					SNAPPI.STATE.showDisplayOptions = !value;
+				}
 				SNAPPI.STATE.showDisplayOptions = SNAPPI.STATE.showDisplayOptions ? 0 : 1;
 				UIHelper.actions.setDisplayOptions();
 			} catch (e) {}
