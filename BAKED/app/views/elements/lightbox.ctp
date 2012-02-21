@@ -38,7 +38,7 @@ if (Configure::read('controller.action')=='lightbox') {
 	
 ?>
 <section class="lightbox lightbox-bg cf filmstrip drop container_16 hide" id="lightbox">
-	<div class='lightbox-tab lightbox-bg hide'>Lightbox</div>
+	<div class='lightbox-tab lightbox-bg hide' title="move the mouse a little lower to see the Lightbox">Lightbox</div>
 	<section class="gallery-header grid_16">
 		<ul class="inline cf">
 			<li><h3>Lightbox</h3></li>
