@@ -295,7 +295,24 @@
 	
 	
 	var MenuItems = function(){}; 
-
+	MenuItems.story_id_beforeShow= function(menuItem, menu){
+		// start listener for story_id
+		menuItem.listen = menuItem.listen | {};
+		if (menuItem.listen['change']) return;
+		menuItem.listen['change'] = menuItem.delegate('change', function(e){
+			try {
+				var parent = menu.get('contentBox');
+				var STORY_ID = menuItem.one('input#story_id').get('value');
+				parent.all('li.btn').each(
+					function(n,i,l){
+						if (/(play|save)/.test(n.getAttribute('action'))) {
+							if (STORY_ID) n.removeClass('disabled');
+							else n.addClass('disabled');
+						}
+					})
+			} catch (e) {}
+		}, '#story_id');		
+	},
 	MenuItems.shuffle_beforeShow = function(menuItem, menu){
 		if (1) {
 			menuItem.removeClass('disabled');
@@ -306,33 +323,16 @@
 	
 	MenuItems.shuffle_click = function(menuItem, menu){
 		var target = menu.get('currentNode');	
-		// var delayed = new _Y.DelayedTask( function() {
-			// menu.hide();
-		// });
-		// delayed.delay(1000);
 		PM.main.makePageGallery();
 	};
 	MenuItems.save_beforeShow= function(menuItem, menu){
 		// start listener for story_id
-		menuItem.delegate('click', function(e){
-			e.stopImmediatePropagation();
-		}, '#story_id');
-		menuItem.delegate('change', function(e){
-			try {
-				var parent = menu.get('contentBox');
-				var STORY_ID = menuItem.one('#story_id').get('value');
-				parent.all('li.btn').some(
-					function(n,i,l){
-						if (n.getAttribute('action')=='play') {
-							if (STORY_ID) n.removeClass('disabled');
-							else n.addClass('disabled');
-							return true;
-						}
-						return false;
-					})
-			} catch (e) {}
-		}, '#story_id');		
-	}
+		var parent = menuItem.get('parentNode');
+		var STORY_ID = parent.one('#story_id').get('value');
+		if (STORY_ID) {
+			menuItem.removeClass('disabled');
+		} else menuItem.addClass('disabled');
+	},
 	MenuItems.save_click = function(menuItem, menu){
 		var target = menu.get('currentNode');
 		var parent = menuItem.get('parentNode');
@@ -368,14 +368,22 @@
 	
 	// called on menu.show()
 	MenuItems.play_beforeShow = function(menuItem, menu){
-		var STORY_ID = menuItem.get('parentNode').one('#story_id').get('value');
-		if (STORY_ID) {
-			menuItem.removeClass('disabled');
-			return;
-		}
+		var parent = menuItem.get('parentNode');
+		var STORY_ID = parent.one('#story_id').get('value');
+		try {
+			if (STORY_ID && !Plugin.production.scene.saved.length) {
+				menuItem.originalTitle = menuItem.originalTitle || menuItem.get('title');
+				menuItem.set('title', menuItem.originalTitle + " Don't forget to click Save if this is the first page of your Story.");
+			} 
+			if (STORY_ID){
+				menuItem.removeClass('disabled');
+				return;
+			}	
+		}catch(e){}
 		menuItem.addClass('disabled');
 	};			
 	MenuItems.play_click = function(menuItem, menu){
+		if (menuItem.hasClass('disabled')) return;
 		var STORY_ID = menuItem.get('parentNode').one('#story_id').get('value');
 		if (STORY_ID) {
 			var saved_src = '/gallery/story/'+STORY_ID;
