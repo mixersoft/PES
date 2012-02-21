@@ -37,7 +37,8 @@ if (Configure::read('controller.action')=='lightbox') {
 	
 	
 ?>
-<section class="lightbox filmstrip drop container_16 hide" id="lightbox">
+<section class="lightbox lightbox-bg cf filmstrip drop container_16 hide" id="lightbox">
+	<div class='lightbox-tab lightbox-bg hide'>Lightbox</div>
 	<section class="gallery-header grid_16">
 		<ul class="inline cf">
 			<li><h3>Lightbox</h3></li>
@@ -57,15 +58,15 @@ if (Configure::read('controller.action')=='lightbox') {
 			<li class="right">
 				<nav class="window-options">
 					<ul class="thumb-size inline">
-						<li class="label">Size</li>
+						<li class="label" >Size</li>
 						<?php 
 							foreach ($sizes as $size => $src ) {
-								echo "<li class='btn white ".($thumbSize==$size ? 'focus' : '')."'  action='set-display-size:{$size}'><img src='{$src}' alt=''></li>\n";
+								echo "<li class='btn white ".($thumbSize==$size ? 'focus' : '')."'  action='set-display-size:{$size}'><img src='{$src}' alt='' title='set thumbnail size'></li>\n";
 							}
 						?>
 					</ul>
 					<ul class="inline">
-						<li action='set-display-view:minimize'><img src="/css/images/img_zoomin.gif"><li action='set-display-view:one-row'><img src="/css/images/img_zoomout.gif"></li><li action="set-display-view:maximize"><img src="/css/images/img_zoomout.gif"></li>
+						<li action='set-display-view:minimize' title="minimize Lightbox"><img src="/css/images/img_zoomin.gif"><li action='set-display-view:one-row' title="show one row of thumbnails in Lightbox"><img src="/css/images/img_zoomout.gif"></li><li action="set-display-view:maximize" title="maximize Lightbox"><img src="/css/images/img_zoomout.gif"></li>
 					</ul>
 				</nav>
 			</li>

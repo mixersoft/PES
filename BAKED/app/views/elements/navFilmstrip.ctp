@@ -12,7 +12,7 @@
 		'lm'=>'/css/images/img_3.gif',
 	);
 ?>
-<section id="nav-filmstrip" class="filmstrip minimize">
+<section id="nav-filmstrip" class="filmstrip filmstrip-bg minimize">
 	<section class="gallery-header grid_16">
 		<ul class="inline">
 			<li><h3>Filmstrip <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li>

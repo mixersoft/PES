@@ -698,7 +698,7 @@
 			ID_PREFIX : 'hiddenshot-',
 			PROVIDER_NAME: 'snappi',
 			MARKUP: 	'<div id="dialog-hidden-shot" class="container_16" > ' +
-	'	<section class="filmstrip drop alpha omega"> ' +
+	'	<section class="filmstrip filmstrip-bg drop alpha omega"> ' +
 	' 		<div class="preview grid_11 alpha-b1 omega-b1"><nav class="toolbar"></nav></div>'+		
 	'		<section class="gallery photo filmstrip hiddenshots grid_11 alpha-b1 omega-b1"> ' +
 	'			<div class="filmstrip-wrap hidden"><div class="filmstrip"><div class="container"></div></div></div> ' +

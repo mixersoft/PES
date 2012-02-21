@@ -1,8 +1,9 @@
 <!--  should be same as /views/elements/lightbox.ctp  -->
-<section class="lightbox drop container_16 hide" id="lightbox">
+<section class="lightbox lightbox-bg cf filmstrip drop container_16 hide" id="lightbox">
+	<div class='lightbox-tab lightbox-bg hide'>Lightbox</div>
 	<section class="gallery-header grid_16">
-		<ul class="inline">
-			<li><h3>My Lightbox <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li>
+		<ul class="inline cf">
+			<li><h3>Lightbox <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li>
 			<li>
 				<nav class="toolbar">
 					<div>
@@ -23,7 +24,7 @@
 						<li size="lbx-tiny" class="btn"><img alt="" src="/css/images/img_1.gif"></li><li size="sq" class="btn "><img alt="" src="/css/images/img_2.gif"></li><li size="lm" class="btn "><img alt="" src="/css/images/img_3.gif"></li>
 					</ul>
 					<ul class="inline">
-						<li action='set-display-view:one-row'><img src="/css/images/img_zoomin.gif"></li><li action="set-display-view:maximize"><img src="/css/images/img_zoomout.gif"></li>
+						<li action='set-display-view:minimize' title="minimize Lightbox"><img src="/css/images/img_zoomin.gif"><li action='set-display-view:one-row' title="show one row of thumbnails in Lightbox"><img src="/css/images/img_zoomout.gif"></li><li action="set-display-view:maximize" title="maximize Lightbox"><img src="/css/images/img_zoomout.gif"></li>
 					</ul>
 				</nav>
 			</li>

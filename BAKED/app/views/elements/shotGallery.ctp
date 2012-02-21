@@ -8,7 +8,7 @@
 		'lm'=>'/css/images/img_3.gif',
 	);
 ?>
-<section id="shot-gallery" class="filmstrip drop minimize alpha grid_11 omega">
+<section id="shot-gallery" class="filmstrip filmstrip-bg drop minimize alpha grid_11 omega">
 	<section class='gallery photo filmstrip hiddenshots grid_11 alpha-b1 omega-b1'>
 		<div class="filmstrip-wrap hidden"><div class='filmstrip'><div class='container'></div></div></div>
 	</section>	

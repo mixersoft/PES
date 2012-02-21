@@ -15,9 +15,6 @@
 		<li action='trends'  class='disabled'>
 			<a href="/my/home#trends">My Trends</a>
 		</li>
-		<li action='upload' >
-			<a href="/my/upload">Upload Photos</a>
-		</li>
 		<li action='settings' >
 			<a href="/my/settings">My Settings</a>
 		</li>
