@@ -989,16 +989,18 @@
 				
 				// TODO: move to UIHelper.init.section{}
 				// initialize state
-				if (PAGE.jsonData.montage) {
-					// open montage view
-					node.one('li.montage').addClass('focus');
-					SNAPPI.UIHelper.create._GET_MONTAGE();
-					_Y.one('.gallery-container').addClass('hide');
-				} else {
-					node.one('li.gallery').addClass('focus');  
-				    new SNAPPI.Gallery({type:SNAPPI.STATE.galleryType});
-				    _Y.one('.montage-container').addClass('hide');
-				}				
+				try {
+					if (PAGE.jsonData.montage) {
+						// open montage view
+						node.one('li.montage').addClass('focus');
+						SNAPPI.UIHelper.create._GET_MONTAGE();
+						_Y.one('.gallery-container').addClass('hide');
+					} else {
+						node.one('li.gallery').addClass('focus');  
+					    new SNAPPI.Gallery({type:SNAPPI.STATE.galleryType});
+					    _Y.one('.montage-container').addClass('hide');
+					}				
+				} catch(e){}
 			}
         },        
         DragDrop : function(){

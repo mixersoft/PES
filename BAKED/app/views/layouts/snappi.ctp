@@ -139,6 +139,11 @@
 			</li>
 		</ul>
 	</div>	
+	<div class="hide"><div id="hint-multiselect-markup" class="hint message blue rounded-5 cf">
+		<h1>Getting Started</h1>
+		<p>Use <span class='keypress multiselect-single'>Ctrl-Click</span> or <span class='keypress'>Shift-Click</span> to select the Snaps, and try <span class='keypress'>Right-Click</span> on an item for additional actions. 
+		You can also drag selected Snaps to your <b>Lightbox</b> to hold them in place.</p>
+	</div></div>
 	<?php $this->Layout->output($this->viewVars['markup_for_layout']); ?>
 </div>		
 

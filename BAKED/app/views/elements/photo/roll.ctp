@@ -70,6 +70,14 @@ $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 				SNAPPI.STATE.galleryType = 'Photo';
 				// load montage or gallery from UIHelper.listeners['SectionOptionClick']
 				SNAPPI.startListeners();	// catch any PAGE.jsonData.listeners by XHR
+				SNAPPI.LazyLoad.hint( {
+					ready: function(Y){
+						SNAPPI.Hint.load({
+							id: 'HINT_MultiSelect',
+							trigger: 'section.gallery.photo .container',
+						});
+					}
+				});
 			} catch (e) {}
 		};
 		try {

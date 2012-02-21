@@ -2540,8 +2540,20 @@ li:hover.white.focus, li:hover.white.selected
  * hints
  */
 
-.hint .message {
+.aui-tooltip-content .message {
 	padding: 4px;
+	font-size: 9pt;
+}
+.aui-tooltip-content .message span.close {
+	padding: 2px 4px;
+	border-radius: 4px;
+	cursor: pointer;	
+	background: #FFF;
+	border: 1px solid #888;
+	color: #000;	
+}
+.aui-tooltip-content .message p {
+	margin-bottom: 4px;
 }
 
 span.keypress {

@@ -363,6 +363,12 @@
 		}
 		LazyLoad.use(modules, onlazyload, cfg);
 	}; 
+	LazyLoad.hint = function(cfg){
+		cfg = cfg || { ready: function(){return true;}};	// closure for onlazyload
+		var modules = ['snappi-hint'];
+		var onlazyload = cfg.ready;
+		LazyLoad.use(modules, onlazyload, cfg);
+	};	
 	// adds support for SNAPPI.xhrFetch
 	LazyLoad.xhr= function() {
 		cfg = cfg || {};	// closure for onlazyload
@@ -840,6 +846,10 @@
                 'snappi-filter': {
                     path: 'filter.js',
                     requires: ['node', 'snappi-rating']
+                },
+                'snappi-hint': {
+                	path: 'hint.js',
+                    requires: ['aui-tooltip', 'cookie']
                 }
             }
         };
