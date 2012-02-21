@@ -1004,6 +1004,7 @@ div.anchor-bottom {
 }
 section#lightbox {
 	border:1px solid #000066;
+	border-bottom: 0;
 	border-radius: 10px 10px 0px 0px;
 	position: relative;
 	overflow: visible;
