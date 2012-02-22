@@ -912,9 +912,9 @@
 		hostCfg = hostCfg || Config.getHostConfig();	
 	    var yuiConfig_jsLib = {
             combine: 0, // hostCfg.snappi_useCombo,
-            base: 'http://' + hostCfg.host + '/js/lib/',
+            base: 'http://' + hostCfg.host + '/static/js/',
             comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl='+hostCfg.snappi_comboBase,
-            root: 'js/lib/',
+            root: 'static/js/',
             modules: {
                 'fleegix_xml': {
                     path: 'xml.js'

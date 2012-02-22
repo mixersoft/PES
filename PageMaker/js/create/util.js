@@ -225,7 +225,23 @@
                 
                 SNAPPI.io.post(sUrl, postData, callback, {src: sUrl});
                 return sUrl;
-            }
+            },
+            subdomain_prefix : 'snappi',
+        	subdomain_count : 2,
+            addSubdomain: function(src) {
+            	try {
+            		if (src.indexOf('http')==0) return src;
+            		var match, sub, host, i;
+            		match = src.match(/.*\/stage(\d+)\/.*/);	
+            		i = parseInt(match[1]) % SNAPPI.PM.util.subdomain_count;
+            		sub = i ? SNAPPI.PM.util.subdomain_prefix+i : SNAPPI.PM.util.subdomain_prefix;
+            		host = window.location.host;
+            		host = "http://"+host.replace(window.location.hostname, sub);
+            		if (src.indexOf('/') !== 0) host += '/'; 
+            		return host + src;
+            	} catch(e){}
+            	return src;
+            },
         };
     }
 })();

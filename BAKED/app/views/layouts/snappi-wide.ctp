@@ -30,15 +30,15 @@
 	</script>
 	<script src="/svc/lib/alloy-1.0.2/build/aui/aui.js" type="text/javascript"></script>
 	<link rel="stylesheet" type="text/css" media="all" href="/combo/js?baseurl=svc/lib/alloy-1.0.2/build&/aui-skin-classic/css/aui-skin-classic-all.css&/aui-loading-mask/assets/skins/sam/aui-loading-mask.css&/aui-overlay/assets/skins/sam/aui-overlay.css&" />
-	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/reset.css" />
-	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/960-fluid.css" />	
-<!-- 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/style.css" /> -->
+	<link rel="stylesheet" type="text/css" media="all" href="/static/css/reset.css" />
+	<link rel="stylesheet" type="text/css" media="all" href="/static/css/960-fluid.css" />	
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/style.1.css" />
 	<?php
-		echo $this->Html->meta('favicon.ico', '/img/favicon.ico', array('type' => 'icon') );
+		echo $this->Html->meta('favicon.ico', '/static/img/favicon.ico', array('type' => 'icon') );
 		echo $this->element('analytics');
 	?>
 </head>
+ <?php flush(); ?>
 <body>
 	<?php echo $this->element('/nav/primary-wide'); ?>
 		
@@ -127,7 +127,7 @@
 <div id="footer" class="container_16">
 	<span style="font-size:0.8em;vertical-align:text-top;">&copy; 2008-2011 Snaphappi</span>
 	<?php echo $this->Html->link(
-			$this->Html->image('cake.power.gif', array('alt'=> __('CakePHP: the rapid development php framework', true), 'border' => '0')),
+			$this->Html->image('/static/img/css-gui/cake.power.gif', array('alt'=> __('CakePHP: the rapid development php framework', true), 'border' => '0')),
 			'http://www.cakephp.org/',
 			array('target' => '_blank', 'escape' => false)
 		);

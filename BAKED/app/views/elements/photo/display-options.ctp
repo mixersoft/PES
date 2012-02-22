@@ -64,7 +64,7 @@
 				<li class="btn white  <?php echo $btn_state['filter-tag']; ?>"  action="filter:tag">
 					<span class="btn remove rounded-5  <?php echo $btn_state['filter-tag'] ? '' : 'hide'; ?>"  title="click to REMOVE this filter" action="filter:tag">x</span>
 					Tag&nbsp;<input type='text' class='tag copy-paste' maxlength='40'  value='' /></li>
-				<li class="btn white disabled">Date Taken <a><img src="/css/images/arrow.png" alt=""></a></li>
+				<li class="btn white disabled">Date Taken <a><img src="/static/img/css-gui/arrow.png" alt=""></a></li>
 			</ul>
 	        <ul class="sort inline inline-break right">
 	        	<li class='label'>Sort</li>

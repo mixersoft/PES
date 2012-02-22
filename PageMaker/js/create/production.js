@@ -352,7 +352,7 @@
                     cropRect = PM.util.getCropSpec(cast.crop);
                     castSrcCropped = PM.util.addCropSpec(castSrc, cropRect);
                 }
-                
+                castSrcCropped = SNAPPI.PM.util.addSubdomain(castSrcCropped);
                 tokens = {
                 	src: castSrcCropped,
                 	title: snappiAud.label,

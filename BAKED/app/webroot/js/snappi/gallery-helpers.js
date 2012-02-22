@@ -705,7 +705,7 @@
 	'		</section>	 ' +
 	'		<section class="gallery-header alpha-b1 grid_11 omega-b1"> ' +
 	'			<ul class="inline cf"> ' +
-	'				<li><h3><img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li> ' +
+	'				<li><h3><img src="/static/img/css-gui/img_setting.gif" alt="" align="absmiddle"></h3></li> ' +
 	'				<li> ' +
 	'					<nav class="toolbar"> ' +
 	'						<div> ' +
@@ -720,11 +720,11 @@
 	'								<nav class="window-options"> ' +
 	'									<ul class="thumb-size inline"> ' +
 	'										<li class="label">Size</li> ' +
-	'										<li class="btn white " action="set-display-size:sq"><img alt="" src="/css/images/img_1.gif"></li>' +
-	'										<li class="btn white "  action="set-display-size:tn"><img alt="" src="/css/images/img_2.gif"></li>' +
-	'										<li class="btn white " action="set-display-size:lm"><img alt="" src="/css/images/img_3.gif"></li>' +
+	'										<li class="btn white " action="set-display-size:sq"><img alt="" src="/static/img/css-gui/img_1.gif"></li>' +
+	'										<li class="btn white "  action="set-display-size:tn"><img alt="" src="/static/img/css-gui/img_2.gif"></li>' +
+	'										<li class="btn white " action="set-display-size:lm"><img alt="" src="/static/img/css-gui/img_3.gif"></li>' +
 	'									</ul><ul class="inline"> ' +
-	'										<li action="set-display-view:one-row"><img src="/css/images/img_zoomin.gif"></li><li action="set-display-view:maximize"><img src="/css/images/img_zoomout.gif"></li> ' +
+	'										<li action="set-display-view:one-row"><img src="/static/img/css-gui/img_zoomin.gif"></li><li action="set-display-view:maximize"><img src="/static/img/css-gui/img_zoomout.gif"></li> ' +
 	'									</ul> ' +
 	'								</nav> ' +
 	'							</li> ' +

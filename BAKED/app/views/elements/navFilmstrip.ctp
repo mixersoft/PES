@@ -7,15 +7,15 @@
 	$thumbSize = Session::read("thumbSize.{$PREFIX}");
 	if (!$thumbSize) $thumbSize = 'sq';
 	$sizes = array(
-		'sq'=>'/css/images/img_1.gif',
-		'tn'=>'/css/images/img_2.gif',
-		'lm'=>'/css/images/img_3.gif',
+		'sq'=>'/static/img/css-gui/img_1.gif',
+		'tn'=>'/static/img/css-gui/img_2.gif',
+		'lm'=>'/static/img/css-gui/img_3.gif',
 	);
 ?>
 <section id="nav-filmstrip" class="filmstrip filmstrip-bg minimize">
 	<section class="gallery-header grid_16">
 		<ul class="inline">
-			<li><h3>Filmstrip <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li>
+			<li><h3>Filmstrip <img src="/static/img/css-gui/img_setting.gif" alt="" align="absmiddle"></h3></li>
 			<li>
 				<nav class="toolbar">
 					<h1 class="count"></h1>
@@ -32,7 +32,7 @@
 						?>
 					</ul>
 					<ul class="inline">
-						<li action='set-display-view:minimize'><img src="/css/images/img_zoomin.gif"></li><li action="set-display-view:one-row"><img src="/css/images/img_zoomout.gif"></li>
+						<li action='set-display-view:minimize'><img src="/static/img/css-gui/img_zoomin.gif"></li><li action="set-display-view:one-row"><img src="/static/img/css-gui/img_zoomout.gif"></li>
 					</ul>
 				</nav>
 			</li>

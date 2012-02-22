@@ -65,6 +65,9 @@
         	if (Util.instance) return Util.instance;	// singleton
         	Util.instance = this;
         };
+        // for serving from cached servers, snappi1.snaphappi.com, etc.
+        Util.subdomain_prefix = 'snappi';
+        Util.subdomain_count = 2;
         Util.prototype = {
             /*
              * SNAPPI util functions
@@ -93,6 +96,20 @@
                 if (size && !parts.dirname.match(/.thumbs\/$/)) 
                     parts.dirname += '.thumbs/';
                 return parts.dirname + (size ? size + '~' : '') + parts.filename + (parts.crop ? '~' + parts.crop : '');
+            },
+            addSubdomain: function(src) {
+            	try {
+            		if (src.indexOf('http')==0) return src;
+            		var match, sub, host, i;
+            		match = src.match(/.*\/stage(\d+)\/.*/);	
+            		i = parseInt(match[1]) % Util.subdomain_count;
+            		sub = i ? Util.subdomain_prefix+i : Util.subdomain_prefix;
+            		host = window.location.host;
+            		host = "http://"+host.replace(window.location.hostname, sub);
+            		if (src.indexOf('/') !== 0) host += '/'; 
+            		return host + src;
+            	} catch(e){}
+            	return src;
             },
             parseSrcString: function(src){
                 var i = src.lastIndexOf('/');

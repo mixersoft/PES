@@ -63,19 +63,19 @@ switch ($config['Config.os']) {
 			),
 			'stageroot'=>array('basepath'=>$wwwroot.'/svc/STAGING', 'httpAlias'=>'svc/STAGING'),
 			
-			'blank_user_photo'=> '/img/providers/snappi.png', 	// deprecate, use Stagehand::getSrc()
+			'blank_user_photo'=> '/static/img/css-gui/snappi.png', 	// deprecate, use Stagehand::getSrc()
 			'default_badges'=>array(
-				'person'=>'/img/providers/snappi.png',
-				'Circle'=>'/img/providers/snappi.png',
-				'Group'=>'/img/providers/snappi.png',
-				'Event'=>'/img/providers/snappi.png',
-				'Wedding'=>'/img/providers/snappi.png',
-				'Tag'=>'/img/providers/snappi.png',
+				'person'=>'/static/img/css-gui/snappi.png',
+				'Circle'=>'/static/img/css-gui/snappi.png',
+				'Group'=>'/static/img/css-gui/snappi.png',
+				'Event'=>'/static/img/css-gui/snappi.png',
+				'Wedding'=>'/static/img/css-gui/snappi.png',
+				'Tag'=>'/static/img/css-gui/snappi.png',
 			),
 
 //			'meanshift_tmp'=>'W:/usr/bin/meanshift/tmp',
 			'pageGalleryPrefix'=>'/svc/pages',
-			'pagemaker'=>array('catalog'=>$wwwroot.'\PAGEMAKER\arrangements'),
+			'pagemaker'=>array('catalog'=>$wwwroot.'\PAGEMAKER\static\arrangements'),
 			'autorender'=> $wwwroot.DS.'svc'.DS.'autorender'.DS.'Image.php',
 		);
 		$config['path']['fileUploader'] = array(
@@ -126,16 +126,16 @@ switch ($config['Config.os']) {
 				'preview'=>array('basepath'=>$wwwroot.'/svc/PREVIEWS', 'httpAlias'=>'svc/PREVIEWS'),
 			),
 			'stageroot'=>array('basepath'=>$wwwroot.'/svc/STAGING', 'httpAlias'=>'svc/STAGING'),
-			'blank_user_photo'=> '/img/providers/snappi.png', 	// deprecate, use Stagehand::getSrc()
+			'blank_user_photo'=> '/static/img/css-gui/snappi.png', 	// deprecate, use Stagehand::getSrc()
 			'default_badges'=>array(
-				'person'=>'/img/providers/snappi.png',
-				'Circle'=>'/img/providers/snappi.png',
-				'Group'=>'/img/providers/snappi.png',
-				'Event'=>'/img/providers/snappi.png',
-				'Wedding'=>'/img/providers/snappi.png',
+				'person'=>'/static/img/css-gui/snappi.png',
+				'Circle'=>'/static/img/css-gui/snappi.png',
+				'Group'=>'/static/img/css-gui/snappi.png',
+				'Event'=>'/static/img/css-gui/snappi.png',
+				'Wedding'=>'/static/img/css-gui/snappi.png',
 			),
 			'pageGalleryPrefix'=>'/svc/pages',
-			'pagemaker'=>array('catalog'=>$wwwroot.'/PAGEMAKER/arrangements'),
+			'pagemaker'=>array('catalog'=>$wwwroot.'/PAGEMAKER/static/arrangements'),
 			'autorender'=> $wwwroot.DS.'svc'.DS.'autorender'.DS.'Image.php',
 		);
 		$config['path']['fileUploader'] = array(

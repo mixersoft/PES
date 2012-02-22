@@ -3,7 +3,7 @@
 	<div class='lightbox-tab lightbox-bg hide' title="move the mouse a little lower to see the Lightbox">Lightbox</div>
 	<section class="gallery-header grid_16">
 		<ul class="inline cf">
-			<li><h3>Lightbox <img src="/css/images/img_setting.gif" alt="" align="absmiddle"></h3></li>
+			<li><h3>Lightbox <img src="/static/img/css-gui/img_setting.gif" alt="" align="absmiddle"></h3></li>
 			<li>
 				<nav class="toolbar">
 					<div>
@@ -21,10 +21,10 @@
 				<nav class="window-options">
 					<ul class="thumb-size inline">
 						<li class="label">Size</li>
-						<li size="lbx-tiny" class="btn"><img alt="" src="/css/images/img_1.gif"></li><li size="sq" class="btn "><img alt="" src="/css/images/img_2.gif"></li><li size="lm" class="btn "><img alt="" src="/css/images/img_3.gif"></li>
+						<li size="lbx-tiny" class="btn"><img alt="" src="/static/img/css-gui/img_1.gif"></li><li size="sq" class="btn "><img alt="" src="/static/img/css-gui/img_2.gif"></li><li size="lm" class="btn "><img alt="" src="/static/img/css-gui/img_3.gif"></li>
 					</ul>
 					<ul class="inline">
-						<li action='set-display-view:minimize' title="minimize Lightbox"><img src="/css/images/img_zoomin.gif"><li action='set-display-view:one-row' title="show one row of thumbnails in Lightbox"><img src="/css/images/img_zoomout.gif"></li><li action="set-display-view:maximize" title="maximize Lightbox"><img src="/css/images/img_zoomout.gif"></li>
+						<li action='set-display-view:minimize' title="minimize Lightbox"><img src="/static/img/css-gui/img_zoomin.gif"><li action='set-display-view:one-row' title="show one row of thumbnails in Lightbox"><img src="/static/img/css-gui/img_zoomout.gif"></li><li action="set-display-view:maximize" title="maximize Lightbox"><img src="/static/img/css-gui/img_zoomout.gif"></li>
 					</ul>
 				</nav>
 			</li>

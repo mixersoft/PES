@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<collage version="2" format="6:4" orientation="landscape" theme="picturegrid" shadows="0" captions="1" albumUID="">
+ <albumTitle></albumTitle>
+ <albumDate></albumDate>
+ <background type="solid" color="FFFFFFFF"/>
+ <spacing value="0.000000"/>
+ <node x="0.000000" y="0.000000" w="0.307692" h="0.500000" theta="0.000000" scale="315.000000">
+  <theme>noborder</theme>
+ </node>
+ <node x="0.307692" y="0.000000" w="0.692308" h="0.500000" theta="0.000000" scale="709.000000">
+  <theme>noborder</theme>
+ </node>
+ <node x="0.000000" y="0.500000" w="0.692308" h="0.500000" theta="0.000000" scale="709.000000">
+  <theme>noborder</theme>
+ </node>
+ <node x="0.692308" y="0.500000" w="0.307692" h="0.500000" theta="0.000000" scale="315.000000">
+  <theme>noborder</theme>
+ </node>
+</collage>

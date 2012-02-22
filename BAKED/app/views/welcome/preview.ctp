@@ -4,7 +4,7 @@
 <?php echo $this->Html->charset('UTF-8'); ?>
 <title>Coming Soon</title>
 <?php
-echo $this->Html->meta('favicon.ico', '/img/favicon.ico', array('type' => 'icon') );
+echo $this->Html->meta('favicon.ico', '/static/img/favicon.ico', array('type' => 'icon') );
 echo $this->Html->css('niftyCorners');
 echo $this->Html->script('/js/niftycube.js');
 ?>

@@ -513,7 +513,7 @@
                 '<li class="label">Sizes</li><li class="btn white" action="set-display-size:tn" size="tn">XS</li><li class="btn white" action="set-display-size:bs" size="bs">S</li><li class="btn white" action="set-display-size:bm" size="bm">M</li><li class="btn white" action="set-display-size:bp" size="bp">L</li>' +
                 ' 		 </ul>'+                
                 '		 </nav></li>' +
-                '        <li class="icon context-menu"><img alt="" title="actions" src="/css/images/icon2.png"></li>'+
+                '        <li class="icon context-menu"><img alt="" title="actions" src="/static/img/css-gui/icon2.png"></li>'+
 				'	</ul></figcaption>' +
 				'	<img alt="" src="">' +
 				'</figure>'+
@@ -789,8 +789,8 @@
                 '    <figcaption><ul class="extras">'+
                 '    	 <li class="rating wrap-bg-sprite"></li>'+
                 '        <li class="score">0.0</li>'+
-                '        <li class="icon context-menu"><img alt="" title="actions" src="/css/images/icon2.png"></li>'+
-                '        <li class="icon info"><img alt="more info" src="/css/images/icon1.png"></li>'+
+                '        <li class="icon context-menu"><img alt="" title="actions" src="/static/img/css-gui/icon2.png"></li>'+
+                '        <li class="icon info"><img alt="more info" src="/static/img/css-gui/icon1.png"></li>'+
 				'	</ul></figcaption></figure>'+
 				'</article>',
 		renderElementsBySize : function (size, audition, cfg){
@@ -856,6 +856,7 @@
 			// set src to the correct size
 			var img = node.one('img');
 			src = audition.getImgSrcBySize(audition.urlbase + audition.rootSrc, sizeCfg.size);
+			src = SNAPPI.util.addSubdomain(src);
 			if (this._cfg.queue && SNAPPI.Imageloader.QUEUE_IMAGES) {
 				img.qSrc = src;
 				// SNAPPI.util3.ImageLoader.queueOneImg(img); // defer,
@@ -937,8 +938,8 @@
                 '		<ul class="hide extras">'+
                 '    		<li class="hide rating"></li>'+
                 '       	<li class="hide score">0.0</li>'+
-                '       	<li class="icon context-menu"><img alt="" title="actions" src="/css/images/icon2.png"></li>'+	
-                '       	<li class="icon info"><img alt="more info" src="/css/images/icon1.png"></li>'+
+                '       	<li class="icon context-menu"><img alt="" title="actions" src="/static/img/css-gui/icon2.png"></li>'+	
+                '       	<li class="icon info"><img alt="more info" src="/static/img/css-gui/icon1.png"></li>'+
 				'		</ul></figcaption></figure>'+
 				'</article>',
 		defaultCfg: {

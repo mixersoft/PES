@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<public:component xmlns:public="urn:HTMLComponent" lightweight="true">
+<public:attach event="oncontentready" handler="fixNaturalWH"/>
+<script type="text/javascript">
+//<![CDATA[
+function fixNaturalWHLoad(self) {
+self.el.naturalWidth = self.width;
+self.el.naturalHeight = self.height;
+try{
+  delete self.el;
+} catch(e) {
+  self.el = null;
+}
+try{
+  delete self;
+} catch(e) {
+}
+};
+function fixNaturalWH() {
+var io = new Image();
+io.el = element;
+io.onload = function(){
+  fixNaturalWHLoad(io);
+}
+io.src = element.src;
+};
+//]]>
+</script>
+</public:component>

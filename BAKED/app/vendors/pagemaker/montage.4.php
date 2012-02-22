@@ -174,9 +174,9 @@ $sortedPhotos = sortPhotos(getPhotos($photos, $baseurl), null);
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html>
 <head>
-<!--[if IE]><style> img {behavior: url(/app/pagemaker/js/fixnaturalwh.htc)}</style><![endif]-->
+<!--[if IE]><style> img {behavior: url(/app/pagemaker/static/js/fixnaturalwh.htc)}</style><![endif]-->
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link href="http://snaphappi.com/img/favicon.ico" type="image/x-icon"
+<link href="/static/img/favicon.ico" type="image/x-icon"
 	rel="icon" />
 <title>Snaphappi Page Layout Maker</title>
 <link media="screen" type="text/css"
@@ -186,7 +186,7 @@ $sortedPhotos = sortPhotos(getPhotos($photos, $baseurl), null);
 	src="http://yui.yahooapis.com/combo?3.3.0/build/yui/yui-min.js"> 
         </script>
 <script type="text/javascript"
-	src="http://<?php echo $appHost ?>/app/pagemaker/js/play/pageGallery.js"> 
+	src="http://<?php echo $appHost ?>/app/pagemaker/static/js/play.js"> 
         </script>
 </head>
 <?php  

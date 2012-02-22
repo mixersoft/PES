@@ -12,11 +12,11 @@
 	<title>
 		<?php echo $title_for_layout; ?>
 	</title>
-	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/reset.css" />
-	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/960.css" />	
+	<link rel="stylesheet" type="text/css" media="all" href="/static/css/reset.css" />
+	<link rel="stylesheet" type="text/css" media="all" href="/static/css/960.css" />	
 	<link rel="stylesheet" type="text/css" media="all" href="/css/manoj-css/style.1.css" />
 	<?php
-		echo $this->Html->meta('favicon.ico', '/img/favicon.ico', array('type' => 'icon') );
+		echo $this->Html->meta('favicon.ico', '/static/img/favicon.ico', array('type' => 'icon') );
 		echo $this->element('analytics');
 	?>
 </head>
@@ -39,7 +39,7 @@
 	<div class="grid_16">
 		<span>&copy; 2008-2012 Snaphappi</span>
 		<?php echo $this->Html->link(
-				$this->Html->image('cake.power.gif', array('alt'=> __('CakePHP: the rapid development php framework', true), 'border' => '0')),
+				$this->Html->image('/static/img/css-gui/cake.power.gif', array('alt'=> __('CakePHP: the rapid development php framework', true), 'border' => '0')),
 				'http://www.cakephp.org/',
 				array('target' => '_blank', 'escape' => false)
 			);

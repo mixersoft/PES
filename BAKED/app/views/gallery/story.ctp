@@ -14,7 +14,7 @@
 	<div id="nextPage"></div>
 	<div class="hide">
 		<!-- load  these imgs first-->
-		<img src='/img/pageGallery/prevlabel.gif'><img src='/img/pageGallery/nextlabel.gif'>
+		<img src='/static/img/css-pm/prevlabel.gif'><img src='/static/img/css-pm/nextlabel.gif'>
 	</div>
 </div>
 <div id='content' class='hidden'>
@@ -27,5 +27,5 @@
 	<?php } ?>
 </div>
 <div id="footer" class='<?php if ($isPreview) echo "hide"?>'> 
-	<a href="http://snaphappi.com" target="_new"><img src="/img/snappi/snappi-top.png"></a>
+	<a href="http://snaphappi.com" target="_new"><img src="/static/img/css-gui/snappi-top.png"></a>
 </div>

@@ -8,8 +8,8 @@ html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pr
 
 @font-face {
 	font-family: 'HelveticaNeueRoman';
-	src: url('hlr___-webfont.eot');
-	src: url('hlr___-webfont.eot?#iefix') format('embedded-opentype'), url('hlr___-webfont.woff') format('woff'), url('hlr___-webfont.ttf') format('truetype'), url('hlr___-webfont.svg#HelveticaNeueRoman') format('svg');
+	src: url('/static/css/hlr___-webfont.eot');
+	src: url('/static/css/hlr___-webfont.eot?#iefix') format('embedded-opentype'), url('/static/css/hlr___-webfont.woff') format('woff'), url('/static/css/hlr___-webfont.ttf') format('truetype'), url('/static/css/hlr___-webfont.svg#HelveticaNeueRoman') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
@@ -26,7 +26,7 @@ body {
 	xfont-family: 'HelveticaNeueRoman';
 	font: 1em Arial,Helvetica,Verdana,sans-serif;
 	font-family: Arial;
-	background: url(../images/body_bg.jpg) no-repeat center top #CEE9F0;
+	background: url(/static/img/css-gui/body_bg.jpg) no-repeat center top #CEE9F0;
 }
 
 section, aside, #content {
@@ -145,7 +145,7 @@ form .error-message {
 header {
 	overflow: hidden;
 	height: 44px;
-	background: url("../images/body_bg.jpg") no-repeat scroll center top #000000;
+	background: url(../images/body_bg.jpg) no-repeat scroll center top #000000;
 }
 header li {
 	line-height: 40px !important;
@@ -175,7 +175,7 @@ header nav.primary li.focus {
 	background-color: #000 !important;
 }
 header nav.primary li.focus a {
-	background: url(../images/arrow.png) no-repeat bottom center;
+	background: url(/static/img/css-gui/arrow.png) no-repeat bottom center;
 	padding-bottom: 4px;
 }
 
@@ -191,11 +191,11 @@ header nav.user ul.right > li {
 	margin: 0 4px;
 }
 .menu-open {
-	background: url(../images/arrow.png) no-repeat right center;
+	background: url(/static/img/css-gui/arrow.png) no-repeat right center;
 	padding-right: 15px;
 }
 .menu-close {
-	background: url(../images/arrow-up.png) no-repeat right center;
+	background: url(/static/img/css-gui/arrow-up.png) no-repeat right center;
 	padding-right: 15px;
 }
 
@@ -303,7 +303,7 @@ nav.section-header > ul li.preference {
 	padding: 0 4px 0 4px;
 }
 #search div.go {
-	background: url(../images/search.gif) no-repeat scroll -1px -3px transparent;
+	background: url(/static/img/css-gui/search.gif) no-repeat scroll -1px -3px transparent;
 	width: 24px;
 	height: 24px;
 	cursor: pointer;
@@ -627,7 +627,7 @@ section.gallery-display-options.wide ul > li.label {
 }
 
 .FigureBox.Photo div.hidden-shot {
-	background: url(../images/icon-hidden-shot-null.png) no-repeat scroll ;
+	background: url(/static/img/css-gui/icon-hidden-shot-null.png) no-repeat scroll ;
 	position: absolute;
 	right: 4px;
 	bottom: 5px;
@@ -640,19 +640,19 @@ section.gallery-display-options.wide ul > li.label {
 }
 
 .FigureBox.Photo div.hidden-shot.c2 {
-	background: url(../images/icon-hidden-shot-2.png) no-repeat scroll ;
+	background: url(/static/img/css-gui/icon-hidden-shot-2.png) no-repeat scroll ;
 }
 .FigureBox.Photo div.hidden-shot.c3 {
-	background: url(../images/icon-hidden-shot-3.png) no-repeat scroll ;
+	background: url(/static/img/css-gui/icon-hidden-shot-3.png) no-repeat scroll ;
 }
 .FigureBox.Photo div.hidden-shot.c4 {
-	background: url(../images/icon-hidden-shot-4.png) no-repeat scroll ;
+	background: url(/static/img/css-gui/icon-hidden-shot-4.png) no-repeat scroll ;
 }
 .FigureBox.Photo div.hidden-shot.c5 {
-	background: url(../images/icon-hidden-shot-5.png) no-repeat scroll ;
+	background: url(/static/img/css-gui/icon-hidden-shot-5.png) no-repeat scroll ;
 }
 .FigureBox.Photo div.hidden-shot.c6 {
-	background: url(../images/icon-hidden-shot-6.png) no-repeat scroll ;
+	background: url(/static/img/css-gui/icon-hidden-shot-6.png) no-repeat scroll ;
 }
 .FigureBox.Photo.hiddenshot-hide {
     display: none;
@@ -755,7 +755,7 @@ section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
 	height:20px;
 }
 .FigureBox.PhotoPreview div.hidden-shot {
-	background: url(../images/icon-hidden-shot-null.png) no-repeat scroll 0 bottom transparent;
+	background: url(/static/img/css-gui/icon-hidden-shot-null.png) no-repeat scroll 0 bottom transparent;
 	width: 32px;
 	height: 18px;
 	padding-top: 5px;
@@ -765,19 +765,19 @@ section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
 	bottom: 20px;
 }
 .FigureBox.PhotoPreview div.hidden-shot.c2 {
-	background-image: url(../images/icon-hidden-shot-2.png);
+	background-image: url(/static/img/css-gui/icon-hidden-shot-2.png);
 }
 .FigureBox.PhotoPreview div.hidden-shot.c3 {
-	background-image: url(../images/icon-hidden-shot-3.png);
+	background-image: url(/static/img/css-gui/icon-hidden-shot-3.png);
 }
 .FigureBox.PhotoPreview div.hidden-shot.c4 {
-	background-image: url(../images/icon-hidden-shot-4.png);
+	background-image: url(/static/img/css-gui/icon-hidden-shot-4.png);
 }
 .FigureBox.PhotoPreview div.hidden-shot.c5 {
-	background-image: url(../images/icon-hidden-shot-5.png);
+	background-image: url(/static/img/css-gui/icon-hidden-shot-5.png);
 }
 .FigureBox.PhotoPreview div.hidden-shot.c6 {
-	background-image: url(../images/icon-hidden-shot-6.png);
+	background-image: url(/static/img/css-gui/icon-hidden-shot-6.png);
 }
 
 /*
@@ -798,7 +798,7 @@ section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
  */
 div.ratingGroup {
     margin: 0 auto;
-    background: url('../images/smileyStarGrp.png') no-repeat;
+    background: url(/static/img/css-gui/smileyStarGrp.png) no-repeat;
     background-position: -70px 0; /* init to 0 stars */
     width: 71px; /* width of 5 stars */
     height: 15px;
@@ -960,7 +960,7 @@ aside.related-content .body section > h1 {
 }
 
 .menu li.selected {
-	background: url(../images/next.png) no-repeat 2px center;
+	background: url(/static/img/css-gui/next.png) no-repeat 2px center;
 	padding-left: 10px;
 }
 .menu li.clicked {
@@ -979,7 +979,7 @@ aside.related-content .body section > h1 {
  * drag-drop
  */
 .yui3-dd-proxy {
-    background-image: url( /img/css/countBadge.png );
+    background-image: url( /static/img/css-gui/countBadge.png );
     background-repeat: no-repeat;
     color: white;
     font-weight: bold;
@@ -1052,7 +1052,7 @@ section#lightbox .toolbar ul {
 }
 
 section#lightbox .toolbar ul li{
-	background:url(../images/seprator_bottom.gif) no-repeat bottom right ;
+	background:url(/static/img/css-gui/separator_bottom.gif) no-repeat bottom right ;
 	padding: 0px 10px;
 }
 section#lightbox .toolbar ul li a{color:#000; font-size:11px;}
@@ -1152,7 +1152,7 @@ section.filmstrip .gallery-header .toolbar ul {
 }
 
 section.filmstrip .toolbar ul li {
-	background:url(../images/seprator_bottom.gif) no-repeat bottom right ;
+	background:url(/static/img/css-gui/separator_bottom.gif) no-repeat bottom right ;
 	padding: 0px 10px;
 }
 section.filmstrip .toolbar ul li a{color:#000; font-size:11px;}
@@ -1412,16 +1412,16 @@ ul.circle-thumb li.selected {
 }
 
 .FigureBox.Group li.privacy.public {
-	background: url(../images/earth.png) no-repeat left;
+	background: url(/static/img/css-gui/earth.png) no-repeat left;
 }
 .FigureBox.Group li.privacy.listing {
-	background: url(../images/earth.png) no-repeat left;
+	background: url(/static/img/css-gui/earth.png) no-repeat left;
 }
 .FigureBox.Group li.privacy.members {
-	background: url(../images/people.png) no-repeat left;
+	background: url(/static/img/css-gui/people.png) no-repeat left;
 }
 .FigureBox.Group li.privacy.admin {
-	background: url(../images/lock.png) no-repeat left;
+	background: url(/static/img/css-gui/lock.png) no-repeat left;
 }
 .FigureBox.Group.sq {
 	margin-bottom: 10px;
@@ -1661,16 +1661,16 @@ section.item-header .window-options ul {
 	width: 11px;
 }
 .aui-paginator-first-link{
-	background: url(../images/first.png) no-repeat center;
+	background: url(/static/img/css-gui/first.png) no-repeat center;
 } 
 .aui-paginator-prev-link{
-	background: url(../images/prev.png) no-repeat center;
+	background: url(/static/img/css-gui/prev.png) no-repeat center;
 } 
 .aui-paginator-next-link{
-	background: url(../images/next.png) no-repeat center;
+	background: url(/static/img/css-gui/next.png) no-repeat center;
 } 
 .aui-paginator-last-link{
-	background: url(../images/last.png) no-repeat center;
+	background: url(/static/img/css-gui/last.png) no-repeat center;
 } 
 .aui-paginator-page-link {
 	padding: 3px;
@@ -1707,26 +1707,26 @@ aside.related-content .body-right section > h1 {
 }
 /*	TODO: update icons */
 aside.related-content section.recent > h1 {
-	background: url(../images/recent.png) left top no-repeat;
+	background: url(/static/img/css-gui/recent.png) left top no-repeat;
 }
 aside.related-content section.circles > h1 {
-	background: url(../images/circle.png) left top no-repeat;
+	background: url(/static/img/css-gui/circle.png) left top no-repeat;
 }
 /* deprecate person, use people instead*/
 aside.related-content section.person > h1 {
-	background: url(../images/person.png) left top no-repeat;
+	background: url(/static/img/css-gui/person.png) left top no-repeat;
 }
 aside.related-content section.people h1 {
-	background: url(../images/people.png) left top no-repeat;
+	background: url(/static/img/css-gui/people.png) left top no-repeat;
 }
 aside.related-content section.snap > h1 {
-	background: url(../images/snap.png) left top no-repeat;
+	background: url(/static/img/css-gui/snap.png) left top no-repeat;
 }
 aside.related-content section.trends > h1 {
-	background: url(../images/popular.png) left top no-repeat;
+	background: url(/static/img/css-gui/popular.png) left top no-repeat;
 }
 aside.related-content  section.discussion > h1 {
-	xbackground: url(../images/discussion.png) left top no-repeat;
+	xbackground: url(/static/img/css-gui/discussion.png) left top no-repeat;
 } 
 
 #related-content aside p, aside.related-content p {
@@ -2249,7 +2249,7 @@ img.tiny {
 	float: left;
 	font-size: 12px;
 	color: #909090;
-	background: url(../images/seprator.gif) no-repeat right;
+	background: url(/static/img/css-gui/separator.gif) no-repeat right;
 	padding: 5px 10px;
 	line-height: 14px;
 }

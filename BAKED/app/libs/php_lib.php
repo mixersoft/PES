@@ -197,10 +197,10 @@ function base64url_decode($input) {
  * helper functions for http headers
  */
 function setExpiresHeader($expires) {
-	header('Expires: '.gmdate('D, d M Y H:i:s', time() + $expires).'GMT');
+	header('Expires: '.gmdate('D, d M Y H:i:s', time() + $expires).' GMT');
 }
 function setLastModifiedHeader($timestamp) {
-	header('Last-Modified: '.gmdate('D, d M Y H:i:s', $timestamp).'GMT');
+	header('Last-Modified: '.gmdate('D, d M Y H:i:s', $timestamp).' GMT');
 }
 
 

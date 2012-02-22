@@ -170,7 +170,7 @@
 	    		air_comboBase: 'app/air&',
 	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
 	    		pagemaker_comboBase: 'PageMaker&',	// filepath, not baseurl
-	    		pagemaker_useCombo: 0,		
+	    		pagemaker_useCombo: 1,		
 	    		alloy_useCombo: true,
 	    		yahoo_CDN: 0,
 	    		YUI_VERSION: '3.3.0',	// this is actually set in aui.js
@@ -588,73 +588,73 @@
 		hostCfg = hostCfg || Config.getHostConfig();	
 	    var yuiConfig_pagemaker = {
             combine: hostCfg.pagemaker_useCombo,
-            base: 'http://' + hostCfg.host + '/app/pagemaker/js/',
+            base: 'http://' + hostCfg.host + '/app/pagemaker/',
             // comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl=PAGEMAKER&',
             comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl='+hostCfg.pagemaker_comboBase,
-            root: 'js/',
+            root: '',
             modules: {
                 'pagemaker-base': {
-                    path: 'create/base_aui.js',
+                    path: 'js/create/base_aui.js',
                     requires: ['node', 'io', 'fleegix_xml']
                 },
 			    'snappi-pm-main': {
-			        path: 'create/main3.js',
+			        path: 'js/create/main3.js',
 			        requires: ['snappi-pm-create-css','node','snappi-pm-catalog3','snappi-pm-performance3']
 			    },
 			    'snappi-pm-node3': {
-			        path: 'create/node3.js',
+			        path: 'js/create/node3.js',
 			        requires: ['snappi-pm-util','node', 'event', 'substitute', 'stylesheet']
 			    },
 			    'snappi-pm-util': {
-			        path: 'create/util.js',
+			        path: 'js/create/util.js',
 			        requires: ['io-base','node']
 			    },
 			    'snappi-pm-datasource3': {
-			        path: 'create/datasource3.js',
+			        path: 'js/create/datasource3.js',
 			        requires: ['snappi-datasource']
 			    },
 			    'snappi-pm-arrangement': {
-			        path: 'create/arrangement.js',
+			        path: 'js/create/arrangement.js',
 			        requires: ['oop']
 			    },
 			    'snappi-pm-role': {
-			        path: 'create/role.js',
+			        path: 'js/create/role.js',
 			        requires: ['oop','snappi-sort']
 			    },
 			    'snappi-pm-production': {
-			        path: 'create/production.js',
+			        path: 'js/create/production.js',
 			        requires: ['node','snappi-pm-catalog3','snappi-pm-util']
 			    },
 			    'snappi-pm-audition': {
-			        path: 'create/audition.js',
+			        path: 'js/create/audition.js',
 			        requires: ['snappi-sort','snappi-pm-util']
 			    },
 			    'snappi-pm-tryout': {
-			        path: 'create/tryout.js',
+			        path: 'js/create/tryout.js',
 			        requires: ['snappi-sortedhash','snappi-pm-audition']
 			    },
 			    'snappi-pm-catalog3': {
-			        path: 'create/catalog3.js',
+			        path: 'js/create/catalog3.js',
 			        requires: ['snappi-sortedhash','snappi-pm-audition', 'snappi-pm-role' ]
 			    },
 			    'snappi-pm-casting': {
-			        path: 'create/casting.js',
+			        path: 'js/create/casting.js',
 			        requires: ['node', 'snappi-pm-catalog3']
 			    },
 			    'snappi-pm-performance3': {
-			        path: 'create/performance3.js',
+			        path: 'js/create/performance3.js',
 			        requires: ['node','snappi-pm-tryout','snappi-pm-node3']
 			    },
 			    'snappi-pm-dialog': {
-			        path: 'create/dialog.js',
+			        path: 'js/create/dialog.js',
 			        requires:['node', 'aui-skin-classic-all', 'aui-aria', 'aui-dialog', 'aui-overlay-manager', 'dd-constrain']
 			    },
 			    'snappi-pm-menu': {
-			        path: 'create/menu.js',
+			        path: 'js/create/menu.js',
 			        requires:['event-mouseenter', 'aui-io', 'aui-aria', 'aui-overlay-context', 'aui-overlay-manager']
 			    },
 			    'snappi-pm-play': {
-			        path: 'play/pageGallery.js',
+			        path: 'static/js/play.js',
 			        requires: ["event-delegate", "node", "anim"]
 	           },
 			}
@@ -671,9 +671,9 @@
 		hostCfg = hostCfg || Config.getHostConfig();	
 	    var yuiConfig_jsLib = {
             combine: 0, // hostCfg.snappi_useCombo,
-            base: 'http://' + hostCfg.host + '/js/lib/',
+            base: 'http://' + hostCfg.host + 'static/js/',
             comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl='+hostCfg.snappi_comboBase,
-            root: 'js/lib/',
+            root: 'static/js/',
             modules: {
                 'fleegix_xml': {
                     path: 'xml.js'

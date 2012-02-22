@@ -7,9 +7,9 @@
 	}
 	if (!$thumbSize) $thumbSize = 'lm';		
 	$sizes = array(
-		'tn'=>'/css/images/img_1.gif',
-		'lm'=>'/css/images/img_2.gif',
-		'll'=>'/css/images/img_3.gif',
+		'tn'=>'/static/img/css-gui/img_1.gif',
+		'lm'=>'/static/img/css-gui/img_2.gif',
+		'll'=>'/static/img/css-gui/img_3.gif',
 	);
 	$xhrFrom = Configure::read('controller.xhrFrom');
 	$passedArgs = Configure::read('passedArgs.min');

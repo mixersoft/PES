@@ -179,8 +179,8 @@ $setIconHelp =  !empty($controllerAttrs['isOwner']) ? "Just drop a thumbnail her
 		</ul>
 		<nav class="window-options grid_2 omega hide">
 			<ul class="inline right">
-				<li class="icon context-menu <?php echo $showAction;  ?>"><img alt="" title="actions" src="/css/images/icon2.png"></li>
-				<li action="set-display-view:minimize"><img src="/css/images/img_zoomin.gif"></li><li action="set-display-view:maximize"><img src="/css/images/img_zoomout.gif"></li>
+				<li class="icon context-menu <?php echo $showAction;  ?>"><img alt="" title="actions" src="/static/img/css-gui/icon2.png"></li>
+				<li action="set-display-view:minimize"><img src="/static/img/css-gui/img_zoomin.gif"></li><li action="set-display-view:maximize"><img src="/static/img/css-gui/img_zoomout.gif"></li>
 			</ul>
 		</nav>	
 	</div>
