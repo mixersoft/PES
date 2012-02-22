@@ -130,7 +130,7 @@ class GalleryController extends AppController {
             }
         }
         if ( empty($page_gallery) ) {
-            $page_gallery = array('<div class="error-page-gallery">Sorry, it seems there was an error somewhere. The Page Gallery you requested is not available.</div>');
+            $page_gallery = array('<div class="error-page-gallery">Sorry, it seems there was an error somewhere. We cannot find the Story you requested.</div>');
             $link = '';
         }
         $this->set('page_gallery', $page_gallery);

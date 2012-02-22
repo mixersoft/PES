@@ -236,13 +236,21 @@
 					// no special clickhandler, so just find a.href
 					var next = menuItem.one('a').getAttribute('href');
 					menuItem.addClass('clicked');
-					SNAPPI.setPageLoading(true);
-					var delayed = new _Y.DelayedTask( function() {
-						menu.hide();
-						menuItem.removeClass('clicked');
-						window.location.href = next;
-					});
-					delayed.delay(100);
+					var target = menuItem.one('a').getAttribute('target');
+					if (target) {	// open in a popup window
+						var delayed = new _Y.DelayedTask( function() {
+							menu.hide();
+							menuItem.removeClass('clicked');
+							SNAPPI.setPageLoading(false);
+						});
+						delayed.delay(100);	
+					} else SNAPPI.setPageLoading(true);
+					// var delayed = new _Y.DelayedTask( function() {
+						// menu.hide();
+						// menuItem.removeClass('clicked');
+						// window.location.href = next;
+					// });
+					// delayed.delay(100);
 				} catch (e) {}
 			}
 		};

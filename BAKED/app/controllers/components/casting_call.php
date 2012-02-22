@@ -137,7 +137,7 @@ class CastingCallComponent extends Object {
 		if (isset($src['root'])) $rootSrc = $src['root'];
 		// if (isset($src['preview']))	$previewSrc= $src['preview'];
 		if (isset($src['orig']))	$origSrc= $src['orig'];
-		if (isset($exif['root'])) { 	// $exif['root'] set in controllers/import.php
+		if (isset($exif['root'])) { 	// $exif['root'] set in component/import.php
 			$W = $exif['root']['imageWidth'];
 			$H = $exif['root']['imageHeight'];
 			$Orientation  = isset($exif['root']['Orientation']) ? $exif['root']['Orientation'] : 1;

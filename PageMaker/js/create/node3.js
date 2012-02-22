@@ -176,7 +176,7 @@
                 ev.stopPropagation();
                 var userid, filename, saved_src;
                 try { 
-                	userid = PAGE.jsonData.controller.xhrFrom.uuid;
+                	userid = SNAPPI.STATE.userid;
                 	filename = userid;
                 } catch (e){
                 	filename = 'saved';

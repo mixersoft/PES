@@ -132,11 +132,13 @@ class ImportComponent extends Object
 		$rootSrcAttr['isRGB'] = !empty($exif['ColorSpace']) ? ($exif['ColorSpace'] == 1) : 0;
 		$exif['isFlash'] =  !empty($exif['Flash']) ? ($exif['Flash'] & 1) : 0;  // checks bit 0
 // debug($exif['Orientation']);		
+// debug($exif);
+// debug($rootSrcAttr);
 		/*
 		 * add Exif attributes for root Audition.Photo.Img on Server
 		 * 	- HANDLED IN casting_call.php
 		 */
-		$rootExif = array_filter_keys($exif, array('imageWidth', 'imageHeight', 'isRGB', 'Orientation'));
+		$rootExif = array_filter_keys($rootSrcAttr, array('imageWidth', 'imageHeight', 'isRGB', 'Orientation'));
 		if (!empty($options['autoRotate']) 
 			&& (empty($rootExif['Orientation']) || $rootExif['Orientation'] > 4)) // null, 6 or 8 
 		{	
@@ -148,7 +150,7 @@ class ImportComponent extends Object
 		}	
 		if (isset($exif['Orientation']) && $exif['Orientation'] == 1) {
 			// assume original ExifOrientation has be 'autorotated' & set =1
-			if (($exif['imageWidth']<$exif['imageHeight']) 
+			if (($rootExif['imageWidth']<$rootExif['imageHeight']) 
 				&& ($exif['ExifImageWidth']>$exif['ExifImageLength']) )
 			{	// flip values
 // debug("Flipped ExifImageWidth, ExifImageLength");			
@@ -162,6 +164,7 @@ class ImportComponent extends Object
 			$rootExif['Orientation'] = 1;
 		}
 		$exif['root'] = $rootExif;
+// debug($exif['root']);		
 		unset ($exif['imageWidth']);
 		unset ($exif['imageHeight']);
 		unset ($exif['COMPUTED']);

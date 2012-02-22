@@ -140,7 +140,7 @@ class AppController extends Controller {
 			 * init if empty. for dependent XHR calls
 			 */ 
 			$xhrFrom['alias'] = Configure::read("controller.alias"); // controller alias
-			$xhrFrom['uuid'] = AppController::$ownerid;  // add as ? 'src'=>implode('~',$xhrRoot)				// uuid
+			$xhrFrom['uuid'] = AppController::$uuid;  // add as ? 'src'=>implode('~',$xhrRoot)				// uuid
 			$xhrFrom['action'] = $this->action; // action (optional)
 			$xhrFrom['view'] = null; 
 		} else {

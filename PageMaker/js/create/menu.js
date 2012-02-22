@@ -340,7 +340,7 @@
 		if (STORY_ID) {
             var userid, filename, saved_src;
             try { 
-            	userid = PAGE.jsonData.controller.xhrFrom.uuid;
+            	userid = SNAPPI.STATE.userid;
             	filename = STORY_ID || userid;
             } catch (e){
             	filename = STORY_ID || 'saved';

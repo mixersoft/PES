@@ -631,8 +631,20 @@
 		},
 		bindSelected: function(selected, previewBody, size) {
 			if (!selected.id) {
-        		selected = SNAPPI.Auditions.get(selected);
+        		var check = SNAPPI.Auditions.get(selected);
         	} 	    		
+        	try {
+        		if (check) {
+        			selected = check;
+        		} else {
+	        		var onDuplicate = SNAPPI.Auditions.onDuplicate_REPLACE;
+		        	SNAPPI.Auditions.parseCastingCall(PAGE.jsonData.castingCall, null, null, onDuplicate);
+		        	selected = SNAPPI.Auditions.get(selected);
+	        	} 
+        	} catch(e) {
+        		console.warn('ERROR: ThumbnailFactory.PhotoPreview.bindSelected() cannot find audition for uuid='+selected);
+        	}
+	        	
     		var previewBody = previewBody || _Y.one('.photo .preview-body');
     		if (!previewBody) return;
     		

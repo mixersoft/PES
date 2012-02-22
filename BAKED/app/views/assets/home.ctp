@@ -115,7 +115,11 @@
 	var initOnce = function() {
 		var Y = SNAPPI.Y;
 		SNAPPI.mergeSessionData();
-		
+		// init page with navFilmstrip closed
+		var selected = PAGE.jsonData.controller.xhrFrom.uuid;
+		var previewBody = Y.one('.preview-body');
+	    SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, previewBody);
+	    
 		// NOTE: we must init the gallery to start the 'WindowOptionClick' listners
 		var filmstripCfg = {
 			type: 'NavFilmstrip',
@@ -124,14 +128,7 @@
 			render: false,		// do NOT render on init
 		};
 		var fs = new SNAPPI.Gallery(filmstripCfg);
-		
-		// init page with navFilmstrip closed
-		var selected = PAGE.jsonData.controller.xhrFrom.uuid;
-		// SNAPPI.domJsBinder.bindSelected2Page(fs, selected);
-		var previewBody = Y.one('.preview-body');
-	    SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, previewBody);
 		SNAPPI.xhrFetch.init(); 
-	
 	};
 	try {SNAPPI.xhrFetch.fetchXhr; initOnce(); }			// run now for XHR request, or
 	catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request
