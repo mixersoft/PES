@@ -4,9 +4,9 @@
 		$focus = $this->passedArgs['thumbSize'];		
 	}
 	$sizes = array(
-		'sq'=>'/static/img/css-gui/img_1.gif',
-		'lm'=>'/static/img/css-gui/img_2.gif',
-		'll'=>'/static/img/css-gui/img_3.gif',
+		'sq'=>AppController::$http_static[1].'/static/img/css-gui/img_1.gif',
+		'lm'=>AppController::$http_static[0].'/static/img/css-gui/img_2.gif',
+		'll'=>AppController::$http_static[1].'/static/img/css-gui/img_3.gif',
 	);
 	if ($isPreview) {
 		$xhrFrom = Configure::read('controller.xhrFrom');

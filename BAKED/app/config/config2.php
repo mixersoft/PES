@@ -89,18 +89,23 @@ switch ($config['Config.os']) {
 		$config['path']['storyMakerUploader'] = array(
 				'folder_basepath'=>$wwwroot.DS.'svc'.DS.'upload'.DS,
 				'baseurl'=>'svc'.DS.'upload'.DS,
-			);		
+			);	
+		$config['http_static'] = array('http://snappi:88', 'http://snappi1:88');
 		break;
 	case '*nix':
 	case 'unix':
 		
 		switch (env('SERVER_NAME')) {
+			case 'dev.snaphappi.com':
+			case 'aws.snaphappi.com':
+				$wwwroot = '/www-dev';	
+				$config['http_static'] = array('http://snappi.snaphappi.com', 'http://snappi1.snaphappi.com'); 
+				break;
 			case 'dev2.snaphappi.com':
 			case 'gallery.snaphappi.com':
 				$wwwroot = '/www-dev2';
 				break;			
-			case 'aws.snaphappi.com':
-				default:
+			default:
 				$wwwroot = '/www-dev'; 
 				break;
 		}
@@ -154,9 +159,9 @@ switch ($config['Config.os']) {
 }
 
 switch (env('SERVER_NAME')) {
+	case 'dev.snaphappi.com':
 	case 'aws.snaphappi.com':
 	case 'gallery.snaphappi.com':
-	case 'dev.snaphappi.com':
 		Configure::write('debug', 0);
 		break;
 }

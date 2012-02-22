@@ -145,7 +145,7 @@ form .error-message {
 header {
 	overflow: hidden;
 	height: 44px;
-	background: url(../images/body_bg.jpg) no-repeat scroll center top #000000;
+	background: url(/static/img/css-gui/body_bg.jpg) no-repeat scroll center top #000000;
 }
 header li {
 	line-height: 40px !important;
@@ -178,7 +178,6 @@ header nav.primary li.focus a {
 	background: url(/static/img/css-gui/arrow.png) no-repeat bottom center;
 	padding-bottom: 4px;
 }
-
 
 header nav.user ul.right > li {
 	display: inline-block;

@@ -27,5 +27,5 @@
 	<?php } ?>
 </div>
 <div id="footer" class='<?php if ($isPreview) echo "hide"?>'> 
-	<a href="http://snaphappi.com" target="_new"><img src="/static/img/css-gui/snappi-top.png"></a>
+	<a href="http://snaphappi.com" target="_new"><img src="<?php echo AppController::$http_static[0]; ?>/static/img/css-gui/snappi-top.png"></a>
 </div>

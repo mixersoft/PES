@@ -12,7 +12,7 @@ class AppController extends Controller {
 		'Auth',
 		'Permissionable.Permissionable',
 	);
-
+	static $http_static = null;
 	static $uuid = null;
 	static $userid = null;
 	static $ownerid = null;
@@ -368,6 +368,7 @@ debug("AppController::__updateExif");
 	}
 	
 	function prepareRequest() {
+		AppController::$http_static = Configure::read('http_static');
 		$this->__cacheAuth();
 		$this->__cacheControllerAttrs();	
 		$this->__cacheClickStream();

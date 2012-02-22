@@ -39,7 +39,7 @@
 <header class="head container_16">
 		<div class="grid_3">
 			<h1 class="logo"><a href="/photos/all">
-				<img src="/static/img/css-gui/snappi-top.png" alt=""></a>
+				<img src="<?php echo AppController::$http_static[0]; ?>/static/img/css-gui/snappi-top.png" alt=""></a>
 				</h1>
 		</div>
 		<nav class="primary grid_6">

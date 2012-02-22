@@ -3,9 +3,9 @@
 	$thumbSize = Session::read("thumbSize.{$PREFIX}");
 	if (!$thumbSize) $thumbSize = 'sq';
 	$sizes = array(
-		'sq'=>'/static/img/css-gui/img_1.gif',
-		'tn'=>'/static/img/css-gui/img_2.gif',
-		'lm'=>'/static/img/css-gui/img_3.gif',
+		'sq'=>AppController::$http_static[1].'/static/img/css-gui/img_1.gif',
+		'tn'=>AppController::$http_static[0].'/static/img/css-gui/img_2.gif',
+		'lm'=>AppController::$http_static[1].'/static/img/css-gui/img_3.gif',
 	);
 ?>
 <section id="shot-gallery" class="filmstrip filmstrip-bg drop minimize alpha grid_11 omega">
@@ -36,7 +36,7 @@
 						?>
 					</ul>
 					<ul class="inline">
-						<li action='set-display-view:minimize'><img src="/static/img/css-gui/img_zoomin.gif"></li><li action="set-display-view:one-row"><img src="/static/img/css-gui/img_zoomout.gif"></li>
+						<li action='set-display-view:minimize'><img src="<?php echo AppController::$http_static[0]; ?>/static/img/css-gui/img_zoomin.gif"></li><li action="set-display-view:one-row"><img src="<?php echo AppController::$http_static[1]; ?>/static/img/css-gui/img_zoomout.gif"></li>
 					</ul>
 				</nav>
 			</li>

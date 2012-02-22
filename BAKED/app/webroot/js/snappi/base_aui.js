@@ -157,12 +157,16 @@
      */
 	var Config = function(){};  
 	Config._name = 'snappi';  
+	Config.staticHost = {			// also defined in /pagemaker/js/create/base_aui.js
+		subdomain: 'snappi',		// subdomain prefix for static host
+		server_count: 2, 			// count of subdomains on this prefix
+	};
 	SNAPPI.Config = Config;	// make global
 	var _CFG = {		// frequently used startup Config params 
 			DEBUG : {	// default when hostname==git*
 	    		snappi_comboBase: 'baked/app/webroot&',
 	    		air_comboBase: 'app/air&',
-	    		snappi_useCombo: 0,					// <-- TESTING SNAPPI useCombo
+	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
 	    		pagemaker_comboBase: 'PageMaker&',	// filepath, not baseurl
 	    		pagemaker_useCombo: 1,
 	    		alloy_useCombo: true,
@@ -185,6 +189,27 @@
 	namespace('CFG');
 	CFG = _CFG;
 	
+	/**
+	 * @params hashkey mixed, use this value to determine staticHost index
+	 * @return host, string, same form as window.location.host, i.e. hostname:port
+	 */
+	Config.getStaticHost = function(hashkey){
+		var match, needle, subdomain, i;
+		host = window.location.host;
+		try {
+			i = hashkey % Config.staticHost.server_count;
+			if (isNaN(i)) { // scan for stageN
+				match = hashkey.match(/.*\/stage(\d+)\/.*/);	
+				hashkey = (match && match.length==2) ? parseInt(match[1]) : 0;
+				i = hashkey % Config.staticHost.server_count;		
+			}
+		}catch(e){}
+		subdomain = i ? Config.staticHost.subdomain+i : Config.staticHost.subdomain;
+		match = host.match(/(.*)\.snaphappi\.com/);
+		needle = (match && match.length==2) ? match[1] : window.location.hostname;
+		host = host.replace(needle, subdomain);
+		return host;
+	}
 	Config.getYuiConfig = function(force){
 		if (SNAPPI.yuiConfig && force !== true) {
 			return SNAPPI.yuiConfig;
@@ -223,7 +248,7 @@
 	    // update yuiConfig for yahoo CDN config
 	    if (hostCfg.alloy_useCombo && hostCfg.yahoo_CDN == false) {
 	    	// use hosted combo services
-	    	yuiConfig.comboBase = 'http://' + hostCfg.host + '/combo/js?baseurl=svc/lib/yui_'+hostCfg.YUI_VERSION+'/yui/build&';
+	    	yuiConfig.comboBase = 'http://' + Config.getStaticHost(0) + '/combo/js?baseurl=svc/lib/yui_'+hostCfg.YUI_VERSION+'/yui/build&';
 	    	yuiConfig.root = '/';
 	    }
 	    
@@ -695,7 +720,7 @@
 			yuiConfig_alloy = {
 	            combine: true,
 	            base: 'http://' + hostCfg.host + '/svc/lib/'+ALLOY_VERSION+'/build/',
-	            comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl=svc/lib/'+ALLOY_VERSION+'/build&',
+	            comboBase: 'http://' + Config.getStaticHost(0) + '/combo/js?baseurl=svc/lib/'+ALLOY_VERSION+'/build&',
 	            root: '/',		// base for combo loading, combo load uri = comboBase+root+[module-name]
 	//	        filter: "MIN",    // filter ['MIN'|'DEBUG'|'RAW'], set in yuiConfig.yui    
 	            filter:'MIN',            
@@ -717,8 +742,8 @@
 		hostCfg = hostCfg || Config.getHostConfig();
 	    var yuiConfig_snappi = {
             combine: hostCfg.snappi_useCombo,
-            base: 'http://' + hostCfg.host + '/js/snappi/',
-            comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl='+hostCfg.snappi_comboBase,
+            base: 'http://' + hostCfg.host + '/js/snappi/', // must be same as alloy?
+            comboBase: 'http://' + Config.getStaticHost(1) + '/combo/js?baseurl='+hostCfg.snappi_comboBase,
             root: 'js/snappi/',						// base for combo loading, combo load uri = comboBase+root+[module-name]
             modules: {
 	    		'snappi-event-hover': {
@@ -865,7 +890,7 @@
 	    var yuiConfig_gallery = {
 	            combine: hostCfg.snappi_useCombo,
 	            base: 'http://' + hostCfg.host + '/js/gallery/',
-	            comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl='+hostCfg.snappi_comboBase,
+	            comboBase: 'http://' + Config.getStaticHost(1) + '/combo/js?baseurl='+hostCfg.snappi_comboBase,
 	            root: 'js/gallery/',						// base for combo loading, combo load uri = comboBase+root+[module-name]
 	            modules: {
 	                'gallery-util': {

@@ -163,6 +163,10 @@
     
 	var Config = function(){};    
 	Config._name = 'snappi-pm';
+	Config.staticHost = {			// also defined in /js/snappi/base_aui.js
+		subdomain: 'snappi',		// subdomain prefix for static host
+		server_count: 2, 			// count of subdomains on this prefix
+	};
 	PM.Config = Config;	// make global
 	var _CFG = {		// frequently used startup Config params 
 			DEBUG : {	// default when hostname==git*
@@ -190,7 +194,27 @@
 	    }
 	namespace('CFG');
 	CFG = _CFG;
-	
+	/**
+	 * @params hashkey mixed, use this value to determine staticHost index
+	 * @return host, string, same form as window.location.host, i.e. hostname:port
+	 */
+	Config.getStaticHost = function(hashkey){
+		var match, needle, subdomain, i;
+		host = window.location.host;
+		try {
+			i = hashkey % Config.staticHost.server_count;
+			if (isNaN(i)) { // scan for stageN
+				match = hashkey.match(/.*\/stage(\d+)\/.*/);	
+				hashkey = (match && match.length==2) ? parseInt(match[1]) : 0;
+				i = hashkey % Config.staticHost.server_count;		
+			}
+		}catch(e){}
+		subdomain = i ? Config.staticHost.subdomain+i : Config.staticHost.subdomain;
+		match = host.match(/(.*)\.snaphappi\.com/);
+		needle = (match && match.length==2) ? match[1] : window.location.hostname;
+		host = host.replace(needle, subdomain);
+		return host;
+	}
 	Config.getYuiConfig = function(force){
 		if (PM.yuiConfig && force !== true) {
 			return PM.yuiConfig;

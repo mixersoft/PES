@@ -63,7 +63,7 @@
 		<div id="footer">
 			<span style="font-size:0.8em;vertical-align:text-top;">&copy; 2008-2010 Snaphappi</span>
 			<?php echo $this->Html->link(
-					$this->Html->image('/static/img/css-gui/cake.power.gif', array('alt'=> __('CakePHP: the rapid development php framework', true), 'border' => '0')),
+					$this->Html->image(AppController::$http_static[0].'/static/img/css-gui/cake.power.gif', array('alt'=> __('CakePHP: the rapid development php framework', true), 'border' => '0')),
 					'http://www.cakephp.org/',
 					array('target' => '_blank', 'escape' => false)
 				);
