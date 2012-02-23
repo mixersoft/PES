@@ -33,9 +33,7 @@
 	<link rel="stylesheet" type="text/css" media="all" href="<?php echo AppController::$http_static[1]; ?>/combo/js?baseurl=svc/lib/alloy-1.0.2/build&/aui-skin-classic/css/aui-skin-classic-all.css&/aui-loading-mask/assets/skins/sam/aui-loading-mask.css&/aui-overlay/assets/skins/sam/aui-overlay.css&" />
 	<link rel="stylesheet" type="text/css" href="<?php echo AppController::$http_static[0]; ?>/min/b=static/css&amp;f=reset.css,960.css" />	
 	<link rel="stylesheet" type="text/css" media="all" href="<?php echo AppController::$http_static[1]; ?>/css/manoj-css/style.1.css" />
-	<?php
-		echo $this->Html->meta('favicon.ico', '/static/img/favicon.ico', array('type' => 'icon') );
-	?>
+	<link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
 </head>
  <?php flush(); ?>
 <body>
