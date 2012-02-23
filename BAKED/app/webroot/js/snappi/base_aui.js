@@ -158,6 +158,7 @@
 	Config.staticHost = {			// also defined in /pagemaker/js/create/base_aui.js
 		subdomain: 'snappi',		// subdomain prefix for static host
 		server_count: 2, 			// count of subdomains on this prefix
+		FORCE_HOST: false,			// if string, then set host to string value
 	};
 	SNAPPI.Config = Config;	// make global
 	var _CFG = {		// frequently used startup Config params 
@@ -192,6 +193,7 @@
 	 * @return host, string, same form as window.location.host, i.e. hostname:port
 	 */
 	Config.getStaticHost = function(hashkey){
+		if (Config.staticHost.FORCE_HOST) return Config.staticHost.FORCE_HOST;
 		var match, needle, subdomain, i;
 		host = window.location.host;
 		try {
@@ -608,6 +610,7 @@
 				alert("baseurl is not set");
 				SNAPPI.AIR.host = 'git3:88';
 			}	
+			Config.staticHost.FORCE_HOST = SNAPPI.AIR.host;	// MULTIPLE subdomains doesn't work with AIR
 			/*
 			 * helper functions, debug for firebug lite
 			 */
