@@ -58,36 +58,34 @@ $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 
 		$this->Layout->blockStart('javascript'); 
 	?>
-	<script type="text/javascript">
-		/**
-		 * run after EACH XHR request
-		 */
-		var initOnce = function() {
-			try {
-				SNAPPI.setPageLoading(true);
-				SNAPPI.mergeSessionData();
-				SNAPPI.UIHelper.nav.setDisplayOptions();
-				SNAPPI.STATE.galleryType = 'Photo';
-				// load montage or gallery from UIHelper.listeners['SectionOptionClick']
-				SNAPPI.startListeners();	// catch any PAGE.jsonData.listeners by XHR
-				SNAPPI.LazyLoad.hint( {
-					ready: function(Y){
-						SNAPPI.Hint.load({
-							id: 'HINT_MultiSelect',
-							trigger: 'section.gallery.photo .container',
-						});
-					}
-				});
-			} catch (e) {}
-		};
+<script type="text/javascript">
+	/**
+	 * run after EACH XHR request
+	 */
+	var initOnce = function() {
 		try {
-			SNAPPI.xhrFetch.fetchXhr; 
-			initOnce(); 
-		} catch (e) {
-			PAGE.init.push(initOnce); 
-		}	// run from Y.on('domready') for HTTP request
-		var check;
-	</script>	
+			SNAPPI.setPageLoading(true);
+			SNAPPI.mergeSessionData();
+			SNAPPI.UIHelper.nav.setDisplayOptions();
+			SNAPPI.STATE.galleryType = 'Photo';
+			/*
+			 *  load montage OR gallery from UIHelper.listeners['SectionOptionClick']
+			 * 	set in $this->viewVars['jsonData']['listeners']['SectionOptionClick'] = null;
+			 */
+			SNAPPI.startListeners();	// catch any PAGE.jsonData.listeners by XHR
+			SNAPPI.Hint.load({
+				id: 'HINT_MultiSelect',
+				trigger: 'section.gallery.photo .container',
+			});
+		} catch (e) {}
+	};
+	try {
+		SNAPPI.xhrFetch.fetchXhr; 
+		initOnce(); 
+	} catch (e) {
+		PAGE.init.push(initOnce); 
+	}	// run from Y.on('domready') for HTTP request
+</script>	
 <?php   $this->Layout->blockEnd();
 
 

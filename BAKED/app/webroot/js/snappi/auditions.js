@@ -30,7 +30,6 @@
     SNAPPI.namespace('SNAPPI.onYready');
     SNAPPI.onYready.Audition = function(Y){
 		if (_Y === null) _Y = Y;
-		AuditionParser.snappi.getImgSrcBySize = SNAPPI.util.getImgSrcBySize;
 		SNAPPI.AuditionParser = AuditionParser;
     
 	    /*
@@ -521,6 +520,9 @@
         parse: function(rootNode){
             //            _xml2JsTidy(rootNode);
             var p, audition, arrAuditions, baseurl, node, results = [];
+            if (!this.getImgSrcBySize) {	// initialize here
+	    		this.getImgSrcBySize = SNAPPI.util.getImgSrcBySize;
+	    	}
             if (rootNode.CastingCall && rootNode.CastingCall.Auditions && rootNode.CastingCall.Auditions.Audition) {
                 arrAuditions = rootNode.CastingCall.Auditions.Audition;
                 baseurl = rootNode.CastingCall.Auditions.Baseurl;

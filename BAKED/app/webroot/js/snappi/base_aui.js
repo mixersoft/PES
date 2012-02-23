@@ -78,29 +78,29 @@
 			'DragDrop': 1,
 		};
 		SNAPPI.startListeners(listeners);
-		// if (PAGE.jsonData && PAGE.jsonData.listeners) {
-			// listeners = Y.merge(listeners, PAGE.jsonData.listeners);
-			// delete PAGE.jsonData.listeners;
-		// }
-		// for (var listen in listeners) {
-			// if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
-		// }        	
-    	
         
         // ready now, or after Gallery init   
         var isXhrGet =  Y.one('#body-container .xhr-get');
         if (!isXhrGet) {
         	SNAPPI.setPageLoading(false);
-        }                   
-        /**********************************************************
-         * optional inits
-         * - there should be room to optimize what we init for each page
-         */
-        // TODO: restore Lightbox is useful only if we are saving to desktop cookie
-        // 			right now default is SERVER cookie
-        //		SNAPPI.lightbox.restoreLightboxByCookie();	
+        }         
         
-        // Pagemaker default cfg  
+        var delayed = new Y.DelayedTask( function() {
+			SNAPPI.LazyLoad.extras({
+	        	module_group:'gallery',
+	        }); 
+		});
+		delayed.delay(3000);	
+                 
+        // /**********************************************************
+         // * optional inits
+         // * - there should be room to optimize what we init for each page
+         // */
+        // // TODO: restore Lightbox is useful only if we are saving to desktop cookie
+        // // 			right now default is SERVER cookie
+        // //		SNAPPI.lightbox.restoreLightboxByCookie();	
+//         
+        // // Pagemaker default cfg  
         try {
         	SNAPPI.PM.cfg = {
                     fn_DISPLAY_SIZE: function(){
@@ -109,9 +109,7 @@
                         };
                     }
                 };
-        }catch (e){
-        	
-        }
+        }catch (e){}
         
         Y.fire('snappi:afterMain');
         
@@ -388,11 +386,21 @@
 		}
 		LazyLoad.use(modules, onlazyload, cfg);
 	}; 
-	LazyLoad.hint = function(cfg){
-		cfg = cfg || { ready: function(){return true;}};	// closure for onlazyload
-		var modules = ['snappi-hint'];
-		var onlazyload = cfg.ready;
-		LazyLoad.use(modules, onlazyload, cfg);
+	/**
+	 * load extra modules AFTER initial page rendering
+	 * @params cfg.module_group = string, set of modules to load by key
+	 */			
+	LazyLoad.extras = function(cfg){	// load on _Y.later() after initial startup
+		var module_group = {
+			'gallery': ['snappi-dialog-aui', 'snappi-hint', 'pagemaker-base'],
+			'hint':['snappi-hint' ],
+		}
+		var modules = module_group[cfg.module_group];
+		if (modules) {
+			cfg = cfg.ready || { ready: function(){return true;}};	// closure for onlazyload
+			var onlazyload = cfg.ready;
+			LazyLoad.use(modules, onlazyload, cfg);
+		}
 	};	
 	// adds support for SNAPPI.xhrFetch
 	LazyLoad.xhr= function() {
@@ -488,21 +496,6 @@
 			// UNUSED
 			// 'aui-resize', 
 		];
-		modules_3 = [
-			'snappi-dialog-aui',
-			/*
-			 * pagemaker
-			 */
-			'pagemaker-base',
-		]
-		
-		// var onlazyload_1 = function(Y, result){
-			// Y.on("domready", function() {
-		    	// SNAPPI.domready = true;
-		    // });
-		    // YAHOO = SNAPPI.Y.YUI2; // YUI2 deprecate when possible
-		    // LazyLoad.use(modules_2, onlazyload_2, {before: null});
-		// }
 		var onlazyload = function(Y, result){
 			/*
 			 * all script files loaded, begin init
@@ -511,21 +504,11 @@
 			Y.on("domready", function() {
 		    	_main(Y);
 		    });
-			// if (SNAPPI.domready) {
-				// _main();		// domready event already called
-			// } else {
-// console.warn('Y.ready() BEFORE domready');					
-				// var detach = Y.on("domready", function() {
-					// detach.detach();
-			    	// _main();
-			    // });
-			// }
-			// LazyLoad.use(modules_3, onlazyload_3, {before: null});
 		}
 		var onlazyload_3 = function(Y, result){
 			// init for dialog, pagemakerPlugin
 		}
-		var modules = modules_1.concat(modules_2, modules_3);
+		var modules = modules_1.concat(modules_2);
 		LazyLoad.use( modules, onlazyload, null );
 	}
 	LazyLoad.AIRDesktopUploader = function(cfg){
@@ -720,7 +703,7 @@
 			yuiConfig_alloy = {
 	            combine: true,
 	            base: 'http://' + hostCfg.host + '/svc/lib/'+ALLOY_VERSION+'/build/',
-	            comboBase: 'http://' + Config.getStaticHost(0) + '/combo/js?baseurl=svc/lib/'+ALLOY_VERSION+'/build&',
+	            comboBase: 'http://' + Config.getStaticHost(1) + '/combo/js?baseurl=svc/lib/'+ALLOY_VERSION+'/build&',
 	            root: '/',		// base for combo loading, combo load uri = comboBase+root+[module-name]
 	//	        filter: "MIN",    // filter ['MIN'|'DEBUG'|'RAW'], set in yuiConfig.yui    
 	            filter:'MIN',            
@@ -743,7 +726,7 @@
 	    var yuiConfig_snappi = {
             combine: hostCfg.snappi_useCombo,
             base: 'http://' + hostCfg.host + '/js/snappi/', // must be same as alloy?
-            comboBase: 'http://' + Config.getStaticHost(1) + '/combo/js?baseurl='+hostCfg.snappi_comboBase,
+            comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl='+hostCfg.snappi_comboBase,
             root: 'js/snappi/',						// base for combo loading, combo load uri = comboBase+root+[module-name]
             modules: {
 	    		'snappi-event-hover': {

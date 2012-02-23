@@ -559,6 +559,7 @@
 				 */
 				var modules = ['pagemaker-base','snappi-dialog-aui']
 				var callback = function(Y, result){
+					PM = SNAPPI.PM;
 					/*
 					 * (after PageMakerPlugin load,)
 					 * DO NOT wait for 'snappi:lazyload-complete', 
@@ -568,8 +569,6 @@
 					 */
 					Y.fire('snappi-pm:PageMakerPlugin-load-complete', Y);
 					external_Y.fire('snappi-pm:PageMakerPlugin-load-complete', Y);
-					// Y.fire('snappi-pm:afterPageMakerPluginLoad', Y);
-					// external_Y.fire('snappi-pm:afterPageMakerPluginLoad', Y);
 // console.info("snappi-pm:PageMakerPlugin-load-complete");					
 					// TODO: put in 'snappi-pm:afterPageMakerPluginLoad' handler?
 					PMPlugin = PM.pageMakerPlugin = new PM.PageMakerPlugin(external_Y);
