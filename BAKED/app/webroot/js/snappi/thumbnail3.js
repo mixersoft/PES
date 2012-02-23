@@ -182,6 +182,21 @@
         	Factory[this._cfg.type].renderElementsBySize.call(this, this._cfg.size, audition, cfg);				
 			return this.node;
 		},
+		isReady : function(){
+			if (this.img.qSrc) {
+				// TODO: incomplete. listen for Imageloader event
+				return true;
+			} else {
+				var src = this.img.get('src');
+				this.img.set('src', null); // naturalHeight == 0
+				var detach = this.img.on('load', function(){
+					detach.detach();
+					_Y.fire('snappi:img-ready', this);
+				});
+				this.img.set('src', src);
+			}
+			return this.img.get('naturalHeight');
+		},
 		remove: function() {
 			SNAPPI.Auditions.unbind(this.node);
 			this.node.empty().remove();

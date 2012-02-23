@@ -866,23 +866,22 @@
 			if (this._cfg.addClass) node.addClass(this._cfg.addClass);
 
 			// set src to the correct size
-			var img = node.one('img');
 			src = audition.getImgSrcBySize(audition.urlbase + audition.rootSrc, sizeCfg.size);
 			src = SNAPPI.util.addSubdomain(src);
 			if (this._cfg.queue && SNAPPI.Imageloader.QUEUE_IMAGES) {
-				img.qSrc = src;
+				this.img.qSrc = src;
 				// SNAPPI.util3.ImageLoader.queueOneImg(img); // defer,
 				// queue by selector
 			} else {
-				img.set('src', src);
+				this.img.set('src', src);
 			}		
-			img.setAttribute('linkTo', linkTo);
+			this.img.setAttribute('linkTo', linkTo);
 			
 			// set draggable	
 			if (this._cfg.draggable) {
-				img.addClass('drag');
+				this.img.addClass('drag');
 			} else {
-				img.removeClass('drag');
+				this.img.removeClass('drag');
 			}
 			
 			// show caption, 

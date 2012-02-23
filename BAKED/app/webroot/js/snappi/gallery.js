@@ -115,7 +115,6 @@
 	
     Gallery.prototype = {
     	init: function(cfg) {
-    		var Y = SNAPPI.Y;
 	    	var _cfg = _Y.merge(cfg);		// copy cfg
 	    	
 	    	// skip this line
@@ -342,7 +341,7 @@
             /*
              * reuse or create LIs
              */
-            var thumbCfg = {};
+            var lastLI, thumbCfg = {};
             // if (this.node.hasClass('hiddenshots')) thumbCfg = {	showHiddenShot : false	}
             if (nlist.size()) {
                 // if .FigureBox exist, reuse
@@ -355,7 +354,7 @@
             		} else if (_Y.Lang.isNumber(this._cfg.start) && this._cfg.end) {
 						var audition = this.auditionSH.get(offset+i);
 						if (audition && offset+i < this._cfg.end) { 
-						    this.reuseThumbnail(audition, n, thumbCfg);
+						    lastLI = this.reuseThumbnail(audition, n, thumbCfg);
 						    if (audition.id == focusUuid) n.addClass('focus');
 						} else {
 							// n.addClass('hide');
@@ -366,16 +365,13 @@
             }
             // otherwise create new LIs, or if there is not enough
             var li, audition, i = offset + nlist.size(), limit = offset + perpage;
-            var lastLI;
             
             while (i < limit) {
                 audition = this.auditionSH.get(i++);
                 if (audition == null) 
                     break;
-                li = this.createThumbnail(audition, thumbCfg);
-                if (audition.id == focusUuid) li.addClass('focus');
-
-                lastLI = li;
+                lastLI = this.createThumbnail(audition, thumbCfg);
+                if (audition.id == focusUuid) lastLI.addClass('focus');
             }
             
             if (this._cfg.hideHiddenShotByCSS) {
@@ -423,7 +419,32 @@
 	                	castingCall: response.castingCall,
 	                	replace: args.replace,
 	                }
-	                this.render(options);
+	                var lastThumb = this.render(options);
+	                /*
+	                 * CHECK Thumbnail.isReady() before loadingmask.hide()
+	                 * TODO: Thumbnail.isReady() is still a hack, need to tally onload for all thumbs
+	                 */
+	                var after = _Y.after(
+	                	function(){
+	                		after.detach();
+	                		var REFRESH_TIMEOUT = 5000;
+	                		var timeout = _Y.later(REFRESH_TIMEOUT, this, function(){
+		                		this.hide();
+		                	});	// set timeout for loadingmask 
+	                		if (!lastThumb.Thumbnail.isReady()) {
+	                			this.show();
+			                	var detach = _Y.on('snappi:img-ready', function(imgNode, lastThumb){
+			                		if (!lastThumb.contains(imgNode)) return;
+									detach.detach();
+									this.hide();
+									timeout.cancel();
+								}, 
+								this, // context == loadingmask
+								lastThumb 	//arg 2
+			                )}
+						}, this.node.loadingmask, 'hide', 
+						this.node.loadingmask		// context
+					);
 	                return false;								
 			};
 	        this.loadCastingCall(uri, cfg);
@@ -459,6 +480,7 @@
         }, 
         reuseThumbnail: function(audition, node, cfg){
         	node.Thumbnail.reuse.call(node.Thumbnail, audition, cfg);
+        	return node;
         },
         createThumbnail: function(audition, cfg){
         	// TODO: do NOT copy ALL cfg attrs to thumbnail. figure out which ones we need
@@ -731,7 +753,6 @@
          */
 		processDrop : function(nodeList, onComplete) {
 			var g = this;
-			var Y = SNAPPI.Y;
 			/*
 			 * process dropped items only
 			 */
@@ -1157,8 +1178,7 @@
 		 * @params batch auditionSH (optional)
 		 */        
         groupAsShot: function(batch, cfg){
-            var Y = SNAPPI.Y,
-            	auditionREFs = [], 
+            var auditionREFs = [], 
             	aids = [],            
             	idPrefix = this._cfg.ID_PREFIX || null;
             
@@ -1708,7 +1728,6 @@
          * 		cfg.successJson function, success handler, should return 'false'
          */
         loadCastingCall: function(uri, cfg){
-        	var Y = SNAPPI.Y;
         	cfg = cfg || {};
         	if (!uri) {
         		// use existing CC
@@ -1812,7 +1831,7 @@
         // DialogHelper.bindSelected2DialogHiddenShot() 
         showShotGallery : function(selected, cfg) {
         	selected = selected || this.auditionSH.getFocus();
-        	var container, parent, shots, Y = SNAPPI.Y;
+        	var container, parent, shots;
         	var shot = selected.Audition.Substitutions;
         	
         	// unhide ShotGallery if there is a Shot
