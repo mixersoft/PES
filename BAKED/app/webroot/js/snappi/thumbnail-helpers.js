@@ -286,12 +286,43 @@
 					ThumbnailFactory[this._cfg.type].handle_ActionsClick
             	, this.node)			
 		},
+		// PhotoPreview only
+		// just enable/disable autoScroll, not next/prev
 		AutoScrollClick: function() {
+			// context = Thumbnail
 			return this.node.one('figcaption .settings input[type=checkbox]').on('click',
 					ThumbnailFactory[this._cfg.type].handle_AutoScrollClick
             	, this.node)			
 		},
-		RatingClick: function() {
+		// PhotoPreview only
+		NextPrevClick: function() {
+			return this.node.delegate('click',
+				function(e){
+					var direction = e.currentTarget.hasClass('next') ? 'next' : 'prev';
+					var g = SNAPPI.Gallery.find['nav-'];
+					// render Gallery if not rendered
+					if (g) {
+						if (!g.container.one('.FigureBox.Photo')) {
+							SNAPPI.setPageLoading(true);
+							var detach = _Y.on('snappi:gallery-render-complete', function(){
+								detach.detach();
+								ThumbnailFactory['PhotoPreview'].next(direction, g, null);
+							})
+							var f = SNAPPI.Factory.Gallery.NavFilmstrip;
+							f.handle_setDisplayView(g, 'one-row');
+							// set PhotoPreview autoScroll listener, as necessary
+							try {
+								var isAutoScroll = photoPreview.one('figcaption input[type=checkbox].auto-advance').get('checked');
+								SNAPPI.Factory.Thumbnail.PhotoPreview.set_AutoScroll_Rating_Listener(isAutoScroll, photoPreview, g);
+							} catch (e) {}
+							return;
+						}
+						ThumbnailFactory['PhotoPreview'].next(direction, g, null);	
+					}
+				}
+            	, 'li.btn.next, li.btn.prev', this.node);			
+		},
+		RatingClick: function() {			
 			var r = this.node.one('.rating');
 			return SNAPPI.Rating.startListeners(r);
 		},
@@ -499,7 +530,7 @@
     		showSizes: true,
     		draggable: true,
     		queue: false,
-    		listeners: ['ActionsClick', 'AutoScrollClick', 'ThumbsizeClick', 'HiddenShotClick', 'RatingClick', 'PreviewImgLoad'],
+    		listeners: ['ActionsClick', 'AutoScrollClick', 'ThumbsizeClick', 'HiddenShotClick', 'RatingClick', 'PreviewImgLoad', 'NextPrevClick'],
     	},
     	// TODO: update Sizes to use action="set-display-size:[size]" format
 		markup: '<article class="FigureBox PhotoPreview">'+
@@ -508,7 +539,9 @@
                 '    	 <li class="label">My Rating</li><li class="rating wrap-bg-sprite"></li>' +
                 '        <li class="label">Score</li><li class="score">0.0</li>' +
                 '		 <li><nav class="settings">' +
-                '<ul class="inline"><li class="label" title="Automatically advance to the next Snap after each click">Auto</li><li><input type="checkbox" class="auto-advance" value="" title="Automatically advance to the next Snap after each click"></li></ul> ' +
+                '<ul class="inline">'+
+                '<li class="li btn prev orange">&#x25C0;</li><li class="li btn orange radius-0" title="Automatically advance to the next Snap after each click"><input type="checkbox" class="auto-advance" value="" title="Automatically advance to the next Snap after each click"></li><li class="li btn next orange">&#x25B6;</li>' + 
+                '</ul> ' +
                 '        <ul class="sizes inline">' +
                 '<li class="label">Sizes</li><li class="btn white" action="set-display-size:tn" size="tn">XS</li><li class="btn white" action="set-display-size:bs" size="bs">S</li><li class="btn white" action="set-display-size:bm" size="bm">M</li><li class="btn white" action="set-display-size:bp" size="bp">L</li>' +
                 ' 		 </ul>'+                
@@ -755,17 +788,34 @@
 				SNAPPI.MenuAUI.initMenus({'menu-photoPreview-actions':1});	
 			}
 		},
+		/**
+		 * enable/disable autoScroll
+		 * load Gallery.NavFilmstrip and start listener for auto-scroll
+		 */
 		handle_AutoScrollClick: function(e) {
-			try {
+			var g = SNAPPI.Gallery.find['nav-'];
+			try {	// init NavFilmstrip gallery if necessary
 				if (e.currentTarget.get('checked')) {
 					SNAPPI.setPageLoading(true);
-					var g = SNAPPI.Gallery.find['nav-'];
 					var f = SNAPPI.Factory.Gallery.NavFilmstrip;
 					f.handle_setDisplayView(g, 'one-row');
+					// TODO: handle_setDisplayView initializes/renders NavFilmstrip
+					// but maybe we should move it here.
 				}
 			} catch(e){}
+			// set PhotoPreview autoScroll listener, as necessary
+			try {
+				var isAutoScroll = e.currentTarget.get('checked');
+				var photoPreview = this;
+				ThumbnailFactory.PhotoPreview.set_AutoScroll_Rating_Listener(isAutoScroll, photoPreview, g);
+			} catch (e) {}
 		},
-		set_AutoScroll: function(value, node, gallery) {
+		/*
+		 * called by handle_setDisplayView()
+		 * enable/disable autoScroll, ???: why doesn't this use 
+		 * ThumbnailFactory.listeners.AutoScrollClick????  same?
+		 */
+		set_AutoScroll_Rating_Listener: function(value, node, gallery) {
 			// node == previewThumbnail node, .FigureBox.PreviewPhoto
 			value = value || false;
 			node = node || _Y.one('.FigureBox.PhotoPreview');
@@ -777,15 +827,31 @@
 					node.listen[listener] = _Y.on('snappi:ratingChanged', 
 						function(r){
 							if (g && previewBody.one('.FigureBox.PhotoPreview').contains(r.node)) {
-								var selected = g.auditionSH.next();
-								g.scrollFocus(selected);
-								// TODO: debug g.next(), g.prev(), etc.
-								ThumbnailFactory.PhotoPreview.bindSelected(selected, previewBody);
+								ThumbnailFactory.PhotoPreview.next('next', g, previewBody);
+								// var selected = g.auditionSH.next();
+								// g.scrollFocus(selected);
+								// // TODO: debug g.next(), g.prev(), etc.
+								// ThumbnailFactory.PhotoPreview.bindSelected(selected, previewBody);
 							}
 						});
 				} catch (e){}
 			}
-			if (!value) node.listen[listener].detach();		
+			if (!value) {
+				node.listen[listener].detach();
+				delete node.listen[listener];
+			}		
+		},
+		next: function(direction, g, previewBody){
+			var selected, 
+				g = g || SNAPPI.Gallery.find['nav-'];
+			direction = direction || 'next';
+			if (g){
+				if (direction=='prev') selected = g.auditionSH.prev();
+				else selected = g.auditionSH.next();
+				g.scrollFocus(selected);
+				previewBody = previewBody || _Y.one('.FigureBox.PhotoPreview').ancestor('.preview-body');
+				ThumbnailFactory.PhotoPreview.bindSelected(selected, previewBody);
+			}
 		},
 	};	
 	

@@ -290,14 +290,14 @@
             
             
             switch(this._cfg.ID_PREFIX) {
-	            case 'lightbox-':
+	            case 'lightbox-': 	// type=Lightbox
             		// use the existing number of .FigureBoxs
 	                perpage =  this._cfg.perpage || this.auditionSH.size();
 	                page = page ||  1;
 	                offset = (page - 1) * perpage;
 	            	break;
-	            case 'hiddenshot-':
-	            case 'shot-':
+	            case 'hiddenshot-': 	// type=DialogHiddenShot
+	            case 'shot-': 			// type=ShotGallery
 					ccAuditions = {
 	            		Page: 1,
 	            		Perpage: this.auditionSH.count(),
@@ -310,11 +310,12 @@
 	            	}
 	            	this.Shot = shot;
 	            	// continue below	
-	            case 'nav-':
+	            case 'nav-': 	// type=NavFilmstrip
+	            	this.node.get('parentNode').removeClass('hide');
 	            	this._cfg.page = ccAuditions.Page;
 	            	this._cfg.perpage = ccAuditions.Perpage || ccAuditions.Total;
 	            	perpage = this._cfg.perpage;
-	            case 'uuid-':
+	            case 'uuid-': 	// type=Photo
             	default:
                 	// calculate offset of requested page from Gallery.castingCall.Auditions.Page
                 	// cfg.page = SNAPPI.STATE.displayPage.page, or $this->passedArgs['page']
@@ -392,6 +393,7 @@
             }
             this.updateCount();
             if (this.container.hasClass('one-row')) this.setFilmstripWidth();
+            _Y.fire('snappi:gallery-render-complete', this);
             return lastLI;
         },
         refresh: function(cfg, force){
@@ -421,6 +423,7 @@
 						page: args.page,
 	                	castingCall: response.castingCall,
 	                	replace: args.replace,
+	                	uuid: args.uuid,
 	                }
 	                var lastThumb = this.render(options);
 	                /*
@@ -448,6 +451,7 @@
 						}, this.node.loadingmask, 'hide', 
 						this.node.loadingmask		// context
 					);
+					_Y.fire('snappi:gallery-refresh-complete', this);
 	                return false;								
 			};
 	        this.loadCastingCall(uri, cfg);

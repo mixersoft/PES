@@ -12,7 +12,7 @@
 		'lm'=>AppController::$http_static[1].'/static/img/css-gui/img_3.gif',
 	);
 ?>
-<section id="nav-filmstrip" class="filmstrip filmstrip-bg minimize">
+<section id="nav-filmstrip" class="filmstrip filmstrip-bg minimize container_16 hide">
 	<section class="gallery-header grid_16">
 		<ul class="inline">
 			<li><h3>Filmstrip <img src="/static/img/css-gui/img_setting.gif" alt="" align="absmiddle"></h3></li>

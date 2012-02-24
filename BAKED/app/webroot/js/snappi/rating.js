@@ -726,7 +726,7 @@
 				_Y.fire('snappi:ratingChanged', r);
 				break;
 			case "photoPreview-ratingGroup": // see ThumbnailFactory.PhotoPreview.renderElementsBySize()
-				// for autoScroll, see: Factory.Thumbnail.PhotoPreview.set_AutoScroll()
+				// for autoScroll, see: Factory.Thumbnail.PhotoPreview.set_AutoScroll_Rating_Listener()
 				try {
 					var tn = r.node.ancestor('.FigureBox');
 					var audition = SNAPPI.Auditions.find(tn.uuid);

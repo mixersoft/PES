@@ -49,8 +49,8 @@
 	&nbsp;</span>
 		</dl>
 	</div>
+	<?php echo $this->element('navFilmstrip') ?>
 <?php	$this->Layout->blockEnd(); ?>	
-<?php echo $this->element('navFilmstrip') ?>
 <section class="photo">
 	<div class="preview grid_11">
 		<section class='preview-body' <?php $size = !empty($this->passedArgs['size']) ?  $this->passedArgs['size'] : 'bp';  echo "size='{$size}' uuid='".AppController::$uuid."'"; ?> >

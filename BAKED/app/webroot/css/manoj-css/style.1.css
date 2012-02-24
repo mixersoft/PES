@@ -695,10 +695,19 @@ section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
 .FigureBox.PhotoPreview figcaption .extras li.btn {
 	background: #FFF;
 	border: 1px solid #D8D5D5;
-	-moz-border-radius: 5px;
-	-webkit-border-radius: 5px;	
+	border-radius: 5px;
 	color: #494949;
 }
+.FigureBox.PhotoPreview figcaption .extras li.btn.prev {
+	border-radius: 15px 0 0 15px;
+}
+.FigureBox.PhotoPreview figcaption .extras li.btn.radius-0 {
+	border-radius: 0;
+}
+.FigureBox.PhotoPreview figcaption .extras li.btn.next {
+	border-radius: 0 15px 15px 0;
+}
+
 /*.FigureBox.PhotoPreview figcaption .extras li.caption{
 	font-weight: bold;
 	padding-right: 10px;
@@ -729,14 +738,7 @@ section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
 	margin: 0 1px;
 	padding: 0 4px;
 }
-.FigureBox.PhotoPreview figcaption .extras li.btn:hover, .FigureBox.PhotoPreview figcaption .extras li.btn.selected {
-	background: -moz-linear-gradient(bottom, #fca22f, #ffc374);	 
-	background: -webkit-gradient(linear, center bottom, center top, from(#fca22f), to(#ffc374));	border: 1px solid #cd7708;
-	-moz-border-radius: 4px;
-	-webkit-border-radius: 4px;
-	color: #fff;
-	border: 1px solid #CD7708;
-}
+
 .FigureBox.PhotoPreview figcaption .extras nav.settings {
 }
 .FigureBox.PhotoPreview figcaption .extras nav.settings > ul {
@@ -2198,9 +2200,15 @@ div.link input.copy-paste {
 }
 
 
-.rounded-5 {
+.rounded-5, .radius-5 {
+	border-radius: 5px;
 	-webkit-border-radius: 5px;
 	-moz-border-radius: 5px;	
+}
+.radius-0 {
+	border-radius: 0;
+	-webkit-border-radius: 0;
+	-moz-border-radius: 0;	
 }
 .upload .related-content.blue {
 	font-size: 10pt;

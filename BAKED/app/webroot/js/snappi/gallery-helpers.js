@@ -611,12 +611,13 @@
 				uuid = null;
 			}
 			try {
-				var EXTENDED_PAGE = 240;
+				var EXTENDED_PAGE = g.auditionSH.count();  // 240;
 				var i = g.castingCall.auditionSH.indexOfKey(uuid);
 				var offset = (SNAPPI.STATE.displayPage.page-1) *  SNAPPI.STATE.displayPage.perpage;
 				var page = Math.floor( (i+offset)/EXTENDED_PAGE) + 1;
 				var perpage = EXTENDED_PAGE;
-				var isExtended = /perpage:250/.test(g.castingCall.CastingCall.Request);
+				var patt=new RegExp('perpage:'+EXTENDED_PAGE,'i');
+				var isExtended = patt.test(g.castingCall.CastingCall.Request);
 			} catch (e) {
 				isExtended = false;
 			}
@@ -631,27 +632,26 @@
 				// just render
 				g.render({uuid: uuid});
 				// autoScroll default=true				
-				photoPreview.one('figcaption input[type=checkbox].auto-advance').set('checked', true);
+				// photoPreview.one('figcaption input[type=checkbox].auto-advance').set('checked', true);
 			} else if (uuid && loadFilmStrip ){
 				try {
 					// var uri = PAGE.jsonData.castingCall.CastingCall.Request;
 					var uri = '/photos/neighbors/'+ PAGE.jsonData.castingCall.CastingCall.ID + '/.json';
 					// get extended castingCall by cacheRefresh
 					var named = {perpage: perpage, page: page};
-					uri = SNAPPI.IO.setNamedParams(uri, named);
-					var options = _Y.merge({
+					// uri = SNAPPI.IO.setNamedParams(uri, named);
+					var options = {
+						uri: uri,
 						uuid: uuid,
-					}, named);
-					g.loadCastingCall(uri, options);
+						perpage: perpage,
+						page: page,
+					};
+					g.node.get('parentNode').removeClass('hide');
+					g.refresh(options, true);
 					// autoScroll default=true				
-					photoPreview.one('figcaption input[type=checkbox].auto-advance').set('checked', true);
+					// photoPreview.one('figcaption input[type=checkbox].auto-advance').set('checked', true);
 				} catch (e) {}	
 			}
-			// set PhotoPreview autoScroll, as necessary
-			try {
-				var isAutoScroll = photoPreview.one('figcaption input[type=checkbox].auto-advance').get('checked');
-				SNAPPI.Factory.Thumbnail.PhotoPreview.set_AutoScroll(isAutoScroll, photoPreview, g);
-			} catch (e) {}
 		}
 	}	
 	
