@@ -434,7 +434,7 @@ class CastingCallComponent extends Object {
 			case 'weddings':
 				if (!$id) return false;
 				// paginate 
-				App::Import('Controller', 'GroupsController');
+				App::Import('Controller', 'GroupsController', null, null, 'groups_controller.php');
 				$PaginateController = new GroupsController;
 				$paginateArray = $PaginateController->paginate[$paginateModel];
 				$paginateArray = $Model->getPaginatePhotosByGroupId($id, $paginateArray);
@@ -460,7 +460,7 @@ class CastingCallComponent extends Object {
 				// end paginate
 				break;
 			case 'tags':
-				App::Import('Controller', 'Tags.TagsController');
+				App::Import('Controller', 'Tags.TagsController', true, null, 'tags_controller.php');
 				$PaginateController = new TagsController;
 				$paginateArray = $PaginateController->paginate[$paginateModel];
 				$paginateArray = $Model->getPaginatePhotosByTagId($id, $paginateArray);

@@ -611,7 +611,7 @@
 				uuid = null;
 			}
 			try {
-				var EXTENDED_PAGE = 250;
+				var EXTENDED_PAGE = 240;
 				var i = g.castingCall.auditionSH.indexOfKey(uuid);
 				var offset = (SNAPPI.STATE.displayPage.page-1) *  SNAPPI.STATE.displayPage.perpage;
 				var page = Math.floor( (i+offset)/EXTENDED_PAGE) + 1;
