@@ -441,7 +441,7 @@
 	var DialogHelper = function(cfg) {};
 	
 	DialogHelper.showSigninDialog = function(target){
-		var uri = target || '/users/signin';	
+		var uri = target || '/users/signin';	// get XHR view	
 		var cfg = {
 			uri: uri,
 		};
