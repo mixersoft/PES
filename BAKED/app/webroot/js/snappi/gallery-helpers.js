@@ -622,11 +622,17 @@
 			}
 			
 			/*
-			 * load navFilmstrip if not already loaded
+			 * load navFilmstrip if not already loaded, or extend cached CC
+			 * XHR GET: /photos/neighbors/1330052530/perpage:999/page:1/.json
 			 */
 			var photoPreview = _Y.one('.preview-body .FigureBox.PhotoPreview');
 			var loadFilmStrip = g.container.all('.FigureBox').size() < g.auditionSH.count();
-			if (uuid && loadFilmStrip ){
+			if (isExtended) {
+				// just render
+				g.render({uuid: uuid});
+				// autoScroll default=true				
+				photoPreview.one('figcaption input[type=checkbox].auto-advance').set('checked', true);
+			} else if (uuid && loadFilmStrip ){
 				try {
 					// var uri = PAGE.jsonData.castingCall.CastingCall.Request;
 					var uri = '/photos/neighbors/'+ PAGE.jsonData.castingCall.CastingCall.ID + '/.json';

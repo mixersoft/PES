@@ -410,17 +410,19 @@ class CastingCallComponent extends Object {
 				&& (empty($passedArgs['page']) || $cc['Auditions']['Page'] == $passedArgs['page'])
 				&& (time() - $cc['Timestamp'] < CastingCallComponent::$MAX_AGE) 
 			) {
-				// debug("cache HIT!!!");
-				// debug(array_diff_key($cc['Auditions'], array('Audition'=>1)));	
-				// debug($passedArgs);
-				// debug($cc['Auditions']['Perpage']);
+// debug("cache HIT!!!");
+// debug(array_diff_key($cc['Auditions'], array('Audition'=>1)));	
+// debug($passedArgs);
+// debug($cc['Auditions']['Perpage']);
+// exit;
 				$castingCall['CastingCall'] = $cc; 	// format as CastingCall 
 				return $castingCall;
 			}
 		}
 		if (!empty($perpage_on_cache_stale)) $passedArgs['perpage'] = $perpage_on_cache_stale;		
 		Configure::write('passedArgs.complete', $passedArgs); 
-		
+// debug("******************* cache MISS **********************");		
+// debug($passedArgs);		
 		$id = isset($route['pass'][0]) ? $route['pass'][0] : null;
 		$paginateModel = 'Asset';
 		$Model = ClassRegistry::init($paginateModel);
@@ -432,7 +434,10 @@ class CastingCallComponent extends Object {
 			case 'weddings':
 				if (!$id) return false;
 				// paginate 
-				$paginateArray = $Model->getPaginatePhotosByGroupId($id, $this->controller->paginate[$paginateModel]);
+				App::Import('Controller', 'GroupsController');
+				$PaginateController = new GroupsController;
+				$paginateArray = $PaginateController->paginate[$paginateModel];
+				$paginateArray = $Model->getPaginatePhotosByGroupId($id, $paginateArray);
 				$paginateArray['conditions'] = @$Model->appendFilterConditions($passedArgs, $paginateArray['conditions']);
 				$this->controller->paginate[$paginateModel] = $Model->getPageablePaginateArray($this->controller, $paginateArray);
 				$pageData = Set::extract($this->controller->paginate($paginateModel), "{n}.{$paginateModel}");
@@ -445,15 +450,20 @@ class CastingCallComponent extends Object {
 			case 'users':	
 				if (!$id) return;
 				// paginate
-				$paginateArray = $Model->getPaginatePhotosByUserId($id, $this->controller->paginate[$paginateModel]);
+				App::Import('Controller', 'PersonController', null, null, 'person_controller.php');
+				$PaginateController = new PersonController;
+				$paginateArray = $PaginateController->paginate[$paginateModel];
+				$paginateArray = $Model->getPaginatePhotosByUserId($id, $paginateArray);
 				$paginateArray['conditions'] = @$Model->appendFilterConditions($passedArgs, $paginateArray['conditions']);
 				$this->controller->paginate[$paginateModel] = $Model->getPageablePaginateArray($this->controller, $paginateArray);
-// debug($this->controller->paginate[$paginateModel]);				
 				$pageData = Set::extract($this->controller->paginate($paginateModel), "{n}.{$paginateModel}");
 				// end paginate
 				break;
 			case 'tags':
-				$paginateArray = $Model->getPaginatePhotosByTagId($id, $this->controller->paginate[$paginateModel]);
+				App::Import('Controller', 'Tags.TagsController');
+				$PaginateController = new TagsController;
+				$paginateArray = $PaginateController->paginate[$paginateModel];
+				$paginateArray = $Model->getPaginatePhotosByTagId($id, $paginateArray);
 				$paginateArray['conditions'] = @$Model->appendFilterConditions($passedArgs, $paginateArray['conditions']);
 				$this->controller->paginate[$paginateModel] = $Model->getPageablePaginateArray($this->controller, $paginateArray);
 				$pageData = Set::extract($this->controller->paginate($paginateModel), "{n}.{$paginateModel}");

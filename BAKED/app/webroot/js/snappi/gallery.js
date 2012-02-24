@@ -313,6 +313,7 @@
 	            case 'nav-':
 	            	this._cfg.page = ccAuditions.Page;
 	            	this._cfg.perpage = ccAuditions.Perpage || ccAuditions.Total;
+	            	perpage = this._cfg.perpage;
 	            case 'uuid-':
             	default:
                 	// calculate offset of requested page from Gallery.castingCall.Auditions.Page
@@ -323,12 +324,14 @@
 	            	var displayPage = this._cfg.page;
 	            	var displayOffset = (displayPage-1)*this._cfg.perpage;
 	            	offset = displayOffset - ccOffset;
-	            	try {
-	            		this._cfg.perpage = Math.min(SNAPPI.STATE.displayPage.perpage, ccAuditions.Perpage);	// should we get from cfg or paginator???
-            		} catch (e) {
-            			this._cfg.perpage = ccAuditions.Perpage;
-            		} 
-	                perpage = this._cfg.perpage;            
+	            	if (!perpage){		// could be set by case 'nav-':
+						try {
+		            		this._cfg.perpage = Math.min(SNAPPI.STATE.displayPage.perpage, ccAuditions.Perpage);	// should we get from cfg or paginator???
+	            		} catch (e) {
+	            			this._cfg.perpage = ccAuditions.Perpage;
+	            		} 
+	            		perpage = perpage || this._cfg.perpage; 
+	            	}
 	                this._cfg.start = 0;
 	                this._cfg.end = perpage;
 	                if (this.auditionSH.size() == 0) {
