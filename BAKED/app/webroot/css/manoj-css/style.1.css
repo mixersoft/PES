@@ -666,8 +666,9 @@ section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
 
 /* preview photo */
 .FigureBox.PhotoPreview {
-	float: none;
+/*	float: none;*/
 	margin: 0 !important;
+	display: inline-block;
 }
 .FigureBox.PhotoPreview figcaption {
 	overflow: hidden;	
@@ -1313,13 +1314,11 @@ form input[type='text'].help {
 	padding: 0 40px;
 }
 
-#dialog-alert li {
+#dialog-alert ul:not(.inline) li {
 	list-style-position: inside;
 	padding: 0 25px;
 	text-indent: -15px;
 }
-
-
 
 
 /*TODO: deprecate ?*/
@@ -1829,12 +1828,13 @@ aside.related-content.grid_5 > section {
 
 .preview section.preview-body {
 	margin-bottom: 20px;
-	overflow: hidden;
+	xoverflow: hidden;
 }
 
 #preview-zoom {
 	height: auto;
 	overflow: hidden;
+	display: inline-block;
 }
 #preview-zoom figcaption .caption{
 	font-weight: 600;

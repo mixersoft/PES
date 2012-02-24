@@ -105,29 +105,30 @@
 		if (cfg.center !== false) cfg.center=true;
 		var h=0, w=0;
 		try {
-			h += d.getStdModNode('header').get('scrollHeight');
-			w = Math.max(w, d.getStdModNode('header').get('scrollWidth'));
+			h += d.getStdModNode('header').get('offsetHeight');
+			// w = Math.max(w, d.getStdModNode('header').get('scrollWidth'));
 		} catch(e){}
 		try {
-			h += d.getStdModNode('footer').get('scrollHeight');
-			w = Math.max(w, d.getStdModNode('footer').get('scrollWidth'));
+			h += d.getStdModNode('footer').get('offsetHeight');
+			w = Math.max(w, d.getStdModNode('footer').get('offsetWidth'));
 		} catch(e){}
 		try {
 			var body_wrap = d.getStdModNode('body').one(cfg.bodySelector);
-			body_wrap.setStyle('overflow', 'hidden');
-			h += cfg.h || body_wrap.get('scrollHeight');
+			body_wrap.addClass('cf');  // setStyle('overflow', 'hidden');
+			w = Math.max(w, cfg.minW, cfg.w, body_wrap.get('offsetWidth'));
+			w = Math.min(w, body_wrap.get('winWidth')-cfg.outerMargin); // max height limit 100
+			d.set('width', w+18);
+			
+			h += cfg.h || body_wrap.get('offsetHeight');
 			h = Math.max(h, cfg.minH);
 			h = Math.min(h, body_wrap.get('winHeight')-cfg.outerMargin); // max height limit 100
-			w = Math.max(w, cfg.minW, cfg.w, body_wrap.get('scrollWidth'));
-			w = Math.min(w, body_wrap.get('winWidth')-cfg.outerMargin); // max height limit 100
+			d.set('height', h+12+11+cfg.marginH);	// add borders for dialog contentBox+bodyNode
 		} catch(e){
 			console.warn('WARNING: Dialog.refresh(), dialog body not properly wrapped');
 		}		
-		d.set('height', h+12+11+cfg.marginH);	// add borders for dialog contentBox+bodyNode
-		d.set('width', w+12);
 		if (cfg.center) d.centered();
 		else {
-			// TODO: add listner for winResize()???	
+			// TODO: add listener for winResize()???	
 		}
 	}
 		
@@ -566,7 +567,7 @@
 	        } catch (e){
 	        	previewSize = DEFAULT_THUMBSIZE;
 	        } 
-        	previewBody = _Y.Node.create('<section class="preview-body" />')
+        	previewBody = _Y.Node.create('<section class="preview-body" />');
         	previewBody.setAttribute('size', previewSize);
         	dialog.setStdModContent('body', previewBody);
         	
@@ -590,7 +591,7 @@
 	        dialog.listen['preview-change'] = _Y.on('snappi:preview-change', 
 	        	function(thumb){
 	        		if (thumb.Thumbnail._cfg.type == 'PhotoPreview' ) 
-	        			_Y.fire('snappi:dialog-body-rendered', dialog, {center:false});
+	        			_Y.fire('snappi:dialog-body-rendered', dialog, {center:false, w:662});
 	        	}, '.FigureBox.PhotoPreview figure > img', dialog
 	        )
     		
@@ -599,7 +600,7 @@
         	// update/show dialog 
 			if (!dialog.get('visible')) {
 				dialog.show();
-				Dialog.refresh(dialog, {center:false});
+				Dialog.refresh(dialog, {center:false, w:662});
 			}        	
 			previewBody = dialog.getStdModNode('body').one('.preview-body');
 			previewSize = null; // use size from existing Thumbnail.PhotoPreview
@@ -608,7 +609,7 @@
 		// add preview markup to Dialog body, set initial preview size
 		previewBody.loadingmask.refreshMask();
 		previewBody.loadingmask.show();
-		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, previewBody, previewSize);
+		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, previewBody, {gallery:g, size:previewSize});
 		
 		// add shotGallery		
        	var shotGallery = SNAPPI.Gallery.find['hiddenshot-'];

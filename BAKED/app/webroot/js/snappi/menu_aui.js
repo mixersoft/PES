@@ -728,12 +728,13 @@ console.error("PreviewPhoto delete is still incomplete");
 		var previewBody = dialog.getStdModNode('body').one('#preview-zoom');
 		var detach = _Y.on('snappi:preview-change', 
 	        	function(thumb){
-	        		detach.detach();
-	        		if (thumb.Thumbnail._cfg.type == 'PhotoZoom' ) 
+	        		if (thumb.Thumbnail._cfg.type == 'PhotoZoom' ) {
+	        			detach.detach();
 	        			_Y.fire('snappi:dialog-body-rendered', dialog);
+	        		}
 	        	}, '.FigureBox.PhotoZoom figure > img', dialog
 	        )		
-		SNAPPI.Factory.Thumbnail.PhotoZoom.bindSelected(audition, previewBody);
+		SNAPPI.Factory.Thumbnail.PhotoZoom.bindSelected(audition, previewBody, {gallery:g});
 	}
 	MenuItems.rotate_click = function(menuItem, menu, e){
 		var rotate = menuItem.getAttribute('rotate');

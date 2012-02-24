@@ -1528,7 +1528,7 @@
 				// TODO: set {uuid:} to scrollFocus();
 				shotGallery.render();	
 				var previewBody = shotGallery.node.one('.preview-body');
-				SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(bestShot, previewBody);
+				SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(bestShot, previewBody, {gallery:shotGallery});
 				// shotGallery.updateHiddenShotPreview(shotGallery, oldFocus);
 				
 				if (photoGallery) {

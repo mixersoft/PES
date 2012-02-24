@@ -578,7 +578,7 @@
 		    	var previewUuid = previewBody.one('.FigureBox.PhotoPreview').Thumbnail.id;
 		    	if (selected.id != previewUuid) {
 		    		// SNAPPI.domJsBinder.bindSelected2Page(gallery, selected, oldUuid);
-		    		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, previewBody);
+		    		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, previewBody, {gallery: gallery});
 		        }
 	    	} catch (e) {}
 		},
@@ -692,7 +692,7 @@
 	    	var oldUuid = gallery.getFocus().id;
 	    	if (selected.id != oldUuid) {
 	    		gallery.setFocus(selected);
-	    		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected);
+	    		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, null, {gallery:gallery});
 	        }
 		},
 	}
@@ -751,6 +751,7 @@
 		},
 		build: GalleryFactory.ShotGallery.build,
 		handle_focusClick: function(e){
+			// also check: DialogHelper.bindSelected2DialogHiddenShot(). which one is used?
 	    	var gallery = this.Gallery;
 			if (gallery.node.listen['disable_LinkToClick']) {
 				// hide contextmenu with this click
@@ -763,7 +764,7 @@
 	    	if (selected.id != oldUuid) {
 	    		gallery.setFocus(selected);
 	    		var previewBody = this.ancestor('.preview-body');
-	    		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, previewBody);
+	    		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, previewBody, {gallery:gallery});
 	        }
 		},
 		after_setToolbarOption : function (g, action, setting) {

@@ -288,36 +288,56 @@
 		},
 		// PhotoPreview only
 		// just enable/disable autoScroll, not next/prev
-		AutoScrollClick: function() {
+		ToggleAutoScrollClick: function() {
 			// context = Thumbnail
 			return this.node.one('figcaption .settings input[type=checkbox]').on('click',
-					ThumbnailFactory[this._cfg.type].handle_AutoScrollClick
+					ThumbnailFactory[this._cfg.type].handle_ToggleAutoScrollClick
             	, this.node)			
+		},
+		// for PhotoPreview.set_AutoScroll_RatingClick_Listener()
+		AutoScrollRatingClick: function(g, previewBody){
+			g = g || this.node.Gallery;
+			previewBody = previewBody || this.node.ancestor('.previewBody');
+			return _Y.on('snappi:ratingChanged', function(r, g, previewBody){
+				if (g && previewBody.one('.FigureBox.PhotoPreview').contains(r.node)) {
+					ThumbnailFactory.PhotoPreview.next('next', g, previewBody);
+				}
+			}, this, g, previewBody);
 		},
 		// PhotoPreview only
 		NextPrevClick: function() {
 			return this.node.delegate('click',
 				function(e){
+					// context = article.FigureBox
 					var direction = e.currentTarget.hasClass('next') ? 'next' : 'prev';
-					var g = SNAPPI.Gallery.find['nav-'];
+					var g = this.Gallery || SNAPPI.Gallery.find['nav-'];	// this.Gallery from Factory.PhotoPreview.bindSelected();
+					var type = this.Thumbnail._cfg.type;
 					// render Gallery if not rendered
 					if (g) {
 						if (!g.container.one('.FigureBox.Photo')) {
 							SNAPPI.setPageLoading(true);
 							var detach = _Y.on('snappi:gallery-render-complete', function(){
 								detach.detach();
-								ThumbnailFactory['PhotoPreview'].next(direction, g, null);
+								ThumbnailFactory[type].next(direction, g, null);
 							})
 							var f = SNAPPI.Factory.Gallery.NavFilmstrip;
 							f.handle_setDisplayView(g, 'one-row');
 							// set PhotoPreview autoScroll listener, as necessary
 							try {
-								var isAutoScroll = photoPreview.one('figcaption input[type=checkbox].auto-advance').get('checked');
-								SNAPPI.Factory.Thumbnail.PhotoPreview.set_AutoScroll_Rating_Listener(isAutoScroll, photoPreview, g);
+								var isAutoScroll = e.container.one('figcaption input[type=checkbox].auto-advance').get('checked');
+								SNAPPI.Factory.Thumbnail.PhotoPreview.set_AutoScroll_RatingClick_Listener(isAutoScroll, photoPreview, g);
 							} catch (e) {}
 							return;
 						}
-						ThumbnailFactory['PhotoPreview'].next(direction, g, null);	
+						// ThumbnailFactory[type].next(direction, g, null);	
+						// next: function(direction, g, previewBody){
+						var selected, previewBody,
+							direction = direction || 'next';
+						if (direction=='prev') selected = g.auditionSH.prev();
+						else selected = g.auditionSH.next();
+						g.scrollFocus(selected);
+						parent = this.ancestor('.preview-body') || this.ancestor('.preview-zoom');
+						ThumbnailFactory[type].bindSelected(selected, parent, {gallery: g});
 					}
 				}
             	, 'li.btn.next, li.btn.prev', this.node);			
@@ -359,7 +379,7 @@
     		showSizes: false,
     		draggable: false,
     		queue: false,
-    		listeners: ['RatingClick', 'PreviewImgLoad'],
+    		listeners: ['RatingClick', 'PreviewImgLoad', 'NextPrevClick'],
     	},
     	// TODO: update Sizes to use action="set-display-size:[size]" format
 		markup: '<article class="FigureBox PhotoZoom">'+
@@ -368,6 +388,10 @@
                 '<li class="label caption"></li>' +
                 '    	 <li class="label">My Rating</li><li class="rating wrap-bg-sprite"></li>' +
                 '        <li class="label">Score</li><li class="score">0.0</li>' +
+                '		 <li><nav class="settings">' +
+                '<ul class="inline">'+
+                '<li class="li btn prev orange">&#x25C0;</li><li class="li btn next orange">&#x25B6;</li>' + 
+                '</ul></li>' +
 				'	</ul></figcaption>' +
 				'	<img alt="" src="">' +
 				'</figure>'+
@@ -469,29 +493,32 @@
 			
 			return this;
 		},
-		bindSelected: function(selected, previewBody, size) {
+		bindSelected: function(selected, previewBody, cfg) {
+			cfg = cfg || {};
+			var uuid, size, auditionSH,
+	    		_cfg = {
+	    			type: 'PhotoZoom',
+	    			size: 'bp',
+	    		};
+	    		
 			if (!selected.id) {
         		selected = SNAPPI.Auditions.get(selected);
         	} 	    		
     		var previewBody = previewBody || _Y.one('#dialog-alert #preview-zoom');
     		if (!previewBody) return;
     		
-    		var cfg, uuid, size, auditionSH;
-    		cfg = {
-    			type: 'PhotoZoom',
-    			size: 'bp',
-    		}
     		// create/reuse Thumbnail
     		var t, node = previewBody.one('.FigureBox.PhotoZoom');
     		if (!node) {
 	    		try {
 	    			// TODO: get initial size, save size as property of Thumbnail object
-	    			cfg.size = size || PAGE.jsonData.profile.thumbSize[cfg.type];
+	    			cfg.size = cfg.size || PAGE.jsonData.profile.thumbSize[cfg.type];
 	    		} catch (e) {
 	    			// default init size
 	    			if ( previewBody.getAttribute('size')) cfg.size = previewBody.getAttribute('size');	
 	    		}
 	    		if (!cfg.size) delete cfg.size;
+	    		cfg = _Y.merge(_cfg, cfg);
 	    		// create PhotoPreview thumbnail	    		
     			t = new SNAPPI.Thumbnail(selected, cfg);	
     			previewBody.prepend(t.node);
@@ -514,7 +541,21 @@
 	    		}    			
     			
     		} else {
+    			var dialog = SNAPPI.Dialog.find['dialog-alert'];
+    			var detach = _Y.on('snappi:preview-change', 
+		        	function(thumb){
+		        		if (thumb.Thumbnail._cfg.type == 'PhotoZoom' ) {
+		        			detach.detach();
+		        			previewBody.loadingmask.refreshMask();
+		        			_Y.fire('snappi:dialog-body-rendered', dialog);
+		        		}
+		        	}, '.FigureBox.PhotoZoom figure > img', dialog
+		        )
     			node.Thumbnail.reuse(selected);
+    		}
+    		if (cfg.gallery) {
+    			node.Gallery = cfg.gallery;
+    			node.Gallery.auditionSH.setFocus(selected);
     		}
     		previewBody.loadingmask.refreshMask();
     		previewBody.loadingmask.show(); 
@@ -530,7 +571,7 @@
     		showSizes: true,
     		draggable: true,
     		queue: false,
-    		listeners: ['ActionsClick', 'AutoScrollClick', 'ThumbsizeClick', 'HiddenShotClick', 'RatingClick', 'PreviewImgLoad', 'NextPrevClick'],
+    		listeners: ['ActionsClick', 'ToggleAutoScrollClick', 'ThumbsizeClick', 'HiddenShotClick', 'RatingClick', 'PreviewImgLoad', 'NextPrevClick'],
     	},
     	// TODO: update Sizes to use action="set-display-size:[size]" format
 		markup: '<article class="FigureBox PhotoPreview">'+
@@ -662,7 +703,8 @@
 			
 			return this;
 		},
-		bindSelected: function(selected, previewBody, size) {
+		bindSelected: function(selected, previewBody, cfg) {
+			cfg = cfg || {};
 			if (!selected.id) {
         		var check = SNAPPI.Auditions.get(selected);
         	} 	    		
@@ -681,20 +723,23 @@
     		var previewBody = previewBody || _Y.one('.photo .preview-body');
     		if (!previewBody) return;
     		
-    		var cfg, uuid, size, auditionSH;
-    		cfg = {
-    			type: 'PhotoPreview',
-    		}
+    		var uuid, auditionSH,
+	    		_cfg = {
+	    			type: 'PhotoPreview',
+	    			size: 'bp',					// size of last resort
+	    		}
     		// create/reuse Thumbnail
     		var t, node = previewBody.one('.FigureBox.PhotoPreview');
     		if (!node) {
 	    		try {
 	    			// TODO: get initial size, save size as property of Thumbnail object
-	    			cfg.size = size || PAGE.jsonData.profile.thumbSize[cfg.type];
+	    			cfg.size = cfg.size || PAGE.jsonData.profile.thumbSize[cfg.type];
 	    		} catch (e) {
 	    			// default init size
 	    			if ( previewBody.getAttribute('size')) cfg.size = previewBody.getAttribute('size');	
 	    		}
+	    		if (!cfg.size) delete cfg.size;
+	    		cfg = _Y.merge(_cfg, cfg);
 	    		// create PhotoPreview thumbnail	    		
     			t = new SNAPPI.Thumbnail(selected, cfg);	
     			previewBody.prepend(t.node);
@@ -718,6 +763,7 @@
     		} else {
     			node.Thumbnail.reuse(selected);
     		}
+    		if (cfg.gallery) node.Gallery =  cfg.gallery;
     		previewBody.loadingmask.refreshMask();
     		previewBody.loadingmask.show(); 
     		ThumbnailFactory.PhotoPreview.bindShotGallery2Preview(selected, previewBody);
@@ -792,7 +838,7 @@
 		 * enable/disable autoScroll
 		 * load Gallery.NavFilmstrip and start listener for auto-scroll
 		 */
-		handle_AutoScrollClick: function(e) {
+		handle_ToggleAutoScrollClick: function(e) {
 			var g = SNAPPI.Gallery.find['nav-'];
 			try {	// init NavFilmstrip gallery if necessary
 				if (e.currentTarget.get('checked')) {
@@ -807,33 +853,23 @@
 			try {
 				var isAutoScroll = e.currentTarget.get('checked');
 				var photoPreview = this;
-				ThumbnailFactory.PhotoPreview.set_AutoScroll_Rating_Listener(isAutoScroll, photoPreview, g);
+				ThumbnailFactory.PhotoPreview.set_AutoScroll_RatingClick_Listener(isAutoScroll, photoPreview, g);
 			} catch (e) {}
 		},
 		/*
-		 * called by handle_setDisplayView()
-		 * enable/disable autoScroll, ???: why doesn't this use 
-		 * ThumbnailFactory.listeners.AutoScrollClick????  same?
+		 * toggle AutoScroll RatingClick Listener
 		 */
-		set_AutoScroll_Rating_Listener: function(value, node, gallery) {
+		set_AutoScroll_RatingClick_Listener: function(value, node, gallery) {
 			// node == previewThumbnail node, .FigureBox.PreviewPhoto
 			value = value || false;
 			node = node || _Y.one('.FigureBox.PhotoPreview');
-			var listener = 'AutoScroll';
+			var listener = 'AutoScroll_RatingClick';
 			if (value && !node.listen[listener]) {
 				try {
 					var previewBody = node.ancestor('.preview-body');
 					var g = gallery || SNAPPI.Gallery.find['nav-'];
-					node.listen[listener] = _Y.on('snappi:ratingChanged', 
-						function(r){
-							if (g && previewBody.one('.FigureBox.PhotoPreview').contains(r.node)) {
-								ThumbnailFactory.PhotoPreview.next('next', g, previewBody);
-								// var selected = g.auditionSH.next();
-								// g.scrollFocus(selected);
-								// // TODO: debug g.next(), g.prev(), etc.
-								// ThumbnailFactory.PhotoPreview.bindSelected(selected, previewBody);
-							}
-						});
+					// init pattern from Thumbnail constructor
+					node.listen[listener] = ThumbnailFactory.listeners['AutoScrollRatingClick'].call(node.Thumbnail, g, previewBody);
 				} catch (e){}
 			}
 			if (!value) {
@@ -850,7 +886,7 @@
 				else selected = g.auditionSH.next();
 				g.scrollFocus(selected);
 				previewBody = previewBody || _Y.one('.FigureBox.PhotoPreview').ancestor('.preview-body');
-				ThumbnailFactory.PhotoPreview.bindSelected(selected, previewBody);
+				ThumbnailFactory.PhotoPreview.bindSelected(selected, previewBody, {gallery: g});
 			}
 		},
 	};	
