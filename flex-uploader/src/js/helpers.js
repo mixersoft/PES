@@ -157,7 +157,7 @@ console.log("load BEGIN: helpers.js");
 	    		remote: "http://dev2.snaphappi.com/my/desktop_upload",
 	    };		
 		// login
-		var login_Url = "http://" + SNAPPI.AIR.host + "/users/login/.json?optional=1";
+		var login_Url = "http://" + SNAPPI.AIR.host + "/users/signin/.json?optional=1";
 		SNAPPI.AIR.XhrHelper.login_Url = login_Url;
 		LOG("login_Url > "+login_Url);
 		

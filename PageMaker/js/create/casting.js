@@ -262,9 +262,9 @@
 				console.error("Error: unable to get valid arrangement. "+o.statusText);
 				if (cfg.callback && cfg.callback.failure) cfg.callback.failure();
 				if (o.statusText == "timeout") {
-					alert("Sorry, it took too long to build this Story. Please try again with a different mix of Snaps or Ratings");
+					alert("Sorry, it took too long to build this Story. Please try again with a different mix of Snaps or Ratings, or reload the page.");
 				} else {
-					alert("Sorry, there was a problem building this Story. Please try again, maybe with a different mix of Snaps");
+					alert("Sorry, there was a problem building this Story. Please try again, maybe with a different mix of Snaps, or reload the page.");
 				}
 			}
 		} 

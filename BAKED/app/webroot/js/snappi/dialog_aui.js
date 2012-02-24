@@ -320,7 +320,7 @@
 			title: 'Sign In',
 			id: CSS_ID,
 			height: 300,	// 3 rows
-			destroyOnClose: false,
+			destroyOnClose: true,
 			modal: true,
 			buttons: [
 			// {
@@ -342,24 +342,9 @@
 		// save reference
 		Dialog.find[CSS_ID] = dialog;
 		return dialog;		
-	}	
+	}
 	
-	/*
-	 * example usage
-	 * 
-				var cfg = {
-					selector: [CSS selector, copies outerHTML and substitutes tokens as necessary],
-					markup: [html markup],
-	    			uri: '/combo/markup/importComplete',
-	    			height: 300,
-	    			tokens: {
-	    				folder: 'folder',
-		    			count: 17,
-		    			added: 4
-	    			},
-	    		};
-	 * var alert = SNAPPI.Alert.load(cfg) or SNAPPI.Dialog.CFG['dialog-alert'].load(cfg);
-	 */
+	
 	var CFG_Dialog_Alert = function(){}; 
 	CFG_Dialog_Alert.load = function(cfg){
 		var CSS_ID = 'dialog-alert';
@@ -455,6 +440,102 @@
 	 */
 	var DialogHelper = function(cfg) {};
 	
+	DialogHelper.showSigninDialog = function(target){
+		var uri = target || '/users/signin';	
+		var cfg = {
+			uri: uri,
+		};
+		var detach = _Y.on('snappi:dialog-body-rendered', function(){
+			try {
+				detach.detach();
+				var username = PAGE.jsonData.User[0].username;
+				_Y.one('#UserUsername').set('value', username);
+			}catch(e){}
+		});
+		return SNAPPI.Alert.load(cfg);
+	}
+	DialogHelper.signIn = function(form){
+		SNAPPI.setPageLoading(true);
+		form = (form instanceof _Y.Node) ? form : form.ynode();
+		postData = {};
+		postData['data[User][username]'] = form.one('#UserUsername').get('value');
+		postData['data[User][password]'] = form.one('#UserPassword').get('value');
+		if (form.one('#UserMagic')) {
+			form.one('#UserMagic').get("options").some(function(n, i, l) {
+					// this = option from the select
+						if (n.get('selected')) {
+							postData['data[User][magic]'] = n.getAttribute('value') || '';
+							return true;
+						}
+						return false;
+					});
+		}
+
+		var uri = form.get('action');
+		if (SNAPPI.AIR && SNAPPI.AIR.host) uri = "http://" + SNAPPI.AIR.host + uri;  
+            
+		// SNAPPI.io GET JSON  
+		var container = form;
+		// XhrHelper.resetSignInForm(container);
+		
+    	var args = {
+    		node: container,
+    		uri: uri,
+    	};
+    	/*
+		 * plugin _Y.Plugin.IO
+		 */
+		if (container.io) container.unplug(SNAPPI.Y.Plugin.IO);
+		var loadingmaskTarget = container;
+		container.plug(_Y.LoadingMask, {
+			strings: {loading:'One moment...'}, 	// BUG: A.LoadingMask
+			target: loadingmaskTarget,
+		});    			
+		container.loadingmask._conf.data.value['target'] = loadingmaskTarget;
+		container.loadingmask.overlayMask._conf.data.value['target'] = container.loadingmask._conf.data.value['target'];
+		// container.loadingmask.set('target', target);
+		// container.loadingmask.overlayMask.set('target', target);
+		container.loadingmask.set('zIndex', 10);
+		container.loadingmask.overlayMask.set('zIndex', 10);
+		args.loadingmask = container.loadingmask;
+		var	ioCfg = {
+   					uri: args.uri,
+					// parseContent: false,
+					// autoLoad: false,
+					context: container,
+					arguments: args, 
+					method: "POST",
+					dataType: 'json',
+					qs: postData,
+					on: {
+						successJson: function(e, i, o,args){
+							var resp = o.responseJson;
+							if (resp.response && resp.response.User) {
+								args.loadingmask.hide();
+								Dialog.find['dialog-alert'].hide();
+							}
+							return false;
+						}, 
+						complete: function(e, i, o, args) {
+							args.loadingmask.hide();
+						},
+						failure : function (e, i, o, args) {
+							// post failure or timeout
+							var resp = o.responseJson || o.responseText || o.response;
+							var msg = resp.message || resp;
+							if (msg) {
+								this.one('.message').setContent(msg).removeClass('hide');	
+							}
+							args.loadingmask.hide();
+							SNAPPI.setPageLoading(false);
+							return false;
+						},
+					}
+			};
+		container.loadingmask.show();	
+		container.plug(_Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(ioCfg));
+		return;		
+	}	
 	/**
 	 * @params g SNAPPI.Gallery object
 	 * @params selected obj, audition of selected item
@@ -570,9 +651,13 @@
 	
 	
 	/**
+	 * @deprecate. desktop Uploader uses #login from uploaderMarkup.ctp
+	 * replace with showSigninDialog() posting to /users/signin/.json
+	 * 
 	 * Login Dialog
 	 * @params g SNAPPI.Gallery object
 	 * @params selected obj, audition of selected item
+	 * 
 	 */
 	DialogHelper.showLogin = function(show) {
 		if (show == undefined) show = true; 	// default

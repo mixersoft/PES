@@ -671,7 +671,7 @@ LOG('>>>>>>> BASEURL='+selected);
 		var node=_Y.one('body');
 		var i=10;
 		var ioCfg = {
-   					uri: '/users/login/.json',
+   					uri: '/users/signin/.json',
 					parseContent: false,
 					autoLoad: false,
 					context: node,
@@ -771,7 +771,7 @@ LOG(' >>>>>>>>>>>>>  testSession(): starting next iteration    #'+args.i);
 			});			
 		}
 
-		var uri = XhrHelper.login_Url || "http://" + SNAPPI.AIR.host + "/users/login/.json";
+		var uri = XhrHelper.login_Url || "http://" + SNAPPI.AIR.host + "/users/signin/.json";
 LOG(">>> LOGIN, login_Url="+uri+", postdata follows:");
 LOG(postData);
             

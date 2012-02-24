@@ -726,8 +726,8 @@ class UsersController extends UsersPluginController {
 		
 	}
 	function signin() {
-		$this->login();
-		$this->render('login');
+		$done = $this->login();
+		if (!$done) $this->render('login');
 	}
 	function login() {
 		$this->layout = $layout = 'snappi-guest';
@@ -738,7 +738,7 @@ class UsersController extends UsersPluginController {
 		 * POST method
 		 * local user registration not yet implemented
 		 */
-		if (isset($this->data['User'])) {
+		if (isset($this->data['User']['username'])) {
 if ($this->RequestHandler->isAjax() || $forceXHR) {
 	$this->log("   >>> ATTEMPTED XHR Sign-in for user={$this->data['User']['username']}", LOG_DEBUG);
 	// $this->log($_COOKIE, LOG_DEBUG);	
@@ -899,7 +899,8 @@ $this->log("using Cookie guestpass signin for {$guestid}", LOG_DEBUG);
 
 		$userlist = $this->User->find('list', array('fields'=>'User.username', 'conditions'=>array("id!=username")));
 		$this->set('userlist', $userlist);
-		
+		$done = $this->renderXHRByRequest(null, '/elements/users/signin', 0);		
+		return $done;
 	}
 	function signout() {
 		$this->logout();

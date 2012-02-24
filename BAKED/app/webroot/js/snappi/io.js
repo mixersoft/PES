@@ -594,8 +594,12 @@
 				var ioRequest = e.target;
 				var context = ioRequest.get('context') || this;				
 				if (o.status == '403') {
-					// forbidden
-					SNAPPI.flash.flash('For the moment, you\'ll need to sign in before you can do this action.<br /><a href="/users/signin">Sign in now</a>.');
+					if (SNAPPI.STATE.controller.userid) {
+						SNAPPI.Helper.Dialog.showSigninDialog();
+					} else {
+						// forbidden or login Dialog
+					SNAPPI.flash.flash('For the moment, you\'ll need to sign in before you can do this action.<br /><a href="/users/signin">Sign in now</a>.');	
+					}
 				}
 				// timeout or no response
 				if (_callback.failure) return _callback.failure.call(context, e, id, o, args);
