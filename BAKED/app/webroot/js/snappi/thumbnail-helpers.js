@@ -546,7 +546,6 @@
 		        	function(thumb){
 		        		if (thumb.Thumbnail._cfg.type == 'PhotoZoom' ) {
 		        			detach.detach();
-		        			previewBody.loadingmask.refreshMask();
 		        			_Y.fire('snappi:dialog-body-rendered', dialog);
 		        		}
 		        	}, '.FigureBox.PhotoZoom figure > img', dialog

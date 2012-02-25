@@ -290,7 +290,7 @@ class CastingCallComponent extends Object {
 	 * @param newCC array($ID=>$castingCall)
 	 */
 	static $MAX_AGE = 600; // 10 minutes
-	static $MAX_ENTRIES = 20; // LAST 10 castingCalls 
+	static $MAX_ENTRIES = 10; // LAST 10 castingCalls 
 	function cache_Clear(){
 		Session::write('castingCall', null); 
 	}
@@ -302,6 +302,22 @@ class CastingCallComponent extends Object {
 		            // [Auditions] => Array()
 				// ))
 		$this->cache_Age($newCC);	// saves a write to Session this way
+	}
+	/*
+	 * summary output of CC for debugging
+	 */ 
+	function printr_CC($cc) {
+		$output = array();
+		if (isset($cc['ID'])) $cc = array($cc);
+		foreach ($cc as $key=>$row) {
+			$output_row['ID'] = $row['ID'];
+			$output_row['Timestamp'] = $row['Timestamp'];
+			$output_row['Request'] = $row['Request'];
+			$output_row['Stale'] = isset($row['Stale']) ? $row['Stale'] : 0;
+			$output_row['Total'] = isset($row['Auditions']['Total']) ? $row['Auditions']['Total'] : null;
+			$output[$key] = $output_row;
+		}
+		return $output;
 	}
 	/**
 	 * age entries from cache, just keep Request for old cache keys
@@ -340,9 +356,16 @@ class CastingCallComponent extends Object {
 		}
 		if ($newCC) {
 			$cc = $newCC + $cc;
+	
 			$changed = true;
 		}
-		if ($changed) Session::write('castingCall', $cc); 
+		if ($changed) {
+			$ret = Session::write('castingCall', $cc);
+// $this->log($this->printr_CC($cc),LOG_DEBUG);		
+			if (!$ret) {
+				Session::write('castingCall', $newCC);
+			}
+		} 
 		return $changed;
 	}	
 	function cache_MostRecent($cc = null) {
@@ -355,13 +378,13 @@ class CastingCallComponent extends Object {
 			return $cc[array_pop($ccIds)];
 		} else return null;
 	}
-	function cache_MarkStale($ccid){
+	function cache_MarkStale(& $castingCall, $ccid){
 		// mark castingCall as Stale
-		$request = Session::read("castingCall.{$ccid}.Request");
+		$request = $castingCall[$ccid]['Request'];
+		$timestamp = $castingCall[$ccid]['Timestamp'];
 		if ($request) {
-			$castingCall = array('ID'=>$ccid, 'Request'=>$request, 'Stale'=>true);
-			Session::write("castingCall.{$ccid}", $castingCall);
-		} else Session::delete("castingCall.{$ccid}");
+			$castingCall[$ccid] = array('ID'=>$ccid, 'Request'=>$request, 'Timestamp'=>$timestamp, 'Stale'=>true);
+		} else unset($castingCall[$ccid]);
 	}
 	/**
 	 * @params $mixed int or aa, ccid or CastingCall
