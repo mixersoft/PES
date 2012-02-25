@@ -646,32 +646,42 @@
 		},
 		setPagingControls: function(g) {
 			try {
-				// get h without li.btn.prev
-				g.container.all('li.btn').addClass('hide');
-				var h = g.container.get('clientHeight') - 10;
-				g.container.all('li.btn').removeClass('hide');
-				
 				var cc_PAGES = g.castingCall.CastingCall.Auditions.Pages;
 				var cc_PAGE = g.castingCall.CastingCall.Auditions.Page;
+				var delta = 0;
 				var PREV_PAGE = '<li class="li btn prev orange" action="paginate:prev" title="Get previous page">&#x25C0;</li>';
-				
 				if (cc_PAGE > 1) {
 					if (!g.container.one('li.btn.prev')) {
 						g.container.prepend(PREV_PAGE);
+						delta++;
 					}
-				} else if (g.container.one('li.btn.prev')) g.container.one('li.btn.prev').remove();
-				if (g.container.one('li.btn.prev')) g.container.one('li.btn.prev').setStyle('lineHeight', h+'px');
+				} else if (g.container.one('li.btn.prev')) {
+					g.container.one('li.btn.prev').remove();
+					delta--;
+				}
 				
 				var NEXT_PAGE = '<li class="li btn next orange" action="paginate:next" title="Get next page">&#x25B6;</li>'; 
 				if (cc_PAGE < cc_PAGES) {
 					if (!g.container.one('li.btn.next')) {
 						g.container.append(NEXT_PAGE);
-						g.container.one('li.btn.next').setStyle('lineHeight', h+'px');
+						delta++;
 					}
-				} else if (g.container.one('li.btn.next'))  g.container.one('li.btn.next').remove();
-				 if (g.container.one('li.btn.next')) g.container.one('li.btn.next').setStyle('lineHeight', h+'px');
-				 g.setFilmstripWidth();
+				} else if (g.container.one('li.btn.next')) {
+					g.container.one('li.btn.next').remove();
+					delta--;
+				} 
+				 
+				// get h without li.btn.prev
+				if (delta) {
+					var fsWidth = g.setFilmstripWidth();
+					g.container.setStyle('width', fsWidth+'px');	// force target fsWidth
+				}
+				var pagingControls = g.container.all('li.btn');
+				pagingControls.addClass('hide');	// hide controls to get accurate clientHeight
+				var h = g.container.get('clientHeight') - 10;
+				pagingControls.setStyle('lineHeight', h+'px').removeClass('hide'); 
 			}catch(e){}
+			return delta;
 		},
 		/*
 	     * update all components on /photos/home page to match 'selected'

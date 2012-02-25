@@ -392,7 +392,9 @@
 	            } catch (e) {}
             }
             this.updateCount();
-            if (this.container.hasClass('one-row')) this.setFilmstripWidth();
+            if (this.container.hasClass('one-row')) {
+            	this.setFilmstripWidth();
+            }
             _Y.fire('snappi:gallery-render-complete', this);
             return lastLI;
         },
@@ -681,22 +683,23 @@
          */
         setFilmstripWidth: function() {
         	try {
-	        	var wrapper = this.container.ancestor('.filmstrip');
-	        	var thumb = this.container.one('.FigureBox');
-	        	var count = this.auditionSH.count();
+        		var wrapper, thumb, count, width, oldWidth, newWidth;
+	        	wrapper = this.container.ancestor('.filmstrip');
+	        	thumb = this.container.one('.FigureBox');
+	        	count = this.auditionSH.count();
 	        	count -= this.container.all('.hiddenshot-hide').size(); 
 	        	var lookupWidth = {
 	        		'sq':81,
 	        		'tn':151,
 	        		'lm':151,
 	        	}
-	        	var width = lookupWidth[thumb.Thumbnail._cfg.size];
-	        	var newWidth = width*count;
+	        	width = lookupWidth[thumb.Thumbnail._cfg.size];
+	        	newWidth = width*count;
 	        	var pageControls = this.container.all('li.btn');
-	        	if (pageControls) newWidth += (pageControls.size()*pageControls.item(1).get('offsetWidth'));
+	        	if (pageControls) newWidth += (pageControls.size()*pageControls.item(0).get('offsetWidth'));
 	        	newWidth = Math.max(newWidth, wrapper.get('clientWidth'));
 	        	
-	        	var oldWidth = this.container.get('clientWidth');
+	        	oldWidth = this.container.get('clientWidth');
 	        	var setWidth = function(w, g) {
 	        		g.container.setStyles({
 						width: (w)+'px',	
@@ -714,8 +717,9 @@
 	        	} else {
 	        		setWidth(newWidth, this);
 	        	}
-	        	return;
-			} catch (e) {}	
+	        	
+			} catch (e) {}
+			return newWidth;	
         },
         /*
          * scroll ".gallery .filmstrip" to show focus in center
