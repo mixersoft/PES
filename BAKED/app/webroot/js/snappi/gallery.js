@@ -436,6 +436,7 @@
 	                		var REFRESH_TIMEOUT = 5000;
 	                		var timeout = _Y.later(REFRESH_TIMEOUT, this, function(){
 		                		this.hide();
+		                		SNAPPI.setPageLoading(false);
 		                	});	// set timeout for loadingmask 
 	                		if (!lastThumb.Thumbnail.isReady()) {
 	                			this.show();
@@ -444,6 +445,7 @@
 									detach.detach();
 									this.hide();
 									timeout.cancel();
+									SNAPPI.setPageLoading(false);
 								}, 
 								this, // context == loadingmask
 								lastThumb 	//arg 2
@@ -686,7 +688,11 @@
 	        		'lm':151,
 	        	}
 	        	var width = lookupWidth[thumb.Thumbnail._cfg.size];
-	        	var newWidth = Math.max(width*count, wrapper.get('clientWidth'));
+	        	var newWidth = width*count;
+	        	var pageControls = this.container.all('li.btn');
+	        	if (pageControls) newWidth += (pageControls.size()*pageControls.item(1).get('offsetWidth'));
+	        	newWidth = Math.max(newWidth, wrapper.get('clientWidth'));
+	        	
 	        	var oldWidth = this.container.get('clientWidth');
 	        	var setWidth = function(w, g) {
 	        		g.container.setStyles({

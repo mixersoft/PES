@@ -91,6 +91,7 @@
 	        	if (g.container.hasClass('one-row')) {
 	        		g.setFilmstripWidth();
 	        		g.scrollFocus();
+	        		if (g._cfg.type == 'NavFilmstrip') GalleryFactory['NavFilmstrip'].setPagingControls(g);
 	        	}
         	}
         	// TODO: save thumbSize to Session Session::write("thumbSize.{g._cfg.size}", g._cfg.size);  		
@@ -557,6 +558,85 @@
 			listeners: ['Keypress', 'Mouseover', 'MultiSelect', 'Contextmenu', 'FocusClick', 'HiddenShotClick', 'WindowOptionClick'],
 		},
 		build: GalleryFactory.Photo.build,
+		render: function(g, uuid){
+			// update castingCall if necessary 
+			try {
+				uuid = uuid || SNAPPI.STATE.controller.xhrFrom.uuid;
+			} catch (e) {
+				uuid = null;
+			}
+			try {
+				// if isAlreadyExtended==true, then extend the CC, i.e. get more thumbnails
+				// for now, set to false;
+				var EXTENDED_PAGE = g.auditionSH.count();  // 240;
+				var patt=new RegExp('perpage:'+EXTENDED_PAGE,'i');
+				var isAlreadyExtended = patt.test(g.castingCall.CastingCall.Request);
+			} catch (e) {
+				isAlreadyExtended = false;
+			}
+			
+			// listen for complete, then add Paging Controls
+			var detach = _Y.on('snappi:gallery-render-complete', function(){
+				if (g._cfg.type == 'NavFilmstrip') {
+					detach.detach();
+					GalleryFactory[g._cfg.type].setPagingControls(g)
+				}
+			})
+			
+			/*
+			 * load navFilmstrip if not already loaded, or extend cached CC
+			 * XHR GET: /photos/neighbors/1330052530/perpage:999/page:1/.json
+			 */
+			if (isAlreadyExtended && g.auditionSH.count()) {		
+				g.render({uuid: uuid});		// just render existing CC
+			} else {
+				try {
+					// var uri = PAGE.jsonData.castingCall.CastingCall.Request;
+					var uri = '/photos/neighbors/'+ PAGE.jsonData.castingCall.CastingCall.ID + '/.json';
+					// get extended castingCall by cacheRefresh
+					var i = g.castingCall.auditionSH.indexOfKey(uuid);
+					var offset = (SNAPPI.STATE.displayPage.page-1) *  SNAPPI.STATE.displayPage.perpage;
+					var page = Math.floor( (i+offset)/EXTENDED_PAGE) + 1;
+					var options = {
+						uri: uri,
+						uuid: uuid,
+						perpage: EXTENDED_PAGE,
+						page: page,
+					};
+					g.node.get('parentNode').removeClass('hide');
+					g.refresh(options, true);
+				} catch (e) {}	
+			}
+		},
+		setPagingControls: function(g) {
+			try {
+				// get h without li.btn.prev
+				g.container.all('li.btn').addClass('hide');
+				var h = g.container.get('clientHeight') - 10;
+				g.container.all('li.btn').removeClass('hide');
+				
+				var cc_PAGES = g.castingCall.CastingCall.Auditions.Pages;
+				var cc_PAGE = g.castingCall.CastingCall.Auditions.Page;
+				var PREV_PAGE = '<li class="li btn prev orange" title="Get previous page">&#x25C0;</li>';
+				
+				if (cc_PAGE > 1) {
+					if (!g.container.one('li.btn.prev')) {
+						g.container.prepend(PREV_PAGE);
+					}
+				} else if (g.container.one('li.btn.prev')) g.container.one('li.btn.prev').remove();
+				if (g.container.one('li.btn.prev')) g.container.one('li.btn.prev').setStyle('lineHeight', h+'px');
+				
+				var NEXT_PAGE = '<li class="li btn next orange" title="Get next page">&#x25B6;</li>'; 
+				if (cc_PAGE < cc_PAGES) {
+					if (!g.container.one('li.btn.next')) {
+						g.container.append(NEXT_PAGE);
+						g.container.one('li.btn.next').setStyle('lineHeight', h+'px');
+					}
+				} else if (g.container.one('li.btn.next'))  g.container.one('li.btn.next').remove();
+				 if (g.container.one('li.btn.next')) g.container.one('li.btn.next').setStyle('lineHeight', h+'px');
+				 g.setFilmstripWidth();
+			}catch(e){}
+		},
 		/*
 	     * update all components on /photos/home page to match 'selected'
 	     */		
@@ -604,54 +684,10 @@
 					_Y.one('.properties').addClass('hide');
 				} catch (e) {}
 			}
-			// update castingCall if necessary 
-			try {
-				var uuid = SNAPPI.STATE.controller.xhrFrom.uuid;
-			} catch (e) {
-				uuid = null;
+			if (!g.container.one('.FigureBox')){
+				GalleryFactory[g._cfg.type].render(g);	// render gallery if not rendered()
 			}
-			try {
-				var EXTENDED_PAGE = g.auditionSH.count();  // 240;
-				var i = g.castingCall.auditionSH.indexOfKey(uuid);
-				var offset = (SNAPPI.STATE.displayPage.page-1) *  SNAPPI.STATE.displayPage.perpage;
-				var page = Math.floor( (i+offset)/EXTENDED_PAGE) + 1;
-				var perpage = EXTENDED_PAGE;
-				var patt=new RegExp('perpage:'+EXTENDED_PAGE,'i');
-				var isExtended = patt.test(g.castingCall.CastingCall.Request);
-			} catch (e) {
-				isExtended = false;
-			}
-			
-			/*
-			 * load navFilmstrip if not already loaded, or extend cached CC
-			 * XHR GET: /photos/neighbors/1330052530/perpage:999/page:1/.json
-			 */
-			var photoPreview = _Y.one('.preview-body .FigureBox.PhotoPreview');
-			var loadFilmStrip = g.container.all('.FigureBox').size() < g.auditionSH.count();
-			if (isExtended) {
-				// just render
-				g.render({uuid: uuid});
-				// autoScroll default=true				
-				// photoPreview.one('figcaption input[type=checkbox].auto-advance').set('checked', true);
-			} else if (uuid && loadFilmStrip ){
-				try {
-					// var uri = PAGE.jsonData.castingCall.CastingCall.Request;
-					var uri = '/photos/neighbors/'+ PAGE.jsonData.castingCall.CastingCall.ID + '/.json';
-					// get extended castingCall by cacheRefresh
-					var named = {perpage: perpage, page: page};
-					// uri = SNAPPI.IO.setNamedParams(uri, named);
-					var options = {
-						uri: uri,
-						uuid: uuid,
-						perpage: perpage,
-						page: page,
-					};
-					g.node.get('parentNode').removeClass('hide');
-					g.refresh(options, true);
-					// autoScroll default=true				
-					// photoPreview.one('figcaption input[type=checkbox].auto-advance').set('checked', true);
-				} catch (e) {}	
-			}
+			return;
 		}
 	}	
 	

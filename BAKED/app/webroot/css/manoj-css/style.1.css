@@ -680,6 +680,7 @@ section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
 /* copied from section.gallery-display-options */
 .FigureBox.PhotoPreview figcaption .extras {
 	border: 1px solid #D2D2D2;
+/*	light gray background  */
 	background: -moz-linear-gradient(bottom, #E2E6EB, #f5f5f5);
 	background: -webkit-gradient(linear, center bottom, center top, from(#E2E6EB), to(#f5f5f5));
 	line-height: 20px;
@@ -1192,6 +1193,18 @@ section.filmstrip .toolbar ul li.none{
 	background:#FFF;
 	padding: 0;
 }
+
+.gallery.photo.filmstrip .container li.btn.prev {
+	border-radius: 15px 0 0 15px;
+	float: left;
+}
+
+.gallery.photo.filmstrip .container li.btn.next {
+	border-radius: 0 15px 15px 0;
+	float: left;
+}
+
+border-radius: 15px 0 0 15px;
 
 /*	lightbox filmstrip:  */
 section.filmstrip section.gallery.lightbox {
