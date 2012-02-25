@@ -327,8 +327,50 @@
 	        		}, '.FigureBox.Photo  figcaption  li.context-menu', this.node);        		
 				}        	
 	        	return;
-	        },        	
-        };
+	        },   
+	        /**
+	         * listen to NavFilmstrip.gallery .container li.btn next/prev to page inside filmstrip 
+	         */
+	        PaginateClick: function(){
+	        	// for .gallery.photo nav.settings, NOT .filmstrip .window-options
+	        	var action = 'PaginateClick';
+	            if (this.node.listen[action] == undefined) {
+	                // listen thumbnail size
+	                this.node.listen[action] = this.container.delegate('click', 
+		                function(e){
+		                	var fn, action = e.currentTarget.getAttribute('action').split(':');
+		                	try {
+					    		switch(action[0]) {
+					    			case 'paginate':
+					    				fn = GalleryFactory[this.Gallery._cfg.type]['handle_'+action[0]];
+					    				break;
+					    		}
+			                	try {
+			                		fn.call(this, action[1], this.Gallery, e);
+			                	} catch (e) {}
+				    		} catch(e) {
+				    			console.error("GalleryFactory.listeners.PaginateClick()");
+				    		}	
+		                }, 'li.btn', this.node);
+				}	        	
+	        }, 
+	        /**
+	         * listen to NavFilmstrip 'snappi:gallery-render-complete', and render prev/next paging
+	         */
+	        SetPagingControls: function() {
+	        	var action = 'SetPagingControls';
+	            if (this.node.listen[action] == undefined) {
+	                // listen thumbnail size
+	                this.node.listen[action] = _Y.on('snappi:gallery-render-complete', 
+		                function(g){
+							if (g._cfg.type == 'NavFilmstrip') {
+								GalleryFactory['NavFilmstrip'].setPagingControls(g);
+							};
+						})	        	
+				}
+	        }     	
+	        
+	};
     /**
      * attach gallery.node and gallery.container
      */
@@ -555,7 +597,7 @@
 			hideHiddenShotByCSS: true,	
 			draggable: true,
 			// listeners: ['Keypress', 'Mouseover', 'MultiSelect', 'Contextmenu', 'FocusClick', 'WindowOptionClick'],
-			listeners: ['Keypress', 'Mouseover', 'MultiSelect', 'Contextmenu', 'FocusClick', 'HiddenShotClick', 'WindowOptionClick'],
+			listeners: ['Keypress', 'Mouseover', 'MultiSelect', 'Contextmenu', 'FocusClick', 'HiddenShotClick', 'WindowOptionClick', 'PaginateClick', 'SetPagingControls'],
 		},
 		build: GalleryFactory.Photo.build,
 		render: function(g, uuid){
@@ -575,13 +617,7 @@
 				isAlreadyExtended = false;
 			}
 			
-			// listen for complete, then add Paging Controls
-			var detach = _Y.on('snappi:gallery-render-complete', function(){
-				if (g._cfg.type == 'NavFilmstrip') {
-					detach.detach();
-					GalleryFactory[g._cfg.type].setPagingControls(g)
-				}
-			})
+			// GalleryFactory.listen.SetPagingControls: listen for complete, then add Paging Controls 
 			
 			/*
 			 * load navFilmstrip if not already loaded, or extend cached CC
@@ -617,7 +653,7 @@
 				
 				var cc_PAGES = g.castingCall.CastingCall.Auditions.Pages;
 				var cc_PAGE = g.castingCall.CastingCall.Auditions.Page;
-				var PREV_PAGE = '<li class="li btn prev orange" title="Get previous page">&#x25C0;</li>';
+				var PREV_PAGE = '<li class="li btn prev orange" action="paginate:prev" title="Get previous page">&#x25C0;</li>';
 				
 				if (cc_PAGE > 1) {
 					if (!g.container.one('li.btn.prev')) {
@@ -626,7 +662,7 @@
 				} else if (g.container.one('li.btn.prev')) g.container.one('li.btn.prev').remove();
 				if (g.container.one('li.btn.prev')) g.container.one('li.btn.prev').setStyle('lineHeight', h+'px');
 				
-				var NEXT_PAGE = '<li class="li btn next orange" title="Get next page">&#x25B6;</li>'; 
+				var NEXT_PAGE = '<li class="li btn next orange" action="paginate:next" title="Get next page">&#x25B6;</li>'; 
 				if (cc_PAGE < cc_PAGES) {
 					if (!g.container.one('li.btn.next')) {
 						g.container.append(NEXT_PAGE);
@@ -688,6 +724,25 @@
 				GalleryFactory[g._cfg.type].render(g);	// render gallery if not rendered()
 			}
 			return;
+		},
+		handle_paginate: function(direction, g, e) {	// from GalleryFactory.listeners.PaginateClick()
+			var pages = g.castingCall.CastingCall.Auditions.Pages;
+			var page = g.castingCall.CastingCall.Auditions.Page;
+			var perpage = g.castingCall.CastingCall.Auditions.Perpage;
+			var i, 
+				nextPerpage = Math.min(perpage, 100);	// recalibrate pagesize
+			switch(direction){
+				case 'next':
+					i = page*perpage -1;
+					page += 1;	
+				break;
+				case 'prev':
+					i = (page-1)* perpage;
+					page -= 1;
+				break;
+			}
+			if ((page > pages) || (page <= 0)) return;
+			g.refresh({page:page}, 'force');
 		}
 	}	
 	

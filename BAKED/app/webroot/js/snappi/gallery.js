@@ -396,6 +396,9 @@
             _Y.fire('snappi:gallery-render-complete', this);
             return lastLI;
         },
+        /**
+         * calls g.loadCastingCall() > g.render() and waits for IMG load before hiding loadingmask
+         */
         refresh: function(cfg, force){
         	cfg = cfg || {};
         	var page = cfg.page || cfg.nameData && cfg.nameData.page || SNAPPI.STATE.displayPage.page;  
@@ -1739,6 +1742,7 @@
          * @params cfg object
          * 		cfg.uuid string, UUID of selected audition
          * 		cfg.successJson function, success handler, should return 'false'
+         * NOTE: calls g.render() by default, NOT g.refresh(); 
          */
         loadCastingCall: function(uri, cfg){
         	cfg = cfg || {};
