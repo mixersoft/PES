@@ -62,6 +62,7 @@
 		init : function(cfg) {
 			this._cfg = _Y.merge(defaultCfg, cfg);
 			this.node = _Y.one('section.lightbox');
+			this.node.listen = this.node.listen  || {};
 			if (this.node) {
 				// rendered from cakePHP: app/views/elements/lightbox.ctp
 			} else { 
@@ -111,7 +112,16 @@
 				view: view,
 			}
 			this.Gallery = new SNAPPI.Gallery(options);
-			SNAPPI.Factory.Gallery.actions.setView(this.Gallery, view);				
+			SNAPPI.Factory.Gallery.actions.setView(this.Gallery, view);	
+			// add .lightbox-tab listener
+			var action = 'LightboxTabClick';
+			if (this.node.listen[action] == undefined) {
+				this.node.listen[action] = this.node.delegate('click', 
+	                function(e){
+	                	SNAPPI.Factory.Gallery.actions.setToolbarOption.call(this, e);
+	                }, '.lightbox-tab', this);
+			}	
+						
 			
 			this.restoreLightboxFromJson();	// lightbox.visible, lightbox.regionAsJSON
 			

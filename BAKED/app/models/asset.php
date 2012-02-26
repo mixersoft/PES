@@ -475,6 +475,8 @@ class Asset extends AppModel {
 			$meta = $Import->getMeta($photoPath);
 			$asset['json_exif'] = $meta['exif'];
 			$asset['json_iptc'] = $meta['iptc'];
+			// process json_exif from v1.8.3 snappi-uploader
+			$options = array('filepath'=>$photoPath, 'autoRotate'=>0);	// js upload not rotated
 		} else {	
 			// json_exif from desktop-uploader
 			if (is_string($asset['json_exif'])) {	
@@ -483,9 +485,9 @@ class Asset extends AppModel {
 			} 
 			// process json_exif from v1.8.3 snappi-uploader
 			$options = array('filepath'=>$photoPath, 'autoRotate'=>1);
-			$exif = $Import->augmentExif($asset['json_exif'], $options);
-			$asset['json_exif'] = Set::merge($asset['json_exif'], $exif);
 		}
+		$exif = $Import->augmentExif($asset['json_exif'], $options);
+		$asset['json_exif'] = Set::merge($asset['json_exif'], $exif);
 		if (empty($asset['json_exif'])) {	
 			//  if exif STILL not available, make an exif array to capture ORIGINAL dimensions
 			$options['filepath'] = $photoPath;
@@ -538,11 +540,11 @@ class Asset extends AppModel {
 			'json_src' => $src,
 			'src_thumbnail' => $src['thumb'],
 			'json_exif' => $asset['json_exif'],
-			'json_preview_exif' => $asset['json_exif']['preview'],
+			'json_preview_exif' => !empty($asset['json_exif']['preview']) ? $asset['json_exif']['preview'] : null,	// deprecate?
 //			'json_iptc' => $meta['iptc'],
 			'dateTaken' => !empty($asset['json_exif']['DateTimeOriginal']) ? $asset['json_exif']['DateTimeOriginal'] : null,
 			'isFlash' => $asset['json_exif']['isFlash'],
-			'isRGB' => $asset['json_exif']['isRGB'],
+			'isRGB' => !empty($asset['json_exif']['isRGB']) ? $asset['json_exif']['isRGB']: null,
 		);
 		if (isset($asset['json_iptc']['Keyword'])) $newAsset['keyword']= $asset['json_iptc']['Keyword'];
 		if (isset($asset['json_iptc']['Caption'])) $newAsset['caption']= $asset['json_iptc']['Caption'];

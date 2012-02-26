@@ -347,7 +347,7 @@ $this->log($response['message'], LOG_DEBUG);
 		$paginateArray['order'] = array("`HABTM`.created DESC");
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$expressUploadGroups = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
-		
+// debug($expressUploadGroups);		
 		// this is the model we really want to paginate
 		Configure::write('paginate.Model', $copyFromAlias);
 		return $expressUploadGroups;
@@ -431,6 +431,7 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 		$userid = AppController::$userid;
 		
 		if (!empty($this->params['url']['qqfile'])) {
+			Configure::write('debug', $forceXHR);
 			/*
 			 * handle javascript POST
 			 */

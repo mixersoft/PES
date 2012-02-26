@@ -50,12 +50,12 @@
     			case 'one-row': 
     				if (g.view == 'maximize') {
     					g.container.addClass('one-row');
-    					g.setFilmstripWidth();
     				} else {
     					parent.removeClass('minimize');
 	        			g.container.addClass('one-row');
 	        			g.header.one('ul').removeClass('hide');
 	        		}
+	        		g.setFilmstripWidth();
 	        		break;
     			case 'maximize': 
     				// from lighbox action.maximize, not tested 
@@ -241,6 +241,7 @@
 	         * 	start 'click' listener for action=
 	         * 		set-display-size:[size] 
 	         * 		set-display-view:[mode]
+	         * includes .lightbox-tab for lightbox
 	         */
 	        WindowOptionClick : function() {
 	        	var action = 'WindowOptionClick';

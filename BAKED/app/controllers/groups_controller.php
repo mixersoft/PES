@@ -74,6 +74,12 @@ class GroupsController extends AppController {
 			'fields' =>'Member.*',
 			'joins' => array()
 		),
+		'ExpressUploadGroup'=>array(
+			'preview_limit'=>8,
+			'paging_limit' =>8,
+			'recursive'=> -1,
+			'fields' =>'ExpressUploadGroup.*',
+		),
 		'Comment' =>array(
 			'limit'=>5,
 			'order'=>array('Comment.created'=>'DESC'),
@@ -441,11 +447,11 @@ LIMIT 5;";
 				$message = "You must sign in as a full User to continue. ";
 			} else if (!$isMember) {
 				$success = false;
-				$message = "You are not a member of this Circle.";
+				$message = "You must first become a member of this Circle before you can share Snaps.";
 			} else {
 				$ret = $this->__joinGroup($join['id'], AppController::$userid, $isExpress);
 				if ($ret) {
-					if ($isExpress) $message = 'You membership in this Circle has now been marked for Express Upload.';
+					if ($isExpress) $message = 'Your membership in this Circle has now been marked for Express Upload.';
 					else $message = 'Express Upload has been removed from this Circle.';
 				}
 				$success = true;
@@ -1329,6 +1335,60 @@ LIMIT 5;";
 		$done = $this->renderXHRByRequest('json', '/elements/group/roll');
 		if ($done) return;
 		$this->action='index'; 
+	}
+	
+	/**
+	 * use js uploader to upload and share with this Circle
+	 * copied from /my/upload
+	 */
+	function upload($id) {
+		$this->layout = 'snappi-guest';
+		$forceXHR = setXHRDebug($this);
+		$userid = AppController::$userid;
+		
+		/*
+		 * POST
+		 */
+		if (!empty($this->params['url']['qqfile'])) {
+			Configure::write('debug', $forceXHR);
+			/*
+			 * handle javascript POST
+			 */
+			$this->autoRender = false;
+			$this->__upload_javascript($userid);
+			exit(0);
+		} else if ($this->data){
+			$this->log($this->data, LOG_DEBUG);
+			echo "1";
+			return;
+			/*
+			 *  bad cakephp POST from somewhere else
+			 */			
+			header("HTTP/1.1 500 Internal Server Error");
+			echo "Bad POST";
+			exit(0);
+		}
+		
+		
+		/*
+		 * GET
+		 */
+		$readOk = $this->Group->hasPermission('read',$id);
+		$uploadOk = $readOk && in_array($id, Permissionable::getGroupIds());
+		$this->Group->contain();
+		$options = array('conditions'=>array('Group.id'=>$id));	
+		$data = $this->Group->find('first', $options);
+		if (!$uploadOk) {
+			/*
+			 * handle no permission to view record
+			 */
+			$this->Session->setFlash("You must first become a member of this Circle before you can share Snaps.");
+			$this->redirectSafe();
+		} else {
+			$expressUploadGroups = array($data['Group']);	
+			// set for '/elements/group/express-upload'
+			$this->set(compact('data','expressUploadGroups'));
+		}		
 	}
 }
 ?>

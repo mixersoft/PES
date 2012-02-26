@@ -20,7 +20,7 @@
 		
 		// explore action
 		$exploreAction = ($controllerAttr['alias'] == 'my') ? $controllerAttr['action'] : $controllerAttr['alias'] ;
-		if ( $exploreAction == 'home' ) $exploreAction = 'photos';
+		if ( !in_array($exploreAction, array('groups', 'person')) ) $exploreAction = 'photos';
 		$sections['Explore']=array('label'=>'Explore','href'=>"/{$exploreAction}/all");
 	} else { // visitor
 		$sections['Circles']=array('label'=>'Circles','href'=>'/groups/all');

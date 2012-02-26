@@ -6,7 +6,8 @@
 			<li action='unshare_from_group' class='before-show'>Remove from this Circle</li>
 		</div>
 		<div class="menu-item-group">
-			<li action='express_upload' class='before-show selected'>Express Upload</li>
+			<li action='express_upload' class='before-show' title='Ask to share uploaded photos directly with this Circle'>Express Upload</li>
+			<li action='direct_upload' class='before-show disabled' title='Upload Photos and share directly with this Circle'>Upload to this Circle</li>
 			<li action='privacy' class='disabled before-show'>Privacy...</li>
 			<li action='settings' class='disabled before-show'>Settings</li>
 		</div>

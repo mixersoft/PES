@@ -1047,17 +1047,19 @@ console.error("PreviewPhoto delete is still incomplete");
 	};	
 	MenuItems.express_upload_beforeShow = function(menuItem, menu, properties){
 		// if this group is marked for express-upload, add .selected
+		// if this group is marked for express-upload, add .selected
 		if (!PAGE.jsonData.expressUploadGroups) {
 			menuItem.hide();
 		} else {
 			var isExpress = PAGE.jsonData.expressUploadGroups[properties.id] !== undefined;
-			if (isExpress) menuItem.addClass('selected');
-			else menuItem.removeClass('selected');
+			menuItem.origLabel = menuItem.origLabel || menuItem.get('innerHTML');
+			if (isExpress) menuItem.setContent('▶'+menuItem.origLabel).setAttribute('title', 'click to disable Express Upload into this Circle');
+			else menuItem.setContent(menuItem.origLabel).setAttribute('title', 'Ask to share uploaded photos directly with this Circle');;
 			menuItem.show();
 		} 			 
 	};	
 	MenuItems.express_upload_click = function(menuItem, menu, properties){
-		var isExpress = menuItem.hasClass('selected');
+		var isExpress = menuItem.get('innerHTML')[0] == '▶';
 		isExpress = !isExpress;
 		var cfg = {
 			gid: properties.id,
@@ -1067,6 +1069,29 @@ console.error("PreviewPhoto delete is still incomplete");
 		}
 		SNAPPI.UIHelper.groups.isExpress(cfg);
 				// menuItem.addClass('selected');
+	};
+	MenuItems.direct_upload_beforeShow = function(menuItem, menu, properties){
+		// if this group is marked for express-upload, add 
+		var controller = SNAPPI.STATE.controller;
+		if (controller.alias == 'my' 
+			||(controller['class'] == 'Group' && controller.action !='all') ) 
+		{
+			menuItem.removeClass('disabled').show();
+		} else menuItem.addClass('disabled').hide();	// disabled if not signed in 	
+	};
+	MenuItems.direct_upload_click = function(menuItem, menu, properties){
+		// try {
+			// var uuid, controller = SNAPPI.STATE.controller;
+			// var thumbnail = menu.get('currentNode');
+			// if (thumbnail.hasClass('.FigureBox')) uuid = thumbnail.get('id');
+			// else if( controller['class']=='Group' ) uuid = controller.xhrFrom.uuid;
+		// }catch(e){}
+
+		var controller = SNAPPI.STATE.controller;
+		if (controller.alias == 'my' 
+			||(controller['class'] == 'Group' && controller.action !='all') ) {
+			window.location.href = '/groups/upload/'+properties.id;
+		} 
 	};	
 	MenuItems.share_with_this_circle_beforeShow = function(menuItem, menu){
 		if (/^Groups/.test(SNAPPI.STATE.controller.name)==false) {

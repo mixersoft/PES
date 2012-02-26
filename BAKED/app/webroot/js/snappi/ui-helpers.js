@@ -308,12 +308,12 @@
 							if (args.menuItem) {
 								try {
 									if (args.isExpress) {
-										args.menuItem.addClass('selected');
+										args.menuItem.setContent('&#x25B6;'+args.menuItem.origLabel);
 										// update local copy
 										if (_Y.Lang.isArray(PAGE.jsonData.expressUploadGroups)) PAGE.jsonData.expressUploadGroups = {};
 										PAGE.jsonData.expressUploadGroups[args.gid] = 1;
 									} else {
-										args.menuItem.removeClass('selected');
+										args.menuItem.setContent(args.menuItem.origLabel);
 										delete (PAGE.jsonData.expressUploadGroups[args.gid]);
 									}
 								} catch(ex) {}

@@ -696,7 +696,7 @@
 	        	width = lookupWidth[thumb.Thumbnail._cfg.size];
 	        	newWidth = width*count;
 	        	var pageControls = this.container.all('li.btn');
-	        	if (pageControls) newWidth += (pageControls.size()*pageControls.item(0).get('offsetWidth'));
+	        	if (pageControls.size()) newWidth += (pageControls.size()*pageControls.item(0).get('offsetWidth'));
 	        	newWidth = Math.max(newWidth, wrapper.get('clientWidth'));
 	        	
 	        	oldWidth = this.container.get('clientWidth');

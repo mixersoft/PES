@@ -163,7 +163,7 @@ $setIconHelp =  !empty($controllerAttrs['isOwner']) ? "Just drop a thumbnail her
 		<ul class="inline grid_14">
 			<li class='thumbnail sq droppable' title="<?php echo $setIconHelp; ?>"><?php 
 					$img = $this->Html->image($badge_src, array('width'=>75, 'height'=>75));
-					echo $this->Html->link($img, array('action'=>'home', AppController::$ownerid) , array('escape'=>false)); 
+					echo $this->Html->link($img, array('action'=>'home', AppController::$uuid) , array('escape'=>false)); 
 				?>
 				</li>
 			<li>

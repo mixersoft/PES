@@ -6,7 +6,7 @@
 	$this->Layout->blockEnd();		
 
 	$this->Layout->blockStart('itemHeader');
-		$badge_src = Stagehand::getSrc($data['User']['src_thumbnail'], 'sq', 'person');
+		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', 'person');
 		echo $this->element('nav/section', array('badge_src'=>$badge_src));  
 	$this->Layout->blockEnd();		
 ?>
@@ -32,10 +32,10 @@ h1 {
 </style>
 
 <div class="grid_16 upload">
-	<h1>Upload Photos to Snaphappi</h1>
+	<h1>Upload Photos & Share with this Circle</h1>
 	<section class="alpha grid_8">
 		<h2>Upload a Few Photos</h2>
-		<p>If you plan to upload just a few photos, you can drag-drop the photos onto the button below. (Only JPG files, please.)</p>
+		<p>If you plan to upload just a few photos and share directly with this Circle, you can drag-drop the photos onto the button below. (Only JPG files, please.)</p>
 		<br /> 
 		<p>But, if you plan to upload 10+ photos, you can finish up to <b>50x faster</b> by using the <b>Snaphappi Desktop Uploader</b>.</p>
 		<div class="wrap">
@@ -52,6 +52,8 @@ h1 {
 	<div class="grid_8 omega">
 		<aside class="related-content blue rounded-5">
 			<h1>Upload a LOT of Photos</h1>
+			<p>For best results, we recommend you use the Snaphappi Desktop Uploader to upload photos. Choose <b>Express Upload</b> to share uploaded photos directly with this Circle.</p>
+			<br />
 			<?php echo $this->element('downloads')?>
 		</aside>		
 	</div>
