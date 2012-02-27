@@ -2579,17 +2579,33 @@ li:hover.white.focus, li:hover.white.selected
 	font-size: 9pt;
 }
 .aui-tooltip-content .message span.close {
-	padding: 2px 4px;
 	border-radius: 4px;
 	cursor: pointer;	
 	background: #FFF;
 	border: 1px solid #888;
-	color: #000;	
+	color: #A21111;	
+	font-weight: bold;
+	padding: 2px 4px;
 }
 .aui-tooltip-content .message p {
 	margin-bottom: 4px;
 }
-
+.aui-tooltip-content .message .hint-footer {
+	border-top: 1px solid #888888;
+    margin-top: 8px;
+    overflow: hidden;
+    padding-top: 4px;
+}
+.aui-tooltip-content .message .hint-footer .show-next{
+	background: #FFF;
+	border: 1px solid #888;
+	border-radius: 4px;
+	cursor: pointer;
+	padding: 1px 4px;
+}
+.aui-tooltip-content .message .hint-footer .show-next.disabled{
+	color: #888;
+}
 span.keypress {
 	border: 1px solid black;
     font-family: courier;

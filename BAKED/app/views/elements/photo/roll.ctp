@@ -73,10 +73,12 @@ $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 			 * 	set in $this->viewVars['jsonData']['listeners']['SectionOptionClick'] = null;
 			 */
 			SNAPPI.startListeners();	// catch any PAGE.jsonData.listeners by XHR
-			SNAPPI.Hint.load({
+			SNAPPI.STATE.hints = SNAPPI.STATE.hints || {}; 
+			SNAPPI.STATE.hints['HINT_MultiSelect'] = {
 				id: 'HINT_MultiSelect',
 				trigger: 'section.gallery.photo .container',
-			});
+			};
+			SNAPPI.Hint.flushQueue();		// if Hint already available
 		} catch (e) {}
 	};
 	try {
