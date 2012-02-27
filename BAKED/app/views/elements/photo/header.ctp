@@ -13,17 +13,20 @@
 	);
 	$xhrFrom = Configure::read('controller.xhrFrom');
 	$passedArgs = Configure::read('passedArgs.min');
-	$next = array('controller'=>$xhrFrom['alias'],'action'=>'photos', $xhrFrom['uuid']) + $passedArgs;
+	
 	$tokens['total'] = $total; 
+	if (in_array(Configure::read('controller.class'), array('User', 'Group', 'Tag'))) {
+		$next = array('controller'=>$xhrFrom['alias'],'action'=>'photos', $xhrFrom['uuid']) + $passedArgs;
+	} else $next = null;
 	if ($isPreview) {
 		$tokens['type'] = ($total==1 ? "Snap. " : "Snaps. ");		
-		$tokens['linkTo'] = $this->Html->link('Show all', $next); 
+		$tokens['linkTo'] = $next ? $this->Html->link('Show all', $next) : ''; 
 		$header_content = String::insert("Total <span class=''>:total</span> :type :linkTo", $tokens);
 	} else {
 		// NOT isPreview	
-		$tokens['type'] = ($total==1 ? "Snap " : "Snaps ");		
-		$tokens['linkTo'] = Router::url($next);
-		$btn_snaps= String::insert("<a href=':linkTo'>:total :type</a>", $tokens); 
+		$tokens['type'] = ($total==1 ? "Snap " : "Snaps ");	
+		$tokens['linkTo'] = $next ? Router::url($next) : $this->here;
+		$btn_snaps= String::insert("<a href=':linkTo'>:total :type</a>", $tokens);
 	}
 	$isRelated = empty($this->params['url']['gallery']);
 	if ($isPreview && $isRelated) {
@@ -33,7 +36,7 @@
 			$header_content = String::insert("Total <span class='count'>:total</span> :type :linkTo", $tokens);
 		}
 		echo "<h2>{$header_content}</h2>";
-		return;
+		return;	// exit
 	}	
 ?>
 <section class="gallery-header container_16">
@@ -43,11 +46,7 @@
 		<li class='blue label'><h1><?php echo $header_content;  ?></h1></li>
 	</ul>	
 
-	
-	
 <?php  } else { ?>
-	
-	
 	
 	<ul class="toolbar inline grid_3">
 		<li class="btn white select-all"><span class="menu-open"><input type="checkbox" value="" name=""></span></li>
