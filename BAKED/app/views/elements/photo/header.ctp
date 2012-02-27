@@ -16,6 +16,7 @@
 	
 	$tokens['total'] = $total; 
 	if (in_array(Configure::read('controller.class'), array('User', 'Group', 'Tag'))) {
+		if ($xhrFrom['alias'] == 'my') $xhrFrom['uuid'] = null;
 		$next = array('controller'=>$xhrFrom['alias'],'action'=>'photos', $xhrFrom['uuid']) + $passedArgs;
 	} else $next = null;
 	if ($isPreview) {

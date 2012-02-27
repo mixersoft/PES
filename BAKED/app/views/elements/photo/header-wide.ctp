@@ -15,7 +15,8 @@
 	$passedArgs = Configure::read('passedArgs.min');
 	$tokens['total'] = $total; 
 	if (in_array(Configure::read('controller.class'), array('User', 'Group', 'Tag'))) {
-		$next = array('controller'=>$xhrFrom['alias'],'action'=>'photos', $xhrFrom['uuid']) + $passedArgs;
+		if ($xhrFrom['alias'] == 'my') $xhrFrom['uuid'] = null;
+ 		$next = array('controller'=>$xhrFrom['alias'],'action'=>'photos', $xhrFrom['uuid']) + $passedArgs;
 	} else $next = null;
 	if ($isPreview) {
 		$tokens['type'] = ($total==1 ? "Snap. " : "Snaps. ");		
