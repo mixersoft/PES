@@ -1,5 +1,6 @@
 <!--  for XHR login  -->
 <div class="plain-form">
+	{message}
 	<div class="cf">
 		<h2>Sign-in</h2>
 		<div >

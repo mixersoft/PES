@@ -595,10 +595,9 @@
 				var context = ioRequest.get('context') || this;				
 				if (o.status == '403') {
 					if (SNAPPI.STATE.controller.userid) {
-						SNAPPI.Helper.Dialog.showSigninDialog();
+						SNAPPI.Helper.Dialog.showSigninDialog({message: "Your session may have expired. Please sign-in again."});
 					} else {
-						// forbidden or login Dialog
-					SNAPPI.flash.flash('For the moment, you\'ll need to sign in before you can do this action.<br /><a href="/users/signin">Sign in now</a>.');	
+						SNAPPI.Helper.Dialog.showSigninDialog({message: "Please sign-in to perform this action."});	
 					}
 				}
 				// timeout or no response

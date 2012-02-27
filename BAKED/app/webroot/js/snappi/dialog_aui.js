@@ -441,11 +441,14 @@
 	 */
 	var DialogHelper = function(cfg) {};
 	
-	DialogHelper.showSigninDialog = function(target){
-		var uri = target || '/users/signin';	// get XHR view	
-		var cfg = {
-			uri: uri,
-		};
+	DialogHelper.showSigninDialog = function(cfg){
+		cfg = cfg || {};
+		cfg.uri = cfg.uri || '/users/signin';	// get XHR view	
+		cfg.message = cfg.message ? '<div class="messages"><div class="message">'+cfg.message+'</div></div>' : '';
+		cfg.tokens = {
+			message: cfg.message,
+		}
+		delete cfg.message;
 		var detach = _Y.on('snappi:dialog-body-rendered', function(){
 			try {
 				detach.detach();
