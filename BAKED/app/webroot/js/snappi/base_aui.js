@@ -45,6 +45,10 @@
 			delayed.delay(1000);	
 			SNAPPI.UIHelper.markup.set_ItemHeader_WindowOptions();
 			SNAPPI.setPageLoading(false); 
+			// start gallery.Photo hints
+			SNAPPI.STATE.hints['HINT_MultiSelect'] = true;
+			SNAPPI.STATE.hints['HINT_ContextMenu'] = true;
+			SNAPPI.Hint.flushQueue();		// if Hint already available
         });        
         Y.on('snappi:afterLightboxInit', function(){
             /**
@@ -1089,7 +1093,8 @@
 	 */    
     SNAPPI.mergeSessionData = function(castingCall){
         try {
-            SNAPPI.STATE = SNAPPI.STATE  || {}; // stores session data across XHR calls
+        	SNAPPI.namespace('SNAPPI.STATE.hints');
+            // SNAPPI.STATE = SNAPPI.STATE  || {}; // stores session data across XHR calls
         	SNAPPI.STATE = _Y.merge(PAGE.jsonData.STATE, SNAPPI.STATE);
         	PAGE.jsonData.STATE = {};
     		// merge PAGE into SNAPPI.STATE

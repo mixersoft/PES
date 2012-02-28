@@ -74,11 +74,6 @@ $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 			 */
 			SNAPPI.startListeners();	// catch any PAGE.jsonData.listeners by XHR
 			SNAPPI.STATE.hints = SNAPPI.STATE.hints || {}; 
-			SNAPPI.STATE.hints['HINT_MultiSelect'] = {
-				id: 'HINT_MultiSelect',
-				trigger: 'section.gallery.photo .container',
-			};
-			SNAPPI.Hint.flushQueue();		// if Hint already available
 		} catch (e) {}
 	};
 	try {
