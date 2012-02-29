@@ -22,15 +22,17 @@
     Hint.CFG = {					// id:CSS_ID
     	HINT_MultiSelect:{
     		css_id:'hint-multiselect-markup', 
-    		// showDelay:5000,
-    		align:  { points: [ 'tc', 'tc' ] },
+    		showDelay:5000,
+    		align:  { points: [ 'tl', 'bc' ] },
     		trigger: 'section.gallery.photo .container',
+    		anchor: 'section.gallery.photo .container .FigureBox.Photo:first-child',
     	},
     	HINT_ContextMenu:{
     		css_id:'hint-contextmenu-markup', 
-    		// showDelay:5000,
-    		align:  { points: [ 'tc', 'tc' ] },
+    		showDelay:5000,
+    		align:  { points: [ 'tl', 'bc' ] },
     		trigger: 'section.gallery.photo .container',
+    		anchor: 'section.gallery.photo .container .FigureBox.Photo:first-child .icon.context-menu',
     	},
     }
     /*
@@ -58,6 +60,14 @@
 	    		SNAPPI.STATE.hints[i] = 'loaded';
 	    	}
 	    }
+    }
+    Hint.alignToAnchor = function(){
+    	try {
+    		var cfg = Hint.active.cfg;
+    		if(cfg.anchor) {
+	    		Hint.instance.align(cfg.anchor, cfg.align.points);
+	    	}	
+    	}catch(e){}
     }
     /*
      * private attributes
@@ -115,7 +125,12 @@
     		){
     			// found == Hint.active
     			hint.set('bodyContent', Hint.active.body);
-console.log('hint.body set to '+found.cfg.id)    
+    			// Hint.alignToAnchor();
+    			// if (Hint.active.cfg.anchor) {
+    				// hint.set('currentNode', _Y.one(Hint.active.cfg.anchor));
+// console.warn('1 >>> hint.currentNode set to '+Hint.active.cfg.anchor);    				
+    			// }
+console.log('hint.body set to '+found.cfg.id);    
 				break;			
     		}
     	}
@@ -171,15 +186,17 @@ console.log("scanning for active hints. trigger="+trigger+", hintId="+hintDesc[i
     	} 
     	return false;
     }
-    var _checkDoNotShow = function (o){
-    	return o && (Hint.doNotShow[o.cfg.id] ? true : false);
+    var _checkDoNotShow = function (found){
+    	return found && (Hint.doNotShow[found.cfg.id] ? true : false);
     }
-    var _addDoNotShow = function(id){
+    var _addDoNotShow = function(id, saveToCookie){
     	Hint.doNotShow[id] = 1;
-		// _Y.Cookie.setSub('donotshow', id, 1, {
-			// path: 'dev.snaphappi.com',
-			// expires: new Date(+new Date + 12096e5),
-		// });
+    	if (saveToCookie) {
+    		_Y.Cookie.setSub('donotshow', id, 1, {
+				path: 'dev.snaphappi.com',
+				expires: new Date(+new Date + 12096e5),
+			});
+    	}
     }
     
     var _handle_VisibleChange = function(e){
@@ -201,22 +218,31 @@ console.warn("visibleChange:: trigger set to #blackhole");
 			// var body = e.currentTarget.get('bodyContent') !== Hint.active.body;
 		}
 	}
+	var _override_refreshAlign = function(){
+		this.constructor.prototype.refreshAlign.call(this);	// parentClass method
+		try{	// align to anchor without changing this.get('currentNode')
+			this.align(_Y.one(Hint.active.cfg.anchor), Hint.active.cfg.align.points);
+		}catch(e){}
+	};
 	
 	var _handle_Close = function(e, contentBox){
 		try {		// context: this = hint or ToolTip
 			var hide = e.container.one('input.do-not-show');
-			if (hide.get('checked')) _addDoNotShow(Hint.active.cfg.id); 
+			if (hide.get('checked')) _addDoNotShow(Hint.active.cfg.id, true);
+			else _addDoNotShow(Hint.active.cfg.id, false); 
 		} catch(e) {}
 		this.hide();
 		var check;
 	}
 	var _handle_ShowNextTip = function(e){ // context: this = hint or ToolTip
+		e.halt();
+		e.stopImmediatePropagation();
 		if (e.currentTarget.hasClass('disabled')) return;
 		var footer = this.getStdModNode('footer');
 		if (footer.one('.do-not-show').get('checked')){
-			_addDoNotShow(Hint.active.cfg.id);
+			_addDoNotShow(Hint.active.cfg.id, true);
 			footer.one('.do-not-show').set('checked', false);
-		}
+		} else _addDoNotShow(Hint.active.cfg.id, false);
 		var triggerNode = this.get('currentNode');
 		var found = _setHintBodyByTriggerNode(this, triggerNode);
 		if (!found) e.currentTarget.addClass('disabled');
@@ -256,6 +282,10 @@ console.warn("visibleChange:: trigger set to #blackhole");
     		hint.set('headerContent', _bodyMarkup.close);
     		hint.set('footerContent', _Y.substitute(_bodyMarkup.doNotShow, cfg));
     		hint.on('visibleChange', _handle_VisibleChange, hint);
+    		/*
+    		 * override refreshAlign(), called by show() method
+    		 */
+    		hint.refreshAlign = _override_refreshAlign;
     		contentBox = hint.get('contentBox');
     		contentBox.listen = {};
 			contentBox.listen['close'] = contentBox.delegate('click', _handle_Close, 'span.close', hint, contentBox);
