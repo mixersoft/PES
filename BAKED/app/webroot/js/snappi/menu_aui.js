@@ -75,36 +75,42 @@
 	 * @return menu or false on XHR request
 	 */
 	Menu.getMarkup = function(cfg, callback){
-		var container = cfg.container;
-		var selector = cfg.selector;
+		var container = cfg.container || _Y.one('#markup');	
+		var selector = cfg.selector || '#'+cfg.css_id;	// selector for markup
+		var markup = container.one(selector);
+		if (markup) {
+			callback.call(this, cfg, markup);
+			return markup;
+		}
 		
+		var markupNode = _Y.Node.create("<div></div>");
+		container.append(markupNode);
 		var ioCfg = {
-				uri: null,
+				uri: cfg.uri,
 				autoLoad: true,
 				showLoading:false, 
-				end: null
+				context: this,
+				arguments: {
+					cfg: cfg,
+					parent: markupNode,
+					callback: callback,
+				},
+				on: {
+					success: function(e, id, o, args) {
+						SNAPPI.setPageLoading(false);
+						var markup = _Y.Node.create(o.responseText);
+						args.parent.setContent(markup);
+						args.callback.call(this, args.cfg, markup);
+						return false;	
+					}
+				},
 		};		
-		var ioCfg = _Y.merge(ioCfg, cfg);
-		delete ioCfg.selector;
-		delete ioCfg.selector;
-		
-		if (!_Y.one(selector) && ioCfg.uri) {
-			// BUG: container.one('#menu-header') does NOT work in chrome
-			var markupNode = _Y.Node.create("<div />");
-			container.append(markupNode);
-			SNAPPI.setPageLoading(true);
-			markupNode.plug(_Y.Plugin.IO, ioCfg);	
-			markupNode.io.afterHostMethod('insert', function(){
-				SNAPPI.setPageLoading(false);
-				callback.apply(this, arguments);
-			});
-			return false;
-		} else {
-			return callback();
-		}		
+		SNAPPI.setPageLoading(true);
+		markupNode.plug(_Y.Plugin.IO, ioCfg);
+		return false;	
 	};
 	/**
-	 * 
+	 * load Menus on page 
 	 * @param MARKUP
 	 * @param TRIGGER
 	 * @param cfg {}, additional config for _Y.OverlayContext
