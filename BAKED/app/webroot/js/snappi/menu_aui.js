@@ -179,6 +179,15 @@
 		if (cfg.currentTarget) {
 			menu.set('trigger', TRIGGER);	// 'enabled' trigger
 			menu._stashTrigger = TRIGGER;
+			menu.on('visibleChange',
+				function(e){
+					if (e.newVal == false && e.prevVal== true) {
+						// disable contextmenu for menu.onHide
+						e.target.disable();
+						e.target.set('trigger', '#blackhole');
+					}
+				}
+			, menu);
 		}
 		Menu.startListener(menu, cfg.handle_click );
 		
@@ -208,13 +217,14 @@
 	 * toggle .FigureBox context menu enable/disable by changing trigger
 	 */
 	Menu.toggleEnabled = function(menu_ID, e) {
-		var menu = Menu.find[menu_ID];
+		var menu = (menu_ID instanceof _Y.OverlayContext) ? menu_ID : Menu.find[menu_ID];
 		if (e && menu.get('disabled')) {
 			menu.enable();
 			var trigger = e.currentTarget.hasClass('FigureBox') ? e.currentTarget : e.currentTarget.ancestor('.FigureBox');
 			menu.set('trigger', trigger);			// 'startup/disabled' trigger
 			menu.show();
-			menu.set('trigger', menu._stashTrigger); 		// 'enabled' trigger
+			// TODO: add checkbox for sticky
+			if (sticky) menu.set('trigger', menu._stashTrigger); 		// 'enabled' trigger
 		} else {
 			menu.disable();
 			menu.hide();
