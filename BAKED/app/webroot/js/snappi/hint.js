@@ -21,15 +21,17 @@
 	 */
     Hint.CFG = {					// id:CSS_ID
     	HINT_MultiSelect:{
-    		css_id:'hint-multiselect-markup', 
-    		showDelay:5000,
+    		css_id:'hint-multiselect-markup',
+    		uri: '/help/markup/tooltips', 
+    		showDelay:1000,
     		align:  { points: [ 'tl', 'bc' ] },
     		trigger: 'section.gallery.photo .container',
     		anchor: 'section.gallery.photo .container .FigureBox.Photo:first-child',
     	},
     	HINT_ContextMenu:{
     		css_id:'hint-contextmenu-markup', 
-    		showDelay:5000,
+    		uri: '/help/markup/tooltips', 
+    		showDelay:1000,
     		align:  { points: [ 'tl', 'bc' ] },
     		trigger: 'section.gallery.photo .container',
     		anchor: 'section.gallery.photo .container .FigureBox.Photo:first-child .icon.context-menu',
@@ -50,19 +52,21 @@
     /*
      * Static methods 
      */
+    Hint.XHR_WAIT = {};
     Hint.flushQueue = function() {
     	// load queued hints
 	    for (var i in SNAPPI.STATE.hints) {
 	    	if (SNAPPI.STATE.hints[i] !== 'loaded') {
 	    		var loadCfg = SNAPPI.STATE.hints[i];
 	    		if (!loadCfg.id) loadCfg = {id: i}; 
-	    		Hint.load(loadCfg);	
-	    		SNAPPI.STATE.hints[i] = 'loaded';
+	    		if (Hint.load(loadCfg)) {
+	    			SNAPPI.STATE.hints[i] = 'loaded';	
+	    		}
 	    	}
 	    }
     }
     Hint.alignToAnchor = function(){
-    	try {
+    	try {		// using _override_refreshAlign() instead
     		var cfg = Hint.active.cfg;
     		if(cfg.anchor) {
 	    		Hint.instance.align(cfg.anchor, cfg.align.points);
@@ -125,12 +129,7 @@
     		){
     			// found == Hint.active
     			hint.set('bodyContent', Hint.active.body);
-    			// Hint.alignToAnchor();
-    			// if (Hint.active.cfg.anchor) {
-    				// hint.set('currentNode', _Y.one(Hint.active.cfg.anchor));
-// console.warn('1 >>> hint.currentNode set to '+Hint.active.cfg.anchor);    				
-    			// }
-console.log('hint.body set to '+found.cfg.id);    
+// console.log('hint.body set to '+found.cfg.id);    
 				break;			
     		}
     	}
@@ -151,7 +150,7 @@ console.log('hint.body set to '+found.cfg.id);
     	if (_Y.Lang.isArray(hintDesc)){
     		// get first valid object after current
     		for (var i in hintDesc){
-console.log("scanning for active hints. trigger="+trigger+", hintId="+hintDesc[i].cfg.id);    			
+// console.log("scanning for active hints. trigger="+trigger+", hintId="+hintDesc[i].cfg.id);    			
     			if (current && hintDesc[i].body!==current.body) {
     				if (!first && !_checkDoNotShow(hintDesc[i])) first = hintDesc[i];
     				continue;
@@ -207,7 +206,7 @@ console.log("scanning for active hints. trigger="+trigger+", hintId="+hintDesc[i
 			var found = _setHintBodyByTriggerNode(this, triggerNode);
 			if (!found && _checkDoNotShow(Hint.active)) {
 				this.set('trigger', '#blackhole');
-console.warn("visibleChange:: trigger set to #blackhole");
+console.warn("visibleChange: Hints disabled, trigger set to #blackhole");
 				e.halt();
 				return;
 			} // else just show active
@@ -242,33 +241,76 @@ console.warn("visibleChange:: trigger set to #blackhole");
 		if (footer.one('.do-not-show').get('checked')){
 			_addDoNotShow(Hint.active.cfg.id, true);
 			footer.one('.do-not-show').set('checked', false);
-		} else _addDoNotShow(Hint.active.cfg.id, false);
+		} 
+		// else _addDoNotShow(Hint.active.cfg.id, false);
 		var triggerNode = this.get('currentNode');
 		var found = _setHintBodyByTriggerNode(this, triggerNode);
 		if (!found) e.currentTarget.addClass('disabled');
 		var check;
 	}
-    
+    /**
+     * NOTE: this method blocks Hint.flushQueue() on XHR
+     * 		- assumes that all cfg.uri contains markup for all hints 
+	 * fetch html markup using Plugin.IO, 
+	 * 		copied from SNAPPI.Menu
+	 * @param cfg {uri:, selector:, container:, plug _Y.Plugin.io cfg attrs}
+	 * @param callback, callback method to init Menu
+	 * @return menu or false on XHR request
+	 */
+	Hint.getMarkup = function(cfg, callback){
+		var container = cfg.container || _Y.one('#markup');	
+		var selector = cfg.selector || '#'+cfg.css_id;	// selector for markup
+		var markup = container.one(selector);
+		if (markup) return markup;
+		
+		var markupNode = _Y.Node.create("<div class='hide'></div>");
+		container.append(markupNode);
+		var ioCfg = {
+				uri: cfg.uri,
+				autoLoad: true,
+				showLoading:false, 
+				arguments: {
+					cfg: cfg,
+					parent: markupNode,
+					callback: callback,
+				},
+				on: {
+					success: function(e, id, o, args) {
+						SNAPPI.setPageLoading(false);
+						args.parent.setContent(o.responseText);
+						// args.callback.call(this, args.cfg);
+						Hint.XHR_WAIT[args.cfg.uri] = false;
+						Hint.flushQueue();	// just flushQueue() to restart
+						return false;	
+					}
+				},
+		};		
+		SNAPPI.setPageLoading(true);
+		markupNode.plug(_Y.Plugin.IO, ioCfg);
+		Hint.XHR_WAIT[cfg.uri] = true;	
+		return false;	
+	};
     /**
      * load the hint
      * @params cfg.id string, appears in Hint.CFG, example: HINT_MultiSelect
      * @params cfg.css_id string, CSS id of markup
      * @params cfg.delay int, (optional) milliseconds until hint is displayed
      * @params cfg.trigger, Node or selector
+     * @return false if waiting for XHR
      */
     Hint.load = function(cfg){
     	if (Hint.doNotShow[cfg.id]) return;	
     	
     	if (_Y.Lang.isObject(Hint.CFG[cfg.id])) {
     		cfg = _Y.merge(_defaultCfg, Hint.CFG[cfg.id], cfg);
-    	} else cfg = _Y.merge(_defaultCfg, cfg2, cfg);
-    	var cancel = SNAPPI.namespace('SNAPPI.timeout.hint');
-    	var CSS_ID = cfg.css_id;
-    	var body = _Y.one('#markup #'+CSS_ID);
+    	} else cfg = _Y.merge(_defaultCfg, cfg);
     	
+    	// get markup, from DOM or by XHR
+    	if (cfg.uri && Hint.XHR_WAIT[cfg.uri]) return false;	// WAIT until XHR complete
+    	var body = Hint.getMarkup(cfg, Hint.load);
+    	if (body === false) return false;		// wait for callback
     	
     	// use only 1 hint, modify trigger, bodyContent
-    	// var hint = Hint.findByTrigger[cfg.trigger];
     	var hint = Hint.instance;
     	if (!hint) { // create new hint
 	    	hint = new _Y.Tooltip(cfg).render();
@@ -308,5 +350,6 @@ console.warn("visibleChange:: trigger set to #blackhole");
     		// register Hint
     		_registerHint(hint, cfg, body);
     	}
-};
+    	return true;
+	};
 })();
