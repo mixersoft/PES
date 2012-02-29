@@ -36,6 +36,14 @@
     		trigger: 'section.gallery.photo .container',
     		anchor: 'section.gallery.photo .container .FigureBox.Photo:first-child .icon.context-menu',
     	},
+    	HINT_Create:{
+    		css_id:'hint-create-markup', 
+    		uri: '/help/markup/tooltips', 
+    		showDelay:1000,
+    		align:  { points: [ 'tr', 'bc' ] },
+    		trigger: '.head .menu-trigger-create',
+    		anchor: '.head .menu-trigger-create span.green',
+    	},
     }
     /*
      * static properties
@@ -68,8 +76,9 @@
     Hint.alignToAnchor = function(){
     	try {		// using _override_refreshAlign() instead
     		var cfg = Hint.active.cfg;
+    		var anchor = cfg.anchor || cfg.trigger;
     		if(cfg.anchor) {
-	    		Hint.instance.align(cfg.anchor, cfg.align.points);
+	    		Hint.instance.align(anchor, cfg.align.points);
 	    	}	
     	}catch(e){}
     }
@@ -110,9 +119,11 @@
      * 		called by hint.on('visibleChange') before hint.show();
      * @params hint, Hint object
      * @params node, the node which triggered, i.e. Hint.get('currentNode');
+     * @params anyTrigger boolean. expand search for any hint/trigger when true 
+     * 		typically true for ShowNextTip
      * @return found;
      */ 
-    var _setHintBodyByTriggerNode = function(hint, node){
+    var _setHintBodyByTriggerNode = function(hint, node, anyTrigger, dryrun){
     	node = node || hint.get('currentNode');
     	// find the next valid Hint markup, using .test() and setBodyContent
     	// if no more, then check if there is another Hint.trigger that was suppressed
@@ -125,11 +136,11 @@
     	var i, found;
     	for (var i in triggerSelectors) {
     		if (node.test(triggerSelectors[i]) 
-    			&& (found = _getHintMarkupFromTrigger(triggerSelectors[i], true))
+    			&& (found = _getHintMarkupFromTrigger(triggerSelectors[i], anyTrigger))
     		){
     			// found == Hint.active
-    			hint.set('bodyContent', Hint.active.body);
-// console.log('hint.body set to '+found.cfg.id);    
+    			if (!dryrun) hint.set('bodyContent', Hint.active.body);
+console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0));    
 				break;			
     		}
     	}
@@ -205,14 +216,17 @@
 			var triggerNode = this.get('currentNode');
 			var found = _setHintBodyByTriggerNode(this, triggerNode);
 			if (!found && _checkDoNotShow(Hint.active)) {
-				this.set('trigger', '#blackhole');
-console.warn("visibleChange: Hints disabled, trigger set to #blackhole");
-				e.halt();
-				return;
-			} // else just show active
-			var footer = this.getStdModNode('footer');
-			footer.one('span.show-next').removeClass('disabled');
-    		footer.one('.do-not-show').set('id', Hint.active.cfg.id).set('checked', false);
+				e.halt();		// prevent hint.show();
+				var moreTips = _setHintBodyByTriggerNode(this, triggerNode, true, 'dryrun');
+				if (!moreTips) {
+					this.set('trigger', '#blackhole');
+	console.warn("visibleChange: Hints disabled, trigger set to #blackhole");
+				}
+			} else { // else just show active
+				var footer = this.getStdModNode('footer');
+				footer.one('span.show-next').removeClass('disabled');
+	    		footer.one('.do-not-show').set('id', Hint.active.cfg.id).set('checked', false);
+	    	}
 		} else if (e.newVal == false && e.prevVal== true) {
 			// var body = e.currentTarget.get('bodyContent') !== Hint.active.body;
 		}
@@ -223,7 +237,13 @@ console.warn("visibleChange: Hints disabled, trigger set to #blackhole");
 			this.align(_Y.one(Hint.active.cfg.anchor), Hint.active.cfg.align.points);
 		}catch(e){}
 	};
-	
+	var _handle_clickOutside = function(e, hint){
+		var target = e.target;
+		if (!this.get('boundingBox').contains(e.target)) {
+			this.hide();	
+			this.clearIntervals();
+		};
+	}
 	var _handle_Close = function(e, contentBox){
 		try {		// context: this = hint or ToolTip
 			var hide = e.container.one('input.do-not-show');
@@ -244,7 +264,7 @@ console.warn("visibleChange: Hints disabled, trigger set to #blackhole");
 		} 
 		// else _addDoNotShow(Hint.active.cfg.id, false);
 		var triggerNode = this.get('currentNode');
-		var found = _setHintBodyByTriggerNode(this, triggerNode);
+		var found = _setHintBodyByTriggerNode(this, triggerNode, true);
 		if (!found) e.currentTarget.addClass('disabled');
 		var check;
 	}
@@ -323,7 +343,10 @@ console.warn("visibleChange: Hints disabled, trigger set to #blackhole");
 			// set the tip before show
     		hint.set('headerContent', _bodyMarkup.close);
     		hint.set('footerContent', _Y.substitute(_bodyMarkup.doNotShow, cfg));
-    		hint.on('visibleChange', _handle_VisibleChange, hint);
+    		hint.listen = {};
+    		hint.listen['visibleChange'] = hint.on('visibleChange', _handle_VisibleChange, hint);
+    		hint.listen['any-click'] = _Y.on('click', _handle_clickOutside, null, hint);
+    		hint.listen['any-contextmenu'] = _Y.on('contextmenu', _handle_clickOutside, null, hint);
     		/*
     		 * override refreshAlign(), called by show() method
     		 */
