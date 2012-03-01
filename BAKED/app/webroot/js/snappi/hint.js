@@ -3,9 +3,7 @@
     SNAPPI.namespace('SNAPPI.onYready');
     SNAPPI.onYready.Hint = function(Y){
 		if (_Y === null) _Y = Y;
-		
 		Hint.overlayManager = new _Y.OverlayManager();
-		
 		/*
 		 * make global
 		 */
@@ -36,6 +34,30 @@
     		trigger: 'section.gallery.photo .container',
     		anchor: 'section.gallery.photo .container .FigureBox.Photo:first-child .icon.context-menu',
     	},
+    	HINT_Bestshot:{
+    		css_id:'hint-bestshot-markup', 
+    		uri: '/help/markup/tooltips', 
+    		showDelay:1000,
+    		align:  { points: [ 'tl', 'bc' ] },
+    		trigger: 'section.gallery.photo .container',
+    		anchor: 'section.gallery.photo .container .FigureBox.Photo:first-child',
+    	},
+    	HINT_HiddenShot:{
+    		css_id:'hint-hiddenshot-markup', 
+    		uri: '/help/markup/tooltips', 
+    		showDelay:1000,
+    		align:  { points: [ 'tl', 'bc' ] },
+    		trigger: 'section.gallery.photo .container',
+    		anchor: 'section.gallery.photo .container .FigureBox.Photo:first-child .hidden-shot, section.gallery.photo .container .FigureBox.Photo:first-child ',
+    	},
+    	HINT_Filmstrip:{
+    		css_id:'hint-filmstrip-markup', 
+    		uri: '/help/markup/tooltips', 
+    		showDelay:1000,
+    		align:  { points: [ 'tc', 'bc' ] },
+    		trigger: 'section.preview-body nav.settings ul.filmstrip-nav',
+    		anchor: 'section.preview-body nav.settings ul.filmstrip-nav',
+    	},
     	HINT_Create:{
     		css_id:'hint-create-markup', 
     		uri: '/help/markup/tooltips', 
@@ -43,6 +65,38 @@
     		align:  { points: [ 'tr', 'bc' ] },
     		trigger: '.head .menu-trigger-create',
     		anchor: '.head .menu-trigger-create span.green',
+    	},
+    	HINT_DisplayOptions:{
+    		css_id:'hint-display-option-markup', 
+    		uri: '/help/markup/tooltips', 
+    		showDelay:1000,
+    		align:  { points: [ 'tr', 'bc' ] },
+    		trigger: '.gallery-header .display-option',
+    		anchor: '.gallery-header .display-option',
+    	},
+    	HINT_Montage:{
+    		css_id:'hint-montage-markup', 
+    		uri: '/help/markup/tooltips', 
+    		showDelay:1000,
+    		align:  { points: [ 'tl', 'bc' ] },
+    		trigger: 'nav.section-header li.montage, nav.section-header li.gallery',
+    		anchor: 'nav.section-header li.montage',
+    	},
+    	HINT_Lightbox:{
+    		css_id:'hint-lightbox-markup', 
+    		uri: '/help/markup/tooltips', 
+    		showDelay:1000,
+    		align:  { points: [ 'br', 'tr' ] },
+    		trigger: '#lightbox',
+    		anchor: '#lightbox .lightbox-tab',
+    	},
+    	HINT_Upload:{
+    		css_id:'hint-upload-markup', 
+    		uri: '/help/markup/tooltips', 
+    		showDelay:1000,
+    		align:  { points: [ 'tc', 'bc' ] },
+    		trigger: '.gallery.photo .container .FigureBox',
+    		anchor: '.upload-toolbar li.btn.start',
     	},
     }
     /*
@@ -156,24 +210,30 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
     var _getHintMarkupFromTrigger = function(trigger, anyTrigger){
     	// iterate through HintMarkup, check _checkDoNotShow()
     	trigger = trigger.trim();
-    	var current, first, found, hintDesc = Hint.lookupHintByTrigger[trigger];
+    	var first, found, next,
+    		current = current || {}, 
+    		hintDesc = Hint.lookupHintByTrigger[trigger];
     	if (Hint.active.trigger == trigger) current = Hint.active;
     	if (_Y.Lang.isArray(hintDesc)){
     		// get first valid object after current
     		for (var i in hintDesc){
 // console.log("scanning for active hints. trigger="+trigger+", hintId="+hintDesc[i].cfg.id);    			
-    			if (current && hintDesc[i].body!==current.body) {
-    				if (!first && !_checkDoNotShow(hintDesc[i])) first = hintDesc[i];
-    				continue;
-    			} else if (current && hintDesc[i].body==current.body) {
+				if (!first && !next && !_checkDoNotShow(hintDesc[i])) 
+					first = hintDesc[i];
+				if (!current.body && first) {
+					found = first;
+					break;
+				} 
+    			if (hintDesc[i].body==current.body) {
+    				next = true;
     				continue;
     			}
-    			if (!_checkDoNotShow(hintDesc[i])) {
+    			if (next && !_checkDoNotShow(hintDesc[i])) {
     				found = hintDesc[i];
     				break;
     			}
     		}
-    		if (current && current.body && !found && first) found = first;
+    		if (current.body && !found && first && first.body!=current.body) found = first;
     	} else if (!_checkDoNotShow(hintDesc)){
     		found = hintDesc;
     	}
@@ -187,8 +247,9 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
     	} else if (anyTrigger) {	// 'recurse' through Hint.lookupHintByTrigger
     		for (var j in Hint.lookupHintByTrigger) {
     			if (j == trigger) continue;
+    			if (!_Y.one(j)) continue;
     			found = _getHintMarkupFromTrigger(j, false);
-    			if (found && current 
+    			if (found 
     				&& found.body !== current.body 
     				&& !_checkDoNotShow(found)
     			) return found;
@@ -197,7 +258,7 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
     	return false;
     }
     var _checkDoNotShow = function (found){
-    	return found && (Hint.doNotShow[found.cfg.id] ? true : false);
+    	return found && found.cfg && (Hint.doNotShow[found.cfg.id] ? true : false);
     }
     var _addDoNotShow = function(id, saveToCookie){
     	Hint.doNotShow[id] = 1;
@@ -234,7 +295,8 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 	var _override_refreshAlign = function(){
 		this.constructor.prototype.refreshAlign.call(this);	// parentClass method
 		try{	// align to anchor without changing this.get('currentNode')
-			this.align(_Y.one(Hint.active.cfg.anchor), Hint.active.cfg.align.points);
+			var anchor = _Y.one(Hint.active.cfg.anchor);
+			if (anchor) this.align(anchor, Hint.active.cfg.align.points);
 		}catch(e){}
 	};
 	var _handle_clickOutside = function(e, hint){
@@ -320,7 +382,6 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
      */
     Hint.load = function(cfg){
     	if (Hint.doNotShow[cfg.id]) return;	
-    	
     	if (_Y.Lang.isObject(Hint.CFG[cfg.id])) {
     		cfg = _Y.merge(_defaultCfg, Hint.CFG[cfg.id], cfg);
     	} else cfg = _Y.merge(_defaultCfg, cfg);

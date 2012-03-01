@@ -48,6 +48,14 @@
 			// start gallery.Photo hints
 			SNAPPI.STATE.hints['HINT_MultiSelect'] = true;
 			SNAPPI.STATE.hints['HINT_ContextMenu'] = true;
+			SNAPPI.STATE.hints['HINT_Create'] = true;
+			SNAPPI.STATE.hints['HINT_Bestshot'] = true;
+			SNAPPI.STATE.hints['HINT_HiddenShot'] = true;
+			SNAPPI.STATE.hints['HINT_Montage'] = true;
+			SNAPPI.STATE.hints['HINT_DisplayOptions'] = true;
+			SNAPPI.STATE.hints['HINT_Lightbox'] = true;
+			// from PhotoPreview load()
+			SNAPPI.STATE.hints['HINT_Filmstrip'] = true;
 			SNAPPI.Hint.flushQueue();		// if Hint already available
         });        
         Y.on('snappi:afterLightboxInit', function(){
@@ -169,7 +177,7 @@
 			DEBUG : {	// default when hostname==git*
 	    		snappi_comboBase: 'baked/app/webroot&',
 	    		air_comboBase: 'app/air&',
-	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
+	    		snappi_useCombo: 0,					// <-- TESTING SNAPPI useCombo
 	    		pagemaker_comboBase: 'PageMaker&',	// filepath, not baseurl
 	    		pagemaker_useCombo: 1,
 	    		alloy_useCombo: true,
@@ -576,6 +584,13 @@
     						SNAPPI.AIR.XhrHelper.checkUpdate();
     					});
     					SNAPPI.AIR.XhrHelper.getMarkup();
+						Y.later(10000, this, function(){
+							Y.ready('snappi-hint', function(Y){
+									SNAPPI.namespace('SNAPPI.STATE.hints');
+									SNAPPI.STATE.hints['HINT_Upload'] = true;
+									SNAPPI.onYready.Hint(Y);
+							});	
+				      	});
     				} catch (e) {}
 	    		});
 		}
@@ -648,7 +663,13 @@
 		    	} else LOG('FLEX> '+msg);
 		    };
 		    LazyLoad.helpers.before_LazyLoad();	
-		    
+		    /*
+	         * override String
+	         */
+	        String.prototype.trim = function(){
+	            //            return this.replace(/^\s*/, "").replace(/\s*$/, "");
+	            return this.replace(/^\s+|\s+$/g, '');
+	        };
 		    
 		    CFG.DEBUG.snappi_useCombo = 0;
  
@@ -864,7 +885,7 @@
                 },
                 'snappi-hint': {
                 	path: 'hint.js',
-                    requires: ['aui-tooltip', 'cookie']
+                    requires: ['aui-tooltip', 'snappi-io', 'cookie']
                 }
             }
         };
@@ -1045,22 +1066,22 @@
 			comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl='+hostCfg.air_comboBase,
 	        root: 'js/css',			// base for combo loading, combo load uri = comboBase+root+[module-name]
             modules: {
-            	'960-reset-css': { 	// load manually in HTML HEAD
-            		path: 'reset.css',
-            		requires: [],
-            		type: 'css'
-            	},
-            	'AIR-upload-ui-css': {
+            	// '960-reset-css': { 	// load manually in HTML HEAD
+            		// path: 'reset.css',
+            		// requires: [],
+            		// type: 'css'
+            	// },
+    			// 'AIR-snappi-css': {		// load manually in HTML HEAD
+    		        // path: 'AIR_snappi.css',
+    		        // requires: ['960-reset-css', 'AIR-upload-ui-css'],		
+    		        // type: 'css'
+    			// },  
+    			'AIR-upload-ui-css': {
     		        path: 'upload_ui.css',
     		        // requires: ['snappi-cake-css','old-snappi-css','snappi-menu-css'],
     		        requires: [],
     		        type: 'css'
-    		    },
-    			'AIR-snappi-css': {		// load manually in HTML HEAD
-    		        path: 'AIR_snappi.css',
-    		        requires: ['960-reset-css', 'AIR-upload-ui-css'],		
-    		        type: 'css'
-    			},       		     	        
+    		    },     		     	        
             }
         };    	
 		return yuiConfig_AIR_CSS; 

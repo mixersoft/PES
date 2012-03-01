@@ -579,8 +579,8 @@
                 '    	 <li class="label">My Rating</li><li class="rating wrap-bg-sprite"></li>' +
                 '        <li class="label">Score</li><li class="score">0.0</li>' +
                 '		 <li><nav class="settings">' +
-                '<ul class="inline">'+
-                '<li class="li btn prev orange">&#x25C0;</li><li class="li btn orange radius-0" title="Automatically advance to the next Snap after each click"><input type="checkbox" class="auto-advance" value="" title="Automatically advance to the next Snap after each click"></li><li class="li btn next orange">&#x25B6;</li>' + 
+                '<ul class="inline filmstrip-nav">'+
+                '<li class="li btn prev orange">&#x25C0;</li><li class="li btn orange radius-0 auto-advance" title="Automatically advance to the next Snap after each click"><input type="checkbox" class="auto-advance" value="" title="Automatically advance to the next Snap after each click"></li><li class="li btn next orange">&#x25B6;</li>' + 
                 '</ul> ' +
                 '        <ul class="sizes inline">' +
                 '<li class="label">Sizes</li><li class="btn white" action="set-display-size:tn" size="tn">XS</li><li class="btn white" action="set-display-size:bs" size="bs">S</li><li class="btn white" action="set-display-size:bm" size="bm">M</li><li class="btn white" action="set-display-size:bp" size="bp">L</li>' +

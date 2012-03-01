@@ -172,17 +172,18 @@
 		_cfg = _Y.merge(DEFAULT_CFG_contextmenu, _cfg, cfg);
 		if (cfg.currentTarget) _cfg.trigger = cfg.currentTarget;	// 'startup/disabled' trigger
 
-		var menu = new _Y.OverlayContext(_cfg);
+		var sticky, menu = new _Y.OverlayContext(_cfg);
 		menu.render();
 		menu.get('contentBox').removeClass('hide');
 		if (cfg.init_hidden === false) menu.show();
 		if (cfg.currentTarget) {
-			menu.set('trigger', TRIGGER);	// 'enabled' trigger
+			if (sticky) menu.set('trigger', TRIGGER);	// 'sticky' trigger
 			menu._stashTrigger = TRIGGER;
 			menu.on('visibleChange',
 				function(e){
 					if (e.newVal == false && e.prevVal== true) {
 						// disable contextmenu for menu.onHide
+						if (sticky) return;		// TODO: set up sticky in contextmenu
 						e.target.disable();
 						e.target.set('trigger', '#blackhole');
 					}
@@ -224,7 +225,9 @@
 			menu.set('trigger', trigger);			// 'startup/disabled' trigger
 			menu.show();
 			// TODO: add checkbox for sticky
-			if (sticky) menu.set('trigger', menu._stashTrigger); 		// 'enabled' trigger
+			if (sticky) {
+				menu.set('trigger', menu._stashTrigger); 		// 'enabled' trigger
+			}
 		} else {
 			menu.disable();
 			menu.hide();

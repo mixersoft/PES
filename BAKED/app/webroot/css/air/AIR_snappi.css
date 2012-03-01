@@ -1117,3 +1117,57 @@ img.tiny {
 	margin-bottom: 10px;
 }
 
+/*
+ * hints
+ */
+.aui-tooltip-content {
+	font-size: 9pt;
+}
+.aui-tooltip-content .message {
+	padding: 4px;
+}
+.aui-tooltip-content .yui3-widget-hd span.close {
+	border-radius: 4px;
+	-webkit-border-radius: 4px;
+	cursor: pointer;	
+	background: #FFF;
+	border: 1px solid #888;
+	color: #A21111;	
+	font-weight: bold;
+	padding: 2px 4px;
+	margin: 4px
+}
+.aui-tooltip-content .message p {
+	margin: 4px;
+}
+.aui-tooltip-content .message div.center {
+	margin-bottom: 4px;
+}
+.aui-tooltip-content .message div.right {
+	margin-left: 4px;
+}
+.message ul:not(.inline) li {
+	margin-left: 1.5em;
+}
+.aui-tooltip-content  .hint-footer {
+	margin-top: 4px;
+    overflow: hidden;
+}
+.aui-tooltip-content  .hint-footer .show-next{
+	background: #FFF;
+	border: 1px solid #888;
+	border-radius: 4px;
+	-webkit-border-radius: 4px;
+	cursor: pointer;
+	padding: 1px 4px;
+}
+.aui-tooltip-content .hint-footer .show-next.disabled {
+	color: #888;
+}
+span.keypress {
+	border: 1px solid black;
+    font-family: courier;
+    font-size: 0.8em;
+    padding: 2px;
+    vertical-align: middle;
+}

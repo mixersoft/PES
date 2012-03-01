@@ -2581,6 +2581,7 @@ li:hover.white.focus, li:hover.white.selected
 }
 .aui-tooltip-content .yui3-widget-hd span.close {
 	border-radius: 4px;
+	-webkit-border-radius: 4px;
 	cursor: pointer;	
 	background: #FFF;
 	border: 1px solid #888;
@@ -2590,10 +2591,18 @@ li:hover.white.focus, li:hover.white.selected
 	margin: 4px
 }
 .aui-tooltip-content .message p {
+	margin: 4px;
+}
+.aui-tooltip-content .message div.center {
 	margin-bottom: 4px;
 }
+.aui-tooltip-content .message div.right {
+	margin-left: 4px;
+}
+.message ul:not(.inline) li {
+	margin-left: 1.5em;
+}
 .aui-tooltip-content  .hint-footer {
-	xfont-size: 9pt;
 	margin-top: 4px;
     overflow: hidden;
 }
@@ -2601,6 +2610,7 @@ li:hover.white.focus, li:hover.white.selected
 	background: #FFF;
 	border: 1px solid #888;
 	border-radius: 4px;
+	-webkit-border-radius: 4px;
 	cursor: pointer;
 	padding: 1px 4px;
 }
@@ -2614,6 +2624,7 @@ span.keypress {
     padding: 2px;
     vertical-align: middle;
 }
+
 
 /*
  * Story
