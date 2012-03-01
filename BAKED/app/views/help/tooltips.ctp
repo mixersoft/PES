@@ -84,6 +84,15 @@
 	<li>Click <img src="/static/img/hints/upload.jpg"> and make yourself a cup of coffee</li>
 	</ul>
 </div>
+<div id="hint-badge-markup" class="hint message blue rounded-5 cf">	
+	<h1>Changing the Badge Photo</h1>
+	<div class='right'><img src="/static/img/hints/circle-badge.jpg"></div>
+	<p>The badge photo is used to represent Snaps, Circles and People in directories and listings across the site. 
+		As the owner of an item, you can change it's badge photo by simply dragging a Snap over this spot.</p>
+	<p>Here is an example of a badge photo used in a Circle listing (right).</p>
+	<p>You can also click on the badge photo to go back to the home page for that item.</p>
+	
+</div>
 <div id="hint-XXX-markup" class="hint message blue rounded-5 cf">	
 	<h1></h1>
 	<p></p>

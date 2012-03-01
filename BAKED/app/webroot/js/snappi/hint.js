@@ -4,6 +4,7 @@
     SNAPPI.onYready.Hint = function(Y){
 		if (_Y === null) _Y = Y;
 		Hint.overlayManager = new _Y.OverlayManager();
+		Hint.lookupHintByTriggerSH = new SNAPPI.SortedHash();
 		/*
 		 * make global
 		 */
@@ -29,7 +30,7 @@
     	HINT_ContextMenu:{
     		css_id:'hint-contextmenu-markup', 
     		uri: '/help/markup/tooltips', 
-    		showDelay:1000,
+    		showDelay:9000,
     		align:  { points: [ 'tl', 'bc' ] },
     		trigger: 'section.gallery.photo .container',
     		anchor: 'section.gallery.photo .container .FigureBox.Photo:first-child .icon.context-menu',
@@ -37,7 +38,7 @@
     	HINT_Bestshot:{
     		css_id:'hint-bestshot-markup', 
     		uri: '/help/markup/tooltips', 
-    		showDelay:1000,
+    		showDelay:9000,
     		align:  { points: [ 'tl', 'bc' ] },
     		trigger: 'section.gallery.photo .container',
     		anchor: 'section.gallery.photo .container .FigureBox.Photo:first-child',
@@ -45,7 +46,7 @@
     	HINT_HiddenShot:{
     		css_id:'hint-hiddenshot-markup', 
     		uri: '/help/markup/tooltips', 
-    		showDelay:1000,
+    		showDelay:9000,
     		align:  { points: [ 'tl', 'bc' ] },
     		trigger: 'section.gallery.photo .container',
     		anchor: 'section.gallery.photo .container .FigureBox.Photo:first-child .hidden-shot, section.gallery.photo .container .FigureBox.Photo:first-child ',
@@ -53,7 +54,7 @@
     	HINT_Filmstrip:{
     		css_id:'hint-filmstrip-markup', 
     		uri: '/help/markup/tooltips', 
-    		showDelay:1000,
+    		showDelay:5000,
     		align:  { points: [ 'tc', 'bc' ] },
     		trigger: 'section.preview-body nav.settings ul.filmstrip-nav',
     		anchor: 'section.preview-body nav.settings ul.filmstrip-nav',
@@ -61,7 +62,7 @@
     	HINT_Create:{
     		css_id:'hint-create-markup', 
     		uri: '/help/markup/tooltips', 
-    		showDelay:1000,
+    		showDelay:5000,
     		align:  { points: [ 'tr', 'bc' ] },
     		trigger: '.head .menu-trigger-create',
     		anchor: '.head .menu-trigger-create span.green',
@@ -69,7 +70,7 @@
     	HINT_DisplayOptions:{
     		css_id:'hint-display-option-markup', 
     		uri: '/help/markup/tooltips', 
-    		showDelay:1000,
+    		showDelay:5000,
     		align:  { points: [ 'tr', 'bc' ] },
     		trigger: '.gallery-header .display-option',
     		anchor: '.gallery-header .display-option',
@@ -77,7 +78,7 @@
     	HINT_Montage:{
     		css_id:'hint-montage-markup', 
     		uri: '/help/markup/tooltips', 
-    		showDelay:1000,
+    		showDelay:5000,
     		align:  { points: [ 'tl', 'bc' ] },
     		trigger: 'nav.section-header li.montage, nav.section-header li.gallery',
     		anchor: 'nav.section-header li.montage',
@@ -85,15 +86,22 @@
     	HINT_Lightbox:{
     		css_id:'hint-lightbox-markup', 
     		uri: '/help/markup/tooltips', 
-    		showDelay:1000,
+    		showDelay:2000,
     		align:  { points: [ 'br', 'tr' ] },
     		trigger: '#lightbox',
     		anchor: '#lightbox .lightbox-tab',
     	},
+    	HINT_Badge:{
+    		css_id:'hint-badge-markup', 
+    		uri: '/help/markup/tooltips', 
+    		showDelay:3000,
+    		align:  { points: [ 'tl', 'bc' ] },
+    		trigger: 'section.item-header li.thumbnail',
+    	},    	
     	HINT_Upload:{
     		css_id:'hint-upload-markup', 
     		uri: '/help/markup/tooltips', 
-    		showDelay:1000,
+    		showDelay:5000,
     		align:  { points: [ 'tc', 'bc' ] },
     		trigger: '.gallery.photo .container .FigureBox',
     		anchor: '.upload-toolbar li.btn.start',
@@ -105,11 +113,13 @@
     Hint.instance = null;			// singleton class
     Hint.doNotShow = {};			// hidden by user, load from Cookie
     Hint.lookupHintByTrigger = {}	// struct to lookup hint.body from trigger
-    Hint.active = {					// set in _getHintMarkupFromTrigger()
+    Hint.lookupHintByTriggerSH = null;
+    Hint.active = {					// set in _getHintMarkupFromTriggerSH()
     	trigger: null,
     	body: null,
     	cfg: null,
     }
+    Hint.anyTrigger = false;		// show All Hints on NextTip
 
     /*
      * Static methods 
@@ -161,11 +171,20 @@
 			trigger = triggers[i].trim();
 			foundByTrigger = Hint.lookupHintByTrigger[trigger];
 			row = {
+				id: cfg.id,
 				cfg: cfg,
 				body: body,
 			};
 			if (foundByTrigger && _Y.Lang.isArray(foundByTrigger)) foundByTrigger.push(row);
 			else Hint.lookupHintByTrigger[trigger] = [row];
+			// use SH
+			var rowSH = Hint.lookupHintByTriggerSH.get(trigger);
+			if (rowSH) rowSH.add(row); 
+			else {
+				rowSH = new SNAPPI.SortedHash();
+				rowSH.add(row);
+				Hint.lookupHintByTriggerSH.add(trigger, rowSH);
+			}
 		}
     }
     /*
@@ -179,25 +198,31 @@
      */ 
     var _setHintBodyByTriggerNode = function(hint, node, anyTrigger, dryrun){
     	node = node || hint.get('currentNode');
-    	// find the next valid Hint markup, using .test() and setBodyContent
+    	var trigger, current, 
+    		sh = SNAPPI.Hint.lookupHintByTriggerSH;
+    	var found, 
+    		focus = sh.getFocus(), 
+    		i = sh.indexOfValue(focus), 
+    		triggerSelectors = sh.getKeys();
+ 		// find the next valid Hint markup, using .test() and setBodyContent
     	// if no more, then check if there is another Hint.trigger that was suppressed
-    	try {
-    		var triggerSelectors = hint.triggers;	
-    	} catch(e){
-    		console.error("Error Hint:_setHintBodyByTriggerNode(). trigger is not a Selector String");
+    	// resorder array to start from focus
+    	if (i) {
+    		var move = triggerSelectors.slice(0,i);
+    		triggerSelectors = triggerSelectors.slice(i).concat(move);
     	}
-    	
-    	var i, found;
-    	for (var i in triggerSelectors) {
-    		if (node.test(triggerSelectors[i]) 
-    			&& (found = _getHintMarkupFromTrigger(triggerSelectors[i], anyTrigger))
+    		
+		for (var j in triggerSelectors) {
+			var validSelector = anyTrigger ? _Y.one(triggerSelectors[j]) : false;
+    		if ((validSelector || node.test(triggerSelectors[j])) 
+    			&& (found = _getHintMarkupFromTriggerSH(triggerSelectors[j], anyTrigger))
     		){
     			// found == Hint.active
     			if (!dryrun) hint.set('bodyContent', Hint.active.body);
 console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0));    
 				break;			
     		}
-    	}
+    	}    	
     	return found;
     	
     }
@@ -207,35 +232,58 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
      * @params anyTrigger Boolean. if true, scan entire Hint.lookupHintByTrigger tree
      * @return object, value from Hint.lookupHintByTrigger[trigger]
      */
-    var _getHintMarkupFromTrigger = function(trigger, anyTrigger){
-    	// iterate through HintMarkup, check _checkDoNotShow()
+    var _getHintMarkupFromTriggerSH = function(trigger, anyTrigger, _originalTrigger){
     	trigger = trigger.trim();
-    	var first, found, next,
-    		current = current || {}, 
-    		hintDesc = Hint.lookupHintByTrigger[trigger];
-    	if (Hint.active.trigger == trigger) current = Hint.active;
-    	if (_Y.Lang.isArray(hintDesc)){
-    		// get first valid object after current
-    		for (var i in hintDesc){
-// console.log("scanning for active hints. trigger="+trigger+", hintId="+hintDesc[i].cfg.id);    			
-				if (!first && !next && !_checkDoNotShow(hintDesc[i])) 
-					first = hintDesc[i];
-				if (!current.body && first) {
-					found = first;
-					break;
-				} 
-    			if (hintDesc[i].body==current.body) {
-    				next = true;
-    				continue;
+    	sh = SNAPPI.Hint.lookupHintByTriggerSH;
+    	var hint, found, 
+			anyTrigger = anyTrigger || Hint.anyTrigger,
+    		triggerSH = sh.get(trigger),
+    		activeId = Hint.active.cfg && Hint.active.cfg.id;
+		if (!_Y.one(trigger)) {
+			if (anyTrigger) {
+				// this trigger is not a validSelector on this page. 
+				// get next nextTriggerSH by recursion
+    			var nextTrigger, 
+    				nextTriggerSH = sh.next();
+    			if (!nextTriggerSH) nextTriggerSH = sh.setFocus(0);
+    			_originalTrigger = _originalTrigger || trigger;	// already .trim()
+    			nextTrigger = sh.getKeyForValue(nextTriggerSH);
+    			if (nextTrigger == _originalTrigger) return false;	// same trigger, no new hint
+    			else {
+    				return _getHintMarkupFromTriggerSH( nextTrigger, true, _originalTrigger);
     			}
-    			if (next && !_checkDoNotShow(hintDesc[i])) {
-    				found = hintDesc[i];
-    				break;
+    		} else return false;	 
+		}    		
+    	if (triggerSH) {
+    		hint = triggerSH.getFocus();
+    		while (hint 
+    			&& (hint.id == activeId || _checkDoNotShow(hint)) ) 
+    		{	// get next valid hint in triggerSH
+    			hint = triggerSH.next();
+    		} 
+    		if (hint && hint.id == activeId) hint = false;		// same as active
+    		if (hint) found = hint;
+    		else if (!hint && !anyTrigger) {
+    			// 	not found, try from the beginning
+    			hint = triggerSH.setFocus(0);		
+    			while (hint && _checkDoNotShow(hint)) {
+    				hint = triggerSH.next();
+    			}
+    			if (hint && hint.id == activeId) return false;	// same hint, no new hints
+    			if (hint) found = hint;
+    		} else if (!hint && anyTrigger) {
+    			hint = triggerSH.setFocus(0);	// start old triggerSH from beginning, 
+    			// get next nextTriggerSH
+    			var nextTrigger, 				// move to new triggerSH
+    				nextTriggerSH = sh.next();
+    			if (!nextTriggerSH) nextTriggerSH = sh.setFocus(0);
+    			_originalTrigger = _originalTrigger || trigger;	// already .trim()
+    			nextTrigger = sh.getKeyForValue(nextTriggerSH);
+    			if (nextTrigger == _originalTrigger) return false;	// same trigger, no new hint
+    			else {
+    				return _getHintMarkupFromTriggerSH( nextTrigger, true, _originalTrigger);
     			}
     		}
-    		if (current.body && !found && first && first.body!=current.body) found = first;
-    	} else if (!_checkDoNotShow(hintDesc)){
-    		found = hintDesc;
     	}
     	if (found) {
     		Hint.active = {
@@ -244,16 +292,6 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 	    		cfg: found.cfg,
 	    	}	
 	    	return found;
-    	} else if (anyTrigger) {	// 'recurse' through Hint.lookupHintByTrigger
-    		for (var j in Hint.lookupHintByTrigger) {
-    			if (j == trigger) continue;
-    			if (!_Y.one(j)) continue;
-    			found = _getHintMarkupFromTrigger(j, false);
-    			if (found 
-    				&& found.body !== current.body 
-    				&& !_checkDoNotShow(found)
-    			) return found;
-    		}
     	} 
     	return false;
     }
@@ -329,6 +367,21 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 		var found = _setHintBodyByTriggerNode(this, triggerNode, true);
 		if (!found) e.currentTarget.addClass('disabled');
 		var check;
+	}
+	var _handle_ShowAllTips = function(e){
+		// context: hint
+		e.halt();
+		if (Hint.anyTrigger) {
+			Hint.anyTrigger = false;
+			this.hide();
+			e.currentTarget.setContent('Show All Tips');
+		} else {
+			Hint.anyTrigger = true;
+			this.show();
+			Hint.doNotShow = {}
+			e.currentTarget.setContent('Hide Tips');
+			SNAPPI.UIHelper.nav.showHelp();
+		}
 	}
     /**
      * NOTE: this method blocks Hint.flushQueue() on XHR
@@ -408,6 +461,7 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
     		hint.listen['visibleChange'] = hint.on('visibleChange', _handle_VisibleChange, hint);
     		hint.listen['any-click'] = _Y.on('click', _handle_clickOutside, null, hint);
     		hint.listen['any-contextmenu'] = _Y.on('contextmenu', _handle_clickOutside, null, hint);
+    		hint.listen['show-all-tips'] = _Y.on('click', _handle_ShowAllTips , 'section.help li.btn.show-all-tips', hint);
     		/*
     		 * override refreshAlign(), called by show() method
     		 */

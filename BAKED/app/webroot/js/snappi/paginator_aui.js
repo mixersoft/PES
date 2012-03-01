@@ -48,7 +48,7 @@
 			var pageCfg = {
 					page: displayPage.page,
 					total: displayPage.total,  
-					maxPageLinks: 9,
+					maxPageLinks: 10,
 					rowsPerPage: displayPage.perpage,
 					rowsPerPageOptions: [displayPage.perpage, 12,24,48,96],
 					alwaysVisible: false,
