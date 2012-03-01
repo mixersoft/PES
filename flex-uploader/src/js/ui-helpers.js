@@ -152,7 +152,8 @@ LOG("+++ EXCEPTION: loadingmask.hide()");
 			var detach = _Y.on('snappi-air:sign-in-success', function(){
 				detach.detach();
 				// startup upload after login
-				UIHelper.toggle_upload();
+				var expressUpload = _Y.one('#express-upload-options input:checked');
+				if (!expressUpload) UIHelper.toggle_upload();
 			})
 			SNAPPI.setPageLoading(false);
 		}
@@ -969,6 +970,7 @@ LOG(postData);
 						var found = body.one('ul li input[type=checkbox]');
 						body = XhrHelper.href2openPage(body);
 						if (found) this.setContent(body);
+						_Y.fire('snappi:express-upload-found');
 						return false;
 					},
 					failure: function(e,i,o,args) {
