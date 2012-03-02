@@ -279,8 +279,11 @@ nav.section-header > ul li a {
 }
 
 nav.section-header > ul li.preference {
-	xbackground: #8cd1ed;
 	border: 1px solid #006e9a;
+}
+nav.section-header img.badge-tiny {
+	width: 28px;
+	height: 28px;
 }
 #search {
 	overflow: hidden;
@@ -2672,11 +2675,10 @@ section.welcome-preview .message {
 section.welcome-preview .message p {
 	margin-bottom: 10px;
 }
-section.welcome-preview .message img.help {
-	border-radius: 5px 5px 5px 5px;
-    vertical-align: text-top;
+section.welcome-preview img.button {
+	margin-top: -9px;
+    vertical-align: text-bottom;
 }
-
 
 
 

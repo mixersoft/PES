@@ -53,7 +53,7 @@ $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 		
 		// init section-header
 		$this->viewVars['jsonData']['listeners']['SectionOptionClick'] = null;
-		echo $this->element('/photo/section-header');
+		echo $this->element('/photo/section-header', compact('badge_src'));
 		 
 
 		$this->Layout->blockStart('javascript'); 

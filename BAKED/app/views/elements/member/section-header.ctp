@@ -14,8 +14,8 @@
 	}	
 ?>
 <nav class="section-header container_16">
-	<h1 class="grid_3"><?php echo $label ?></h1>
-    <ul class="inline grid_9">
+	<h1 class="grid_4"><?php echo $label ?></h1>
+    <ul class="inline grid_8">
 		<li class="disabled"><a>Montage</a></li>                    
 		<li class="rounded-5 orange focus"><a>Gallery</a></li>
 		<li class="disabled"><a>Timeline</a></li>

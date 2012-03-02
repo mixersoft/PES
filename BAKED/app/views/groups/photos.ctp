@@ -1,15 +1,10 @@
-<?php 
-if (empty($this->passedArgs['wide'])) {
-	$this->Layout->blockStart('itemHeader');
-		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
-		echo $this->element('nav/section', array('badge_src'=>$badge_src)); 
-	$this->Layout->blockEnd();	
-}	
-?>
 <div class="groups photos">
-	<p>Show as <?php echo $this->Html->link('Photostream', $this->passedArgs + array('action'=>'photostreams'))?>
-	</p>
-	<?php echo $this->element('/photo/roll');?>
+	<?php 
+		// $photostreams = $this->Html->link('Photostream', $this->passedArgs + array('action'=>'photostreams'));
+		// echo "<p>Show as {$photostreams}</p>\n";
+		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
+		echo $this->element('/photo/roll', compact('badge_src'));
+	?>
 </div>
 <?php	// tagCloud
 	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show', 'filter'=>'Asset');

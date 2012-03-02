@@ -1,4 +1,7 @@
-<?php echo $this->element('/photo/roll');?>
+<?php 
+$badge_src = Stagehand::getSrc($data['User']['src_thumbnail'], 'sq', 'person');
+echo $this->element('/photo/roll', compact('badge_src') );
+?>
 
 <?php  $this->Layout->blockStart('markup');
 		if (Configure::read('controller.alias') == 'my') {	?>
@@ -10,7 +13,13 @@
 					Or better yet, you can (someday soon) ask us to do it for you.</p>
 				<ul class='inline' ><li class='btn orange rounded-5'><a href='/my/upload'>Get started now.<a></li></ul>
 			</div></div>
-	<?php } ?>		
+	<?php } else if ( Configure::read('controller.alias') == 'person' && $data['User']['asset_count'] >0 ) { ?>
+			<div class='empty-photo-gallery-message hide'><div class='message blue rounded-5 wrap-v'>
+				<h1>Snap Gallery</h1>
+				<p>You are not connected with this Person.</p>
+				<p>You can connect with other members by joining the same Circle. Send your friends an invitation to join your Circles.</p>
+			</div></div>
+	<?php } ?>			
 			<div class='empty-lightbox-gallery-message hide'><div class=' message blue rounded-5 wrap-v'>
 				<p>Drag selected Snaps from above into the Lightbox. 
 					Use <span class='keypress multiselect-single'>Ctrl-Click</span> or <span class='keypress'>Shift-Click</span> to select multiple Snaps.
