@@ -160,9 +160,8 @@ switch ($config['Config.os']) {
 }
 
 switch (env('SERVER_NAME')) {
+	case 'preview.snaphappi.com':
 	case 'dev.snaphappi.com':
-	case 'aws.snaphappi.com':
-	case 'gallery.snaphappi.com':
 		Configure::write('debug', 0);
 		break;
 }
