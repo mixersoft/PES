@@ -1902,6 +1902,7 @@ section.help .FigureBox.Person figure > a > img {
 }
 .comments-main .post h3 {
 	font-size: 0.9em;
+	height: 18px;
 }
 .comments-main form > div {
 	display: inline-block;
@@ -1964,7 +1965,8 @@ section.help .comments-main .FigureBox.Person span.title a {
 section.help li.btn.show-all-tips {
 	font-size: 7pt;
     font-weight: normal;
-    padding: 1px 4px;
+    padding: 2px 4px;
+    margin: 0;
 }
 
 /* unused ?*/

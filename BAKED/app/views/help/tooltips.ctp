@@ -129,6 +129,7 @@
 		<li>Orangize your photos by adding Ratings, Tags, and Bestshots (i.e. hiding duplicates)</li>
 		<li>Join or create Circles; share Snaps; and invite your friends to do the same</li>
 		<li>Create wonderful Stories to share with your friends</li>
-		<li>Determine who can see your photos through privacy and sharing</li>		
+		<li>Determine who can see your photos through privacy and sharing</li>
+		<li>Report a problem or post a question/comment in the Help section.</li>		
 	</ul>
 </div>
