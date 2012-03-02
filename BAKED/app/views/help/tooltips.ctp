@@ -118,19 +118,28 @@
 		And while it is not yet &ldquo;done&rdquo;, it is ready to share with our <b>Friends and Family</b> 
 		<img src="/static/img/css-gui/smiley.gif">.
 	</p>
-	</p>If you follow the Yellow Brick Road things should be fine, 
-		but if you go off the beaten path you might notice some things that have gone awry. 
+	<p>If you follow the Yellow Brick Road things should be fine, 
+		but if you wander off you may notice some things have gone awry. 		
 		Thanks for your understanding.</p>
 	<br />	
-	<div class='right'><img src='/static/img/hints/yellow-brick-road.jpg'></div>
+	<div class='right cf'>
+		<article class="FigureBox Photo">
+	    	<figure>
+				<img class='' src='/static/img/hints/yellow-brick-road.jpg'>	    		
+				<figcaption>
+	    		 <div class="label"><b>Follow the Yellow Brick Road...</b></div>
+	    		 </figcaption>
+			</figure>
+		</article>
+		</div>
 	<ul><b>The Yellow Brick Road:</b> 
 		<li>Browse Snaps and Circles at Snaphappi</li>
 		<li>Sign-up and manage your account at Snaphappi</li>
 		<li>Upload 1 or 1000+ photos from your PC or Mac</li>
 		<li>Orangize your photos by adding Ratings <div class="ratingGroup" style="background-position: -28px bottom;display:inline-block;"></div>, Tags, and Bestshots (i.e. hiding duplicates)</li>
 		<li>Join or create Circles; share Snaps; and invite your friends to do the same</li>
-		<li>Create wonderful Stories to share with your friends</li>
+		<li>Create wonderful Stories to share with your friends <img class='rounded-5 button' src="/static/img/hints/create.jpg"></li>
 		<li>Determine who can see your photos through privacy and sharing</li>
-		<li>Report a problem or post a question or comment in the Help section. <img class='help' src="/static/img/hints/help.jpg"></li>		
+		<li>Report a problem or post a question or comment in the Help section. <img class='rounded-5 button' src="/static/img/hints/help.jpg"></li>		
 	</ul>
 </div>

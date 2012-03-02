@@ -1,3 +1,8 @@
+<style type="text/css">
+#body-container.plain {
+	padding: 10px 0 !important;
+}
+</style>
 <?php 
 switch (env('SERVER_NAME')) {
 	case 'preview.snaphappi.com':
@@ -19,7 +24,7 @@ $this->Layout->blockStart('itemHeader'); ?>
 				<img width="50" height="50" alt="" src="<?php echo $preview_badge_src; ?>">
 				</a></li>
 			<li>
-				<div class="item-class">A few words from the founder</div>
+				<div class="item-class">A few words from our founder</div>
 				<h1 class="label">Michael</h1>
 			</li>
 		</ul>
@@ -38,14 +43,15 @@ $this->Layout->blockStart('itemHeader'); ?>
 		<img src="/static/img/css-gui/smiley.gif">.
 	</p>
 	<p>Our vision is to build a service that delivers surprise and delight from your rated photos.
-		We know that rating the 10,000+ photos on your desktop is tedious <img src="/static/img/css-gui/frownie.gif">, 
-		and we look forward to offering an elegant solution. 
-		But for now, our Friends and Family preview only scratches the surface of our vision.</p>
+		We know that rating the 10,000+ photos on your hard drive is tedious <img src="/static/img/css-gui/frownie.gif">, 
+		and we plan to offer an elegant solution. But for now, you'll have to do it by hand. 
+		This preview is only the tip of our iceberg.
+		</p>
 	
 	<p>If you follow the Yellow Brick Road things should be fine, 
-		but if you go off the beaten path you might notice some things that have gone awry. 
+		but if you wander off you may notice some things have gone awry. 
 		</p>
-	<p>Thanks for your support, Michael.</p>
+	<p>Thanks for your support and understanding, Michael.</p>
 	<div class='right cf'>
 		<article class="FigureBox Photo">
 	    	<figure>
@@ -62,9 +68,9 @@ $this->Layout->blockStart('itemHeader'); ?>
 		<li>Upload 1 or 1000+ photos from your PC or Mac</li>
 		<li>Orangize your photos by adding Ratings <div class="ratingGroup" style="background-position: -28px bottom;display:inline-block;"></div>, Tags, and Bestshots (i.e. hiding duplicates)</li>
 		<li>Join or create Circles; share Snaps; and invite your friends to do the same</li>
-		<li>Create wonderful Stories to share with your friends</li>
+		<li>Create wonderful Stories to share with your friends <img class='rounded-5 button' src="/static/img/hints/create.jpg"></li>
 		<li>Determine who can see your photos through privacy and sharing</li>
-		<li>Report a problem or post a question or comment in the Help section. <img class='help' src="/static/img/hints/help.jpg"></li>		
+		<li>Report a problem or post a question or comment in the Help section. <img class='rounded-5 button' src="/static/img/hints/help.jpg"></li>		
 	</ul>
 	<br />	
 	<div>
