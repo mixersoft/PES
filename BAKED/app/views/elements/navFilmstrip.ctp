@@ -15,7 +15,7 @@
 <section id="nav-filmstrip" class="filmstrip filmstrip-bg minimize container_16 hide">
 	<section class="gallery-header grid_16">
 		<ul class="inline">
-			<li><h3>Filmstrip <img src="/static/img/css-gui/img_setting.gif" alt="" align="absmiddle"></h3></li>
+			<li><h3>Filmstrip <img src="/static/img/css-gui/info.gif" alt="" align="absmiddle"></h3></li>
 			<li>
 				<nav class="toolbar">
 					<h1 class="count"></h1>

@@ -11,6 +11,7 @@
 		// global lookup by CSS ID, or cfg.lookup_key
 		Menu.CFG = {
 			'menu-pm-toolbar-edit': CFG_Menu_PageMaker_Toolbar_Edit,
+			'menu-pm-toolbar-preview': CFG_Menu_PageMaker_Toolbar_Preview,
 			'menu-photoPreview-actions': CFG_Menu_PreviewPhoto_Actions,
 
 			// context menus
@@ -122,7 +123,9 @@
 			var key = menus[i]!==false ? i : null; 
 			var cfg = _Y.Lang.isObject(menus[i]) ? menus[i] : null;
 	    	if (key && !Menu.find[key]) {
-	    		Menu.CFG[key].load(cfg);
+	    		try {
+					Menu.CFG[key].load(cfg);
+	    		} catch (e) {}
 	    	}			
 		}
 		_Y.one('#markup').setStyle('display', 'block');
@@ -521,6 +524,24 @@
 	var CFG_Menu_PageMaker_Toolbar_Edit = function(){};
 	CFG_Menu_PageMaker_Toolbar_Edit.load = function(cfg){
 		var CSS_ID = 'menu-pm-toolbar-edit';
+		var TRIGGER = '#stage-2';
+		var XHR_URI = '/combo/markup/pm_ToolbarEdit'; 
+		var _cfg = {
+			showOn: 'mouseenter',
+			hideOn: 'mouseleave',
+			hideDelay: 10000,
+			// hideOnDocumentClick: false,	// must set zIndex manually, and hide on dialog close
+			// zIndex: 5000,					
+			align: { points:['bc', 'tc'] },
+			init_hidden: false,
+		}
+		_cfg = _Y.merge(_cfg, cfg);
+		return _load_Single_Trigger_Menu(CSS_ID, TRIGGER, XHR_URI, _cfg);
+	};	
+	
+	var CFG_Menu_PageMaker_Toolbar_Preview = function(){};
+	CFG_Menu_PageMaker_Toolbar_Preview.load = function(cfg){
+		var CSS_ID = 'menu-pm-toolbar-preview';
 		var TRIGGER = '#stage-2';
 		var XHR_URI = '/combo/markup/pm_ToolbarEdit'; 
 		var _cfg = {

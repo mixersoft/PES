@@ -3,7 +3,7 @@
 	<div class='lightbox-tab lightbox-bg hide' title="click to show the Lightbox" action="set-display-view:one-row">Lightbox</div>
 	<section class="gallery-header grid_16">
 		<ul class="inline cf">
-			<li><h3>Lightbox <img src="/static/img/css-gui/img_setting.gif" alt="" align="absmiddle"></h3></li>
+			<li><h3>Lightbox <img src="/static/img/css-gui/info.gif" alt="" align="absmiddle"></h3></li>
 			<li>
 				<nav class="toolbar">
 					<div>

@@ -143,3 +143,16 @@
 		<li>Report a problem or post a question or comment in the Help section. <img class='rounded-5 button' src="/static/img/hints/help.jpg"></li>		
 	</ul>
 </div>
+<div id="hint-preview-story-ratings-markup" class="hint message blue rounded-5 cf">	
+	<h1>Fun with Ratings</h1>
+	<p>Sharing is simple when you know which photos to share &#151; but when you are buried under a pile of photos it often becomes a job for another day, month, year... you get the point.</p>
+	<p>When your photos are rated, everything becomes a snap! You can find your top-rated photos quickly, and we can do special things with them.</p>
+	<p>For example, our Stories automatically consider the size, orientation, and rating of your Snaps to build a customized arrangement which always feature the top-rated photos.
+		This dramatically improves the quality of the arrangement.</p>
+	<ul>To see the how easy it is to make Story pages from rated photos:
+		<li>Click the 'Shuffle' button until you see an arrangement you like.</li>
+		<li>You can also reload this popup to get a different combination of Snaps.</li>
+	</ul>
+	<p>This is just one example of how we plan to deliver surprise and delight from your rated photos.</p>
+</div>
+

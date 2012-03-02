@@ -11,3 +11,9 @@
 		</li>		
 	</ul>
 </div>
+<div id="menu-pm-toolbar-preview" class="menu-inline yui3-aui-overlaycontext-hidden hide">
+	<ul class='inline'>
+		<li class='btn orange' action='shuffle' title='Shuffle Snaps into a new layout.'>Shuffle
+		</li>
+	</ul>
+</div>

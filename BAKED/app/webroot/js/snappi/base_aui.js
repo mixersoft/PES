@@ -413,12 +413,13 @@
 	LazyLoad.extras = function(cfg){	// load on _Y.later() after initial startup
 		var module_group = {
 			'gallery': ['snappi-dialog-aui', 'snappi-hint', 'pagemaker-base'],
-			'hint':['snappi-hint' ],
+			'hint':['snappi-hint'],
+			'preview': ['snappi-dialog-aui', 'snappi-auditions', 'snappi-hint'],
 		}
 		var modules = module_group[cfg.module_group];
 		if (modules) {
-			cfg = cfg.ready || { ready: function(){return true;}};	// closure for onlazyload
-			var onlazyload = cfg.ready;
+			onlazyload = cfg.ready || { ready: function(){return true;}};	// closure for onlazyload
+			delete cfg.ready;
 			LazyLoad.use(modules, onlazyload, cfg);
 		}
 	};	

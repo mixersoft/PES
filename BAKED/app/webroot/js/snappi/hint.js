@@ -123,6 +123,15 @@
     		trigger: 'body',
     		anchor: '#content',
     	},
+    	HINT_Preview_StoryByRatings:{
+    		css_id:'hint-preview-story-ratings-markup',
+    		uri: '/help/markup/tooltips', 
+    		// showDelay:3000,
+    		hideDelay: 10000, 
+    		showArrow: false,
+    		align:  { points: [ 'tc', 'tc' ] },
+    		trigger: '#dialog-alert .pagemaker-stage',
+    	},
     }
     /*
      * static properties

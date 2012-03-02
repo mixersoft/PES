@@ -64,12 +64,16 @@
     	} else {
     		Plugin.player.setStage(Plugin.stage, Plugin.stage.body);
     	}
-    	if (
-    		Plugin.sceneCfg.stageType != 'montage'		// no edit menu for 'montage'
-    		&& !PM.Menu.find['menu-pm-toolbar-edit']	// edit menu already loaded
-    	) {
-	    	PM.Menu.initMenus({ 'menu-pm-toolbar-edit': 1});
-	    }
+    	switch (Plugin.sceneCfg.stageType) {
+    		case 'modal': 
+    			PM.Menu.initMenus({ 'menu-pm-toolbar-edit': 1});
+    			break;
+    		case 'preview-ratings':
+	    		PM.Menu.initMenus({ 'menu-pm-toolbar-preview': 1});
+	    		break;
+    		case 'montage': 	// no edit menu for montage
+    			break;
+    	}
     	Plugin.player.init();
     };
     

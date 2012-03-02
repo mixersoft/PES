@@ -2643,7 +2643,6 @@ span.keypress {
  * Story
  */
 .montage-container {
-	xbackground: black url('/img/pageGallery/ajax-loading-img-hg.black.gif') center center no-repeat;
 	background-color: #000;
 	margin-bottom: 10px;
 	min-height: 100px;
@@ -2656,7 +2655,6 @@ span.keypress {
 	overflow:hidden;
 }
 .pagemaker-stage .stage-body {
-	xbackground: black url('/img/pageGallery/ajax-loading-img-hg.black.gif') center center no-repeat;
 	background-color: #000;
 	height: auto;
 	width: 100%;
@@ -2679,7 +2677,16 @@ section.welcome-preview img.button {
 	margin-top: -9px;
     vertical-align: text-bottom;
 }
-
+span.info-button {
+    border: 1px solid transparent;
+    border-radius: 10px 10px 10px 10px;
+    box-shadow: 1px 1px 1px #FFFFFF inset;
+    cursor: pointer;
+    font-size: 10pt;
+    margin: 0 4px;
+    padding: 1px 5px;
+    vertical-align: top;
+}
 
 
 

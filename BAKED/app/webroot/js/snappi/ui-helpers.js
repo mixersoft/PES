@@ -336,11 +336,12 @@
 		},
 	}
 	UIHelper.create = {
-		getStage_modal : function(){
+		getStage_modal : function(cfg){
+			cfg = cfg || {};
 			var MAX_HEIGHT = 800;	
 			var PADDING_TOP = 140;	// header+offsets = 140px
 			var markup = "<div id='stage-2' class='pagemaker-stage'><div class='stage-body'></div></div>";
-			var cfg = {
+			var dialogCfg = {
 				// selector: '#stage-2',
 				markup: markup,
     			// uri: '/combo/markup/importComplete',
@@ -356,11 +357,12 @@
     			else {
     				// reuse stage
     				stage.setContent('');
-    				cfg.bodyNode = stage;
+    				dialogCfg.bodyNode = stage;
     			}
     		}
-    		dialog = SNAPPI.Alert.load(cfg);
-    		dialog.setStdModContent('header', '<span>Create Story</span>', 'before');
+    		dialog = SNAPPI.Alert.load(dialogCfg);
+    		var stageTitle = cfg.stageTitle || 'Create Story'; 
+    		dialog.setStdModContent('header', '<span>'+stageTitle+'</span>', 'before');
     		stage = dialog.getStdModNode('body').one('#stage-2');
     		stage.noHeader = true;
     		if (!stage.listen) {
@@ -392,14 +394,7 @@
 	    				_setStageDim(null, node);
 	    			}, stage);
     		}
-    		stage.stageType = 'modal';
-    		
-    		/*
-    		 * remove all Hints, just show story hints
-    		 */
-    		SNAPPI.Hint.lookupHintByTriggerSH.clear();
-    		SNAPPI.STATE.hints['HINT_PMToolbarEdit'] = true;
-			SNAPPI.Hint.flushQueue();		// if Hint already available
+    		stage.stageType = cfg.stageType || 'modal';
 			return stage;
 		},
 		/*
@@ -527,7 +522,7 @@
 					}
 				} else {
 					var check = PMPlugin.sceneCfg.tryout;
-					var stage = (cfg.getStage) ? cfg.getStage() : this.getStage_modal();
+					var stage = (cfg.getStage) ? cfg.getStage(cfg) : this.getStage_modal(cfg);
 					PMPlugin.setStage(stage);
 					fn_create = SNAPPI.PM.main.makePageGallery;
 				}
@@ -539,7 +534,7 @@
 				// prepare for simple case
 				var sceneCfg = this.getSceneCfg(cfg);
 				PMPlugin.setScene(sceneCfg);
-				var stage = (cfg.getStage) ? cfg.getStage() : this.getStage_modal();
+				var stage = (cfg.getStage) ? cfg.getStage(cfg) : this.getStage_modal(cfg);
 				PMPlugin.setStage(stage);
 				fn_create = SNAPPI.PM.main.makePageGallery
 				return fn_create;
@@ -560,6 +555,18 @@
 		// load 'pagemaker-base' MODULE if SNAPPI.PM.PageMakerPlugin class does not exist
 		load_PageMakerPlugin: function(external_Y, cfg){
 			PM = SNAPPI.PM;
+			external_Y.once('snappi-pm:PageMakerPlugin-load-complete', function(){
+			    try {
+					/*
+		    		 * remove existing Hints, just show story hints
+		    		 */
+		    		var hintId = cfg.hintId || 'HINT_PMToolbarEdit';
+		    		SNAPPI.Hint.lookupHintByTriggerSH.clear();
+		    		SNAPPI.STATE.hints[hintId] = true;
+					SNAPPI.Hint.flushQueue();		// if Hint already available    			
+	    		} catch (e){}
+	    	});
+			
 			// check plugin
 			if (!PM || !PM.pageMakerPlugin) {
 				/*
@@ -620,6 +627,7 @@
 			} 
 			var create = this.getCreate(cfg);
 			_Y.later(100, this, create);
+			
 		},
 		// on 'snappi-pm:pagemaker-load-complete'
 		launch_PageMaker: function(cfg){
@@ -696,28 +704,35 @@
 				} 
 				return stage;
 		},
-		_GET_MONTAGE : function(){
-			var cfg = {};
+		_GET_MONTAGE : function(cfg){
+			var cfg = cfg || {};
 			try {
 				var g = _Y.one('.gallery.photo').Gallery;
 				cfg.gallery = g;
 				cfg.batch = g.auditionSH.slice(0,16);	
 			} catch (e) {
 				var onDuplicate = SNAPPI.Auditions.onDuplicate_REPLACE;
+				var castingCall = cfg.castingCall || PAGE.jsonData.castingCall;
 				var auditionSH = SNAPPI.Auditions.parseCastingCall(
-						PAGE.jsonData.castingCall, 
+						castingCall, 
 						null, 
 						null, 
 						onDuplicate);
-				cfg.batch = auditionSH;		
+				cfg.batch = auditionSH;	
+				if (cfg.roleCount)	{
+					var max = Math.min(auditionSH.count(), cfg.roleCount.hi);
+					var min = Math.min(auditionSH.count(), cfg.roleCount.lo);
+					var roleCount = Math.floor(Math.random()*(max-min+1)) + min;
+console.info('Getting Story for rolecount='+roleCount);					
+					cfg.batch = cfg.batch.slice(0, roleCount);
+				}
 			}
 			
 			// skip slice, use Role.suggestedPhotoId
-			cfg.stageType = 'montage';
+			cfg.stageType = cfg.stageType || 'montage';
 			cfg.noHeader = true;
-			cfg.getStage = this.getStage_montage;
+			cfg.getStage = cfg.getStage || this.getStage_montage;
 			cfg.thumbnailMarkup = '<article class="FigureBox Montage"><figure><img src="{src}" title="{title}" linkTo="{linkTo}" style="height:{height}px;width:{width}px;left:{left}px;top:{top}px;border:{borderSpacing}px solid transparent;"></figure></article>';
-			cfg.stageType = 'montage';
 			cfg.isMontage = true;	// uses Pr.getThumbPrefix to get min thumb size by crop
 			cfg.spacing = 1;		// border spacing
 			cfg.arrangement = PAGE.jsonData.montage;

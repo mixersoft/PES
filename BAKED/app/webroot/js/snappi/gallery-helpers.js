@@ -813,7 +813,7 @@
 	'		</section>	 ' +
 	'		<section class="gallery-header alpha-b1 grid_11 omega-b1"> ' +
 	'			<ul class="inline cf"> ' +
-	'				<li><h3><img src="/static/img/css-gui/img_setting.gif" alt="" align="absmiddle"></h3></li> ' +
+	'				<li><h3><img src="/static/img/css-gui/info.gif" alt="" align="absmiddle"></h3></li> ' +
 	'				<li> ' +
 	'					<nav class="toolbar"> ' +
 	'						<div> ' +

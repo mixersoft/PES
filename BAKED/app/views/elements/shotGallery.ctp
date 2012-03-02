@@ -14,7 +14,7 @@
 	</section>	
 	<section class="gallery-header alpha grid_11 omega">
 		<ul class="inline hide">
-			<li class='alpha-b1'><h3>Hidden Shot Gallery <img src="/static/img/css-gui/img_setting.gif" alt="" align="absmiddle"></h3></li>
+			<li class='alpha-b1'><h3>Hidden Shot Gallery <img src="/static/img/css-gui/info.gif" alt="" align="absmiddle"></h3></li>
 			<li>
 				<nav class="toolbar">
 					<div>
