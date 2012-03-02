@@ -282,7 +282,12 @@
             }
             return v;
         },
-        
+        getKeyForValue: function(value){
+        	for (var i in this._data) {
+        		if (value === this._data[i]) return i;
+        	}
+        	return null;
+        },
         count: function(){
             return this._keys.length;
         },

@@ -63,7 +63,7 @@
 		'showHelp': function(btn, node){
 			try {
 				var container = node || _Y.one('section.help');
-				btn = _Y.one(btn);
+				btn = _Y.one() || _Y.one('nav.user li.help span');
 				if (/\/help\/topic/.test(window.location.href)) {
 					return;
 				}
@@ -360,6 +360,7 @@
     			}
     		}
     		dialog = SNAPPI.Alert.load(cfg);
+    		dialog.setStdModContent('header', '<span>Create Story</span>', 'before');
     		stage = dialog.getStdModNode('body').one('#stage-2');
     		stage.noHeader = true;
     		if (!stage.listen) {
@@ -392,6 +393,13 @@
 	    			}, stage);
     		}
     		stage.stageType = 'modal';
+    		
+    		/*
+    		 * remove all Hints, just show story hints
+    		 */
+    		SNAPPI.Hint.lookupHintByTriggerSH.clear();
+    		SNAPPI.STATE.hints['HINT_PMToolbarEdit'] = true;
+			SNAPPI.Hint.flushQueue();		// if Hint already available
 			return stage;
 		},
 		/*

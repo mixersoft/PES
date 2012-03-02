@@ -529,7 +529,7 @@
 			hideDelay: 10000,
 			// hideOnDocumentClick: false,	// must set zIndex manually, and hide on dialog close
 			// zIndex: 5000,					
-			align: { points:['bl', 'tl'] },
+			align: { points:['bc', 'tc'] },
 			init_hidden: false,
 		}
 		_cfg = _Y.merge(_cfg, cfg);

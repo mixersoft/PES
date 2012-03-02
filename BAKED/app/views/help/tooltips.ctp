@@ -93,7 +93,42 @@
 	<p>You can also click on the badge photo to go back to the home page for that item.</p>
 	
 </div>
-<div id="hint-XXX-markup" class="hint message blue rounded-5 cf">	
-	<h1></h1>
-	<p></p>
+<div id="hint-pm-toolbar-edit-markup" class="hint message blue rounded-5 cf">	
+	<h1>Create Story</h1>
+	<p>Stories are an easy way to show a gaggle of Snaps in a tidy little montage, 
+		and they are great for sharing.</p>
+	<div class='center'><img src="/static/img/hints/story-edit-toolbar.jpg"></div>	
+	<ol> To create and share your own Story, just take the following steps:
+		<li>Click 'Shuffle' until you see an arrangement you like, you can also close this dialog and select different Snaps</li>
+		<li>Give your story a <u>unique</u> title so you can save your Story. Use the <u>same</u> title if you want to add pages.</li>
+		<li>Click 'Save' to save the current arragement to your Story</li>
+		<li>Click 'Play' to open your Story with the Storybook Player (in a new browser window or tab). You will also find a 'permalink' at the bottom of the Player.</li>
+		<li>To share your story with friends, just send the link you see on the bottom of the Player.</li>
+	</ol>	
+	<br />
+	<ul><b>Note:</b>  For now, our Story features are very basic: 
+		<li>You <b>must</b> remember the Story title to add pages</li>
+		<li>You cannot browse the site for Stories you already created.</li>
+	</ul>
+	<p>We still have much work to do and plan to offer more capabilities in the near future. Thanks for your understanding.</p>
+</div>
+<div id="hint-preview-markup" class="hint message blue rounded-5 cf">	
+	<h1>Welcome to the Snaphappi Friends and Family Preview</h1>
+	<p>We've put a lot of time and effort developing our vision for Snaphappi and building this site. 
+		And while it is not yet ready for "Prime Time", it is ready for our Friends and Family.
+	</p>
+	</p>If you follow the Yellow Brick Road things should be fine, 
+		but if you go off the beaten path you might notice some things that have gone awry. 
+		Thanks in advance for your understanding.</p>
+	<br />	
+	<div class='right'><img src='/static/img/hints/yellow-brick-road.jpg'></div>
+	<ul><b>The Yellow Brick Road:</b> 
+		<li>Browse through public content at Snaphappi</li>
+		<li>Sign-up and manage your account at Snaphappi</li>
+		<li>Upload 1 or 1000+ photos from your PC or Mac</li>
+		<li>Orangize your photos by adding Ratings, Tags, and Bestshots (i.e. hiding duplicates)</li>
+		<li>Join or create Circles; share Snaps; and invite your friends to do the same</li>
+		<li>Create wonderful Stories to share with your friends</li>
+		<li>Determine who can see your photos through privacy and sharing</li>		
+	</ul>
 </div>

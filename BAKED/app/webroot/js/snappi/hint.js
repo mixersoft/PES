@@ -22,7 +22,7 @@
     	HINT_MultiSelect:{
     		css_id:'hint-multiselect-markup',
     		uri: '/help/markup/tooltips', 
-    		showDelay:1000,
+    		showDelay:9000,
     		align:  { points: [ 'tl', 'bc' ] },
     		trigger: 'section.gallery.photo .container',
     		anchor: 'section.gallery.photo .container .FigureBox.Photo:first-child',
@@ -56,7 +56,7 @@
     		uri: '/help/markup/tooltips', 
     		showDelay:5000,
     		align:  { points: [ 'tc', 'bc' ] },
-    		trigger: 'section.preview-body nav.settings ul.filmstrip-nav',
+    		trigger: 'section.preview-body nav.settings',
     		anchor: 'section.preview-body nav.settings ul.filmstrip-nav',
     	},
     	HINT_Create:{
@@ -106,13 +106,29 @@
     		trigger: '.gallery.photo .container .FigureBox',
     		anchor: '.upload-toolbar li.btn.start',
     	},
+    	HINT_PMToolbarEdit:{
+    		css_id:'hint-pm-toolbar-edit-markup', 
+    		uri: '/help/markup/tooltips', 
+    		showDelay: 1000,
+    		align:  { points: [ 'tc', 'bc' ] },
+    		trigger: '#dialog-alert .pagemaker-stage',
+    		anchor: '#menu-pm-toolbar-edit', 
+    	},
+    	HINT_Preview:{
+    		css_id:'hint-preview-markup',
+    		uri: '/help/markup/tooltips', 
+    		// showDelay:3000,
+    		showArrow: false,
+    		align:  { points: [ 'tc', 'tc' ] },
+    		trigger: 'body',
+    		anchor: '#content',
+    	},
     }
     /*
      * static properties
      */        
     Hint.instance = null;			// singleton class
     Hint.doNotShow = {};			// hidden by user, load from Cookie
-    Hint.lookupHintByTrigger = {}	// struct to lookup hint.body from trigger
     Hint.lookupHintByTriggerSH = null;
     Hint.active = {					// set in _getHintMarkupFromTriggerSH()
     	trigger: null,
@@ -169,14 +185,14 @@
     	var foundByTrigger, trigger, row;
 		for (var i in triggers) {
 			trigger = triggers[i].trim();
-			foundByTrigger = Hint.lookupHintByTrigger[trigger];
+			// foundByTrigger = Hint.lookupHintByTrigger[trigger];
 			row = {
 				id: cfg.id,
 				cfg: cfg,
 				body: body,
 			};
-			if (foundByTrigger && _Y.Lang.isArray(foundByTrigger)) foundByTrigger.push(row);
-			else Hint.lookupHintByTrigger[trigger] = [row];
+			// if (foundByTrigger && _Y.Lang.isArray(foundByTrigger)) foundByTrigger.push(row);
+			// else Hint.lookupHintByTrigger[trigger] = [row];
 			// use SH
 			var rowSH = Hint.lookupHintByTriggerSH.get(trigger);
 			if (rowSH) rowSH.add(row); 
@@ -235,11 +251,12 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
     var _getHintMarkupFromTriggerSH = function(trigger, anyTrigger, _originalTrigger){
     	trigger = trigger.trim();
     	sh = SNAPPI.Hint.lookupHintByTriggerSH;
-    	var hint, found, 
+    	var hint, found, triggerVisible, 
 			anyTrigger = anyTrigger || Hint.anyTrigger,
     		triggerSH = sh.get(trigger),
     		activeId = Hint.active.cfg && Hint.active.cfg.id;
-		if (!_Y.one(trigger)) {
+    		triggerVisible = _Y.one(trigger);
+		if (!triggerVisible || !triggerVisible.get('clientHeight')) {
 			if (anyTrigger) {
 				// this trigger is not a validSelector on this page. 
 				// get next nextTriggerSH by recursion
@@ -314,14 +331,14 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 			// var trigger = e.currentTarget._cfg.trigger;
 			var triggerNode = this.get('currentNode');
 			var found = _setHintBodyByTriggerNode(this, triggerNode);
+			if (!found) e.halt();		// prevent hint.show();
 			if (!found && _checkDoNotShow(Hint.active)) {
-				e.halt();		// prevent hint.show();
 				var moreTips = _setHintBodyByTriggerNode(this, triggerNode, true, 'dryrun');
 				if (!moreTips) {
 					this.set('trigger', '#blackhole');
 	console.warn("visibleChange: Hints disabled, trigger set to #blackhole");
 				}
-			} else { // else just show active
+			} else if (found) { // else just show active
 				var footer = this.getStdModNode('footer');
 				footer.one('span.show-next').removeClass('disabled');
 	    		footer.one('.do-not-show').set('id', Hint.active.cfg.id).set('checked', false);
@@ -333,7 +350,7 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 	var _override_refreshAlign = function(){
 		this.constructor.prototype.refreshAlign.call(this);	// parentClass method
 		try{	// align to anchor without changing this.get('currentNode')
-			var anchor = _Y.one(Hint.active.cfg.anchor);
+			var anchor = _Y.one(Hint.active.cfg.anchor || Hint.active.cfg.trigger);
 			if (anchor) this.align(anchor, Hint.active.cfg.align.points);
 		}catch(e){}
 	};

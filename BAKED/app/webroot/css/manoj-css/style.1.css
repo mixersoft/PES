@@ -1960,6 +1960,13 @@ section.help .comments-main .FigureBox.Person span.title a {
 	font-weight: bold;
 	color: #006400;
 }
+
+section.help li.btn.show-all-tips {
+	font-size: 7pt;
+    font-weight: normal;
+    padding: 1px 4px;
+}
+
 /* unused ?*/
 .comments-main .FigureBox.Person .description {
 /*	font-size: 0.8em;*/
@@ -2599,7 +2606,7 @@ li:hover.white.focus, li:hover.white.selected
 .aui-tooltip-content .message div.right {
 	margin-left: 4px;
 }
-.message ul:not(.inline) li {
+.message ul:not(.inline) li , .message ol li{
 	margin-left: 1.5em;
 }
 .aui-tooltip-content  .hint-footer {

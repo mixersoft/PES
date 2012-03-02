@@ -17,6 +17,7 @@
 	?>
 			<h3><?php __d('comments', 'Post a Question, Comment or Suggestion for Topic:'); ?>
 				<span class='page'><?php echo "/{$help_page['alias']}/{$help_page['action']}"; ?> </span>
+				<ul class='inline right'><li class="btn orange show-all-tips">Show All Tips</li></ul>
 			</h3>
 			<?php
 			echo $commentWidget->element('form', array('comment' => (!empty($comment) ? $comment : 0)));
