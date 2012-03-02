@@ -1,77 +1,103 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<?php echo $this->Html->charset('UTF-8'); ?>
-<title>Coming Soon</title>
-<?php
-echo $this->Html->meta('favicon.ico', '/static/img/favicon.ico', array('type' => 'icon') );
-echo $this->Html->css('niftyCorners');
-echo $this->Html->script('/js/niftycube.js');
-?>
+<?php 
+switch (env('SERVER_NAME')) {
+	case 'preview.snaphappi.com':
+	case 'dev.snaphappi.com':
+		$preview_badge_src = '/svc/STAGING/stage6/.thumbs/sq~923BB005-BA32-48A5-A2A3-F72A24DEDF8A.jpg';
+		break; 
+	case 'git3':
+	default:
+		$preview_badge_src = '/svc/STAGING/stage7/.thumbs/sq~C6E72021-9BBA-4F90-9548-217180605066.jpg';
+		break;
+}
+	
+$this->Layout->blockStart('itemHeader'); ?>
+<section class="item-header container_16" id="aui_3_3_0_2424">
+	<div class="wrap">
+		<ul class="inline grid_14">
+			<li class="thumbnail sq">
+				<a href='/person/home/4f279575-29bc-4c87-9d86-094b0afc480d'>
+				<img width="50" height="50" alt="" src="<?php echo $preview_badge_src; ?>">
+				</a></li>
+			<li>
+				<div class="item-class">A few words from the founder</div>
+				<h1 class="label">Michael</h1>
+			</li>
+		</ul>
+	</div>
+</section>	
+<?php	$this->Layout->blockEnd(); ?>
+
+
+<section class='welcome-preview prefix_1 grid_14 suffix_1'>
+	<div class='alpha grid_14 omega'>	
+		
+<div class="hint message blue rounded-5 cf">	
+	<h2 class="alpha">Welcome to our Friends and Family Preview</h2>
+	<p>We've put a lot of time and effort developing our vision for Snaphappi, and this site. 
+		And while it is not yet &ldquo;done&rdquo;, it is ready to share with our <b>Friends and Family</b> 
+		<img src="/static/img/css-gui/smiley.gif">.
+	</p>
+	<p>Our vision is to build a service that delivers surprise and delight from your rated photos.
+		We know that rating the 10,000+ photos on your desktop is tedious <img src="/static/img/css-gui/frownie.gif">, 
+		and we look forward to offering an elegant solution. 
+		But for now, our Friends and Family preview only scratches the surface of our vision.</p>
+	
+	<p>If you follow the Yellow Brick Road things should be fine, 
+		but if you go off the beaten path you might notice some things that have gone awry. 
+		</p>
+	<p>Thanks for your support, Michael.</p>
+	<div class='right cf'>
+		<article class="FigureBox Photo">
+	    	<figure>
+				<img class='' src='/static/img/hints/yellow-brick-road.jpg'>	    		
+				<figcaption>
+	    		 <div class="label"><b>Follow the Yellow Brick Road...</b></div>
+	    		 </figcaption>
+			</figure>
+		</article>
+		</div>
+	<ul><b>The Yellow Brick Road:</b> 
+		<li>Browse Snaps and Circles at Snaphappi</li>
+		<li>Sign-up and manage your account at Snaphappi</li>
+		<li>Upload 1 or 1000+ photos from your PC or Mac</li>
+		<li>Orangize your photos by adding Ratings <div class="ratingGroup" style="background-position: -28px bottom;display:inline-block;"></div>, Tags, and Bestshots (i.e. hiding duplicates)</li>
+		<li>Join or create Circles; share Snaps; and invite your friends to do the same</li>
+		<li>Create wonderful Stories to share with your friends</li>
+		<li>Determine who can see your photos through privacy and sharing</li>
+		<li>Report a problem or post a question or comment in the Help section. <img class='help' src="/static/img/hints/help.jpg"></li>		
+	</ul>
+	<br />	
+	<div>
+		<button class="continue orange" type="submit"'>Continue to Snaphappi</button>
+		<span class="input checkbox">&nbsp;&nbsp;&nbsp;
+			<input type="checkbox" id="WelcomePreviewSkip" name="data[Profile][welcome_preview_skip]"><label for="WelcomePreviewSkip"> Skip this page</label>
+			</span>
+	</div>	
+	
+</div>
+
+	</div>
+</section>
+
+
+<?php $this->Layout->blockStart('javascript'); ?>
 <script type="text/javascript">
-window.onload=function(){
-Nifty("div#container","big transparent");
-}
+	namespace('SNAPPI.onYready');
+	var _Y = null;
+	SNAPPI.onYready.preview = function(Y){
+		if (_Y === null) _Y = Y;
+		var skip;
+		_Y.on('click', function(e){
+			skip = _Y.one('input#WelcomePreviewSkip:checked');
+			if (skip) {
+				_Y.Cookie.setSub('donotshow', 'welcome-preview', 1, {
+					// path: 'preview.snaphappi.com',
+					expires: new Date(+new Date + 12096e5),
+				});		
+			}
+			SNAPPI.setPageLoading(true);
+			window.location.href = '/';
+		}, 'button.continue');
+	}
 </script>
-<style>
-<!--
-body {
-	font-family: arial, helvetica, sans-serif, 'Gill Sans', 'lucida grande';
-}
-
-a {
-	text-decoration: none;
-	color: white;
-}
-
-a:link a:visited {
-	text-decoration: none;
-}
-
-a:hover {
-	text-decoration: underline;
-}
-
-a img {
-	border: none;
-}
-
-#container {
-	background: white;
-	width: 500px;
-	padding: 50px;
-	text-align: center;
-	color: #538fb3;
-	overflow: hidden;
-}
-
-#footer {
-	margin: 4px;
-	text-align: right;
-	font-weight: bold;
-}
-
-#footer img {
-	vertical-align: middle;
-}
--->
-</style>
-</head>
-<body style="background: #538fb3;">
-<div style="margin: 20%; background: #538fb3;">
-<div id="container">
-<div style="font-size: 2em;">
-<p style="text-align: center;">Get ready for the new</p>
-<?php echo $this->Html->image('snaphappi.blue.gif', array('alt'=>'Snaphappi', 'url'=>'/welcome/about')); ?>
-<p style="font-size: 0.8em">Remixed and ready to go. Summer 2010</p>
-</div>
-</div>
-<div id='footer' style="background: #538fb3;"><a href="/welcome/about">about
-us</a> <a href="http://www.facebook.com/pages/Snaphappi/16486082015"><img
-	src="/img/comingsoon/facebook_32.png" alt="Find us on Facebook"
-	title="Find us on Facebook" /></a> <a
-	href="http://www.twitter.com/snaphappi"><img
-	src="/img/comingsoon/twitter_32.png" alt="Follow @snaphappi on Twitter"
-	title="Follow @snaphappi on Twitter" /></a></div>
-</div>
-</body>
+<?php $this->Layout->blockEnd(); ?>	

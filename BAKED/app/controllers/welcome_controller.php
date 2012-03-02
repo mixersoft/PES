@@ -3,27 +3,33 @@ class WelcomeController extends AppController {
 
 	var $name = 'Welcome';
 	var $uses = NULL;
+	var $layout = 'snappi';
 //	var $components = array('Session');
 //	var $helpers = array('Session');
 
-	public $paginate = array(
-		'Asset'=>array(
-			'limit'=>48,
-			'order'=>array('Asset.dateTaken'=>'ASC'),
-		),
-		'Group'=>array(
-			'limit' => 8,
-			'order'=>array('Group.title'=>'ASC'),
-		)
-	);
-	function preview(){
-		$this->layout = false;
-	}
+	public $paginate = array();
+	
 	function beforeFilter() {
 		parent::beforeFilter(); // disable access control for this controller
 		$this->Auth->allow('*');
 	}
+	function preview($force = null){
+		$this->layout = 'snappi-guest';
+		// check for cookie 'donotshow.welcome-preview'
+		$skip = isset($_COOKIE['donotshow']) ? $_COOKIE['donotshow'] : null;
+		if (!empty($skip['welcome-preview'])){
+			if ($force || isset($this->params['url']['show'])) {
+				// show this page
+			} else  {
+				$this->redirect('/', null, true);
+			}
+		} 
 
+	}
+	function remixed(){
+		$this->layout = false;
+	}
+	
 	function index() {
 	}
 

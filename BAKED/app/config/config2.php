@@ -96,8 +96,9 @@ switch ($config['Config.os']) {
 	case 'unix':
 		
 		switch (env('SERVER_NAME')) {
+			case 'preview.snaphappi.com':
 			case 'dev.snaphappi.com':
-			case 'aws.snaphappi.com':
+			// case 'aws.snaphappi.com':
 				$wwwroot = '/www-dev';	
 				$config['http_static'] = array('http://snappi.snaphappi.com', 'http://snappi1.snaphappi.com'); 
 				break;

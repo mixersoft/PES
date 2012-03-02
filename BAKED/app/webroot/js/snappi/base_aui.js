@@ -360,7 +360,11 @@
 				
 			} else SNAPPI.Y = _Y = Y;
 			if (before) before(Y, result);
-			onlazyload(Y, result);
+			try {
+				onlazyload(Y, result);
+			} catch(e){
+				console.error('ERROR: exception in LazyLoad.onlazyLoad();')
+			}
 			if (after) after(Y, result);
 			_Y.fire('snappi:lazyload-complete');
 		}
@@ -379,9 +383,8 @@
 	LazyLoad.min = function(cfg){
 		cfg = cfg || {};	// closure for onlazyload
 		
-		var modules = ['snappi-ui-helpers', 'snappi-io', 'snappi-menu-aui'];
+		var modules = ['snappi-ui-helpers', 'snappi-io', 'snappi-menu-aui', 'cookie'];
 		var onlazyload = function(Y, result){
-				
 				// update session data
 				SNAPPI.mergeSessionData();
 				
@@ -391,7 +394,7 @@
 				// start listeners
 				var listeners = {
 					// 'WindowOptionClick':null,
-					'ContentMenuClick': false, 
+					'ContextMenuClick': false, 
 				};
 				if (PAGE.jsonData && PAGE.jsonData.listeners) {
 					listeners = Y.merge(listeners, PAGE.jsonData.listeners);
@@ -435,7 +438,7 @@
 				// start listeners
 				var listeners = {
 					'WindowOptionClick':null,
-					'ContentMenuClick': false, 
+					'ContextMenuClick': false, 
 				};
 				if (PAGE.jsonData && PAGE.jsonData.listeners) {
 					listeners = Y.merge(listeners, PAGE.jsonData.listeners);

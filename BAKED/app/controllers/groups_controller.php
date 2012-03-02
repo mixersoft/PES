@@ -28,7 +28,7 @@ class GroupsController extends AppController {
 			// set limit in PageableBehavior->getPerpageLimit()	
 			'limit' => 16,
 			'big_limit' =>36,
-			'order'=>array('Group.title'=>'ASC'),
+			'order'=>array('Group.lastVisit'=>'DESC'),
 		),
 		'ProviderAccount'=>array(
 			'preview_limit'=>5,

@@ -1237,9 +1237,6 @@ section.filmstrip section.gallery.lightbox {
 	clear: both;
 }
 
-section.item-header.minimize {
-	height: 10px;
-}
 
 section.filmstrip.minimize .gallery-header {
 	height: 5px;
@@ -1479,7 +1476,7 @@ ul.circle-thumb li.selected {
     position: relative;	
 }
 
-/* Circles home page */
+
 section.item-header  {
 	background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0, rgb(197,232,250)),color-stop(1, rgb(232,246,253))	);
 	background-image: -moz-linear-gradient(center bottom,rgb(197,232,250) 0%,rgb(232,246,253) 100%);
@@ -1491,12 +1488,15 @@ section.item-header  {
 	x-moz-box-shadow: 0px 0px 7px #fff inset;
 	overflow: hidden;
 }
+section.item-header.minimize {
+	height: 10px;
+}
 section.item-header  .wrap {
 	padding: 4px 0;	
 	overflow: hidden;
 }
 section.item-header ul {
-	height: 50px;
+	height: 54px;	/*	window options adding 4px */	
 }
 section.item-header .thumbnail img {
 	width: 50px;
@@ -2103,6 +2103,7 @@ form input[type="button"] {
 /*
  * PAGE: /users/login, /users/register, user auth pages
  */
+
 body.simple .item-header h1 {
 	font-size: 20pt;
 }
@@ -2663,7 +2664,33 @@ span.keypress {
 	
 }
 
+
+/* welcome-preview */
+section.welcome-preview .message {
+	padding: 20px 40px;
+}
+section.welcome-preview .message p {
+	margin-bottom: 10px;
+}
+section.welcome-preview .message img.help {
+	border-radius: 5px 5px 5px 5px;
+    vertical-align: text-top;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* keep at bottom */
-body.wait, body.wait a {
+body.wait * {
 	cursor: wait; !important;
 }

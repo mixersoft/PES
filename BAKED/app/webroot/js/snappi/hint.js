@@ -13,7 +13,7 @@
 	    Hint.doNotShow = _Y.Cookie.getSubs('donotshow') || {};
 	    Hint.flushQueue();		// load queued hints
 	}
-	
+
     var Hint = function(){};
 	/*
 	 * 
@@ -319,7 +319,7 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
     	Hint.doNotShow[id] = 1;
     	if (saveToCookie) {
     		_Y.Cookie.setSub('donotshow', id, 1, {
-				path: 'dev.snaphappi.com',
+				path: 'preview.snaphappi.com',
 				expires: new Date(+new Date + 12096e5),
 			});
     	}
