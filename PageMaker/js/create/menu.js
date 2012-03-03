@@ -107,17 +107,6 @@
 	 */
 	Menu.initMenus = function(menus){
 		var auth, defaultMenus = {};
-		try {
-			auth = SNAPPI.STATE.controller.userid; // authenticated
-		} catch (e) {
-			auth = null;
-		}			
-		if (auth) {
-			defaultMenus = {
-				'menu-pm-toolbar-edit': 1,	
-			};
-		}			
-		
 		menus = _Y.merge(defaultMenus, menus);
 		for (var i in menus) {
 			var key = menus[i]!==false ? i : null; 
@@ -211,8 +200,8 @@
 		return menu;
 	};
 	
-	Menu.startListener = function(menu, handle_click){
-		var parent = menu.get('contentBox');
+	Menu.startListener = function(menu, handle_click, proxy){
+		var parent = proxy || menu.get('contentBox');
 		handle_click = handle_click || function(e){
 			var menuItem = e.currentTarget;
 			if (menuItem.hasClass('disabled')) {
@@ -245,23 +234,39 @@
 		if (!menu.listen['delegate_click']) {
 			menu.listen['delegate_click'] = parent.delegate('click', handle_click, 'ul  li',  menu);
 		}
+		if (proxy && !menu.listen['mouseenter_beforeShow']) {
+			menu.listen['mouseenter_beforeShow'] = parent.on('mouseenter', 
+			function(e){
+				Menu.menuItem_beforeShow(proxy, null);
+			}, 'ul  li',  menu);
+		}
 	};
 	
 	Menu.menuItem_beforeShow = function(menu, o){
-		var content = menu.get('contentBox');
+		var content = menu.get('contentBox') || menu;
 		if (content) content.all('ul  li.before-show').each(function(n,i,l){
 			// call beforeShow for each menuItem
-			if (n.hasClass('before-show')) {
-				var methodName = n.getAttribute('action')+'_beforeShow';
-				if (MenuItems[methodName]) {
-					try {
-						MenuItems[methodName](n, menu, o);	
-					} catch (e) {}
-				}
+			var methodName = n.getAttribute('action')+'_beforeShow';
+			if (MenuItems[methodName]) {
+				try {
+					MenuItems[methodName](n, menu, o);	
+				} catch (e) {}
 			}
 		}, menu);
 	};
-	
+	Menu.copyMenuToDialogHeader = function(menu, CSS_ID, dialog){
+		var dialog = dialog || SNAPPI.Dialog.find['dialog-alert'],
+			header = dialog.getStdModNode('header');
+		if (!header.one('.'+CSS_ID)){
+			var menuContent = menu.get('contentBox');	// get menuContent
+			var after = header.one('span.aui-toolbar');
+			var copied = header.create(menuContent.get('innerHTML'));
+			copied.addClass(CSS_ID).addClass('toolbar');
+			header.insertBefore(copied, after);
+			Menu.startListener(menu, null, copied.get('parentNode') );	
+			menu.disable().hide();					
+		}
+	}
 	
 	
 	
@@ -516,8 +521,9 @@
 		return Menu.getMarkup(MARKUP , callback);
 	} 
 	 
+
 	/**
-	 * load user shortcuts menu
+	 * load toolbar for shuffling Story photos
 	 * @param cfg
 	 * @return
 	 */
@@ -534,6 +540,12 @@
 			// zIndex: 5000,					
 			align: { points:['bc', 'tc'] },
 			init_hidden: false,
+			on: {
+				show: function(e) {
+					var menu = e.currentTarget;
+					Menu.copyMenuToDialogHeader(menu, CSS_ID);
+				}
+			}
 		}
 		_cfg = _Y.merge(_cfg, cfg);
 		return _load_Single_Trigger_Menu(CSS_ID, TRIGGER, XHR_URI, _cfg);
@@ -552,6 +564,12 @@
 			// zIndex: 5000,					
 			align: { points:['bc', 'tc'] },
 			init_hidden: false,
+			on: {
+				show: function(e) {
+					var menu = e.currentTarget;
+					Menu.copyMenuToDialogHeader(menu, CSS_ID);
+				}
+			}
 		}
 		_cfg = _Y.merge(_cfg, cfg);
 		return _load_Single_Trigger_Menu(CSS_ID, TRIGGER, XHR_URI, _cfg);

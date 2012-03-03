@@ -236,8 +236,8 @@
 		return menu;
 	};
 	
-	Menu.startListener = function(menu, handle_click){
-		var parent = menu.get('contentBox');
+	Menu.startListener = function(menu, handle_click, proxy){
+		var parent = proxy || menu.get('contentBox');
 		handle_click = handle_click || function(e){
 			var menuItem = e.currentTarget;
 			if (menuItem.hasClass('disabled')) {
@@ -278,22 +278,39 @@
 		if (!menu.listen['delegate_click']) {
 			menu.listen['delegate_click'] = parent.delegate('click', handle_click, 'ul  li',  menu);
 		}
+		if (proxy && !menu.listen['mouseenter_beforeShow']) {
+			menu.listen['mouseenter_beforeShow'] = parent.on('mouseenter', 
+			function(e){
+				Menu.menuItem_beforeShow(proxy, null);
+			}, 'ul  li',  menu);
+		}
 	};
 	
 	Menu.menuItem_beforeShow = function(menu, o){
-		var content = menu.get('contentBox');
+		var content = menu.get('contentBox') || menu;
 		if (content) content.all('ul  li.before-show').each(function(n,i,l){
 			// call beforeShow for each menuItem
-			if (n.hasClass('before-show')) {
 				var methodName = n.getAttribute('action')+'_beforeShow';
 				if (MenuItems[methodName]) {
 					try {
 						MenuItems[methodName](n, menu, o);	
 					} catch (e) {}
 				}
-			}
 		}, menu);
 	};
+	Menu.copyMenuToDialogHeader = function(menu, CSS_ID, dialog){
+		var dialog = dialog || SNAPPI.Dialog.find['dialog-alert'],
+			header = dialog.getStdModNode('header');
+		if (!header.one('.'+CSS_ID)){
+			var menuContent = menu.get('contentBox');	// get menuContent
+			var after = header.one('span.aui-toolbar');
+			var copied = header.create(menuContent.get('innerHTML'));
+			copied.addClass(CSS_ID).addClass('toolbar');
+			header.insertBefore(copied, after);
+			Menu.startListener(menu, null, copied.get('parentNode') );	
+			menu.disable().hide();					
+		}
+	}
 	
 	
 	

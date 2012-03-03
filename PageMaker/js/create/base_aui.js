@@ -66,7 +66,10 @@
     	}
     	switch (Plugin.sceneCfg.stageType) {
     		case 'modal': 
-    			PM.Menu.initMenus({ 'menu-pm-toolbar-edit': 1});
+    			try {
+					auth = SNAPPI.STATE.controller.userid; // authenticated
+					if (auth) PM.Menu.initMenus({ 'menu-pm-toolbar-edit': 1});
+				} catch (e) {}	
     			break;
     		case 'preview-ratings':
 	    		PM.Menu.initMenus({ 'menu-pm-toolbar-preview': 1});

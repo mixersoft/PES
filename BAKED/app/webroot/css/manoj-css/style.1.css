@@ -1332,6 +1332,7 @@ form input[type='text'].help {
 }
 
 
+
 /*TODO: deprecate ?*/
 ul.circle-thumb li.selected {
 	margin-right:16px;
@@ -2689,7 +2690,16 @@ span.info-button {
 }
 
 
-
+#dialog-alert .aui-dialog-hd .toolbar {
+	display: inline-block;
+    left: 0;
+    margin: 0 25%;
+    position: absolute;
+    text-align: center;
+    text-shadow: none;
+    top: 4px;
+    width: 50%;
+}
 
 
 
