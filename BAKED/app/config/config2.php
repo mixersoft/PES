@@ -64,14 +64,6 @@ switch ($config['Config.os']) {
 			'stageroot'=>array('basepath'=>$wwwroot.'/svc/STAGING', 'httpAlias'=>'svc/STAGING'),
 			
 			'blank_user_photo'=> '/static/img/css-gui/snappi.png', 	// deprecate, use Stagehand::getSrc()
-			'default_badges'=>array(
-				'person'=>'/static/img/css-gui/snappi.png',
-				'Circle'=>'/static/img/css-gui/snappi.png',
-				'Group'=>'/static/img/css-gui/snappi.png',
-				'Event'=>'/static/img/css-gui/snappi.png',
-				'Wedding'=>'/static/img/css-gui/snappi.png',
-				'Tag'=>'/static/img/css-gui/snappi.png',
-			),
 
 //			'meanshift_tmp'=>'W:/usr/bin/meanshift/tmp',
 			'pageGalleryPrefix'=>'/svc/pages',
@@ -133,13 +125,7 @@ switch ($config['Config.os']) {
 			),
 			'stageroot'=>array('basepath'=>$wwwroot.'/svc/STAGING', 'httpAlias'=>'svc/STAGING'),
 			'blank_user_photo'=> '/static/img/css-gui/snappi.png', 	// deprecate, use Stagehand::getSrc()
-			'default_badges'=>array(
-				'person'=>'/static/img/css-gui/snappi.png',
-				'Circle'=>'/static/img/css-gui/snappi.png',
-				'Group'=>'/static/img/css-gui/snappi.png',
-				'Event'=>'/static/img/css-gui/snappi.png',
-				'Wedding'=>'/static/img/css-gui/snappi.png',
-			),
+			
 			'pageGalleryPrefix'=>'/svc/pages',
 			'pagemaker'=>array('catalog'=>$wwwroot.'/PAGEMAKER/static/arrangements'),
 			'autorender'=> $wwwroot.DS.'svc'.DS.'autorender'.DS.'Image.php',
@@ -158,6 +144,15 @@ switch ($config['Config.os']) {
 			);		
 		break;		
 }
+
+$config['path']['default_badges'] = array(
+	'Asset'=>'/static/img/css-gui/snappi.png',
+	'person'=>'/static/img/css-gui/snappi.png',
+	'Circle'=>'/static/img/css-gui/snappi.png',
+	'Group'=>'/static/img/css-gui/snappi.png',
+	'Event'=>'/static/img/css-gui/snappi.png',
+	'Wedding'=>'/static/img/css-gui/snappi.png',
+);
 
 switch (env('SERVER_NAME')) {
 	case 'preview.snaphappi.com':

@@ -69,6 +69,7 @@
     			try {
 					auth = SNAPPI.STATE.controller.userid; // authenticated
 					if (auth) PM.Menu.initMenus({ 'menu-pm-toolbar-edit': 1});
+					else PM.Menu.initMenus({ 'menu-pm-toolbar-preview': 1});
 				} catch (e) {}	
     			break;
     		case 'preview-ratings':

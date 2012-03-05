@@ -79,7 +79,7 @@
 	};
 	MultiSelect.multiSelectHandler = function(e) {
 		var active, target = e.target;
-		active = (_Y.UA.os == "macintosh") ? (e.metaKey || e_boundary.shiftKey) : (e.ctrlKey || e.shiftKey)
+		active = (_Y.UA.os == "macintosh") ? (e.metaKey || e.shiftKey) : (e.ctrlKey || e.shiftKey)
 		if (!active) {
 			if (target.get('parentNode').hasClass('context-menu')) {
 				// let ContextMenu listner handle this click.

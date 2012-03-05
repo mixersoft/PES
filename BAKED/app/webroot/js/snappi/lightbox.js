@@ -672,7 +672,7 @@
 					// TODO: close organize menu, show flash msg
 				}
 			};
-            SNAPPI.shotController.xxxpostGroupAsShot.call(this, post_aids, callback);
+            SNAPPI.shotController.postGroupAsShot.call(this, post_aids, callback);
 		},
 		onGroupAsShotComplete : function (shot, resp){
 			SNAPPI.flash.flash(resp.message);

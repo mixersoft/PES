@@ -8,7 +8,7 @@ PAGE.init.push(initOnce);
 <?php 
 if (empty($this->passedArgs['wide'])) {
 	$this->Layout->blockStart('itemHeader');
-		echo $this->element('nav/section', array('badge_src'=>null));
+		echo $this->element('nav/section', array('badge_src'=>Stagehand::$default_badges['Asset']));
 	$this->Layout->blockEnd();
 }
 ?>

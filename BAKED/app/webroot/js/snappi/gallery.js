@@ -1194,6 +1194,8 @@
 			this.toggleSubstitutes(_Y.one('#show-substitutes'), SNAPPI.STATE.showSubstitutes);
         },		
 		/**
+		 * TODO: move to ShotController.groupAsShot(), or postGroupAsShot()
+		 * deprecate: check if lightbox.postGroupAsShot is used or lightbox.Gallery.groupAsShot
 		 * group all selected items into ONE shot. 
 		 * @params batch auditionSH (optional)
 		 */        
@@ -1219,7 +1221,8 @@
 					auditions: batch,
 					shotType: cfg.shotType,
 					lightbox: cfg.lightbox,
-					success: this._groupAsShot_success	
+					success: this._groupAsShot_success,
+					menu: cfg.menu,	
 			};
 			var loadingNode = cfg.loadingNode;
 			if (loadingNode.io == undefined) {
@@ -1233,6 +1236,7 @@
 					arguments: args, 
 					on: {
 						successJson:  function(e, id, o, args) {
+							args.menu.hide();
 							return args.success.apply(this, arguments);
 						}
 					}
@@ -1326,7 +1330,8 @@
 			var args = {
 				sort: sort,
 				aids: post_aids,
-				success: this._ungroupShot_success				
+				success: this._ungroupShot_success,
+				menu: cfg.menu,					
 			};
 			var loadingNode = cfg.loadingNode;
 			if (loadingNode.io == undefined) {
@@ -1340,6 +1345,7 @@
 					arguments: args,
 					on: {
 						successJson:  function(e, id, o, args) {
+							args.menu.hide();
 							return args.success.apply(this, arguments);
 						}
 					}
@@ -1441,7 +1447,8 @@
 			}
 			var args = {
 				sort: sort,
-				success: this._removeFromShot_success
+				success: this._removeFromShot_success,
+				menu: cfg.menu,	
 			};
 			var loadingNode = cfg.loadingNode;
 			if (loadingNode.io == undefined) {
@@ -1455,8 +1462,8 @@
 					arguments: args,
 					on: {
 						successJson:  function(e, id, o, args) {
-							args.success.apply(this, arguments);
-							return false;
+							args.menu.hide();
+							return args.success.apply(this, arguments);
 						}
 					}
 				});

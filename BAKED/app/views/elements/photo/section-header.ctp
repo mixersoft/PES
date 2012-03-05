@@ -13,13 +13,14 @@
 	} catch (Exception $e) {
 		$label = "&nbsp;";
 	}	
-	$badge = $this->Html->image($badge_src, array(
+	if (empty($badge_src)) $badge = "";
+	else $badge = $this->Html->image($badge_src, array(
 		'title'=>'Click to go to the home page.',
 		'class'=>'badge-tiny', 
-		'url'=>array('action'=>'home')+$this->passedArgs)); 
+		'url'=>array('action'=>'home')+$this->passedArgs)) . "&nbsp;"; 
 ?>
 <nav class="section-header container_16">
-	<h1 class="grid_4"><?php echo $badge .'&nbsp;'. $label ?></h1>
+	<h1 class="grid_4"><?php echo $badge . $label ?></h1>
     <ul class="inline grid_8">
 		<li class="montage rounded-5 white" action='section-view:montage'><a>Montage</a></li>                    
 		<li class="gallery rounded-5 white" action='section-view:gallery'><a>Gallery</a></li>

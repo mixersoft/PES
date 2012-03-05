@@ -750,9 +750,16 @@ console.error("PreviewPhoto delete is still incomplete");
 	MenuItems.zoom_click = function(menuItem, menu, e){
 		// menu.hide();
 		var thumbnail = menu.get('currentNode');	// target
+		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
+		if (e.ctrlKey || e.metaKey) {
+			var src = audition.Audition.Photo.Img.Src.rootSrc;
+			src = audition.getImgSrcBySize(audition.urlbase+src,'bp');
+			menu.hide(); // open JPG in popup
+			window.open(src, '_blank');
+			return;
+		}
 		var g = MenuItems.getGalleryFromTarget(thumbnail);
 		SNAPPI.Factory.Gallery.nav.toggle_ContextMenu(g, e);
-		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		var cfg = {
 			// selector: [CSS selector, copies outerHTML and substitutes tokens as necessary],
 			markup: "<div id='preview-zoom'></div>",
@@ -771,7 +778,19 @@ console.error("PreviewPhoto delete is still incomplete");
 	        	}, '.FigureBox.PhotoZoom figure > img', dialog
 	        )		
 		SNAPPI.Factory.Thumbnail.PhotoZoom.bindSelected(audition, previewBody, {gallery:g});
+		return false;
 	}
+	MenuItems.refresh_click = function(menuItem, menu, e){
+		// menu.hide();
+		var thumbnail = menu.get('currentNode');	// target
+		var img = thumbnail.one('figure > img');
+		img.once('load', function(){
+			SNAPPI.setPageLoading(false);
+		});
+		SNAPPI.setPageLoading(true);
+		img.set('src', img.get('src')+'?t='+new Date().getTime());
+		var check;
+	}	
 	MenuItems.rotate_click = function(menuItem, menu, e){
 		var rotate = menuItem.getAttribute('rotate');
 		var thumbnail = menu.get('currentNode');
@@ -1030,23 +1049,6 @@ console.error("PreviewPhoto delete is still incomplete");
 			menuItem.addClass('disabled').setAttribute('title','Please sign in to access this feature.');
 		}
 	}
-	MenuItems.create_pagegallery_beforeShow = function(menuItem, menu){
-		try {
-			var g = SNAPPI.Gallery.find['uuid-'] || SNAPPI.Gallery.find['nav-'];
-			// check .gallery.photo, then lightbox for selected 
-			var batch = g.getSelected();
-			if (!batch.count() && SNAPPI.lightbox) {
-				batch = SNAPPI.lightbox.getSelected();
-			}	
-			if (batch) {
-				menuItem.removeClass('disabled').show();
-			} else {
-				menuItem.addClass('disabled');
-			}
-		} catch(e) {
-			menuItem.addClass('disabled');
-		}
-	}
 	MenuItems.create_pagegallery_click = function(menuItem, menu){
 		try {
 			var g = SNAPPI.Gallery.find['uuid-'] || SNAPPI.Gallery.find['nav-'];
@@ -1066,20 +1068,32 @@ console.error("PreviewPhoto delete is still incomplete");
 				}catch (e) {}
 				return;
 			}
-		} catch(e) {		}
-		// nothing selected, show MultiSelect help
-		var cfg = {
-			// markup: "<div id='preview-zoom'></div>",
-			selector: '#hint-new-story',
-			uri: '/help/markup/hint_NewStory',
-			width: 600,
-			addToMarkup: true,
-		};
-		var dialog = SNAPPI.Alert.load(cfg);;
-		var detach = _Y.on('snappi:dialog-alert-xhr-complete', function(d){
-			detach.detach();
-			SNAPPI.util.setForMacintosh(d.getStdModNode('body'));
-		}, this);
+		} catch(e) {	}
+		var showHint = function(){
+			var next = '';
+			if (!g) {	// no gallery, redirect to page
+				var auth = SNAPPI.STATE.controller.userid; // authenticated
+				var target = auth ? '/my/photos' : '/photos/all';
+				next = '<div class="center"><a href="'+target+'"><button class="continue orange" type="submit">Show me some Snaps!</button></a></div><br />'
+			}			
+			// gallery found, but nothing selected, show MultiSelect help
+			var cfg = {
+				// markup: "<div id='preview-zoom'></div>",
+				selector: '#hint-new-story',
+				uri: '/help/markup/hint_NewStory',
+				width: 600,
+				addToMarkup: true,
+				tokens: {
+					next: next
+				}
+			};
+			var dialog = SNAPPI.Alert.load(cfg);
+			var detach = _Y.on('snappi:dialog-alert-xhr-complete', function(d){
+				detach.detach();
+				SNAPPI.util.setForMacintosh(d.getStdModNode('body'));
+			});	
+		}
+		SNAPPI.LazyLoad.extras({module_group:'alert', ready: showHint});
 	};	
 	MenuItems.express_upload_beforeShow = function(menuItem, menu, properties){
 		// if this group is marked for express-upload, add .selected

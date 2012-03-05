@@ -101,15 +101,11 @@
 		 */
 		var CCid, mainPR;
 		try {
-			if (o instanceof SNAPPI.Lightbox) {
-				mainPR = _Y.one('section.gallery.photo').Gallery;
-			} else {
-				mainPR = (o instanceof SNAPPI.Gallery) ? o :  o.dom().Gallery;
+			if (o instanceof SNAPPI.Lightbox) o = o.Gallery;
+			if (o instanceof SNAPPI.Gallery) {
+				CCid = o.castingCall.CastingCall.ID;
 			}
-			CCid = mainPr.castingCall.CastingCall.ID;
-		} catch (e) {
-			CCid = null;
-		}		
+		} catch (e) {}		
 		return CCid;
 	};
 	/**
@@ -170,7 +166,7 @@
 	};		
 	ShotController.prototype = {
 		// @deprecate (?), call lightbox.Gallery.groupAsShot() instead?
-		xxxpostGroupAsShot : function(aids, callback) {
+		postGroupAsShot : function(aids, callback) {
 			// called from lightbox, 
 			// see Photoroll.groupAsShot() for pattern
 			var auditionREF = [];

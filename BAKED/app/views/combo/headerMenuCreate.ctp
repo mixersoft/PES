@@ -6,7 +6,7 @@
 		<li action='authenticated' class="before-show disabled" title="Upload photos into Snaphappi">
 			<a href="/my/upload">New Snaps</a>
 		</li>	
-		<li action='create_pagegallery' class="before-show disabled" title="Select Snaps or Add to Lightbox to create a new Story" >
+		<li action='create_pagegallery' title="Select Snaps or Add to Lightbox to create a new Story" >
 			<a>New Story</a>
 		</li>
 	</ul>

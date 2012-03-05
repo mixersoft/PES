@@ -1,5 +1,6 @@
 <div id="hint-new-story" class="hint container_x"><div class="message blue rounded-5 wrap-v">
 	<h1>Select Some Snaps to Get Started</h1>
+	<div class='center'><img src='/static/img/hints/multi-select.jpg'></div>
 	<p>Use <span class='keypress multiselect-single'>Ctrl-Click</span> or <span class='keypress'>Shift-Click</span> to select the Snaps to be used in your new Story. 
 		You can also drag selected Snaps to your <b>Lightbox</b> (on the bottom of this page) to hold them in place.</p>
 	<ul>Additional Hints
@@ -9,5 +10,6 @@
 		<li>To add/append a page to a Story, just 'Save to' the same name.</li>
 	</ul>
 	<br />
+	{next}
 </div>
 </div>

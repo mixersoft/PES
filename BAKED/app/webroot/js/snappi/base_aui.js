@@ -415,6 +415,7 @@
 			'gallery': ['snappi-dialog-aui', 'snappi-hint', 'pagemaker-base'],
 			'hint':['snappi-hint'],
 			'preview': ['snappi-dialog-aui', 'snappi-auditions', 'snappi-hint'],
+			'alert': ['snappi-dialog-aui'],
 		}
 		var modules = module_group[cfg.module_group];
 		if (modules) {

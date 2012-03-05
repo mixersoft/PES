@@ -40,11 +40,11 @@ $this->Layout->blockStart('itemHeader'); ?>
 	<h2 class="alpha">Welcome to our Friends and Family Preview</h2>
 	<p>We've put a lot of time and effort developing our vision for Snaphappi, and this site. 
 		And while it is not yet &ldquo;done&rdquo;, it is ready to share with our <b>Friends and Family</b> 
-		<img src="/static/img/css-gui/smiley.gif" title="Show me more">.
+		<img src="/static/img/css-gui/smiley.gif" title="I love you guys...">.
 	</p>
 	<p>Our vision is to build a service that delivers surprise and delight from your rated photos.
-		<span class="info-button orange">Tell me more</span> </p> 
-	<p>We know that rating the 10,000+ photos on your hard drive is tedious <img src="/static/img/css-gui/frownie.gif">, 
+		<span class="info-button orange">Show me more</span> </p> 
+	<p>We know that rating the 10,000+ photos on your hard drive is <img src="/static/img/css-gui/frownie.gif">, 
 		and we plan to offer an elegant, automated solution. But for now, you&#39;ll have to rate a few photos yourself &#151; this preview is only the tip of our iceberg.
 		</p>
 	
@@ -74,7 +74,7 @@ $this->Layout->blockStart('itemHeader'); ?>
 	</ul>
 	<br />	
 	<div>
-		<button class="continue orange" type="submit"'>Continue to Snaphappi</button>
+		<button class="continue orange" type="submit">Continue to Snaphappi</button>
 		<span class="input checkbox">&nbsp;&nbsp;&nbsp;
 			<input type="checkbox" id="WelcomePreviewSkip" name="data[Profile][welcome_preview_skip]"><label for="WelcomePreviewSkip"> Skip this page</label>
 			</span>

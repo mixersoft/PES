@@ -328,7 +328,7 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
     	Hint.doNotShow[id] = 1;
     	if (saveToCookie) {
     		_Y.Cookie.setSub('donotshow', id, 1, {
-				path: 'preview.snaphappi.com',
+				path: '/',
 				expires: new Date(+new Date + 12096e5),
 			});
     	}
@@ -386,7 +386,7 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 		var footer = this.getStdModNode('footer');
 		if (footer.one('.do-not-show').get('checked')){
 			_addDoNotShow(Hint.active.cfg.id, true);
-			footer.one('.do-not-show').set('checked', false);
+			// footer.one('.do-not-show').set('checked', false);
 		} 
 		// else _addDoNotShow(Hint.active.cfg.id, false);
 		var triggerNode = this.get('currentNode');
@@ -405,6 +405,10 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 			Hint.anyTrigger = true;
 			this.show();
 			Hint.doNotShow = {}
+			// for (var i in Hint.CFG) {
+				// SNAPPI.STATE.hints[i] = SNAPPI.STATE.hints[i] || true;	 // load all hints
+			// }
+			SNAPPI.Hint.flushQueue();		// if Hint already available
 			e.currentTarget.setContent('Hide Tips');
 			SNAPPI.UIHelper.nav.showHelp();
 		}

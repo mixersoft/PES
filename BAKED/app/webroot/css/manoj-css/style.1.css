@@ -1330,7 +1330,9 @@ form input[type='text'].help {
 	padding: 0 25px;
 	text-indent: -15px;
 }
-
+#dialog-alert .message {
+	padding: 10px;
+}
 
 
 /*TODO: deprecate ?*/
