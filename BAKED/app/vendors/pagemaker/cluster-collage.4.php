@@ -23,6 +23,11 @@ class ClusterCollage {
      * @var float
      */
     protected $cropVarianceMax  = 0.2;
+	 /**
+     * minArea for resized photo, attempt to upscale proportionally
+     * @var float
+     */
+    protected $MIN_AREA = 0.125;
     /**
      * Max result arrangement width
      * @var float
@@ -169,11 +174,11 @@ class ClusterCollage {
             $ratingsSum += $photo['rating'];
         }
 // debug($photos);		
-		if (true) {
+		if (1) {
 			/*
 			 * adjust resized photo to obey $minArea
 			 * */
-			$minArea = min(1/count($photos), 0.125);
+			$minArea = min(1/count($photos), $this->MIN_AREA);
 			$this->photos = $this->resizePhotosWithMinArea($photos, $ratingsSum, $minArea);
 // debug($this->photos);			
 			// $this->partitionByTopRatedCutoff($this->photos, $topRated, $lowRated, 2, true);
@@ -219,8 +224,9 @@ class ClusterCollage {
 			$h = $photo['height'];
 			$w = $photo['width'];
 			$rating = $photo['rating'];
-			if ($h <= 0 || $w <= 0 || $rating < 0 || $rating > $ratingsSum)
+			if ($h <= 0 || $w <= 0 || $rating < 0 || $rating > $ratingsSum){
 	            throw new Exception('Bad parameters for ' . __CLASS__ . '::' . __FUNCTION__);
+			}
 	        $newAreaPhoto = $rating / $ratingsSum;
 			$areaPhoto = $h * $w;
 			$photo['newAreaPhoto'] = $newAreaPhoto;

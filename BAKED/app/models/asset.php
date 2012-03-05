@@ -448,7 +448,7 @@ class Asset extends AppModel {
 		)
 	);
 
-	function addIfNew($asset, $providerAccount, $baseurl, $photoPath, & $response){
+	function addIfNew($asset, $providerAccount, $baseurl, $photoPath, $isOriginal, & $response){
 		$ret = true;
 		$timestamp = time();
 		$userid = AppController::$userid;
@@ -465,36 +465,18 @@ class Asset extends AppModel {
 		$shardPath = $Import->shardKey($uuid, $uuid);
 		$src['orig']= cleanPath($providerAccount['baseurl'].DS.$asset['rel_path'], 'http');		// original relpath in the clear
 		$src['root']= $shardPath;
-		$src['preview']= $Import->getImageSrcBySize($shardPath, 'bp');
+		// $src['preview']= $Import->getImageSrcBySize($shardPath, 'bp');	// deprecate??
 		$src['thumb']= $Import->getImageSrcBySize($shardPath, 'tn');
 
 		/*
-		 * get extended exif from asset
+		 * get extended exif from uploaded file, if available.
+		 * 	if exif missing, use $asset['json_exif'] from Desktop Uploader
 		 */
-		if (empty($asset['json_exif'])) {
-			$meta = $Import->getMeta($photoPath);
-			$asset['json_exif'] = $meta['exif'];
-			$asset['json_iptc'] = $meta['iptc'];
-			// process json_exif from v1.8.3 snappi-uploader
-			$options = array('filepath'=>$photoPath, 'autoRotate'=>0);	// js upload not rotated
-		} else {	
-			// json_exif from desktop-uploader
-			if (is_string($asset['json_exif'])) {	
-				// process json_exif from v1.8.3 snappi-uploader
-				$asset['json_exif'] = json_decode($asset['json_exif'], true);
-			} 
-			// process json_exif from v1.8.3 snappi-uploader
-			$options = array('filepath'=>$photoPath, 'autoRotate'=>1);
-		}
-		$exif = $Import->augmentExif($asset['json_exif'], $options);
-		$asset['json_exif'] = Set::merge($asset['json_exif'], $exif);
-		if (empty($asset['json_exif'])) {	
-			//  if exif STILL not available, make an exif array to capture ORIGINAL dimensions
-			$options['filepath'] = $photoPath;
-			$options['width'] = $asset['width'];
-			$options['height'] = $asset['height'];
-			$asset['json_exif'] = $Import->augmentExif(null, $options);
-		}
+		// $asset['json_exif'] == json_exif from v1.8.3 snappi-uploader via POST
+		$exif_0 = (isset($asset['json_exif'])) ? $asset['json_exif'] : null;
+		$meta = $Import->getMeta($photoPath, $isOriginal, $exif_0);
+		$asset['json_exif'] = $meta['exif'];
+		$asset['json_iptc'] = $meta['iptc'];
 
 		// add provider_account_id for generating asset_hash
 		$asset['provider_account_id'] = $providerAccount['id'];
@@ -540,7 +522,7 @@ class Asset extends AppModel {
 			'json_src' => $src,
 			'src_thumbnail' => $src['thumb'],
 			'json_exif' => $asset['json_exif'],
-			'json_preview_exif' => !empty($asset['json_exif']['preview']) ? $asset['json_exif']['preview'] : null,	// deprecate?
+			// 'json_preview_exif' => !empty($asset['json_exif']['preview']) ? $asset['json_exif']['preview'] : null,	// deprecate?
 //			'json_iptc' => $meta['iptc'],
 			'dateTaken' => !empty($asset['json_exif']['DateTimeOriginal']) ? $asset['json_exif']['DateTimeOriginal'] : null,
 			'isFlash' => $asset['json_exif']['isFlash'],
@@ -597,6 +579,7 @@ $this->log($newAsset, LOG_DEBUG);
 		$find_options = array(
 			'fields'=>"Asset.id, Asset.json_src, Asset.json_exif",
 			'recursive'=>-1,
+			'order'=>array('Asset.created'=>'DESC'),
 			'permissionable'=>false
 		);
 		extract($options); 	// $name; $uuid;
@@ -628,13 +611,15 @@ $this->log($newAsset, LOG_DEBUG);
 				$basepath = Configure::read('path.stageroot.basepath');
 				$rootpath = cleanpath($basepath.DS.$src['root'], $os);
 		debug("{$rootpath} from {$src['orig']}"); // continue;
-				$meta = $Import->getMeta($rootpath);
+				
+				// $asset['json_exif'] == json_exif from DB
+				$meta = $Import->getMeta($rootpath, null, $row['Asset']['json_exif']);
 				if (!empty($meta['exif'])){
-		// debug($meta['exif']);
+					if (!isset($meta['exif']['Orientation'])) $meta['exif']['Orientation'] = 1;
+		debug($meta['exif']);
 					// debug(json_decode($data['Asset']['json_exif'],true));
 					$json_exif = json_encode($meta['exif']);
-		// debug($data['Asset']['json_exif']);
-		// debug($json_exif);
+		debug($json_exif);
 					$this->id = $row['Asset']['id'];
 					$retval = $this->saveField('json_exif', $json_exif);
 					if ($retval) {
@@ -644,6 +629,17 @@ $this->log($newAsset, LOG_DEBUG);
 						foreach (GLOB($derived) AS $delete) {
 							// debug("delete, path={$delete}");
 							unlink($delete);
+						}
+						$rotate_lookup = array(8=>array(1=>8,8=>3,3=>6,6=>1), 6=>array(1=>6,6=>3,3=>8,8=>1), 3=>array(1=>3,6=>6,3=>1,8=>8));
+// TODO: hack. using rotate  json_exif, NOT UserEdit.rotate 						
+						$rotate = !empty($meta['exif']['preview']['Orientation']) ? $meta['exif']['preview']['Orientation'] : 1;
+						if ($rotate > 1) {
+							$new_rotate = $rotate_lookup[$rotate][$meta['exif']['Orientation']];
+							if ($new_rotate > 1) {
+								if (!isset($this->Jhead)) $this->Jhead = loadComponent('Jhead', $this);
+								$previewSrc = $basepath.'/'.preg_replace('/\//', '/.thumbs/', $src['preview'], 1); 
+								$errors =  $this->Jhead->exifRotate($new_rotate, $previewSrc);							
+							}
 						}
 					}
 					$ret = $ret && $retval;

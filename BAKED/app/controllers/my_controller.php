@@ -102,7 +102,8 @@ class MyController extends PersonController {
 		return;
 	}
 
-	function __importPhoto($data, $baseurl, $move_to_src_root){
+	function __importPhoto($data, $baseurl, $move_to_src_root, $isOriginal){
+		$isOriginal = ($isOriginal == 'ORIGINAL');
 		$ret = true;
 		$Import = loadComponent('Import', $this);
 		if (!isset($this->ProviderAccount)) $this->ProviderAccount = ClassRegistry::init('ProviderAccount');
@@ -122,7 +123,7 @@ class MyController extends PersonController {
 			$data['Asset']['perms'] = $profile['Profile']['privacy_assets'];
 		}	
 // $this->log("MyController::__importPhoto, asset=".print_r($paData, true), LOG_DEBUG);			
-		$assetData = $this->Asset->addIfNew($data['Asset'], $paData['ProviderAccount'], $baseurl, $move_to_src_root, $response);		
+		$assetData = $this->Asset->addIfNew($data['Asset'], $paData['ProviderAccount'], $baseurl, $move_to_src_root, $isOriginal, $response);		
 // $this->log("MyController::__importPhoto, asset=".print_r($assetData, true), LOG_DEBUG);		
 		// move file to staging server 
 		$src = json_decode($assetData['Asset']['json_src'], true);
@@ -175,12 +176,9 @@ class MyController extends PersonController {
 		$BATCH_ID = $_GET['batchId'];
 		$PROVIDER_NAME = 'snappi';
 		$Import = loadComponent('Import', $this);
-		$meta = $Import->getMeta($move_to_src_root);	// this is src['root']
 		$data = array();
 		$data['Asset']['id'] = null;
 		$data['Asset']['asset_hash'] = null;
-		// $data['Asset']['json_exif'] = $meta['exif'];	// deprecate: moved to $Asset->addIfNew() 
-		// $data['Asset']['iptc_exif'] = $meta['iptc'];	// deprecate: moved to $Asset->addIfNew()
 		$data['Asset']['batchId'] = $BATCH_ID;
 		$data['Asset']['rel_path'] = basename($move_to_src_root);
 		$data['ProviderAccount']['provider_name']=$PROVIDER_NAME;
@@ -190,7 +188,7 @@ class MyController extends PersonController {
 		 */
 //$this->log("MyController::__upload_javascript() BEGIN VALUMS/JAVASCRIPT IMPORT", LOG_DEBUG);
 //		$this->log($data, LOG_DEBUG);
-		$response = $this->__importPhoto($data, $UPLOAD_FOLDER, $move_to_src_root);
+		$response = $this->__importPhoto($data, $UPLOAD_FOLDER, $move_to_src_root, 'ORIGINAL');	// autoRotate=false
 		if ($response['success'] && isset($response['response']['Asset']['id'])) {
 			/*
 			 * share via express uploads, as necessary
@@ -286,7 +284,8 @@ $this->log("__upload_AIRclient(): upload success, owner_id={$userid}, file dest=
 		 */
 $this->log("before __importPhoto  >>>>>>>>>>>>>>>", LOG_DEBUG);	
 $this->log($this->data['Asset'], LOG_DEBUG);
-		$response = $this->__importPhoto($this->data, $UPLOAD_FOLDER, $move_to_src_root);
+		// for AIR: autoRotate==true
+		$response = $this->__importPhoto($this->data, $UPLOAD_FOLDER, $move_to_src_root, "PREVIEW");
 $this->log($response['message'], LOG_DEBUG);		
 		/*
 		 * share via express uploads, as necessary

@@ -1201,27 +1201,39 @@ debug($aids);
 								// 8 = ccw, 6 = cw
 								// 8=> 1, 8, 3, 6, 1
 								// 6=> 1, 6, 3, 8, 1
-								$rotate_lookup = array(8=>array(1=>8,8=>3,3=>6,6=>1), 6=>array(1=>6,6=>3,3=>8,8=>1));
+								$rotate_lookup = array(8=>array(1=>8,8=>3,3=>6,6=>1), 6=>array(1=>6,6=>3,3=>8,8=>1), 3=>array(1=>3,6=>6,3=>1,8=>8));
 								$old_rotate = !empty($json_exif['preview']['Orientation']) ? $json_exif['preview']['Orientation'] : 1;
 								$new_rotate = $rotate_lookup[$rotate][$old_rotate];
+// debug("{$new_rotate} = rotate_lookup[{$rotate}][{$old_rotate}]"); 							
 								$json_exif['preview']['Orientation'] = $new_rotate;
 								$response['rotate'] = $new_rotate;
 								$repsonse['uuid'] = $data['Asset']['id'];
 // debug("{$aid}: new rotate = $new_rotate");								
-								if (in_array($rotate, array(6,8)) && isset($json_exif['preview']['imageWidth'])) {
+								if (in_array($new_rotate, array(6,8)) && isset($json_exif['preview']['imageWidth'])) {
+$this->log("WARNING: json_exif['preview']['imageWidth'] MAY BE DEPRECATED!!!! ");									
 									$temp = $json_exif['preview']['imageWidth'];
 									$json_exif['preview']['imageWidth'] = $json_exif['preview']['imageHeight'];
 									$json_exif['preview']['imageHeight'] = $temp;
+								} else if (in_array($new_rotate, array(6,8))) {
+$this->log("WARNING: json_exif['preview']['imageWidth'] may need to be scaled, if not deprecated ");										
+									$json_exif['preview']['imageWidth'] = $json_exif['root']['imageHeight'];
+									$json_exif['preview']['imageHeight'] = $json_exif['root']['imageWidth'];
+								} else {
+									$json_exif['preview']['imageWidth'] = $json_exif['root']['imageWidth'];
+									$json_exif['preview']['imageHeight'] = $json_exif['root']['imageHeight'];
 								};
 								// get src for preview derived asset
 								$json_src = json_decode($data['Asset']['json_src'], true);
 								$previewSrc = $basepath.'/'.preg_replace('/\//', '/.thumbs/', $json_src['preview'], 1); 
 
 								// save asset data
+					// TODO: save to UserEdits.rotate as well						
+// debug($json_exif);							
 								$data['Asset']['json_exif']=json_encode($json_exif);
 								$this->Asset->id = $data['Asset']['id'];
+								$this->Asset->disablePermissionable(true);
 								$return = $this->Asset->saveField('json_exif', $data['Asset']['json_exif'], false);
-								
+								$this->Asset->disablePermissionable(false);
 								// update rotate preview
 								// $previewSrc = Stagehand::getImageSrcBySize($thumb_src, 'bp');
 								if (!isset($this->Jhead)) $this->Jhead = loadComponent('Jhead', $this);

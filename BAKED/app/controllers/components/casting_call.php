@@ -110,6 +110,7 @@ class CastingCallComponent extends Object {
 		$id = $row['id'];
 		$isOwner = $row['owner_id'] == AppController::$ownerid;
 		$exif = json_decode($row['json_exif'], true);
+// debug($exif['root']);		
 		if (!@empty($row[0]['FocusCenter'])) {
 			$x=$row[0]['FocusCenter']['X'];
 			$y=$row[0]['FocusCenter']['Y'];
@@ -138,6 +139,10 @@ class CastingCallComponent extends Object {
 		// if (isset($src['preview']))	$previewSrc= $src['preview'];
 		if (isset($src['orig']))	$origSrc= $src['orig'];
 		if (isset($exif['root'])) { 	// $exif['root'] set in component/import.php
+if (!isset($exif['root']['imageWidth'])) {
+	debug("Problem with id={$id}");
+	debug($exif['root']);
+}		
 			$W = $exif['root']['imageWidth'];
 			$H = $exif['root']['imageHeight'];
 			$Orientation  = isset($exif['root']['Orientation']) ? $exif['root']['Orientation'] : 1;
@@ -145,7 +150,7 @@ class CastingCallComponent extends Object {
 		} else {
 			$W = $exif['ExifImageWidth'];
 			$H = $exif['ExifImageLength'];
-			$Orientation = $exif['Orientation'];
+			$Orientation = (isset($exif['Orientation'])) ? $exif['Orientation'] : 1;
 		}
 		$Src = compact('W', 'H', 'base64Src', 'rootSrc', 'Orientation', 'isRGB');
 		$Img = compact('Src');
@@ -167,7 +172,9 @@ class CastingCallComponent extends Object {
 		$Rating = (!empty($row['rating'])) ? $row['rating'] : null;
 		$Score = number_format(round($row['score'] , 1),1);
 		$Votes = @ifed($row['votes'], null);
-		$Rotate = (!empty($row['rotate'])) ? $row['rotate'] : 1;
+//TODO: hack until json_exif[preview][Orientation] saved to rotate
+$previewOrientation = 	isset($exif['preview']['Orientation']) ? $exif['preview']['Orientation'] : 1;	
+		$Rotate = (!empty($row['rotate'])) ? $row['rotate'] : $previewOrientation;
 		$Scrub = (!empty($row['scrub'])) ? $this->formatScrub($row['scrub'])  : '';
 		$Fix = compact('Crops', 'Rating', 'Rotate', 'Scrub', 'Score', 'Votes');
 		$AutoRender = ($row['provider_name']=='snappi');
@@ -378,8 +385,10 @@ class CastingCallComponent extends Object {
 			return $cc[array_pop($ccIds)];
 		} else return null;
 	}
-	function cache_MarkStale(& $castingCall, $ccid){
+	function cache_MarkStale(& $castingCall, $ccid = null){
 		// mark castingCall as Stale
+		// if (!$ccid) $ccid = array_shift(array_keys(Session::read('castingCall')));
+		if (!$ccid) return false;
 		$request = $castingCall[$ccid]['Request'];
 		$timestamp = $castingCall[$ccid]['Timestamp'];
 		if ($request) {

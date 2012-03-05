@@ -318,9 +318,21 @@ $this->log("version={$version}", LOG_DEBUG);
 			$path = $wwwroot.$src;
 		}
 debug($path);
+		/*
+		 * IMPORTANT!!! do NOT change $data['Asset']['json_exif']['Orientation']
+		 */
 		$Import = loadComponent('Import', $this);
-		$meta = $Import->getMeta($path);
 		$data['Asset']['json_exif'] = json_decode($data['Asset']['json_exif'], true);
+debug($data['Asset']['json_exif']);
+		/*
+		 * Do Not Change
+		 * see: ImportComponent::$EXIF_DO_NOT_CHANGE
+		 */
+debug("IMPORTANT!!! do NOT change data['Asset']['json_exif']['Orientation']");
+
+
+		$meta = $Import->getMeta($path, null, $data['Asset']['json_exif']);
+debug($meta);		
 		$data['Asset']['json_exif'] = $meta['exif'] + $data['Asset']['json_exif'];
 debug(getAssetHash($data['Asset'], $path));	
 

@@ -127,7 +127,7 @@ class CastingCallJsonHelper extends Helper {
 		$W = $exif['imageWidth'];
 		$H = $exif['imageHeight'];
 		$src = (array)json_decode($row['json_src']);
-		$Src = $src['preview'];
+		// $Src = $src['preview'];	// deprecate, use $rootSrc = $src['root'];
 		if (isset($src['base64Src'])) $base64Src = $src['base64Src'];
 		if (isset($src['root'])) $rootSrc = $src['root'];
 		$origSrc = $src['orig'];
