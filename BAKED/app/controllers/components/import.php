@@ -143,7 +143,7 @@ class ImportComponent extends Object
 		 */ 
 		$exif = @exif_read_data($path);
 		if (empty($exif)) $exif = $exif_0;
-		else $exif = array_merge($exif, array_filter_keys($exif_0, ImportComponent::$EXIF_DO_NOT_CHANGE));
+		else if ($exif && $exif_0) $exif = array_merge($exif, array_filter_keys($exif_0, ImportComponent::$EXIF_DO_NOT_CHANGE));
 		
 		// this is a fix to preserve manual rotates, 
 		// currently saved in json_exif, NOT UserEdit.rotate
