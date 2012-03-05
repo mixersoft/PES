@@ -190,7 +190,7 @@
 				}
 			, menu);
 		}
-		Menu.startListener(menu, cfg.handle_click );
+		if (!menu.get('disabled')) Menu.startListener(menu, cfg.handle_click );
 		
 		// lookup reference
 		var key = cfg.lookup_key || MARKUP.id;
@@ -237,7 +237,7 @@
 	};
 	
 	Menu.startListener = function(menu, handle_click, proxy){
-		var parent = proxy || menu.get('contentBox');
+		var delegateHost = proxy ? proxy : menu.get('contentBox');
 		handle_click = handle_click || function(e){
 			var menuItem = e.currentTarget;
 			if (menuItem.hasClass('disabled')) {
@@ -264,22 +264,29 @@
 						});
 						delayed.delay(100);	
 					} else SNAPPI.setPageLoading(true);
-					// var delayed = new _Y.DelayedTask( function() {
-						// menu.hide();
-						// menuItem.removeClass('clicked');
-						// window.location.href = next;
-					// });
-					// delayed.delay(100);
 				} catch (e) {}
 			}
 		};
 			
 		menu.listen = menu.listen || {};
-		if (!menu.listen['delegate_click']) {
-			menu.listen['delegate_click'] = parent.delegate('click', handle_click, 'ul  li',  menu);
+		if (proxy) {
+			// detach, if delegateHost is not contained 
+			var j, detachHost;
+			for (j in menu.listen ) {
+				detachHost = menu.listen[j].evt.el;
+				if (!detachHost.ynode().contains(proxy)) {
+					console.log("menu.id="+menu._yuid+", header="+delegateHost._yuid+", container="+delegateHost.get('parentNode')._yuid);		
+					menu.listen[j].detach();
+					delete (menu.listen[j]);
+				}
+			}
 		}
+		if (!menu.listen['delegate_click']) {	
+			menu.listen['delegate_click'] = delegateHost.delegate('click', handle_click, 'ul  li',  menu);
+		} else 
+console.log("delegateHost="+delegateHost._yuid);		
 		if (proxy && !menu.listen['mouseenter_beforeShow']) {
-			menu.listen['mouseenter_beforeShow'] = parent.on('mouseenter', 
+			menu.listen['mouseenter_beforeShow'] = delegateHost.on('mouseenter', 
 			function(e){
 				Menu.menuItem_beforeShow(proxy, null);
 			}, 'ul  li',  menu);
@@ -307,7 +314,7 @@
 			var copied = header.create(menuContent.get('innerHTML'));
 			copied.addClass(CSS_ID).addClass('toolbar');
 			header.insertBefore(copied, after);
-			Menu.startListener(menu, null, copied.get('parentNode') );	
+			Menu.startListener(menu, null, header.get('parentNode') );	
 			menu.disable().hide();					
 		}
 	}
@@ -1094,6 +1101,7 @@ console.error("PreviewPhoto delete is still incomplete");
 			});	
 		}
 		SNAPPI.LazyLoad.extras({module_group:'alert', ready: showHint});
+		menu.hide();
 	};	
 	MenuItems.express_upload_beforeShow = function(menuItem, menu, properties){
 		// if this group is marked for express-upload, add .selected

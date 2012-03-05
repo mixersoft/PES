@@ -157,7 +157,7 @@
 			menu.set('trigger', TRIGGER);	// 'enabled' trigger
 			menu._stashTrigger = TRIGGER;
 		}
-		Menu.startListener(menu, cfg.handle_click );
+		if (!menu.get('disabled')) Menu.startListener(menu, cfg.handle_click );
 		
 		// lookup reference
 		var key = cfg.lookup_key || MARKUP.id;
@@ -201,8 +201,9 @@
 	};
 	
 	Menu.startListener = function(menu, handle_click, proxy){
-		var parent = proxy || menu.get('contentBox');
+		var delegateHost = proxy ? proxy : menu.get('contentBox');
 		handle_click = handle_click || function(e){
+console.log('click');			
 			var menuItem = e.currentTarget;
 			if (menuItem.hasClass('disabled')) {
 				// check for disabled
@@ -228,14 +229,26 @@
 					delayed.delay(100);
 				} catch (e) {}
 			}
-		};
-			
-		menu.listen = menu.listen || {};
-		if (!menu.listen['delegate_click']) {
-			menu.listen['delegate_click'] = parent.delegate('click', handle_click, 'ul  li',  menu);
 		}
+		menu.listen = menu.listen || {};
+		if (proxy) {
+			// detach, if delegateHost is not contained 
+			var j, detachHost;
+			for (j in menu.listen ) {
+				detachHost = menu.listen[j].evt.el;
+				if (!detachHost.ynode().contains(proxy)) {
+					console.log("menu.id="+menu._yuid+", header="+delegateHost._yuid+", container="+delegateHost.get('parentNode')._yuid);		
+					menu.listen[j].detach();
+					delete (menu.listen[j]);
+				}
+			}
+		}
+		if (!menu.listen['delegate_click']) {	
+			menu.listen['delegate_click'] = delegateHost.delegate('click', handle_click, 'ul  li',  menu);
+		} else 
+console.log("delegateHost="+delegateHost._yuid);		
 		if (proxy && !menu.listen['mouseenter_beforeShow']) {
-			menu.listen['mouseenter_beforeShow'] = parent.on('mouseenter', 
+			menu.listen['mouseenter_beforeShow'] = delegateHost.on('mouseenter', 
 			function(e){
 				Menu.menuItem_beforeShow(proxy, null);
 			}, 'ul  li',  menu);
@@ -263,7 +276,7 @@
 			var copied = header.create(menuContent.get('innerHTML'));
 			copied.addClass(CSS_ID).addClass('toolbar');
 			header.insertBefore(copied, after);
-			Menu.startListener(menu, null, copied.get('parentNode') );	
+			Menu.startListener(menu, null, header.get('parentNode'));	
 			menu.disable().hide();					
 		}
 	}
@@ -533,7 +546,7 @@
 		var TRIGGER = '#stage-2';
 		var XHR_URI = '/combo/markup/pm_ToolbarEdit'; 
 		var _cfg = {
-			showOn: 'mouseenter',
+			showOn: 'mouseover',
 			hideOn: 'mouseleave',
 			hideDelay: 10000,
 			// hideOnDocumentClick: false,	// must set zIndex manually, and hide on dialog close
