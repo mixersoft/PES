@@ -354,6 +354,7 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 	    	}
 		} else if (e.newVal == false && e.prevVal== true) {
 			// var body = e.currentTarget.get('bodyContent') !== Hint.active.body;
+			_sleepHints(1);
 		}
 	}
 	var _override_refreshAlign = function(){
@@ -370,6 +371,39 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 			this.clearIntervals();
 		};
 	}
+	
+	/*
+	 * sleep timer for hints on hide() or close
+	 */
+	var _sleep_status = {count: 0, time: 0, later: null}
+	var _sleepHints = function(mins){
+		if (mins!==false && !mins) mins = 1;
+		var secs, h = Hint.instance;
+		if (mins === false) {	// cancel sleep
+			h.set('trigger', h.triggers.join(',') );
+			_sleep_status.count = _sleep_status['time'] = 0;
+			if (_sleep_status.later) _sleep_status.later.cancel();
+			_sleep_status.later = null;
+console.log('force awake');				
+			return;
+		}
+		secs = mins*60*1000;
+		if ( secs < _sleep_status['time']) return;	// already sleeping
+		
+		_sleep_status.count += 1;
+		_sleep_status['time'] = secs  * _sleep_status.count;
+		if (_sleep_status.later) _sleep_status.later.cancel();
+		_sleep_status.later = _Y.later( _sleep_status['time'], h, 
+			function(){
+				h.set('trigger', h.triggers.join(',') );
+				_sleep_status['time'] = 0;
+				_sleep_status.later = null;
+console.log('awake');				
+			}	
+		);
+		h.set('trigger', '#blackhole');
+console.log("sleep for sec="+_sleep_status['time'])	;	
+	};
 	var _handle_Close = function(e, contentBox){
 		try {		// context: this = hint or ToolTip
 			var hide = e.container.one('input.do-not-show');
@@ -377,6 +411,7 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 			else _addDoNotShow(Hint.active.cfg.id, false); 
 		} catch(e) {}
 		this.hide();
+		_sleepHints(3);
 		var check;
 	}
 	var _handle_ShowNextTip = function(e){ // context: this = hint or ToolTip
@@ -397,19 +432,18 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 	var _handle_ShowAllTips = function(e){
 		// context: hint
 		e.halt();
-		if (Hint.anyTrigger) {
+		if (false && Hint.anyTrigger) {
 			Hint.anyTrigger = false;
 			this.hide();
 			e.currentTarget.setContent('Show All Tips');
 		} else {
 			Hint.anyTrigger = true;
+			_sleepHints(false);
 			this.show();
 			Hint.doNotShow = {}
-			// for (var i in Hint.CFG) {
-				// SNAPPI.STATE.hints[i] = SNAPPI.STATE.hints[i] || true;	 // load all hints
-			// }
 			SNAPPI.Hint.flushQueue();		// if Hint already available
-			e.currentTarget.setContent('Hide Tips');
+			// reset button
+			// e.currentTarget.setContent('Hide Tips');
 			SNAPPI.UIHelper.nav.showHelp();
 		}
 	}
