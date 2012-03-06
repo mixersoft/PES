@@ -203,7 +203,7 @@
 	Menu.startListener = function(menu, handle_click, proxy){
 		var delegateHost = proxy ? proxy : menu.get('contentBox');
 		handle_click = handle_click || function(e){
-console.log('click');			
+// console.log('click');			
 			var menuItem = e.currentTarget;
 			if (menuItem.hasClass('disabled')) {
 				// check for disabled
@@ -213,7 +213,7 @@ console.log('click');
 			var methodName = menuItem.getAttribute('action')+'_click';
 			if (MenuItems[methodName]) {
 				e.preventDefault();
-				MenuItems[methodName](menuItem, this);
+				MenuItems[methodName](menuItem, this, e);
 			} else {
 				// default
 				try {

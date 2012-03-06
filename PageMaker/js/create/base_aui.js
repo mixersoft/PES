@@ -496,10 +496,6 @@
         			path: 'paginator_aui.js',
         			requires:['aui-io', 'aui-paginator']
         		},              		
-        		'snappi-zoom': {
-    				path: 'zoom.js',
-    				requires:['node']
-    			},
                 'snappi-tabs': {
                     path: 'tabs.js',
                     requires: ['node']

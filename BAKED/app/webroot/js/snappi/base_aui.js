@@ -419,7 +419,7 @@
 		}
 		var modules = module_group[cfg.module_group];
 		if (modules) {
-			onlazyload = cfg.ready || { ready: function(){return true;}};	// closure for onlazyload
+			onlazyload = cfg.ready || function(){return true;};	// closure for onlazyload
 			delete cfg.ready;
 			LazyLoad.use(modules, onlazyload, cfg);
 		}
@@ -514,7 +514,7 @@
 			 */
 			
 			// deprecated
-			// 'snappi-property', 'snappi-menucfg', 'snappi-toolbutton', 'snappi-menu', 'snappi-menuitem', 'snappi-dialogboxCfg','snappi-dialogbox', 'snappi-zoom',
+			// 'snappi-property', 'snappi-menucfg', 'snappi-toolbutton', 'snappi-menu', 'snappi-menuitem', 'snappi-dialogboxCfg','snappi-dialogbox', 
 			// UNUSED
 			// 'aui-resize', 
 		];
@@ -806,10 +806,6 @@
         			path: 'paginator_aui.js',
         			requires:['aui-io', 'aui-paginator']
         		},              		
-        		'snappi-zoom': {
-    				path: 'zoom.js',
-    				requires:['node']
-    			},
                 'snappi-tabs': {
                     path: 'tabs.js',
                     requires: ['node']
