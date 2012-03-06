@@ -281,16 +281,24 @@
 			buttons: [
 			{
 				text: 'Apply',
-				handler: function() {
+				handler: function(e) {
 					var content = this.get('contentBox');
-					var selected = content.one('.selected');
-					var value = parseInt(selected.getAttribute('value'));
-					var detach = _Y.on('snappi:privacy-complete', function(lightbox, loading){
-						loading.loadingmask.hide();
-						// update asset count in dialog
-						detach.detach();
+					var setting = content.one('.selected');
+					var value = parseInt(setting.getAttribute('value'));
+					var target = this.get('target');
+					_Y.once('snappi:set-property-complete', function(args){
+						args.loadingNode.loadingmask.hide();
 					});
-					SNAPPI.lightbox.applyPrivacyInBatch(value, selected);
+					if (target.hasClass('FigureBox')) {
+						var selected = SNAPPI.Auditions.find(target.get('uuid'));
+						var batch = new SNAPPI.SortedHash(null, selected);
+						SNAPPI.AssetPropertiesController.setPrivacy.call(this, batch, value, setting);
+					} else if (target instanceof SNAPPI.Gallery) {
+						// TODO: add apply privacy setting for selectAll from gallery selection
+						var check;
+					} else if (target instanceof SNAPPI.Lightbox) {
+						SNAPPI.lightbox.applyPrivacyInBatch(value, setting);
+					}
 				}
 			}
 			]			

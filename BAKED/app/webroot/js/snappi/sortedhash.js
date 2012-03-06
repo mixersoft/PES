@@ -58,7 +58,7 @@
     /*
      * class definition
      */
-    var SortedHash = function(cfg){
+    var SortedHash = function(cfg, key, value){
         /*
          * private
          */
@@ -82,6 +82,9 @@
             }];
         };
         this.init(cfg);
+        if (key) {
+	        this.add(key,value);
+        }
         return this;	// make chainable
     };    
     /*

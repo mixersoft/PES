@@ -1359,8 +1359,11 @@ ul.circle-thumb li.selected {
 .dialog-vert-select li > div.term {
 	width: 120px;
 }
-.dialog-vert-select li:hover {
+.dialog-vert-select li:hover:not(.selected) {
 	border: 2px solid gray;
+} 
+.dialog-vert-select li.selected {
+	border: 2px solid red;
 } 
 
 

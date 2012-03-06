@@ -713,15 +713,17 @@
 			} catch (e) {
 				var onDuplicate = SNAPPI.Auditions.onDuplicate_REPLACE;
 				var castingCall = cfg.castingCall || PAGE.jsonData.castingCall;
-				var auditionSH = SNAPPI.Auditions.parseCastingCall(
-						castingCall, 
-						null, 
-						null, 
-						onDuplicate);
-				cfg.batch = auditionSH;	
+				if (!castingCall.auditionSH) { 
+					var auditionSH = SNAPPI.Auditions.parseCastingCall(
+							castingCall, 
+							null, 
+							null, 
+							onDuplicate);
+					}
+				cfg.batch = castingCall.auditionSH;	
 				if (cfg.roleCount)	{
-					var max = Math.min(auditionSH.count(), cfg.roleCount.hi);
-					var min = Math.min(auditionSH.count(), cfg.roleCount.lo);
+					var max = Math.min(castingCall.auditionSH.count(), cfg.roleCount.hi);
+					var min = Math.min(castingCall.auditionSH.count(), cfg.roleCount.lo);
 					var roleCount = Math.floor(Math.random()*(max-min+1)) + min;
 console.info('Getting Story for rolecount='+roleCount);					
 					cfg.batch = cfg.batch.slice(0, roleCount);
@@ -1018,7 +1020,8 @@ console.info('Getting Story for rolecount='+roleCount);
 						SNAPPI.UIHelper.create._GET_MONTAGE();
 						_Y.one('.gallery-container').addClass('hide');
 					} else {
-						node.one('li.gallery').addClass('focus');  
+						node.one('li.gallery').addClass('focus'); 
+console.log('initializing GalleryView');						 
 					    new SNAPPI.Gallery({type:SNAPPI.STATE.galleryType});
 					    _Y.one('.montage-container').addClass('hide');
 					}				

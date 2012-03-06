@@ -29,6 +29,8 @@
 		
 		SNAPPI.ShotController = ShotController;
 		SNAPPI.shotController = new ShotController();
+		
+		SNAPPI.AssetPropertiesController = AssetPropertiesController;
 	}
 	/***************************************************************************
 	 * EditMode Static Class - Works with Settings/Edit Actions - searches for
@@ -69,7 +71,63 @@
 			});
 		}
 	};
-
+	
+	/*
+	 * placeholder, methods for calling /assets/setprop
+	 * called by: 
+	 * 	- CFG_Dialog_Select_Privacy: apply() handler
+	 */
+	AssetPropertiesController = function() {}
+	AssetPropertiesController.setPrivacy = function(batch, value, loading, callbacks){
+		// copied from Lightbox.applyPrivacyInBatch, and modified
+		var asset_ids = [];
+		batch.each(function(audition) {
+			asset_ids.push(audition.id);
+		});
+		/***********************************************************************
+		 * - cakePHP POST
+		 */
+		var uri = "/photos/setprop/.json";
+		var data = {
+			'data[Asset][privacy]' : value,
+			'data[Asset][id]' : asset_ids.join(',')
+		};
+		var args = {
+			privacy : value,
+			loadingNode: loading,
+		};
+		AssetPropertiesController.setProperties(this, uri, data, args, callbacks);		
+	} 
+	AssetPropertiesController.setProperties = function(context, uri, data, args, callbacks){
+		context = context || this;
+		var loadingNode = args.loadingNode;
+		if (loadingNode.io == undefined) {
+			var ioCfg = SNAPPI.IO.pluginIO_RespondAsJson({
+				uri: uri ,
+				parseContent:true,
+				method: 'POST',
+				qs: data,
+				dataType: 'json',
+				context: context,	
+				arguments: args, 
+				on: {
+					successJson : function(e, id, o, args) {
+						_Y.fire('snappi:set-property-complete', args);
+						var success = callbacks && callbacks.successJson || callbacks.success;
+						if (success) return success.call(this, e, args);
+						else return false;
+					}
+				}
+			});
+            loadingNode.plug(_Y.Plugin.IO, ioCfg );
+		} else {
+			loadingNode.io.set('data', data);
+			loadingNode.io.set('context', context);
+			loadingNode.io.set('uri', uri);
+			loadingNode.io.set('arguments', args);
+			loadingNode.io.start();
+        }
+	}
 
 	/*
 	 * placeholder TEMPORARY CLASS DEFINITION, relocate this functionality when

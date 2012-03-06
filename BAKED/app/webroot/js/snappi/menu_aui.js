@@ -353,8 +353,28 @@ console.log("delegateHost="+delegateHost._yuid);
 	
 	
 	
-	
 	var MenuItems = function(){}; 
+	MenuItems.confirmAuth = function(menuItem){
+		try { // authenticated
+			if (!SNAPPI.STATE.controller.userid) {
+				menuItem.addClass('disabled').set('title', 'Sign in to perform this action'); 
+				return false;	
+			} return true;
+		} catch(e){
+			return false;
+		}
+	};
+	MenuItems.authenticated_beforeShow = function(menuItem, menu){
+		try {
+			if (SNAPPI.STATE.controller.userid) {
+				menuItem.removeClass('disabled').show();
+			} else {
+				menuItem.addClass('disabled').setAttribute('title','Please sign in to access this feature.');
+			}
+		} catch(e) {
+			menuItem.addClass('disabled').setAttribute('title','Please sign in to access this feature.');
+		}
+	};
 	MenuItems.select_all_pages_beforeShow = function(menuItem, menu){
 		var target = menu.get('currentNode');	// target
 		// gallery only, not lighbox
@@ -562,6 +582,7 @@ console.log("delegateHost="+delegateHost._yuid);
 		menu.hide();
 	};	
 	MenuItems.delete_beforeShow = function(menuItem, menu){
+		if (!MenuItems.confirmAuth(menuItem)) return;
 		try {
 			var target = menu.get('currentNode'),	// target
 				enabled = true,
@@ -626,6 +647,7 @@ console.log("delegateHost="+delegateHost._yuid);
 		menu.hide();
 	};	
 	MenuItems.preview_delete_beforeShow = function(menuItem, menu){
+		if (!MenuItems.confirmAuth(menuItem)) return;
 		try {
 			var target = menu.get('currentNode'),	// target
 				enabled = true;
@@ -874,6 +896,7 @@ console.error("PreviewPhoto delete is still incomplete");
 	};
 
 	MenuItems.groupAsShot_beforeShow = function(menuItem, menu){
+		if (!MenuItems.confirmAuth(menuItem)) return;
 		var thumbnail = menu.get('currentNode');	// target
 		var g = MenuItems.getGalleryFromTarget(thumbnail);
 		try {
@@ -915,6 +938,15 @@ console.error("PreviewPhoto delete is still incomplete");
 		} catch (e) {}	
 	};	
 	
+	MenuItems.lightbox_group_as_shot_beforeShow = function(menuItem, menu){
+		if (!MenuItems.confirmAuth(menuItem)) return;
+		// from lightbox menuItem
+		var lightbox = menu.get('currentNode').ancestor('#lightbox').Lightbox;
+		if (lightbox && lightbox.getSelected()){
+			menuItem.removeClass('disabled');	
+		} else menuItem.addClass('disabled');
+		
+	}
 	MenuItems.lightbox_group_as_shot_click = function(menuItem, menu){
 		try {
 			// from lightbox menuItem
@@ -939,6 +971,7 @@ console.error("PreviewPhoto delete is still incomplete");
 	}
 	
 	MenuItems.removeFromShot_beforeShow = function(menuItem, menu){
+		if (!MenuItems.confirmAuth(menuItem)) return;
 		var thumbnail = menu.get('currentNode');	// target
 		try {
 			// check if the user has permission to groupAsShot
@@ -989,6 +1022,7 @@ console.error("PreviewPhoto delete is still incomplete");
 	};
 	
 	MenuItems.ungroupShot_beforeShow = function(menuItem, menu){
+		if (!MenuItems.confirmAuth(menuItem)) return;
 		var thumbnail = menu.get('currentNode');	// target
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		try {
@@ -1045,17 +1079,6 @@ console.error("PreviewPhoto delete is still incomplete");
 			shotType: shotType
 		});
 	};	
-	MenuItems.authenticated_beforeShow = function(menuItem, menu){
-		try {
-			if (SNAPPI.STATE.controller.userid) {
-				menuItem.removeClass('disabled').show();
-			} else {
-				menuItem.addClass('disabled').setAttribute('title','Please sign in to access this feature.');
-			}
-		} catch(e) {
-			menuItem.addClass('disabled').setAttribute('title','Please sign in to access this feature.');
-		}
-	}
 	MenuItems.create_pagegallery_click = function(menuItem, menu){
 		try {
 			var g = SNAPPI.Gallery.find['uuid-'] || SNAPPI.Gallery.find['nav-'];
@@ -1103,8 +1126,9 @@ console.error("PreviewPhoto delete is still incomplete");
 		SNAPPI.LazyLoad.extras({module_group:'alert', ready: showHint});
 		menu.hide();
 	};	
+	// what's the diff between express_upload and direct_upload
 	MenuItems.express_upload_beforeShow = function(menuItem, menu, properties){
-		// if this group is marked for express-upload, add .selected
+		if (!MenuItems.confirmAuth(menuItem)) return;
 		// if this group is marked for express-upload, add .selected
 		if (!PAGE.jsonData.expressUploadGroups) {
 			menuItem.hide();
@@ -1128,7 +1152,9 @@ console.error("PreviewPhoto delete is still incomplete");
 		SNAPPI.UIHelper.groups.isExpress(cfg);
 				// menuItem.addClass('selected');
 	};
+	// what's the diff between express_upload and direct_upload
 	MenuItems.direct_upload_beforeShow = function(menuItem, menu, properties){
+		if (!MenuItems.confirmAuth(menuItem)) return;
 		// if this group is marked for express-upload, add 
 		var controller = SNAPPI.STATE.controller;
 		if (controller.alias == 'my' 
@@ -1138,13 +1164,6 @@ console.error("PreviewPhoto delete is still incomplete");
 		} else menuItem.addClass('disabled').hide();	// disabled if not signed in 	
 	};
 	MenuItems.direct_upload_click = function(menuItem, menu, properties){
-		// try {
-			// var uuid, controller = SNAPPI.STATE.controller;
-			// var thumbnail = menu.get('currentNode');
-			// if (thumbnail.hasClass('.FigureBox')) uuid = thumbnail.get('id');
-			// else if( controller['class']=='Group' ) uuid = controller.xhrFrom.uuid;
-		// }catch(e){}
-
 		var controller = SNAPPI.STATE.controller;
 		if (controller.alias == 'my' 
 			||(controller['class'] == 'Group' && controller.action !='all') ) {
@@ -1152,28 +1171,31 @@ console.error("PreviewPhoto delete is still incomplete");
 		} 
 	};	
 	MenuItems.share_with_this_circle_beforeShow = function(menuItem, menu){
-		if (/^Groups/.test(SNAPPI.STATE.controller.name)==false) {
-			menuItem.addClass('disabled');
-		}
+		if (!MenuItems.confirmAuth(menuItem)) return;
+		try {
+			if (SNAPPI.STATE.controller.name=='Groups') {
+				menuItem.removeClass('disabled'); return;
+			} 	
+		} catch(e){}		
+		menuItem.addClass('disabled');
 	};	
 	MenuItems.share_with_this_circle_click = function(menuItem, menu, e){
+		if (!MenuItems.confirmAuth(menuItem)) return;
 		try {
 			var gid = SNAPPI.STATE.controller.xhrFrom.uuid;	
 			SNAPPI.lightbox.applyShareInBatch(gid, menuItem);
 		} catch (e) {}
 	};	
 	MenuItems.share_with_circle_beforeShow = function(menuItem, menu, e){
+		if (!MenuItems.confirmAuth(menuItem)) return;
 		try {
-			var here = (SNAPPI.STATE.controller);	
-			if (here.alias == 'my' 
-				|| (here.userid == here.xhrFrom.uuid)
-			) {
-				menuItem.removeClass('disabled');
-				return;	
-			}
+			auth = SNAPPI.STATE.controller.userid; // authenticated
+			if (auth) {
+				menuItem.removeClass('disabled'); return;	
+			} else menuItem.set('title', 'Sign in to perform this action');
 		} catch(e){}
 		menuItem.addClass('disabled');
-	},
+	};
 	MenuItems.share_with_circle_click = function(menuItem, menu, e){
 		var batch, thumbnail = menu.get('currentNode');
 		if (thumbnail.hasClass('FigureBox')) {	// from PhotoContextMenu
@@ -1239,7 +1261,15 @@ console.error("PreviewPhoto delete is still incomplete");
 		SNAPPI.setPageLoading(true);   			
 		dialog.io.start();			
 	};	
+	MenuItems.photo_privacy_beforeShow = function(menuItem, menu){
+		if (!MenuItems.confirmAuth(menuItem)) return;
+		// TODO: confirm isOwner, if this is for 1 photo
+		menuItem.removeClass('disabled');
+		// what about a selection?
+	}
 	MenuItems.photo_privacy_click = function(menuItem, menu){
+		var target = menu.get('currentNode');	// target
+		if (target.ancestor('#lightbox')) target = target.ancestor('#lightbox').Lightbox;
     		/*
     		 * create or reuse Dialog
     		 */
@@ -1247,6 +1277,7 @@ console.error("PreviewPhoto delete is still incomplete");
     		var dialog = SNAPPI.Dialog.find[dialog_ID];
     		if (!dialog) {
             	dialog = SNAPPI.Dialog.CFG[dialog_ID].load();
+            	dialog.addAttr('target', {value:target});
             	var args = {
             		dialog: dialog,
             		menu: menu
@@ -1262,12 +1293,13 @@ console.error("PreviewPhoto delete is still incomplete");
 					on: {
 						success: function(e, i,o,args) {
 							args.menu.hide();
-							// use div#settings-asset-privacy-markup
-							var parent = _Y.Node.create(o.responseText); 
-							var markup = parent.one('div#settings-asset-privacy-markup');
-							markup.removeClass('hide');
-							this.setStdModContent('body', markup);
-							_Y.fire('snappi:dialog-body-rendered', this);
+							SNAPPI.setPageLoading(false);
+							// add content
+							var parent = args.dialog.getStdModNode('body');
+							parent.setContent('<div>'+o.responseText+'</div>');
+							// multi-select listener started in Dialog.load()
+							_Y.fire('snappi:dialog-body-rendered', args.dialog);
+							var check = args.dialog.get('target');
 							return false;
 						}					
 					}
@@ -1277,15 +1309,16 @@ console.error("PreviewPhoto delete is still incomplete");
     			// dialog_ID == dialog.get('boundingBox').get('id')
     			SNAPPI.Dialog.find[dialog_ID] = dialog;
     		} else {
+				dialog.set('target', target);
     			if (!dialog.get('visible')) {
-    				dialog.setStdModContent('body','<ul />');
+    				dialog.setStdModContent('body','');
     				dialog.show();
     			}
     			dialog.set('title', 'Privacy Settings');
     		}
     		
 			// shots are NOT included. get shots via XHR and render
-			var subUri = '/combo/markup/settings';	// placeholder
+			var subUri = '/combo/markup/settings_privacy';	// placeholder
 			dialog.io.set('uri', subUri );
 			// dialog.io.set('arguments', args );
 			dialog.io.start();			
@@ -1300,6 +1333,7 @@ console.error("PreviewPhoto delete is still incomplete");
 	
 	
 	MenuItems.settings_beforeShow = function(menuItem, menu, properties){
+		if (!MenuItems.confirmAuth(menuItem)) return;
 		var target = menu.get('currentNode');
 		if (properties.isOwner) menuItem.removeClass('disabled').show();
 		else menuItem.addClass('disabled');
@@ -1337,6 +1371,7 @@ console.error("PreviewPhoto delete is still incomplete");
 		window.location.href = '/groups/invite/'+properties.id;
 	};		
 	MenuItems.unshare_from_group_beforeShow = function(menuItem, menu, properties){
+		if (!MenuItems.confirmAuth(menuItem)) return;
 		var target = menu.get('currentNode');
 		if (target.ancestor('#related-content') && SNAPPI.STATE.controller.name == 'Assets') {
 			menuItem.ancestor('.menu-item-group').removeClass('hide');
@@ -1351,6 +1386,7 @@ console.error("PreviewPhoto delete is still incomplete");
 		menu.hide();
 	};	
 	MenuItems.leave_beforeShow = function(menuItem, menu, properties){
+		if (!MenuItems.confirmAuth(menuItem)) return;
 		var target = menu.get('currentNode');
 		// TODO: check privacy/membership settings
 		if (properties.isMember && !properties.isOwner) menuItem.show();

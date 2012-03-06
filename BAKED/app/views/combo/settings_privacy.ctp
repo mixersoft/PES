@@ -1,7 +1,7 @@
-	<div id="settings-asset-privacy-markup" class="dialog-vert-select hide">
+	<div id="settings-asset-privacy-markup" class="container dialog-vert-select">
 		<p>Apply the selected Privacy Setting to each Lightbox Snap.</p>
 		<ul>
-			<li value="519">
+			<li value="519" class='selected'>
 				<div class='term'><b>Public</b></div><div>Snaps are publicly listed and visible to anyone.</div></li>
 			<li value="71">
 				<div class='term'><b>Members only</b></div><div>Snaps are NOT publicly listed, and are visible only when shared in Groups or Events, and only by Group members.</div></li>

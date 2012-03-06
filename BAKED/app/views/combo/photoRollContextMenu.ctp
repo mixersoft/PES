@@ -13,7 +13,7 @@
 		<li action='refresh'>refresh Thumbnail</li>
 		<hr>
 		<li action='share_with_circle' class='before-show' title='Share this Snap with a Circle.'>Share with Circle...</li>
-		<li action='privacy' class='disabled before-show'>Privacy...</li>
+		<li action='photo_privacy' class='disabled before-show'>Privacy...</li>
 		<hr>
 		<li action='delete' class='before-show' title='DELETE photo(s) from your Snaphappi account.'>Delete...</li>
 	</ul>

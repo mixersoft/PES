@@ -106,14 +106,14 @@
 				<input id='lbx-tag-field' class='help' type='text' size='16' maxlength='255' value='Enter tags' onclick='this.value=null; this.className=null;'>
 				<input type='submit' value='Go' class='orange'/>				
 			</li>
-			<li action='lightbox_group_as_shot'>Group as Shot</li>
+			<li action='lightbox_group_as_shot' class='before-show'>Group as Shot</li>
 		</ul>
 	</div>
 	<div id="menu-lightbox-share-markup" class="menu yui3-aui-overlaycontext-hidden hide">
 		<ul>
 			<li action='share_with_this_circle' class='before-show'>Share with this Circle</li>
-			<li action='share_with_circle'>Share with Circle...</li>
-			<li action='photo_privacy'>Privacy...</li>
+			<li action='share_with_circle' class='before-show'>Share with Circle...</li>
+			<li action='photo_privacy' class='before-show'>Privacy...</li>
 		</ul>
 	</div>	
 	<?php $this->Layout->output($this->viewVars['markup_for_layout']); ?>
