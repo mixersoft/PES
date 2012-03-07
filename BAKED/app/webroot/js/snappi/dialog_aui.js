@@ -7,7 +7,7 @@
 		SNAPPI.Alert = CFG_Dialog_Alert;
 		SNAPPI.namespace('SNAPPI.Helper');
 		SNAPPI.Helper.Dialog = DialogHelper;
-		
+		SNAPPI.Dialog.BUTTONS_OK_CANCEL = BUTTONS_OK_CANCEL;
 		Dialog.listen['body-rendered'] = _Y.on('snappi:dialog-body-rendered', function(d, cfg){
 			Dialog.refresh(d,cfg);
 		})
@@ -19,7 +19,7 @@
 			text: 'OK',
 			handler: null
 		},{
-			test: 'Cancel',
+			text: 'Cancel',
 			handler: function(){this.close();}
 		}],
 			
@@ -98,7 +98,7 @@
 		h:0, w:0,
 		center: true,
 		outerMargin: 100,	// dialog margin 
-		bodySelector: '*', 
+		bodySelector: null, 
 	};
 	Dialog.refresh = function(d, cfg){
 		cfg = _Y.merge(_default_refresh_cfg,cfg);
@@ -113,8 +113,12 @@
 			w = Math.max(w, d.getStdModNode('footer').get('offsetWidth'));
 		} catch(e){}
 		try {
-			var body_wrap = d.getStdModNode('body').one(cfg.bodySelector);
-			body_wrap.addClass('cf');  // setStyle('overflow', 'hidden');
+			var body_wrap = d.getStdModNode('body');
+			if( cfg.bodySelector )body_wrap = body_wrap.one(cfg.bodySelector);
+			else if (body_wrap.get('childNodes').size()==1 ) {
+				body_wrap = body_wrap.one('*');
+				body_wrap.addClass('cf');  // setStyle('overflow', 'hidden');
+			}
 			w = Math.max(w, cfg.minW, cfg.w, body_wrap.get('offsetWidth'));
 			w = Math.min(w, body_wrap.get('winWidth')-cfg.outerMargin); // max height limit 100
 			d.set('width', w+18);
@@ -213,12 +217,12 @@
 					var content = this.get('contentBox');
 					var selected = content.one('.selected');
 					var gid = selected.get('id');
-					var detach = _Y.on('snappi:share-complete', function(lightbox, loading, response){
+					_Y.once('snappi:share-complete', function(lightbox, loading, response){
 						// TODO: show response in msg
 						loading.loadingmask.hide();
+						this.hide();
 						SNAPPI.multiSelect.clearAll(this.get('contentBox'));
 						// update asset count in dialog
-						detach.detach();
 					}, this);
 					var options = {
 						batch: this.batch, 
@@ -237,12 +241,12 @@
 					var content = this.get('contentBox');
 					var selected = content.one('.container .FigureBox.selected');
 					var gid = selected.get('id');
-					var detach = _Y.on('snappi:share-complete', function(lightbox, loading, response){
+					_Y.once('snappi:share-complete', function(lightbox, loading, response){
 						loading.loadingmask.hide();
-						SNAPPI.multiSelect.clearAll(this.get('contentBox').one('.container'));
+						this.hide();	// hide dialog instead of clearing selection
+						// SNAPPI.multiSelect.clearAll(this.get('contentBox').one('.container'));
 						// TODO: show response in msg
 						// update asset count in dialog
-						detach.detach();
 					}, this);
 					var options = {
 						batch: this.batch, 
@@ -289,6 +293,9 @@
 					_Y.once('snappi:set-property-complete', function(args){
 						args.loadingNode.loadingmask.hide();
 					});
+					_Y.once('snappi:set-property-complete', function(){
+						this.hide();
+					}, this);
 					if (target.hasClass('FigureBox')) {
 						var selected = SNAPPI.Auditions.find(target.get('uuid'));
 						var batch = new SNAPPI.SortedHash(null, selected);
@@ -368,7 +375,9 @@
 		var alert = Dialog.find[_cfg.id];
 		if (alert) {
 			try {	// destroy existing alert box
-				alert.getStdModNode('body').setContent('');	
+				// alert.getStdModNode('body').setContent('');	
+				alert.setStdModContent('body', '');
+				alert.setStdModContent('footer', '');
 			}catch(e){}
 			for (var i in alert.listen) {
 				alert.listen[i].detach();
@@ -383,7 +392,7 @@
 			// body.setContent(_cfg.bodyNode);
 			alert.setStdModContent('body', _cfg.bodyNode);
 		} else if (_cfg.selector && _Y.one(_cfg.selector)) {
-			var markup = _Y.one(_cfg.selector).get('parentNode.innerHTML');
+			var markup = _Y.one(_cfg.selector).outerHTML();
 			if (_cfg.tokens) markup = _Y.substitute(markup, _cfg.tokens);
 			// body.setContent(markup);
 			alert.setStdModContent('body', markup);
@@ -410,9 +419,14 @@
 				on: {
 					success: _cfg.success || function(e, i, o, args) {
 						var content, markup;
+						SNAPPI.setPageLoading(false);
+						// add to #markup
+						markup = _Y.one('#markup').append(o.responseText);
+						// get added markup from #markup
+						if (args && args.cfg.selector) markup = _Y.one(args.cfg.selector);
 						if (args && args.tokens) {
-							markup = _Y.substitute(o.responseText, args.tokens);
-						} else markup = o.responseText;
+							markup = _Y.substitute(markup.outerHTML(), args.tokens);
+						} else markup = markup.outerHTML();
 						this.setStdModContent('body', markup);
 						content = this.getStdModNode('body').one('*');
 						_Y.fire('snappi:dialog-body-rendered', this);
@@ -423,8 +437,12 @@
 			};
 			ioCfg = SNAPPI.IO.getIORequestCfg(cfg.uri, ioCfg.on, ioCfg);
 			alert.plug(SNAPPI.Y.Plugin.IO, ioCfg);
+			var WAIT_FOR_XHR = true;
 		}	
-		
+		if (!WAIT_FOR_XHR){
+			_Y.fire('snappi:dialog-body-rendered', alert);
+			_Y.fire('snappi:dialog-alert-xhr-complete', alert);
+		}
 		Dialog.find[_cfg.id] = alert;		// save reference for lookup
 		return alert;		
 	}	

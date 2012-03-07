@@ -97,7 +97,35 @@
 			loadingNode: loading,
 		};
 		AssetPropertiesController.setProperties(this, uri, data, args, callbacks);		
-	} 
+	};
+	/**
+	 * called by Gallery.deleteThumbnail(), MenuItems.preview_delete_click(), via dialog
+	 * @params container _Y.Node, container for loadingmask 
+	 * @params ids Array, asset UUIDs
+	 * @params properties obj, {rating:, rotate:, }
+	 * @params actions obj, {updateBestshot:1, }
+	 */
+	AssetPropertiesController.deleteByUuid = function(container, cfg){
+		var uri = "/photos/delete/.json";
+		var postData = {
+			'data[Asset][id]' : cfg.ids,
+		};	
+		var postKey;	
+		for (var k in cfg.properties) {
+			postKey = 'data[Asset]['+k+']';
+			postData[postKey] = cfg.properties[k];
+		}		
+		for (var k in cfg.actions) {
+			postKey = 'data['+k+']';
+			postData[postKey] = cfg.actions[k];
+		}
+		var args = {
+    		loadingNode: container,
+    		uri: uri,
+    	};		
+    	context = cfg.context || container;	
+		AssetPropertiesController.setProperties(context, uri, postData, args, cfg.callbacks)
+	};
 	AssetPropertiesController.setProperties = function(context, uri, data, args, callbacks){
 		context = context || this;
 		var loadingNode = args.loadingNode;
@@ -105,6 +133,7 @@
 			var ioCfg = SNAPPI.IO.pluginIO_RespondAsJson({
 				uri: uri ,
 				parseContent:true,
+				autoLoad: false,
 				method: 'POST',
 				qs: data,
 				dataType: 'json',
@@ -119,14 +148,25 @@
 					}
 				}
 			});
+			// set loadingmask to parent
+			loadingNode.plug(_Y.LoadingMask, {
+				strings: {loading:'One moment...'}, 	// BUG: A.LoadingMask
+				target: loadingNode,
+			});    			
+			loadingNode.loadingmask._conf.data.value['target'] = loadingNode;
+			loadingNode.loadingmask.overlayMask._conf.data.value['target'] = loadingNode.loadingmask._conf.data.value['target'];
+			loadingNode.loadingmask.set('zIndex', 10);
+			loadingNode.loadingmask.overlayMask.set('zIndex', 10);			
             loadingNode.plug(_Y.Plugin.IO, ioCfg );
 		} else {
 			loadingNode.io.set('data', data);
 			loadingNode.io.set('context', context);
 			loadingNode.io.set('uri', uri);
 			loadingNode.io.set('arguments', args);
-			loadingNode.io.start();
         }
+        loadingNode.loadingmask.refreshMask();
+		loadingNode.loadingmask.show();	
+		loadingNode.io.start();
 	}
 
 	/*

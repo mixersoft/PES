@@ -612,7 +612,7 @@ console.log("delegateHost="+delegateHost._yuid);
 			menuItem.addClass('hide');
 		}
 	};	
-	MenuItems.delete_click = function(menuItem, menu){
+	MenuItems.delete_click = function(menuItem, menu, e){
 		var g, response, selected, isSelected, isContextMenu, isLightbox,
 			thumbnail = menu.get('currentNode');	// target
 		// contextmenu or selectall menu
@@ -633,18 +633,24 @@ console.log("delegateHost="+delegateHost._yuid);
 			return;
 		}
 		// single or batch operation
-		if (g && isContextMenu && e.shiftKey == false) {
-			// single select. delete 1 item
-			response = confirm('Are you sure you want to remove this Snap from your Snaphappi account?');
-			if (response)  g.deleteThumbnail(thumbnail, thumbnail);
-		} else {	// multiSelect
-			selected = g.getSelected();
-			// TODO: convert to SNAPPI.Alert()
-			response = confirm('Are you sure you want to remove ALL selected Snaps from your Snaphappi account?');
-			if (selected.count()>3 && response) response = confirm('This cannot action be undone. Are you sure you mean to DELETE '+selected.count()+' photos from Snaphappi?');
-			if (response)  g.deleteThumbnail(selected, menuItem);
-		}
+		if (g && isContextMenu && e.shiftKey) {
+			selected = g.getSelected();		// BATCH delete
+		} else selected = new SNAPPI.SortedHash(null, SNAPPI.Auditions.find(thumbnail.get('uuid')));
 		menu.hide();
+		var cfg = {
+				selector: '#markup .confirm-remove-snaps',
+				uri: '/help/markup/dialogs',
+				buttons: SNAPPI.Dialog.BUTTONS_OK_CANCEL
+			};
+		cfg.buttons[0].handler = function(e){
+			var content = this.getStdModNode('body');
+			if (!content.one('.confirm-remove-snaps')) return;	// WRONG DIALOG
+			_Y.once('snappi:set-property-complete', function(){
+				this.hide();
+			}, this);
+			g.deleteThumbnail(selected, content.one('.confirm-remove-snaps'));
+		}
+		return SNAPPI.Alert.load(cfg);
 	};	
 	MenuItems.preview_delete_beforeShow = function(menuItem, menu){
 		if (!MenuItems.confirmAuth(menuItem)) return;
@@ -653,8 +659,7 @@ console.log("delegateHost="+delegateHost._yuid);
 				enabled = true;
 			target = target.ancestor('.FigureBox');
 			var audition = SNAPPI.Auditions.find(target.uuid);
-			// TODO: add Audition.owner property to CastingCall
-			if (audition && audition.Audition.owner == SNAPPI.STATE.controller.userid) {
+			if (audition && audition.isOwner) {
 				menuItem.removeClass('hide');
 				if (enabled) menuItem.removeClass('disabled');
 				else menuItem.addClass('disabled');
@@ -667,14 +672,13 @@ console.log("delegateHost="+delegateHost._yuid);
 		// preview has no gallery association. delete directly
 		var node = menu.get('currentNode').ancestor('.FigureBox');
 		var aids = [node.uuid];
-		SNAPPI.AssetRatingController.deleteByUuid( node, {
+		SNAPPI.AssetPropertiesController.deleteByUuid( node, {
 			ids: aids.join(','), 
 			actions: {'delete':1},
-			// context: ????,
+			context: menu,
 			callbacks: {
-				successJson: function(e, i, o,args){
-					var resp = o.responseJson;
-					// remove deleted auditions
+				successJson: function(e, args){
+					menu.hide();
 					var aud,  
 						auditions = SNAPPI.Auditions._auditionSH,
 						shots = SNAPPI.Auditions._shotsSH;
@@ -686,9 +690,16 @@ console.log("delegateHost="+delegateHost._yuid);
 							shots.remove(aud.Audition.Shot.id);	
 						} catch(e) {}
 					}
-console.error("PreviewPhoto delete is still incomplete");					
-					// refresh, move focus if filmstrip is available
-					// or redirect
+					// click Next btn if gallery found
+					var g= SNAPPI.Gallery.find['nav-'] ;
+					if (g && g.container.one('.FigureBox.Photo')) {
+						SNAPPI.Factory.Thumbnail['PhotoPreview'].next.call(node, 'next', null, node);	
+					} else {
+						SNAPPI.flash.flash("Snap removed.");
+						_Y.later(2000, this, function(){
+							window.location.href = '/my/photos';
+						})
+					}
 					return false;
 				}
 			}
@@ -1229,13 +1240,14 @@ console.error("PreviewPhoto delete is still incomplete");
 				arguments: args,    					
 				on: {
 					success: function(e, i,o,args) {
-						args.menu.hide();
 						SNAPPI.setPageLoading(false);
-						// add content
-						var parent = args.dialog.getStdModNode('body');
-						parent.setContent('<div>'+o.responseText+'</div>');
+						args.dialog.batch = args.batch;		// selected thumbs to share
+						// not reusable, add content directly to dialog
+						this.setStdModContent('body', '<div>'+o.responseText+'</div>');
 						// start multi-select listener
-						var body = parent.one('.container');
+						var body = this.getStdModNode('body').one('.container');
+						var t = body.all('.FigureBox');
+						if (t.size()==1) t.item(0).addClass('selected');
 						SNAPPI.multiSelect.listen(body, true, SNAPPI.MultiSelect.singleSelectHandler);
 						_Y.fire('snappi:dialog-body-rendered', args.dialog);
 						return false;
@@ -1259,6 +1271,7 @@ console.error("PreviewPhoto delete is still incomplete");
 		dialog.io.set('uri', subUri );
 		// dialog.io.set('arguments', args ); 
 		SNAPPI.setPageLoading(true);   			
+		menu.hide();
 		dialog.io.start();			
 	};	
 	MenuItems.photo_privacy_beforeShow = function(menuItem, menu){
@@ -1270,58 +1283,58 @@ console.error("PreviewPhoto delete is still incomplete");
 	MenuItems.photo_privacy_click = function(menuItem, menu){
 		var target = menu.get('currentNode');	// target
 		if (target.ancestor('#lightbox')) target = target.ancestor('#lightbox').Lightbox;
-    		/*
-    		 * create or reuse Dialog
-    		 */
-    		var dialog_ID = 'dialog-select-privacy';
-    		var dialog = SNAPPI.Dialog.find[dialog_ID];
-    		if (!dialog) {
-            	dialog = SNAPPI.Dialog.CFG[dialog_ID].load();
-            	dialog.addAttr('target', {value:target});
-            	var args = {
-            		dialog: dialog,
-            		menu: menu
-            	}
-            	// content for dialog contentBox
-    			var ioCfg = {
-   					uri: subUri,
-					parseContent: false,
-					autoLoad: false,
-					context: dialog,
-					dataType: 'html',
-					arguments: args,    					
-					on: {
-						success: function(e, i,o,args) {
-							args.menu.hide();
-							SNAPPI.setPageLoading(false);
-							// add content
-							var parent = args.dialog.getStdModNode('body');
-							parent.setContent('<div>'+o.responseText+'</div>');
-							// multi-select listener started in Dialog.load()
-							_Y.fire('snappi:dialog-body-rendered', args.dialog);
-							var check = args.dialog.get('target');
-							return false;
-						}					
-					}
-    			};
-    			ioCfg = SNAPPI.IO.pluginIO_RespondAsJson(ioCfg);
-    			dialog.plug(_Y.Plugin.IO, ioCfg);
-    			// dialog_ID == dialog.get('boundingBox').get('id')
-    			SNAPPI.Dialog.find[dialog_ID] = dialog;
-    		} else {
-				dialog.set('target', target);
-    			if (!dialog.get('visible')) {
-    				dialog.setStdModContent('body','');
-    				dialog.show();
-    			}
-    			dialog.set('title', 'Privacy Settings');
-    		}
-    		
-			// shots are NOT included. get shots via XHR and render
-			var subUri = '/combo/markup/settings_privacy';	// placeholder
-			dialog.io.set('uri', subUri );
-			// dialog.io.set('arguments', args );
-			dialog.io.start();			
+		/*
+		 * create or reuse Dialog
+		 */
+		var dialog_ID = 'dialog-select-privacy';
+		var dialog = SNAPPI.Dialog.find[dialog_ID];
+		if (!dialog) {
+        	dialog = SNAPPI.Dialog.CFG[dialog_ID].load();
+        	dialog.addAttr('target', {value:target});
+        	var args = {
+        		dialog: dialog,
+        		menu: menu
+        	}
+        	// content for dialog contentBox
+			var ioCfg = {
+				uri: subUri,
+				parseContent: false,
+				autoLoad: false,
+				context: dialog,
+				dataType: 'html',
+				arguments: args,    					
+				on: {
+					success: function(e, i,o,args) {
+						args.menu.hide();
+						SNAPPI.setPageLoading(false);
+						// add content
+						var parent = args.dialog.getStdModNode('body');
+						parent.setContent('<div>'+o.responseText+'</div>');
+						// multi-select listener started in Dialog.load()
+						_Y.fire('snappi:dialog-body-rendered', args.dialog);
+						var check = args.dialog.get('target');
+						return false;
+					}					
+				}
+			};
+			ioCfg = SNAPPI.IO.pluginIO_RespondAsJson(ioCfg);
+			dialog.plug(_Y.Plugin.IO, ioCfg);
+			// dialog_ID == dialog.get('boundingBox').get('id')
+			SNAPPI.Dialog.find[dialog_ID] = dialog;
+		} else {
+			dialog.set('target', target);
+			if (!dialog.get('visible')) {
+				dialog.setStdModContent('body','');
+				dialog.show();
+			}
+			dialog.set('title', 'Privacy Settings');
+		}
+		
+		// shots are NOT included. get shots via XHR and render
+		var subUri = '/combo/markup/settings_privacy';	// placeholder
+		dialog.io.set('uri', subUri );
+		// dialog.io.set('arguments', args );
+		dialog.io.start();			
 	};	
 	MenuItems.uploader_setFolder_click = function(menuItem, menu){
 		var target = menu.get('currentNode');

@@ -1697,14 +1697,12 @@
 				});
 			}
 			// get gids, if any
-			SNAPPI.AssetRatingController.deleteByUuid(loadingmask || nodeOrselected, {
+			SNAPPI.AssetPropertiesController.deleteByUuid(loadingmask || nodeOrselected, {
 				ids: aids.join(','), 
 				actions: {'delete':1},
 				context: this,
 				callbacks: {
-					successJson: function(e, i, o,args){
-						var resp = o.responseJson;
-						// remove deleted auditions
+					successJson: function(e, args){
 						var aud,  
 							auditions = SNAPPI.Auditions._auditionSH,
 							shots = SNAPPI.Auditions._shotsSH;

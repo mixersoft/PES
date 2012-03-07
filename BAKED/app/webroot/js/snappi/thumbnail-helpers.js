@@ -304,43 +304,14 @@
 				}
 			}, this, g, previewBody);
 		},
-		// PhotoPreview only
 		NextPrevClick: function() {
 			return this.node.delegate('click',
 				function(e){
-					// context = article.FigureBox
 					var direction = e.currentTarget.hasClass('next') ? 'next' : 'prev';
 					var g = this.Gallery || SNAPPI.Gallery.find['nav-'];	// this.Gallery from Factory.PhotoPreview.bindSelected();
-					var type = this.Thumbnail._cfg.type;
-					// render Gallery if not rendered
-					if (g) {
-						if (!g.container.one('.FigureBox.Photo')) {
-							SNAPPI.setPageLoading(true);
-							var detach = _Y.on('snappi:gallery-render-complete', function(){
-								detach.detach();
-								ThumbnailFactory[type].next(direction, g, null);
-							})
-							var f = SNAPPI.Factory.Gallery.NavFilmstrip;
-							f.handle_setDisplayView(g, 'one-row');
-							// set PhotoPreview autoScroll listener, as necessary
-							try {
-								var isAutoScroll = e.container.one('figcaption input[type=checkbox].auto-advance').get('checked');
-								SNAPPI.Factory.Thumbnail.PhotoPreview.set_AutoScroll_RatingClick_Listener(isAutoScroll, photoPreview, g);
-							} catch (e) {}
-							return;
-						}
-						// ThumbnailFactory[type].next(direction, g, null);	
-						// next: function(direction, g, previewBody){
-						var selected, previewBody,
-							direction = direction || 'next';
-						if (direction=='prev') selected = g.auditionSH.prev();
-						else selected = g.auditionSH.next();
-						g.scrollFocus(selected);
-						parent = this.ancestor('.preview-body') || this.ancestor('.preview-zoom');
-						ThumbnailFactory[type].bindSelected(selected, parent, {gallery: g});
-					}
-				}
-            	, 'li.btn.next, li.btn.prev', this.node);			
+					// same for PhotoPreview or PhotoZoom only
+					ThumbnailFactory['PhotoPreview'].next.call(this, direction, g, this);
+				}, 'li.btn.next, li.btn.prev', this.node);			
 		},
 		RatingClick: function() {			
 			var r = this.node.one('.rating');
@@ -876,16 +847,35 @@
 				delete node.listen[listener];
 			}		
 		},
-		next: function(direction, g, previewBody){
+		// deprecated? see: listeners[]'NextPrevClick']
+		next: function(direction, g, figureBox){
+			// context = article.FigureBox
 			var selected, 
 				g = g || SNAPPI.Gallery.find['nav-'];
-			direction = direction || 'next';
+				direction = direction || 'next';
 			if (g){
+				if (!g.container.one('.FigureBox.Photo')) {
+					SNAPPI.setPageLoading(true);
+					_Y.once('snappi:gallery-render-complete', function(){
+						SNAPPI.setPageLoading(false);
+						ThumbnailFactory['PhotoPreview'].next.call(this, direction, g, this);
+					}, this);
+					var f = SNAPPI.Factory.Gallery.NavFilmstrip;
+					f.handle_setDisplayView(g, 'one-row');
+					// set PhotoPreview autoScroll listener, as necessary
+					try {
+						var isAutoScroll = e.container.one('figcaption input[type=checkbox].auto-advance').get('checked');
+						ThumbnailFactory['PhotoPreview'].set_AutoScroll_RatingClick_Listener(isAutoScroll, photoPreview, g);
+					} catch (e) {}
+					return;
+				}
+				
 				if (direction=='prev') selected = g.auditionSH.prev();
 				else selected = g.auditionSH.next();
 				g.scrollFocus(selected);
-				previewBody = previewBody || _Y.one('.FigureBox.PhotoPreview').ancestor('.preview-body');
-				ThumbnailFactory.PhotoPreview.bindSelected(selected, previewBody, {gallery: g});
+				parent = this.ancestor('.preview-body') || this.ancestor('.preview-zoom');
+				var type = this.Thumbnail._cfg.type;
+				ThumbnailFactory[type].bindSelected(selected, parent, {gallery: g});
 			}
 		},
 	};	
