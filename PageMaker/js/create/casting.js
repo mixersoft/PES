@@ -164,8 +164,10 @@
                 continue;
             }
             
-            var c = new Casting();
-            if (R.suggestedPhotoId) Aud = auditionSH.get(R.suggestedPhotoId);
+            var check_Aud, c = new Casting();
+            if (R.suggestedPhotoId) check_Aud = auditionSH.get(R.suggestedPhotoId);
+            if (check_Aud) Aud = check_Aud;
+            else console.warn("WARNING: audition was not found in arrangement JSON, id="+R.suggestedPhotoId);
             c.audition = Aud;
             c.role = R;
             c.setMinSize();
@@ -252,7 +254,7 @@
     Casting.CustomFitArrangement = function (Pr, cfg) {
     	// this is a syncronous call
     	var callback = {
-			success: function(A){
+			success: function(A, cfg){
 				var scene = null;
 				if (Pr.arrangement) scene = Casting.ChronoCast(Pr, cfg);
 				if (cfg.callback && cfg.callback.success) cfg.callback.success(scene);
@@ -269,7 +271,7 @@
 			}
 		} 
 		var cfg2 = _Y.merge(cfg, {callback:callback});
-    	PM.Catalog.getCustomFitArrangement.call(Pr, Pr, cfg.roleCount, callback);
+    	PM.Catalog.getCustomFitArrangement.call(Pr, Pr, cfg, callback);
     };
 
     /*

@@ -377,7 +377,7 @@
 		    			var d = SNAPPI.Dialog.find['dialog-alert'];
 		    			_Y.fire('snappi:dialog-body-rendered', d, {
 		    				bodySelector:'.stage-body',
-		    				outerMargin:20,
+		    				marginH:20,
 		    			});
 						try {
 		    				if (n.get('clientHeight') < node.origRect.H) {

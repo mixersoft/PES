@@ -54,15 +54,15 @@
      * 		called by Casting.CustomFitArrangement()
      * 	SYNCHRONOUS XHR
      */
-    Catalog.getCustomFitArrangement = function (Pr, roleCount, callback) {
+    Catalog.getCustomFitArrangement = function (Pr, cfg, callback) {
         /*
          * get arrangement from server, 
          * resets Plugin.production here
          */
-        var uri, auditions, baseurl, data, post_callback;
+        var uri, auditions, baseurl, data, post_callback, roleCount;
         auditions = new Array();
         uri = "/pagemaker/arrangement/.json";
-        roleCount = parseInt(roleCount);
+        roleCount = parseInt(cfg.roleCount);
         
         Pr.tryout.pmAuditionSH.some(function(o){
         	// make "simple" auditions for cluster_collage
@@ -95,6 +95,10 @@
         	'data[CastingCall][Auditions]':rawJsonAuditions,
         	'data[role_count]': auditions.length
         };
+        var args = {
+        	cfg: cfg,
+        	Pr: Pr,
+        }
         var Plugin = PM.pageMakerPlugin;
         var loadingNode = Pr.cfg.stage;
         if (loadingNode.io == undefined) {
@@ -105,16 +109,16 @@
 						qs: data,
 						dataType: 'json',
 						context: this,	
-						// arguments: args, 
+						arguments: args, 
 						// sync: true,								/* SYNCRONOUS XHR CALL */
 						timeout: 20000,
 						on: {
 							successJson:  function(e, id, o, args) {
 								if (o.responseJson.success) {
 					        		var rawA = o.responseJson.response.arrangement;
-					        		Catalog.parseCustomFitArrangement(rawA, Pr);
-					                var A = Pr.arrangement;
-					        		callback.success.call(this, A);
+					        		Catalog.parseCustomFitArrangement(rawA, args.Pr);
+					                var A = args.Pr.arrangement;
+					        		callback.success.call(this, A, args.cfg);
 					        	} else callback.failure.call(this, o);
 					        	return false;
 							},
@@ -126,10 +130,10 @@
 	        loadingNode.plug(Plugin.external_Y.Plugin.IO, ioCfg );
         } else {
         	loadingNode.loadingmask.refreshMask();
+        	loadingNode.io.set('arguments', args);
 	        loadingNode.io.set('data', data);
 			loadingNode.io.set('context', this);
 			loadingNode.io.set('uri', uri);
-			// loadingNode.io.set('arguments', args);
 			loadingNode.io.start();
         }
         _Y.fire('snappi-pm:arrangement-xhr-start', loadingNode);
