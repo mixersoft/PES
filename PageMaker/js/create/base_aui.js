@@ -687,6 +687,15 @@
 	           },
 			}
         };
+        if (hostCfg.host == 'preview.snaphappi.com' || hostCfg.snappi_minify) {
+			/* use minify
+             *   - mods, strip leading ',' from f=
+             *   - remove & delimiter, using only ,
+             */
+           
+            yuiConfig_pagemaker.comboBase = 'http://' + hostCfg.host + '/min/b=js/snappi&yuiconfig&f=';
+            yuiConfig_pagemaker.root = ',';        	
+        } 
 	    return yuiConfig_pagemaker;
 	}; 	
 	

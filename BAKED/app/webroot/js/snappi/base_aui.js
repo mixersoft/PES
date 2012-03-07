@@ -192,7 +192,7 @@
 		    },
 	    	PROD : {	// use for unix/server testing
 	    		snappi_comboBase: 'app/webroot&',
-	    		snappi_minify: 1,
+	    		snappi_minify: 0,	// auto minify for preview.snaphappi.com
 	    		air_comboBase: 'app/air&',
 	    		snappi_useCombo: 1,
 	    		pagemaker_comboBase: 'PAGEMAKER&',	// filepath, not baseurl
@@ -895,7 +895,7 @@
                 }
             }
         };
-        if (hostCfg.snappi_minify) {
+        if (hostCfg.host == 'preview.snaphappi.com' || hostCfg.snappi_minify) {
 			/* use minify
              *   - mods, strip leading ',' from f=
              *   - remove & delimiter, using only ,
@@ -929,7 +929,15 @@
 	                // },
 	            }
 	        };
-	     		
+	    if (hostCfg.host == 'preview.snaphappi.com' || hostCfg.snappi_minify) {
+			/* use minify
+             *   - mods, strip leading ',' from f=
+             *   - remove & delimiter, using only ,
+             */
+           
+            yuiConfig_gallery.comboBase = 'http://' + Config.getStaticHost(1) + '/min/b=js/gallery&yuiconfig&f=';
+            yuiConfig_gallery.root = ',';        	
+        }  		
 	    return yuiConfig_gallery;
 	};   
 	/**
