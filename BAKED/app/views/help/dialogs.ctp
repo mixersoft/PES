@@ -12,4 +12,11 @@
 			This cannot be undone.</p>
 		<div class="center"><b style="color:red;">Are you sure?</b></div>
 	</div> 
+	<div class='XXX-empty-lightbox-gallery-message'>  
+		<!-- 		not really a dialog/alert  -->
+		<div class='message blue rounded-5 wrap-v'>
+		<p>Drag selected Snaps from above into the Lightbox. 
+			Use <span class='keypress multiselect-single'>Ctrl-Click</span> or <span class='keypress'>Shift-Click</span> to select multiple Snaps.
+		</p>
+	</div></div>
 </div>

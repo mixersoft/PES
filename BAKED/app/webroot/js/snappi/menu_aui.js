@@ -806,13 +806,13 @@ console.log("delegateHost="+delegateHost._yuid);
 			uri: '/combo/markup/null',
 			height: 400,
 			width: 400,
+			skipRefresh: true,
 		};
-		var dialog = SNAPPI.Alert.load(cfg);
+		var dialog = SNAPPI.Alert.load(cfg); // don't resize yet
 		var previewBody = dialog.getStdModNode('body').one('#preview-zoom');
-		var detach = _Y.on('snappi:preview-change', 
+		_Y.once('snappi:preview-change', 
 	        	function(thumb){
 	        		if (thumb.Thumbnail._cfg.type == 'PhotoZoom' ) {
-	        			detach.detach();
 	        			_Y.fire('snappi:dialog-body-rendered', dialog);
 	        		}
 	        	}, '.FigureBox.PhotoZoom figure > img', dialog

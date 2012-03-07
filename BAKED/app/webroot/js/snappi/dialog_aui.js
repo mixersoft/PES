@@ -8,7 +8,9 @@
 		SNAPPI.namespace('SNAPPI.Helper');
 		SNAPPI.Helper.Dialog = DialogHelper;
 		SNAPPI.Dialog.BUTTONS_OK_CANCEL = BUTTONS_OK_CANCEL;
-		Dialog.listen['body-rendered'] = _Y.on('snappi:dialog-body-rendered', function(d, cfg){
+		Dialog.listen['body-rendered'] = _Y.on('snappi:dialog-body-rendered', 
+		function(d, cfg){
+			if (cfg && cfg.skipRefresh) return;
 			Dialog.refresh(d,cfg);
 		})
 		
@@ -429,8 +431,8 @@
 						} else markup = markup.outerHTML();
 						this.setStdModContent('body', markup);
 						content = this.getStdModNode('body').one('*');
-						_Y.fire('snappi:dialog-body-rendered', this);
-						_Y.fire('snappi:dialog-alert-xhr-complete', this);
+						_Y.fire('snappi:dialog-body-rendered', this, _cfg);
+						_Y.fire('snappi:dialog-alert-xhr-complete', this, _cfg);
 						return false; 
 					}					
 				}
@@ -440,8 +442,8 @@
 			var WAIT_FOR_XHR = true;
 		}	
 		if (!WAIT_FOR_XHR){
-			_Y.fire('snappi:dialog-body-rendered', alert);
-			_Y.fire('snappi:dialog-alert-xhr-complete', alert);
+			_Y.fire('snappi:dialog-body-rendered', alert, _cfg);
+			_Y.fire('snappi:dialog-alert-xhr-complete', alert, _cfg);
 		}
 		Dialog.find[_cfg.id] = alert;		// save reference for lookup
 		return alert;		
