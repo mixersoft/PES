@@ -140,7 +140,13 @@
 		<li>Join or create Circles; share Snaps; and invite your friends to do the same</li>
 		<li>Create wonderful Stories to share with your friends <img class='rounded-5 button' src="/static/img/hints/create.jpg"></li>
 		<li>Determine who can see your photos through privacy and sharing</li>
-		<li>Report a problem or post a question or comment in the Help section. <img class='rounded-5 button' src="/static/img/hints/help.jpg"></li>		
+		<li>Report a problem or post a question or comment in the Help section. 
+			<span>
+			<img class='rounded-5 button' src="/static/img/hints/help.jpg" title="Look for this button to ask for Help.">		
+			<a href="http://www.facebook.com/pages/Snaphappi/16486082015"><img src="/static/img/comingsoon/facebook_32.png" alt="Find us on Facebook" title="Find us on Facebook" /></a> 
+			<a href="http://www.twitter.com/snaphappi"><img src="/static/img/comingsoon/twitter_32.png" alt="Follow @snaphappi on Twitter" title="Follow @snaphappi on Twitter for the latest updates" /></a>	
+			</span>
+			</li>
 	</ul>
 </div>
 <div id="hint-preview-story-ratings-markup" class="hint message blue rounded-5 cf">	

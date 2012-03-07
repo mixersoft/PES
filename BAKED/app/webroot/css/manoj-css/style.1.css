@@ -2693,6 +2693,9 @@ span.info-button {
     padding: 1px 5px;
     vertical-align: top;
 }
+span.align-preview-icons > a > img {
+	margin-top: -12px;
+}
 
 
 #dialog-alert .aui-dialog-hd .toolbar {

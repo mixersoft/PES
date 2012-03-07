@@ -177,6 +177,7 @@
     var _defaultCfg = {
     	align:  { points: [ 'bl', 'tr' ] },
     	constrain: true,
+    	hideDelay: 5000,
     }
     var _bodyMarkup = {
     	'close': "<span class='close btn white right'>X</span>",
@@ -223,6 +224,7 @@
      */ 
     var _setHintBodyByTriggerNode = function(hint, node, anyTrigger, dryrun){
     	node = node || hint.get('currentNode');
+    	if (!node) anyTrigger = true;
     	var trigger, current, 
     		sh = SNAPPI.Hint.lookupHintByTriggerSH;
     	var found, 
@@ -239,7 +241,7 @@
     		
 		for (var j in triggerSelectors) {
 			var validSelector = anyTrigger ? _Y.one(triggerSelectors[j]) : false;
-    		if ((validSelector || node.test(triggerSelectors[j])) 
+    		if ((validSelector || (node && node.test(triggerSelectors[j]))) 
     			&& (found = _getHintMarkupFromTriggerSH(triggerSelectors[j], anyTrigger))
     		){
     			// found == Hint.active
@@ -383,10 +385,17 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 			h.set('trigger', h.triggers.join(',') );
 			_sleep_status.count = _sleep_status['time'] = 0;
 			if (_sleep_status.later) _sleep_status.later.cancel();
-			_sleep_status.later = null;
-console.log('force awake');				
+			_sleep_status.later = false;
+			h.set('hideDelay', 10000);
+			h.set('showDelay', 0);
+console.log('force awake, triggers='+h.triggers.join(','));				
 			return;
 		}
+		if (_sleep_status.later===false) {
+console.log('show all tips. cancel sleep');			
+			return;	// cancel for this page.
+		}
+		
 		secs = mins*60*1000;
 		if ( secs < _sleep_status['time']) return;	// already sleeping
 		
@@ -432,10 +441,12 @@ console.log("sleep for sec="+_sleep_status['time'])	;
 	var _handle_ShowAllTips = function(e){
 		// context: hint
 		e.halt();
-		if (false && Hint.anyTrigger) {
+		if (Hint.anyTrigger) {
 			Hint.anyTrigger = false;
 			this.hide();
+			_sleep_status.later = null;
 			e.currentTarget.setContent('Show All Tips');
+			SNAPPI.UIHelper.nav.showHelp();
 		} else {
 			Hint.anyTrigger = true;
 			_sleepHints(false);
@@ -443,7 +454,7 @@ console.log("sleep for sec="+_sleep_status['time'])	;
 			Hint.doNotShow = {}
 			SNAPPI.Hint.flushQueue();		// if Hint already available
 			// reset button
-			// e.currentTarget.setContent('Hide Tips');
+			e.currentTarget.setContent('Hide Tips');
 			SNAPPI.UIHelper.nav.showHelp();
 		}
 	}
