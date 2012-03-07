@@ -373,6 +373,11 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 			this.clearIntervals();
 		};
 	}
+	var _handle_MenuDialogVisible = function(o, visible) {
+		Hint.instance.set('disabled', visible ? true : false);
+		if (visible) Hint.instance.hide();
+		var check;
+	}
 	
 	/*
 	 * sleep timer for hints on hide() or close
@@ -388,11 +393,11 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 			_sleep_status.later = false;
 			h.set('hideDelay', 10000);
 			h.set('showDelay', 0);
-console.log('force awake, triggers='+h.triggers.join(','));				
+// console.log('force awake, triggers='+h.triggers.join(','));				
 			return;
 		}
 		if (_sleep_status.later===false) {
-console.log('show all tips. cancel sleep');			
+// console.log('showing all tips. cancel sleep');			
 			return;	// cancel for this page.
 		}
 		
@@ -407,11 +412,11 @@ console.log('show all tips. cancel sleep');
 				h.set('trigger', h.triggers.join(',') );
 				_sleep_status['time'] = 0;
 				_sleep_status.later = null;
-console.log('awake');				
+// console.log('awake');				
 			}	
 		);
 		h.set('trigger', '#blackhole');
-console.log("sleep for sec="+_sleep_status['time'])	;	
+// console.log("sleep for sec="+_sleep_status['time'])	;	
 	};
 	var _handle_Close = function(e, contentBox){
 		try {		// context: this = hint or ToolTip
@@ -537,6 +542,8 @@ console.log("sleep for sec="+_sleep_status['time'])	;
     		hint.listen['any-click'] = _Y.on('click', _handle_clickOutside, null, hint);
     		hint.listen['any-contextmenu'] = _Y.on('contextmenu', _handle_clickOutside, null, hint);
     		hint.listen['show-all-tips'] = _Y.on('click', _handle_ShowAllTips , 'section.help li.btn.show-all-tips', hint);
+    		hint.listen['menu-visible'] = _Y.on('snappi:menu-visible', _handle_MenuDialogVisible, null, hint);
+    		hint.listen['dialog-visible'] = _Y.on('snappi:dialog-visible', _handle_MenuDialogVisible, null, hint);
     		/*
     		 * override refreshAlign(), called by show() method
     		 */

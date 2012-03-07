@@ -179,17 +179,22 @@
 		if (cfg.currentTarget) {
 			if (sticky) menu.set('trigger', TRIGGER);	// 'sticky' trigger
 			menu._stashTrigger = TRIGGER;
-			menu.on('visibleChange',
-				function(e){
-					if (e.newVal == false && e.prevVal== true) {
+		}
+		menu.on('visibleChange',
+			function(e){
+				if (e.newVal == true && e.prevVal== false) {
+					_Y.fire('snappi:menu-visible', menu, true);
+				} else if (e.newVal == false && e.prevVal== true) {
+					_Y.fire('snappi:menu-visible', menu, false);
+					if (_cfg.currentTarget) {  // closure
 						// disable contextmenu for menu.onHide
 						if (sticky) return;		// TODO: set up sticky in contextmenu
 						e.target.disable();
 						e.target.set('trigger', '#blackhole');
 					}
-				}
-			, menu);
-		}
+				}					
+			}
+		, menu);
 		if (!menu.get('disabled')) Menu.startListener(menu, cfg.handle_click );
 		
 		// lookup reference
@@ -225,7 +230,7 @@
 			menu.set('trigger', trigger);			// 'startup/disabled' trigger
 			menu.show();
 			// TODO: add checkbox for sticky
-			if (sticky) {
+			if (typeof sticky !== 'undefined') {
 				menu.set('trigger', menu._stashTrigger); 		// 'enabled' trigger
 			}
 		} else {
