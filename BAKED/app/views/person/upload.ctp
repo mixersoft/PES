@@ -84,10 +84,23 @@ var initOnce = function() {
 			});  
 			var check;  
 		},
-//		onComplete:null,
+		onComplete:function(){
+			var LLcfg = {
+					module_group: 'alert',
+					ready: function(){
+						var cfg = {
+							selector: '#markup .alert-upload-complete',
+							uri: '/help/markup/dialogs',
+						};
+						SNAPPI.Alert.load(cfg);
+					},
+				}
+			SNAPPI.LazyLoad.extras(LLcfg);
+		},
 		end: null
 	}); 
 	/**
+	 * TODO: change to DialogAlert()
 	 * get group_ids of groups for express upload/sharing
 	 * @return String, comma delim string of group_ids
 	 */
