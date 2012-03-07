@@ -387,8 +387,14 @@
 			}
 		}
 		alert = new _Y.Dialog(_cfg).render();
+		_Y.fire('snappi:dialog-visible', alert, true);
 		alert.listen = {};
-			
+		alert.once('close',
+			function(e){
+				_Y.fire('snappi:dialog-visible', alert, false);
+			}
+		, alert);
+					
 		var body = alert.getStdModNode('body');
 		if (_cfg.bodyNode) {
 			// body.setContent(_cfg.bodyNode);

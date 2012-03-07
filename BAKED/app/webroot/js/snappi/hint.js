@@ -374,6 +374,7 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 		};
 	}
 	var _handle_MenuDialogVisible = function(o, visible) {
+		// TODO: what is both menu & dialog visible, then one is hidden?
 		Hint.instance.set('disabled', visible ? true : false);
 		if (visible) Hint.instance.hide();
 		var check;
