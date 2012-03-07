@@ -179,6 +179,7 @@
 	var _CFG = {		// frequently used startup Config params 
 			DEBUG : {	// default when hostname==git*
 	    		snappi_comboBase: 'baked/app/webroot&',
+	    		snappi_minify: 1,
 	    		air_comboBase: 'app/air&',
 	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
 	    		pagemaker_comboBase: 'PageMaker&',	// filepath, not baseurl
@@ -191,6 +192,7 @@
 		    },
 	    	PROD : {	// use for unix/server testing
 	    		snappi_comboBase: 'app/webroot&',
+	    		snappi_minify: 1,
 	    		air_comboBase: 'app/air&',
 	    		snappi_useCombo: 1,
 	    		pagemaker_comboBase: 'PAGEMAKER&',	// filepath, not baseurl
@@ -893,6 +895,15 @@
                 }
             }
         };
+        if (hostCfg.snappi_minify) {
+			/* use minify
+             *   - mods, strip leading ',' from f=
+             *   - remove & delimiter, using only ,
+             */
+           
+            yuiConfig_snappi.comboBase = 'http://' + hostCfg.host + '/min/b=js/snappi&yuiconfig&f=';
+            yuiConfig_snappi.root = ',';        	
+        } 
 	    return yuiConfig_snappi;
 	};
 	/**

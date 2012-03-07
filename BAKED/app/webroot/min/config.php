@@ -30,7 +30,7 @@ $min_errorLogger = false;
  * In 'debug' mode, Minify combines files with no minification and adds comments
  * to indicate line #s of the original files.
  */
-$min_allowDebugFlag = false;
+$min_allowDebugFlag = true;
 
 
 /**
@@ -65,8 +65,8 @@ $min_enableBuilder = true;
  * If /min/ is directly inside your document root, just uncomment the 
  * second line. The third line might work on some Apache servers.
  */
-$min_documentRoot = '';
-//$min_documentRoot = substr(__FILE__, 0, -15);
+// $min_documentRoot = '';
+$min_documentRoot = substr(__FILE__, 0, -15);
 //$min_documentRoot = $_SERVER['SUBDOMAIN_DOCUMENT_ROOT'];
 
 
@@ -120,7 +120,7 @@ $min_serveOptions['minifiers']['application/x-javascript'] = 'closureCompiler';
  * 
  * // = shortcut for DOCUMENT_ROOT 
  */
-//$min_serveOptions['minApp']['allowDirs'] = array('//js', '//css');
+$min_serveOptions['minApp']['allowDirs'] = array('//js', '//css', '//static');
 
 /**
  * Set to true to disable the "f" GET parameter for specifying files.

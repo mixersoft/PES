@@ -91,6 +91,24 @@ class Minify {
             self::$_cache = $cache;
         }
     }
+	/**
+	 * translate from yuiConfig combo load string
+	 * to use, add '&yuiconfig' to the Minify string
+	 */
+    public static function transformYuiConfig() {
+    	$f = array();
+    	foreach (array_keys($_GET) as $file) {
+    		if (strpos($file, ',') === 0 || $file == 'f') {
+    			if ($file == 'f') $file = $_GET['f'];
+    			$filename = substr($file, 1);
+				$filename = str_replace('_js', '.js', $filename);
+				if ($file == 'f') array_unshift($f, $filename);
+				else array_push($f, $filename);
+				if ($file !== 'f') unset($_GET[$file]);
+    		}
+    	}
+		$_GET['f'] = implode(',',$f);
+    }
     
     /**
      * Serve a request for a minified file. 
@@ -165,12 +183,19 @@ class Minify {
      * with keys "success" (bool), "statusCode" (int), "content" (string), and
      * "headers" (array).
      */
+    
     public static function serve($controller, $options = array())
     {
         if (! self::$isDocRootSet && 0 === stripos(PHP_OS, 'win')) {
             self::setDocRoot();
         }
-
+		
+		/*
+		 * translate from yuiConfig combo load string
+		 */ 
+		if (isset($_GET['yuiconfig'])) Minify::transformYuiConfig();
+		
+		
         if (is_string($controller)) {
             // make $controller into object
             $class = 'Minify_Controller_' . $controller;
