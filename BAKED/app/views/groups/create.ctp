@@ -23,13 +23,10 @@ PAGE.saveChoice = function(o) {
 </script>
 <?php
 	$this->Layout->blockStart('itemHeader');
-		$type = 'Circle'; // Group Event Wedding
-		$badge_src = Stagehand::getSrc(null, 'sq', $type);
-		echo $this->element('nav/section', 
-			array('badge_src'=>$badge_src,
-				// 'classLabel'=>$type,
-				'label'=>"Create a New {$type}",
-		));
+		$classLabel = 'Circle'; // Group Event Wedding
+		$badge_src=Stagehand::$default_badges[$classLabel];
+		$label = "Create a New {$type}";
+		echo $this->element('nav/section', compact('badge_src', 'label', 'classLabel') );
 	$this->Layout->blockEnd();
 ?>
 <div class="groups view ">

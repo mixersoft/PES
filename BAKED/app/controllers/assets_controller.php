@@ -345,6 +345,15 @@ class AssetsController extends AppController {
 		$this->getLookups(array('Users'=> array_keys(Set::combine($pageData, '/owner_id', ''))));
 		$done = $this->renderXHRByRequest('json', '/elements/photo/roll');
 		if ($done) return;
+		$options = array(
+			'permissionable'=>false,
+			'recursive'=>-1,
+			'showEdits'=>false,
+			'join_shots'=>false, 
+			'show_hidden_shots'=>true,
+		);
+		$ownerCount = $this->Asset->find('count', $options);
+		$this->set(compact('ownerCount'));
 		// or autoRender
 		$this->action='index';  
 	}

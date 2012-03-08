@@ -18,6 +18,7 @@ if (isset($passedArgs['rating'])) {
 	$state['showRatings']='show';
 	$state['showDisplayOptions'] = 1;
 }
+// debug($data);
 $this->viewVars['jsonData']['STATE'] = $state;
 
 $THUMBSIZE = isset($passedArgs['thumbSize']) ?  $passedArgs['thumbSize'] : 'lm';
@@ -95,8 +96,8 @@ $THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 	<div class='gallery-container' >
 		<?php 
 			if ($isWide) {
-				echo $this->element('/photo/header-wide', compact('total', 'isPreview', 'state'));
-			} else echo $this->element('/photo/header', compact('total', 'isPreview', 'state'));
+				echo $this->element('/photo/header-wide', compact('total', 'ownerCount', 'isPreview', 'state'));
+			} else echo $this->element('/photo/header', compact('total', 'ownerCount', 'isPreview', 'state'));
 		?>
 		<section class="<?php if ($isWide) echo "wide "; ?>gallery photo container_16">
 			<div class='container grid_16'></div>

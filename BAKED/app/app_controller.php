@@ -2,7 +2,7 @@
 
 class AppController extends Controller {
 
-	public $scaffold;
+	public $scaffold = false;
 //	public $layout = 'default';
 	public $layout = 'snappi';
 	public $components = array(
@@ -383,7 +383,9 @@ class AppController extends Controller {
 		Configure::write('passedArgs.min', array_diff_key($this->passedArgs, array_flip(array('perpage', 'page', 'sort', 'direction', 'filter'))));
 		// use Stagehand Static class to manage staged content and object badges
 		Stagehand::$default_badges = Configure::read('path.default_badges');
-		Stagehand::$stage_baseurl =  '/'.Configure::read('path.stageroot.httpAlias').'/';
+		$root = Configure::read('path.stageroot');
+		Stagehand::$stage_baseurl =  "/{$root['httpAlias']}/";
+		Stagehand::$stage_basepath = $root['basepath'];
 		
 		// $this->viewVars['jsonData']['named'] = $this->params['named'];
 	}

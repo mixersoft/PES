@@ -3,7 +3,8 @@
 		// $photostreams = $this->Html->link('Photostream', $this->passedArgs + array('action'=>'photostreams'));
 		// echo "<p>Show as {$photostreams}</p>\n";
 		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
-		echo $this->element('/photo/roll', compact('badge_src'));
+		$ownerCount = $data['Group']['assets_group_count'];
+		echo $this->element('/photo/roll', compact('badge_src', 'ownerCount'));
 	?>
 </div>
 <?php	// tagCloud
@@ -19,7 +20,7 @@
 				<h1>Snap Gallery</h1>
 				<p>You must be a member of this Circle to see these Snaps from this Group.
 				Join this Circle to share Snaps, Stories, and more with other members.</p>
-				<ul class='inline' ><li class='btn orange rounded-5'><a href='/groups/join/<?php echo AppController::$uuid; ?>'>Join now.<a></li></ul>
+				<ul class='inline' ><li class='btn orange rounded-5'><a href='/groups/join/<?php echo AppController::$uuid; ?>'>Join now<a></li></ul>
 			</div></div>
 <?php 	$this->Layout->blockEnd(); } ?>	
 <script type="text/javascript">

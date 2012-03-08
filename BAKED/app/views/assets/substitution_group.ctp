@@ -3,7 +3,7 @@
 if (empty($this->passedArgs['wide'])) {
 	$this->Layout->blockStart('itemHeader');
 		$badge_src = Stagehand::getSrc($data['Asset']['src_thumbnail'], 'sq');
-		echo $this->element('nav/section', array('badge_src'=>$badge_src));
+		echo $this->element('nav/section', compact('badge_src'));
 	$this->Layout->blockEnd();
 }
 ?>

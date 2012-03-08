@@ -1,10 +1,8 @@
 <?php
 if (empty($this->passedArgs['wide'])) {
 	$this->Layout->blockStart('itemHeader');
-		$badge_src = Stagehand::getSrc(null, 'sq', 'Circle');
-		echo $this->element('nav/section', 
-			array('badge_src'=>$badge_src,
-		));
+		$badge_src=Stagehand::$default_badges['Circle'];
+		echo $this->element('nav/section', compact('badge_src'));
 	$this->Layout->blockEnd();	
 }	
 ?>

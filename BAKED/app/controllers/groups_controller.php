@@ -662,7 +662,7 @@ LIMIT 5;";
 									'Asset.batchId'=>$batch['Asset']['batchId'],
 				),
 				'order'=>'Asset.dateTaken',
-				'noEdit'=>true,
+				'show_edits'=>false,
 				'permissionable'=>false,
 				'recursive'=>-1,
 			);

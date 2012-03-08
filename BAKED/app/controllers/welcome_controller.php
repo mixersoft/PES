@@ -31,6 +31,7 @@ class WelcomeController extends AppController {
 	}
 	
 	function index() {
+		$this->redirect(array('action'=>'preview', 'show'));
 	}
 
 	function home() {

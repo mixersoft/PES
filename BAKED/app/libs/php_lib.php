@@ -360,6 +360,7 @@ function indexRename($fileOrFolder) {
 class Stagehand {
 	public static $default_badges =  null;	// set to Configure::read('path.default_badges')
 	public static $stage_baseurl = null;
+	public static $stage_basepath = null;
 	/*
 	 * uses size prefixing via autorender
 	 */

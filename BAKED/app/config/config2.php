@@ -147,11 +147,12 @@ switch ($config['Config.os']) {
 
 $config['path']['default_badges'] = array(
 	'Asset'=>'/static/img/css-gui/snappi.png',
-	'person'=>'/static/img/css-gui/snappi.png',
+	'Person'=>'/static/img/css-gui/snappi.png',
 	'Circle'=>'/static/img/css-gui/snappi.png',
 	'Group'=>'/static/img/css-gui/snappi.png',
 	'Event'=>'/static/img/css-gui/snappi.png',
 	'Wedding'=>'/static/img/css-gui/snappi.png',
+	'Tag'=>'/static/img/css-gui/snappi.png',
 );
 
 switch (env('SERVER_NAME')) {

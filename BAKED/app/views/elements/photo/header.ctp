@@ -13,7 +13,7 @@
 	);
 	$xhrFrom = Configure::read('controller.xhrFrom');
 	$passedArgs = Configure::read('passedArgs.min');
-	
+	if (isset($ownerCount) && $ownerCount !== $total) $total = "{$total}/{$ownerCount}";	
 	$tokens['total'] = $total; 
 	if (in_array(Configure::read('controller.class'), array('User', 'Group', 'Tag'))) {
 		if ($xhrFrom['alias'] == 'my') $xhrFrom['uuid'] = null;
@@ -44,14 +44,14 @@
 <?php  if ($isPreview) { ?>
 	
 	<ul class="toolbar inline grid_3">
-		<li class='blue label'><h1><?php echo $header_content;  ?></h1></li>
+		<li class='blue label' title='You may not have permission to see all Snaps'><h1><?php echo $header_content;  ?></h1></li>
 	</ul>	
 
 <?php  } else { ?>
 	
 	<ul class="toolbar inline grid_3">
 		<li class="btn white select-all"><span class="menu-open"><input type="checkbox" value="" name=""></span></li>
-		<li class='btn orange snap-count'><?php echo $btn_snaps; ?></li>
+		<li class='btn orange snap-count' title='You may not have permission to see all Snaps'><?php echo $btn_snaps; ?></li>
 	</ul>	
 <?php  } ?>
     <nav class="settings window-options push_6 grid_7">

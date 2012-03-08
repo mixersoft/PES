@@ -28,11 +28,9 @@
 	
 	$this->Layout->blockStart('itemHeader');
 		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
-		echo $this->element('nav/section', 
-			array('badge_src'=>$badge_src,
-				'classLabel'=>$data['Group']['type'],
-				'label'=>$data['Group']['title'],
-		));
+		$classLabel = $data['Group']['type'];
+		$label = $data['Group']['title'];
+		echo $this->element('nav/section', compact('badge_src', 'classLabel', 'label'));
 ?>
 <div class="properties hide container_16">	
 	<dl class="grid_16">

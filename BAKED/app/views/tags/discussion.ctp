@@ -1,6 +1,7 @@
 <?php 
 	$this->Layout->blockStart('itemHeader');
-		echo $this->element('nav/section', array('badge_src'=>null)); 
+		$badge_src=Stagehand::$default_badges['Tag'];
+		echo $this->element('nav/section', compact('badge_src')); 
 	$this->Layout->blockEnd();	
 ?>
 <div id='paging-comments' class="paging-content placeholder">

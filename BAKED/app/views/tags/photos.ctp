@@ -1,7 +1,9 @@
 <?php
+$ownerCount = $data['Tag']['tagged_count'];
+$badge_src=Stagehand::$default_badges['Tag'];
 if (empty($this->passedArgs['wide'])) {
 	$this->Layout->blockStart('itemHeader');
-		echo $this->element('nav/section', array('badge_src'=>null)); 
+		echo $this->element('nav/section', compact('badge_src'));
 ?>
 <div class="properties hide container_16">
 	<dl class="grid_16">
@@ -52,7 +54,7 @@ if (empty($this->passedArgs['wide'])) {
 <div class="tags photos">
 	<p>Show as <?php echo $this->Html->link('Photostream', $this->passedArgs + array('action'=>'photostreams') );?>
 	</p>	
-	<?php echo $this->element('/photo/roll');?>
+	<?php echo $this->element('/photo/roll', compact('badge_src', 'ownerCount'));?>
 </div>
 
 <?php $this->Layout->blockStart('relatedContent');?>

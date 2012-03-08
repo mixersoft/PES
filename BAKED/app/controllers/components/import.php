@@ -109,8 +109,20 @@ class ImportComponent extends Object
 	 * @return array
 	 */
 	
-
-
+	/**
+	 * hack for incorrect getMeta call
+	 */
+	function fixRootImagesize($src){
+		$path = Stagehand::$stage_basepath.DS.$src['root'];
+		if (!file_exists($path)) {
+			$this->log("WARNING: missing img file, (note: >1M not copied to dev) path={$path}");
+			return array('imageWidth'=>null, 'imageHeight'=>null);
+		}
+$this->log("WARNING: missing exif[root][imageSize], (see castingCall), path={$path}");		
+		$getimagesize = getimagesize($path);
+		list($imageWidth, $imageHeight, $type, $attr) = $getimagesize;
+		return compact('imageWidth', 'imageHeight');
+	}
 	/**
 	 * 	Get exif and iptc meta data for image file,
 	 * 		get imageWidth, imageHeight at the very minimum

@@ -2,11 +2,9 @@
 if (empty($this->passedArgs['wide'])) {
 	$this->Layout->blockStart('itemHeader');
 		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
-		echo $this->element('nav/section', 
-			array('badge_src'=>$badge_src,
-				'classLabel'=>$data['Group']['type'],
-				'label'=>$data['Group']['title'],
-		));
+		$classLabel = $data['Group']['type'];
+		$label = $data['Group']['title'];
+		echo $this->element('nav/section', compact('badge_src', 'classLabel', 'label'));
 ?>
 <div class="properties hide container_16">	
 	<dl class="grid_16">
@@ -75,7 +73,7 @@ if (empty($this->passedArgs['wide'])) {
 				<h1>Snap Gallery</h1>
 				<p>You must be a member of this Circle to see these Snaps from this Group.
 				Join this Circle to share Snaps, Stories, and more with other members.</p>
-				<ul class='inline' ><li class='btn orange rounded-5'><a href='/groups/join/<?php echo AppController::$uuid; ?>'>Join now.<a></li></ul>
+				<ul class='inline' ><li class='btn orange rounded-5'><a href='/groups/join/<?php echo AppController::$uuid; ?>'>Join now<a></li></ul>
 			</div></div>
 <?php 	$this->Layout->blockEnd(); } ?>	
 

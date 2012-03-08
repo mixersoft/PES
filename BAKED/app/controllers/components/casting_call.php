@@ -140,8 +140,8 @@ class CastingCallComponent extends Object {
 		if (isset($src['orig']))	$origSrc= $src['orig'];
 		if (isset($exif['root'])) { 	// $exif['root'] set in component/import.php
 if (!isset($exif['root']['imageWidth'])) {
-	debug("Problem with id={$id}");
-	debug($exif['root']);
+	if (!isset($this->Import)) $this->Import = loadComponent('Import', $this);
+	$exif['root'] = array_merge( $exif['root'], $this->Import->fixRootImagesize($src));	
 }		
 			$W = $exif['root']['imageWidth'];
 			$H = $exif['root']['imageHeight'];

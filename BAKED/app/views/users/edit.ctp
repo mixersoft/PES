@@ -1,5 +1,8 @@
 <?php 
-	echo $this->element('nav/section', array('icon_src'=>$data['User']['src_thumbnail']));
+	$this->Layout->blockStart('itemHeader');
+		$icon_src = $badge_src = $data['User']['src_thumbnail'];
+		echo $this->element('nav/section', compact('badge_src', 'icon_src'));
+	$this->Layout->blockEnd();
 ?>
 <div class="users form">
 	<h2><?php printf(__('Edit %s', true), __('My Settings', true)); ?></h2>

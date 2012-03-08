@@ -1,5 +1,6 @@
 <?php
-echo $this->element('nav/section', array('icon_src'=>$data['Group']['src_thumbnail']));
+		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
+		echo $this->element('nav/section', compact('badge_src'));
 ?>
 <div class="groups view main-div placeholder">
 	<div id='fields' class="setting  tab-panel">
