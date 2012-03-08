@@ -109,7 +109,7 @@ $this->Layout->blockStart('itemHeader'); ?>
 				});		
 			}
 			SNAPPI.setPageLoading(true);
-			window.location.href = '/';
+			window.location.href = '/photos/all';
 		}, 'button.continue');
 		
 		// get Montage

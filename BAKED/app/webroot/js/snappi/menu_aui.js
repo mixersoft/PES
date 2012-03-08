@@ -1112,35 +1112,37 @@ console.log("delegateHost="+delegateHost._yuid);
 				try {
 					SNAPPI.UIHelper.create.load_then_launch_PageMaker();	
 				}catch (e) {}
-				return;
+			} else { // nothing selected
+				// if NOT launched, then show create new story help if nothing is selected(?)
+				var showHint = function(){
+					var next = '';
+					if (!g) {	// no gallery, redirect to page
+						var auth = SNAPPI.STATE.controller.userid; // authenticated
+						var target = auth ? '/my/photos' : '/photos/all';
+						next = '<div class="center"><a href="'+target+'"><button class="continue orange" type="submit">Show me some Snaps!</button></a></div><br />'
+					}			
+					// gallery found, but nothing selected, show MultiSelect help
+					var cfg = {
+						// markup: "<div id='preview-zoom'></div>",
+						selector: '#hint-new-story',
+						uri: '/help/markup/hint_NewStory',
+						width: 600,
+						addToMarkup: true,
+						tokens: {
+							next: next
+						}
+					};
+					var dialog = SNAPPI.Alert.load(cfg);
+					var detach = _Y.on('snappi:dialog-alert-xhr-complete', function(d){
+						detach.detach();
+						SNAPPI.util.setForMacintosh(d.getStdModNode('body'));
+					});	
+				}
+				SNAPPI.LazyLoad.extras({module_group:'alert', ready: showHint});
 			}
 		} catch(e) {	}
-		var showHint = function(){
-			var next = '';
-			if (!g) {	// no gallery, redirect to page
-				var auth = SNAPPI.STATE.controller.userid; // authenticated
-				var target = auth ? '/my/photos' : '/photos/all';
-				next = '<div class="center"><a href="'+target+'"><button class="continue orange" type="submit">Show me some Snaps!</button></a></div><br />'
-			}			
-			// gallery found, but nothing selected, show MultiSelect help
-			var cfg = {
-				// markup: "<div id='preview-zoom'></div>",
-				selector: '#hint-new-story',
-				uri: '/help/markup/hint_NewStory',
-				width: 600,
-				addToMarkup: true,
-				tokens: {
-					next: next
-				}
-			};
-			var dialog = SNAPPI.Alert.load(cfg);
-			var detach = _Y.on('snappi:dialog-alert-xhr-complete', function(d){
-				detach.detach();
-				SNAPPI.util.setForMacintosh(d.getStdModNode('body'));
-			});	
-		}
-		SNAPPI.LazyLoad.extras({module_group:'alert', ready: showHint});
 		menu.hide();
+		return;
 	};	
 	// what's the diff between express_upload and direct_upload
 	MenuItems.express_upload_beforeShow = function(menuItem, menu, properties){

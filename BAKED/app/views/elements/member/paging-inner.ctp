@@ -45,7 +45,7 @@ $PREVIEW_LIMIT = $isPreview ? 6 : false;
 				$fields['last_login'] = "last visit: {$this->Time->timeAgoInWords($member['last_login'])}";
 				$link_options['title'] = $fields['title'];
 				// $fields['ownerLink'] = $this->Html->link($fields['trim_owner'], "/person/home/{$member['id']}", $link_options );
-				$fields['src_icon'] =  Stagehand::getSrc($member['src_thumbnail'], $THUMBSIZE, 'person');
+				$fields['src_icon'] =  Stagehand::getSrc($member['src_thumbnail'], $THUMBSIZE, 'Person');
 				$controllerAlias = Configure::read('controller.action');
 				
 				$options = array('plugin'=>'','controller'=>'person', $member['id']);

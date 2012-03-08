@@ -29,7 +29,7 @@ Router::connect('/tags/:action/*', array('plugin'=>'tags', 'controller'=>'tags')
 Router::connect('/comments/:action/*', array('plugin'=>'comments', 'controller'=>'comments'));
 Router::connect('/users/:action/*', array('plugin'=>'', 'controller'=>'users'));
 //Router::connect('/photos', array('controller'=>'assets'));  // for photos/all only
-//Router::connect('/photos/:action/*', array('controller'=>'assets'));
+Router::connect('/snaps/:action/*', array('controller'=>'assets'));
 
 
 // my routing

@@ -94,7 +94,7 @@ class PagesController extends AppController {
 	}
 
 	function index() {
-		$no_controller_redirect = '/groups/all';
+		$no_controller_redirect = '/welcome/preview/show';
 		$this->redirect($no_controller_redirect); 	
 	}
 	

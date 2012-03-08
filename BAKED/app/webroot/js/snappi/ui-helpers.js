@@ -361,6 +361,7 @@
     			}
     		}
     		dialog = SNAPPI.Alert.load(dialogCfg);
+    		
     		var stageTitle = cfg.stageTitle || 'Create Story'; 
     		dialog.setStdModContent('header', '<span>'+stageTitle+'</span>', 'before');
     		stage = dialog.getStdModNode('body').one('#stage-2');
@@ -385,6 +386,14 @@
 		    				}	
 		    			} catch(e){}
 		    			SNAPPI.setPageLoading(false);
+		    			try {
+		    				/* re-enable hints for PM, disabled on dialog/menu show */
+				    		var hint = SNAPPI.Hint.instance;
+				    		hint.set('disabled', false);
+				    		hint.set('trigger', hint.triggers.join(','));
+				    		SNAPPI.Hint.sleepHints(0);
+				    		/* end */
+		    			} catch(e){}	
 		    			return;		    			
 		    	};
 	    		stage.listen['render'] = _Y.on('snappi-pm:render', _setStageDim	);
@@ -393,6 +402,15 @@
 	    				var node = this.one('div.pageGallery');
 	    				_setStageDim(null, node);
 	    			}, stage);
+	    			
+	    		/*
+	    		 * on first render
+	    		 */	
+	    		_Y.once('snappi-pm:render', function(){	
+	    			SNAPPI.Hint.flushQueue();		// if Hint already available    			
+					SNAPPI.Hint.instance.set('disabled', false);
+	    		});	
+	    		
     		}
     		stage.stageType = cfg.stageType || 'modal';
 			return stage;
@@ -560,10 +578,9 @@
 					/*
 		    		 * remove existing Hints, just show story hints
 		    		 */
-		    		var hintId = cfg.hintId || 'HINT_PMToolbarEdit';
 		    		SNAPPI.Hint.lookupHintByTriggerSH.clear();
-		    		SNAPPI.STATE.hints[hintId] = true;
-					SNAPPI.Hint.flushQueue();		// if Hint already available    			
+		    		SNAPPI.STATE.hints['HINT_PMToolbarEdit'] = true;
+		    		SNAPPI.STATE.hints['HINT_PMPlay'] = true;
 	    		} catch (e){}
 	    	});
 			

@@ -109,10 +109,19 @@
     	HINT_PMToolbarEdit:{
     		css_id:'hint-pm-toolbar-edit-markup', 
     		uri: '/help/markup/tooltips', 
-    		showDelay: 1000,
+    		showDelay: 2000,
+    		hideDelay: 20000,
     		align:  { points: [ 'tc', 'bc' ] },
     		trigger: '#dialog-alert .pagemaker-stage',
     		anchor: '#menu-pm-toolbar-edit', 
+    	},
+    	HINT_PMPlay:{
+    		css_id:'hint-pm-play-markup', 
+    		uri: '/help/markup/tooltips', 
+    		showDelay: 0,
+    		hideDelay: 500,
+    		align:  { points: [ 'bc', 'tc' ] },
+    		trigger: '#menu-pm-toolbar-edit .play',
     	},
     	HINT_Preview:{
     		css_id:'hint-preview-markup',
@@ -246,7 +255,7 @@
     		){
     			// found == Hint.active
     			if (!dryrun) hint.set('bodyContent', Hint.active.body);
-console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0));    
+// console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0));    
 				break;			
     		}
     	}    	
@@ -356,7 +365,7 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 	    	}
 		} else if (e.newVal == false && e.prevVal== true) {
 			// var body = e.currentTarget.get('bodyContent') !== Hint.active.body;
-			_sleepHints(1);
+			Hint.sleepHints(1);
 		}
 	}
 	var _override_refreshAlign = function(){
@@ -384,7 +393,7 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 	 * sleep timer for hints on hide() or close
 	 */
 	var _sleep_status = {count: 0, time: 0, later: null}
-	var _sleepHints = function(mins){
+	Hint.sleepHints = function(mins){
 		if (mins!==false && !mins) mins = 1;
 		var secs, h = Hint.instance;
 		if (mins === false) {	// cancel sleep
@@ -403,21 +412,22 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 		}
 		
 		secs = mins*60*1000;
-		if ( secs < _sleep_status['time']) return;	// already sleeping
+		if ( (secs !==0) && secs < _sleep_status['time']) return;	// already sleeping
 		
-		_sleep_status.count += 1;
-		_sleep_status['time'] = secs  * _sleep_status.count;
+		if (secs !==0) _sleep_status.count += 1;
+		else _sleep_status.count = 0;
+		_sleep_status['time'] = secs  * _sleep_status.count  || 10;
 		if (_sleep_status.later) _sleep_status.later.cancel();
 		_sleep_status.later = _Y.later( _sleep_status['time'], h, 
 			function(){
 				h.set('trigger', h.triggers.join(',') );
 				_sleep_status['time'] = 0;
 				_sleep_status.later = null;
-// console.log('awake');				
+console.log('awake');				
 			}	
 		);
 		h.set('trigger', '#blackhole');
-// console.log("sleep for sec="+_sleep_status['time'])	;	
+console.log("sleep for sec="+_sleep_status['time'])	;	
 	};
 	var _handle_Close = function(e, contentBox){
 		try {		// context: this = hint or ToolTip
@@ -426,7 +436,7 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 			else _addDoNotShow(Hint.active.cfg.id, false); 
 		} catch(e) {}
 		this.hide();
-		_sleepHints(3);
+		Hint.sleepHints(3);
 		var check;
 	}
 	var _handle_ShowNextTip = function(e){ // context: this = hint or ToolTip
@@ -455,7 +465,7 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 			SNAPPI.UIHelper.nav.showHelp();
 		} else {
 			Hint.anyTrigger = true;
-			_sleepHints(false);
+			Hint.sleepHints(false);
 			this.show();
 			Hint.doNotShow = {}
 			SNAPPI.Hint.flushQueue();		// if Hint already available
@@ -494,6 +504,7 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 					success: function(e, id, o, args) {
 						SNAPPI.setPageLoading(false);
 						args.parent.setContent(o.responseText);
+						SNAPPI.util.setForMacintosh(args.parent);
 						// args.callback.call(this, args.cfg);
 						Hint.XHR_WAIT[args.cfg.uri] = false;
 						Hint.flushQueue();	// just flushQueue() to restart
@@ -563,7 +574,9 @@ console.log('hint.body set to '+found.cfg.id+', anyTrigger='+(anyTrigger ? 1 : 0
 		    			update = true;
 		    		}
     			}
-    			if (update || hint.get('trigger') == '#blackhole') hint.set('trigger', hint.triggers.join(','));
+    			if (update || (hint.get('trigger') == '#blackhole')) {
+    				hint.set('trigger', hint.triggers.join(','));
+    			}
     		} catch(e){
     			console.error("Error: Hint.load(): expecting trigger to be a selector string");
     		}

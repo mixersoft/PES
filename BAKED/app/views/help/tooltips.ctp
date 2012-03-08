@@ -1,8 +1,18 @@
 <div id="hint-multiselect-markup" class="hint message blue rounded-5 cf">
 	<h1>Getting Started: Select Thumbnail(s)</h1>
-	<div class='center'><img src='/static/img/hints/multi-select.jpg'></div>
-	<p>Use <span class='keypress multiselect-single'>Ctrl-Click</span> to select individual Snaps, or <span class='keypress'>Shift-Click</span> to select a contiguous range.
-	Most actions will be applied to all selected Snaps. You can also drag selected Snaps to your <b>Lightbox</b> to hold them in place.</p>
+	<p>Many actions require you to select one or more Thumbnails to proceeed. For example, to create a new Story you need to select the Snaps you want to use.</p>
+	<div class="center" >
+	<div class="cf" style="width:400px;margin: 10px 80px;">
+		<div class='right'style="margin-left:10px;"><img src='/static/img/hints/ctrl-click.jpg'></div>
+		<p style="margin-top:20px;text-align:right;">
+			Use <span class='keypress multiselect-single'>Ctrl-Click</span> to select individual Snaps,</p> 
+	</div>
+	<div class="cf"  style="width:400px;margin: 10px 80px;">
+		<div class='left'  style="margin-right:10px;"><img src='/static/img/hints/shift-click.jpg'></div>
+		<p style="margin-top:20px;text-align:left;">or <span class='keypress'>Shift-Click</span> to select a contiguous range.
+	</div>	
+	</div>
+	<p>Most actions will be applied to all selected Snaps. You can also drag selected Snaps to your <b>Lightbox</b> to hold them in place.</p>
 </div>
 <div id="hint-contextmenu-markup" class="hint message blue rounded-5 cf">
 	<h1>Getting Started: The Context Menu (i.e. Right-Click)</h1>
@@ -102,7 +112,8 @@
 		<li>Click 'Shuffle' until you see an arrangement you like, you can also close this dialog and select different Snaps</li>
 		<li>Give your story a <u>unique</u> title so you can save your Story. Use the <u>same</u> title if you want to add pages.</li>
 		<li>Click 'Save' to save the current arragement to your Story</li>
-		<li>Click 'Play' to open your Story with the Storybook Player (in a new browser window or tab). You will also find a 'permalink' at the bottom of the Player.</li>
+		<li>Click 'Play' to open your Story with the Storybook Player, this is the page that your friends will see. 
+				<div class="center" style="color:red;font-weight:bold;">Make sure you unblock this pop-up.</div></li>
 		<li>To share your story with friends, just send the link you see on the bottom of the Player.</li>
 	</ol>	
 	<br />
@@ -111,6 +122,11 @@
 		<li>You cannot browse the site for Stories you already created.</li>
 	</ul>
 	<p>We still have much work to do and plan to offer more capabilities in the near future. Thanks for your understanding.</p>
+</div>
+<div id="hint-pm-play-markup" class="hint message blue rounded-5 cf">	
+	<h1>Play Your Story</h1>
+	<p>See your Story in another window.</p>
+	<p style="color:red;"><b>If you cannot see the Player, make sure your browser is NOT blocking the pop-up.</b></p>
 </div>
 <div id="hint-preview-markup" class="hint message blue rounded-5 cf">	
 	<h1>Welcome to the Snaphappi Friends and Family Preview</h1>

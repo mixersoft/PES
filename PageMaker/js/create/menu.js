@@ -248,7 +248,7 @@
 		} else 
 console.log("delegateHost="+delegateHost._yuid);		
 		if (proxy && !menu.listen['mouseenter_beforeShow']) {
-			menu.listen['mouseenter_beforeShow'] = delegateHost.on('mouseenter', 
+			menu.listen['mouseenter_beforeShow'] = delegateHost.on('mouseover', 
 			function(e){
 				Menu.menuItem_beforeShow(proxy, null);
 			}, 'ul  li',  menu);

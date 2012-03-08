@@ -7,7 +7,7 @@
 		</li>
 		<li class='btn orange disabled before-show' action='save' title='Save this page to a Story.'>Save
 		</li>
-		<li class='btn orange disabled before-show' action='play' title='Show a saved Story in a new pop-up window.' >Play
+		<li class='btn orange disabled before-show play' action='play' title='See your Story in a new pop-up window. Make sure your browser is NOT blocking the pop-up.' >Play
 		</li>		
 	</ul>
 </div>

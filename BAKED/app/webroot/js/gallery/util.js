@@ -356,7 +356,7 @@
 			setForMacintosh: function (node) {
 				try {
 					if (_Y.UA.os === "macintosh") {
-						node.one('span.multiselect-single').setContent('Cmd-Click');	
+						node.all('span.multiselect-single').setContent('Cmd-Click');	
 					}
 				} catch(e) {}
 			},
