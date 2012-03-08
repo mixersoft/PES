@@ -16,10 +16,10 @@ class PagemakerController extends AppController {
 		 *	These actions are allowed for all users
 		 */
 		$this->Auth->allow('parseXml', 'catalog',
-		/*
-		 * move to ACL for role=users
-		 */
-		'arrangement'
+			/*
+			 * move to ACL for role=users
+			 */
+			'arrangement', 'save_page'
 		);
 	}
 	
@@ -146,7 +146,94 @@ class PagemakerController extends AppController {
 		$arrangement['W'] /= $scale;
 		$arrangement['H'] /= $scale;
 	}
-	
+	/*
+	 * TODO: move to Story model, also see /gallery/save_page
+     * __getSecretKey(): get a secret key to be used for unauthenticated access a PageGallery share
+     * Notes:
+     * 	- key is used to lookup pageGallery filename: see /svc/pages/[secretKey].div
+     * 	- key is only issued to logged in user, used to save PageGallery
+     * 	- key is not required for owner access, read/write
+     */
+    function __getSecretKey($seed = '') {
+    	$salt = Configure::read('Security.salt');
+    	$userid = AppController::$userid  ? AppController::$userid : 'Guest';
+    	$key = sha1($userid.$seed.$salt);
+//    	if (!$key) $key = sha1(time().'-'.rand().$salt); 		// guest user in designer mode. deprecate
+        return $key;
+    }
+
+    /*
+	 * * TODO: move to Story model, also see /gallery/save_page
+     * use seed to reset secretKey
+     * - seed should be a user-provided value stored in DB, along with $userid, $filename
+     */
+    function __getSeed($filename) {
+    	// TODO: get from DB
+    	return null;	
+    }
+    function save_page() {
+    	$forceXHR = setXHRDebug($this, 0);
+        $this->layout = null;
+        $ret = 0;
+
+        if ($this->data) {
+            /*
+             * POST - save/append/delete PageGallery file
+             */        	
+            // allow guest users to save
+            $userid = AppController::$userid  ? AppController::$userid : 'Guest';
+        	if ($userid) {	
+	            $content = $this->data['content'];		// page content
+	            $dest = $this->data['dest'];	// dest	file, book
+        		// TODO: use seed to reset secretKey. get seed from DB
+        		$secretKeyDest = $this->__getSecretKey($this->__getSeed($dest)); 
+	            
+	            /*
+	             * read content from page
+	             */
+        		if (empty($content)) {
+        			$src = $this->data['src'];		// source file, stored in /svc/pages
+        			$secretKeySrc = $this->__getSecretKey($this->__getSeed($src));
+		            $File = Configure::read('path.wwwroot').Configure::read('path.pageGalleryPrefix').DS.$src.'_'.$secretKeySrc.'.div';
+		            $content = @file_get_contents($File);
+        		}
+	            /*
+	             * append or write content to book
+	             */
+	            $File = Configure::read('path.wwwroot').Configure::read('path.pageGalleryPrefix').DS.$dest.'_'.$secretKeyDest.'.div';
+	            
+	            // append page to book
+	            $mode = isset($this->data['reset']) ? 'w' : 'a';
+	            $Handle = fopen($File, $mode);
+	            fwrite($Handle, $content);
+	            fclose($Handle);
+	            // don't unlink
+	            $ret = 1;
+	        }
+		}
+		$this->autoRender = false;
+		Configure::write('debug',0);
+		header('Content-type: application/json');
+		header('Pragma: no-cache');
+		header('Cache-control: no-cache');
+		header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); 		
+		$success = $ret ? true : false;
+		if ($success) {
+			header("HTTP/1.1 201 CREATED");
+			$message = "Your Story was saved.";
+			$response = array(
+				'key'=>$secretKeyDest, 
+				'href'=>"/gallery/story/{$this->data['dest']}_{$secretKeyDest}",
+			);
+		} else {
+			$message = "There was an error saving your Story. Please try again.";
+			$response = array();
+		}
+		echo json_encode(compact('success', 'message', 'response'));
+		return;
+    }	
+
+
 	function arrangement($count = 16) {
 		$forceXHR = setXHRDebug($this, 0, true);
 		if ($forceXHR) {

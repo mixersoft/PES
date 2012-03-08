@@ -2665,10 +2665,15 @@ span.keypress {
 	height: auto;
 	width: 100%;
 }
-
+.pagemaker-stage .stage-body .play {
+	color: white;
+    font-size: 0.9em;
+}
+.pagemaker-stage .stage-body .play a {
+	color: yellow;
+}
 #menu-pm-toolbar-edit ul.inline li.btn.disabled {
 	border-color: #888;
-	
 }
 
 

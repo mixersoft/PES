@@ -20,6 +20,7 @@ class GalleryController extends AppController {
     }
     
     /*
+	 * * TODO: move to Story model, also see /pagemaker/save_page
      * __getSecretKey(): get a secret key to be used for unauthenticated access a PageGallery share
      * Notes:
      * 	- key is used to lookup pageGallery filename: see /svc/pages/[secretKey].div
@@ -28,13 +29,14 @@ class GalleryController extends AppController {
      */
     function __getSecretKey($seed = '') {
     	$salt = Configure::read('Security.salt');
-    	$userid = AppController::$ownerid;		// stories saved to owner's account, not Editor
+    	$userid = AppController::$userid  ? AppController::$userid : 'Guest';
     	$key = sha1($userid.$seed.$salt);
 //    	if (!$key) $key = sha1(time().'-'.rand().$salt); 		// guest user in designer mode. deprecate
         return $key;
     }
 
     /*
+	 * * TODO: move to Story model, also see /pagemaker/save_page
      * use seed to reset secretKey
      * - seed should be a user-provided value stored in DB, along with $userid, $filename
      */
@@ -46,14 +48,14 @@ class GalleryController extends AppController {
     	$next = str_replace('page_gallery','story', $this->here);
     	$this->redirect($next, null, true);
     }
-    function story($filename = '') {
-        $filename = $filename ? $filename : 'default'; // testing
+    function story($filename = null) {
+        $filename = $filename ? $filename : 'guest'; // testing
         $seed = $this->__getSeed($filename); 	// TODO: use seed to reset secretKey. get seed from DB 
         if ($this->data) {
             /*
              * POST - save/append/delete PageGallery file
              */        	
-        	if (empty(AppController::$ownerid) || empty($this->data['content'])) {
+        	if (empty($this->data['content'])) {
         		$check = false;
         		$ret = 0;
         	} else {
@@ -152,11 +154,14 @@ class GalleryController extends AppController {
     	$forceXHR = setXHRDebug($this, 0);
         $this->layout = null;
         $ret = 0;
+
         if ($this->data) {
             /*
              * POST - save/append/delete PageGallery file
              */        	
-        	if (AppController::$ownerid) {
+            // allow guest users to save
+            $userid = AppController::$userid  ? AppController::$userid : 'Guest';
+        	if ($userid) {	
 	            $content = $this->data['content'];		// page content
 	            $dest = $this->data['dest'];	// dest	file, book
         		// TODO: use seed to reset secretKey. get seed from DB
@@ -184,12 +189,26 @@ class GalleryController extends AppController {
 	            // don't unlink
 	            $ret = 1;
 	        }
-			$this->autoRender = false;
+		}
+		$this->autoRender = false;
+		header('Content-type: application/json');
+		header('Pragma: no-cache');
+		header('Cache-control: no-cache');
+		header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); 		
+		$success = $ret ? true : false;
+		if ($success) {
 			header("HTTP/1.1 201 CREATED");
-			// TODO: return standard JSON message format
-			echo $ret;
-			return;
-	    }
+			$message = "Your Story was saved.";
+			$response = array(
+				'key'=>$secretKeySrc, 
+				'link'=>"/gallery/story/{$this->data['dest']}_{$secretKeySrc}",
+			);
+		} else {
+			$message = "There was an error saving your Story. Please try again.";
+			$response = array();
+		}
+		echo json_encode(compact('success', 'message', 'response'));
+		return;
     }
 
 	function upload_share() {

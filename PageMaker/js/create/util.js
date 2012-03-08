@@ -12,12 +12,13 @@
     /*
      * shorthand
      */
-    var PM = SNAPPI.namespace('SNAPPI.PM');
-    var Y = PM.Y;
-	// make sure io-base is loaded
-    PM.Y.use("io-base", function(Y){
-    });
-    
+    var _Y = null;
+	var Plugin = null;
+	var PM = SNAPPI.namespace('SNAPPI.PM');
+	// Yready init
+	PM.onYready.Util = function(Y){
+		if (_Y === null) _Y = Y;
+	}
     if (!SNAPPI.PM.util) {
         // load once
         SNAPPI.PM.util = {
@@ -166,7 +167,75 @@
                 }
                 
             },
-            saveToPageGallery: function(cfg){
+            saveStory: function(cfg){
+                var postData, filename = (cfg.filename) ? cfg.filename : '123';
+                if (cfg.content) {
+                	postData = {
+                    		"data[content]" : encodeURIComponent(cfg.content),
+                    		"data[dest]" : encodeURIComponent(filename)
+                        };
+                } else {
+                    /*
+                     * copy file tmp > filename on Server
+                     */
+                	postData = {
+                    		"data[src]" : encodeURIComponent(tmpfile),
+                    		"data[dest]" : encodeURIComponent(filename)
+                    };
+                }
+                postData = SNAPPI.IO.object2querystring(postData);
+                var uri = "/pagemaker/save_page/.json";
+                var callbacks = {
+                	successJson : function(e, id, o, args) {
+                		_Y.fire('snappi:save-story-complete', resp, args);
+                		var resp = o.responseJson;
+                		if (args.success) args.success(resp, args);
+                		return false;
+                	},
+                    complete: function(status, resp, arguments){
+                        if (resp.statusText == "OK" || resp.statusText == "CREATED") {
+console.log("saveStory complete: statusText="+resp.statusText) ;                       	
+                            // if (cfg.success) cfg.success(arguments);
+                        }
+                    },
+                    failure: function(o){
+                        var check;
+                    }
+                };
+                var loadingNode = cfg.loadingNode;
+                if (loadingNode.io == undefined) {
+	                var ioCfg = SNAPPI.IO.pluginIO_RespondAsJson({
+						uri: uri ,
+						parseContent:false,
+						autoLoad: false,
+						method: 'POST',
+						data: postData,
+						dataType: 'json',
+						context: cfg.context || this,	
+						arguments: cfg, 
+						on: callbacks,
+					});
+					// set loadingmask to parent
+					loadingNode.plug(_Y.LoadingMask, {
+						strings: {loading:'One moment...'}, 	// BUG: A.LoadingMask
+						target: loadingNode,
+					});    			
+					loadingNode.loadingmask._conf.data.value['target'] = loadingNode;
+					loadingNode.loadingmask.overlayMask._conf.data.value['target'] = loadingNode.loadingmask._conf.data.value['target'];
+					loadingNode.loadingmask.set('zIndex', 10);
+					loadingNode.loadingmask.overlayMask.set('zIndex', 10);			
+		            loadingNode.plug(_Y.Plugin.IO, ioCfg );
+				} else {
+					loadingNode.io.set('data', postData);
+					loadingNode.io.set('context', cfg.context || this);
+					loadingNode.io.set('uri', uri);
+					loadingNode.io.set('arguments', cfg);
+		        }
+				loadingNode.loadingmask.refreshMask();
+				loadingNode.loadingmask.show();	
+				loadingNode.io.start();
+            },
+            saveToPageGallery: function(cfg){	// deprecated
                 var postData, filename = (cfg.filename) ? cfg.filename : '123';
                 if (cfg.content) {
                 	postData = {

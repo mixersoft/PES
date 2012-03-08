@@ -187,6 +187,7 @@
     	align:  { points: [ 'bl', 'tr' ] },
     	constrain: true,
     	hideDelay: 5000,
+    	cancellableHide: true,
     }
     var _bodyMarkup = {
     	'close': "<span class='close btn white right'>X</span>",
@@ -394,7 +395,7 @@
 	 */
 	var _sleep_status = {count: 0, time: 0, later: null}
 	Hint.sleepHints = function(mins){
-		if (mins!==false && !mins) mins = 1;
+		// if (mins!==false && !mins) mins = 1;		// allow mins==0
 		var secs, h = Hint.instance;
 		if (mins === false) {	// cancel sleep
 			h.set('trigger', h.triggers.join(',') );

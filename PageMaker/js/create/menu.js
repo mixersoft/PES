@@ -353,7 +353,7 @@ console.log("delegateHost="+delegateHost._yuid);
 		if (STORY_ID) {
 			menuItem.removeClass('disabled');
 		} else menuItem.addClass('disabled');
-	},
+	};
 	MenuItems.save_click = function(menuItem, menu){
 		var target = menu.get('currentNode');
 		var parent = menuItem.get('parentNode');
@@ -361,27 +361,35 @@ console.log("delegateHost="+delegateHost._yuid);
 		if (STORY_ID) {
             var userid, filename, saved_src;
             try { 
-            	userid = SNAPPI.STATE.userid;
-            	filename = STORY_ID || userid;
+            	filename = STORY_ID || SNAPPI.STATE.controller.userid;
             } catch (e){
             	filename = STORY_ID || 'saved';
             }
-            saved_src = '/gallery/story/'+filename+'?page=last';
             var content = Plugin.stage.body.one('div.pageGallery').unscaled_pageGallery;
             var cfg = {
+            	loadingNode: target,
+            	filename: filename,
             	content: content, 	// save pageGallery HTML of parent node
 //                  tmpfile: 'tmp',		// save from tmp file
-                filename: filename,
-                success: function(){
+                success: function(resp, args){
                     /*
                      * mark scene as saved
                      */
                     var Pr = Plugin.production;
-                    Pr.saveScene();
-                    window.open(saved_src, 'page gallery');
+                    // Pr.saveScene();
+                    window.open(resp.response.href+'&page=last', '_story');
+                    // add share link to stage
+                    var href = 'http://'+window.location.host + resp.response.href;
+                    var a = _Y.substitute('Share this Story: <a href="{href}" target="_blank">{href}</a>', {href: href});
+                    if (!args.loadingNode.one('.play')) {
+	                    args.loadingNode.one('.stage-body').append('<div class="center play">'+a+'</div>');
+                    } else args.loadingNode.one('.play').setContent(a);
+                    // refresh Dialog
+                    PM.PageMakerPlugin.instance.external_Y.fire('snappi-pm:resize', args.loadingNode);
+                    var check;
                 }
             };
-            PM.util.saveToPageGallery(cfg);
+            PM.util.saveStory(cfg);
             return false;
         }			
 	}
