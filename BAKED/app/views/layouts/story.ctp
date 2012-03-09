@@ -7,30 +7,22 @@
     <head>
         <!--[if IE]><style> img {behavior: url(/app/pagemaker/static/js/fixnaturalwh.htc)}</style><![endif]-->
         <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge" /><![endif]-->
-        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+        <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+		<title>
+			<?php echo $title_for_layout; ?>
+		</title>		
         <link href="/static/img/favicon.ico" type="image/x-icon" rel="icon" />
-        <title>Snaphappi Page Gallery</title>
        	<link media="screen" type="text/css" href="/app/pagemaker/static/css/play.css" rel="stylesheet">
-        <script type="text/javascript" src="http://yui.yahooapis.com/combo?3.3.0/build/yui/yui-min.js">
-        </script>
-        <script type="text/javascript" src="/app/pagemaker/static/js/play.js">
-        </script>  
-        <script type="text/javascript">
-
-		  var _gaq = _gaq || [];
-		  _gaq.push(['_setAccount', 'UA-4086550-1']);
-		  _gaq.push(['_setDomainName', 'snaphappi.com']);
-		  _gaq.push(['_trackPageview']);
-		
-		  (function() {
-		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-		  })();
-		
-		</script> 
-        </head>
+    </head>
+     <?php flush(); ?>
     <body>
         <?php echo $content_for_layout; ?>
     </body>
+	<script type="text/javascript" src="http://yui.yahooapis.com/combo?3.3.0/build/yui/yui-min.js"></script>
+    <script type="text/javascript" src="/app/pagemaker/static/js/play.js"></script> 
 </html>
+<?php echo $this->element('analytics'); ?>
+<!--  share this  -->
+<script type="text/javascript">var switchTo5x=false;</script>
+<script type="text/javascript" src="http://w.sharethis.com/button/buttons.js"></script>
+<script type="text/javascript">stLight.options({publisher: "ur-1fda4407-f1c8-d8ff-b0bd-1f1ff46eeb72"}); </script>

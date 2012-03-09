@@ -318,6 +318,7 @@
 				} catch (e) {}
 
 			}
+			_Y.one('div.sharethis').removeClass('hide');
 		},
 
 		startListeners : function(start) {
