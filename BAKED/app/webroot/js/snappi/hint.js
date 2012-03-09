@@ -10,7 +10,9 @@
 		 */
 	    SNAPPI.Hint = Hint;
 	    // load Hint.doNotShow from Cookie or Session
-	    Hint.doNotShow = _Y.Cookie.getSubs('donotshow') || {};
+	    // Hint.doNotShow = _Y.Cookie.getSubs('SNAPPI_doNotShow') || {};
+	    Hint.doNotShow = {}
+	    Hint.cookie = {};
 	    Hint.flushQueue();		// load queued hints
 	}
 
@@ -338,10 +340,12 @@
     }
     var _addDoNotShow = function(id, saveToCookie){
     	Hint.doNotShow[id] = 1;
+    	var exp = new Date(+new Date + 12096e5);
     	if (saveToCookie) {
-    		_Y.Cookie.setSub('donotshow', id, 1, {
-				path: '/',
-				expires: new Date(+new Date + 12096e5),
+    		Hint.cookie[id] = 1;
+    		_Y.Cookie.set('SNAPPI_doNotShow', _Y.JSON.stringify(Hint.cookie), {
+				path: '/help/markup/tooltips',			
+				expires: exp,
 			});
     	}
     }
@@ -495,6 +499,7 @@ console.log("sleep for sec="+_sleep_status['time'])	;
 		var ioCfg = {
 				uri: cfg.uri,
 				autoLoad: true,
+				// parseContent: true,			// pass Cookies as PAGE.Cookie
 				showLoading:false, 
 				arguments: {
 					cfg: cfg,
@@ -504,10 +509,18 @@ console.log("sleep for sec="+_sleep_status['time'])	;
 				on: {
 					success: function(e, id, o, args) {
 						SNAPPI.setPageLoading(false);
-						args.parent.setContent(o.responseText);
+						var node = SNAPPI.IO.parseContent(o.responseText);
+						args.parent.setContent(node);
 						SNAPPI.util.setForMacintosh(args.parent);
 						// args.callback.call(this, args.cfg);
 						Hint.XHR_WAIT[args.cfg.uri] = false;
+						
+						try {
+							Hint.doNotShow = _Y.merge(Hint.doNotShow, PAGE.Cookie.doNotShow);	
+							Hint.cookie = _Y.merge(Hint.cookie, PAGE.Cookie.doNotShow);
+						} catch(e){}
+						
+						
 						Hint.flushQueue();	// just flushQueue() to restart
 						return false;	
 					}
@@ -518,6 +531,7 @@ console.log("sleep for sec="+_sleep_status['time'])	;
 		Hint.XHR_WAIT[cfg.uri] = true;	
 		return false;	
 	};
+	
     /**
      * load the hint
      * @params cfg.id string, appears in Hint.CFG, example: HINT_MultiSelect

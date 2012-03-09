@@ -65,7 +65,10 @@ class ComboController extends AppController {
      * @param $name string - name of view file
      */
     function markup($name) {
-// $this->log("/combo/markup/{$name}", LOG_DEBUG);    	
+    	// exports cookies with prefix 'SNAPPI_' to PAGE.Cookie
+    	$this->layout='markup';
+		$this->__setCookies();
+		$this->autoRender = false;
 		$viewFile = DS."combo".DS.$name;
     	$this->render(null, 'markup', $viewFile);
     }

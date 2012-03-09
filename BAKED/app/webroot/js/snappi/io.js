@@ -504,11 +504,33 @@
        		return o;
        }
     };
-    IO.debug_ParseContent = function(plugin) {
-    	plugin.io.afterHostMethod('insert', function(e){
-    		console.warn("After Plugin.IO.ParseContent(), target="+plugin);
-    	});
-    };
+    /*
+     * from A.Plugin.ParseContent
+     * hack: A.Plugin.ParseContent not working with _Y.Plugin.IO
+     */
+    IO.parseContent = function(markup) {
+		var doc = _Y.getDoc();
+		var head = doc.one('head');
+		if (!head.ParseContent) {
+			head.plug(_Y.Plugin.ParseContent);
+		}
+		var output = head.ParseContent.parseContent(markup);
+		output.js.each(function(n){
+			var script = n.html();
+			// NOTE: A.Node.create('<script></script>') doesn't work correctly on Opera
+			var newScript = document.createElement('script');
+
+			newScript.type = 'text/javascript';
+
+			if (script) {
+				// NOTE: newScript.set(TEXT, data) breaks on IE, YUI BUG.
+				newScript.text = _Y.Lang.trim(script);
+			}
+
+			head.appendChild(newScript).remove(); //removes the script node immediately after executing it		
+		});
+		return output.fragment;
+	}
     
     /**
      * wrap IORequest callbacks with code to parse Json response.

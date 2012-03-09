@@ -113,7 +113,10 @@ class HelpController extends AppController {
      * @param $name string - name of view file
      */
     function markup($name) {
-$this->log("/help/markup/{$name}", LOG_DEBUG);    	
+    	// exports cookies with path=/help/markup/[name] to PAGE.jsonData
+    	$this->layout='markup';
+		$this->__setCookies();
+		$this->autoRender = false;
 		$viewFile = DS."help".DS.$name;
     	$this->render(null, 'markup', $viewFile);
     }

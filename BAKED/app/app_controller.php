@@ -225,6 +225,34 @@ class AppController extends Controller {
 		return;
 	}
 
+
+	/**
+	 * read cookie with prefix 'SNAPPI_' from $_COOKIE
+	 * and save json_encode(data) to $this->viewVars['cData']
+	 * read in javascript from PAGE.Cookie 
+	 * use $this->layout='markup', or 
+	 * 		if (isset($cData)) echo $this->element('script/cookieData'); 
+	 */ 
+	function __setCookies(){
+		// scan $_COOKIE for prefix 'SNAPPI_'
+		foreach ($_COOKIE as $name=>$data) {
+			if (strpos($name, 'SNAPPI_') !== 0) continue;
+			
+			// only read cookie with prefix 'SNAPPI_' from $_COOKIE
+			if (substr($data, 0, 1)=='{'){	
+				// guess its already JSON data
+				$this->viewVars['cData'][str_replace('SNAPPI_', '', $name)] = $data;
+			} else {
+				// parse into Array for json_encode() on output
+				$cookie = $this->Cookie->read("{$name}.");	// returns array of kv pairs
+				foreach ($cookie as $kv){
+					list($k, $v) = explode('=',$kv);
+					$aa[$k] = $v;
+				}
+				$this->viewVars['cData'][str_replace('SNAPPI_', '', $name)] = $aa;	
+			}			
+		}
+	}
 	/**
 	 * allows easy rendering of json/xml requests in browser for debugging
 	 */
