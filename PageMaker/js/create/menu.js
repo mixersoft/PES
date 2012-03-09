@@ -18,9 +18,8 @@
 			'contextmenu-photoroll-markup': CFG_Context_Photoroll,
 			'contextmenu-group-markup': CFG_Context_FigureBox,		
 			'contextmenu-person-markup': CFG_Context_FigureBox,
-		};	
-		
-		
+		};
+		PM.namespace('PAGE.Cookie.pagemaker');
 	} 	
 
 	var DEFAULT_CFG_contextmenu = 	{
@@ -70,33 +69,41 @@
 	 * @return menu or false on XHR request
 	 */
 	Menu.getMarkup = function(cfg, callback){
-		var container = cfg.container;
-		var selector = cfg.selector;
+		var container = cfg.container || _Y.one('#markup');	
+		var selector = cfg.selector || '#'+cfg.css_id;	// selector for markup
+		var markup = container.one(selector);
+		if (markup) {
+			callback.call(this, cfg, markup);
+			return markup;
+		}
 		
+		var markupNode = _Y.Node.create("<div></div>");
+		container.append(markupNode);
 		var ioCfg = {
-				uri: null,
+				uri: cfg.uri,
 				autoLoad: true,
 				showLoading:false, 
-				end: null
+				context: this,
+				arguments: {
+					cfg: cfg,
+					parent: markupNode,
+					callback: callback,
+				},
+				on: {
+					success: function(e, id, o, args) {
+						SNAPPI.setPageLoading(false);
+						// PM.Menu
+						var node = SNAPPI.IO.parseContent(o.responseText);
+						args.parent.setContent(node);
+						SNAPPI.util.setForMacintosh(args.parent);
+						args.callback.call(this, args.cfg, markup);
+						return false;	
+					}
+				},
 		};		
-		var ioCfg = _Y.merge(ioCfg, cfg);
-		delete ioCfg.selector;
-		delete ioCfg.selector;
-		
-		if (!_Y.one(selector) && ioCfg.uri) {
-			// BUG: container.one('#menu-header') does NOT work in chrome
-			var markupNode = _Y.Node.create("<div />");
-			container.append(markupNode);
-			SNAPPI.setPageLoading(true);
-			markupNode.plug(_Y.Plugin.IO, ioCfg);	
-			markupNode.io.afterHostMethod('insert', function(){
-				SNAPPI.setPageLoading(false);
-				callback.apply(this, arguments);
-			});
-			return false;
-		} else {
-			return callback();
-		}		
+		SNAPPI.setPageLoading(true);
+		markupNode.plug(_Y.Plugin.IO, ioCfg);
+		return false;	
 	};
 	/**
 	 * 
@@ -267,17 +274,20 @@ console.log("delegateHost="+delegateHost._yuid);
 			}
 		}, menu);
 	};
-	Menu.copyMenuToDialogHeader = function(menu, CSS_ID, dialog){
-		var dialog = dialog || SNAPPI.Dialog.find['dialog-alert'],
+	Menu.copyMenuToDialogHeader = function(CSS_ID, menu){
+		var dialog = SNAPPI.Dialog.find['dialog-alert'],
 			header = dialog.getStdModNode('header');
-		if (!header.one('.'+CSS_ID)){
+			menu = menu || Menu.find[CSS_ID];
+		if (menu && !header.one('.'+CSS_ID)){
 			var menuContent = menu.get('contentBox');	// get menuContent
 			var after = header.one('span.aui-toolbar');
 			var copied = header.create(menuContent.get('innerHTML'));
 			copied.addClass(CSS_ID).addClass('toolbar');
 			header.insertBefore(copied, after);
 			Menu.startListener(menu, null, header.get('parentNode'));	
-			menu.disable().hide();					
+			menu.disable().hide();
+			menu.set('trigger', '#blackhole');
+			var check;					
 		}
 	}
 	
@@ -317,23 +327,12 @@ console.log("delegateHost="+delegateHost._yuid);
 	
 	var MenuItems = function(){}; 
 	MenuItems.story_id_beforeShow= function(menuItem, menu){
-		// start listener for story_id
-		menuItem.listen = menuItem.listen | {};
-		if (menuItem.listen['change']) return;
-		menuItem.listen['change'] = menuItem.delegate('change', function(e){
-			try {
-				var parent = menu.get('contentBox');
-				var STORY_ID = menuItem.one('input#story_id').get('value');
-				parent.all('li.btn').each(
-					function(n,i,l){
-						if (/(play|save)/.test(n.getAttribute('action'))) {
-							if (STORY_ID) n.removeClass('disabled');
-							else n.addClass('disabled');
-						}
-					})
-			} catch (e) {}
-		}, '#story_id');		
-	},
+		// set title from Cookie
+		try {
+			var target = menuItem.one('input#story_id');
+			target.setContent(PAGE.Cookie.pagemaker['STORY_ID']);
+		} catch(e){}
+	};
 	MenuItems.shuffle_beforeShow = function(menuItem, menu){
 		if (1) {
 			menuItem.removeClass('disabled');
@@ -359,9 +358,10 @@ console.log("delegateHost="+delegateHost._yuid);
 		var parent = menuItem.get('parentNode');
 		var STORY_ID = parent.one('#story_id').get('value');
 		if (STORY_ID) {
-            var userid, filename, saved_src;
+            var userid, filename, key, saved_src;
             try { 
             	filename = STORY_ID || SNAPPI.STATE.controller.userid;
+            	key = PAGE.Cookie.pagemaker.key;
             } catch (e){
             	filename = STORY_ID || 'saved';
             }
@@ -369,55 +369,83 @@ console.log("delegateHost="+delegateHost._yuid);
             var cfg = {
             	loadingNode: target,
             	filename: filename,
+            	key: key,
             	content: content, 	// save pageGallery HTML of parent node
 //                  tmpfile: 'tmp',		// save from tmp file
                 success: function(resp, args){
                     /*
                      * mark scene as saved
                      */
-                    var Pr = Plugin.production;
+                    var oneYear = new Date(+new Date + 3600*1000*8766);	
                     // Pr.saveScene();
-                    window.open(resp.response.href+'&page=last', '_story');
+                    // window.open(resp.response.href+'&page=last', '_story');
                     // add share link to stage
                     var href = 'http://'+window.location.host + resp.response.href;
+                    
+                    // add Yellow link to stage
                     var a = _Y.substitute('Share this Story: <a href="{href}" target="_blank">{href}</a>', {href: href});
                     if (!args.loadingNode.one('.play')) {
 	                    args.loadingNode.one('.stage-body').append('<div class="center play">'+a+'</div>');
                     } else args.loadingNode.one('.play').setContent(a);
+                    
+                    
                     // refresh Dialog
                     PM.PageMakerPlugin.instance.external_Y.fire('snappi-pm:resize', args.loadingNode);
                     var check;
+                    
+			    	if (saveToCookie = true) {
+			    		PAGE.Cookie.pagemaker['STORY_ID'] = resp.response.title;
+			    		PAGE.Cookie.pagemaker['key'] = resp.response.key;
+			    		Plugin.external_Y.Cookie.set('SNAPPI_pagemaker', _Y.JSON.stringify(PAGE.Cookie.pagemaker), {
+							path: '/combo/markup/pm_ToolbarEdit',			
+							expires: oneYear,
+						});
+			    	}
+                    
                 }
             };
             PM.util.saveStory(cfg);
             return false;
         }			
-	}
-	
-	
+	};
 	// called on menu.show()
 	MenuItems.play_beforeShow = function(menuItem, menu){
 		var parent = menuItem.get('parentNode');
 		var STORY_ID = parent.one('#story_id').get('value');
-		try {
-			if (STORY_ID && !Plugin.production.scene.saved.length) {
-				menuItem.originalTitle = menuItem.originalTitle || menuItem.get('title');
-				menuItem.set('title', menuItem.originalTitle + " Don't forget to click Save if this is the first page of your Story.");
-			} 
-			if (STORY_ID){
+		if (menuItem.originalTitle) menuItem.set('title', menuItem.originalTitle);
+		try { // try from link
+			var href = menu.one('.play a').get('href') + '?page=last';	
+			if (href && href.search(STORY_ID) !==-1) {
+				menuItem.setAttribute('href', href);
 				menuItem.removeClass('disabled');
 				return;
-			}	
+			} 
+		} catch(e){	}
+		
+		try {	// try from cookie
+			href = PAGE.Cookie.pagemaker.STORY_ID+'_'+PAGE.Cookie.pagemaker.key; 
+			href = 'http://'+window.location.host + '/gallery/story/' + href + '?page=last'
+			if (href && href.search(STORY_ID) !==-1) {
+				menuItem.setAttribute('href', href);
+				menuItem.removeClass('disabled');
+				return;
+			} 
+		} catch(e){	}
+		
+		try{ // new STORY_ID, has not been saved yet. try from title
+			if (STORY_ID) {
+				menuItem.originalTitle = menuItem.originalTitle || menuItem.get('title');
+				menuItem.set('title', menuItem.originalTitle + " Don't forget to click Save if this is the first page of your Story.");
+				menuItem.removeClass('disabled');
+				return;
+			} 
 		}catch(e){}
 		menuItem.addClass('disabled');
 	};			
 	MenuItems.play_click = function(menuItem, menu){
 		if (menuItem.hasClass('disabled')) return;
-		var STORY_ID = menuItem.get('parentNode').one('#story_id').get('value');
-		if (STORY_ID) {
-			var saved_src = '/gallery/story/'+STORY_ID;
-			window.open(saved_src, 'page gallery');
-		}
+		var href = menuItem.getAttribute('href');
+		if (href) window.open(href, 'page gallery'); 
 	};		
 		
 	
@@ -564,7 +592,12 @@ console.log("delegateHost="+delegateHost._yuid);
 			on: {
 				show: function(e) {
 					var menu = e.currentTarget;
-					Menu.copyMenuToDialogHeader(menu, CSS_ID);
+					Menu.copyMenuToDialogHeader(CSS_ID, menu);
+					try {
+						var dialog = SNAPPI.Dialog.find['dialog-alert'],
+						header = dialog.getStdModNode('header');
+						header.one('input#story_id').setAttribute('value', PAGE.Cookie.pagemaker['STORY_ID']);
+					} catch(e){}
 				}
 			}
 		}
@@ -588,7 +621,7 @@ console.log("delegateHost="+delegateHost._yuid);
 			on: {
 				show: function(e) {
 					var menu = e.currentTarget;
-					Menu.copyMenuToDialogHeader(menu, CSS_ID);
+					Menu.copyMenuToDialogHeader(CSS_ID, menu);
 				}
 			}
 		}

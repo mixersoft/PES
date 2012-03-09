@@ -310,17 +310,20 @@ console.log("delegateHost="+delegateHost._yuid);
 				}
 		}, menu);
 	};
-	Menu.copyMenuToDialogHeader = function(menu, CSS_ID, dialog){
-		var dialog = dialog || SNAPPI.Dialog.find['dialog-alert'],
+	Menu.copyMenuToDialogHeader = function(CSS_ID, menu){
+		var dialog = SNAPPI.Dialog.find['dialog-alert'],
 			header = dialog.getStdModNode('header');
-		if (!header.one('.'+CSS_ID)){
+			menu = menu || Menu.find[CSS_ID];
+		if (menu && !header.one('.'+CSS_ID)){
 			var menuContent = menu.get('contentBox');	// get menuContent
 			var after = header.one('span.aui-toolbar');
 			var copied = header.create(menuContent.get('innerHTML'));
 			copied.addClass(CSS_ID).addClass('toolbar');
 			header.insertBefore(copied, after);
 			Menu.startListener(menu, null, header.get('parentNode') );	
-			menu.disable().hide();					
+			menu.disable().hide();
+			menu.set('trigger', '#blackhole');
+			var check;							
 		}
 	}
 	

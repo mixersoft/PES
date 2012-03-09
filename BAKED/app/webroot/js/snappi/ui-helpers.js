@@ -356,6 +356,7 @@
     			if (dialog.get('destroyed') == false) return stage;
     			else {
     				// reuse stage
+    				// dialog.getStdModNode('header').setContent('');
     				stage.setContent('');
     				dialogCfg.bodyNode = stage;
     			}
@@ -369,10 +370,9 @@
     		if (!stage.listen) {
     			stage.listen = {};
     			/*
-    			 * @params P Performance
     			 * @params node div.pageGallery
     			 */
-    			var _setStageDim = function(P, node){
+    			var _setStageDim = function(node){
     					if (!node.ancestor('#stage-2')) return; 
     					stage.removeClass('hide');
 		    			var d = SNAPPI.Dialog.find['dialog-alert'];
@@ -396,19 +396,30 @@
 		    			} catch(e){}	
 		    			return;		    			
 		    	};
-	    		stage.listen['render'] = _Y.on('snappi-pm:render', _setStageDim	);
+	    		stage.listen['render'] = _Y.on('snappi-pm:render', function(Performance, node){
+		    			_setStageDim(node);
+		    			var CSS_ID = 'menu-pm-toolbar-edit';	
+						SNAPPI.PM.Menu.copyMenuToDialogHeader(CSS_ID, null);
+						try {
+							var dialog = SNAPPI.Dialog.find['dialog-alert'],
+							header = dialog.getStdModNode('header');
+							header.one('input#story_id').setAttribute('value', PAGE.Cookie.pagemaker['STORY_ID']);
+						} catch(e){}
+	    			}, this,  _setStageDim);
 	    		stage.listen['resize'] = _Y.on('snappi-pm:resize', 
 	    			function(player, containerH){
 	    				var node = this.one('div.pageGallery');
-	    				_setStageDim(null, node);
+	    				_setStageDim(node);
 	    			}, stage);
 	    			
 	    		/*
 	    		 * on first render
 	    		 */	
 	    		_Y.once('snappi-pm:render', function(){	
+	    			try {
 	    			SNAPPI.Hint.flushQueue();		// if Hint already available    			
 					SNAPPI.Hint.instance.set('disabled', false);
+					} catch(e){}
 	    		});	
 	    		
     		}

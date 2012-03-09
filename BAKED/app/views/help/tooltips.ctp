@@ -114,12 +114,13 @@
 		<li>Click 'Save' to save the current arragement to your Story</li>
 		<li>Click 'Play' to open your Story with the Storybook Player, this is the page that your friends will see. 
 				<div class="center" style="color:red;font-weight:bold;">Make sure you unblock this pop-up.</div></li>
-		<li>To share your story with friends, just send the link you see on the bottom of the Player.</li>
+		<li>To share your story with friends, just send the yellow link you see at the bottom of the page.</li>
 	</ol>	
 	<br />
 	<ul><b>Note:</b>  For now, our Story features are very basic: 
-		<li>You <b>must</b> remember the Story title to add pages</li>
-		<li>You cannot browse the site for Stories you already created.</li>
+		<li>Your most recent Story title is saved as a browser cookie.</li>
+		<li>Be careful where you share your Story, anyone can open the link.</li>
+		<li>If you are not signed in, lose the cookie, and also the link, you are done for.</li>
 	</ul>
 	<p>We still have much work to do and plan to offer more capabilities in the near future. Thanks for your understanding.</p>
 </div>

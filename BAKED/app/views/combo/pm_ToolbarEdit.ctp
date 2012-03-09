@@ -1,6 +1,6 @@
 <div id="menu-pm-toolbar-edit" class="menu-inline yui3-aui-overlaycontext-hidden hide">
 	<ul class='inline'>
-		<li class='story-id btn orange' action='story_id' title='Enter a unique title which will be used to Save and Play-back your Story.'>
+		<li class='story-id btn orange before-show' action='story_id' title='Enter a unique title which will be used to Save and Play-back your Story.'>
 			Title: <input id='story_id' type='text' class='copy-paste' style='cursor:default;height:14px;' value='' />
 		</li>
 		<li class='btn orange' action='shuffle' title='Shuffle Snaps into a new layout.'>Shuffle

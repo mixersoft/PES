@@ -168,11 +168,11 @@
                 
             },
             saveStory: function(cfg){
-                var postData, filename = (cfg.filename) ? cfg.filename : '123';
+                var postData;
                 if (cfg.content) {
                 	postData = {
                     		"data[content]" : encodeURIComponent(cfg.content),
-                    		"data[dest]" : encodeURIComponent(filename)
+                    		"data[dest]" : encodeURIComponent(cfg.filename),
                         };
                 } else {
                     /*
@@ -180,9 +180,10 @@
                      */
                 	postData = {
                     		"data[src]" : encodeURIComponent(tmpfile),
-                    		"data[dest]" : encodeURIComponent(filename)
+                    		"data[dest]" : encodeURIComponent(filename),
                     };
                 }
+                if (cfg.key) postData["data[key]"]= encodeURIComponent(cfg.key);
                 postData = SNAPPI.IO.object2querystring(postData);
                 var uri = "/pagemaker/save_page/.json";
                 var callbacks = {

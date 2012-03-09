@@ -113,7 +113,7 @@ class HelpController extends AppController {
      * @param $name string - name of view file
      */
     function markup($name) {
-    	// exports cookies with path=/help/markup/[name] to PAGE.jsonData
+    	// exports cookies with 'SNAPPI_' to PAGE.Cookie
     	$this->layout='markup';
 		$this->__setCookies();
 		$this->autoRender = false;

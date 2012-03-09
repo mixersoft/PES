@@ -151,13 +151,12 @@ class PagemakerController extends AppController {
      * __getSecretKey(): get a secret key to be used for unauthenticated access a PageGallery share
      * Notes:
      * 	- key is used to lookup pageGallery filename: see /svc/pages/[secretKey].div
-     * 	- key is only issued to logged in user, used to save PageGallery
+     * 	- key is issued by userid or random uuid
      * 	- key is not required for owner access, read/write
      */
-    function __getSecretKey($seed = '') {
+    function __getSecretKey($uuid, $seed = '') {
     	$salt = Configure::read('Security.salt');
-    	$userid = AppController::$userid  ? AppController::$userid : 'Guest';
-    	$key = sha1($userid.$seed.$salt);
+    	$key = sha1($uuid.$seed.$salt);
 //    	if (!$key) $key = sha1(time().'-'.rand().$salt); 		// guest user in designer mode. deprecate
         return $key;
     }
@@ -167,36 +166,35 @@ class PagemakerController extends AppController {
      * use seed to reset secretKey
      * - seed should be a user-provided value stored in DB, along with $userid, $filename
      */
-    function __getSeed($filename) {
-    	// TODO: get from DB
-    	return null;	
+    function __getSeed($filename, $uuid=null) {
+    	return '-';	
     }
     function save_page() {
-    	$forceXHR = setXHRDebug($this, 0);
+    	$forceXHR = setXHRDebug($this, 1);
         $this->layout = null;
         $ret = 0;
-
         if ($this->data) {
             /*
              * POST - save/append/delete PageGallery file
              */        	
             // allow guest users to save
-            $userid = AppController::$userid  ? AppController::$userid : 'Guest';
-        	if ($userid) {	
+            $dest = $this->data['dest'];	// dest	file, book
+            if (isset($this->data['key']) && $this->data['key']!=='undefined') $secretKeyDest =  $this->data['key'];
+			if (empty($secretKeyDest)) {
+				$uuid = AppController::$userid  ? AppController::$userid : String::uuid();
+				$secretKeyDest = $this->__getSecretKey($uuid, $this->__getSeed($dest));
+			}
+        	if ($secretKeyDest) {	
 	            $content = $this->data['content'];		// page content
-	            $dest = $this->data['dest'];	// dest	file, book
-        		// TODO: use seed to reset secretKey. get seed from DB
-        		$secretKeyDest = $this->__getSecretKey($this->__getSeed($dest)); 
-	            
 	            /*
 	             * read content from page
 	             */
-        		if (empty($content)) {
-        			$src = $this->data['src'];		// source file, stored in /svc/pages
-        			$secretKeySrc = $this->__getSecretKey($this->__getSeed($src));
+	    		if (empty($content)) {
+	    			$src = $this->data['src'];		// source file, stored in /svc/pages
+	    			$secretKeySrc = $this->__getSecretKey($uuid, $this->__getSeed($src));
 		            $File = Configure::read('path.wwwroot').Configure::read('path.pageGalleryPrefix').DS.$src.'_'.$secretKeySrc.'.div';
 		            $content = @file_get_contents($File);
-        		}
+	    		}
 	            /*
 	             * append or write content to book
 	             */
@@ -209,7 +207,7 @@ class PagemakerController extends AppController {
 	            fclose($Handle);
 	            // don't unlink
 	            $ret = 1;
-	        }
+			}
 		}
 		$this->autoRender = false;
 		Configure::write('debug',0);
@@ -223,7 +221,8 @@ class PagemakerController extends AppController {
 			$message = "Your Story was saved.";
 			$response = array(
 				'key'=>$secretKeyDest, 
-				'href'=>"/gallery/story/{$this->data['dest']}_{$secretKeyDest}",
+				'title'=> $dest,
+				'href'=>"/gallery/story/{$dest}_{$secretKeyDest}",
 			);
 		} else {
 			$message = "There was an error saving your Story. Please try again.";
@@ -289,7 +288,8 @@ debug($photos);
 			$message = $e->getMessage();
 			$response = null;
 		}
-		$this->viewVars['jsonData'] = compact('success', 'message', 'response');
+		$mostRecent = $this->Session->read('pagemaker');
+		$this->viewVars['jsonData'] = compact('success', 'message', 'response', 'mostRecent');
 		$done = $this->renderXHRByRequest('json');
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
 	}
