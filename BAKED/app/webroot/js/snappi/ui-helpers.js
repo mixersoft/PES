@@ -403,7 +403,8 @@
 						try {
 							var dialog = SNAPPI.Dialog.find['dialog-alert'],
 							header = dialog.getStdModNode('header');
-							header.one('input#story_id').setAttribute('value', PAGE.Cookie.pagemaker['STORY_ID']);
+							var STORY_ID = PAGE.Cookie.pagemaker['STORY_ID'];
+							if (STORY_ID) header.one('input#story_id').setAttribute('value', STORY_ID);
 						} catch(e){}
 	    			}, this,  _setStageDim);
 	    		stage.listen['resize'] = _Y.on('snappi-pm:resize', 

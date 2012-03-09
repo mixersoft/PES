@@ -69,7 +69,9 @@
     			try {
 					auth = SNAPPI.STATE.controller.userid; // authenticated
 					if (auth) PM.Menu.initMenus({ 'menu-pm-toolbar-edit': 1});
-					else PM.Menu.initMenus({ 'menu-pm-toolbar-preview': 1});
+					else {
+						PM.Menu.initMenus({ 'menu-pm-toolbar-edit': 1});	
+					}
 				} catch (e) {}	
     			break;
     		case 'preview-ratings':
@@ -179,10 +181,11 @@
 	var _CFG = {		// frequently used startup Config params 
 			DEBUG : {	// default when hostname==git*
 	    		snappi_comboBase: 'baked/app/webroot&',
+	    		snappi_minify: 1,
 	    		air_comboBase: 'app/air&',
 	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
 	    		pagemaker_comboBase: 'PageMaker&',	// filepath, not baseurl
-	    		pagemaker_useCombo: 0,		
+	    		pagemaker_useCombo: 1,		
 	    		alloy_useCombo: true,
 	    		yahoo_CDN: 0,
 	    		YUI_VERSION: '3.3.0',	// this is actually set in aui.js
@@ -191,6 +194,7 @@
 		    },
 	    	PROD : {	// use for unix/server testing
 	    		snappi_comboBase: 'app/webroot&',
+	    		snappi_minify: 0,
 	    		air_comboBase: 'app/air&',
 	    		snappi_useCombo: 1,
 	    		pagemaker_comboBase: 'PAGEMAKER&',	// filepath, not baseurl
@@ -579,6 +583,15 @@
                 }
             }
         };
+        if (hostCfg.host == 'preview.snaphappi.com' || hostCfg.snappi_minify) {
+			/* use minify
+             *   - mods, strip leading ',' from f=
+             *   - remove & delimiter, using only ,
+             */
+           
+            yuiConfig_snappi.comboBase = 'http://' + hostCfg.host + '/min/b=js/snappi&yuiconfig&f=';
+            yuiConfig_snappi.root = ',';        	
+        } 
 	    return yuiConfig_snappi;
 	};
 	/**
@@ -687,13 +700,13 @@
 	           },
 			}
         };
-        if (hostCfg.host == 'preview.snaphappi.com' || hostCfg.snappi_minify) {
-			/* use minify
+        if (false) {
+			/* use minify, problem with Alias directive
              *   - mods, strip leading ',' from f=
              *   - remove & delimiter, using only ,
              */
            
-            yuiConfig_pagemaker.comboBase = 'http://' + hostCfg.host + '/min/b=js/snappi&yuiconfig&f=';
+            yuiConfig_pagemaker.comboBase = 'http://' + hostCfg.host + '/min/b=app/pagemaker&yuiconfig&f=';
             yuiConfig_pagemaker.root = ',';        	
         } 
 	    return yuiConfig_pagemaker;
