@@ -27,10 +27,9 @@ class GalleryController extends AppController {
      * 	- key is only issued to logged in user, used to save PageGallery
      * 	- key is not required for owner access, read/write
      */
-    function __getSecretKey($seed = '') {
+    function __getSecretKey($uuid, $seed = '') {
     	$salt = Configure::read('Security.salt');
-    	$userid = AppController::$userid  ? AppController::$userid : 'Guest';
-    	$key = sha1($userid.$seed.$salt);
+    	$key = sha1($uuid.$seed.$salt);
 //    	if (!$key) $key = sha1(time().'-'.rand().$salt); 		// guest user in designer mode. deprecate
         return $key;
     }
@@ -40,9 +39,8 @@ class GalleryController extends AppController {
      * use seed to reset secretKey
      * - seed should be a user-provided value stored in DB, along with $userid, $filename
      */
-    function __getSeed($filename) {
-    	// TODO: get from DB
-    	return null;	
+    function __getSeed($filename, $uuid=null) {
+    	return '-';	
     }
     function page_gallery($filename = '') {
     	$next = str_replace('page_gallery','story', $this->here);
@@ -50,10 +48,11 @@ class GalleryController extends AppController {
     }
     function story($filename = null) {
         $filename = $filename ? $filename : 'guest'; // testing
-        $seed = $this->__getSeed($filename); 	// TODO: use seed to reset secretKey. get seed from DB 
         if ($this->data) {
             /*
+			 * deprecate. using /pagemaker/save_page instead
              * POST - save/append/delete PageGallery file
+			 * 
              */        	
         	if (empty($this->data['content'])) {
         		$check = false;
@@ -61,9 +60,9 @@ class GalleryController extends AppController {
         	} else {
 	            $content = $this->data['content'];
 	            /*
-	             * get secretKey for current user
+	             * get secretKey for current user, auth REQUIRED
 	             */
-		        $secretKey = $this->__getSecretKey($seed);            
+		        $secretKey = $this->__getSecretKey(AppController::$userid, $this->__getSeed($filename));          
 	            /*
 	             * save PageGallery content to file
 	             */
@@ -88,6 +87,8 @@ class GalleryController extends AppController {
         	/*
         	 * GET - read PageGallery content
         	 */
+        	$title = ucwords(substr($filename,0, strlen($filename)-41));
+			$title .= " @Snaphappi"; 
             $page_gallery = array();
             $isPreview = isset($this->params['url']['preview']) ? $this->params['url']['preview'] !== '0' : false;
             
@@ -113,14 +114,18 @@ class GalleryController extends AppController {
             	// secretKey already embedded in $filename 
                 $link = "http://{$_SERVER['HTTP_HOST']}/{$request}";	// share link to display in PageGallery
             } else {
-                // logged in user, add secretKey to find PageGallery
-                $secretKey = $this->__getSecretKey($seed); 
+                /*
+	             * get secretKey for current user, auth REQUIRED
+	             */
+				$secretKey = $this->__getSecretKey(AppController::$userid, $this->__getSeed($filename));
                 $File = Configure::read('path.wwwroot').Configure::read('path.pageGalleryPrefix').DS.$filename.'_'.$secretKey.'.div';
                 $link = "http://{$_SERVER['HTTP_HOST']}/{$request}_{$secretKey}";
             }
             if (file_exists($File)) {	
 	            if (isset($this->params['url']['reset'])) {
 	                unlink($File);
+				} else if (isset($this->params['url']['remove'])) {
+	                // remove a page
 	            } else {
 	                $str = @file_get_contents($File);
 	                if ($str) {
@@ -135,9 +140,8 @@ class GalleryController extends AppController {
             $page_gallery = array('<div class="error-page-gallery">Sorry, it seems there was an error somewhere. We cannot find the Story you requested.</div>');
             $link = '';
         }
-        $this->set('page_gallery', $page_gallery);
-        $this->set(compact('link', 'isPreview'));
-        
+        $this->set(compact('page_gallery', 'link', 'isPreview', 'title'));
+        $this->set('title_for_layout', $title);
         $done = $this->renderXHRByRequest(null, '/gallery/story', null, 0);
         if ($done) return;
         
