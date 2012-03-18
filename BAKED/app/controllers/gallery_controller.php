@@ -88,7 +88,7 @@ class GalleryController extends AppController {
         	 * GET - read PageGallery content
         	 */
         	$title = ucwords(substr($filename,0, strlen($filename)-41));
-			$title .= " @Snaphappi"; 
+			$title .= " :: Stories@Snaphappi"; 
             $page_gallery = array();
             $isPreview = isset($this->params['url']['preview']) ? $this->params['url']['preview'] !== '0' : false;
             

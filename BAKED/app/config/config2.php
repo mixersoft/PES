@@ -157,9 +157,12 @@ $config['path']['default_badges'] = array(
 
 switch (env('SERVER_NAME')) {
 	case 'preview.snaphappi.com':
-	case 'dev.snaphappi.com':
 		Configure::write('debug', 0);
 		break;
+	case 'dev.snaphappi.com':
+	default:
+		Configure::write('debug', 2);
+	break;
 }
 
 
