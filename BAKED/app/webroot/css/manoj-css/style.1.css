@@ -440,6 +440,9 @@ section.gallery-display-options ul.sort li select {
 	height: 20px;
 	color: #888;
 }
+section.gallery-display-options ul.sort li select option {
+	color: #000;
+}
 section.gallery-display-options ul.sort li.selected select {
 	color: #000;
 }

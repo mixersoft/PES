@@ -79,8 +79,8 @@ class Asset extends AppModel {
 	 * $queryData['extras']['show_edits'] boolean, default false, join Shared/UserEdits for rating/score
 	 */
 	public function beforeFind($queryData) {
-//debug("Model:Asset beforeFind()");
-//debug($queryData); // use extras for shot options
+// debug("Model:Asset beforeFind()");
+// debug($queryData['order']); // use extras for shot options
 			        // add belongsTo fields???
 		if (!empty($queryData['extras']['join_shots'])) {
 			// default is to NOT show hidden shots
@@ -89,6 +89,19 @@ class Asset extends AppModel {
 		} 
 		if (!empty($queryData['extras']['show_edits']) || !empty($queryData['showEdits']) ) {
 			$queryData = $this->joinWithEdits($queryData);
+		}
+		/*
+		 * add secondary sorts for Asset
+		 * TODO: use assets_groups.dateTaken_offset for groups
+		 */ 
+		if (is_array($queryData['order'][0])) {
+			foreach ($queryData['order'][0] as $sort=>$dir) {
+				// if (preg_match('/(rating|batchId|owner_id)/', $sort)) $queryData['order'][] = '`Asset`.dateTaken ASC';
+				if (strpos($sort, 'dateTaken') === false) {
+					$queryData['order'][] = '`Asset`.dateTaken ASC';
+					break;
+				}
+			}
 		}
 		return $queryData;
 	}
