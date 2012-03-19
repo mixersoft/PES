@@ -444,7 +444,7 @@ class Stagehand {
 	}
 	public static function rotate_dimensions($dimOrPoint, $orientation, $rotate=1) {
 		if ($rotate > 1) {
-			$orientation = Stagehand::$orientation_lookup($orientation, $rotate);
+			$orientation = Stagehand::orientation_sum($orientation, $rotate);
 		}
 		if ($orientation <=3) return $dimOrPoint;
 		else {

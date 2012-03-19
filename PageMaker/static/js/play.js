@@ -318,7 +318,9 @@
 				} catch (e) {}
 
 			}
-			_Y.one('div.sharethis').removeClass('hide');
+			try {
+				_Y.one('div.sharethis').removeClass('hide');	
+			} catch (e){}
 		},
 
 		startListeners : function(start) {
