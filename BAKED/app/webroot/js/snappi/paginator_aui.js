@@ -75,6 +75,10 @@
 							if (e.newVal == e.prevVal) return;
 							SNAPPI.STATE.displayPage.perpage = parseInt(e.newVal);
 							SNAPPI.STATE.displayPage.page = null;
+							SNAPPI.io.writeSession({
+								'profile.photos.perpage': SNAPPI.STATE.displayPage.perpage,
+								'profile.snaps.perpage': SNAPPI.STATE.displayPage.perpage}
+							);
 						}						
 					}
 			};

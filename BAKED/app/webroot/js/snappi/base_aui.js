@@ -175,6 +175,16 @@
 		server_count: 2, 			// count of subdomains on this prefix
 		FORCE_HOST: false,			// if string, then set host to string value
 	};
+	
+	/*
+	 * force static host to snappi-cn for these conditions, usually 10.1.2.207
+	 */
+	if (window.location.host.match( /10\.1\.2\./i )) Config.staticHost.FORCE_HOST = window.location.host;
+	if (window.location.host.match( /aws\.snaphappi\.com/i )) Config.staticHost.FORCE_HOST = '10.1.2.207';
+	/*
+	 * end force static host
+	 */
+	
 	SNAPPI.Config = Config;	// make global
 	var _CFG = {		// frequently used startup Config params 
 			DEBUG : {	// default when hostname==git*
@@ -405,6 +415,7 @@
 				for (var listen in listeners) {
 					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
 				}
+				SNAPPI.setPageLoading(false);
 		}
 		LazyLoad.use(modules, onlazyload, cfg);
 	}; 

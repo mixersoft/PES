@@ -997,16 +997,22 @@
 			if (this._cfg.showRatings) {
 				if (exists && node.Rating) {
 					if (node.Rating.id != audition.id) {
-						// update rating
+						// update rating uuid
 						node.Rating.id = audition.id;
 						node.Rating.node.setAttribute('uuid', audition.id).set(
 								'id', audition.id + '_ratingGrp');
-						node.Rating.render(audition.rating);
 					}
+					if (size == 'll') node.Rating.node.addClass('wide');
+					else node.Rating.node.removeClass('wide');
+					node.Rating.render(audition.rating);
 				} else {
 					// attach Rating
 	            	var gallery = this._cfg.gallery || SNAPPI.Gallery.getFromDom(node);
 	            	SNAPPI.Rating.pluginRating(gallery, node.Thumbnail, audition.rating);
+	            	if (size == 'll') {
+	            		node.Rating.node.addClass('wide');
+	            		node.Rating.render(audition.rating);
+	            	}
 	            }
 	            if (exists) exists.removeClass('hide');	  
 	       } else {

@@ -43,19 +43,23 @@
 
 	var _getStarValueFromEvent = function(ev) {
 		// 14 = width of 1 smiley -1 (i.e. 15-1=14)
-		return Math.max(1, Math.ceil((ev.clientX - ev.target.getX() - 1) / 14));
+		var w = ev.currentTarget.hasClass('wide') ? 23 : 14;
+		return Math.max(1, Math.ceil((ev.clientX - ev.target.getX() - 1) / w));
 	};
 
 	/*
 	 * DEPRECATE. use Rating._setRatingSprite()
 	 * move background rating sprite to indicate given rating
 	 */
-	var _setRatingSprite = function(mixed, value) {
+	var XXX_setRatingSprite = function(mixed, value) {
 		if (mixed instanceof SNAPPI.Rating) {
 			mixed = mixed.node;
 		}
 		// 14 = width of 1 smiley -1 (i.e. 15-1=14)
-		var position = '-' + (70 - 14 * value) + 'px bottom';
+		var position = '-' + (71 - 14 * value) + 'px bottom';
+		if (this.node.ancestor('.FigureBox.ll')) {
+			position = value ? (115 - 22 * value) : 115;
+		}
 		mixed.setStyle('backgroundPosition', position);
 	};
 
@@ -332,7 +336,14 @@
 		setRatingSprite : function(value) {
 			if (!value) value = this.value;
 			// 14 = width of 1 smiley -1 (i.e. 15-1=14)
-			var position = '-' + (70 - 14 * value) + 'px bottom';
+			var position;
+			if (this.node.hasClass('wide')) {
+				// or 23 = width for wide smiley, iOS touch padding
+				position = value ? (115 - 23 * value) : 116;
+			} else {
+				position = value ? (70 - 14 * value) : 71;	
+			} 
+			position = '-' + position + 'px bottom';
 			this.node.setStyle('backgroundPosition', position);
 		},
 		// DEPRECATE

@@ -807,13 +807,17 @@ section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
  */
 div.ratingGroup {
     margin: 0 auto;
-    background: url(/static/img/css-gui/smileyStarGrp.png) no-repeat;
-    background-position: -70px 0; /* init to 0 stars */
+    background: url(/static/img/css-gui/smileyStarGrp.3.png) no-repeat;
+    background-position: -71px 0; /* init to 0 stars */
     width: 71px; /* width of 5 stars */
     height: 15px;
 	cursor:pointer;
-	z-index:-1;
+}
 
+div.ratingGroup.wide {
+	width: 115px;
+	background: url(/static/img/css-gui/smileyStarGrp.wide.3.png) no-repeat;
+	background-position: -115px 0; /* init to 0 stars */
 }
 
 div.ratingGroup.r0 {
