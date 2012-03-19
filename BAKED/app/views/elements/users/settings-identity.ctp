@@ -26,7 +26,7 @@ SNAPPI.EditMode.init();
 		<?php 
 			$fields = array();
 			//$fields['title'] = $this->Form->value('User.username');
-			$fields['src_icon'] = Stagehand::getSrc(  $this->Form->value('User.src_thumbnail'),  'sq', 'person');
+			$fields['src_icon'] = Stagehand::getSrc(  $this->Form->value('User.src_thumbnail'),  'sq', 'Person');
 			$options = array('url'=>array_merge(array('plugin'=>'','controller'=>'users', 'action'=>'home', $this->Form->value('User.id')))); 
 		    echo $this->Html->image($fields['src_icon'] , null) ?>
 		   

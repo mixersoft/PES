@@ -1015,7 +1015,7 @@ LIMIT 5;";
 		$formatted = array();
 		foreach ($data as & $row) {
 			$row[0]['linkTo'] = Router::url(array('controller'=>'person', 'action'=>'home' , $row['User']['id']));	
-			$row[0]['src'] =   Stagehand::getSrc($row['User']['src_thumbnail'], null, 'person');
+			$row[0]['src'] =   Stagehand::getSrc($row['User']['src_thumbnail'], null, 'Person');
 			if (empty($row['Profile']['fname']) && empty($row['Profile']['lname'])) {
 				$row[0]['fullname'] = '';
 			} else {

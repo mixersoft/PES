@@ -6,7 +6,7 @@
 	$this->Layout->blockEnd();		
 
 	$this->Layout->blockStart('itemHeader');
-		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', 'person');
+		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', 'Person');
 		echo $this->element('nav/section', compact('badge_src'));  
 	$this->Layout->blockEnd();		
 ?>

@@ -37,7 +37,7 @@
 	$ownerUrl = Router::url(array('plugin'=>'','controller'=>'person', 'action'=>'home', $User['id']));
 	$fields['owner'] = $User['username'];
 	$fields['trim_owner'] = $this->Text->truncate($User['username'], $SHORT-4);	
-	$fields['src_icon'] =  Stagehand::getSrc($User['src_thumbnail'], $THUMBSIZE, 'person');
+	$fields['src_icon'] =  Stagehand::getSrc($User['src_thumbnail'], $THUMBSIZE, 'Person');
 	$fields['ownerLink'] = $this->Html->link($fields['trim_owner'], $ownerUrl, $options );
 	$fields['new'] = ($this->Time->wasWithinLast('3 day', $comment['Comment']['created'])) ? "<span class='new'>New!</span>" : '';
 	// debug($User);

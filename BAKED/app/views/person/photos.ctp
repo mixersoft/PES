@@ -1,5 +1,5 @@
 <?php 
-$badge_src = Stagehand::getSrc($data['User']['src_thumbnail'], 'sq', 'person');
+$badge_src = Stagehand::getSrc($data['User']['src_thumbnail'], 'sq', 'Person');
 $ownerCount = $data['User']['asset_count'];
 echo $this->element('/photo/roll', compact('badge_src', 'ownerCount') );
 ?>

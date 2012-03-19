@@ -72,7 +72,7 @@
 	             	<select onchange="SNAPPI.UIHelper.nav.orderBy(this);">
 	             		<?php 
 							foreach ($orderBy_options as $id => $option) {
-								$html = str_replace($needle, $replace, $option['A_markup']);
+								if (isset($option['A_markup'])) $html = str_replace($needle, $replace, $option['A_markup']);
 								if (!empty($option['selected'])) $html = str_replace('value', " {$option['selected']} value", $html);
 								echo $html;
 							}                     		
