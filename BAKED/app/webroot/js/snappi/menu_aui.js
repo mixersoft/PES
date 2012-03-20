@@ -829,7 +829,6 @@ console.log("delegateHost="+delegateHost._yuid);
 		return false;
 	}
 	MenuItems.refresh_click = function(menuItem, menu, e){
-		// menu.hide();
 		var thumbnail = menu.get('currentNode');	// target
 		var img = thumbnail.one('figure > img');
 		img.once('load', function(){
@@ -837,7 +836,7 @@ console.log("delegateHost="+delegateHost._yuid);
 		});
 		SNAPPI.setPageLoading(true);
 		img.set('src', img.get('src')+'?t='+new Date().getTime());
-		var check;
+		_Y.later(500, menu, function(){this.hide();});
 	}	
 	MenuItems.rotate_click = function(menuItem, menu, e){
 		var rotate = menuItem.getAttribute('rotate');

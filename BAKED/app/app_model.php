@@ -207,7 +207,7 @@ class AppModel extends Model {
 	 * cascading options for paginate
 	 */
 	
-	protected function getSqlOrderFromOptions($options) {
+	protected function XXXgetSqlOrderFromOptions($options) {
 		$order = $direction = $sort = null;
 		if (!empty($options['sort'])) {
 			$sort = $options['sort'];

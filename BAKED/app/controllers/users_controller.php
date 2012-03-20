@@ -494,6 +494,7 @@ class UsersController extends UsersPluginController {
 	}
 
 	function updateExif($uuid) {
+		set_time_limit (600);
 		return parent::__updateExif($uuid);
 	}
 	function update_count($id = null) {

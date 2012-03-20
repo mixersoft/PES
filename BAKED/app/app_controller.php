@@ -91,6 +91,7 @@ class AppController extends Controller {
 	}
 	
 	function __check_browserRedirect() {
+		if (empty($_SERVER['HTTP_USER_AGENT'])) return true;
 		$u_agent = $_SERVER['HTTP_USER_AGENT']; 
 	    $unsupported = false; 
 	    if(preg_match('/MSIE/i',$u_agent)) 
@@ -661,7 +662,7 @@ class AppController extends Controller {
 	 * cascading options for paginate
 	 * @deprecated ??? 
 	 */
-	function getPaginateOptionsForCount($model, $options=array()) {
+	function XXXgetPaginateOptionsForCount($model, $options=array()) {
 		$limit = ''; $page = 1; $perpage=null;
 		$order = ''; $sort = ''; $direction = '';
 		$fields=''; $conditions='';

@@ -109,8 +109,19 @@ class CastingCallComponent extends Object {
 		//		$id = "snappi-audition-{$row['id']}";
 		$id = $row['id'];
 		$isOwner = $row['owner_id'] == AppController::$ownerid;
+		// Src Root
+		$src = (array)json_decode($row['json_src'], true);
+		// $Src = $src['preview']; 	// TODO: deprecate. refactor to use $src['root'] here
+		if (isset($src['base64Src'])) $base64Src = $src['base64Src'];
+		if (isset($src['root'])) $rootSrc = $src['root'];
+		// if (isset($src['preview']))	$previewSrc= $src['preview'];
+		if (isset($src['orig']))	$origSrc= $src['orig'];
+		
 		$exif = json_decode($row['json_exif'], true);
-// debug($exif['root']);		
+if (!isset($exif['root']['imageWidth'])) {
+	if (!isset($this->Import)) $this->Import = loadComponent('Import', $this);
+	$exif['root'] = mergeAsArray( $exif['root'], $this->Import->fixRootImagesize($src));	
+}	
 		if (!@empty($row[0]['FocusCenter'])) {
 			$x=$row[0]['FocusCenter']['X'];
 			$y=$row[0]['FocusCenter']['Y'];
@@ -121,8 +132,8 @@ class CastingCallComponent extends Object {
 				$x = $exif['ExifImageWidth']/2;
 				$y = $exif['ExifImageLength']/2;					
 			} else {
-				$x = $exif['imageWidth']/2;
-				$y = $exif['imageHeight']/2;
+				$x = $exif['root']['imageWidth']/2;
+				$y = $exif['root']['imageHeight']/2;
 			}
 			$scale = 2*max(array($x,$y));
 		}
@@ -131,18 +142,8 @@ class CastingCallComponent extends Object {
 		// $Rating = @ifed($row['rating'], null);		// owner rating
 		$LayoutHint = compact('FocusCenter', 'FocusVector');
 
-		// Src Root
-		$src = (array)json_decode($row['json_src'], true);
-		// $Src = $src['preview']; 	// TODO: deprecate. refactor to use $src['root'] here
-		if (isset($src['base64Src'])) $base64Src = $src['base64Src'];
-		if (isset($src['root'])) $rootSrc = $src['root'];
-		// if (isset($src['preview']))	$previewSrc= $src['preview'];
-		if (isset($src['orig']))	$origSrc= $src['orig'];
 		if (isset($exif['root'])) { 	// $exif['root'] set in component/import.php
-if (!isset($exif['root']['imageWidth'])) {
-	if (!isset($this->Import)) $this->Import = loadComponent('Import', $this);
-	$exif['root'] = array_merge( $exif['root'], $this->Import->fixRootImagesize($src));	
-}		
+		
 			$W = $exif['root']['imageWidth'];
 			$H = $exif['root']['imageHeight'];
 			$Orientation  = isset($exif['root']['Orientation']) ? $exif['root']['Orientation'] : 1;
