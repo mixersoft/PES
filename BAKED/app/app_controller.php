@@ -220,8 +220,9 @@ class AppController extends Controller {
 		}		
 		$this->autoRender = false;
 		Configure::write('debug',2);
-// debug("AppController::__updateExif");		
-		$ret = ClassRegistry::init('Asset')->updateExif(array('name'=>$this->name,'uuid'=>$uuid));
+// debug("AppController::__updateExif");	
+		if (!isset($this->Asset)) $this->Asset = ClassRegistry::init('Asset');	
+		$ret = $this->Asset->updateExif(array('name'=>$this->name,'uuid'=>$uuid));
 		$this->render('/elements/dumpSQL', 'plain');
 		return;
 	}

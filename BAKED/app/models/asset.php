@@ -590,7 +590,7 @@ $this->log($newAsset, LOG_DEBUG);
 	function updateExif($options=array()) {
 		$os = Configure::read('os');
 		$find_options = array(
-			'fields'=>"Asset.id, Asset.json_src, Asset.json_exif",
+			'fields'=>"Asset.id, Asset.dateTaken, Asset.json_src, Asset.json_exif, Asset.isRGB",
 			'recursive'=>-1,
 			'order'=>array('Asset.created'=>'DESC'),
 			'permissionable'=>false
@@ -633,8 +633,26 @@ $this->log($newAsset, LOG_DEBUG);
 					// debug(json_decode($data['Asset']['json_exif'],true));
 					$json_exif = json_encode($meta['exif']);
 		debug($json_exif);
+					/* 
+					 * update Asset with updated exif data
+					 */  
 					$this->id = $row['Asset']['id'];
-					$retval = $this->saveField('json_exif', $json_exif);
+					$updateAsset = array(
+						'json_exif' => $json_exif,
+						'json_iptc' => json_encode($meta['iptc']),
+						'dateTaken' => !empty($meta['exif']['DateTimeOriginal']) ? $meta['exif']['DateTimeOriginal'] : null,
+						'isFlash' => $meta['exif']['isFlash'],
+					);
+					if ($row['Asset']['isRGB']===null) { // override if null
+						$updateAsset['isRGB'] = !empty($meta['exif']['ColorSpace']) ? ($meta['exif']['ColorSpace'] == 1) : 0;
+					}
+					if (isset($meta['iptc']['Keyword'])) $updateAsset['keyword']= $meta['iptc']['Keyword'];
+					if (isset($meta['iptc']['Caption'])) $updateAsset['caption']= $meta['iptc']['Caption'];
+					$retval = $this->save(array('Asset'=>$updateAsset));
+					/*
+					 * end update
+					 */ 
+					
 					if ($retval) {
 						// delete all derived assets and re-render
 						$filename = pathinfo($rootpath, PATHINFO_FILENAME);
