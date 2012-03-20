@@ -21,14 +21,14 @@
 	
 ?>
 	<ul class='inline context'>
-		<?php if (!$isPreview  && Configure::read("paginate.Options.{$paginateModel}.context")!='skip' ) { echo "<li>{$this->element('context')}</li>"; }?>
+		<?php if (empty($isPreview)  && Configure::read("paginate.Options.{$paginateModel}.context")!='skip' ) { echo "<li>{$this->element('context')}</li>"; }?>
 	</ul>
 
             <section id="tag-cloud" class="trends grid_16">
 <?php 
 	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show');
 	$xhrFrom = Configure::read('controller.xhrFrom');
-	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom), 'gallery'=>1);
+	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom), 'gallery'=>1, 'preview'=>0);
 	$xhrSrc = Router::url($xhrSrc);
 	echo "<div id='paging-tags-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
 ?>

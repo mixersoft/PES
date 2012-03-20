@@ -15,9 +15,9 @@
 <?php 
 	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show');
 	$xhrFrom = Configure::read('controller.xhrFrom');
-	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom), 'gallery'=>1);
+	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom), 'gallery'=>1, 'preview'=>0);
 	$xhrSrc = Router::url($xhrSrc);
-	echo "<div id='paging-tags-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
+	echo "<div id='paging-tags-xhr' class='xhr-get' nodelay='1' xhrSrc='{$xhrSrc}'></div>";
 ?>
 			</section>
 			
@@ -45,7 +45,7 @@
 					<?php
 	$xhrSrc = array('plugin'=>'', 'action'=>'discussion', $this->passedArgs[0]);
 	$xhrSrc = Router::url($xhrSrc);
-	echo $this->element('comments/discussion-fragment', array('xhrSrc'=>$xhrSrc));
+	echo "<div id='paging-comments' class='paging-content xhr-get' xhrSrc='{$xhrSrc}'  xhrTarget='paging-comments'></div>";
 						?>	
 					</section>
 				</article>				

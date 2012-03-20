@@ -16,29 +16,18 @@ Configure::write('debug',1);
 	$controllerAttr = Configure::read('controller');
 	$isXhr = $controllerAttr['isXhr'];
 	$xhrFrom = $controllerAttr['xhrFrom']; 
-	switch($xhrFrom['alias']) {
-		case 'photos': 	$next_action = 'photos'; break;
-		case 'groups':
-		case 'circles':
-		case 'events':
-		case 'weddings':
-			$next_action = 'groups'; break;
-		case 'tags':
-		default:
-			$next_action = 'trends'; break;	
-	}
+	$next = array('controller'=>$xhrFrom['alias'], 'action'=>'trends', $xhrFrom['uuid']);
 	
 	if (1) {
-		$xhrFrom = Configure::read('controller.xhrFrom');
 		$passedArgs = Configure::read('passedArgs.min');
-		$next = array('controller'=>'tags','action'=>$next_action, $xhrFrom['uuid']) + $passedArgs;
+		$next = $next + $passedArgs;
 		$tokens['total'] = $total; 
 		$tokens['linkTo'] = $this->Html->link('Show all', $next); 
 		$tokens['type'] = ($total==1 ? "Tag. " : "Tags. ");
 		$header_content = String::insert("Total <span class=''>:total</span> :type :linkTo", $tokens);
 	}
 	
-	if ($isRelated) {
+	if ($isRelated) {	// &gallery=1
 		if ($total==0) {
 			$header_content = String::insert("There are <span class='count'>no</span> :type for this item.", $tokens);
 		} else {

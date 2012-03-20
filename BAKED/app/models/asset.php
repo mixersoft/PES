@@ -43,6 +43,22 @@ class Asset extends AppModel {
 		return $query;
 	}
 	
+	public function tagUsershot($tagString, $assetId, $replace = false) {
+		$ret = true;
+		$usershotSQL = "
+SELECT a.asset_id
+FROM assets_usershots a
+JOIN assets_usershots AS includes ON a.usershot_id = includes.usershot_id
+AND includes.asset_id='{$assetId}';		
+		"; 	
+		$assetIds = Set::extract('/a/asset_id', $this->query($usershotSQL));
+		if (empty($assetIds)) $assetIds = array($assetId); 
+		foreach ($assetIds as $aid) {
+			$ret = $ret && $this->saveTags($tagString, $aid, $replace);
+		}
+		return $ret;
+	}
+	
 	/**
 	 * @return string, ['Usershot' | 'Groupshot' | false ]
 	 */

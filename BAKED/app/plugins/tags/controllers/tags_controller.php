@@ -419,7 +419,7 @@ class TagsController extends TagsAppController {
 	/**
 	 * Show - shows tagCloud
 	 * - called via XHR to show tagCloud for a given Taggable
-	 * - example: $ajaxSrc = Router::url(array('plugin'=>'', 'controller'=>'tags','action'=>'show', '?' => array( 'from'=>), 'filter'=>'Group'));
+	 * - example: $xhrSrc = Router::url(array('plugin'=>'', 'controller'=>'tags','action'=>'show', '?' => array( 'from'=>), 'filter'=>'Group'));
 	 */
 	function show(){
 
@@ -453,6 +453,7 @@ class TagsController extends TagsAppController {
 				
 		$this->set('cloudTags', $data['cloud']);  // tagCloud
 		if ($this->action == 'show_more') {
+			// deprecate show_more, use ?preview=0|1, test paging		
 			// from parent action=trends
 			if (isset($this->passedArgs['page'])) {
 				// XHR paging loads paging-inner only
@@ -463,7 +464,8 @@ class TagsController extends TagsAppController {
 			}
 		} else {
 			// action = "show", XHR load from div#tags-preview-xhr
-			$this->set('isPreview', 1);
+			$isPreview = $this->params['url']['preview'];
+			$this->set(compact('isPreview'));
 			$xhrView = '/elements/tags/tagCloud'; 
 			// $xhrView = '/elements/tags/preview';
 		}

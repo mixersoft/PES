@@ -1013,7 +1013,33 @@ debug("WARNING: This code path is not tested");
 	function updateExif($uuid) {
 		return parent::__updateExif($uuid);
 	}
-	
+	function trends($id = null) {
+		if (!$id) {
+			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'Snap'));
+			$this->redirectSafe();
+		}	
+		$options = array(
+			'conditions'=>array('Asset.id'=>$id),
+			'contain'=> array('Owner.id', 'Owner.username', 'ProviderAccount.id', 'ProviderAccount.provider_name', 'ProviderAccount.display_name'),
+			'fields'=>'Asset.*',		// MUST ADD 'fields' for  containable+permissionable
+			'extras'=>array(
+				'show_edits'=>true,
+				'join_shots'=>false, 		// join shots to get shot_count?
+				'join_bestshot'=>false,			// do NOT need bestShots when we access by $asset_id
+				'show_hidden_shots'=>true,		// by $asset_id, hidden shots ok, or DONT join_bestshot
+			),
+		);
+		$data = $this->Asset->find('first', $options);
+		if (empty($data)) {
+			/*
+			 * handle no permission to view record
+			 */
+			$this->Session->setFlash("Snap not found.");
+			$this->redirectSafe();
+		} else {
+			$this->set('data', $data);
+		}
+	}
 	function discussion($id) {
 		$this->layout = 'snappi';
 		$this->helpers[] = 'Time';
@@ -1135,7 +1161,7 @@ debug("WARNING: This code path is not tested");
 				//TODO: begin SQL transaction for batch commit
 				$updateBestShot_assetIds = array();
 				$activePerAssetFields = array_intersect(array('rating','rotate','tags','chunk','privacy','unshare'), $fields);
-debug($aids);				
+// debug($aids);				
 				foreach ($aids as $aid) {
 					if (count($activePerAssetFields)==0) break;	// skip if ther eare not active PerAssset Fields
 					/*
@@ -1435,7 +1461,8 @@ $this->log("WARNING: json_exif['preview']['imageWidth'] may need to be scaled, i
 
 	function __addTag($tagString, $assetId) {
 		// Taggable->saveTags()
-		return $this->Asset->saveTags($tagString, $assetId, $replace = false);
+		// tag all assets in Shot, assume Usershot
+		return $this->Asset->tagUsershot($tagString, $assetId, $replace = false);
 	}
 	
 	

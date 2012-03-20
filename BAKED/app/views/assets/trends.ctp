@@ -1,8 +1,8 @@
 <?php 
 	$this->Layout->blockStart('itemHeader');
-		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
+		$badge_src = Stagehand::getSrc($data['Asset']['src_thumbnail'], 'sq');
 		echo $this->element('nav/section', compact('badge_src')); 
-	$this->Layout->blockEnd();
+	$this->Layout->blockEnd();	
 ?>
 <section id="tag-cloud" class="trends grid_16">
 <?php	// tagCloud

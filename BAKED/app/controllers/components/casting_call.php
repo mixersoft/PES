@@ -120,7 +120,7 @@ class CastingCallComponent extends Object {
 		$exif = json_decode($row['json_exif'], true);
 if (!isset($exif['root']['imageWidth'])) {
 	if (!isset($this->Import)) $this->Import = loadComponent('Import', $this);
-	$exif['root'] = mergeAsArray( $exif['root'], $this->Import->fixRootImagesize($src));	
+	$exif['root'] = @mergeAsArray( $exif['root'], $this->Import->fixRootImagesize($src));	
 }	
 		if (!@empty($row[0]['FocusCenter'])) {
 			$x=$row[0]['FocusCenter']['X'];
