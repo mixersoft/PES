@@ -61,7 +61,30 @@ class Groupshot extends AppModel {
 		)
 	);
 
-	
+/**
+	 * return top rated Asset.id, sorted by rating DESC, score DESC
+	 * NOTE: assumes data is order by 'order'=>'`SharedEdit`.score DESC, `Asset`.dateTaken ASC',
+	 */
+	private function _getTopRatedByRatingScore(& $data){
+		$top_rated = null;
+		foreach ($data as $row) {
+			if (!$top_rated) {
+				$top_rated = $row;
+				continue;
+			}
+			if ($row[0]['rating'] > $top_rated[0]['rating']) {
+				$top_rated = $row;
+				continue;
+			}
+			if ($row[0]['rating'] == $top_rated[0]['rating'] 
+				&& $row['SharedEdit']['score'] > $top_rated['SharedEdit']['score'] ) 
+			{
+				$top_rated = $row;
+				continue;
+			}
+		}
+		return $top_rated['Asset']['id'];
+	}	
 	/**
 	 * groupAsShot
 	 * @param array $assetIds 
@@ -138,7 +161,7 @@ class Groupshot extends AppModel {
 				// set BestGroupshotMember by UserEdit rating
 				$bestshotAlias='BestGroupshotMember';
 			}
-			$insert[$bestshotAlias]['asset_id'] = $byRating[0]['Asset']['id'];
+			$insert[$bestshotAlias]['asset_id'] = $this->_getTopRatedByRatingScore($byRating);
 			$insert[$bestshotAlias]['user_id'] = AppController::$userid;
 			
 			// save to DB

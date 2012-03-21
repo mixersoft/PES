@@ -47,7 +47,30 @@ class Usershot extends AppModel {
 			'dependent' => true,
 		),		
 	);	
-	
+	/**
+	 * return top rated Asset.id, sorted by rating DESC, score DESC
+	 * NOTE: assumes data is order by 'order'=>'`SharedEdit`.score DESC, `Asset`.dateTaken ASC',
+	 */
+	private function _getTopRatedByRatingScore(& $data){
+		$top_rated = null;
+		foreach ($data as $row) {
+			if (!$top_rated) {
+				$top_rated = $row;
+				continue;
+			}
+			if ($row[0]['rating'] > $top_rated[0]['rating']) {
+				$top_rated = $row;
+				continue;
+			}
+			if ($row[0]['rating'] == $top_rated[0]['rating'] 
+				&& $row['SharedEdit']['score'] > $top_rated['SharedEdit']['score'] ) 
+			{
+				$top_rated = $row;
+				continue;
+			}
+		}
+		return $top_rated['Asset']['id'];
+	}
 	/**
 	 * groupAsShot
 	 * @param array $assetIds 
@@ -115,7 +138,7 @@ class Usershot extends AppModel {
 			// set BestShotSystem by sort order, sort=='`SharedEdit`.score DESC, `Asset`.dateTaken ASC',
 			// WARNING: assumes hiddenShot assets are ALL lower rated than visible shots
 			$insert['BestUsershotSystem']['asset_id'] = $assetIds[0];
-			// now sort by UserEdit.rating
+			// now sort by UserEdit.rating, then SharedEdit.score DESC
 			$byRating = Set::sort($data, '/Asset/rating', 'DESC');
 			if ($bestshot_ownerId == AppController::$userid) {
 				// set BestUsershotOwner by UserEdit.rating	
@@ -124,7 +147,7 @@ class Usershot extends AppModel {
 				// set BestUsershotMember by UserEdit rating
 				$bestshotAlias='BestUsershotMember';
 			}
-			$insert[$bestshotAlias]['asset_id'] = $byRating[0]['Asset']['id'];
+			$insert[$bestshotAlias]['asset_id'] = $this->_getTopRatedByRatingScore($byRating);
 			$insert[$bestshotAlias]['user_id'] = $bestshot_ownerId;
 			
 			// save to AssetsUsershot, BestUsershot, etc.

@@ -131,9 +131,16 @@
                 try {
                     var oRating = o.rating || o.data && o.data.rating || o.Audition.Photo.Fix.Rating || 0;
 					var b = this.best;
-					var bRating = b.data ? b.data.rating : b.rating ? b.rating : b.Audition.Photo.Fix.Rating || 0;
-                    if (oRating > bRating) 
-                        this.best = o;
+					var bRating = b.rating || b.data && b.data.rating || b.Audition.Photo.Fix.Rating || 0;
+                    if (oRating > bRating) {
+                    	this.best = o;
+                    	return true
+                    }
+                    if (oRating == bRating) {	// check score
+                    	oRating = o.score || o.data && o.data.score || o.Audition.Photo.Fix.Score || 0;
+                    	bRating = b.score || b.data && b.data.score || b.Audition.Photo.Fix.Score || 0;
+                    }
+                    if (oRating > bRating) this.best = o;
                 } 
                 catch (err) {
                     return false;
