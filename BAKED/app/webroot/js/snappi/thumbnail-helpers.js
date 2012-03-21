@@ -543,7 +543,6 @@
     		queue: false,
     		listeners: ['ActionsClick', 'ToggleAutoScrollClick', 'ThumbsizeClick', 'HiddenShotClick', 'RatingClick', 'PreviewImgLoad', 'NextPrevClick'],
     	},
-    	// TODO: update Sizes to use action="set-display-size:[size]" format
 		markup: '<article class="FigureBox PhotoPreview">'+
                 '<figure>'+
                 '    <figcaption><ul class="extras inline rounded-5">'+

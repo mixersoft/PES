@@ -2,7 +2,7 @@
 	if (isset($this->passedArgs['thumbSize'])) {
 		$thumbSize = $this->passedArgs['thumbSize'];		
 	} else {
-		$PREFIX = 'uuid-';	// Photo 
+		$PREFIX = 'Photo';	// Photo 
 		$thumbSize = Session::read("thumbSize.{$PREFIX}");
 	}
 	if (!$thumbSize) $thumbSize = 'lm';		

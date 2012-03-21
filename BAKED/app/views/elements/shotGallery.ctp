@@ -1,5 +1,5 @@
 <?php
-	$PREFIX = 'shot-';
+	$PREFIX = 'ShotGallery';
 	$thumbSize = Session::read("thumbSize.{$PREFIX}");
 	if (!$thumbSize) $thumbSize = 'sq';
 	$sizes = array(

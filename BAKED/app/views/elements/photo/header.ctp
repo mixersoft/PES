@@ -2,10 +2,10 @@
 	if (isset($this->passedArgs['thumbSize'])) {
 		$thumbSize = $this->passedArgs['thumbSize'];		
 	} else {
-		$PREFIX = 'uuid-';	// Photo 
+		$PREFIX = 'Photo';	// Photo 
 		$thumbSize = Session::read("thumbSize.{$PREFIX}");
 	}
-	if (!$thumbSize) $thumbSize = 'lm';		
+	if (!$thumbSize) $thumbSize = 'lm';	
 	$sizes = array(
 		'sq'=>AppController::$http_static[1].'/static/img/css-gui/img_1.gif',
 		'lm'=>AppController::$http_static[0].'/static/img/css-gui/img_2.gif',

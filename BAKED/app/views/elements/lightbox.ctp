@@ -19,7 +19,7 @@ if (isset($this->viewVars['jsonData']['lightbox']) && isset($this->viewVars['jso
 
 
 
-	$PREFIX = 'lightbox-';	// Factory[type.].defaultCfg.ID_PREFIX 
+	$PREFIX = 'Lightbox';	// Factory[type.].defaultCfg.Type 
 	$thumbSize = Session::read("thumbSize.{$PREFIX}");
 	
 if (Configure::read('controller.action')=='lightbox') {

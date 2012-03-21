@@ -115,6 +115,10 @@
 	    				e.currentTarget.get('parentNode').all('li').removeClass('focus');
 		        		e.currentTarget.addClass('focus');
 		        		SNAPPI.setPageLoading(true);
+		        		var sessKey = 'thumbSize.'+ this.Gallery._cfg.type;
+		        		var cfg = {};
+		        		cfg[sessKey] = action[1];
+		        		SNAPPI.io.writeSession(cfg);
 	    			break;	 
 	    			case 'toggle-display-options':
 	    				SNAPPI.UIHelper.nav.toggleDisplayOptions();
@@ -435,28 +439,10 @@
     	build: function(gallery, cfg){
             // var self = gallery;		// instance of SNAPPI.Gallery
             cfg = cfg || {};
-            // inherit javascript state information from current page, 
-            // called AFTER SNAPPI.mergeSessionData();
-			try {	// merge SNAPPI.STATE.displayPage for primary gallery, Photo=photos, home
-				// TODO: use SNAPPI.STATE.galleryType = Photo consistently, starting here
-				if (/[photos|snaps|home]/.test( SNAPPI.STATE.controller.action ) 
-					|| SNAPPI.STATE.controller.name+'/'+SNAPPI.STATE.controller.action == "Assets/all"
-				) {
-					cfg = _Y.merge(SNAPPI.STATE.displayPage, cfg);
-					// check for valid size, type=Photo
-					if (/^(sq|tn|lm|ll)$/.test(SNAPPI.STATE.previewSize)) {
-						cfg.size = SNAPPI.STATE.previewSize;	// override
-						delete PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
-					}
-				}
-			} catch (e) { 	}
-            try {
-            	// TODO: warning, somewhere this was set wrong,  to 
-            	// PAGE.jsonData.profile.thumbSize=='bp'
-            	cfg.size = cfg.size || PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
-            } catch (e){  }
+            
             if (!cfg.size) delete cfg.size;	// merging undefined causes prob with default setting
-            cfg = _Y.merge(GalleryFactory[cfg.type].defaultCfg, cfg);
+            if (cfg.type == 'Photo') cfg = _Y.merge(SNAPPI.STATE.displayPage, cfg);
+            cfg = _Y.merge(GalleryFactory[cfg.type].defaultCfg, cfg);	
             
             try {
             	if (!cfg.castingCall && cfg.castingCall !== false) cfg.castingCall = PAGE.jsonData.castingCall;
@@ -469,6 +455,8 @@
 	        // generic gallery BEFORE init
 			gallery.providerName = cfg.PROVIDER_NAME;	// deprecate: use this.cfg.providerName
 			GalleryFactory._attachNodes(gallery, cfg);
+			var thumbSize = gallery.header && gallery.header.one('ul.thumb-size > li.focus');
+			if (thumbSize) cfg.size = thumbSize.getAttribute('action').split(':').pop();
 	        gallery.init(cfg);
 	        
 	        // apply SNAPPI.STATE.filters to section.gallery-display-options
@@ -552,16 +540,10 @@
     	build: function(gallery, cfg){
             // var self = gallery;		// instance of SNAPPI.Gallery
             cfg = cfg || {};
-            // inherit javascript state information from current page, 
-            // called AFTER SNAPPI.mergeSessionData();
-            cfg = _Y.merge(GalleryFactory[cfg.type].defaultCfg, SNAPPI.STATE.displayPage, cfg);	
-            try {
-            	cfg.size = PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
-            } catch (e){}
-            try {
-            	if (!cfg.castingCall && cfg.castingCall !== false) cfg.castingCall = PAGE.jsonData.lightbox.castingCall;
-            } catch (e){}
-	        
+            // ???: merge displayPage for lightbox???
+            // cfg = _Y.merge(GalleryFactory[cfg.type].defaultCfg, SNAPPI.STATE.displayPage, cfg); 
+            cfg = _Y.merge(GalleryFactory[cfg.type].defaultCfg, cfg);
+            
 	        // .gallery.photo BEFORE init
 	        gallery.auditionSH = null;
 	        gallery.shots = null; 	
@@ -569,6 +551,8 @@
 	        // generic gallery BEFORE init
 			gallery.providerName = cfg.PROVIDER_NAME;	// deprecate: use this.cfg.providerName
 			GalleryFactory._attachNodes(gallery, cfg);
+			var thumbSize = gallery.header && gallery.header.one('ul.thumb-size > li.focus');
+			if (thumbSize) cfg.size = thumbSize.getAttribute('action').split(':').pop();
 	        gallery.init(cfg);
 	        
 	        // .gallery.photo AFTER init methods

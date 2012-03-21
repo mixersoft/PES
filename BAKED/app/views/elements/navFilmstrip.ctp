@@ -3,7 +3,7 @@
 		$count = $this->viewVars['jsonData']['castingCall']['CastingCall']['Auditions']['Total']; 
 	} else $count = 0;
 
-	$PREFIX = 'nav-';
+	$PREFIX = 'NavFilmstrip';
 	$thumbSize = Session::read("thumbSize.{$PREFIX}");
 	if (!$thumbSize) $thumbSize = 'sq';
 	$sizes = array(
