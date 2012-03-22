@@ -64,7 +64,7 @@
 			<?php
 				$xhrSrc = array('plugin'=>'', 'action'=>'discussion', $this->passedArgs[0]);
 				$xhrSrc = Router::url($xhrSrc);
-				echo "<div id='paging-comments' class='paging-content xhr-get' xhrSrc='{$xhrSrc}'  xhrTarget='paging-comments'></div>";	
+				echo "<div id='paging-comments' class='paging-content xhr-get' xhrSrc='{$xhrSrc}'  xhrTarget='paging-comments' delay='8000'></div>";	
 			?>	
 			</section>
 		</aside>	
@@ -78,7 +78,7 @@
 				<h1 class="circle">Circles</h1>
 		<?php
 			$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'groups', '?'=>array('preview'=>1)));
-			echo "<div id='groups-preview-xhr' class='xhr-get gallery group' xhrSrc='{$ajaxSrc}'></div>";
+			echo "<div id='groups-preview-xhr' class='xhr-get gallery group' xhrSrc='{$ajaxSrc}' delay='500'></div>";
 		?>			
 			</section>
 			
@@ -89,7 +89,7 @@
 			$xhrFrom = Configure::read('controller.xhrFrom');
 			$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom),'preview'=>1);
 			$xhrSrc = Router::url($xhrSrc);
-			echo "<div id='tags-preview-xhr' class='gallery tags xhr-get' xhrSrc='{$xhrSrc}'></div>";
+			echo "<div id='tags-preview-xhr' class='gallery tags xhr-get' xhrSrc='{$xhrSrc}'  delay='8000'></div>";
 		?>	
 		<?php echo $this->element('tags', array('domId'=>'assets-tags', 'data'=>$data))?>
 			</section>

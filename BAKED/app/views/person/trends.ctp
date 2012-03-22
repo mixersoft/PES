@@ -11,6 +11,6 @@
 	$xhrFrom = Configure::read('controller.xhrFrom');
 	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom), 'gallery'=>1, 'preview'=>0);
 	$xhrSrc = Router::url($xhrSrc);	
-	echo "<div id='paging-tags-xhr' class='xhr-get' nodelay='1' xhrSrc='{$xhrSrc}'></div>";
+	echo "<div id='paging-tags-xhr' class='xhr-get' delay='0' xhrSrc='{$xhrSrc}'></div>";
 ?>	
 </section>

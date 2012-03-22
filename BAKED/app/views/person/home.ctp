@@ -30,7 +30,7 @@ if (empty($this->passedArgs['wide'])) {
 <?php	$this->Layout->blockEnd();	} ?>	
 <?php 
 	$ajaxSrc = Router::url(Configure::read('passedArgs.complete') + array('action'=>'photos', '?'=>array('gallery'=>1)));
-	echo "<div id='gallery-photo-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' nodelay='1'></div>";
+	echo "<div id='gallery-photo-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' delay='0'></div>";
 ?>
 
 <?php  $this->Layout->blockStart('markup');
@@ -77,7 +77,7 @@ if (empty($this->passedArgs['wide'])) {
 						  <section id="circles">
 <?php
 	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'groups', '?'=>array('preview'=>1)));
-	echo "<div id='groups-preview-xhr' class='xhr-get gallery group' xhrSrc='{$ajaxSrc}' ></div>";
+	echo "<div id='groups-preview-xhr' class='xhr-get gallery group' xhrSrc='{$ajaxSrc}' delay='500' ></div>";
 ?>							  	
 						  </section>
 						</section>
@@ -93,7 +93,7 @@ if (empty($this->passedArgs['wide'])) {
 	$xhrFrom = Configure::read('controller.xhrFrom');
 	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom),'preview'=>1);
 	$xhrSrc = Router::url($xhrSrc);
-	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
+	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}' delay='8000'></div>";
 ?>	
 			</section>
         	<section class="people">

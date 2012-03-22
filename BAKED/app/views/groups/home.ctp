@@ -65,7 +65,7 @@ if (empty($this->passedArgs['wide'])) {
 ?>
 <?php 
 	$ajaxSrc = Router::url(Configure::read('passedArgs.complete') + array('action'=>'photos', 'perpage'=>24, '?'=>array('gallery'=>1)));
-	echo "<div id='gallery-photo-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' nodelay='1'></div>";
+	echo "<div id='gallery-photo-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' delay='0'></div>";
 ?>
 <?php  if ( $data['Group']['assets_group_count']>0 ) {
 		$this->Layout->blockStart('markup'); 		?>
@@ -98,7 +98,7 @@ if (empty($this->passedArgs['wide'])) {
 <?php 
 	// $ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'xhr-get', 'a'=>'members', 'e'=>'preview-members'));
 	$xhrSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'members', '?'=>array('preview'=>1)));
-	echo "<div id='members-preview-xhr' class='xhr-get gallery person' xhrSrc='{$xhrSrc}'></div>";
+	echo "<div id='members-preview-xhr' class='xhr-get gallery person' xhrSrc='{$xhrSrc}' delay='500'></div>";
 ?>							  	
 						  </section>
 						</section>
@@ -111,7 +111,7 @@ if (empty($this->passedArgs['wide'])) {
 					<?php
 						$xhrSrc = array('plugin'=>'', 'action'=>'discussion', $this->passedArgs[0]);
 						$xhrSrc = Router::url($xhrSrc);
-						echo "<div id='paging-comments' class='paging-content wrap xhr-get' xhrSrc='{$xhrSrc}'  xhrTarget='paging-comments'></div>";	
+						echo "<div id='paging-comments' class='paging-content wrap xhr-get' xhrSrc='{$xhrSrc}'  xhrTarget='paging-comments' delay='8000'></div>";	
 					?>	
 					</section>
 				</article>				
@@ -126,7 +126,7 @@ if (empty($this->passedArgs['wide'])) {
 	$xhrFrom = Configure::read('controller.xhrFrom');
 	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom),'preview'=>1);
 	$xhrSrc = Router::url($xhrSrc);
-	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
+	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}' delay='8000'></div>";
 	// tag form 	
 	echo $this->element('tags', array('domId'=>'groups-tags', 'data'=>$data));
 ?>

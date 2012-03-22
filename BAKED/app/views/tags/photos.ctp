@@ -78,7 +78,7 @@ if (empty($this->passedArgs['wide'])) {
 <?php
 // this should be only the circles which include user photos
 	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'groups', '?'=>array('preview'=>1)));
-	echo "<div id='groups-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' ></div>";
+	echo "<div id='groups-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'  delay='500'></div>";
 	
 ?>							  	
 						  </section>
@@ -95,7 +95,7 @@ if (empty($this->passedArgs['wide'])) {
 		$xhrFrom = Configure::read('controller.xhrFrom');
 		$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom),'preview'=>1);
 		$xhrSrc = Router::url($xhrSrc);	
-		echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";	
+		echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}' delay='8000'></div>";	
 ?>	
 			</section>
         	<section class="people">

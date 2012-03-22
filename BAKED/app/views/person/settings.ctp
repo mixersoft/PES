@@ -55,6 +55,6 @@
 				<li class='tab btn'><a id='tab-moderator' href='<?php echo $moderatorSrc ?>' onclick='return SNAPPI.tabSection.selectByCSS(this);'>Moderation</a></li>
 			</ul>
 		</div>	
-		<div id='tab-view-settings' class="setting tab-view xhr-get prefix_1 grid_14 suffix_1"  xhrSrc='<?php echo $xhrSrc."?xhrview={$xhrFrom['view']}" ?>' nodelay='1'></div>	
+		<div id='tab-view-settings' class="setting tab-view xhr-get prefix_1 grid_14 suffix_1"  xhrSrc='<?php echo $xhrSrc."?xhrview={$xhrFrom['view']}" ?>' delay='0'></div>	
 	</div>	
 </div>

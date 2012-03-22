@@ -109,6 +109,7 @@
 	 * - xhrSrc: cakePhp request 
 	 * - xhrTarget: target for ajax response, default to current DOM element by Id 
 	 * xhr-get request is automatically made for all '.xhr-get' markup
+	 * - delay: ms of delay to add, default = 0
 	 */
 	var XhrFetch = function(cfg) {
 		if (XhrFetch.instance) return XhrFetch.instance;
@@ -120,7 +121,7 @@
 	
 	XhrFetch.prototype = {
 		CSS_CLASS_TRIGGER: 'xhr-get',
-		XHR_PAGE_INIT_DELAY: 500,
+		XHR_PAGE_DELAY_BUFFER: 200,
 		/**
 		 * singleton init - attaches delegated click handlers for ajax paging -
 		 * launches request for any ajax xhr-gets to fetch after initial page
@@ -141,22 +142,34 @@
 				this.requestFragment(n, cfg);
 			} else {
 				// searches page for xhr-gets, add delay as necessary
-				var wait = cfg.delay || this.XHR_PAGE_INIT_DELAY;
 				var fragments = _Y.all('.'+TRIGGER);
+				var buffer = {};
 				if (fragments) {
 					fragments.each(function(n,i,l) {
 						if (n.hasClass('xhr-loading')) return;	// prevent duplicate loading
 						n.addClass('xhr-loading');
-						var nodelay = n.getAttribute('nodelay');
-						if (nodelay) {
+						var delay = n.getAttribute('delay');
+						buffer[delay] = !buffer[delay] ? 1 : buffer[delay]+1; 
+						if (!delay) {
 							this.requestFragment(n);							
 						} else {
 							var delayed = new _Y.DelayedTask( function() {
 								this.requestFragment(n);
+								delete SNAPPI.timeout[n.get('id')];
 							}, this);
 							// executes after XXXms the callback
-							delayed.delay(wait);	
-							wait += 500;  // +500ms delay for each subsequent fetch
+							delay = parseInt(delay)+(buffer[delay]*this.XHR_PAGE_DELAY_BUFFER);
+							delayed.delay(delay);	
+							SNAPPI.timeout[n.get('id')] = delayed;
+							if (delay > 1000) {
+								n.once('mouseenter', function(e, n){
+									if (SNAPPI.timeout[n.get('id')]){
+										SNAPPI.timeout[n.get('id')].cancel(); 
+										delete SNAPPI.timeout[n.get('id')];
+										this.requestFragment(n);
+									}
+								}, this, n);
+							}
 						}
 					}, this);
 				}
@@ -175,7 +188,6 @@
 		requestFragment : function(n, cfg) {
 			
 			var target = n.getAttribute('xhrTarget');
-			var nodelay = n.getAttribute('nodelay');
 			target = target ? _Y.one('#'+target) : n;
 			var uri = n.getAttribute('xhrSrc');
 			
@@ -195,7 +207,7 @@
 				target.plug(_Y.Plugin.IO, {
 					uri: uri,
 					method: 'GET',
-					parseContent: true,
+					parseContent: true,	// TODO: doesn't work, use IO.parseContent()
 					autoLoad: false,
 					arguments: args,
 					on: {
@@ -214,131 +226,11 @@
 					}
 				});
 			}
-			
-			/*
-			 *  before _Y.Plugin.IO.setContent()
-			 */
-			// var detach = _Y.before(function(content, target, fragment){
-				// console.warn("before _Y.Plugin.IO.setContent()");
-				// detach.detach();
-				// this.before_SetContent(content, target, fragment);
-				// // new _Y.DelayedTask(SNAPPI.xhrFetch.init).delay(100);
-			// }, target.io, 'setContent', this, target, n); 
 			       				
 			target.io.set('uri', uri);
 			target.io.set('arguments', args);
 			target.io.start();
 			return;			
 		},
-		before_SetContent: function(content, target, fragment){
-		}
 	};
-	
-	/*
-	 * replaced by aui, pagingator-aui and A.IO.plugin
-	 */
-	XhrFetch.unused_methods = {
-		/**
-		 * @deprecated, use paginator-aui instead
-		 * search for paginate divs, add delegated listeners - can be called
-		 * repeatedly with no side-effects
-		 */
-		initPaging : function() {
-			var paging = _Y.all('div.paging-content');	// deprecate. using SNAPPI.Paginator
-			if (paging) {
-				paging.each(function(n) {
-					// add event delegate listeners
-						if (!n.listen) n.listen={}; 
-						if (!n.listen.paging) {
-							n.listen.paging = n.delegate('click',
-									this.requestPagingContent,
-									'.paging-control a', this);
-						}
-					}, this);
-			}
-		},
-		/**
-		 * 
-		 * @deprecated. use paginator-aui instead
-		 * 
-		 * render new page into 'div.paging-content' - searches for
-		 * 'div.paging-content' to attach delegated click listener to
-		 * PaginateHelper <A> elements using CSS selector = '.paging-control a' -
-		 * xhrSrc == A.href from e.target.get('href') - replaces innerHTML in
-		 * target uses the following custom dom attr - xhrTarget: target for
-		 * ajax response, default to 'div.paging-content', referenced by Id
-		 * 
-		 * @param {Object} e - click event object
-		 */
-		requestPagingContent : function(e) {
-			e.halt(); // stop event propagation
-			//e.container == delegate event container
-			var targetId = e.container.getAttribute('xhrTarget') || e.container.get('id');
-			var target = _Y.one('#'+targetId);
-			var uri = e.target.get('href');
-
-			try {
-				SNAPPI.STATE.displayPage.page = parseInt(uri.match(
-						/page:(\d*)/i).pop());
-			} catch (e) {
-			}
-			if (!target.io) {
-				target.plug(_Y.Plugin.IO, {
-					uri: uri,
-					method: 'GET',
-					parseContent: true,
-					autoLoad: false
-				});
-			}
-			target.io.set('uri', uri);
-			target.io.start();
-			return;
-		},
-
-		
-		/**
-		 * @deprecated, use  A.Plugin.IO.setContent instead
-		 * 
-		 * - replaces innerHTML of Dom element with responseText
-		 * 
-		 * @param {Object} id _Y.io transaction Id
-		 * @param {Object} o response object
-		 * @param {Object} args args.sectionId == id of DOM container
-		 */
-		_updateDOM : function(id, o, args) {
-			console.warning("DEPRECATE? SNAPPI.xhrFetch._updateDOM");
-			var data = o.responseText; // Response data.
-			var target = args.target || args[0]; // DOM element id to put
-													// data
-			var node = target.setContent(data);
-	
-			SNAPPI.xhrFetch.xhrInit(node); // execute js in ajax markup
-			_Y.fire('snappi:ajaxLoad'); // execute js in script files
-		},
-		/**
-		 * DEPRECATED (?) XHR request should call 
-		 * XHR page xhr-gets can add init code by markup like this: 
-		 * // <script class='xhrInit' type='text/javascript'> 
-		 */
-		xhrInit : function(xhrNode) {
-			console.warning("DEPRECATE? SNAPPI.xhrFetch.xhrInit: PAGE.init.length="+PAGE.init.length);
-			// execute deferred javascript init
-			while (PAGE.init.length) {
-				var init = PAGE.init.shift();
-				init();
-			}
-		},
-		
-		
-		/**
-		 * Not finished
-		 * getPageFromCache - check if we have page data already cached in a
-		 * sortedHash
-		 * 
-		 * @param {Object}
-		 *            e
-		 */
-	};
-	
-	
 })();

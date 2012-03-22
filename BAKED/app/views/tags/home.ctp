@@ -54,7 +54,7 @@ if (empty($this->passedArgs['wide'])) {
 	// tagged photos
 	$options = array('plugin'=>'','action'=>'photos', '?'=>array('gallery'=>1, 'preview'=>1));
 	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + $options);
-	echo "<div id='gallery-photo-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' nodelay='1'></div>";
+	echo "<div id='gallery-photo-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' delay='0'></div>";
 ?>
 
 <?php
@@ -62,7 +62,7 @@ if (empty($this->passedArgs['wide'])) {
 //	$ajaxSrc = Router::url(array('action'=>'groups', AppController::$uuid));
 	$options = array('plugin'=>'','action'=>'groups', '?'=>array('gallery'=>1, 'preview'=>1)); 
 	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + $options);
-	echo "<div id='groups-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'></div>";
+	echo "<div id='groups-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' delay='500'></div>";
 ?>	
 
 <?php $this->Layout->blockStart('relatedContent');?>
@@ -85,7 +85,7 @@ if (empty($this->passedArgs['wide'])) {
 					<?php
 	$xhrSrc = array('plugin'=>'', 'action'=>'discussion', $this->passedArgs[0]);
 	$xhrSrc = Router::url($xhrSrc);
-	echo "<div id='paging-comments' class='paging-content wrap xhr-get' xhrSrc='{$xhrSrc}'  xhrTarget='paging-comments'></div>";
+	echo "<div id='paging-comments' class='paging-content wrap xhr-get' xhrSrc='{$xhrSrc}'  xhrTarget='paging-comments' delay='8000'></div>";
 						?>	
 					</section>
 				</article>				
@@ -99,7 +99,7 @@ if (empty($this->passedArgs['wide'])) {
 	$xhrFrom = Configure::read('controller.xhrFrom');
 	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom),'preview'=>1);
 	$xhrSrc = Router::url($xhrSrc);
-	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}'></div>";
+	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}' delay='8000'></div>";
 ?>
 			</section>
 		</div>	
