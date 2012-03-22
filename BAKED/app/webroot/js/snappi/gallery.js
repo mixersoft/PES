@@ -481,7 +481,7 @@
             status = (status == undefined) ? true : status;
             var k,v,handler, fn;
             if (status) {
-            	cfg = cfg || ['Keypress', 'Mouseover', 'LinkToClick', 'WindowOptionClick', 'MultiSelect', 'Contextmenu', 'FsClick'];
+            	cfg = cfg || ['Keydown', 'Mouseover', 'LinkToClick', 'WindowOptionClick', 'MultiSelect', 'Contextmenu', 'FsClick'];
             	for ( k in cfg){
             		try {
             			Factory.listeners[cfg[k]].call(this); 
@@ -741,7 +741,7 @@
 	    		var now = this.auditionSH._focus;
 	    		
 	    		// to see if it has a photo under it
-	    		var num_down = parseInt(now) - lineCount;
+	    		var num_down = now - lineCount;
 	    		next = this.container.get('childNodes').item(num_down);
 	    		
 	    		// if it reaches the end of top, then go search the bottom of this column

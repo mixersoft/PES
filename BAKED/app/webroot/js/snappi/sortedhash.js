@@ -361,7 +361,7 @@
                         }
                     }
                     if (found) 
-                        this._focus = i;
+                        this._focus = parseInt(i);
                 }
             }
             return this.getFocus();
@@ -387,7 +387,7 @@
             else {
                 for (var i = this._focus || 0; i < this._keys.length; i++) {
                     if (fn(this._keys[i])) {
-                        this._focus = i;
+                        this._focus = parseInt(i);
                         return this.getFocus();
                     }
                 }
@@ -402,7 +402,7 @@
             else {
                 for (var i = this._focus || 0; i >= 0; i--) {
                     if (fn(this._keys[i])) {
-                        this._focus = i;
+                        this._focus = parseInt(i);
                         return this.getFocus();
                     }
                 }

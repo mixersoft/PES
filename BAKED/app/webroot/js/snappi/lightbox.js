@@ -217,9 +217,9 @@
             var node = this.node;
             if (node.listen == undefined) node.listen = {};
             if (status) {
-                if (node.listen.keypress == undefined) {
-//	                    this.listen.keypress = _Y.on('keypress', this.handleKeypress, document, this);
-                    //					this.listen.keypress = _Y.on('keyup', this.handleKeypress, node, '46', this);
+                if (node.listen['Keydown'] == undefined) {
+//	                    this.listen['Keydown'] = _Y.on('keydown', this.handleKeydown, document, this);
+                    //					this.listen['Keydown'] = _Y.on('keyup', this.handleKeydown, node, '46', this);
                 }
             }
             else {
@@ -1331,7 +1331,7 @@
 				return;
 			}
 		},
-		handleKeypress : function(e) {
+		handleKeydown : function(e) {
 			// console.log(this.container.get('parentNode'));
 			if (!this.node.ancestor('#content')) {
 				// container is no longer visible, detach all listeners

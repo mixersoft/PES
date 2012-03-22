@@ -135,7 +135,7 @@
     	/*
          * Key press functionality of next & previous buttons
          */
-        handleKeypress: function(e){
+        handleKeydown: function(e){
         	var charCode = GalleryFactory[this._cfg.type].charCode;
         	var charStr = e.charCode + '';
             if (e.ctrlKey) {
@@ -157,7 +157,10 @@
 			var focus = this.container.one('.FigureBox.focus');
 			if ( focus == null ) {
 				focus = this.container.one(':hover.FigureBox');
-				if (focus) focus.addClass('focus');
+				if (focus) {
+					focus.addClass('focus');
+					this.setFocus(focus.uuid);
+				}
 			}
         	if ( focus == null ) {
 				var i = this.auditionSH.indexOf(this.auditionSH.getFocus());
@@ -432,18 +435,18 @@
 						})	        	
 				}
 	        }, 
-	        Keypress: function(){
-	        	var action = 'Keypress';
-	            if (this.node.listen['Keypress'] == undefined) {
+	        Keydown: function(){
+	        	var action = 'Keydown';
+	            if (this.node.listen['Keydown'] == undefined) {
 	            	var startListening = function() {
-	            		if (!this.node.listen['Keypress']) {
-	            			this.node.listen['Keypress'] = _Y.on('keypress', GalleryFactory.actions.handleKeypress, document, this);
+	            		if (!this.node.listen['Keydown']) {
+	            			this.node.listen['Keydown'] = _Y.on('keydown', GalleryFactory.actions.handleKeydown, document, this);
 	            		}
 	            	};
 	            	var stopListening = function() {
-	            		if (this.node.listen['Keypress']) { 
-	            			this.node.listen['Keypress'].detach();
-	            			delete this.node.listen['Keypress'];
+	            		if (this.node.listen['Keydown']) { 
+	            			this.node.listen['Keydown'].detach();
+	            			delete this.node.listen['Keydown'];
 	            			// hide focus
 	            			this.container.all('li.focus').removeClass('focus');
 	            		}
@@ -498,7 +501,7 @@
 	        			'</section>',
 			node: 'div.gallery-container > section.gallery.photo',
 			render: true,
-			listeners: ['Keypress', 'Mouseover', 'LinkToClick', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick', 'DisplayOptionClick'],
+			listeners: ['Keydown', 'Mouseover', 'LinkToClick', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick', 'DisplayOptionClick'],
 			draggable: true,
 			hideHiddenShotByCSS: true,
 			size: 'lm',
@@ -613,7 +616,7 @@
 	        tnType: 'Photo',	// thumbnail Type
 			node: '#lightbox section.gallery.lightbox',
 			render: true,
-			// listeners: ['Keypress', 'Mouseover', 'LinkToClick', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick'],
+			// listeners: ['Keydown', 'Mouseover', 'LinkToClick', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick'],
 			listeners: ['MultiSelect', 'WindowOptionClick'],
 			draggable: false,
 			// droppable: true,			// make Lightbox.node droppable instead
@@ -676,8 +679,8 @@
 			showExtras: true,
 			hideHiddenShotByCSS: true,	
 			draggable: true,
-			// listeners: ['Keypress', 'Mouseover', 'MultiSelect', 'Contextmenu', 'FocusClick', 'WindowOptionClick'],
-			listeners: ['Keypress', 'Mouseover', 'MultiSelect', 'Contextmenu', 'FocusClick', 'HiddenShotClick', 'WindowOptionClick', 'PaginateClick', 'SetPagingControls'],
+			// listeners: ['Keydown', 'Mouseover', 'MultiSelect', 'Contextmenu', 'FocusClick', 'WindowOptionClick'],
+			listeners: ['Keydown', 'Mouseover', 'MultiSelect', 'Contextmenu', 'FocusClick', 'HiddenShotClick', 'WindowOptionClick', 'PaginateClick', 'SetPagingControls'],
 		},
 		build: GalleryFactory.Photo.build,
 		render: function(g, uuid){
@@ -964,7 +967,7 @@
 	        			'</section>',
 			node: 'div.gallery-container > section.gallery.photo',
 			render: true,
-			listeners: ['Keypress', 'Mouseover', 'LinkToClick', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick'],
+			listeners: ['Keydown', 'Mouseover', 'LinkToClick', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick'],
 			draggable: true,
 			hideHiddenShotByCSS: true,
 			size: 'lm',
