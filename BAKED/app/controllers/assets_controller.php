@@ -1201,7 +1201,7 @@ debug("WARNING: This code path is not tested");
 						$points = $oldVotes * $data['SharedEdit']['score'] + $delta;
 						$data['SharedEdit']['points'] = $points;
 						// adjust score
-						$data['SharedEdit']['score'] = $points/$data['SharedEdit']['votes'];
+						$data['SharedEdit']['score'] = $data['SharedEdit']['votes'] ? $points/$data['SharedEdit']['votes'] : 0;
 						$data['UserEdit']['rating'] = $newRating;
 						$data['UserEdit']['id'] = String::uuid();
 						$data['UserEdit']['owner_id'] = AppController::$userid;

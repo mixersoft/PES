@@ -155,6 +155,10 @@
             
 			// key navigation for GalleryFactory.Photo
 			var focus = this.container.one('.FigureBox.focus');
+			if ( focus == null ) {
+				focus = this.container.one(':hover.FigureBox');
+				if (focus) focus.addClass('focus');
+			}
         	if ( focus == null ) {
 				var i = this.auditionSH.indexOf(this.auditionSH.getFocus());
 				this.setFocus(i);
