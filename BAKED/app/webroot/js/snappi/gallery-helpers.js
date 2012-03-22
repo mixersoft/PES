@@ -132,6 +132,60 @@
 				} 	        		
         	} catch (e) {}
     	},
+    	/*
+         * Key press functionality of next & previous buttons
+         */
+        handleKeypress: function(e){
+        	var charCode = GalleryFactory[this._cfg.type].charCode;
+        	var charStr = e.charCode + '';
+            if (e.ctrlKey) {
+            	// selectAll
+                if (charStr.search(charCode.selectAllPatt) == 0) {
+                    e.preventDefault();
+                    this.selectAll();
+                    return;
+                }
+                // group
+                if (charStr.search(charCode.groupPatt) == 0) {
+                    e.preventDefault();
+                    this.groupAsShot();
+                    return;
+                }
+            }
+            
+			// key navigation for GalleryFactory.Photo
+			var focus = this.container.one('.FigureBox.focus');
+        	if ( focus == null ) {
+				var i = this.auditionSH.indexOf(this.auditionSH.getFocus());
+				this.setFocus(i);
+				return;
+        	}
+            if (charStr.search(charCode.nextPatt) == 0) {
+                e.preventDefault();
+                this.next();
+                return;
+            }
+            if (charStr.search(charCode.prevPatt) == 0) {
+                e.preventDefault();
+                this.prev();
+                return;
+            }
+            if (charStr.search(charCode.downPatt) == 0) {
+            	e.preventDefault();
+            	this.down();
+            }
+            if (charStr.search(charCode.upPatt) == 0) {
+            	e.preventDefault();
+            	this.up();
+            }
+            if (charStr.search(charCode.ratingPatt) == 0) {
+            	e.preventDefault();
+            	try {
+            		var v = parseInt(charStr) - 48; // 0 - 5
+            		SNAPPI.Rating.setRating(focus.Rating,v); 
+            	} catch(e){}
+            }
+        },
     }
     GalleryFactory.nav = {
     	/**
@@ -373,7 +427,26 @@
 							};
 						})	        	
 				}
-	        }     	
+	        }, 
+	        Keypress: function(){
+	        	var action = 'Keypress';
+	            if (this.node.listen['Keypress'] == undefined) {
+	            	var startListening = function() {
+	            		if (!this.node.listen['Keypress']) {
+	            			this.node.listen['Keypress'] = _Y.on('keypress', GalleryFactory.actions.handleKeypress, document, this);
+	            		}
+	            	};
+	            	var stopListening = function() {
+	            		if (this.node.listen['Keypress']) { 
+	            			this.node.listen['Keypress'].detach();
+	            			delete this.node.listen['Keypress'];
+	            			// hide focus
+	            			this.container.all('li.focus').removeClass('focus');
+	            		}
+	            	}; 
+	            	this.container.on('snappi:hover', startListening, stopListening, this);
+	            }
+	        },     	
 	        
 	};
     /**
@@ -427,6 +500,24 @@
 			size: 'lm',
 			start: null,
 			end: null
+	    },
+	    charCode : {
+	        nextPatt: /(^110$)|(^39$)|(^32$)|(^54$)/, // n,right,space,
+	        // keypad right
+	        prevPatt: /(^112$)|(^37$)|(^8$)|(^52$)/, // p,left,backspace,
+	        // keypad left
+	        closePatt: /(^27$)/,
+	        // escape
+	        selectAllPatt: /(^65$)|(^97$)/,
+	        // ctrl-a		
+	        groupPatt: /(^103$)|(^71$)/,
+	        // ctrl-g/G		
+	        	
+	        downPatt : /(^40)/,
+	        // keypad down
+	        upPatt : /(^38)/,
+	        // kepad up
+	        ratingPatt: /(^48$)|(^49$)|(^50$)|(^51$)|(^52$)|(^53$)/, // keybd 0-5
 	    },
         /*
          * build 

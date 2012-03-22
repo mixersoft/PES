@@ -37,35 +37,6 @@
 	var Factory = null;	// closure, init in onYready()
 	
 	
-    /*
-     * dependencies
-     */
-    var charCode = {
-        nextPatt: /(^110$)|(^39$)|(^32$)|(^54$)/, // n,right,space,
-        // keypad right
-        prevPatt: /(^112$)|(^37$)|(^8$)|(^52$)/, // p,left,backspace,
-        // keypad left
-        closePatt: /(^27$)/,
-        // escape
-        selectAllPatt: /(^65$)|(^97$)/,
-        // ctrl-a		
-        groupPatt: /(^103$)|(^71$)/,
-        // ctrl-g/G		
-        	
-        downPatt : /(^40)/,
-        // keypad down
-        upPatt : /(^38)/
-        // kepad up
-    };
-    // find only visible elements
-//    var isVisible = function(n){
-//    	var not_display = (n.getComputedStyle('display') == "none") ? true : false;
-//    	var invisible = (n.getComputedStyle('visibility') == "hidden") ? true : false;
-//    	var eleInvisible = (not_display || invisible);
-//    	
-//        return !(n.hasClass('hidden') || n.hasClass('hide')  || eleInvisible);
-//    };
-    
     var Gallery = function(cfg){
     	cfg = cfg || {type: 'Photo'};
     	Factory[cfg.type].build(this, cfg);
@@ -542,71 +513,6 @@
         		this.node.listen['LinkToClick'].detach();
         	} catch(e) {}
         },
-        listenKeypress: function(){
-            if (this.node.listen['Keypress'] == undefined) {
-            	var startListening = function() {
-            		if (!this.node.listen['Keypress']) {
-            			this.node.listen['Keypress'] = _Y.on('keypress', this.handleKeypress, document, this);
-//            			this.node.listen.keypress = _Y.on('key', this.handleKeypress, document, this);
-            		}
-            	};
-            	var stopListening = function() {
-            		if (this.node.listen['Keypress']) { 
-            			this.node.listen['Keypress'].detach();
-            			delete this.node.listen['Keypress'];
-            			// hide focus
-            			this.container.all('li.focus').removeClass('focus');
-            		}
-            	}; 
-            	this.container.on('snappi:hover', startListening, stopListening, this);
-            }
-        },
-        /*
-         * Key press functionality of next & previous buttons
-         */
-        handleKeypress: function(e){
-        	var charStr = e.charCode + '';
-            if (e.ctrlKey) {
-            	// selectAll
-                if (charStr.search(charCode.selectAllPatt) == 0) {
-                    e.preventDefault();
-                    this.selectAll();
-                    return;
-                }
-                // group
-                if (charStr.search(charCode.groupPatt) == 0) {
-                    e.preventDefault();
-                    this.groupAsShot();
-                    return;
-                }
-            }
-            
-			// key navigation for photoRoll
-            // set focus, if not set
-        	if (this.container.one('li.focus') == null ) {
-				var i = this.auditionSH.indexOf(this.auditionSH.getFocus());
-				this.setFocus(i);
-				return;
-        	}
-            if (charStr.search(charCode.nextPatt) == 0) {
-                e.preventDefault();
-                this.next();
-                return;
-            }
-            if (charStr.search(charCode.prevPatt) == 0) {
-                e.preventDefault();
-                this.prev();
-                return;
-            }
-            if (charStr.search(charCode.downPatt) == 0) {
-            	e.preventDefault();
-            	this.down();
-            }
-            if (charStr.search(charCode.upPatt) == 0) {
-            	e.preventDefault();
-            	this.up();
-            }
-        },
         // restore state from SNAPPI.STATE
         // TODO: should get state from cakephp Session / user profile
         restoreState : function(){
@@ -820,7 +726,7 @@
         up : function() {
         	var next,
         		lineCount = 1,
-        		prev = this.container.one('li.focus');
+        		prev = this.container.one('.FigureBox.focus');
 	    	if(prev) {
 	    		prev.removeClass('focus');
 	    		
@@ -835,7 +741,7 @@
 	    		var now = this.auditionSH._focus;
 	    		
 	    		// to see if it has a photo under it
-	    		var num_down = now - lineCount;
+	    		var num_down = parseInt(now) - lineCount;
 	    		next = this.container.get('childNodes').item(num_down);
 	    		
 	    		// if it reaches the end of top, then go search the bottom of this column
@@ -860,7 +766,7 @@
         down: function(){
         	var next,
         		lineCount = 1,
-        		prev = this.container.one('li.focus');
+        		prev = this.container.one('.FigureBox.focus');
         	if(prev) {
         		prev.removeClass('focus');
         		
@@ -875,7 +781,7 @@
         		var now = this.auditionSH._focus;
         		
         		// to see if it has a photo under it
-        		var num_down = now + lineCount;
+        		var num_down = parseInt(now) + lineCount;
         		next = this.container.get('childNodes').item(num_down);
         		
         		// if it reaches the end of bottom, back to the top
@@ -894,13 +800,13 @@
         	}
         },
         next: function(){
-            var next, prev = this.container.one('li.focus');
+            var next, prev = this.container.one('.FigureBox.focus');
             if (prev) {
                 prev.removeClass('focus');
                 next = prev.next(SNAPPI.util.isDOMVisible);
             }
             else {
-                next = this.container.one('li');
+                next = this.container.one('.FigureBox');
             }
             
             if(next == null || next.hasClass('contextmenu')){
@@ -917,13 +823,13 @@
              
         },
         prev: function(){
-            var next, prev = this.container.one('li.focus');
+            var next, prev = this.container.one('.FigureBox.focus');
             if (prev) {
                 prev.removeClass('focus');
                 next = prev.previous(SNAPPI.util.isDOMVisible);
             }
             else {
-                next = this.container.one('li');
+                next = this.container.one('.FigureBox');
             }
             
             if(next == null){

@@ -2721,7 +2721,9 @@ span.align-preview-icons > a > img {
     width: 50%;
 }
 
-
+#dialog-alert .aui-dialog-bd {
+	overflow: hidden;
+}
 
 
 

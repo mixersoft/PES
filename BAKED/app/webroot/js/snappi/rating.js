@@ -212,7 +212,17 @@
 	};
 	Rating.handleClick = function(e) {
 		var r = e.target.Rating;
-		
+		var v = _getStarValueFromEvent(e);
+		Rating.setRating(r,v, e);
+		return;
+	};
+	/*
+	 * manually set Rating, called by handleClick
+	 * @params r SNAPPI.Rating
+	 * @params value int
+	 * TODO: deprecate params e
+	 */
+	Rating.setRating = function(r, v, e){		
 		// plugin loading mask then call XHR POST
 		if (!r.node.loadingmask) {
 			loadingmaskTarget = r.node.get('parentNode');
@@ -232,10 +242,8 @@
 			r.node.loadingmask.set('zIndex', 20);
 		}
 		r.node.loadingmask.show();
-					
 		// post rating value
 		if (r.getValue() == 0 || r.rerate) {
-			var v = _getStarValueFromEvent(e);
 			if (r.applyToBatch && _Y.Lang.isFunction(r.applyToBatch)) {
 				r.applyToBatch(v, r.node);			
 			} else if (r.setDbValueFn && _Y.Lang.isFunction(r.setDbValueFn)) {
@@ -696,7 +704,7 @@
 				try {
 					var tn = r.node.ancestor('.FigureBox');
 					var audition = SNAPPI.Auditions.find(tn.uuid);
-					v = v || r.value;
+					v = v !== undefined ? v : r.value;
 					AssetRatingController._updateRatingChange(audition, v);
 				} catch (e) {
 				}
