@@ -778,7 +778,7 @@
 		renderTagInput : function(node) {
 			// TODO: for now, just add to the button. later, render in subMenu
 			var nTagForm = _Y.Node
-					.create("<span><form id='lbx-tag-form' onsubmit='return false;' /><input id='lbx-tag-field' class='help' type='text' size='20' maxlength='255' value='Enter tags' onclick='this.value=null; this.className=null;'><input type='submit' value='Go' onclick='SNAPPI.lightbox.applyTagInBatch(this);return false;'/></form></span>");
+					.create("<span><form id='lbx-tag-form' onsubmit='return false;' /><input id='lbx-tag-field' class='field-help' type='text' size='20' maxlength='255' value='Enter tags' onclick='this.value=\"\"; this.className=\"\";'><input type='submit' value='Go' onclick='SNAPPI.lightbox.applyTagInBatch(this);return false;'/></form></span>");
 			node.append(nTagForm);
 		},
 		applyTagInBatch : function(submit) {

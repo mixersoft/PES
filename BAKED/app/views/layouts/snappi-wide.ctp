@@ -103,7 +103,7 @@
 		<ul>
 			<li action='batch_rating' class='before-show'>Apply rating:</li>
 			<li action='tag' class='before-show'>
-				<input id='lbx-tag-field' class='help' type='text' size='16' maxlength='255' value='Enter tags' onclick='this.value=null; this.className=null;'>
+				<input id='lbx-tag-field' class='field-help' type='text' size='16' maxlength='255' value='Enter tags' onclick='this.value=""; this.className="";'>
 				<input type='submit' value='Go' class='orange'/>				
 			</li>
 			<li action='lightbox_group_as_shot' class='before-show'>Group as Shot</li>

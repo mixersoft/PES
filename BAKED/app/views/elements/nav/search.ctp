@@ -113,7 +113,7 @@
 ?>
 	<form id='search-form' accept-charset="utf-8" method="get" action="<?php echo Router::url($passedArgs + $next); ?>" onsubmit="SNAPPI.UIHelper.nav.goSearch(this); return false; if (this.value=='') return false;" >
 		<ul class='inline right'>
-			<li><input type='text' name='q' value='<?php echo $defaultString; ?>' maxlength='45' title='' onclick='if(this.style.color!="black"){this.value="";}this.style.color="black";' ></input></li><li><div class="go" onclick="return SNAPPI.UIHelper.nav.goSearch(this);"></div></li>
+			<li><input type='text' name='q' class='field-help' value='<?php echo $defaultString; ?>' maxlength='45' title='' onclick='this.value=""; this.className="";'></input></li><li><div class="go" onclick="return SNAPPI.UIHelper.nav.goSearch(this);"></div></li>
 		</ul>
 	</form>
 </div>

@@ -1290,7 +1290,7 @@ section.filmstrip.minimize .filmstrip-wrap {
 /*
  * forms
  */
-form input[type='text'].help {
+input[type='text'].field-help {
 	color: gray;
 }
 
