@@ -117,7 +117,7 @@
 		if (mixed instanceof SNAPPI.Thumbnail) {
 			parent = mixed.node;
 			uuid = mixed.node.uuid;
-		} else if (mixed.hasClass && mixed.hasClass('.FigureBox')) {
+		} else if (mixed.hasClass && mixed.hasClass('FigureBox')) {
 			parent = mixed;
 			uuid = mixed.uuid;
 		} else if (mixed.getAttribute('uuid')) {

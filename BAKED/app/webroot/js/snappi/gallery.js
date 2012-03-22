@@ -549,7 +549,7 @@
          */
         getUuid: function(n){
         	var id = n.get('id');
-        	var uuid = this._cfg.ID_PREFIX ? id.replace(this._cfg.ID_PREFIX, '') : id;
+        	var uuid = n.uuid || this._cfg.ID_PREFIX ? id.replace(this._cfg.ID_PREFIX, '') : id;
         	return uuid;
         },
         /**
@@ -560,7 +560,7 @@
          */
         setFocus: function(m){
         	var focusNode, o;
-        	if (m instanceof _Y.Node && m.hasClass('.FigureBox')) {
+        	if (m instanceof _Y.Node && m.hasClass('FigureBox')) {
 				o = SNAPPI.Auditions.find(m.uuid);  
         		focusNode = m;
         	} else if (m && m.id) {
@@ -634,7 +634,7 @@
         scrollFocus: function(m) {
         	var i, thumbs, selected, parent = this.container.ancestor('.filmstrip');
         	try {
-        		if (m instanceof _Y.Node && m.hasClass('.FigureBox')) {
+        		if (m instanceof _Y.Node && m.hasClass('FigureBox')) {
         			thumbs = this.container.all('.FigureBox');
         			i = thumbs.indexOf(m);
         		} else if (m && m.id) {
@@ -663,6 +663,7 @@
 	        		'sq':81,
 	        		'tn':151,
 	        		'lm':151,
+	        		'll':222, 
 	        	}
 	        	var width = lookupWidth[this._cfg.size];	        	
 	        	var center = parent.get('clientWidth')/2 ;
@@ -755,8 +756,8 @@
         		}
 	    		
     			next.addClass('focus');
-                var id = this.getUuid(next);
-                this.auditionSH.setFocus(id);
+    			this.setFocus(next);
+    			next.scrollIntoView();
                 
                 if(this.contextMenu) {
                 	this.renderContextMenu(next);
@@ -791,8 +792,8 @@
 
         		// if so, navs to the photo
     			next.addClass('focus');
-                var id = this.getUuid(next);
-                this.auditionSH.setFocus(id);
+    			this.setFocus(next);
+    			next.scrollIntoView();
                 
                 if(this.contextMenu) {
                 	this.renderContextMenu(next);
@@ -814,8 +815,8 @@
             }
             
             next.addClass('focus');
-            var id = this.getUuid(next);
-            this.auditionSH.setFocus(id);
+            this.setFocus(next);
+            next.scrollIntoView();
             
             if(this.contextMenu) {
             	this.renderContextMenu(next);
@@ -841,8 +842,8 @@
             }
             var check = next;
             next.addClass('focus');
-            var id = this.getUuid(next);
-            this.auditionSH.setFocus(id);
+            this.setFocus(next);
+            next.scrollIntoView();
             
             if(this.contextMenu) {
             	this.renderContextMenu(next);

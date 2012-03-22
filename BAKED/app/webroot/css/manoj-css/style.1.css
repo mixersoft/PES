@@ -333,7 +333,6 @@ section.gallery-header h1 {
 section.gallery-header ul {
 }
 section.gallery-header ul > li {
-	zzpadding: 2px 4px;
 }
 section.filmstrip section.gallery-header ul > li {
 	padding: 2px 0;
@@ -478,15 +477,18 @@ span.btn.remove {
 	margin: 0;
 	width: 100%;
 }
-section.gallery-display-options.wide ul.wide-display-options li {
+section.gallery-display-options.wide ul.display-options li {
 	display: inline-block;
 }
 section.gallery-display-options.wide ul > li.label {
 	border: none;
 }
+section.gallery-display-options nav.settings > ul.thumb-size > li.btn.white {
+	height: auto;
+}
+
 #body-container .gallery.wide {
 	background: #5D5D5D;
-	padding-top: 10px;
 	overflow: hidden;
 }
 

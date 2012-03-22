@@ -188,7 +188,7 @@
             if (charStr.search(charCode.ratingPatt) == 0) {
             	e.preventDefault();
             	try {
-            		var v = parseInt(charStr) - 48; // 0 - 5
+            		var v = parseInt(charStr) - 96; // 0 - 5
             		SNAPPI.Rating.setRating(focus.Rating,v); 
             	} catch(e){}
             }
@@ -524,7 +524,7 @@
 	        // keypad down
 	        upPatt : /(^38)/,
 	        // kepad up
-	        ratingPatt: /(^48$)|(^49$)|(^50$)|(^51$)|(^52$)|(^53$)/, // keybd 0-5
+	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)/, // keybd 0-5
 	    },
         /*
          * build 
