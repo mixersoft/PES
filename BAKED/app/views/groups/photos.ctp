@@ -12,7 +12,7 @@
 	$xhrFrom = Configure::read('controller.xhrFrom');
 	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom),'preview'=>1);
 	$xhrSrc = Router::url($xhrSrc);
-	echo "<div id='tags-preview-xhr' class='xxhr-get' xhrSrc='{$xhrSrc}'></div>";
+	echo "<div id='tags-preview-xhr' class='xxhr-get' xhrSrc='{$xhrSrc}' delay='8000'></div>";
 ?>	
 <?php  if ( $data['Group']['assets_group_count']>0 ) {
 		$this->Layout->blockStart('markup'); 		?>
