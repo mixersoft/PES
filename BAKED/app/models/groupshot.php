@@ -152,7 +152,6 @@ class Groupshot extends AppModel {
 			// set BestGroupshotSystem by sort order, sort=='`SharedEdit`.score DESC, `Asset`.dateTaken ASC',
 			$insert['BestGroupshotSystem']['asset_id'] = $assetIds[0];
 			// now sort by UserEdit.rating
-			$byRating = Set::sort($data, '/Asset/rating', 'DESC');
 			$admins = $this->Group->getUserIdsByRole($group_id);
 			if (in_array(AppController::$userid, $admins)) {
 				// set BestGroupshotOwner by UserEdit.rating	
@@ -161,7 +160,7 @@ class Groupshot extends AppModel {
 				// set BestGroupshotMember by UserEdit rating
 				$bestshotAlias='BestGroupshotMember';
 			}
-			$insert[$bestshotAlias]['asset_id'] = $this->_getTopRatedByRatingScore($byRating);
+			$insert[$bestshotAlias]['asset_id'] = $this->_getTopRatedByRatingScore($data);
 			$insert[$bestshotAlias]['user_id'] = AppController::$userid;
 			
 			// save to DB

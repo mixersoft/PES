@@ -105,6 +105,7 @@ class Usershot extends AppModel {
 		);
 		$data = $Asset->find('all', $options);
 		$assetIds = Set::extract('/Asset/id', $data);
+// debug($assetIds);		
 
 
 		/*
@@ -139,7 +140,6 @@ class Usershot extends AppModel {
 			// WARNING: assumes hiddenShot assets are ALL lower rated than visible shots
 			$insert['BestUsershotSystem']['asset_id'] = $assetIds[0];
 			// now sort by UserEdit.rating, then SharedEdit.score DESC
-			$byRating = Set::sort($data, '/Asset/rating', 'DESC');
 			if ($bestshot_ownerId == AppController::$userid) {
 				// set BestUsershotOwner by UserEdit.rating	
 				$bestshotAlias='BestUsershotOwner';
@@ -147,7 +147,7 @@ class Usershot extends AppModel {
 				// set BestUsershotMember by UserEdit rating
 				$bestshotAlias='BestUsershotMember';
 			}
-			$insert[$bestshotAlias]['asset_id'] = $this->_getTopRatedByRatingScore($byRating);
+			$insert[$bestshotAlias]['asset_id'] = $this->_getTopRatedByRatingScore($data);
 			$insert[$bestshotAlias]['user_id'] = $bestshot_ownerId;
 			
 			// save to AssetsUsershot, BestUsershot, etc.
