@@ -903,13 +903,17 @@
 			}
         	if ( focus == null ) {
 				var i = this.auditionSH.indexOf(this.auditionSH.getFocus());
-				this.setFocus(i); done = 1;
+				this.setFocus(i); 
         	}
             if (charStr.search(charCode.nextPatt) == 0) {
-                this.next();
+                focus = this.next(); done = 1;
             }
             if (charStr.search(charCode.prevPatt) == 0) {
-                this.prev(); done = 1;
+                focus = this.prev(); done = 1;
+            }
+            if (done) {
+            	var selected = SNAPPI.Auditions.find(focus.uuid);
+	    		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, null, {gallery:this});
             }
             if (charStr.search(charCode.ratingPatt) == 0) {
             	try {

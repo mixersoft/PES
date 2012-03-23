@@ -727,7 +727,7 @@
         		console.warn('ERROR: ThumbnailFactory.PhotoPreview.bindSelected() cannot find audition for uuid='+selected);
         	}
 	        	
-    		var previewBody = previewBody || _Y.one('.photo .preview-body');
+    		var previewBody = previewBody || _Y.one('.preview-body');
     		if (!previewBody) return;
     		
     		var uuid, auditionSH,

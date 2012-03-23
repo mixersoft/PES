@@ -736,73 +736,73 @@
         		prev = this.container.one('.FigureBox.focus');
 	    	if(prev) {
 	    		prev.removeClass('focus');
-	    		
-	    		// get the amount of each line
-	    		var first = this.container.one(' > .FigureBox');
-	    		while(first.get('offsetTop') == first.next(SNAPPI.util.isDOMVisible).get('offsetTop')){
-	    			first = first.next(SNAPPI.util.isDOMVisible);
-	    			lineCount++; 
-	    		}
-	    		
-	    		// get the number of THE photo
-	    		var now = this.auditionSH._focus;
-	    		
-	    		// to see if it has a photo under it
-	    		var num_down = now - lineCount;
-	    		next = this.container.get('childNodes').item(num_down);
-	    		
-	    		// if it reaches the end of top, then go search the bottom of this column
-	    		if(!next){
-	    			var num_lines = this.container.get('childNodes').size() / lineCount;
-	    			num_lines = Math.round(num_lines);
-	    			while (!this.container.get('childNodes').item(now + num_lines * lineCount)){
-	    				num_lines--;
-	    			}
-	    			next = this.container.get('childNodes').item(now + num_lines * lineCount);
-        		}
-	    		
-    			this.setFocus(next);
-    			next.scrollIntoView();
-                
-                if(this.contextMenu) {
-                	this.renderContextMenu(next);
-                }
-	    	}
-        },
+	    	}	
+    		// get the amount of each line
+    		var first = this.container.one(' > .FigureBox');
+    		while(first.get('offsetTop') == first.next(SNAPPI.util.isDOMVisible).get('offsetTop')){
+    			first = first.next(SNAPPI.util.isDOMVisible);
+    			lineCount++; 
+    		}
+    		
+    		// get the number of THE photo
+    		var now = this.auditionSH._focus;
+    		
+    		// to see if it has a photo under it
+    		var num_down = now - lineCount;
+    		next = this.container.get('childNodes').item(num_down);
+    		
+    		// if it reaches the end of top, then go search the bottom of this column
+    		if(!next){
+    			var num_lines = this.container.get('childNodes').size() / lineCount;
+    			num_lines = Math.round(num_lines);
+    			while (!this.container.get('childNodes').item(now + num_lines * lineCount)){
+    				num_lines--;
+    			}
+    			next = this.container.get('childNodes').item(now + num_lines * lineCount);
+    		}
+    		
+			this.setFocus(next);
+			next.scrollIntoView();
+            
+            if(this.contextMenu) {
+            	this.renderContextMenu(next);
+            }
+            return next; 
+    },
         down: function(){
         	var next,
         		lineCount = 1,
         		prev = this.container.one('.FigureBox.focus');
         	if(prev) {
         		prev.removeClass('focus');
-        		
-        		// get the amount of each line
-        		var first = this.container.one(' > .FigureBox');
-        		while(first.get('offsetTop') == first.next(SNAPPI.util.isDOMVisible).get('offsetTop')){
-        			first = first.next(SNAPPI.util.isDOMVisible);
-        			lineCount++; 
-        		}
-        		
-        		// get the number of THE photo
-        		var now = this.auditionSH._focus;
-        		
-        		// to see if it has a photo under it
-        		var num_down = parseInt(now) + lineCount;
-        		next = this.container.get('childNodes').item(num_down);
-        		
-        		// if it reaches the end of bottom, back to the top
-        		if(!next){
-        			next = this.container.get('childNodes').item(now % lineCount);
-        		}
+        	}	
+    		// get the amount of each line
+    		var first = this.container.one(' > .FigureBox');
+    		while(first.get('offsetTop') == first.next(SNAPPI.util.isDOMVisible).get('offsetTop')){
+    			first = first.next(SNAPPI.util.isDOMVisible);
+    			lineCount++; 
+    		}
+    		
+    		// get the number of THE photo
+    		var now = this.auditionSH._focus;
+    		
+    		// to see if it has a photo under it
+    		var num_down = parseInt(now) + lineCount;
+    		next = this.container.get('childNodes').item(num_down);
+    		
+    		// if it reaches the end of bottom, back to the top
+    		if(!next){
+    			next = this.container.get('childNodes').item(now % lineCount);
+    		}
 
-        		// if so, nav to the photo
-    			this.setFocus(next);
-    			next.scrollIntoView();
-                
-                if(this.contextMenu) {
-                	this.renderContextMenu(next);
-                }
-        	}
+    		// if so, nav to the photo
+			this.setFocus(next);
+			next.scrollIntoView();
+            
+            if(this.contextMenu) {
+            	this.renderContextMenu(next);
+            }
+            return next; 
         },
         next: function(){
             var next, prev = this.container.one('.FigureBox.focus');
@@ -824,7 +824,7 @@
             if(this.contextMenu) {
             	this.renderContextMenu(next);
             }
-             
+            return next; 
         },
         prev: function(){
             var next, prev = this.container.one('.FigureBox.focus');
@@ -849,6 +849,7 @@
             if(this.contextMenu) {
             	this.renderContextMenu(next);
             }
+            return next; 
         },
         getFocus: function() {
         	var focus = this.auditionSH.getFocus();
