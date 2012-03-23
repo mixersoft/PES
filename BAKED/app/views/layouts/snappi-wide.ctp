@@ -34,7 +34,7 @@
 	<link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
 </head>
  <?php flush(); ?>
-<body>
+<body class='wide'>
 	<?php echo $this->element('/nav/primary-wide'); ?>
 		
 <section id="body-container" class='container_16'><!--body container start-->

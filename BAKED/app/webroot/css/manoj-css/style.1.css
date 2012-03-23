@@ -1206,15 +1206,20 @@ section.filmstrip .toolbar ul li.none{
 	background:#FFF;
 	padding: 0;
 }
+body.wide .gallery.photo.filmstrip.hiddenshots {
+	width: 640px;
+}
 
 .gallery.photo.filmstrip .container li.btn.prev {
 	border-radius: 15px 0 0 15px;
 	float: left;
+	list-style-type: none;
 }
 
 .gallery.photo.filmstrip .container li.btn.next {
 	border-radius: 0 15px 15px 0;
 	float: left;
+	list-style-type: none;
 }
 
 border-radius: 15px 0 0 15px;
@@ -1227,8 +1232,12 @@ section.filmstrip section.gallery.lightbox {
 #lightbox .filmstrip-wrap .filmstrip {
 	min-height: 39px;
 }
+#dialog-photo-roll-hidden-shots .aui-dialog-bd {
+	overflow: hidden;		/*for accurate g.setFilmstripWidth()*/
+}
 #dialog-hidden-shot {
 	width: 662px;
+	margin: 0;
 }
 #dialog-hidden-shot > section.filmstrip {
 	width: 660px;

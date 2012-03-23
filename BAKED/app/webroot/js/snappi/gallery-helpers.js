@@ -133,24 +133,26 @@
         	} catch (e) {}
     	},
     	/*
-         * Key press functionality of next & previous buttons
+         * DEFAULT Key press functionality of next & previous buttons
+         * 	- used by GalleryFactory.Photo
+         * NOTE: check for GalleryFactory[g._cfg.type].handleKeydown override!!!
+         * 	- GalleryFactory.ShotGallery/DialogHiddenShot
          */
         handleKeydown: function(e){
-        	var charCode = GalleryFactory[this._cfg.type].charCode;
+// console.warn('>>> handleKeydown (DEFAULT)');        	
+        	var done, charCode = GalleryFactory[this._cfg.type].charCode;
         	var charStr = e.charCode + '';
             if (e.ctrlKey) {
             	// selectAll
                 if (charStr.search(charCode.selectAllPatt) == 0) {
-                    e.preventDefault();
-                    this.selectAll();
-                    return;
+                    this.selectAll(); done = 1;
                 }
                 // group
                 if (charStr.search(charCode.groupPatt) == 0) {
-                    e.preventDefault();
-                    this.groupAsShot();
-                    return;
+                    this.groupAsShot(); done = 1;
                 }
+                if (done) e.preventDefault();
+                return;
             }
             
 			// key navigation for GalleryFactory.Photo
@@ -158,40 +160,33 @@
 			if ( focus == null ) {
 				focus = this.container.one(':hover.FigureBox');
 				if (focus) {
-					focus.addClass('focus');
-					this.setFocus(focus.uuid);
+					this.setFocus(focus);
 				}
 			}
         	if ( focus == null ) {
 				var i = this.auditionSH.indexOf(this.auditionSH.getFocus());
-				this.setFocus(i);
-				return;
+				this.setFocus(i); done = 1;
         	}
             if (charStr.search(charCode.nextPatt) == 0) {
-                e.preventDefault();
                 this.next();
-                return;
             }
             if (charStr.search(charCode.prevPatt) == 0) {
-                e.preventDefault();
-                this.prev();
-                return;
+                this.prev(); done = 1;
             }
             if (charStr.search(charCode.downPatt) == 0) {
-            	e.preventDefault();
-            	this.down();
+            	this.down(); done = 1;
             }
             if (charStr.search(charCode.upPatt) == 0) {
-            	e.preventDefault();
-            	this.up();
+            	this.up(); done = 1;
             }
             if (charStr.search(charCode.ratingPatt) == 0) {
-            	e.preventDefault();
             	try {
             		var v = parseInt(charStr) - 96; // 0 - 5
             		SNAPPI.Rating.setRating(focus.Rating,v); 
             	} catch(e){}
+            	 done = 1;
             }
+            if (done) e.preventDefault();
         },
     }
     GalleryFactory.nav = {
@@ -438,25 +433,31 @@
 	        Keydown: function(){
 	        	var action = 'Keydown';
 	            if (this.node.listen['Keydown'] == undefined) {
+	            	try {
+	            		
 	            	var self = this;
+	            	var fnKeyDown = GalleryFactory[self._cfg.type].handleKeydown;
+	            	if (!fnKeyDown) fnKeyDown = GalleryFactory.actions.handleKeydown;
 	            	var stopListening = function() {
 	            		if (self.node.listen['Keydown']) { 
 	            			self.node.listen['Keydown'].detach();
 	            			delete self.node.listen['Keydown'];
 	            			// hide focus
-	            			self.container.all('.focus').removeClass('focus');
+	            			// self.container.all('.focus').removeClass('focus');
 	            		}
 	            	}; 
 	            	var startListening = function() {
+// console.log('Listen Keydown for: '+self._cfg.type);	            		
 	            		if (!self.node.listen['Keydown']) {
 	            			if (document.stoplistening_Keydown && document.stoplistening_Keydown!== stopListening) 
 	            				document.stoplistening_Keydown();
-	            			self.node.listen['Keydown'] = _Y.on('keydown', GalleryFactory.actions.handleKeydown, document, self);
+	            			self.node.listen['Keydown'] = _Y.on('keydown', fnKeyDown, document, self);
 	            			document.stoplistening_Keydown = stopListening;
 	            			
 	            		}
 	            	};
 	            	self.container.on('snappi:hover', startListening, stopListening, self);
+	            	} catch(e){}
 	            }
 	        },     	
 	        
@@ -884,6 +885,41 @@
 	    		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, null, {gallery:gallery});
 	        }
 		},
+		/*
+         * Key press functionality of next & previous buttons, rating
+         * OVERRIDE DEFAULT IN GalleryFactory.actions.handleKeydown
+         */
+        handleKeydown: function(e){
+// console.warn('>>> handleKeydown (shotGallery)');          	
+        	var done, charCode = GalleryFactory[this._cfg.type].charCode;
+        	var charStr = e.charCode + '';
+        	// key navigation for GalleryFactory.Photo
+			var focus = this.container.one('.FigureBox.focus');
+			if ( focus == null ) {
+				focus = this.container.one(':hover.FigureBox');
+				if (focus) {
+					this.setFocus(focus);
+				}
+			}
+        	if ( focus == null ) {
+				var i = this.auditionSH.indexOf(this.auditionSH.getFocus());
+				this.setFocus(i); done = 1;
+        	}
+            if (charStr.search(charCode.nextPatt) == 0) {
+                this.next();
+            }
+            if (charStr.search(charCode.prevPatt) == 0) {
+                this.prev(); done = 1;
+            }
+            if (charStr.search(charCode.ratingPatt) == 0) {
+            	try {
+            		var v = parseInt(charStr) - 96; // 0 - 5
+            		SNAPPI.Rating.setRating(focus.Rating,v); 
+            	} catch(e){}
+            	 done = 1;
+            }
+            if (done) e.preventDefault();
+        },
 	}
 	
 	GalleryFactory.DialogHiddenShot = {
@@ -936,8 +972,16 @@
 			showHiddenShot: false,
 			hideHiddenShotByCSS: false,	
 			draggable: true,	
-			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick', 'WindowOptionClick'],			
+			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick', 'WindowOptionClick', 'Keydown'],			
 		},
+		charCode : {
+	        nextPatt: /(^110$)|(^39$)|(^32$)|(^54$)/, // n,right,space,
+	        // keypad right
+	        prevPatt: /(^112$)|(^37$)|(^8$)|(^52$)/, // p,left,backspace,
+	        // keypad left
+	        closePatt: /(^27$)/,
+	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)/, // keybd 0-5
+	    },
 		build: GalleryFactory.ShotGallery.build,
 		handle_focusClick: function(e){
 			// also check: DialogHelper.bindSelected2DialogHiddenShot(). which one is used?
@@ -959,7 +1003,8 @@
 		after_setToolbarOption : function (g, action, setting) {
 			var previewBody = g.node.ancestor('.preview-body');
 			previewBody.Dialog.refresh(previewBody); 
-		}
+		},
+		handleKeydown : GalleryFactory['ShotGallery'].handleKeydown,
 	}
 	// TODO: currently unused!!!
 	GalleryFactory.PhotoAirUpload = {

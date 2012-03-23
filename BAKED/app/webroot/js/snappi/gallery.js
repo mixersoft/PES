@@ -574,8 +574,14 @@
         		return;
         	};
         	if (o) this.auditionSH.setFocus(o);
-        	if (!focusNode) {
-        		focusNode = this.container.one('#'+this._cfg.ID_PREFIX+o.id);
+        	if (!focusNode) { // check bindTo for correct node
+        		for (var i in o.bindTo) {
+        			if (this.container.contains(o.bindTo[i])) {
+        				focusNode = o.bindTo[i]; 
+        				break;
+        			}
+        		}
+        		// focusNode = this.container.one('#'+this._cfg.ID_PREFIX+o.id);
         	}
             if (focusNode) {
 	            this.container.all('.FigureBox.focus').removeClass('focus');
@@ -755,7 +761,6 @@
 	    			next = this.container.get('childNodes').item(now + num_lines * lineCount);
         		}
 	    		
-    			next.addClass('focus');
     			this.setFocus(next);
     			next.scrollIntoView();
                 
@@ -790,8 +795,7 @@
         			next = this.container.get('childNodes').item(now % lineCount);
         		}
 
-        		// if so, navs to the photo
-    			next.addClass('focus');
+        		// if so, nav to the photo
     			this.setFocus(next);
     			next.scrollIntoView();
                 
@@ -814,7 +818,6 @@
             	next = this.container.get('childNodes').item(0);
             }
             
-            next.addClass('focus');
             this.setFocus(next);
             next.scrollIntoView();
             
@@ -840,8 +843,6 @@
             	}
             	
             }
-            var check = next;
-            next.addClass('focus');
             this.setFocus(next);
             next.scrollIntoView();
             
