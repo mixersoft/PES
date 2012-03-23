@@ -94,7 +94,7 @@
                     parts.dirname += '.thumbs/';
                 return parts.dirname + (size ? size + '~' : '') + parts.filename + (parts.crop ? '~' + parts.crop : '');
             },
-            addSubdomain: function(src) {
+            useStaticHost: function(src) {
             	try {
             		var host = SNAPPI.Config.getStaticHost(src);
 	            	if (src.indexOf('/') !== 0) host += '/'; 

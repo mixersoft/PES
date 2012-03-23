@@ -341,14 +341,12 @@
             if (this.node.listen['Keydown'] == undefined) {
             	var self = this;
             	var stopListening = function() {
-console.warn('Thumbnail keydown STOP Listening');            		
             		if (self.node.listen['Keydown']) { 
             			self.node.listen['Keydown'].detach();
             			delete self.node.listen['Keydown'];
             		}
             	}; 
             	var startListening = function() {
-console.log('Thumbnail keydown startListening');            		
             		if (!self.node.listen['Keydown']) {
             			if (document.stoplistening_Keydown && document.stoplistening_Keydown!== stopListening)
             				document.stoplistening_Keydown();

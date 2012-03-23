@@ -440,7 +440,6 @@
 	            if (this.node.listen['Keydown'] == undefined) {
 	            	var self = this;
 	            	var stopListening = function() {
-console.warn('GALLERY keydown STOP Listening');	            		
 	            		if (self.node.listen['Keydown']) { 
 	            			self.node.listen['Keydown'].detach();
 	            			delete self.node.listen['Keydown'];
@@ -449,7 +448,6 @@ console.warn('GALLERY keydown STOP Listening');
 	            		}
 	            	}; 
 	            	var startListening = function() {
-console.warn('GALLERY keydown startListening');    	            		
 	            		if (!self.node.listen['Keydown']) {
 	            			if (document.stoplistening_Keydown && document.stoplistening_Keydown!== stopListening) 
 	            				document.stoplistening_Keydown();

@@ -587,8 +587,8 @@ class UsersController extends UsersPluginController {
 
 		/* Set delivery method */
 		switch (env('SERVER_NAME')) {
-			case 'aws.snaphappi.com':
-			case 'dev2.snaphappi.com':
+			case 'preview.snaphappi.com':
+			case 'dev.snaphappi.com':
 				$this->Email->delivery = 'smtp';
 				break;
 			default:

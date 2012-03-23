@@ -67,7 +67,7 @@
 							var userClicked = newState.before != undefined;
 							if (userClicked) {
 								// console.warn('Page.changeRequest: page='+newState.page);
-								Paginator._getPageFromCastingCall(paginateContainer,newState.page);
+								Paginator._getPageFromCastingCall(paginateContainer,newState.page, "force");
 							} 
 							this.setState(newState);
 						},
