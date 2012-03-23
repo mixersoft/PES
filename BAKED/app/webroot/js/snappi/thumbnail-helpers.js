@@ -335,7 +335,30 @@
 					_Y.fire('snappi:preview-change', this);	
 					// also see PreviewHelper.DialogHiddenShot, which is currently not being used
 				}, this.node)			
-		},	
+		},
+		Keydown: function(){ // for PhotoPreview
+        	var action = 'Keydown';
+            if (this.node.listen['Keydown'] == undefined) {
+            	var self = this;
+            	var stopListening = function() {
+console.warn('Thumbnail keydown STOP Listening');            		
+            		if (self.node.listen['Keydown']) { 
+            			self.node.listen['Keydown'].detach();
+            			delete self.node.listen['Keydown'];
+            		}
+            	}; 
+            	var startListening = function() {
+console.log('Thumbnail keydown startListening');            		
+            		if (!self.node.listen['Keydown']) {
+            			if (document.stoplistening_Keydown && document.stoplistening_Keydown!== stopListening)
+            				document.stoplistening_Keydown();
+            			self.node.listen['Keydown'] = _Y.on('keydown', ThumbnailFactory['PhotoPreview'].handleKeydown, document, self);
+            			document.stoplistening_Keydown = stopListening;
+            		}
+            	};
+            	self.node.on('snappi:hover', startListening, stopListening, self);
+            }
+        },	
 	};
 	ThumbnailFactory.PhotoZoom = {
 		defaultCfg: {
@@ -350,9 +373,16 @@
     		showSizes: false,
     		draggable: false,
     		queue: false,
-    		listeners: ['RatingClick', 'PreviewImgLoad', 'NextPrevClick'],
-    	},
-    	// TODO: update Sizes to use action="set-display-size:[size]" format
+    		listeners: ['RatingClick', 'PreviewImgLoad', 'NextPrevClick', 'Keydown'],
+    	}, 
+    	charCode : {
+	        nextPatt: /(^110$)|(^39$)|(^32$)|(^54$)/, // n,right,space,
+	        // keypad right
+	        prevPatt: /(^112$)|(^37$)|(^8$)|(^52$)/, // p,left,backspace,
+	        // keypad left
+	        closePatt: /(^27$)/,
+	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)/, // keybd 0-5
+	    },
 		markup: '<article class="FigureBox PhotoZoom">'+
                 '<figure>'+
                 '    <figcaption><ul class="extras inline rounded-5">'+
@@ -401,6 +431,7 @@
 				_Y.fire('snappi:preview-zoom-loaded', img);
 			});
 			src = audition.getImgSrcBySize(audition.urlbase + audition.rootSrc, sizeCfg.size);
+			src = SNAPPI.util.useStaticHost(src);
 			if (this._cfg.queue && SNAPPI.Imageloader.QUEUE_IMAGES) {
 				img.qSrc = src;
 				// SNAPPI.util3.ImageLoader.queueOneImg(img); // defer,
@@ -541,8 +572,16 @@
     		showSizes: true,
     		draggable: true,
     		queue: false,
-    		listeners: ['ActionsClick', 'ToggleAutoScrollClick', 'ThumbsizeClick', 'HiddenShotClick', 'RatingClick', 'PreviewImgLoad', 'NextPrevClick'],
+    		listeners: ['ActionsClick', 'ToggleAutoScrollClick', 'ThumbsizeClick', 'HiddenShotClick', 'RatingClick', 'PreviewImgLoad', 'NextPrevClick', 'Keydown'],
     	},
+    	charCode : {
+	        nextPatt: /(^110$)|(^39$)|(^32$)|(^54$)/, // n,right,space,
+	        // keypad right
+	        prevPatt: /(^112$)|(^37$)|(^8$)|(^52$)/, // p,left,backspace,
+	        // keypad left
+	        closePatt: /(^27$)/,
+	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)/, // keybd 0-5
+	    },
 		markup: '<article class="FigureBox PhotoPreview">'+
                 '<figure>'+
                 '    <figcaption><ul class="extras inline rounded-5">'+
@@ -602,6 +641,7 @@
 			// set src to the correct size, and listen for onload
 			var img = node.one('figure > img');
 			src = audition.getImgSrcBySize(audition.urlbase + audition.rootSrc, sizeCfg.size);
+			src = SNAPPI.util.useStaticHost(src);
 			if (this._cfg.queue && SNAPPI.Imageloader.QUEUE_IMAGES) {
 				img.qSrc = src;
 				// SNAPPI.util3.ImageLoader.queueOneImg(img); // defer,
@@ -877,15 +917,49 @@
 				ThumbnailFactory[type].bindSelected(selected, parent, {gallery: g});
 			}
 		},
+		/*
+         * Key press functionality of next & previous buttons
+         */
+        handleKeydown: function(e){
+        	var charCode = ThumbnailFactory['PhotoPreview'].charCode;
+        	var charStr = e.charCode + '';
+        	try {
+        		var g = this._cfg.gallery || SNAPPI.Gallery.find['nav-'];	// this.Gallery from Factory.PhotoPreview.bindSelected();	
+        	} catch (e) {}
+            if (!g) g = SNAPPI.Gallery.find['uuid-'] || SNAPPI.Gallery.find['nav-'];
+            if (charStr.search(charCode.nextPatt) == 0) {
+                e.preventDefault();
+					// same for PhotoPreview or PhotoZoom only
+				ThumbnailFactory['PhotoPreview'].next.call(this.node, 'next', g, this);
+                return;
+            }
+            if (charStr.search(charCode.prevPatt) == 0) {
+                e.preventDefault();
+				// same for PhotoPreview or PhotoZoom only
+				ThumbnailFactory['PhotoPreview'].next.call(this.node, 'prev', g, this);
+                return;
+            }
+            if (charStr.search(charCode.ratingPatt) == 0) {
+            	e.preventDefault();
+            	try {
+            		var r = this.node.Rating;
+            		var v = parseInt(charStr) - 96; // 0 - 5
+            		SNAPPI.Rating.setRating(r,v); 
+            	} catch(e){}
+            }
+        },
 	};	
 	
 	/*
 	 * Photo Thumbnail
 	 */
 	ThumbnailFactory.Photo = {
-		// defaultCfg: {
-    		// listeners: ['ActionsClick'],  // initialized by GalleryFactory.listeners
-    	// },
+		defaultCfg: {
+			type: 'Photo',
+			draggable: true,
+			size: 'lm',
+    		listeners: null,  // 'ActionsClick' initialized by GalleryFactory.listeners
+    	},
 		markup: '<article class="FigureBox Photo">'+
                 '	<figure><img alt="" src="">'+
                 '    <figcaption><ul class="extras">'+
@@ -957,7 +1031,7 @@
 
 			// set src to the correct size
 			src = audition.getImgSrcBySize(audition.urlbase + audition.rootSrc, sizeCfg.size);
-			src = SNAPPI.util.addSubdomain(src);
+			src = SNAPPI.util.useStaticHost(src);
 			if (this._cfg.queue && SNAPPI.Imageloader.QUEUE_IMAGES) {
 				this.img.qSrc = src;
 				// SNAPPI.util3.ImageLoader.queueOneImg(img); // defer,

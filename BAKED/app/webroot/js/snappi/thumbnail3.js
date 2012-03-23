@@ -122,8 +122,6 @@
 			try {
 				this._cfg = _Y.merge(Factory[cfg.type].defaultCfg, cfg);
 			} catch (e) {}
-			
-			// TODO: deprecate. use Factory[cfg.type].defaultCfg instead
 			// override _defaultCfg properties as necessary
 			for (var attr in _defaultCfg) {
 				if (!this._cfg[attr]) this._cfg[attr] = _defaultCfg[attr];  

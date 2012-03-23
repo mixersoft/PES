@@ -469,9 +469,9 @@
         },
         createThumbnail: function(audition, cfg){
         	// TODO: do NOT copy ALL cfg attrs to thumbnail. figure out which ones we need
-        	cfg = _Y.merge(this._cfg, cfg);	// copy
+        	// cfg = _Y.merge(this._cfg, cfg);	// copy
         	cfg.gallery = this;
-        	cfg.type = cfg.tnType || cfg.type;
+        	cfg.type = this._cfg.tnType || this._cfg.type;
         	var t = new SNAPPI.Thumbnail(audition, cfg);
         	this.container.append(t.node);
         	return t.node;

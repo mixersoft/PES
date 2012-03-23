@@ -438,20 +438,27 @@
 	        Keydown: function(){
 	        	var action = 'Keydown';
 	            if (this.node.listen['Keydown'] == undefined) {
-	            	var startListening = function() {
-	            		if (!this.node.listen['Keydown']) {
-	            			this.node.listen['Keydown'] = _Y.on('keydown', GalleryFactory.actions.handleKeydown, document, this);
-	            		}
-	            	};
+	            	var self = this;
 	            	var stopListening = function() {
-	            		if (this.node.listen['Keydown']) { 
-	            			this.node.listen['Keydown'].detach();
-	            			delete this.node.listen['Keydown'];
+console.warn('GALLERY keydown STOP Listening');	            		
+	            		if (self.node.listen['Keydown']) { 
+	            			self.node.listen['Keydown'].detach();
+	            			delete self.node.listen['Keydown'];
 	            			// hide focus
-	            			this.container.all('li.focus').removeClass('focus');
+	            			self.container.all('.focus').removeClass('focus');
 	            		}
 	            	}; 
-	            	this.container.on('snappi:hover', startListening, stopListening, this);
+	            	var startListening = function() {
+console.warn('GALLERY keydown startListening');    	            		
+	            		if (!self.node.listen['Keydown']) {
+	            			if (document.stoplistening_Keydown && document.stoplistening_Keydown!== stopListening) 
+	            				document.stoplistening_Keydown();
+	            			self.node.listen['Keydown'] = _Y.on('keydown', GalleryFactory.actions.handleKeydown, document, self);
+	            			document.stoplistening_Keydown = stopListening;
+	            			
+	            		}
+	            	};
+	            	self.container.on('snappi:hover', startListening, stopListening, self);
 	            }
 	        },     	
 	        
