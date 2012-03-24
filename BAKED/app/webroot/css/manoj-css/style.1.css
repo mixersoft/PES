@@ -530,7 +530,17 @@ section.gallery-display-options nav.settings > ul.thumb-size > li.btn.white {
 	background: #fff88a;
 }
 .FigureBox.Photo.focus {
-	background: #fff88a;
+    /* same as .orange */
+	background: #f9c667 !important; /* Old browsers */	
+	background: -moz-linear-gradient(top, #f9c667 0%, #f79621 100%) !important; /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f9c667), color-stop(100%,#f79621)) !important; /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* IE10+ */
+	background: linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9c667', endColorstr='#f79621',GradientType=0 ) !important; /* IE6-9 */
+	border: 1px solid #f79621 !important;
+	color: #000 !important;	
 }
 
 
@@ -1400,7 +1410,18 @@ ul.circle-thumb li.selected {
 	background: #fff88a;
 }
 .FigureBox.Group.focus figure {
-	background: #fff88a;
+	    /* same as .orange */
+	background: #f9c667 !important; /* Old browsers */	
+	background: -moz-linear-gradient(top, #f9c667 0%, #f79621 100%) !important; /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f9c667), color-stop(100%,#f79621)) !important; /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* IE10+ */
+	background: linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9c667', endColorstr='#f79621',GradientType=0 ) !important; /* IE6-9 */
+	border: 1px solid #f79621 !important;
+	color: #000 !important;	
+
 }
 .FigureBox.Group figure {
 	font-size: 10pt;
@@ -1556,12 +1577,22 @@ section.item-header .window-options ul {
 	background: #fff88a;
 }
 .FigureBox.Person.focus figure {
-	background: #fff88a;
+	    /* same as .orange */
+	background: #f9c667 !important; /* Old browsers */	
+	background: -moz-linear-gradient(top, #f9c667 0%, #f79621 100%) !important; /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f9c667), color-stop(100%,#f79621)) !important; /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* IE10+ */
+	background: linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9c667', endColorstr='#f79621',GradientType=0 ) !important; /* IE6-9 */
+	border: 1px solid #f79621 !important;
+	color: #000 !important;	
+
 }
 .FigureBox.Person figure {
 	font-size: 10pt;
 /*	thumbnail height */
-	xheight: 83px;
 }
 
 .FigureBox.Person figure > a > img {

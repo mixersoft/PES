@@ -168,7 +168,7 @@
 				this.setFocus(i); done = 1;
         	}
             if (charStr.search(charCode.nextPatt) == 0) {
-                this.next();
+                this.next(); done = 1;
             }
             if (charStr.search(charCode.prevPatt) == 0) {
                 this.prev(); done = 1;
