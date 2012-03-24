@@ -567,6 +567,10 @@
         	this.Gallery.render({
         		perpage: LIMIT,
         		castingCall: castingCall,
+        		thumbCfg: {
+        			type: this.Gallery._cfg.tnType,
+        			size: this.Gallery._cfg.size,	// size set in GalleryFactory[Lightbox].build()
+        		}
         	});
         	if ( 0 || castingCall.auditionSH.count() > LIMIT) {
         		this.node.addClass('is-preview');

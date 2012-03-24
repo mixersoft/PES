@@ -259,13 +259,14 @@
             	this.container.setContent(nlist);
             }
             
-            
+            var lastLI, thumbCfg = {};
             switch(this._cfg.ID_PREFIX) {
 	            case 'lightbox-': 	// type=Lightbox
             		// use the existing number of .FigureBoxs
 	                perpage =  this._cfg.perpage || this.auditionSH.size();
 	                page = page ||  1;
 	                offset = (page - 1) * perpage;
+	                thumbCfg = cfg.thumbCfg;		// set in renderLightboxFromCC()
 	            	break;
 	            case 'hiddenshot-': 	// type=DialogHiddenShot
 	            case 'shot-': 			// type=ShotGallery
@@ -316,7 +317,6 @@
             /*
              * reuse or create LIs
              */
-            var lastLI, thumbCfg = {};
             // if (this.node.hasClass('hiddenshots')) thumbCfg = {	showHiddenShot : false	}
             if (nlist.size()) {
                 // if .FigureBox exist, reuse
@@ -468,8 +468,7 @@
         	return node;
         },
         createThumbnail: function(audition, cfg){
-        	// TODO: do NOT copy ALL cfg attrs to thumbnail. figure out which ones we need
-        	// cfg = _Y.merge(this._cfg, cfg);	// copy
+        	// cfg.size = ??? 
         	cfg.gallery = this;
         	cfg.type = this._cfg.tnType || this._cfg.type;
         	var t = new SNAPPI.Thumbnail(audition, cfg);

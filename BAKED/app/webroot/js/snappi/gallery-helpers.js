@@ -94,7 +94,6 @@
 	        		if (g._cfg.type == 'NavFilmstrip') GalleryFactory['NavFilmstrip'].setPagingControls(g);
 	        	}
         	}
-        	// TODO: save thumbSize to Session Session::write("thumbSize.{g._cfg.size}", g._cfg.size);  		
     	},
     	// called by click event handler, context = Gallery.node, set by listener
     	setToolbarOption: function(e){
@@ -655,6 +654,7 @@
 	        // generic gallery BEFORE init
 			gallery.providerName = cfg.PROVIDER_NAME;	// deprecate: use this.cfg.providerName
 			GalleryFactory._attachNodes(gallery, cfg);
+			// get thumbSize from '.gallery-header .window-options'
 			var thumbSize = gallery.header && gallery.header.one('ul.thumb-size > li.focus');
 			if (thumbSize) cfg.size = thumbSize.getAttribute('action').split(':').pop();
 	        gallery.init(cfg);

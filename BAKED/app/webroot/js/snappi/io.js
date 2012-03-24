@@ -105,6 +105,7 @@
          * callback: defined in caller function to process response
          */
         writeSession : function(postData, callback, args){
+        	callback = _Y.merge({success:null, failure:null, complete:function(){SNAPPI.setPageLoading(false);}}, callback);	
             var jsonFlag = true;
             var data = {};
             for(var key in postData){
