@@ -488,12 +488,6 @@ class AppController extends Controller {
 		if (!empty($this->params['url']['forcexhr'])) $controllerAttr['isXhr'] = 1; 
 		$controllerAttr = array_merge( $controllerAttr , $extended_controllerAttr, $extras);
 
-		if (!$controllerAttr['isXhr'] && isset($this->passedArgs['size'])) {
-			$this->viewVars['jsonData']['STATE']['previewSize'] = $this->passedArgs['size'];
-		}
-//			$this->viewVars['jsonData']['controller'] = $controllerAttr;	// moved to layout
-		
-
 		if (in_array(AppController::$role, array('EDITOR','MANAGER','ADMIN','ROOT'))) {
 			// set in /person/photos for now
 			AppController::$ownerid = Session::read('Auth.User.acts_as_ownerid');

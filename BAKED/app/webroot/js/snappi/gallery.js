@@ -116,12 +116,13 @@
 			delete _cfg.render;
 			
 	        this._cfg = _cfg;
-            if (this.header) {
+            if (0 && this.header) { // header should already be initialized
             	// update thumbnailSize
+            	var thumbSize = this._cfg.size;
             	this.header.all('.window-options .thumb-size > li.btn').each(
             		function(n,i,l){
             			var action = n.getAttribute('action');
-            			if (action.indexOf(this._cfg.size)>-1) n.addClass('focus');
+            			if (action.match(thumbSize+'$')) n.addClass('focus');
             			else n.removeClass('focus'); 
             		}, this
             	);
@@ -259,14 +260,14 @@
             	this.container.setContent(nlist);
             }
             
-            var lastLI, thumbCfg = {};
+            var lastLI, thumbCfg = cfg.thumbCfg;
+            if (!thumbCfg) thumbCfg = {size: this._cfg.size, type:'Photo'};
             switch(this._cfg.ID_PREFIX) {
 	            case 'lightbox-': 	// type=Lightbox
             		// use the existing number of .FigureBoxs
 	                perpage =  this._cfg.perpage || this.auditionSH.size();
 	                page = page ||  1;
 	                offset = (page - 1) * perpage;
-	                thumbCfg = cfg.thumbCfg;		// set in renderLightboxFromCC()
 	            	break;
 	            case 'hiddenshot-': 	// type=DialogHiddenShot
 	            case 'shot-': 			// type=ShotGallery
@@ -317,7 +318,7 @@
             /*
              * reuse or create LIs
              */
-            // if (this.node.hasClass('hiddenshots')) thumbCfg = {	showHiddenShot : false	}
+            // if (this.node.hasClass('hiddenshots')) thumbCfg['showHiddenShot'] =  false;
             if (nlist.size()) {
                 // if .FigureBox exist, reuse
                 nlist.removeClass('focus');
@@ -1791,6 +1792,10 @@
 	                    	uuid: args.uuid,
 	                    	castingCall: shotCC,
 	                    	replace: true,			// same as SNAPPI.Auditions.onDuplicate_ORIGINAL
+	                    	thumbCfg: {
+			        			type: this._cfg.tnType,
+			        			size: this._cfg.size,	// size set in GalleryFactory[Lightbox].build()
+			        		}
 	                    }
 	                    this.render( options);		// render shot directly
 	                    return false;

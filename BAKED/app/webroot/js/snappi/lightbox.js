@@ -76,18 +76,7 @@
 			this.node.dom().Lightbox = this;	// for firebug
 			// plugin droppables
 			SNAPPI.DragDrop.pluginDrop(this.node);
-			
 			// init Lightbox.Gallery, do not render
-			// get init size/view
-			try {
-				var size = SNAPPI.STATE.profile.thumbSize['-lightbox'];
-				if (!size) {
-					if (SNAPPI.STATE.controller.action == 'lightbox' || SNAPPI.STATE.controller.action == 'pagemaker'){
-						size = 'lm';
-					}
-				}
-			} catch (e) {}
-			size = size || 'lbx-tiny';
 			try {
 				var view = SNAPPI.STATE.profile.view['Lightbox'];
 			} catch (e) {
@@ -108,7 +97,6 @@
 			var options = {
 				type: 'Lightbox',
 				render: false,
-				size: size,
 				view: view,
 			}
 			this.Gallery = new SNAPPI.Gallery(options);
@@ -567,10 +555,6 @@
         	this.Gallery.render({
         		perpage: LIMIT,
         		castingCall: castingCall,
-        		thumbCfg: {
-        			type: this.Gallery._cfg.tnType,
-        			size: this.Gallery._cfg.size,	// size set in GalleryFactory[Lightbox].build()
-        		}
         	});
         	if ( 0 || castingCall.auditionSH.count() > LIMIT) {
         		this.node.addClass('is-preview');

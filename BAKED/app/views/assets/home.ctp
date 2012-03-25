@@ -50,10 +50,20 @@
 		</dl>
 	</div>
 	<?php echo $this->element('navFilmstrip') ?>
-<?php	$this->Layout->blockEnd(); ?>	
+<?php	$this->Layout->blockEnd(); 
+
+	if (isset($this->passedArgs['thumbSize'])) {
+		$thumbSize = $this->passedArgs['thumbSize'];		
+	} else {
+		$PREFIX = 'PhotoPreview_Snap';	// Photo 
+		$thumbSize = Session::read("thumbSize.{$PREFIX}");
+		if (!$thumbSize) $thumbSize = 'bp';	
+	}
+	
+?>	
 <section class="photo">
 	<div class="preview grid_11">
-		<section class='preview-body' <?php $size = !empty($this->passedArgs['size']) ?  $this->passedArgs['size'] : 'bp';  echo "size='{$size}' uuid='".AppController::$uuid."'"; ?> >
+		<section class='preview-body' <?php echo "size='{$thumbSize}' uuid='".AppController::$uuid."'"; ?> >
 			<?php echo $this->element('shotGallery') ?>
 		</section>	
 		

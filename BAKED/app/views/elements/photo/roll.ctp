@@ -20,9 +20,6 @@ if (isset($passedArgs['rating'])) {
 }
 // debug($data);
 $this->viewVars['jsonData']['STATE'] = $state;
-
-$THUMBSIZE = isset($passedArgs['thumbSize']) ?  $passedArgs['thumbSize'] : 'lm';
-$THUMBSIZE = $isPreview ? 'sq' : $THUMBSIZE;
 ?>
 
 <?php  if ($isXhr && $isPreview) {

@@ -596,14 +596,11 @@
         	// create dialog
         	dialog = SNAPPI.Dialog.CFG[dialog_ID].load();
         	args.dialog = dialog;
-        	
         	try {		
-	        	var DEFAULT_THUMBSIZE = 'bm';
-	        	// save in PreviewPhoto.size property for later use
-	        	previewSize = PAGE.jsonData.profile.thumbSize[dialog_ID] || DEFAULT_THUMBSIZE;
-	        } catch (e){
-	        	previewSize = DEFAULT_THUMBSIZE;
-	        } 
+	        	previewSize = SNAPPI.STATE.thumbSize.PhotoPreview_HiddenShot;
+		    } catch (e){}
+		   	if (!previewSize) previewSize = 'bp';
+		   	
         	previewBody = _Y.Node.create('<section class="preview-body" />');
         	previewBody.setAttribute('size', previewSize);
         	dialog.setStdModContent('body', previewBody);
@@ -616,7 +613,6 @@
 			previewBody.plug(_Y.LoadingMask, {
 				strings: {loading:''}, 	// BUG: A.LoadingMask
 				target: loadingmaskTarget,
-				end: null
 			});
 			// BUG: A.LoadingMask does not set target properly
 			previewBody.loadingmask._conf.data.value['target'] = loadingmaskTarget;
@@ -640,7 +636,6 @@
 				Dialog.refresh(dialog, {center:false, w:662});
 			}        	
 			previewBody = dialog.getStdModNode('body').one('.preview-body');
-			previewSize = null; // use size from existing Thumbnail.PhotoPreview
         }
         
 		// add preview markup to Dialog body, set initial preview size
@@ -655,7 +650,6 @@
 				type: 'DialogHiddenShot',
 				node: previewBody,
 				render: false,
-				// size: 'sq',
 			});
     	}   
     	

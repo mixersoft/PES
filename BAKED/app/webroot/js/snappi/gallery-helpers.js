@@ -113,11 +113,7 @@
 	    				GalleryFactory.actions.setSize(this.Gallery, action[1]);
 	    				e.currentTarget.get('parentNode').all('li').removeClass('focus');
 		        		e.currentTarget.addClass('focus');
-		        		SNAPPI.setPageLoading(true);
-		        		var sessKey = 'thumbSize.'+ this.Gallery._cfg.type;
-		        		var cfg = {};
-		        		cfg[sessKey] = action[1];
-		        		SNAPPI.io.writeSession(cfg);
+		        		SNAPPI.io.savePreviewSize(this.Gallery._cfg.type, action[1]);
 	    			break;	 
 	    			case 'toggle-display-options':
 	    				SNAPPI.UIHelper.nav.toggleDisplayOptions();
@@ -713,7 +709,9 @@
 			 * XHR GET: /photos/neighbors/1330052530/perpage:999/page:1/.json
 			 */
 			if (isAlreadyExtended && g.auditionSH.count()) {		
-				g.render({uuid: uuid});		// just render existing CC
+				g.render({
+					uuid: uuid,
+				});		// just render existing CC
 			} else {
 				try {
 					// var uri = PAGE.jsonData.castingCall.CastingCall.Request;
@@ -869,7 +867,6 @@
 			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick', 'WindowOptionClick']
 		},
 		build: GalleryFactory.Photo.build,
-		
 		handle_focusClick: function(e){
 	    	var gallery = this.Gallery;
 			if (gallery.node.listen['disable_LinkToClick']) {
@@ -932,6 +929,9 @@
 			tnType: 'Photo',	// thumbnail Type
 			ID_PREFIX : 'hiddenshot-',
 			PROVIDER_NAME: 'snappi',
+			// MARKUP: '<section class="gallery photo filmstrip hiddenshots container_16">'+
+	        			// '<div class="container grid_16" />'+
+	        			// '</section>',	
 			MARKUP: 	'<div id="dialog-hidden-shot" class="container_16" > ' +
 	'	<section class="filmstrip filmstrip-bg drop alpha omega"> ' +
 	' 		<div class="preview grid_11 alpha-b1 omega-b1"><nav class="toolbar"></nav></div>'+		
@@ -986,7 +986,66 @@
 	        closePatt: /(^27$)/,
 	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)/, // keybd 0-5
 	    },
-		build: GalleryFactory.ShotGallery.build,
+		/*
+         * build 
+         * - scan for a cfg.node or defaultCfg.node, 
+		 * - bind to JS auditions
+         * - call AFTER SNAPPI.mergeSessionData(), important for XHR JSON request
+         * @params gallery instance of SNAPPI.Gallery
+         * @params cfg object, cfg object
+         */
+    	build: function(gallery, cfg){
+            // var self = gallery;		// instance of SNAPPI.Gallery
+            cfg = cfg || {};
+            
+            if (!cfg.size) delete cfg.size;	// merging undefined causes prob with default setting
+            cfg = _Y.merge(GalleryFactory[cfg.type].defaultCfg, cfg);	
+            
+            try {
+            	if (!cfg.castingCall && cfg.castingCall !== false) cfg.castingCall = PAGE.jsonData.castingCall;
+            } catch (e){}
+	        gallery.auditionSH = null;
+	        gallery.shots = null; 	
+	        
+	        // generic gallery BEFORE init
+			gallery.providerName = cfg.PROVIDER_NAME;	// deprecate: use this.cfg.providerName
+			GalleryFactory._attachNodes(gallery, cfg);
+			
+			/*
+			 *  for DialogHiddenShot, get initial size differently
+			 */
+			try {
+    			var thumbSize = SNAPPI.STATE.thumbSize.DialogHiddenShot;
+    		} catch(e){}
+    		if (!thumbSize) thumbSize='sq';
+			gallery.header.all('ul.thumb-size li.btn.white').some(function(n){
+				// initialize header icon
+				var action = n.getAttribute('action');
+				if (action.match(thumbSize+'$')) {
+					n.addClass('focus');
+					return true;
+				}
+				return false;
+			}, gallery);
+			cfg.size = thumbSize;	// DialogHiddenShot	 
+			/*
+			 * end 
+			 */
+			
+	        gallery.init(cfg);
+	        
+	        // apply SNAPPI.STATE.filters to section.gallery-display-options
+	        try {	// not valid for NavFilmstrip
+	        	GalleryFactory[cfg.type].apply_filter_settings(SNAPPI.STATE.filters, gallery);	        	
+	        } catch(e) {}
+
+	        
+	        // .gallery.photo AFTER init methods
+	        SNAPPI.Gallery.find[cfg.ID_PREFIX] = gallery;		// add to gallery lookup
+	        SNAPPI.Rating.startListeners(gallery.container);
+	        _Y.fire('snappi:after_PhotoGalleryInit', this); 
+	        return gallery;					// return instance of SNAPPI.Gallery
+        },
 		handle_focusClick: function(e){
 			// also check: DialogHelper.bindSelected2DialogHiddenShot(). which one is used?
 	    	var gallery = this.Gallery;
@@ -1044,6 +1103,7 @@
             // TODO: only merge SNAPPI.STATE.displayPage for "primary" gallery, with paging
             cfg = _Y.merge(GalleryFactory[cfg.type].defaultCfg, SNAPPI.STATE.displayPage, cfg);	
             try {
+            	// TODO DEPRECATE. for PhotoAirUpload. use focus in /elelments/photos/header
             	cfg.size = PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
             } catch (e){}
             try {

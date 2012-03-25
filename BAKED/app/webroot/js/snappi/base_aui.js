@@ -189,7 +189,7 @@
 	var _CFG = {		// frequently used startup Config params 
 			DEBUG : {	// default when hostname==git*
 	    		snappi_comboBase: 'baked/app/webroot&',
-	    		snappi_minify: 1,
+	    		snappi_minify: 0,
 	    		air_comboBase: 'app/air&',
 	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
 	    		pagemaker_comboBase: 'PageMaker&',	// filepath, not baseurl
@@ -1150,7 +1150,7 @@
         try {
         	SNAPPI.namespace('SNAPPI.STATE.hints');
             // SNAPPI.STATE = SNAPPI.STATE  || {}; // stores session data across XHR calls
-        	SNAPPI.STATE = _Y.merge(PAGE.jsonData.STATE, SNAPPI.STATE);
+        	SNAPPI.STATE = _Y.merge(PAGE.jsonData.STATE, SNAPPI.STATE, PAGE.jsonData.profile);
         	PAGE.jsonData.STATE = {};
     		// merge PAGE into SNAPPI.STATE
     		try {

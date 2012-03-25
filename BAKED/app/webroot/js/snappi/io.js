@@ -105,7 +105,7 @@
          * callback: defined in caller function to process response
          */
         writeSession : function(postData, callback, args){
-        	callback = _Y.merge({success:null, failure:null, complete:function(){SNAPPI.setPageLoading(false);}}, callback);	
+        	callback = _Y.merge({success:null, failure:null, complete:null}, callback);	
             var jsonFlag = true;
             var data = {};
             for(var key in postData){
@@ -128,20 +128,28 @@
             this.post("/snappi/writeSession/.json", data, callback, '');
         },
         
-        savePreviewSize : function(size) {
+        savePreviewSize : function(thumbSizeKey, size, callback) {
 			var callback = {
 				complete : function(id, o, args) {
+					SNAPPI.setPageLoading(false);
 					var check;
 				},
 				failure : function(id, o, args) {
 					var check;
 				}
 			};
-			var postData = [];
-			var photoSizeKeyName = 'profile.thumbSize';
-			// see PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX] in galleryHelpers.build()
-			postData[photoSizeKeyName] = size;
-			SNAPPI.io.writeSession(postData, callback, '');
+			var postData = {};
+			var sessKey = 'thumbSize.'+thumbSizeKey;
+			postData[sessKey] = size;
+			switch(thumbSizeKey){
+				case 'PhotoPreview_HiddenShot':
+				case 'DialogHiddenShot':
+					postData['profile.'+sessKey] = size;	// pass thru to JS
+					break;
+				default: break;
+			}
+			SNAPPI.setPageLoading(true);
+			SNAPPI.io.writeSession(postData, callback);
 		},
         
         /**

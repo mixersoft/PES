@@ -510,13 +510,8 @@
     		// create/reuse Thumbnail
     		var t, node = previewBody.one('.FigureBox.PhotoZoom');
     		if (!node) {
-	    		try {
-	    			// TODO: get initial size, save size as property of Thumbnail object
-	    			cfg.size = cfg.size || PAGE.jsonData.profile.thumbSize[cfg.type];
-	    		} catch (e) {
-	    			// default init size
-	    			if ( previewBody.getAttribute('size')) cfg.size = previewBody.getAttribute('size');	
-	    		}
+    			// default size for PhotoZoom == 'bp'
+    			if ( previewBody.getAttribute('size')) cfg.size = previewBody.getAttribute('size');
 	    		if (!cfg.size) delete cfg.size;
 	    		cfg = _Y.merge(_cfg, cfg);
 	    		// create PhotoPreview thumbnail	    		
@@ -738,13 +733,13 @@
     		// create/reuse Thumbnail
     		var t, node = previewBody.one('.FigureBox.PhotoPreview');
     		if (!node) {
-	    		try {
-	    			// TODO: get initial size, save size as property of Thumbnail object
-	    			cfg.size = cfg.size || PAGE.jsonData.profile.thumbSize[cfg.type];
-	    		} catch (e) {
-	    			// default init size
-	    			if ( previewBody.getAttribute('size')) cfg.size = previewBody.getAttribute('size');	
-	    		}
+    			// default init size
+    			cfg.size = previewBody.getAttribute('size');  	// set from SessionKey==thumbsize.PhotoPreview_Snap	
+	    		// try {
+	    			// var previewType = previewBody.ancestor('section.photo') ? 'PhotoPreview_Snap' : 'PhotoPreview_HiddenShot';  
+	    			// if (!cfg.size) cfg.size=SNAPPI.STATE.thumbsize[cfg.type];
+	    		// } catch (e) {
+	    		// }
 	    		if (!cfg.size) delete cfg.size;
 	    		cfg = _Y.merge(_cfg, cfg);
 	    		// create PhotoPreview thumbnail	    		
@@ -809,16 +804,16 @@
 			}
 			SNAPPI.setPageLoading(true);
 			this.Thumbnail.resize(size);
-			// set focus in renderElementsBySize()
-			
 			// refresh Dialog, if necessary
 			try {
 				target.ancestor('.preview-body').Dialog.refresh();
 			}catch(e){}
-			// save preview size to Session, key='profile.previewSize'
-			SNAPPI.io.savePreviewSize(size);
-			SNAPPI.setPageLoading(false);
-			// PAGE.jsonData.profile.thumbSize[cfg.ID_PREFIX];
+			 // save Preview thumbSize
+			var sessKey;
+			if (target.ancestor('#dialog-photo-roll-hidden-shots')) {
+				sessKey = 'PhotoPreview_HiddenShot';
+			} else sessKey = 'PhotoPreview_Snap';	// from /snaps/home page
+			SNAPPI.io.savePreviewSize(sessKey, size);
 		},
 		handle_HiddenShotClick: function(e) {
 			var parent = _Y.one('#shot-gallery');
