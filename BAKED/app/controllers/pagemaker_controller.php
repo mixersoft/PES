@@ -233,8 +233,10 @@ class PagemakerController extends AppController {
     }	
 
 
-	function arrangement($count = 16) {
-		$forceXHR = setXHRDebug($this, 0, true);
+	function arrangement() {
+global $time_start;
+$time_start = isset($time_start) ? $time_start : microtime(true);		
+		$forceXHR = setXHRDebug($this, 0, 0);
 		if ($forceXHR) {
 			// if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 			// $cc = $this->CastingCall->cache_MostRecent();
@@ -250,16 +252,16 @@ class PagemakerController extends AppController {
 		}
 		
 		// prepare photos from castingCall
+		$count = !empty($this->data['role_count']) ? $this->data['role_count'] : 16;
 		$count = $count <= 16 ? $count : 16;
 		$appHost = env('SERVER_NAME');
 		$rawJson = $this->data['CastingCall']['Auditions'];
 		$Auditions = json_decode($rawJson, true);
 		$photos = $Auditions['Audition'];
 		$baseurl = "http://{$appHost}".$Auditions['Baseurl'];
-debug($photos);
 		$sortedPhotos = $this->__sortPhotos($this->__getPhotos($photos, $baseurl), null);
 		$layoutPhotos = count($sortedPhotos) > $count ? array_slice($sortedPhotos, 0, $count) : $sortedPhotos;
-		
+// debug($layoutPhotos);
 		/*
 		 * get arrangement from photos
 		 * params
@@ -290,6 +292,7 @@ debug($photos);
 		}
 		$mostRecent = $this->Session->read('pagemaker');
 		$this->viewVars['jsonData'] = compact('success', 'message', 'response', 'mostRecent');
+debug(" ----------------------->   /pagemaker/arrangement, elapsed(ms)=". 1000*(microtime(true) - $time_start));		
 		$done = $this->renderXHRByRequest('json');
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
 	}

@@ -409,17 +409,19 @@ class ClusterCollage {
      * Rearranges photos sequence (begin-end) with the same rating
      * 
      * @param array $roles
-     * @param array $availibleRoles
+     * @param array $availableRoles
      * @param int $begin
      * @param int $end
      * @return bool
      */
-    protected function rearrangePhotos(&$roles, &$availibleRoles, $begin, $end) {
+    protected function rearrangePhotos(&$roles, &$availableRoles, $begin, $end) {
+global $time_start;
+$time_start = isset($time_start) ? $time_start : microtime(true);    	
         // Define the roles candidates:
 
         $num = 0; $prevRole = null; $selectedRoles = array();
         $countVertical = 0; $countHorizontal = 0;
-        foreach ($availibleRoles as $role) {
+        foreach ($availableRoles as $role) {
             if (null === $role)
                 continue;
             if (null === $prevRole || $role['area'] < $prevRole['area'])
@@ -442,7 +444,6 @@ class ClusterCollage {
             return false;
 
         // Move photos to selected roles:
-
         for ($i = $begin; $i<= $end; $i ++) {
 
             // Get group of roles with the same areas:
@@ -460,22 +461,18 @@ class ClusterCollage {
                     break;
                 }
             }
-
             do {
                 // Randomly select one role from the group:
+                if (count($group) > 0) {
+                	$r = $group[$idx = array_rand($group)];
+					array_splice($group, $idx, 1);
+                } else return false;
                 
-                if (count($group) > 0)
-                    $r = $group[$idx = array_rand($group)];
-                else
-                    return false;
                 $role = $r['role'];
-
                 // Move current photo to this role:
                 $roles[$role['rid']]['pid'] = $i;
                 $res = $this->movePhotoToRole($roles[$role['rid']], $i);
-                array_splice($group, $idx, 0);
             } while(! $res );
-            
              // Cut this role from selectedRoles:
             array_splice($selectedRoles, $r['key'], 1);
             
@@ -484,7 +481,8 @@ class ClusterCollage {
             // We cannot splice the element from availibleRoles, because
             // the rid2 values will not coincide with real availibleRoles
             // indeces, so just set null value (should be skiped in loops):
-            $availibleRoles[$role['rid2']] = null;
+            $availableRoles[$role['rid2']] = null;
+debug(" ----------------------->   rearrangePhotos(), elapsed(ms)=". 1000*(microtime(true) - $time_start));
         }
         return true;
     }
@@ -509,10 +507,10 @@ class ClusterCollage {
                 ($role['x1'] - $role['x0']) * ($role['y1'] - $role['y0']);
         }
         array_multisort($areas, SORT_DESC, $sortedRoles);
-        $availibleRoles = $sortedRoles;
+        $availableRoles = $sortedRoles;
         
         // Fill rid2 field:
-        foreach ($availibleRoles as $key => &$role) {
+        foreach ($availableRoles as $key => &$role) {
             $role['rid2'] = $key;
         }
         
@@ -520,7 +518,7 @@ class ClusterCollage {
         $count = 1;
         for ($i  = 1; $i < count($this->photos); $i ++) {
             if ($this->photos[$i]['rating'] < $prevRating) {
-                if (! $this->rearrangePhotos($roles, $availibleRoles, $begin, $end))
+                if (! $this->rearrangePhotos($roles, $availableRoles, $begin, $end))
                     return false;
                 $begin = $end = $i;
                 $prevRating = $this->photos[$i]['rating'];
@@ -528,7 +526,7 @@ class ClusterCollage {
                 $end = $i;
             }
         }
-        return $this->rearrangePhotos($roles, $availibleRoles, $begin, $end);
+        return $this->rearrangePhotos($roles, $availableRoles, $begin, $end);
     }
 
      /**
@@ -537,9 +535,16 @@ class ClusterCollage {
      * @return array Array of roles
      */
     public function getArrangement() {
+global $time_start;
+$time_start = isset($time_start) ? $time_start : microtime(true);
          do {
             $this->calculate($this->photos, $arrangement, '', true);
-            $res1 = $this->resizeArrangement($arrangement);
+			try {
+            	$res1 = $this->resizeArrangement($arrangement);
+			} catch (Exception $e) {
+debug(" +++++++++++++++++++++++++++++++    Caught exception in this->resizeArrangement()");				
+				continue;	// try again
+			}
             $res2 = (2 != $res1 && 3 != $res1) ? $this->rearrange($arrangement['roles']) : false;
          } while (! $res2 || 2 == $res1 || 3 == $res1);
         
@@ -687,8 +692,11 @@ class ClusterCollage {
      * @return bool
      */
     protected function mergeCells($photos, &$roles, $type, $divisionCheck = false) {
+global $time_start;
+$time_start = isset($time_start) ? $time_start : microtime(true);
         $roles = array();
-        $cluster = $this->getClusterTypes($type); $cluster = $cluster[0];
+        $cluster = $this->getClusterTypes($type); 
+		$cluster = $cluster[0];
 //        $cluster = 'h-2';
 //        $cluster = 'h-h';
         if (!preg_match('/^(?:h|v|\d{1,3})(?:-|\|)(?:h|v|\d{1,3})$/', $cluster))
@@ -698,6 +706,7 @@ class ClusterCollage {
         
         // Calculate cells: (i.e. roles)
         for ($i = 0; $i < strlen($cluster); $i++) {
+        	
             $c = $cluster[$i];
             if ('h' == $c || 'v' == $c) {
                 if (0 == $i) {
@@ -709,7 +718,7 @@ class ClusterCollage {
                          $cellsNumber = $this->defineInitialClusterCellsNumber($type);
                          $costsDistribution =  3 == $cellsNumber ? array(1, 2) : array(1, 1);
                          if (! $this->divisionCheck ($division, $costsDistribution, $results)){
-debug(" ----------------->   fail on i==0 divisionCheck");
+// debug(" ----------------->  mergeCells() fail on i==0 divisionCheck, elapsed(ms)=". 1000*(microtime(true) - $time_start));
                          	return false;
                          }
                               
@@ -737,7 +746,7 @@ debug(" ----------------->   fail on i==0 divisionCheck");
                     }
                     $photos = $division[1]['photos'];
                     if (false === $this->calculate($division[0]['photos'], $cell, $c)) {
-debug(" ------->   fail on i==0 calculate");
+// debug(" ------->   mergeCells() fail  on i==0 calculate, elapsed(ms)=". 1000*(microtime(true) - $time_start));
                     	return false;
                     }
                 } else {
@@ -748,7 +757,7 @@ debug(" ------->   fail on i==0 calculate");
                             $this->currentInitialCell = 2;
                     }
                     if (false === ($this->calculate($photos, $cell, $c))){
-debug(" ----------------------->   fail on i > 0 calculate");                    	
+// debug(" ----------------------->   mergeCells() fail  on i > 0 calculate, elapsed(ms)=". 1000*(microtime(true) - $time_start));                   	
                     	return false;
                     }
                 }
@@ -759,21 +768,18 @@ debug(" ----------------------->   fail on i > 0 calculate");
                 if ($divisionCheck && 0 === $this->currentInitialCell)
                     $this->currentInitialCell = 1;
                 if (false === $this->mergeCells($photos, $cell, $c, $divisionCheck)) {
-debug(" ----------------------->   fail on is_numeric()");                   	
+// debug(" ----------------------->   mergeCells() fail  on is_numeric(), elapsed(ms)=". 1000*(microtime(true) - $time_start));                 	
                     return false;
 				}
                 $cells[] = $cell;
             } else {
-                throw new Exception('Unexpected operaand "' . $c . '" during rule parsing at ' . __CLASS__ . '::' . __FUNCTION__);
+                throw new Exception('Unexpected operand "' . $c . '" during rule parsing at ' . __CLASS__ . '::' . __FUNCTION__);
             }
 			
 			if (1 || !isset($cell['h'])) {
-debug(">>>>>>>>>>>>>>>> cluster={$cluster}, i={$i}, c={$c}");
-debug($photos);
-debug($cells[0]);	// same as arrangement
+// debug(">>>>>>>>>>>>>>>> cluster={$cluster}, i={$i}, c={$c}, elapsed(ms)=". 1000*(microtime(true) - $time_start));
 			}
         }
-        
         /**
          * Merge cells:
          */
@@ -797,8 +803,8 @@ debug($cells[0]);	// same as arrangement
         
         if ('|' == $operator) {
         	if (!isset($cells[$k]['h']) || !isset($cells[$l]['h'])  ) {
-        		debug($cells);
-				debug("k={$k}, l={$l}");
+// debug($cells);
+// debug("k={$k}, l={$l}");
         		throw new Exception('Undefined index: h "' . $cluster . '" at ' . __CLASS__ . '::' . __FUNCTION__);
 			}
             $coef = $cells[$k]['h'] / $cells[$l]['h'];
@@ -811,8 +817,8 @@ debug($cells[0]);	// same as arrangement
             }
         } else { // '-'
         	if (!isset($cells[$k]['w']) || !isset($cells[$l]['w'])  ) {
-debug($cells);
-debug("k={$k}, l={$l}");
+// debug($cells);
+// debug("k={$k}, l={$l}");
         		throw new Exception('Undefined index: w "' . $cluster . '" at ' . __CLASS__ . '::' . __FUNCTION__);
 			}        
             $coef = $cells[$k]['w'] / $cells[$l]['w'];
@@ -858,7 +864,6 @@ debug("k={$k}, l={$l}");
 //        }
         
         // Merge cells:
-        
         $hasTop = $cells[$k]['hasTop'] || $cells[$l]['hasTop'];
         $roles = array(
             'hasTop' => $hasTop,
@@ -868,7 +873,7 @@ debug("k={$k}, l={$l}");
             'way' => (count($cells[$k]['roles']) > 1 ? '(' . $cells[$k]['way'] . ')' : $cells[$k]['way'])
                 . $operator . (count($cells[$l]['roles']) > 1 ? '(' . $cells[$l]['way'] . ')' : $cells[$l]['way']),
         );
-        
+debug(" ----------------------->   mergeCells() DONE, elapsed(ms)=". 1000*(microtime(true) - $time_start));        
         return true;
     }
 
