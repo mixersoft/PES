@@ -66,6 +66,7 @@
 					echo "<li class='btn white ".($thumbSize==$size ? 'focus' : '')."' action='set-display-size:{$size}'><img src='{$src}' alt=''></li>\n";
 				}
 			?>
+			<li class='btn white' action='toggle-keydown'><span class='keydown'>&nbsp;</span></li>
 			<li class='btn white' onclick="SNAPPI.UIHelper.nav.toggle_fullscreen(true);">Fullscreen</li>
 		</ul>
 	</nav> 

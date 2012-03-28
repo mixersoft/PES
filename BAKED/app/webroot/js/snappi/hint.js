@@ -53,6 +53,21 @@
     		trigger: 'section.gallery.photo .container',
     		anchor: 'section.gallery.photo .container .FigureBox.Photo:first-child .hidden-shot, section.gallery.photo .container .FigureBox.Photo:first-child ',
     	},
+    	HINT_Keydown_Gallery:{
+    		css_id:'hint-keydown-gallery-markup', 
+    		uri: '/help/markup/tooltips', 
+    		showDelay:9000,
+    		align:  { points: [ 'tr', 'bc' ] },
+    		trigger: '.gallery-header .keydown',
+    	},
+    	HINT_Keydown_Preview:{
+    		css_id:'hint-keydown-preview-markup', 
+    		uri: '/help/markup/tooltips', 
+    		showDelay:9000,
+    		align:  { points: [ 'tl', 'bc' ] },
+    		trigger: '.FigureBox.PhotoZoom .extras .keydown, .FigureBox.PhotoPreview .extras .keydown',
+    		anchor: '.FigureBox .extras .keydown',
+    	},
     	HINT_Filmstrip:{
     		css_id:'hint-filmstrip-markup', 
     		uri: '/help/markup/tooltips', 

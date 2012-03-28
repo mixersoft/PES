@@ -496,6 +496,7 @@
                 	if (v == 'MultiSelect') {
                 		SNAPPI.multiSelect.listen(this.container, false);
                 	} else {
+                		if (!this.node.listen[v].detach) continue;
 	                    this.node.listen[v].detach();
 	                    delete (this.node.listen[v]);
                 	}

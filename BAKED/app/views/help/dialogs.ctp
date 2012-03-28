@@ -16,7 +16,7 @@
 		<!-- 		not really a dialog/alert  -->
 		<div class='message blue rounded-5 wrap-v'>
 		<p>Drag selected Snaps from above into the Lightbox. 
-			Use <span class='keypress multiselect-single'>Ctrl-Click</span> or <span class='keypress'>Shift-Click</span> to select multiple Snaps.
+			Use <span class='keypress Ctrl-Cmd'>Ctrl-Click</span> or <span class='keypress'>Shift-Click</span> to select multiple Snaps.
 		</p>
 	</div></div>
 </div>

@@ -52,12 +52,14 @@
 			SNAPPI.STATE.hints['HINT_Create'] = true;
 			SNAPPI.STATE.hints['HINT_Bestshot'] = true;
 			SNAPPI.STATE.hints['HINT_HiddenShot'] = true;
+			SNAPPI.STATE.hints['HINT_Keydown_Gallery'] = true;
 			SNAPPI.STATE.hints['HINT_Montage'] = true;
 			SNAPPI.STATE.hints['HINT_DisplayOptions'] = true;
 			SNAPPI.STATE.hints['HINT_Lightbox'] = true;
 			SNAPPI.STATE.hints['HINT_Badge'] = true;
 			// from PhotoPreview load()
 			SNAPPI.STATE.hints['HINT_Filmstrip'] = true;
+			SNAPPI.STATE.hints['HINT_Keydown_Preview'] = true;
 			// SNAPPI.STATE.hints['HINT_PMToolbarEdit'] = true;
 			SNAPPI.Hint.flushQueue();		// if Hint already available
         });        

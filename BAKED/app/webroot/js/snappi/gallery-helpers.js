@@ -117,7 +117,14 @@
 	    			break;	 
 	    			case 'toggle-display-options':
 	    				SNAPPI.UIHelper.nav.toggleDisplayOptions();
-	    			break;   			
+	    			break; 
+	    			case 'toggle-keydown':
+	    				if (e.currentTarget.hasClass('selected')) {
+	    					this.listen['Keydown_stopListening']('selected');
+	    				} else {
+	    					this.listen['Keydown_startListening']('selected');
+	    				}
+	    			break;  			
 	    		}
 	        	
 	        	// check for 'after' event
@@ -429,30 +436,37 @@
 	        	var action = 'Keydown';
 	            if (this.node.listen['Keydown'] == undefined) {
 	            	try {
-	            		
-	            	var self = this;
-	            	var fnKeyDown = GalleryFactory[self._cfg.type].handleKeydown;
-	            	if (!fnKeyDown) fnKeyDown = GalleryFactory.actions.handleKeydown;
-	            	var stopListening = function() {
-	            		if (self.node.listen['Keydown']) { 
-	            			self.node.listen['Keydown'].detach();
-	            			delete self.node.listen['Keydown'];
-	            			// hide focus
-	            			// self.container.all('.focus').removeClass('focus');
-	            		}
-	            	}; 
-	            	var startListening = function() {
-// console.log('Listen Keydown for: '+self._cfg.type);	            		
-	            		if (!self.node.listen['Keydown']) {
-	            			if (document.stoplistening_Keydown && document.stoplistening_Keydown!== stopListening) 
-	            				document.stoplistening_Keydown();
-	            			self.node.listen['Keydown'] = _Y.on('keydown', fnKeyDown, document, self);
-	            			document.stoplistening_Keydown = stopListening;
-	            			
-	            		}
-	            	};
-	            	self.container.on('snappi:hover', startListening, stopListening, self);
-	            	} catch(e){}
+		            	var self = this;
+		            	var fnKeyDown = GalleryFactory[self._cfg.type].handleKeydown;
+		            	if (!fnKeyDown) fnKeyDown = GalleryFactory.actions.handleKeydown;
+		            	var keydownBtn = self.header.one('.keydown').get('parentNode');
+		            	var stopListening = function(className) {
+		            		className = className || 'focus';
+		            		if (self.node.listen['Keydown']) { 
+		            			keydownBtn.removeClass(className);
+		            			if (keydownBtn.hasClass('selected')) return;	// skip if sticky
+		            			self.node.listen['Keydown'].detach();
+		            			delete self.node.listen['Keydown'];
+		            			// self.container.all('.focus').removeClass('focus');
+		            		}
+		            	}; 
+		            	var startListening = function(className) {
+		            		className = className || 'focus';
+	// console.log('Listen Keydown for: '+self._cfg.type);	   
+							keydownBtn.addClass(className);         		
+		            		if (!self.node.listen['Keydown']) {
+		            			if (document.stoplistening_Keydown && document.stoplistening_Keydown!== stopListening) 
+		            				document.stoplistening_Keydown();
+		            			self.node.listen['Keydown'] = _Y.on('keydown', fnKeyDown, document, self);
+		            			document.stoplistening_Keydown = stopListening;
+		            		}
+		            	};
+		            	self.container.on('snappi:hover', startListening, stopListening, self);
+		            	self.node.listen['Keydown_startListening'] = startListening;
+		            	self.node.listen['Keydown_stopListening'] = stopListening;
+	            	} catch(e){
+	            		console.error('GalleryFactory.listeners.Keydown');
+	            	}
 	            }
 	        },     	
 	        

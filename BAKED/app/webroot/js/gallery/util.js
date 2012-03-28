@@ -354,9 +354,12 @@
 			 * 	- Ctrl-Click to Cmd-Click
 			 */
 			setForMacintosh: function (node) {
-				try {
+				try { var shortcut;
 					if (_Y.UA.os === "macintosh") {
-						node.all('span.multiselect-single').setContent('Cmd-Click');	
+						node.all('span.Cmd-Click').each(function(n,i,l){
+							shortcut = n.get('innerHTML');
+							n.setContent(shortcut.replace('Ctrl-', 'Cmd-'));	
+						});
 					}
 				} catch(e) {}
 			},

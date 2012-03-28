@@ -5,7 +5,7 @@
 	<div class="cf" style="width:400px;margin: 10px 80px;">
 		<div class='right'style="margin-left:10px;"><img src='/static/img/hints/ctrl-click.jpg'></div>
 		<p style="margin-top:20px;text-align:right;">
-			Use <span class='keypress multiselect-single'>Ctrl-Click</span> to select individual Snaps,</p> 
+			Use <span class='keypress Ctrl-Cmd'>Ctrl-Click</span> to select individual Snaps,</p> 
 	</div>
 	<div class="cf"  style="width:400px;margin: 10px 80px;">
 		<div class='left'  style="margin-right:10px;"><img src='/static/img/hints/shift-click.jpg'></div>
@@ -55,6 +55,33 @@
 	</ul>
 	<p>Hidden Snaps are always just a click away. Just look for this <img title="3 Snaps in this Shot." src='/static/img/css-gui/icon-hidden-shot-3.png'> icon to get in on the secret.</p>
 
+</div>
+<div id="hint-keydown-gallery-markup" class="hint message blue rounded-5 cf">	
+	<h1>Use Keyboard Shortcuts to Speed Things Up</h1>
+	<div class='center'><img src='/static/img/hints/keydown.jpg'></div>
+	<p>Keyboard shortcuts are helpful when you want to organize and rate a whole batch of Snaps. 
+		To activate, just click the button or put the mouse cursor over the Snap gallery.</p>
+	<ul>Here is the quick list of keyboard shortcuts available for Snap Galleries:  
+		<li><span class='keypress'>Right arrow</span>, <span class='keypress'>space</span> next Snap</li>
+		<li><span class='keypress'>Left arrow</span>, <span class='keypress'>backspace</span> previous Snap</li>
+		<li><span class='keypress'>Up arrow</span> Move up</li>
+		<li><span class='keypress'>Down arrow</span> Move down</li>
+		<li><span class='keypress'>Keypad 0-5</span> Apply rating to Snap</li>
+		<li><span class='keypress Ctrl-Cmd'>Ctrl-A</span> Select Sll</li>
+		<li><span class='keypress Ctrl-Cmd'>Ctrl-G</span> Group (selected) as Shot</li>
+	</ul>
+	<br /> 
+</div>
+<div id="hint-keydown-preview-markup" class="hint message blue rounded-5 cf">	
+	<h1>Use Keyboard Shortcuts to Speed Things Up</h1>
+	<div class='center'><img src='/static/img/hints/keydown.jpg'></div>
+	<p>Keyboard shortcuts are helpful when you want to organize and rate a whole batch of Snaps. 
+		To activate, just click the button or put the mouse cursor over the Snap.</p>
+	<ul>Here is the quick list of keyboard shortcuts available for Snaps:  
+		<li><span class='keypress'>Right arrow</span>, <span class='keypress'>space</span> next Snap</li>
+		<li><span class='keypress'>Left arrow</span>, <span class='keypress'>backspace</span> previous Snap</li>
+		<li><span class='keypress'>Keypad 0-5</span> apply rating to Snap</li>
+	</ul>
 </div>
 <div id="hint-filmstrip-markup" class="hint message blue rounded-5 cf">	
 	<h1>The Filmstrip</h1>

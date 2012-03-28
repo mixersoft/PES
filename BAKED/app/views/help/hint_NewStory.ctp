@@ -5,7 +5,7 @@
 	<div class="cf" style="width:400px;margin: 10px 80px;">
 		<div class='right'style="margin-left:10px;"><img src='/static/img/hints/ctrl-click.jpg'></div>
 		<p style="margin-top:20px;text-align:right;">
-			Use <span class='keypress multiselect-single'>Ctrl-Click</span> to select individual Snaps,</p> 
+			Use <span class='keypress Ctrl-Cmd'>Ctrl-Click</span> to select individual Snaps,</p> 
 	</div>
 	<div class="cf"  style="width:400px;margin: 10px 80px;">
 		<div class='left'  style="margin-right:10px;"><img src='/static/img/hints/shift-click.jpg'></div>

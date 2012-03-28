@@ -330,9 +330,10 @@ section.gallery-header {
 section.gallery-header h1 {
 	font-size: 1.1em;
 }
-section.gallery-header ul {
-}
-section.gallery-header ul > li {
+section.gallery-header .window-options  span.keydown {
+	background:url(/static/img/css-gui/keyboard.1.png) no-repeat 0 -4px transparent;
+	width: 26px;
+	display:inline-block;
 }
 section.filmstrip section.gallery-header ul > li {
 	padding: 2px 0;
@@ -727,7 +728,11 @@ section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
 .FigureBox.PhotoPreview figcaption .extras li.btn.next {
 	border-radius: 0 15px 15px 0;
 }
-
+.FigureBox figcaption .extras .keydown {
+	background:url(/static/img/css-gui/keyboard.1.png) no-repeat 0 -4px transparent;
+	width: 26px;
+	display:inline-block;
+}
 /*.FigureBox.PhotoPreview figcaption .extras li.caption{
 	font-weight: bold;
 	padding-right: 10px;
@@ -1146,14 +1151,10 @@ section.filmstrip .gallery-header ul {
 	line-height: 24px;
 	font-size: 10pt;
 }
-section.filmstrip .gallery-header > ul > li {
-}
 section.filmstrip .gallery-header .toolbar > div {
 	display:inline-block;
 }
-section.filmstrip .gallery-header .toolbar ul {
-}
-section.filmstrip .gallery-header .count {
+section.filmstrip .gallery-header span.count {
 	display: inline-block;
 	font-size: 0.9em;
 	padding-left: 4px;
@@ -1168,15 +1169,7 @@ section.filmstrip .gallery-header .window-options > ul {
 }
 section.filmstrip .gallery-header .toolbar {
 	margin-bottom: -1px;
-	}
-section.filmstrip .gallery-header .toolbar ul {
-	background: -moz-linear-gradient(bottom, #efefef, #fcfcfc);
-	background: -webkit-gradient(linear, center bottom, center top, from(#fcfcfc), to(#efefef));
-	border:1px solid #cfcfcf;
-	-webkit-border-radius:3px;
-	-moz-border-radius:3px;
 }
-
 section.filmstrip .toolbar ul li {
 	background:url(/static/img/css-gui/separator_bottom.gif) no-repeat bottom right ;
 	padding: 0px 10px;
@@ -1186,6 +1179,7 @@ section.filmstrip .toolbar ul li a{color:#000; font-size:11px;}
 section.filmstrip .toolbar ul li.none{
 	background:none;
 }
+
 
 /*  DUPICATES?  */
 .gallery .filmstrip-wrap {

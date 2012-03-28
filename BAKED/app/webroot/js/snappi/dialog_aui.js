@@ -81,10 +81,25 @@
 		var detach = d.on('closeChange', function(e){
 			for (var i in this.listen) {
 				this.listen[i].detach();
+				delete this.listen[i];
 			}
 		}, d)
 		return detach;		
 	}
+	Dialog.handleKeydown = function(e, d){
+// console.warn('>>> handleKeydown (DEFAULT)');        	
+    	var done;
+    	var charCode = {
+    			enterPatt: /(^XXX$)/,
+		        closePatt: /(^27$)/, // escape
+		    };
+    	var charStr = e.charCode + '';
+		// key navigation for GalleryFactory.Photo
+        if (charStr.search(charCode.closePatt) == 0) {
+            d.close();
+        }
+        if (done) e.preventDefault();
+    };
 	
 	/**
 	 * refresh Dialog, typically after 'snappi:dialog-body-render'
@@ -389,6 +404,7 @@
 		alert = new _Y.Dialog(_cfg).render();
 		_Y.fire('snappi:dialog-visible', alert, true);
 		alert.listen = {};
+		alert.listen['Keydown'] = _Y.once('keydown', Dialog.handleKeydown, document, alert, alert);
 		alert.once('close',
 			function(e){
 				_Y.fire('snappi:dialog-visible', alert, false);
