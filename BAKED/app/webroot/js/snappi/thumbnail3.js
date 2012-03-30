@@ -72,17 +72,7 @@
 	var Thumbnail = function(audition, cfg) {
 		this.init(cfg);
 		if (!audition) return; 
-		
 		this.create(audition, cfg);
-		// start listeners, expects this.node.listen from this.create
-		var listeners = this._cfg.listeners;
-		if (listeners) {
-			if (this._cfg.type == 'PhotoPreview') {
-				this.listen(true, listeners);	
-				return;
-			}
-			this.listen(true, listeners);	
-		}
 	};
 	
 	/*
@@ -165,7 +155,6 @@
 			
 			var node = _Y.Node.create(Factory[this._cfg.type].markup);
 			this.node = node;
-			this.node.listen = {};
 			// id references set by SNAPPI.Auditions.bind()
 			SNAPPI.Auditions.bind(this.node, audition);
 			this.img = this.node.one('img');
@@ -173,6 +162,13 @@
 			node.Thumbnail = this;
 			node.dom().Thumbnail = this; 		// add for firebug
 			Factory[this._cfg.type].renderElementsBySize.call(this, this._cfg.size, audition, cfg);
+			
+			// start listeners, 
+			this.node.listen = {};
+			var listeners = this._cfg.listeners;
+			if (listeners) {
+				this.listen(true, listeners);	
+			}
 			return node;
 		},
 		/**

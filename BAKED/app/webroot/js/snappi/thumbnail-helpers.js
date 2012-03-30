@@ -356,7 +356,7 @@
 					}, this.node);			
 			}
 		},
-		Keydown: function(){ // for PhotoPreview, 		ok
+		Keydown: function(){ // for PhotoPreview, PhotoZoom
         	var action = 'Hover';
             if (this.node.listen[action] == undefined) {
             	var self = this;	// context == Thumbnail
@@ -381,7 +381,8 @@
             			document.stoplistening_Keydown = stopListening;
             		}
             	};
-            	self.node.listen[action] = self.node.on('snappi:hover', startListening, stopListening, self);
+            	var delegateNode = self.node.ancestor('.preview-body') || _Y.one('.preview-body');
+            	self.node.listen[action] = delegateNode.on('snappi:hover', startListening, stopListening, self);
             	self.node.listen['Keydown_startListening'] = startListening;
 		        self.node.listen['Keydown_stopListening'] = stopListening;
             }
@@ -580,6 +581,7 @@
 	    		}
     		} 
     		if (cfg.gallery) {
+    			if (!node.orig_Gallery) node.orig_Gallery = cfg.gallery; 
     			node.Gallery = cfg.gallery;
     		}
     		return node;
@@ -656,11 +658,12 @@
 		handle_HiddenShotClick: function(e) {
 			var selected = SNAPPI.Auditions.find(this.uuid);
 			var previewBody = this.ancestor('.preview-body');
-        	var shotGallery = previewBody.get('parentNode').one('.gallery').Gallery;
+			var shotGalleryNode = previewBody.get('parentNode').one('.gallery'),
+				shotGallery = shotGalleryNode.Gallery;
         	if (!shotGallery) {
 				shotGallery = new SNAPPI.Gallery({
 					type: 'ShotGallery',
-					node: parent.one('.gallery'),
+					node: shotGalleryNode,
 					render: false,
 				});
         	}   
@@ -692,7 +695,9 @@
 					f.handle_setDisplayView(g, 'one-row');
 					return;
 				}
-				if (this.ancestor('#dialog-photo-roll-hidden-shots')) {
+				if (this.ancestor('#dialog-photo-roll-hidden-shots')
+					&& !(g._cfg.type == 'DialogHiddenShot' || g._cfg.type == 'ShotGallery') 
+				) {
 					// skip to next hiddenShot
 					var current,
 						found, 
@@ -716,10 +721,16 @@
 						return;
 					}
 				} else {
+					var copy = selected;
 					if (direction=='prev') {
 						selected = g.auditionSH.prev();
 					} else {
 						 selected = g.auditionSH.next();
+					}
+					if (copy == selected 
+						&& (g._cfg.type == 'DialogHiddenShot' || g._cfg.type == 'ShotGallery')
+					) {	// we are at the end, switch g to Photo
+						 this.Gallery = this.orig_Gallery;
 					}
 				}
 				if (g.container.hasClass('filmstrip')) {
