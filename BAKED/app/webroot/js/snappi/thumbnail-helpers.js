@@ -581,8 +581,11 @@
 	    		}
     		} 
     		if (cfg.gallery) {
-    			if (!node.orig_Gallery) node.orig_Gallery = cfg.gallery; 
-    			node.Gallery = cfg.gallery;
+    			if (!node.orig_Gallery) {
+    				if (cfg.gallery._cfg.type == 'ShotGallery'){
+    					node.orig_Gallery = SNAPPI.Gallery.find['NavFilmstrip'];
+    				} else node.orig_Gallery = cfg.gallery;
+    			} node.Gallery = cfg.gallery;
     		}
     		return node;
 		},
