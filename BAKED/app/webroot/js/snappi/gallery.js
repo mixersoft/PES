@@ -198,6 +198,7 @@
 	        		if (n.uuid == selected.id) n.addClass('focus');
 	        	});
         	}
+        	_Y.fire('snappi:gallery-render-complete', this);
         }, 
         render: function(cfg, shot){
         	cfg = cfg || {};
@@ -555,7 +556,7 @@
         },
         /**
          * set focus in DOM object
-         * - NOT the same as auditionSH.getFocus()
+         * - calls auditionSH.setFocus()
          * @param m mixed, .FigureBox Node, audition, UUID, or index
          * @return
          */
@@ -620,8 +621,9 @@
 					}); 
 	        		g.scrollFocus();	
 	        	}
-	        	if (oldWidth > newWidth) {
-	        		// use delay to avoid flash when narrowing 
+	        	if (0 && oldWidth > newWidth) {  
+	        		// TODO: bug. must cancel delay if we setPagingControls, deprecate???
+	        		// use delay to avoid flash when narrowing
 					var delay = new _Y.DelayedTask( 
 						function() {
 							setWidth(newWidth, this);  
@@ -730,7 +732,7 @@
 			var count = this.node.get('parentNode').one('.gallery-header .count')
 			if (count) 
 				count.set('innerHTML', label);
-		},        
+		},   
         up : function() {
         	var next,
         		lineCount = 1,
@@ -769,7 +771,7 @@
             	this.renderContextMenu(next);
             }
             return next; 
-    },
+    	},
         down: function(){
         	var next,
         		lineCount = 1,
@@ -1498,22 +1500,6 @@
 			}
 			return false;
 		},
-		// @deprecated use SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected()
-		// updateHiddenShotPreview: function(gallery, oldFocus){
-			// var focus = gallery.getFocus();
-			// if (focus != oldFocus) {
-				// gallery.setFocus(focus);
-				// switch(gallery._cfg.type) {
-					// case "DialogHiddenShot":
-						// // Helper.bindPreview(gallery);
-						// SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected();
-					// break;
-					// case "ShotGallery":
-						// SNAPPI.domJsBinder.bindSelected2Preview.call(gallery, focus);
-					// break;
-				// }
-			// }			
-		// },
 		/**
 		 * 
 		 * @param selected  .FigureBox of selected shot

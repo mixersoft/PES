@@ -810,14 +810,14 @@ console.log("delegateHost="+delegateHost._yuid);
 		SNAPPI.Factory.Gallery.nav.toggle_ContextMenu(g, e);
 		var cfg = {
 			// selector: [CSS selector, copies outerHTML and substitutes tokens as necessary],
-			markup: "<div id='preview-zoom'></div>",
+			markup: "<div id='preview-zoom' class='preview-body'></div>",
 			uri: '/combo/markup/null',
 			height: 400,
 			width: 400,
 			skipRefresh: true,
 		};
 		var dialog = SNAPPI.Alert.load(cfg); // don't resize yet
-		var previewBody = dialog.getStdModNode('body').one('#preview-zoom');
+		var previewBody = dialog.getStdModNode('body').one('.preview-body');
 		_Y.once('snappi:preview-change', 
 	        	function(thumb){
 	        		if (thumb.Thumbnail._cfg.type == 'PhotoZoom' ) {
@@ -1125,7 +1125,7 @@ console.log("delegateHost="+delegateHost._yuid);
 					}			
 					// gallery found, but nothing selected, show MultiSelect help
 					var cfg = {
-						// markup: "<div id='preview-zoom'></div>",
+						// markup: "<div id='preview-zoom'  class='preview-body'></div>",
 						selector: '#hint-new-story',
 						uri: '/help/markup/hint_NewStory',
 						width: 600,

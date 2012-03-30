@@ -87,12 +87,6 @@
         		g.refresh();
         	}  else {
 	        	g.renderThumbSize(size);
-	        	// check display mode for filmstrip mode, reset width to fit thumbsize
-	        	if (g.container.hasClass('one-row')) {
-	        		g.setFilmstripWidth();
-	        		g.scrollFocus();
-	        		if (g._cfg.type == 'NavFilmstrip') GalleryFactory['NavFilmstrip'].setPagingControls(g);
-	        	}
         	}
     	},
     	// called by click event handler, context = Gallery.node, set by listener
@@ -120,9 +114,9 @@
 	    			break; 
 	    			case 'toggle-keydown':
 	    				if (e.currentTarget.hasClass('selected')) {
-	    					this.listen['Keydown_stopListening']('selected');
+	    					this.listen['Keydown_stopListening'](null, 'selected');
 	    				} else {
-	    					this.listen['Keydown_startListening']('selected');
+	    					this.listen['Keydown_startListening'](null, 'selected');
 	    				}
 	    			break;  			
 	    		}
@@ -409,6 +403,9 @@
 					    				break;
 					    		}
 			                	try {
+			                		// _Y.once('snappi:gallery-refresh-complete', function(g){
+			                			// g.setFilmstripWidth();
+			                		// });
 			                		fn.call(this, action[1], this.Gallery, e);
 			                	} catch (e) {}
 				    		} catch(e) {
@@ -428,19 +425,20 @@
 		                function(g){
 							if (g._cfg.type == 'NavFilmstrip') {
 								GalleryFactory['NavFilmstrip'].setPagingControls(g);
+								g.setFilmstripWidth();
 							};
 						})	        	
 				}
 	        }, 
 	        Keydown: function(){
-	        	var action = 'Keydown';
-	            if (this.node.listen['Keydown'] == undefined) {
+	        	var action = 'Hover';
+	            if (this.node.listen[action] == undefined) {
 	            	try {
 		            	var self = this;
 		            	var fnKeyDown = GalleryFactory[self._cfg.type].handleKeydown;
 		            	if (!fnKeyDown) fnKeyDown = GalleryFactory.actions.handleKeydown;
 		            	var keydownBtn = self.header.one('.keydown').get('parentNode');
-		            	var stopListening = function(className) {
+		            	var stopListening = function(e, className) {
 		            		className = className || 'focus';
 		            		if (self.node.listen['Keydown']) { 
 		            			keydownBtn.removeClass(className);
@@ -450,7 +448,7 @@
 		            			// self.container.all('.focus').removeClass('focus');
 		            		}
 		            	}; 
-		            	var startListening = function(className) {
+		            	var startListening = function(e, className) {
 		            		className = className || 'focus';
 	// console.log('Listen Keydown for: '+self._cfg.type);	   
 							keydownBtn.addClass(className);         		
@@ -461,7 +459,7 @@
 		            			document.stoplistening_Keydown = stopListening;
 		            		}
 		            	};
-		            	self.container.on('snappi:hover', startListening, stopListening, self);
+		            	self.node.listen[action] = self.container.on('snappi:hover', startListening, stopListening, self);
 		            	self.node.listen['Keydown_startListening'] = startListening;
 		            	self.node.listen['Keydown_stopListening'] = stopListening;
 	            	} catch(e){
@@ -696,7 +694,7 @@
 			hideHiddenShotByCSS: true,	
 			draggable: true,
 			// listeners: ['Keydown', 'Mouseover', 'MultiSelect', 'Contextmenu', 'FocusClick', 'WindowOptionClick'],
-			listeners: ['Keydown', 'Mouseover', 'MultiSelect', 'Contextmenu', 'FocusClick', 'HiddenShotClick', 'WindowOptionClick', 'PaginateClick', 'SetPagingControls'],
+			listeners: ['Mouseover', 'MultiSelect', 'Contextmenu', 'FocusClick', 'HiddenShotClick', 'WindowOptionClick', 'PaginateClick', 'SetPagingControls'],
 		},
 		build: GalleryFactory.Photo.build,
 		render: function(g, uuid){
@@ -924,7 +922,8 @@
             }
             if (done) {
             	var selected = SNAPPI.Auditions.find(focus.uuid);
-	    		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, null, {gallery:this});
+            	var previewBody = this.node.one('.preview-body');
+	    		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, previewBody, {gallery:this});
             }
             if (charStr.search(charCode.ratingPatt) == 0) {
             	try {

@@ -71,20 +71,17 @@
 	 */
 	var Thumbnail = function(audition, cfg) {
 		this.init(cfg);
-		if (audition) {
-			this.create(audition, cfg);
-			// start listeners
-			if (this._cfg.listeners) {
-				var listeners = this._cfg.listeners;
-				this.node.listen = this.node.listen || {};
-				for (var k in listeners){
-	        		try {
-	        			if (!this.node.listen[listeners[k]]){
-	        				this.node.listen[listeners[k]] = Factory.listeners[listeners[k]].call(this); 
-	        			}
-	        		} catch(e) {}
-	        	}
+		if (!audition) return; 
+		
+		this.create(audition, cfg);
+		// start listeners, expects this.node.listen from this.create
+		var listeners = this._cfg.listeners;
+		if (listeners) {
+			if (this._cfg.type == 'PhotoPreview') {
+				this.listen(true, listeners);	
+				return;
 			}
+			this.listen(true, listeners);	
 		}
 	};
 	
@@ -126,8 +123,29 @@
 			for (var attr in _defaultCfg) {
 				if (!this._cfg[attr]) this._cfg[attr] = _defaultCfg[attr];  
 			}
-			var check;
 		},
+		listen: function(status, cfg){
+        	// if (this.node.listen == undefined) this.node.listen = {};
+            status = (status == undefined) ? true : status;
+            var k,v;
+            if (status) {
+            	cfg = cfg || this._cfg.listeners || [];
+            	for (k in cfg){
+            		try {
+            			Factory.listeners[cfg[k]].call(this); 
+            		} catch(e) {}
+            	}
+            }
+            else {
+            	cfg = cfg || this.node.listen;
+                for (k in cfg) {
+                	v = cfg[k];
+                	if (!this.node.listen[v].detach) continue;
+                    this.node.listen[v].detach();
+                    delete (this.node.listen[v]);
+                }
+            }
+        },
 		trimLabel: function(label, length) {
         	length = length || 15;
         	if (label.length > length) {
@@ -148,6 +166,7 @@
 			this.id = id;	// deprecate
 			var node = _Y.Node.create(Factory[this._cfg.type].markup);
 			this.node = node;
+			this.node.listen = {};
 			// node.uuid = id;
 			// node.dom().uuid = id;	// for firebug			
 			// this.uuid = id;

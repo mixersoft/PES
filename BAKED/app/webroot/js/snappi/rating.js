@@ -267,6 +267,10 @@
 	 */
 	Rating.startListeners = function(delegateContainer, selector) {
 		var selector = selector || 'div.ratingGroup';
+if (!_Y) {
+	_Y = SNAPPI.Y;
+	console.warn('Had to fix _Y in Rating.startListeners');
+}		
 		if (!delegateContainer instanceof _Y.Node) {
 			delegateContainer = _Y.one(delegateContainer);
 		}
@@ -671,36 +675,13 @@
 				}, this);
 				_Y.fire('snappi:ratingChanged', r);
 				break;
-			case "photoPreview-ratingGroup": // see ThumbnailFactory.PhotoPreview.renderElementsBySize()
-				// for autoScroll, see: Factory.Thumbnail.PhotoPreview.set_AutoScroll_RatingClick_Listener()
-				try {
-					var tn = r.node.ancestor('.FigureBox');
-					var audition = SNAPPI.Auditions.find(tn.uuid);
-					v = v || r.value;
-					AssetRatingController._updateRatingChange(audition, v);
-				} catch (e) {
-				}
-				_Y.fire('snappi:ratingChanged', r);
-				break;
-			case 'zoom_ratingGrp':
-				// try {
-					// var audition = SNAPPI.Auditions.find(r.node.ancestor('#snappi-zoomBox').uuid);
-					// v = v || r.value;
-					// AssetRatingController._updateRatingChange(audition, v);
-				// } catch (e) {
-				// }
-				// _Y.fire('snappi:ratingChanged', r);
-				break;
 			case 'menuItem-contextRatingGrp': // right-click over .FigureBox
-				var audition = SNAPPI.Auditions.get(r.id);
-				v = v || r.value;
+				var audition = SNAPPI.Auditions.find(r.id);
+				v = v !== undefined ? v : r.value;
 				AssetRatingController._updateRatingChange(audition, v);
 				_Y.fire('snappi:ratingChanged', r);
-				// hide contextMenu
-				// use aui-delayed-task and/or aui-debounce
-				_Y.later(2000, null, function(){tn.dom().Menu.getNode().addClass('hide');});
 				break;
-			default: // photoRoll .FigureBox ratingGroup
+			default: // .FigureBox ratingGroup
 				try {
 					var tn = r.node.ancestor('.FigureBox');
 					var audition = SNAPPI.Auditions.find(tn.uuid);

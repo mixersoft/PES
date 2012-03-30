@@ -591,6 +591,8 @@
 		return;		
 	}	
 	/**
+	 * 
+	 * useS ThumbnailFactory.PhotoPreview
 	 * @params g SNAPPI.Gallery object
 	 * @params selected obj, audition of selected item
 	 */

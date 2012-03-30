@@ -243,10 +243,10 @@
 						switch(thumbnail._cfg.type){
 							case 'PhotoPreview':
 								if (shotCount > 6) {
-									exists = '<li class="wrap-bg-sprite"><div class="hidden-shot" title="'+tooltip+'"></div></li>';
+									exists = '<li class="wrap-bg-sprite" action="show-hiddenshot"><div class="hidden-shot" title="'+tooltip+'"></div></li>';
 									thumbnail.node.one('figure figcaption li.context-menu').insert(exists, 'before');						
 								} else if (shotCount > 1) {
-									exists = '<li class="wrap-bg-sprite"><div class="hidden-shot c'+shotCount+'" title="'+tooltip+'"></div></li>';
+									exists = '<li class="wrap-bg-sprite" action="show-hiddenshot"><div class="hidden-shot c'+shotCount+'" title="'+tooltip+'"></div></li>';
 									thumbnail.node.one('figure figcaption li.context-menu').insert(exists, 'before');	
 								}							
 								break;
@@ -269,84 +269,111 @@
 			} catch (e) { }			
 			return;
     };
+    ThumbnailFactory.actions = {
+    	handle_PreviewExtrasClick : function(e){	// context==Thumbnail.node
+    		var t = this.Thumbnail,
+    			action = e.currentTarget.getAttribute('action');
+    		if (!action) return;
+    		else action = action.split(':');
+    		switch(action[0]) {
+	    			case 'set-display-size': // ThumbsizeClick preview size
+	    				ThumbnailFactory[t._cfg.type].handle_ThumbsizeClick.call(this, e, action[1]);
+	    				break;
+	    			case 'show-hiddenshot': //  '.hidden-shot'
+	    				ThumbnailFactory[t._cfg.type].handle_HiddenShotClick.call(this, e);
+	    				break;	
+	    			case 'show-contextmenu': // '.context-menu'
+	    				ThumbnailFactory[t._cfg.type].handle_ActionsClick.call(this, e);
+	    				break;	
+	    			case 'nav':  // 'li.btn.next, li.btn.prev'
+	    				var direction = e.currentTarget.hasClass('next') ? 'next' : 'prev';
+						var g = this.Gallery || SNAPPI.Gallery.find['nav-'];	// this.Gallery from Factory.PhotoPreview.bindSelected();
+						// same for PhotoPreview or PhotoZoom only
+						ThumbnailFactory['PhotoPreview'].next.call(this, direction, g, this);
+	    				break;	
+	    			case 'toggle-keydown':	
+	    				if (e.currentTarget.hasClass('selected')) {
+	    					this.listen['Keydown_stopListening'](null, 'selected');
+	    				} else {
+	    					this.listen['Keydown_startListening'](null, 'selected');
+	    				}
+	    				break;
+	    	}
+    	}
+    };
 	ThumbnailFactory.listeners = {
-		ThumbsizeClick: function(){
-			return this.node.delegate('click',
-					ThumbnailFactory[this._cfg.type].handle_ThumbsizeClick
-            	, 'figcaption ul.sizes li.btn', this.node)
+		PreviewExtrasClick: function() {
+			var action = 'PreviewExtrasClick';
+            if (this.node.listen[action] == undefined) {
+            	var delegate_container = this.node.one('figcaption .extras');
+				this.node.listen[action] ==  delegate_container.delegate('click',
+					ThumbnailFactory.actions.handle_PreviewExtrasClick,
+            		'li, .auto-advance', this.node);
+            }			
 		},
-
-		HiddenShotClick: function() {
-			return this.node.delegate('click',
-					ThumbnailFactory[this._cfg.type].handle_HiddenShotClick
-            	, 'figcaption .hidden-shot', this.node)
-		},
-		ActionsClick: function() {
-			return this.node.one('figcaption .context-menu').on('click',
-					ThumbnailFactory[this._cfg.type].handle_ActionsClick
-            	, this.node)			
-		},
-		// PhotoPreview only
-		// just enable/disable autoScroll, not next/prev
-		ToggleAutoScrollClick: function() {
-			// context = Thumbnail
-			return this.node.one('figcaption .settings input[type=checkbox]').on('click',
-					ThumbnailFactory[this._cfg.type].handle_ToggleAutoScrollClick
-            	, this.node)			
-		},
-		// for PhotoPreview.set_AutoScroll_RatingClick_Listener()
+		// for PhotoPreview/PhotoZoom. deprecate.set_AutoScroll_RatingClick_Listener()
 		AutoScrollRatingClick: function(g, previewBody){
-			g = g || this.node.Gallery;
-			previewBody = previewBody || this.node.ancestor('.previewBody');
-			return _Y.on('snappi:ratingChanged', function(r, g, previewBody){
-				if (g && previewBody.one('.FigureBox.PhotoPreview').contains(r.node)) {
-					ThumbnailFactory.PhotoPreview.next('next', g, previewBody);
-				}
-			}, this, g, previewBody);
+			var action = 'AutoScrollRatingClick';		
+			if (this.node.listen[action] == undefined) {
+				this.node.listen[action] = _Y.on('snappi:ratingChanged', function(r){
+					// context == .FigureBox == Thumbnail.node
+					try {
+						var isAutoScroll = this.one('.extras input.auto-advance').get('checked'),
+							g = this.Gallery;	
+					} catch(e) {
+						return;		// not found
+					}
+					if (isAutoScroll && g) {
+						if (r && r.node.getAttribute('uuid') == this.uuid) {
+							ThumbnailFactory['PhotoPreview'].next.call(this, 'next', g, this);
+						}
+					}
+				}, this.node);
+			}
 		},
-		NextPrevClick: function() {
-			return this.node.delegate('click',
-				function(e){
-					var direction = e.currentTarget.hasClass('next') ? 'next' : 'prev';
-					var g = this.Gallery || SNAPPI.Gallery.find['nav-'];	// this.Gallery from Factory.PhotoPreview.bindSelected();
-					// same for PhotoPreview or PhotoZoom only
-					ThumbnailFactory['PhotoPreview'].next.call(this, direction, g, this);
-				}, 'li.btn.next, li.btn.prev', this.node);			
-		},
-		RatingClick: function() {			
-			var r = this.node.one('.rating');
-			return SNAPPI.Rating.startListeners(r);
+		RatingClick: function() {	
+			var action = 'RatingClick';
+            if (this.node.listen[action] == undefined) {	
+				var r = this.node.one('.rating');
+				this.node.listen[action] = SNAPPI.Rating.startListeners(r);
+			}
 		},
 		PreviewImgLoad: function() {
-			// plugin/show loadingmask in SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected()
-			// BUG: PhotoZoom, img does not yet exist. use delegate
-			return this.node.one('figure > img').on('load',
-				function(e) {
-					// hide loading indicator
-					var node = this;
-					if (node.loadingmask) node.loadingmask.hide();
-					else if ((node = this.get('parentNode')) && node &&  node.loadingmask){
-						node.loadingmask.hide();
-					} else if ((node = this.ancestor('.preview-body')) && node && node.loadingmask){
-						node.loadingmask.hide();
-					} else if ((node = this.ancestor('.preview-zoom')) && node && node.loadingmask){
-						node.loadingmask.hide();
-					}
-					_Y.fire('snappi:preview-change', this);	
-					// also see PreviewHelper.DialogHiddenShot, which is currently not being used
-				}, this.node)			
+			var action = 'PreviewImgLoad';		// show loadingmask for PhotoPreview/PhotoZoom
+            if (this.node.listen[action] == undefined) {
+				this.node.listen[action] = this.node.one('figure > img').on('load',
+					function(e) {
+						// hide loading indicator
+						var node = this;
+						if (node.loadingmask) node.loadingmask.hide();
+						else if ((node = this.get('parentNode')) && node &&  node.loadingmask){
+							node.loadingmask.hide();
+						} else if ((node = this.ancestor('.preview-body')) && node && node.loadingmask){
+							node.loadingmask.hide();
+						}
+						_Y.fire('snappi:preview-change', this);	
+						// also see PreviewHelper.DialogHiddenShot, which is currently not being used
+					}, this.node);			
+			}
 		},
-		Keydown: function(){ // for PhotoPreview
-        	var action = 'Keydown';
-            if (this.node.listen['Keydown'] == undefined) {
-            	var self = this;
-            	var stopListening = function() {
+		Keydown: function(){ // for PhotoPreview, 		ok
+        	var action = 'Hover';
+            if (this.node.listen[action] == undefined) {
+            	var self = this;	// context == Thumbnail
+            	var keydownBtn = self.node.one('.extras .keydown').get('parentNode');
+            	var stopListening = function(e, className) {
+		            className = className || 'focus';
+		            keydownBtn.removeClass(className);  
             		if (self.node.listen['Keydown']) { 
+            			keydownBtn.removeClass(className);
+            			if (keydownBtn.hasClass('selected')) return;	// skip if sticky
             			self.node.listen['Keydown'].detach();
             			delete self.node.listen['Keydown'];
             		}
             	}; 
-            	var startListening = function() {
+            	var startListening = function(e, className) {
+		            className = className || 'focus';
+		            keydownBtn.addClass(className);  
             		if (!self.node.listen['Keydown']) {
             			if (document.stoplistening_Keydown && document.stoplistening_Keydown!== stopListening)
             				document.stoplistening_Keydown();
@@ -354,207 +381,14 @@
             			document.stoplistening_Keydown = stopListening;
             		}
             	};
-            	self.node.on('snappi:hover', startListening, stopListening, self);
+            	self.node.listen[action] = self.node.on('snappi:hover', startListening, stopListening, self);
+            	self.node.listen['Keydown_startListening'] = startListening;
+		        self.node.listen['Keydown_stopListening'] = stopListening;
             }
         },	
 	};
-	ThumbnailFactory.PhotoZoom = {
-		defaultCfg: {
-			type: 'PhotoZoom',
-    		ID_PREFIX: 'zoom-',
-    		size: 'bp',
-    		showExtras: true,
-    		showRatings: true,
-    		showLabel: true,
-    		addClass: 'PhotoPreview', 	// inherit CSS props of PhotoPreview
-    		showHiddenShot: false,		// ???: show icon, but don't listen for click?
-    		showSizes: false,
-    		draggable: false,
-    		queue: false,
-    		listeners: ['RatingClick', 'PreviewImgLoad', 'NextPrevClick', 'Keydown'],
-    	}, 
-    	charCode : {
-	        nextPatt: /(^110$)|(^39$)|(^32$)|(^54$)/, // n,right,space,
-	        // keypad right
-	        prevPatt: /(^112$)|(^37$)|(^8$)|(^52$)/, // p,left,backspace,
-	        // keypad left
-	        closePatt: /(^27$)/,
-	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)/, // keybd 0-5
-	    },
-		markup: '<article class="FigureBox PhotoZoom">'+
-                '<figure>'+
-                '    <figcaption><ul class="extras inline rounded-5">'+
-                '<li class="label caption"></li>' +
-                '    	 <li class="label">My Rating</li><li class="rating wrap-bg-sprite"></li>' +
-                '        <li class="label">Score</li><li class="score">0.0</li>' +
-                '		 <li><nav class="settings">' +
-                '<ul class="inline">'+
-                '<li class="li btn prev orange">&#x25C0;</li><li class="li btn next orange">&#x25B6;</li>' + 
-                '</ul></li>' +
-				'	</ul></figcaption>' +
-				'	<img alt="" src="">' +
-				'</figure>'+
-				'</article>',
-		renderElementsBySize : function (size, audition, cfg){
-			cfg = cfg || {};
-			/*
-			 * set attributes based on thumbnail size
-			 */
-			audition = audition || SNAPPI.Auditions.find(this.id);
-			var node = this.node;
-			
-			var src, linkTo, title, score, votes, exists, tooltip, shotCount, sizeCfg;
-			SNAPPI.Auditions.bind(node, audition);
-			// linkTo = '/photos/home/' + audition.id;
-			// add ?ccid&shotType in photoroll.listenClick()
-			title = audition.label;
-			score = audition.Audition.Photo.Fix.Score;
-			votes = audition.Audition.Photo.Fix.Votes;	
 	
-			// set CSS classNames
-			var sizeCfg = _Y.merge(ThumbnailFactory.PhotoZoom.defaultCfg, cfg);
-			sizeCfg.size = size || sizeCfg.size;
-			node.set('className', 'FigureBox').addClass(this._cfg.type).addClass(sizeCfg.size);
-			if (sizeCfg.addClass) node.addClass(sizeCfg.addClass);
-			delete(sizeCfg.addClass);		// keep size classes local
-			
-			// addClass from this._cfg
-			this._cfg = _Y.merge(this._cfg, sizeCfg, cfg);
-			if (this._cfg.addClass) node.addClass(this._cfg.addClass);
-
-			// set src to the correct size
-			var img = node.one('figure > img');
-			var detach = img.on('load', function(e){
-				detach.detach();
-				_Y.fire('snappi:preview-zoom-loaded', img);
-			});
-			src = audition.getImgSrcBySize(audition.urlbase + audition.rootSrc, sizeCfg.size);
-			src = SNAPPI.util.useStaticHost(src);
-			if (this._cfg.queue && SNAPPI.Imageloader.QUEUE_IMAGES) {
-				img.qSrc = src;
-				// SNAPPI.util3.ImageLoader.queueOneImg(img); // defer,
-				// queue by selector
-			} else {
-				img.set('src', src);
-			}		
-			// img.setAttribute('linkTo', linkTo);
-			
-			// set draggable	
-			if (this._cfg.draggable) {
-				img.addClass('drag');
-			} else {
-				img.removeClass('drag');
-			}
-			
-			// show caption, 
-			exists = node.one("figcaption .caption");
-			if (exists) {
-				if (this._cfg.showLabel) {
-					exists.set('innerHTML', this.trimLabel(title));
-					exists.removeClass('hide');
-				}
-			} else {
-					node.one('figure > img').set('title', title);
-					if (exists) exists.addClass('hide');
-			}
-            			
-			// show hidden shot icons
-			ThumbnailFactory.setHiddenShotNode(this, audition);
-			
-			// rating
-			exists = node.one('ul li.rating');
-			if (this._cfg.showRatings) {
-				if (exists && node.Rating) {
-					if (node.Rating.id != audition.id) {
-						// update rating
-						node.Rating.id = audition.id;
-						node.Rating.node.setAttribute('uuid', audition.id).set(
-								'id', audition.id + '_ratingGrp');
-						node.Rating.render(audition.rating);
-					}
-				} else {
-					// attach Rating
-	            	var gallery = this._cfg.gallery || SNAPPI.Gallery.getFromDom(node);
-	            	SNAPPI.Rating.pluginRating(gallery, node.Thumbnail, audition.rating, {id:'photoPreview-ratingGroup'});
-	            }
-	            if (exists) exists.removeClass('hide');	  
-	       } else {
-	       		if (exists) exists.addClass('hide');
-	       }
 	
-			// show extras, i.e. rating, score, info, menu
-			if (this._cfg.showExtras) {
-				// update Score, show hide in showExtras
-				ThumbnailFactory.setScoreNode(this, audition);
-				node.one('ul').removeClass('hide');
-			} else {
-				node.one('ul').addClass('hide');
-			}		
-			
-			return this;
-		},
-		bindSelected: function(selected, previewBody, cfg) {
-			cfg = cfg || {};
-			var uuid, size, auditionSH,
-	    		_cfg = {
-	    			type: 'PhotoZoom',
-	    			size: 'bp',
-	    		};
-	    		
-			if (!selected.id) {
-        		selected = SNAPPI.Auditions.get(selected);
-        	} 	    		
-    		var previewBody = previewBody || _Y.one('#dialog-alert #preview-zoom');
-    		if (!previewBody) return;
-    		
-    		// create/reuse Thumbnail
-    		var t, node = previewBody.one('.FigureBox.PhotoZoom');
-    		if (!node) {
-    			// default size for PhotoZoom == 'bp'
-    			if ( previewBody.getAttribute('size')) cfg.size = previewBody.getAttribute('size');
-	    		if (!cfg.size) delete cfg.size;
-	    		cfg = _Y.merge(_cfg, cfg);
-	    		// create PhotoPreview thumbnail	    		
-    			t = new SNAPPI.Thumbnail(selected, cfg);	
-    			previewBody.prepend(t.node);
-    			node = t.node;
-    			
-    			// check if image is loaded
-	    		if (!previewBody.loadingmask) {
-	    			var loadingmaskTarget = node;
-					// plugin loadingmask to Thumbnail.PreviewPhoto
-					previewBody.plug(_Y.LoadingMask, {
-						strings: {loading:''}, 	// BUG: A.LoadingMask
-						target: loadingmaskTarget,
-						end: null
-					});
-					// BUG: A.LoadingMask does not set target properly
-					previewBody.loadingmask._conf.data.value['target'] = loadingmaskTarget;
-					previewBody.loadingmask.overlayMask._conf.data.value['target'] = previewBody.loadingmask._conf.data.value['target'];
-					previewBody.loadingmask.set('zIndex', 10);
-		    		previewBody.loadingmask.overlayMask.set('zIndex', 10);    			
-	    		}    			
-    			
-    		} else {
-    			var dialog = SNAPPI.Dialog.find['dialog-alert'];
-    			var detach = _Y.on('snappi:preview-change', 
-		        	function(thumb){
-		        		if (thumb.Thumbnail._cfg.type == 'PhotoZoom' ) {
-		        			detach.detach();
-		        			_Y.fire('snappi:dialog-body-rendered', dialog);
-		        		}
-		        	}, '.FigureBox.PhotoZoom figure > img', dialog
-		        )
-    			node.Thumbnail.reuse(selected);
-    		}
-    		if (cfg.gallery) {
-    			node.Gallery = cfg.gallery;
-    			node.Gallery.auditionSH.setFocus(selected);
-    		}
-    		previewBody.loadingmask.refreshMask();
-    		previewBody.loadingmask.show(); 
-        },	
-	};
 	ThumbnailFactory.PhotoPreview = {
 		defaultCfg: {
 			type: 'PhotoPreview',
@@ -565,7 +399,7 @@
     		showSizes: true,
     		draggable: true,
     		queue: false,
-    		listeners: ['ActionsClick', 'ToggleAutoScrollClick', 'ThumbsizeClick', 'HiddenShotClick', 'RatingClick', 'PreviewImgLoad', 'NextPrevClick', 'Keydown'],
+    		listeners: ['PreviewExtrasClick', 'RatingClick', 'AutoScrollRatingClick', 'PreviewImgLoad', 'Keydown'],
     	},
     	charCode : {
 	        nextPatt: /(^110$)|(^39$)|(^32$)|(^54$)/, // n,right,space,
@@ -582,13 +416,14 @@
                 '        <li class="label">Score</li><li class="score">0.0</li>' +
                 '		 <li><nav class="settings">' +
                 '<ul class="inline filmstrip-nav">'+
-                '<li class="li btn prev orange">&#x25C0;</li><li class="li btn orange radius-0 auto-advance" title="Automatically advance to the next Snap after each click"><input type="checkbox" class="auto-advance" value="" title="Automatically advance to the next Snap after each click"></li><li class="li btn next orange">&#x25B6;</li>' + 
+                '<li class="li btn prev orange" action="nav">&#x25C0;</li><li class="li btn orange radius-0 XXXauto-advance" title="Automatically advance to the next Snap after each click"><input type="checkbox" class="auto-advance" action="toggle-autoscroll" value="" title="Automatically advance to the next Snap after each click"></li><li class="li btn next orange"  action="nav">&#x25B6;</li>' +
+                '<li></li> <li class="btn white" action="toggle-keydown"><span class="keydown">&nbsp;</span></li>'+ 
                 '</ul> ' +
                 '        <ul class="sizes inline">' +
                 '<li class="label">Sizes</li><li class="btn white" action="set-display-size:tn" size="tn">XS</li><li class="btn white" action="set-display-size:bs" size="bs">S</li><li class="btn white" action="set-display-size:bm" size="bm">M</li><li class="btn white" action="set-display-size:bp" size="bp">L</li>' +
                 ' 		 </ul>'+                
                 '		 </nav></li>' +
-                '        <li class="icon context-menu"><img alt="" title="actions" src="/static/img/css-gui/icon2.png"></li>'+
+                '        <li class="icon context-menu" action="show-contextmenu"><img alt="" title="actions" src="/static/img/css-gui/icon2.png"></li>'+
 				'	</ul></figcaption>' +
 				'	<img alt="" src="">' +
 				'</figure>'+
@@ -705,44 +540,17 @@
 			
 			return this;
 		},
-		bindSelected: function(selected, previewBody, cfg) {
-			cfg = cfg || {};
-			if (!selected.id) {
-        		var check = SNAPPI.Auditions.get(selected);
-        	} 	    		
-        	try {
-        		if (check) {
-        			selected = check;
-        		} else {
-	        		var onDuplicate = SNAPPI.Auditions.onDuplicate_REPLACE;
-		        	SNAPPI.Auditions.parseCastingCall(PAGE.jsonData.castingCall, null, null, onDuplicate);
-		        	selected = SNAPPI.Auditions.get(selected);
-	        	} 
-        	} catch(e) {
-        		console.warn('ERROR: ThumbnailFactory.PhotoPreview.bindSelected() cannot find audition for uuid='+selected);
-        	}
-	        	
-    		var previewBody = previewBody || _Y.one('.preview-body');
-    		if (!previewBody) return;
-    		
-    		var uuid, auditionSH,
-	    		_cfg = {
-	    			type: 'PhotoPreview',
-	    			size: 'bp',					// size of last resort
-	    		}
-    		// create/reuse Thumbnail
-    		var t, node = previewBody.one('.FigureBox.PhotoPreview');
+		/**
+		 * create/reuse PhotoPreview/PhotoZoom thumbnail
+		 */
+		bindSelected2PreviewThumbnail: function(selected, previewBody, cfg){
+			// create/reuse Thumbnail
+    		var t, node = previewBody.one('.FigureBox.'+cfg.type);
     		if (!node) {
     			// default init size
-    			cfg.size = previewBody.getAttribute('size');  	// set from SessionKey==thumbsize.PhotoPreview_Snap	
-	    		// try {
-	    			// var previewType = previewBody.ancestor('section.photo') ? 'PhotoPreview_Snap' : 'PhotoPreview_HiddenShot';  
-	    			// if (!cfg.size) cfg.size=SNAPPI.STATE.thumbsize[cfg.type];
-	    		// } catch (e) {
-	    		// }
+    			cfg.size = cfg.size || previewBody.getAttribute('size');  	// set from SessionKey==thumbsize.PhotoPreview_Snap	
 	    		if (!cfg.size) delete cfg.size;
-	    		cfg = _Y.merge(_cfg, cfg);
-	    		// create PhotoPreview thumbnail	    		
+	    		// create PhotoPreview/Zoom thumbnail	    		
     			t = new SNAPPI.Thumbnail(selected, cfg);	
     			previewBody.prepend(t.node);
     			node = t.node;
@@ -764,8 +572,35 @@
     			
     		} else {
     			node.Thumbnail.reuse(selected);
+    		} 
+    		if (cfg.gallery) {
+    			node.Gallery = cfg.gallery;
+    			// node.Gallery.auditionSH.setFocus(selected);  // where is this fired for PhotoPreview?
     		}
-    		if (cfg.gallery) node.Gallery =  cfg.gallery;
+    		return node;
+		},
+		bindSelected: function(selected, previewBody, cfg) {
+			var previewBody = previewBody || (cfg.gallery && cfg.gallery.node.one('.preview-body')) || _Y.one('.preview-body');
+    		if (!previewBody) return;
+    		if (!selected) return;	// possible boundary element, i.e. first or last
+    		
+			if (_Y.Lang.isString(selected)) selected = SNAPPI.Auditions.find(selected);
+        	try {
+        		if (!selected) {
+        			// PhotoPreview only, binds to NavFilmstrip, may not be initialized
+	        		var onDuplicate = SNAPPI.Auditions.onDuplicate_REPLACE;
+		        	SNAPPI.Auditions.parseCastingCall(PAGE.jsonData.castingCall, null, null, onDuplicate);
+		        	selected = SNAPPI.Auditions.get(selected);
+	        	} 
+        	} catch(e) {
+        		console.warn('ERROR: ThumbnailFactory.PhotoPreview.bindSelected() cannot find audition for uuid='+selected);
+        	}
+	        	
+    		var uuid, auditionSH;
+    		cfg = cfg || {};
+			cfg.type = 'PhotoPreview';
+			// create/reuse Thumbnail
+	    	var node = ThumbnailFactory['PhotoPreview'].bindSelected2PreviewThumbnail(selected, previewBody, cfg);
     		previewBody.loadingmask.refreshMask();
     		previewBody.loadingmask.show(); 
     		ThumbnailFactory.PhotoPreview.bindShotGallery2Preview(selected, previewBody);
@@ -794,12 +629,12 @@
 	        	}
         	} catch(e) {}
         },
-		handle_ThumbsizeClick: function(e){
-			var size, action, target = e.currentTarget;
-			action = e.currentTarget.getAttribute('action').split(':');
+		handle_ThumbsizeClick: function(e, size){
+			var target = e.currentTarget;
+			var action = e.currentTarget.getAttribute('action').split(':');
     		switch(action[0]) {
     			case 'set-display-size':
-    				size = action[1];
+    				size = size || action[1];
     				break;
 			}
 			SNAPPI.setPageLoading(true);
@@ -836,57 +671,15 @@
 				SNAPPI.MenuAUI.initMenus({'menu-photoPreview-actions':1});	
 			}
 		},
-		/**
-		 * enable/disable autoScroll
-		 * load Gallery.NavFilmstrip and start listener for auto-scroll
-		 */
-		handle_ToggleAutoScrollClick: function(e) {
-			var g = SNAPPI.Gallery.find['nav-'];
-			try {	// init NavFilmstrip gallery if necessary
-				if (e.currentTarget.get('checked')) {
-					SNAPPI.setPageLoading(true);
-					var f = SNAPPI.Factory.Gallery.NavFilmstrip;
-					f.handle_setDisplayView(g, 'one-row');
-					// TODO: handle_setDisplayView initializes/renders NavFilmstrip
-					// but maybe we should move it here.
-				}
-			} catch(e){}
-			// set PhotoPreview autoScroll listener, as necessary
-			try {
-				var isAutoScroll = e.currentTarget.get('checked');
-				var photoPreview = this;
-				ThumbnailFactory.PhotoPreview.set_AutoScroll_RatingClick_Listener(isAutoScroll, photoPreview, g);
-			} catch (e) {}
-		},
-		/*
-		 * toggle AutoScroll RatingClick Listener
-		 */
-		set_AutoScroll_RatingClick_Listener: function(value, node, gallery) {
-			// node == previewThumbnail node, .FigureBox.PreviewPhoto
-			value = value || false;
-			node = node || _Y.one('.FigureBox.PhotoPreview');
-			var listener = 'AutoScroll_RatingClick';
-			if (value && !node.listen[listener]) {
-				try {
-					var previewBody = node.ancestor('.preview-body');
-					var g = gallery || SNAPPI.Gallery.find['nav-'];
-					// init pattern from Thumbnail constructor
-					node.listen[listener] = ThumbnailFactory.listeners['AutoScrollRatingClick'].call(node.Thumbnail, g, previewBody);
-				} catch (e){}
-			}
-			if (!value) {
-				node.listen[listener].detach();
-				delete node.listen[listener];
-			}		
-		},
-		// deprecated? see: listeners[]'NextPrevClick']
 		next: function(direction, g, figureBox){
-			// context = article.FigureBox
+			// context = article.FigureBox == figureBox
 			var selected, 
 				g = g || SNAPPI.Gallery.find['nav-'];
-				direction = direction || 'next';
+				direction = direction || 'next',
+				type = this.Thumbnail._cfg.type;
 			if (g){
 				if (!g.container.one('.FigureBox.Photo')) {
+					// initialize auto-advance for NavFilmstrip
 					SNAPPI.setPageLoading(true);
 					_Y.once('snappi:gallery-render-complete', function(){
 						SNAPPI.setPageLoading(false);
@@ -894,19 +687,13 @@
 					}, this);
 					var f = SNAPPI.Factory.Gallery.NavFilmstrip;
 					f.handle_setDisplayView(g, 'one-row');
-					// set PhotoPreview autoScroll listener, as necessary
-					try {
-						var isAutoScroll = e.container.one('figcaption input[type=checkbox].auto-advance').get('checked');
-						ThumbnailFactory['PhotoPreview'].set_AutoScroll_RatingClick_Listener(isAutoScroll, photoPreview, g);
-					} catch (e) {}
 					return;
 				}
 				
 				if (direction=='prev') selected = g.auditionSH.prev();
 				else selected = g.auditionSH.next();
 				g.scrollFocus(selected);
-				parent = this.ancestor('.preview-body') || this.ancestor('.preview-zoom');
-				var type = this.Thumbnail._cfg.type;
+				parent = this.ancestor('.preview-body');
 				ThumbnailFactory[type].bindSelected(selected, parent, {gallery: g});
 			}
 		},
@@ -917,19 +704,19 @@
         	var charCode = ThumbnailFactory['PhotoPreview'].charCode;
         	var charStr = e.charCode + '';
         	try {
-        		var g = this._cfg.gallery || SNAPPI.Gallery.find['nav-'];	// this.Gallery from Factory.PhotoPreview.bindSelected();	
+        		var g = this.node.Gallery || this._cfg.gallery || SNAPPI.Gallery.find['nav-'];	// this.Gallery from Factory.PhotoPreview.bindSelected();	
         	} catch (e) {}
             if (!g) g = SNAPPI.Gallery.find['uuid-'] || SNAPPI.Gallery.find['nav-'];
             if (charStr.search(charCode.nextPatt) == 0) {
                 e.preventDefault();
 					// same for PhotoPreview or PhotoZoom only
-				ThumbnailFactory['PhotoPreview'].next.call(this.node, 'next', g, this);
+				ThumbnailFactory['PhotoPreview'].next.call(this.node, 'next', g, this.node);
                 return;
             }
             if (charStr.search(charCode.prevPatt) == 0) {
                 e.preventDefault();
 				// same for PhotoPreview or PhotoZoom only
-				ThumbnailFactory['PhotoPreview'].next.call(this.node, 'prev', g, this);
+				ThumbnailFactory['PhotoPreview'].next.call(this.node, 'prev', g, this.node);
                 return;
             }
             if (charStr.search(charCode.ratingPatt) == 0) {
@@ -942,6 +729,177 @@
             }
         },
 	};	
+	
+	
+	
+	ThumbnailFactory.PhotoZoom = {
+		defaultCfg: {
+			type: 'PhotoZoom',
+    		ID_PREFIX: 'zoom-',
+    		size: 'bp',
+    		showExtras: true,
+    		showRatings: true,
+    		showLabel: true,
+    		addClass: 'PhotoPreview', 	// inherit CSS props of PhotoPreview
+    		showHiddenShot: false,		// ???: show icon, but don't listen for click?
+    		showSizes: false,
+    		draggable: false,
+    		queue: false,
+    		listeners: ['PreviewExtrasClick', 'RatingClick',  'AutoScrollRatingClick', 'PreviewImgLoad', 'Keydown'],
+    	}, 
+    	charCode : {
+	        nextPatt: /(^110$)|(^39$)|(^32$)|(^54$)/, // n,right,space,
+	        // keypad right
+	        prevPatt: /(^112$)|(^37$)|(^8$)|(^52$)/, // p,left,backspace,
+	        // keypad left
+	        closePatt: /(^27$)/,
+	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)/, // keybd 0-5
+	    },
+		markup: '<article class="FigureBox PhotoZoom">'+
+                '<figure>'+
+                '    <figcaption><ul class="extras inline rounded-5">'+
+                '<li class="label caption"></li>' +
+                '    	 <li class="label">My Rating</li><li class="rating wrap-bg-sprite"></li>' +
+                '        <li class="label">Score</li><li class="score">0.0</li>' +
+                '		 <li><nav class="settings">' +
+                '<ul class="inline">'+
+                // '<li class="li btn prev orange" action="nav">&#x25C0;</li><li class="li btn next orange"  action="nav">&#x25B6;</li>' +
+'<li class="li btn prev orange" action="nav">&#x25C0;</li><li class="li btn orange radius-0 XXXauto-advance" title="Automatically advance to the next Snap after each click"><input type="checkbox" class="auto-advance" action="toggle-autoscroll" value="" title="Automatically advance to the next Snap after each click"></li><li class="li btn next orange"  action="nav">&#x25B6;</li>' +                
+                '</ul></li>' +
+                '<li></li> <li class="btn white" action="toggle-keydown"><span class="keydown">&nbsp;</span></li>'+
+				'	</ul></figcaption>' +
+				'	<img alt="" src="">' +
+				'</figure>'+
+				'</article>',
+		renderElementsBySize : function (size, audition, cfg){
+			cfg = cfg || {};
+			/*
+			 * set attributes based on thumbnail size
+			 */
+			audition = audition || SNAPPI.Auditions.find(this.id);
+			var node = this.node;
+			
+			var src, linkTo, title, score, votes, exists, tooltip, shotCount, sizeCfg;
+			SNAPPI.Auditions.bind(node, audition);
+			// linkTo = '/photos/home/' + audition.id;
+			// add ?ccid&shotType in photoroll.listenClick()
+			title = audition.label;
+			score = audition.Audition.Photo.Fix.Score;
+			votes = audition.Audition.Photo.Fix.Votes;	
+	
+			// set CSS classNames
+			var sizeCfg = _Y.merge(ThumbnailFactory.PhotoZoom.defaultCfg, cfg);
+			sizeCfg.size = size || sizeCfg.size;
+			node.set('className', 'FigureBox').addClass(this._cfg.type).addClass(sizeCfg.size);
+			if (sizeCfg.addClass) node.addClass(sizeCfg.addClass);
+			delete(sizeCfg.addClass);		// keep size classes local
+			
+			// addClass from this._cfg
+			this._cfg = _Y.merge(this._cfg, sizeCfg, cfg);
+			if (this._cfg.addClass) node.addClass(this._cfg.addClass);
+
+			// set src to the correct size
+			var img = node.one('figure > img');
+			var detach = img.on('load', function(e){
+				detach.detach();
+				_Y.fire('snappi:preview-zoom-loaded', img);
+			});
+			src = audition.getImgSrcBySize(audition.urlbase + audition.rootSrc, sizeCfg.size);
+			src = SNAPPI.util.useStaticHost(src);
+			if (this._cfg.queue && SNAPPI.Imageloader.QUEUE_IMAGES) {
+				img.qSrc = src;
+				// SNAPPI.util3.ImageLoader.queueOneImg(img); // defer,
+				// queue by selector
+			} else {
+				img.set('src', src);
+			}		
+			// img.setAttribute('linkTo', linkTo);
+			
+			// set draggable	
+			if (this._cfg.draggable) {
+				img.addClass('drag');
+			} else {
+				img.removeClass('drag');
+			}
+			
+			// show caption, 
+			exists = node.one("figcaption .caption");
+			if (exists) {
+				if (this._cfg.showLabel) {
+					exists.set('innerHTML', this.trimLabel(title));
+					exists.removeClass('hide');
+				}
+			} else {
+					node.one('figure > img').set('title', title);
+					if (exists) exists.addClass('hide');
+			}
+            			
+			// show hidden shot icons
+			ThumbnailFactory.setHiddenShotNode(this, audition);
+			
+			// rating
+			exists = node.one('ul li.rating');
+			if (this._cfg.showRatings) {
+				if (exists && node.Rating) {
+					if (node.Rating.id != audition.id) {
+						// update rating
+						node.Rating.id = audition.id;
+						node.Rating.node.setAttribute('uuid', audition.id).set(
+								'id', audition.id + '_ratingGrp');
+						node.Rating.render(audition.rating);
+					}
+				} else {
+					// attach Rating
+	            	var gallery = this._cfg.gallery || SNAPPI.Gallery.getFromDom(node);
+	            	SNAPPI.Rating.pluginRating(gallery, node.Thumbnail, audition.rating, {id:'photoPreview-ratingGroup'});
+	            }
+	            if (exists) exists.removeClass('hide');	  
+	       } else {
+	       		if (exists) exists.addClass('hide');
+	       }
+	
+			// show extras, i.e. rating, score, info, menu
+			if (this._cfg.showExtras) {
+				// update Score, show hide in showExtras
+				ThumbnailFactory.setScoreNode(this, audition);
+				node.one('ul').removeClass('hide');
+			} else {
+				node.one('ul').addClass('hide');
+			}		
+			
+			return this;
+		},
+		bindSelected: function(selected, previewBody, cfg) {
+			var previewBody = previewBody || _Y.one('#dialog-alert .preview-body');
+    		if (!previewBody) return;
+    		
+    		cfg = cfg || {};
+			cfg.type = 'PhotoZoom';
+			var uuid, size, auditionSH;
+			if (!selected.id) {
+        		selected = SNAPPI.Auditions.get(selected);
+        	} 	    		
+    		
+    		// create/reuse Thumbnail
+    		var node = ThumbnailFactory['PhotoPreview'].bindSelected2PreviewThumbnail(selected, previewBody, cfg);
+    		previewBody.listen = previewBody.listen || {};
+    		if (!previewBody.listen['PreviewChange']) {
+    			// ???: should the Dialog.getStdModNode('body') be listening to this event?
+    			previewBody.listen['PreviewChange'] = _Y.on('snappi:preview-change', 
+		        	function(thumb){	// refresh dialog after preview-change
+		        		if (thumb.Thumbnail._cfg.type == 'PhotoZoom' ) {
+		        			var dialog = SNAPPI.Dialog.find['dialog-alert'];
+		        			_Y.fire('snappi:dialog-body-rendered', dialog);
+		        		}
+		        	}, '.FigureBox.PhotoZoom figure > img');
+    		}
+    		if (node.Gallery) {
+    			node.Gallery.setFocus(selected);
+    		}
+    		previewBody.loadingmask.refreshMask();
+    		previewBody.loadingmask.show(); 
+        },
+	};
 	
 	/*
 	 * Photo Thumbnail
