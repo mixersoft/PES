@@ -800,7 +800,7 @@
 	    	gallery.scrollFocus(selected);
 	    	try {
 		    	var previewBody = _Y.one('.preview-body');
-		    	var previewUuid = previewBody.one('.FigureBox.PhotoPreview').Thumbnail.id;
+		    	var previewUuid = previewBody.one('.FigureBox.PhotoPreview').uuid;
 		    	if (selected.id != previewUuid) {
 		    		// SNAPPI.domJsBinder.bindSelected2Page(gallery, selected, oldUuid);
 		    		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, previewBody, {gallery: gallery});
@@ -888,11 +888,8 @@
         	}	    	
 	    	
 	    	var selected = SNAPPI.Auditions.find(e.target.ancestor('.FigureBox').uuid);
-	    	var oldUuid = gallery.getFocus().id;
-	    	if (selected.id != oldUuid) {
-	    		gallery.setFocus(selected);
-	    		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, null, {gallery:gallery});
-	        }
+    		gallery.setFocus(selected);
+    		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, null, {gallery:gallery});
 		},
 		/*
          * Key press functionality of next & previous buttons, rating
@@ -989,7 +986,7 @@
 			showHiddenShot: false,
 			hideHiddenShotByCSS: false,	
 			draggable: true,	
-			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick', 'WindowOptionClick', 'Keydown'],			
+			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick', 'WindowOptionClick'],			
 		},
 		charCode : {
 	        nextPatt: /(^110$)|(^39$)|(^32$)|(^54$)/, // n,right,space,
@@ -1069,12 +1066,9 @@
         	}	    	
 	    	
 	    	var selected = SNAPPI.Auditions.find(e.target.ancestor('.FigureBox').uuid);
-	    	var oldUuid = gallery.getFocus().id;
-	    	if (selected.id != oldUuid) {
-	    		gallery.setFocus(selected);
-	    		var previewBody = this.ancestor('.preview-body');
-	    		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, previewBody, {gallery:gallery});
-	        }
+    		gallery.setFocus(selected);
+    		var previewBody = this.ancestor('.preview-body');
+    		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, previewBody, {gallery:gallery});
 		},
 		after_setToolbarOption : function (g, action, setting) {
 			var previewBody = g.node.ancestor('.preview-body');

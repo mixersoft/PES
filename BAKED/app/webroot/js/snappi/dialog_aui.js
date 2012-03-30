@@ -599,17 +599,19 @@
 	DialogHelper.bindSelected2DialogHiddenShot = function(g, selected) {
 		// from MenuItems.showHiddenShot_click()
 		var Y = SNAPPI.Y;
-		var shotType = selected.Audition.Substitutions.shotType;
-		
-		var dialog_ID = 'dialog-photo-roll-hidden-shots';
-		var dialog = SNAPPI.Dialog.find[dialog_ID];
-		
-    	var args = {
+		var previewBody, previewSize,
+			shotType = selected.Audition.Substitutions.shotType,
+			dialog_ID = 'dialog-photo-roll-hidden-shots',
+			dialog = SNAPPI.Dialog.find[dialog_ID],
+    		args = {
     		selected : selected,
     		uuid: selected.id,
     		dialog: dialog,
-        }; 
-        var previewBody, previewSize;
+        };
+        
+        if (g._cfg.type == 'Photo') {
+        	g.setFocus(selected);  // set focus in Photo gallery, but not NavFilmstrip
+        }
         if (!dialog) {
         	// create dialog
         	dialog = SNAPPI.Dialog.CFG[dialog_ID].load();
@@ -621,6 +623,7 @@
 		   	
         	previewBody = _Y.Node.create('<section class="preview-body" />');
         	previewBody.setAttribute('size', previewSize);
+        	// for this pattern: cfg.size = previewBody.getAttribute('size');  
         	dialog.setStdModContent('body', previewBody);
         	
         	previewBody.Dialog = dialog;
@@ -657,11 +660,9 @@
         }
         
 		// add preview markup to Dialog body, set initial preview size
-		previewBody.loadingmask.refreshMask();
-		previewBody.loadingmask.show();
 		SNAPPI.Factory.Thumbnail.PhotoPreview.bindSelected(selected, previewBody, {gallery:g, size:previewSize});
 		
-		// add shotGallery		
+		// add shotGallery, but PhotoPreview is bound to Photo gallery at this point		
        	var shotGallery = SNAPPI.Gallery.find['hiddenshot-'];
     	if (!shotGallery) {
 			shotGallery = new SNAPPI.Gallery({

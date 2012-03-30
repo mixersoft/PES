@@ -162,17 +162,14 @@
 			// node.addClass(this._cfg.type);
 			// set id
 			this._cfg = _Y.merge(this._cfg,cfg);
-			var id = audition.id;
-			this.id = id;	// deprecate
+			
 			var node = _Y.Node.create(Factory[this._cfg.type].markup);
 			this.node = node;
 			this.node.listen = {};
-			// node.uuid = id;
-			// node.dom().uuid = id;	// for firebug			
-			// this.uuid = id;
+			// id references set by SNAPPI.Auditions.bind()
 			SNAPPI.Auditions.bind(this.node, audition);
 			this.img = this.node.one('img');
-			node.set('id', this._cfg.ID_PREFIX + id);
+			node.set('id', this._cfg.ID_PREFIX + audition.id);
 			node.Thumbnail = this;
 			node.dom().Thumbnail = this; 		// add for firebug
 			Factory[this._cfg.type].renderElementsBySize.call(this, this._cfg.size, audition, cfg);
@@ -187,15 +184,10 @@
 		 */
 		reuse : function(audition, cfg) {
 			// this = SNAPPI.Thumbnail
-			audition = audition || SNAPPI.Auditions.find(this.id);
+			audition = audition || SNAPPI.Auditions.find(this.uuid);
 			// set id
-			var id = audition.id;
-			this.id = id;	// deprecate
-			// this.uuid = id;
-			// this.node.uuid = id;
-			// this.node.dom().uuid = id;	// for firebug
 			SNAPPI.Auditions.bind(this.node, audition);
-			this.node.set('id', this._cfg.ID_PREFIX + id);
+			this.node.set('id', this._cfg.ID_PREFIX + audition.id);
         	Factory[this._cfg.type].renderElementsBySize.call(this, this._cfg.size, audition, cfg);				
 			return this.node;
 		},

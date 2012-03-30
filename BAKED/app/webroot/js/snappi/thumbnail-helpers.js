@@ -569,13 +569,18 @@
 					previewBody.loadingmask.set('zIndex', 10);
 		    		previewBody.loadingmask.overlayMask.set('zIndex', 10);    			
 	    		}    			
-    			
+    			previewBody.loadingmask.refreshMask();
+    			previewBody.loadingmask.show(); 
     		} else {
-    			node.Thumbnail.reuse(selected);
+    			// warning: node.uuid and node.Thumbnail.id out of sync
+    			if (selected.id !== node.uuid) {
+    				node.Thumbnail.reuse(selected);
+	    			previewBody.loadingmask.refreshMask();
+	    			previewBody.loadingmask.show(); 
+	    		}
     		} 
     		if (cfg.gallery) {
     			node.Gallery = cfg.gallery;
-    			// node.Gallery.auditionSH.setFocus(selected);  // where is this fired for PhotoPreview?
     		}
     		return node;
 		},
@@ -584,48 +589,46 @@
     		if (!previewBody) return;
     		if (!selected) return;	// possible boundary element, i.e. first or last
     		
+    		var copy = selected;
 			if (_Y.Lang.isString(selected)) selected = SNAPPI.Auditions.find(selected);
         	try {
         		if (!selected) {
-        			// PhotoPreview only, binds to NavFilmstrip, may not be initialized
+        			// PhotoPreview only, binds to NavFilmstrip, or ShotGallery.
+        			// NavFilmstrip may not be initialized
 	        		var onDuplicate = SNAPPI.Auditions.onDuplicate_REPLACE;
 		        	SNAPPI.Auditions.parseCastingCall(PAGE.jsonData.castingCall, null, null, onDuplicate);
-		        	selected = SNAPPI.Auditions.get(selected);
+		        	selected = SNAPPI.Auditions.get(copy);
 	        	} 
         	} catch(e) {
         		console.warn('ERROR: ThumbnailFactory.PhotoPreview.bindSelected() cannot find audition for uuid='+selected);
         	}
 	        	
-    		var uuid, auditionSH;
+    		// var uuid, auditionSH;
     		cfg = cfg || {};
 			cfg.type = 'PhotoPreview';
 			// create/reuse Thumbnail
 	    	var node = ThumbnailFactory['PhotoPreview'].bindSelected2PreviewThumbnail(selected, previewBody, cfg);
-    		previewBody.loadingmask.refreshMask();
-    		previewBody.loadingmask.show(); 
-    		ThumbnailFactory.PhotoPreview.bindShotGallery2Preview(selected, previewBody);
+    		ThumbnailFactory.PhotoPreview.bindShotGallery2Preview(selected, previewBody, null);
         },		
-        bindShotGallery2Preview: function(selected, previewBody, gallery) {
+        bindShotGallery2Preview: function(selected, previewBody, focusGallery) {
+        	// type='DialogHiddenShot' or 'ShotGallery'
         	try {
-	        	gallery = gallery || previewBody.one('.gallery.photo.filmstrip').Gallery;
-	        	if (!gallery) {
+        		var shotGallery = previewBody.get('parentNode').one('.gallery').Gallery;
+	        	if (!shotGallery) {
 		        	// note: gallery should be initialized in 
 		        	// 		- DialogHelper.bindSelected2DialogHiddenShot()
 		        	// 		- ThumbnailFactory.PhotoPreview.handle_HiddenShotClick()
 		        	return;	// gallery not yet opened, skip
 	        	}
-	        	        		
-				if (!selected.id) {
-	        		selected = SNAPPI.Auditions.find(selected) || SNAPPI.Auditions.find(previewBody.one('.FigureBox').uuid);
-	        	} 	        	
-			    if (selected.Audition.Shot.id) {
-			    	if (!gallery.view || gallery.view == 'minimize') {
-			    		SNAPPI.Factory.Gallery.actions.setView(gallery, 'one-row');
+	        	if (_Y.Lang.isString(selected)) selected = SNAPPI.Auditions.find(selected);        		
+			    if (selected && selected.Audition.Substitutions) {
+			    	if (!shotGallery.view || shotGallery.view == 'minimize') {
+			    		SNAPPI.Factory.Gallery.actions.setView(shotGallery, 'one-row');
 			    	}   			    	
-	    			gallery.showShotGallery(selected);
+	    			shotGallery.showShotGallery(selected);
 	        	} else {
-	        		gallery.container.ancestor('.filmstrip-wrap').addClass('hidden');
-	        		gallery.container.all('.FigureBox').addClass('hide');
+	        		shotGallery.container.ancestor('.filmstrip-wrap').addClass('hidden');
+	        		shotGallery.container.all('.FigureBox').addClass('hide');
 	        	}
         	} catch(e) {}
         },
@@ -651,9 +654,9 @@
 			SNAPPI.io.savePreviewSize(sessKey, size);
 		},
 		handle_HiddenShotClick: function(e) {
-			var parent = _Y.one('#shot-gallery');
-			var selected = SNAPPI.Auditions.find(parent.get('parentNode').one('.FigureBox').uuid);
-        	var shotGallery = SNAPPI.Gallery.find['shot-'];
+			var selected = SNAPPI.Auditions.find(this.uuid);
+			var previewBody = this.ancestor('.preview-body');
+        	var shotGallery = previewBody.get('parentNode').one('.gallery').Gallery;
         	if (!shotGallery) {
 				shotGallery = new SNAPPI.Gallery({
 					type: 'ShotGallery',
@@ -689,10 +692,39 @@
 					f.handle_setDisplayView(g, 'one-row');
 					return;
 				}
-				
-				if (direction=='prev') selected = g.auditionSH.prev();
-				else selected = g.auditionSH.next();
-				g.scrollFocus(selected);
+				if (this.ancestor('#dialog-photo-roll-hidden-shots')) {
+					// skip to next hiddenShot
+					var current,
+						found, 
+						shots = [];
+					try {
+						current = SNAPPI.Auditions.find(this.uuid).Audition.Substitutions.id;
+					} catch(e){
+						console.error('DialogHiddenShot has empty Shotid');
+						current = g.getFocus();
+					}
+					for (var i in g.shots) {
+						shots.push(i);
+					}
+					found = shots.indexOf(current);
+					if (direction=='prev')	found--;
+					else found++
+					if (found >= 0 && found < shots.length) {
+						selected = g.shots[shots[found]].best;
+					} else {
+						// no more hidden shots
+						return;
+					}
+				} else {
+					if (direction=='prev') {
+						selected = g.auditionSH.prev();
+					} else {
+						 selected = g.auditionSH.next();
+					}
+				}
+				if (g.container.hasClass('filmstrip')) {
+					g.scrollFocus(selected);	
+				} else g.setFocus(selected);
 				parent = this.ancestor('.preview-body');
 				ThumbnailFactory[type].bindSelected(selected, parent, {gallery: g});
 			}
@@ -896,8 +928,6 @@
     		if (node.Gallery) {
     			node.Gallery.setFocus(selected);
     		}
-    		previewBody.loadingmask.refreshMask();
-    		previewBody.loadingmask.show(); 
         },
 	};
 	

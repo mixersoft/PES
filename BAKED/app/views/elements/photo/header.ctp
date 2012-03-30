@@ -39,19 +39,23 @@
 		echo "<h2>{$header_content}</h2>";
 		return;	// exit
 	}	
+	if ($xhrFrom['alias'] == 'my') {
+		$snapCount_label = "You are not showing hidden shots";
+	} else $snapCount_label = 'You may not have permission to see all Snaps';
+	
 ?>
 <section class="gallery-header container_16">
 <?php  if ($isPreview) { ?>
 	
 	<ul class="toolbar inline grid_3">
-		<li class='blue label' title='You may not have permission to see all Snaps'><h1><?php echo $header_content;  ?></h1></li>
+		<li class='blue label' title='<?php echo $snapCount_label ?>'><h1><?php echo $header_content;  ?></h1></li>
 	</ul>	
 
 <?php  } else { ?>
 	
 	<ul class="toolbar inline grid_3">
 		<li class="btn white select-all"><span class="menu-open"><input type="checkbox" value="" name=""></span></li>
-		<li class='btn orange snap-count' title='You may not have permission to see all Snaps'><?php echo $btn_snaps; ?></li>
+		<li class='btn orange snap-count' title='<?php echo $snapCount_label ?>'><?php echo $btn_snaps; ?></li>
 	</ul>	
 <?php  } ?>
     <nav class="settings window-options push_6 grid_7">

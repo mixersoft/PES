@@ -1755,6 +1755,7 @@
         	selected = selected || this.auditionSH.getFocus();
         	var container, parent, shots;
         	var shot = selected.Audition.Substitutions;
+        	if (!shot) return;
         	
         	// unhide ShotGallery if there is a Shot
 			if (shot.id) {
