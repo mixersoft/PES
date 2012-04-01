@@ -90,6 +90,7 @@ switch ($config['Config.os']) {
 		switch (env('SERVER_NAME')) {
 			case 'preview.snaphappi.com':
 			case 'dev.snaphappi.com':
+			case 'touch.snaphappi.com':
 			// case 'aws.snaphappi.com':
 				$wwwroot = '/www-dev';	
 				$config['http_static'] = array('http://snappi.snaphappi.com', 'http://snappi1.snaphappi.com'); 
@@ -157,6 +158,7 @@ $config['path']['default_badges'] = array(
 
 switch (env('SERVER_NAME')) {
 	case 'preview.snaphappi.com':
+	case 'touch.snaphappi.com':
 		Configure::write('debug', 0);
 		break;
 	case 'dev.snaphappi.com':

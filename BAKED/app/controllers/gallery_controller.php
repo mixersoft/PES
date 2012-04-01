@@ -47,6 +47,8 @@ class GalleryController extends AppController {
     	$this->redirect($next, null, true);
     }
     function story($filename = null) {
+    	$this->__redirectIfTouchDevice();
+		
         $filename = $filename ? $filename : 'guest'; // testing
         if ($this->data) {
             /*

@@ -107,6 +107,21 @@ class AppController extends Controller {
 		}
 		return true;
 	}
+	function __redirectIfTouchDevice(){
+		// Story controller checks for touch device
+		$options = array('Android', 'iPod', 'iPhone', 'iPad','Opera Mobi','webOS', 'Windows Phone OS');			
+		$pattern = '/' . implode('|', $options) . '/i';
+		$isTouch = (bool)preg_match($pattern, env('HTTP_USER_AGENT'));
+		
+		$TOUCH_SUBDOMAIN= "touch";
+		$exclude = array($TOUCH_SUBDOMAIN, 'git3');
+		$pattern = '/' . implode('|', $exclude) . '/i';
+		$isExclude = (bool)preg_match($pattern, env('HTTP_HOST'));
+    	if ($isTouch && !$isExclude) {
+			$next = "http://{$TOUCH_SUBDOMAIN}.snaphappi.com".env('REQUEST_URI');
+			$this->redirect($next, null, true);
+		}
+	}
 	function __setPageTitle() {
 		if ($this->RequestHandler->isAjax() || $this->RequestHandler->ext=='json') {
 			return; // skip page titles for AJAX requests.
