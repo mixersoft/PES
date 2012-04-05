@@ -10,17 +10,17 @@
 	rel="icon" />
 <title>Snaphappi Page Layout Maker</title>
 <link media="screen" type="text/css"
-	href="http://aws.snaphappi.com/app/pagemaker/css/pageGallery.css"
+	href="http://dev.snaphappi.com/app/pagemaker/css/pageGallery.css"
 	rel="stylesheet">
 <script type="text/javascript"
 	src="http://yui.yahooapis.com/combo?3.3.0/build/yui/yui-min.js"> 
         </script>
 <script type="text/javascript"
-	src="http://aws.snaphappi.com/app/pagemaker/js/play/pageGallery.js"> 
+	src="http://dev.snaphappi.com/app/pagemaker/js/play/pageGallery.js"> 
         </script>
 </head>
 <body>
-<div id="glass">
+<div id="glass" class="hide">
 <div id="centerbox" class="hide">
 <div id="closeBox" class="hidden"></div>
 <span id="prevPhoto"></span> <span id="nextPhoto"></span> <img
@@ -29,9 +29,9 @@
 <div id='bottom'></div>
 </div>
 <div id="paging" class="">
-<div id="prevPage"><&lt Prev</div>
+<div id="prevPage"></div>
 <span id="pagenum"></span>
-<div id="nextPage">Next &gt</div>
+<div id="nextPage"></div>
 </div>
 <?php
 /*****************************************************************
@@ -51,16 +51,18 @@ $COUNT 		= 5;		// count of photos to use in the arrangement, taken from the fina
 /*
  * get JSON from url
  */
-$url = "http://aws.snaphappi.com/users/odesk_photos/{$userid}/rating:{$rating}/page:{$page}/perpage:{$perpage}/.json?debug=0";
+$url = "http://dev.snaphappi.com/photos/all/rating:{$rating}/page:{$page}/perpage:{$perpage}/.json?debug=0";
 $rawJson = file_get_contents($url);
 $json = json_decode($rawJson, true);
+$json = $json['response'];
 $photos = $json['castingCall']['CastingCall']['Auditions']['Audition'];
-$baseurl = 'http://aws.snaphappi.com'.$json['castingCall']['CastingCall']['Auditions']['Baseurl'];
+$baseurl = 'http://dev.snaphappi.com'.$json['castingCall']['CastingCall']['Auditions']['Baseurl'];
+
 
 /*
  * extract key properties from photos
  */
-function getPhotos($photos, $baseurl){
+function getPhotos($photos, $baseurl, $format = null){
 	$output = array();
 	foreach ($photos as $photo) {
 		$p = array();
@@ -71,17 +73,28 @@ function getPhotos($photos, $baseurl){
 		$p['rating'] = $photo['Photo']['Fix']['Rating'];
 		$p['width'] = $photo['Photo']['Img']['Src']['W'];
 		$p['height'] = $photo['Photo']['Img']['Src']['H'];
-		$p['src'] = $baseurl . $photo['Photo']['Img']['Src']['Src'];
+		$p['src'] = $baseurl . $photo['Photo']['Img']['Src']['rootSrc'];
+		
+		if ($format == 'landscape') {	// only use wide photos, for static arrangement
+			if ($p['width'] < $p['height']) continue;
+		}
+		
 		$output[] = $p;
 	}
 //	sort($output, );
 	return $output;
 }
 
+function getPhotoById($photos, $id){
+	foreach ($photos as $photo) {
+		if ($photo['id'] == $id) return $photo;
+	}
+	return false;
+}
 /*
  * sort by Rating DESC, then unixtime ASC
  */
-function sortPhotos($photos, $count = null){
+function sortPhotos($photos, $count = 24){
 	// Obtain a list of columns
 	foreach ($photos as $key => $row) {
 	    $rating[$key]  = $row['rating'];
@@ -92,20 +105,10 @@ function sortPhotos($photos, $count = null){
 	return $photos;
 }
 
-$sortedPhotos = sortPhotos(getPhotos($photos, $baseurl), null);
 /*
  * end INPUT
  **********************************************************************************/
 
-/*******************************************************************************************
- * PROJECT GOAL:
- * 
- * 
- * 		CREATE A SCRIPT WHICH WILL DYNAMICALLY GENERATE AN "arrangement" LIKE $example BELOW
- * 		FROM AN INPUT ARRAY OF PHOTOS LIKE $sortedPhotos ABOVE.
- * 
- * 
- ********************************************************************************************/
 
 /**************************************************************************************
  * output arrangement to HTML template
@@ -113,12 +116,45 @@ $sortedPhotos = sortPhotos(getPhotos($photos, $baseurl), null);
  * 			it DOES NOT consider cropVariance in photo placement
  */
 
- 	$example = array('H'=>718, 'W'=>1002.7026086956522);
- 	$example['Roles'][] = array('H'=>441.146484057971, 'W'=>683.6130028985507, 'X'=>3.1217391304347823, 'Y'=>3.1217391304347823);
- 	$example['Roles'][] = array('H'=>441.146484057971, 'W'=>300.35917101449274, 'X'=>692.978220289855, 'Y'=>3.1217391304347823);
- 	$example['Roles'][] = array('H'=>258.1230811594203, 'W'=>401.3994608695652, 'X'=>184.29603188405798, 'Y'=>450.51170144927534);
- 	$example['Roles'][] = array('H'=>258.1230811594203, 'W'=>401.3994608695652, 'X'=>591.9379304347826, 'Y'=>450.51170144927534);
- 	$example['Roles'][] = array('H'=>258.1230811594203, 'W'=>174.93081449275363, 'X'=>3.1217391304347823, 'Y'=>450.51170144927534);
+	/*
+	 * sample arrangements, json_encoded
+	 */ 
+	$static_arrangement['7wide'] = '{"H":7.03125,"W":12.5,"Roles":[{"H":0.69164265129683,"W":0.51058623646998,"X":0.48941376353002,"Y":0},{"H":0.59114139693356,"W":0.48941376353002,"X":0,"Y":0.40885860306644},{"H":0.40885860306644,"W":0.33849943298906,"X":0.15091433054096,"Y":0},{"H":0.30835734870317,"W":0.25529311823499,"X":0.74470688176501,"Y":0.69164265129683},{"H":0.30835734870317,"W":0.25529311823499,"X":0.48941376353002,"Y":0.69164265129683},{"H":0.20442930153322,"W":0.15091433054096,"X":0,"Y":0.20442930153322},{"H":0.20442930153322,"W":0.15091433054096,"X":0,"Y":0}],"way":"(((h-h)|h)-h)|(h-(h|h)), init: v|v","quality":6.6,"Scale":72}';
+	$static_arrangement['4wide'] = '{"H":12.5,"W":10.158150851582,"Roles":[{"H":0.60948905109489,"W":1,"X":0,"Y":0},{"H":0.39051094890511,"W":0.64071856287425,"X":0.35928143712575,"Y":0.60948905109489},{"H":0.19525547445255,"W":0.35928143712575,"X":0,"Y":0.60948905109489},{"H":0.19525547445255,"W":0.35928143712575,"X":0,"Y":0.80474452554745}],"way":"h-((h-h)|h), init: h-h","quality":6.6,"Scale":72}';
+	$static_arrangement['3wide'] = '{"H":12.5,"W":12.227638772927,"Roles":[{"H":0.65417867435159,"W":1,"X":0,"Y":0.34582132564841},{"H":0.34582132564841,"W":0.52863436123348,"X":0.47136563876652,"Y":0},{"H":0.34582132564841,"W":0.47136563876652,"X":0,"Y":0}],"way":"(h|h)-h, init: h-h","quality":8.1,"Scale":72}';
+	
+	function getArrangementFromPOST($photos) {
+		$postData = array();
+		foreach ($photos as $row) {
+			$post['id'] = $row['id'];
+			// $post['Caption'] = $row['caption'];
+			$post['TS'] = $row['unixtime'];
+			// $post['DateTaken'] = $row['dateTaken'];
+			$post['Rating'] = $row['rating'];
+			$post['W'] = $row['width'];
+			$post['H'] = $row['height'];
+			$postData[] = $post;
+		};
+		$auditionsAsJson = json_encode(array('Audition'=>$postData));
+		$count = count($postData);
+		$url = "http://dev.snaphappi.com/pagemaker/arrangement/.json?data[role_count]={$count}&forcexhr=1&debug=0&data[CastingCall][Auditions]={$auditionsAsJson}";
+		$rawJson = file_get_contents($url);
+		$json = json_decode($rawJson, true);
+		$json = $json['response'];
+		$arrangement = $json['arrangement'];
+		return $arrangement;
+	}
+	function scaleArrangement(&$arrangement){
+		$scale = $arrangement['Scale'];
+		$arrangement['H'] *= $scale;
+		$arrangement['W'] *= $scale;
+		foreach ($arrangement['Roles'] as & $r) {
+			$r['X'] *= $arrangement['W']; 		
+			$r['Y'] *= $arrangement['H'];
+			$r['W'] *= $arrangement['W'];
+			$r['H'] *= $arrangement['H'];
+		}
+	}
 
  	function sortRoles($arrangement){
  		$roles = $arrangement['Roles'];
@@ -133,15 +169,20 @@ $sortedPhotos = sortPhotos(getPhotos($photos, $baseurl), null);
 		return $arrangement;
 	}
  	function exportMontage($arrangement, $sortedPhotos) {
-	 	$arrangementTemplate = "<div style='background-color: lightgray; margin: 6px auto; height: %fpx; width: %fpx;' class='pageGallery'>";
+	 	$arrangementTemplate = "<div style='background-color: lightgray; margin: 2px auto; height: %fpx; width: %fpx;' class='pageGallery'>";
 	 	$photoTemplate = "<img title='%s/5 : %s : %s' src='%s' style='height: %fpx; width: %fpx; left: %fpx; top: %fpx; position: absolute; border: 3px solid lightgray; cursor: pointer;'>";
 	 	$role_count = count($arrangement['Roles']);
 	 	
 	 	$outputHTML = sprintf($arrangementTemplate, $arrangement['H'], $arrangement['W']);
 	 	for	($i = 0; $i < $role_count ; $i++) {
 	 		$r = $arrangement['Roles'][$i];
-	 		if (!isset($sortedPhotos[$i])) break;
-			$p = $sortedPhotos[$i];
+			if (isset($r['photo_id'])) {
+				$p = getPhotoById($sortedPhotos, $r['photo_id']);
+				if ($p == false) break;
+			} else {
+		 		if (!isset($sortedPhotos[$i])) break;
+				$p = $sortedPhotos[$i];
+			}
 	 		$outputHTML .= sprintf($photoTemplate, $p['rating'], $p['dateTaken'], $p['caption'], $p['src'], $r['H'], $r['W'], $r['X'], $r['Y'] );
 	 	}
 	 	$outputHTML .= '</div>';
@@ -151,17 +192,37 @@ $sortedPhotos = sortPhotos(getPhotos($photos, $baseurl), null);
  	/****************************************************
  	 * output
  	 */
- 	$arrangement = sortRoles($example);
- 	$layoutPhotos = $sortedPhotos;
- 	do {
- 		$montage[] = exportMontage($arrangement, $layoutPhotos);
- 		array_splice($layoutPhotos,0,count($example['Roles']));
- 	} while (!empty($layoutPhotos));
+ 	if (1) {	// use sample/static arrangements	
+ 		// static arrangements use only landscape photos
+ 		$layoutPhotos = sortPhotos(getPhotos($photos, $baseurl, 'landscape'),24);
+		shuffle($static_arrangement);
+ 		$rawJson = array_shift($static_arrangement);
+		$arrangement = json_decode($rawJson, true);
+		scaleArrangement($arrangement);
+		do {
+			$slice = array_splice($layoutPhotos,0,count($arrangement['Roles']));
+	 		$montage[] = exportMontage($arrangement, $slice);
+	 	} while (!empty($layoutPhotos));
+ 	} else {
+ 		$layoutPhotos = sortPhotos(getPhotos($photos, $baseurl),3);
+		if ($single_page = 1) {
+			$arrangement = getArrangementFromPOST($layoutPhotos);
+	 		scaleArrangement($arrangement);
+			$montage[] = exportMontage($arrangement, $layoutPhotos);
+		} else {
+			do {
+				$slice = array_splice($layoutPhotos,0,5);
+				$arrangement = getArrangementFromPOST($slice);
+	 			scaleArrangement($arrangement);
+		 		$montage[] = exportMontage($arrangement, $slice);
+		 	} while (!empty($layoutPhotos));
+		}
+ 	}
 ?>
 
 <input id='url' type="text" size="120" value="<?php echo $url ?>"></input>
 <div id='check-data' class='hide' > 
-	<div id='json' style="color: white;"><?php print_r ($sortedPhotos); ?></div>
+	<div id='json' style="color: white;"><?php print_r ($layoutPhotos); ?></div>
 	<img src='<?php echo $sortedPhotos[0]['src']?>'></img>
 </div>
 <div id='content' style='border:1px solid red;'>
@@ -176,8 +237,8 @@ $sortedPhotos = sortPhotos(getPhotos($photos, $baseurl), null);
  */
 	json = {};
 	json.raw=<?php echo json_encode($json);?>;
-	json.sortedPhotos = <?php echo json_encode($sortedPhotos);?>;
-	json.arrangement = <?php echo json_encode($example); ?>;
+	json.photos = <?php echo json_encode($photos);?>;
+	json.arrangement = <?php echo json_encode($arrangement); ?>;
 </script>
 </body>
 </html>
