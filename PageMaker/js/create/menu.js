@@ -358,10 +358,16 @@ console.log("delegateHost="+delegateHost._yuid);
 		var parent = menuItem.get('parentNode');
 		var STORY_ID = parent.one('#story_id').get('value');
 		if (STORY_ID) {
-            var userid, filename, key, saved_src;
+            var userid, filename, uuid, key, saved_src;
+            if (STORY_ID != PAGE.Cookie.pagemaker['STORY_ID']) {
+            	// NEW Story if STORY_ID change
+            	// BUT, what if you want to go back to an existing STORY_ID???
+            	PAGE.Cookie.pagemaker = {};
+            }
             try { 
             	filename = STORY_ID || SNAPPI.STATE.controller.userid;
             	key = PAGE.Cookie.pagemaker.key;
+            	uuid = PAGE.Cookie.pagemaker.uuid;
             } catch (e){
             	filename = STORY_ID || 'saved';
             }
@@ -370,6 +376,7 @@ console.log("delegateHost="+delegateHost._yuid);
             	loadingNode: target,
             	filename: filename,
             	key: key,
+            	uuid: uuid,
             	content: content, 	// save pageGallery HTML of parent node
 //                  tmpfile: 'tmp',		// save from tmp file
                 success: function(resp, args){
@@ -394,6 +401,7 @@ console.log("delegateHost="+delegateHost._yuid);
                     var check;
                     
 			    	if (saveToCookie = true) {
+			    		PAGE.Cookie.pagemaker['uuid'] = resp.response.uuid;
 			    		PAGE.Cookie.pagemaker['STORY_ID'] = resp.response.title;
 			    		PAGE.Cookie.pagemaker['key'] = resp.response.key;
 			    		Plugin.external_Y.Cookie.set('SNAPPI_pagemaker', _Y.JSON.stringify(PAGE.Cookie.pagemaker), {

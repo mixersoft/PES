@@ -74,7 +74,7 @@ class AppModel extends Model {
 	 * list models where we use SQL_CALC_FOUND_ROWS 
 	 */
 	public $USE_FOUND_ROWS = true;	// turn on/off SQL_CALC_FOUND_ROWS query
-	public $use_FOUND_ROWS_whitelist = array('Asset', 'User', 'Group', 'Tagged');
+	public $use_FOUND_ROWS_whitelist = array('Asset', 'Collection', 'User', 'Group', 'Tagged');
 	
 
 	/**

@@ -12,13 +12,18 @@
 		'lm'=>AppController::$http_static[0].'/static/img/css-gui/img_2.gif',
 		'll'=>AppController::$http_static[1].'/static/img/css-gui/img_3.gif',
 	);
+	$tokens['total'] = $total; 
+	if ($controllerAttrs['name'] == 'Collections') {
+		// action == 'all'
+		$tokens['type'] = ($total==1 ? "{$controllerAttrs['label']}" : "{$controllerAttrs['titleName']}");
+	} else {
+		$tokens['type'] = ucFirst($controllerAttrs['action']);	// TODO: not adjusted for singular		
+	}	
 	if ($isPreview) {
-		$xhrFrom = Configure::read('controller.xhrFrom');
+		$xhrFrom = $controllerAttrs['xhrFrom'];
 		$passedArgs = Configure::read('passedArgs.min');
-		$next = array('controller'=>$xhrFrom['alias'],'action'=>'groups', $xhrFrom['uuid']) + $passedArgs;
-		$tokens['total'] = $total; 
+		$next = array('controller'=>$xhrFrom['alias'],'action'=>$controllerAttrs['alias'], $xhrFrom['uuid']) + $passedArgs;
 		$tokens['linkTo'] = $this->Html->link('Show all', $next); 
-		$tokens['type'] = ($total==1 ? "Circle. " : "Circles. ");
 		$header_content = String::insert("Total <span class=''>:total</span> :type :linkTo", $tokens);
 	}
 	$isRelated = empty($this->params['url']['gallery']);
@@ -46,17 +51,15 @@
 	
 	<ul class="toolbar inline grid_2">
 		<li class="btn white select-all"><span class="menu-open"><input type="checkbox" value="" name=""></span></li>
-		<li><h1><?php echo $total; ?>  Circles</h1></li>
+		<li><h1><?php echo "{$total} {$tokens['type']}"; ?></h1></li>
 	</ul>	
 	<nav class="settings grid_4">
 		<ul class="wide-display-options inline">
 			<li class="btn white option">Delete</li>
-			<li class="btn white option">Group as Shot</li>
-			<li class="btn white option">Add to Lightbox</li>
 		</ul>
 	</nav>	
     <nav class="settings grid_10">
-    	<?php echo $this->element('/group/display-options');  ?>
+    	<?php echo $this->element('/collections/display-options');  ?>
 		<ul class="thumb-size inline inline-break right">
 			<li class="label">Size</li>
 			<?php 

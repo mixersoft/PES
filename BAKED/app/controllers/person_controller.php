@@ -53,11 +53,14 @@ class PersonController extends UsersController {
 				'show_hidden_shots'=>false
 			),	
 			'fields' =>'Asset.*',
-	),
+		),
 		'Collection'=>array(				
-			'limit'=>8,
-			'order'=>array('Collection.created'=>'DESC'),
-	),
+			'preview_limit'=>4,
+			'paging_limit' =>16,
+			'order'=>array('Collection.modified'=>'DESC'),
+			'recursive'=> -1,
+			'fields' =>'Collection.*',
+		),
 		'Membership'=>array(
 			'preview_limit'=>4,
 			'paging_limit' =>8,
@@ -98,6 +101,7 @@ class PersonController extends UsersController {
 			/*
 			 * experimental
 			 */
+			'stories',  // TODO: move to ACL
 			'addACLs', 'remove_photos', 'odesk_photos', 'photostreams'
 		);
 		$this->Auth->allow( array_merge($this->Auth->allowedActions , $myAllowedActions));
@@ -159,7 +163,13 @@ class PersonController extends UsersController {
 		$this->paginate[$paginateModel]['limit'] = Configure::read('feeds.paginate.perpage');
 		$this->all();
 	}
-
+	
+	function most_stories(){
+		$paginateModel = 'User';		
+		$this->paginate[$paginateModel]['order'] = array('User.collection_count'=>'DESC');
+		$this->paginate[$paginateModel]['limit'] = Configure::read('feeds.paginate.perpage');
+		$this->all();
+	}
 	function most_recent(){
 		$paginateModel = 'User';
 		$this->paginate[$paginateModel]['order'] = array('User.lastVisit'=>'DESC');
@@ -336,7 +346,46 @@ $this->log("role = ".AppController::$role, 	LOG_DEBUG);
 			$this->viewVars['jsonData']['User'][]=$data['User'];
 		}
 	}
-	
+	function stories($id=null){
+		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';	
+		//	this should be a redirect to /groups/byuser/userid, plus context
+		if (!$id) {
+			$this->Session->setFlash(sprintf(__('No %s found.', true), $this->titleName));
+			$this->redirect(array('action' => 'index'));
+		}
+
+		// paginate 
+		$paginateModel = 'Collection';
+		$Model = $this->User->{$paginateModel};
+		$Model->Behaviors->attach('Pageable');
+		$paginateArray = $Model->getPaginateCollectionsByUserId($id, $this->paginate[$paginateModel]);
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
+		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
+		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
+		// end paginate
+		
+		$this->viewVars['jsonData'][$paginateModel] = $pageData;
+		$done = $this->renderXHRByRequest('json', '/elements/collections/roll');
+		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
+		
+		
+		$this->User->contain();
+		$options = array('conditions'=>array('User.id'=>$id));
+		$data = $this->User->find('first', $options);
+		if (empty($data)) {
+			/*
+			 * handle no permission to view record
+			 */
+			$this->Session->setFlash("ERROR: You are not authorized to view this record.");
+			$this->redirectSafe();
+		} else {
+			$data[$paginateModel] = $pageData;
+			$this->set('data', $data);
+			$this->viewVars['jsonData']['User'][]=$data['User'];
+		}
+	}
 	function photostreams($id=null){
 		// TODO: move #tags-preview-xhr to .related-content
 		$this->layout = 'snappi';

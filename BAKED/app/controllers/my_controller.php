@@ -54,6 +54,12 @@ class MyController extends PersonController {
 	function photos() {
 		parent::photos(MyController::$userid );
 	}
+	function snaps() {
+		parent::photos(MyController::$userid );
+	}
+	function stories() {
+		parent::stories(MyController::$userid );
+	}
 	function photostreams() {
 		parent::photostreams(MyController::$userid );
 	}

@@ -184,8 +184,10 @@
                     };
                 }
                 if (cfg.key) postData["data[key]"]= encodeURIComponent(cfg.key);
+                if (cfg.uuid) postData["data[Collection][id]"]= encodeURIComponent(cfg.uuid);
                 postData = SNAPPI.IO.object2querystring(postData);
-                var uri = "/pagemaker/save_page/.json";
+                // var uri = "/pagemaker/save_page/.json";
+                var uri = "/stories/save_page/.json";
                 var callbacks = {
                 	successJson : function(e, id, o, args) {
                 		_Y.fire('snappi:save-story-complete', resp, args);

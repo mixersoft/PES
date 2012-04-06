@@ -80,6 +80,13 @@ class GroupsController extends AppController {
 			'recursive'=> -1,
 			'fields' =>'ExpressUploadGroup.*',
 		),
+		'Collection'=>array(				
+			'preview_limit'=>4,
+			'paging_limit' =>16,
+			'order'=>array('Collection.modified'=>'DESC'),
+			'recursive'=> -1,
+			'fields' =>'Collection.*',
+		),
 		'Comment' =>array(
 			'limit'=>5,
 			'order'=>array('Comment.created'=>'DESC'),
@@ -109,7 +116,8 @@ class GroupsController extends AppController {
 			/*
 			 * experimental 
 			 */'setRandomGroupCoverPhoto', 'update_count', 'load', 'addACL', 
-			 'invitation',		
+			 'invitation',	
+			 'stories',  // TODO: move to ACL	
 			 'join', 'express_upload' // add to ACLs show require role='USER' but handle in controller for proper Flash msgs		
 		);
 		AppController::$writeOk = $this->Group->hasPermission('write',AppController::$uuid);
@@ -945,6 +953,46 @@ LIMIT 5;";
 		}
 	}
 
+	function stories($id=null){
+		$forceXHR = setXHRDebug($this, 0);
+		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';			
+		if (!$id) {
+			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'Story'));
+			$this->redirectSafe();
+		}
+		
+		// paginate 
+		$paginateModel = 'Collection';
+		$Model = $this->Group->{$paginateModel};
+		$Model->Behaviors->attach('Pageable');
+		$paginateArray = $Model->getPaginateCollectionsByGroupId($id, $this->paginate[$paginateModel]);
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
+		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
+		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
+		// end paginate		
+		$this->viewVars['jsonData'][$paginateModel] = $pageData;
+		
+		$done = $this->renderXHRByRequest('json', '/elements/collections/roll', null ,0);
+		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
+			
+		// get Group data
+		$options = array('conditions'=>array('Group.id'=>$id));
+		$this->Group->contain(null);
+		$data = @$this->Group->find('first', $options);
+		if (empty($data)) {
+			/*
+			 * handle no permission to view record
+			 */
+			$this->Session->setFlash(sprintf(__('No %s found.', true), 'Stories'));
+			$this->redirectSafe();
+		} else {
+			$this->set('data', $data);
+			$this->viewVars['jsonData']['Group'][]=$data['Group'];
+			Session::write('lookup.owner_names', Set::merge(Session::read('lookup.owner_names'), Set::combine($data, '/Owner/id', '/Owner/username')));
+		}
+	}
 
 	function photostreams($id=null){
 		$this->layout = 'snappi';

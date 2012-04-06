@@ -204,7 +204,7 @@ $previewOrientation = 	isset($exif['preview']['Orientation']) ? $exif['preview']
 			// use subselect
 			$SubstitutionREF = $row['shot_id'];
 		}
-		$Shot = array('id'=>$row['shot_id'], 'count'=>$row['shot_count']);
+		$Shot = isset($row['shot_id']) ? array('id'=>$row['shot_id'], 'count'=>$row['shot_count']) : array('id'=>'', 'count'=>'') ;
 		$Tags = array();
 		
 		return compact('id','Photo','LayoutHint','IsCast','lastPerformed','SubstitutionREF','Shot','Tags','Clusters','Credits');

@@ -148,6 +148,8 @@ switch ($config['Config.os']) {
 
 $config['path']['default_badges'] = array(
 	'Asset'=>'/static/img/css-gui/snappi.png',
+	'Story'=>'/static/img/css-gui/snappi.png',
+	'Collection'=>'/static/img/css-gui/snappi.png',
 	'Person'=>'/static/img/css-gui/snappi.png',
 	'Circle'=>'/static/img/css-gui/snappi.png',
 	'Group'=>'/static/img/css-gui/snappi.png',
@@ -184,7 +186,7 @@ $config['lookup.roles'] = $lookup_roles;
  * lookups
  */
 // keyName from controller->name. use keyName as controller/context param for building urls
-$config['lookup.keyName'] = array('Users'=>'person','Groups'=>'group','Assets'=>'photo','Tags'=>'tag');
+$config['lookup.keyName'] = array('Users'=>'person','Groups'=>'group','Assets'=>'photo','Collections'=>'story','Tags'=>'tag');
 // xfr (from XHR root) lookup, keys should match keyName lookup 
 // updated, using 'controller.alias' for key
 $config['lookup.xfr']['my'] = array('Model'=>'User', 'ControllerLabel'=>'Me');
@@ -194,6 +196,7 @@ $config['lookup.xfr']['groups'] = array('Model'=>'Group', 'ControllerLabel'=>'Gr
 $config['lookup.xfr']['events'] = array('Model'=>'Group', 'ControllerLabel'=>'Event');
 $config['lookup.xfr']['weddings'] = array('Model'=>'Group', 'ControllerLabel'=>'Wedding');
 $config['lookup.xfr']['photos'] = array('Model'=>'Asset', 'ControllerLabel'=>'Photo');
+$config['lookup.xfr']['stories'] = array('Model'=>'Collection', 'ControllerLabel'=>'Story');
 $config['lookup.xfr']['tags'] = array('Model'=>'Tag', 'ControllerLabel'=>'Tag');
 // TODO: deprecate. using 'controller.keyName' as key
 $config['lookup.xfr']['Me'] = array('Model'=>'User', 'ControllerAlias'=>'person');
@@ -203,6 +206,7 @@ $config['lookup.xfr']['Event'] = array('Model'=>'Group', 'ControllerAlias'=>'gro
 $config['lookup.xfr']['Wedding'] = array('Model'=>'Group', 'ControllerAlias'=>'groups');
 $config['lookup.xfr']['Photo'] = array('Model'=>'Asset', 'ControllerAlias'=>'photos');
 $config['lookup.xfr']['Snap'] = array('Model'=>'Asset', 'ControllerAlias'=>'photos');
+$config['lookup.xfr']['Story'] = array('Model'=>'Collection', 'ControllerAlias'=>'stories');
 $config['lookup.xfr']['Tag'] = array('Model'=>'Tag', 'ControllerAlias'=>'tags');
 
 

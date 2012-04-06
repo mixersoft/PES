@@ -332,28 +332,6 @@ AND includes.asset_id='{$assetId}';
  		}
 	}	
 		
-
-	//	public function XXXafterSave($created) {
-	//		/*
-	//		 * for Assets
-	//		 * 		if provider is snappi, provider_key = id, save asset_hash
-	//		 */
-	//		if($created) {
-	//			$provider = $this->data['Asset']['provider_name'];
-	//			if ( $provider == 'snappi') {
-	//				$uuid = $this->id;
-	//				$asset = array('provider_key' => $uuid, 'updated'=>false);
-	//				$asset['asset_hash'] = md5($provider."-".$uuid, true);
-	//				$ret = $this->save($asset, false, array('provider_key', 'asset_hash'));
-	//			} else {
-	//				$uuid = $this->data['Asset']['provider_key'];
-	//				$asset['asset_hash'] = md5($provider."-".$uuid, true);
-	//				$ret = $this->save($asset, false, array('asset_hash'));
-	//			}
-	//			return true;
-	//		}
-	//	}
-
 	var $validate = array(
 		'provider_name' => array(
 			'notempty' => array(
@@ -452,19 +430,7 @@ AND includes.asset_id='{$assetId}';
 
 	var $hasAndBelongsToMany = array(
 		'Collection' => array(
-			'className' => 'Collection',
-			'joinTable' => 'assets_collections',
-			'foreignKey' => 'asset_id',
-			'associationForeignKey' => 'collection_id',
-			'unique' => true,
-			'conditions' => '',
-			'fields' => '',
-			'order' => '',
-			'limit' => '',
-			'offset' => '',
-			'finderQuery' => '',
-			'deleteQuery' => '',
-			'insertQuery' => ''
+			'with' => 'AssetsCollection',
 		),
 		'Group' => array(
 			'with' => 'AssetsGroup',		
@@ -472,9 +438,9 @@ AND includes.asset_id='{$assetId}';
 		'Groupshot' => array(					// GroupShot habtm Asset
 			'with' => 'AssetsGroupshot',		
 		),
-		'Tag' => array(
-			'with'=> 'Tagged',			
-		)
+		// 'Tag' => array(
+			// 'with'=> 'Tagged',			
+		// )
 	);
 
 	function addIfNew($asset, $providerAccount, $baseurl, $photoPath, $isOriginal, & $response){
@@ -856,6 +822,62 @@ $this->log($newAsset, LOG_DEBUG);
 		$paginate['extras']['group_as_shot_permission'] = $this->hasGroupAsShotPerm('Group', $groupid);
 		return $paginate;
 	}			
+	
+	
+	function getPaginatePhotosByCollectionId ($collectionid , $paginate = array()) {
+		if (!$this->Collection->hasPermission('read',$collectionid) ){
+			// no read permission, likely non-member
+			$paginate = array('conditions'=>"1=0");
+			return $paginate;
+		}
+//		ClassRegistry::init('Asset')->disablePermissionable();
+		$paginateModel = 'Asset';
+//debug($paginateModel);	 
+		// refactor
+		$context = Session::read('lookup.context');
+		$controller = Configure::read('controller.alias');
+		
+		// add conditions for GroupId
+		$conditions = $joins = array();
+		// moved to joinWithShots()
+		$joins[] = array(
+			'table'=>'assets_collections',
+			'alias'=>'AssetsCollection',
+			'type'=>'INNER',
+			'conditions'=>array('`AssetsCollection`.asset_id = `Asset`.id'),
+		);
+		
+		$conditions[] = "AssetsCollection.collection_id='{$collectionid}'";
+		// check of context == controller
+		$skip = $context['keyName'] == Configure::read('controller.label');
+		// add context
+		if (!$skip) {
+			if (in_array($context['keyName'], array('Me', 'Person'))) {
+				//groups/photos
+				$conditions[] = "`Asset`.owner_id='{$context['uuid']}'";
+			}
+			if (in_array($context['keyName'], array('Group','Event','Wedding'))) {
+				// skip
+			}
+			if ($context['keyName'] == 'Tag') {
+				$joins[] =	array(
+							'table'=>'tagged',
+							'alias'=>'Tagged',
+							'type'=>'INNER',
+							'conditions'=>array("`Tagged`.`foreign_key` = `Asset`.id AND `Tagged`.`model` = 'Asset'"),
+					);
+				$joins[] =	array(
+							'table'=>'tags',
+							'alias'=>'Tag',
+							'type'=>'INNER',
+							'conditions'=>array("`Tagged`.`tag_id` = `Tag`.id AND `Tag`.`keyname` = '{$context['uuid']}'"),
+					);
+			}
+		}
+		if (!empty($joins)) $paginate['joins'] = @mergeAsArray($paginate['joins'], $joins);
+		if (!empty($conditions)) $paginate['conditions'] = @mergeAsArray($paginate['conditions'], $conditions);
+		return $paginate;
+	}
 	
 	function getPaginatePhotosByUserId ($userid , $paginate = array()) {
 		$paginateModel = 'Asset';

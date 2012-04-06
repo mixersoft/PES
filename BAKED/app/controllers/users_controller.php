@@ -438,7 +438,7 @@ class UsersController extends UsersPluginController {
 	public $helpers  = array(
 		'Tags.TagCloud',
 		'Time','Text',
-		'CastingCallJson',
+		// 'CastingCallJson',
 //		'Js' => array('Jquery'),
 	);
 	

@@ -564,8 +564,23 @@ update users set primary_group_id='role-----0123-4567-89ab--------guest' where S
 ALTER TABLE `groups_users` MODIFY COLUMN `lastVisit` TIMESTAMP,
  ADD COLUMN `modified` DATETIME DEFAULT null AFTER `lastVisit`;
  
+ALTER TABLE `assets`
+ ADD COLUMN `assets_collection_count` MEDIUMINT(9) UNSIGNED AFTER `assets_group_count`;  
+
+ALTER TABLE `groups` 
+ ADD COLUMN `collections_group_count` MEDIUMINT(9) UNSIGNED AFTER `assets_group_count`;
+
+ALTER TABLE `users` 
+ ADD COLUMN `collection_count` MEDIUMINT(9) UNSIGNED AFTER `asset_count`;
+
+ALTER TABLE `collections` 
+ ADD COLUMN `src_thumbnail` varchar(1024) COLLATE utf8_unicode_ci DEFAULT NULL AFTER `src`,
+ ADD COLUMN `assets_collection_count` MEDIUMINT(9) UNSIGNED AFTER `src_thumbnail`,
+ ADD COLUMN `collections_group_count` MEDIUMINT(9) UNSIGNED AFTER `assets_collection_count`, 
+ ADD COLUMN `comment_count` MEDIUMINT(9) UNSIGNED AFTER `collections_group_count`,
+ ADD COLUMN `privacy_secret_key` TINYINT UNSIGNED AFTER `comment_count`;
  
- 
+  
 --
 -- Table structure for table `helps`
 --
@@ -580,6 +595,8 @@ CREATE TABLE IF NOT EXISTS `help` (
   `modified` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+
 
 -- --------------------------------------------------------
  

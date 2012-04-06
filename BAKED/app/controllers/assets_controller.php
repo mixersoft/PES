@@ -46,6 +46,13 @@ class AssetsController extends AppController {
 			'recursive'=> -1,
 			'fields' =>'Group.*',
 		),
+		'Collection'=>array(				
+			'preview_limit'=>4,
+			'paging_limit' =>16,
+			'order'=>array('Collection.modified'=>'DESC'),
+			'recursive'=> -1,
+			'fields' =>'Collection.*',
+		),
 		'Comment' =>array(
 			'limit'=>3,
 			'contain'=>array('User.src_thumbnail', 'User.asset_count', 'User.groups_user_count', 'User.last_login'),
@@ -80,7 +87,9 @@ class AssetsController extends AppController {
 		 */'get_asset_info', 'shot',
 		/*
 		 * experimental
-		 */'test', 'addACL', 'updateExif'
+		 */
+		 'stories',  // TODO: move to ACL
+		 'test', 'addACL', 'updateExif'
 		);
 		AppController::$writeOk = $this->Asset->hasPermission('write', AppController::$uuid);
 	}
@@ -422,10 +431,62 @@ class AssetsController extends AppController {
 		);
 		$this->Asset->contain(null);		
 		$data = @$this->Asset->find('first', $options);
-		$data['Group']  = $pageData;
-		$this->set('data', $data);	
+		if (empty($data)) {
+			/*
+			 * handle no permission to view record
+			 */
+			$this->Session->setFlash("ERROR: You are not authorized to view this record.");
+			$this->redirectSafe();
+		} else {
+			$data[$paginateModel] = $pageData;
+			$this->set('data', $data);
+			$this->viewVars['jsonData']['Asset'][]=$data['Asset'];
+		}
 //		debug($data);
 	}	
+
+	function stories($id=null){
+		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';	
+		//	this should be a redirect to /groups/byuser/userid, plus context
+		if (!$id) {
+			$this->Session->setFlash(sprintf(__('No %s found.', true), $this->titleName));
+			$this->redirect(array('action' => 'index'));
+		}
+
+		// paginate 
+		$paginateModel = 'Collection';
+		$Model = $this->User->{$paginateModel};
+		$Model->Behaviors->attach('Pageable');
+		$paginateArray = $Model->getPaginateCollectionsByPhotoId($id, $this->paginate[$paginateModel]);
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
+		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
+		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
+		// end paginate
+		
+		$this->viewVars['jsonData'][$paginateModel] = $pageData;
+		$done = $this->renderXHRByRequest('json', '/elements/collections/roll');
+		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
+		
+		
+		$options = array(
+			'conditions'=>array('Asset.id'=>$id),
+		);
+		$this->Asset->contain(null);		
+		$data = @$this->Asset->find('first', $options);
+		if (empty($data)) {
+			/*
+			 * handle no permission to view record
+			 */
+			$this->Session->setFlash("ERROR: You are not authorized to view this record.");
+			$this->redirectSafe();
+		} else {
+			$data[$paginateModel] = $pageData;
+			$this->set('data', $data);
+			$this->viewVars['jsonData']['Asset'][]=$data['Asset'];
+		}
+	}
 
 	
 	/**

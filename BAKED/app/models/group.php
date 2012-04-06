@@ -218,19 +218,7 @@ ORDER BY photos DESC;";
 			'with' => 'AssetsGroup',
 		),
 		'Collection' => array(
-			'className' => 'Collection',
-			'joinTable' => 'collections_groups',
-			'foreignKey' => 'group_id',
-			'associationForeignKey' => 'collection_id',
-			'unique' => true,
-			'conditions' => '',
-			'fields' => '',
-			'order' => '',
-			'limit' => '',
-			'offset' => '',
-			'finderQuery' => '',
-			'deleteQuery' => '',
-			'insertQuery' => ''
+			'with' => 'CollectionsGroup',
 		),
 		'Member' => array(
 //			'with' => 'groups_users',
@@ -346,7 +334,65 @@ ORDER BY photos DESC;";
 		if (!empty($conditions)) $paginate['conditions'] = @mergeAsArray($paginate['conditions'], $conditions);
 		
 		return $paginate;
-	}			
+	}	
+
+	function getPaginateGroupsByCollectionId ($collectionid , $paginate = array()) {
+		$paginateModel = 'Group';
+//debug($paginateModel);		
+		// refactor
+		$context = Session::read('lookup.context');
+		$controller = Configure::read('controller.alias');
+		
+		// add conditions for photo/asset_id
+		$conditions = $joins = array();
+		$joins[] = array(				
+			'table'=>'collections_groups',
+			'alias'=>'CollectionsGroup',
+			'type'=>'INNER',
+			'conditions'=>array('`CollectionsGroup`.`group_id` = `Group`.id'),
+		);
+		$conditions[] = "CollectionsGroup.collection_id='{$collectionid}'";
+		
+		// check of context == controller
+		$skip = $context['keyName'] == Configure::read('controller.label');
+		// add context
+		if (!$skip) {
+			if (in_array($context['keyName'], array('Me', 'Person'))) {
+				$assocModel = 'Group';
+				//photos/groups
+				if ($context['uuid'] != AppController::$ownerid) {
+					// HERE. CONTEXT USER != $current_userid USER
+					$joins[] =  array(
+								'table'=>'groups_users',
+								'alias'=>'HABTM_2',
+								'type'=>'LEFT',
+								'conditions'=>array("HABTM_2.group_id"=> "{$assocModel}.id",  "HABTM_2.user_id"=>$context['uuid'] ),
+					);
+				}
+			}
+			if (in_array($context['keyName'], array('Group','Event','Wedding'))) {
+				// skip
+			}
+			if ($context['keyName'] == 'Tag') {
+				$joins[] =	array(
+							'table'=>'tagged',
+							'alias'=>'Tagged',
+							'type'=>'INNER',
+							'conditions'=>array("`Tagged`.`foreign_key` = `Group`.id AND `Tagged`.`model` = 'Group'"),
+					);
+				$joins[] =	array(
+							'table'=>'tags',
+							'alias'=>'Tag',
+							'type'=>'INNER',
+							'conditions'=>array("`Tagged`.`tag_id` = `Tag`.id AND `Tag`.`keyname` = '{$context['uuid']}'"),
+					);
+			}
+		}
+		if (!empty($joins)) $paginate['joins'] = @mergeAsArray($paginate['joins'], $joins);
+		if (!empty($conditions)) $paginate['conditions'] = @mergeAsArray($paginate['conditions'], $conditions);
+		
+		return $paginate;
+	}		
 	/**
 	 *  /groups/search/User:[not userid]
 	 * @param $userid

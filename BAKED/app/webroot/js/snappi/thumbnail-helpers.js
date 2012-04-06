@@ -969,7 +969,7 @@
 			/*
 			 * set attributes based on thumbnail size
 			 */
-			audition = audition || SNAPPI.Auditions.get(this.id);
+			audition = audition || SNAPPI.Auditions.get(this.uuid);
 			var node = this.node;
 			
 			var src, linkTo, title, score, votes, exists, tooltip, shotCount, sizeCfg;

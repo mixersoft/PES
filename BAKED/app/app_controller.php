@@ -81,7 +81,7 @@ class AppController extends Controller {
 	 * @access public
 	 */
 	function beforeRender() {
-		if (in_array($this->name, array('Users', 'Groups', 'Assets', 'Tags'))) {
+		if (in_array($this->name, array('Users', 'Groups', 'Assets', 'Collections', 'Tags'))) {
 			unset($this->passedArgs['comment_view_type']);
 			$this->__setPageTitle();
 			$this->__addFiltersAsJsonData();
@@ -187,7 +187,7 @@ class AppController extends Controller {
 		 * build filter config as jsonData
 		 */
 		$controllerAttr = Configure::read('controller');
-		if (in_array($controllerAttr['name'], array('Users', 'Groups', 'Tags', 'Assets'))) {
+		if (in_array($controllerAttr['name'], array('Users', 'Groups', 'Tags', 'Collections', 'Assets'))) {
 			$filter=array();
 			$context = Session::read('lookup.context');
 			if ($context['keyName']) {
@@ -479,7 +479,7 @@ class AppController extends Controller {
 			'isXhr'=>$this->RequestHandler->isAjax(),			
 		);
 		$extended_controllerAttr = $extras = array();	
-		if (in_array($this->name, array('Assets', 'Groups', 'Users', 'Tags'))) {
+		if (in_array($this->name, array('Assets', 'Groups', 'Users', 'Collections', 'Tags'))) {
 			AppController::$uuid = isset($this->passedArgs[0]) ? $this->passedArgs[0] : null;
 			/*
 			 * sluggable processing. this method requires 2 DB calls. (cached)
@@ -534,8 +534,9 @@ class AppController extends Controller {
 			if ($trail_uuid !== AppController::$uuid) 
 			{
 				// update trail with new breadcrumb
+				// note: $classLabel==$this->displayName, but used by lookup.trail
 				$newCrumb = array('uuid'=>AppController::$uuid, 'classLabel'=>$controllerAttr['label']);
-				Session::write("lookup.trail.{$this->displayName}", $newCrumb);
+				Session::write("lookup.trail.{$controllerAttr['label']}", $newCrumb);
 			}
 		}
 		// cache nav location in session
