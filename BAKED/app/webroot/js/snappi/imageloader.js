@@ -27,6 +27,7 @@
 		if (_Y === null) _Y = Y;
 		
 		ImageLoader.QUEUE_IMAGES = true;
+		SNAPPI.imageLoader = new ImageLoader();	
 	}  
     
     /*
@@ -300,24 +301,4 @@
             }
         }		
 	}    
-    
-    
-    SNAPPI.namespace('SNAPPI.onYready');
-	SNAPPI.onYready.ImageLoader = function(Y) {
-		SNAPPI.imageLoader = new ImageLoader();	
-		SNAPPI.ImageLoader.QUEUE_IMAGES = true;
-		
-	    /*
-	     * ImageLoader Event Delegate Listener
-	     */
-	    // use event delegate for all img load listeners
-	    // _Y.delegate("load", function(e){
-	    // alert("delegate event working in ImageLoader!!!")
-	    // var imgEl = _Y.Node.getDOMNode(e.currentTarget);
-	    // if (imgEl.ImageLoader !== undefined) {
-	    // imgEl.ImageLoader.popCompleted(imgEl);
-	    // }
-	    // }, "#content-tabview", 'ul.photoSet > li > img');		
-	}
-    
 })();

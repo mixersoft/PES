@@ -13,7 +13,6 @@
 			if (cfg && cfg.skipRefresh) return;
 			Dialog.refresh(d,cfg);
 		})
-		
 	}      
     
 
@@ -760,4 +759,6 @@
     	// body.loadingmask.refreshMask();
 		// body.loadingmask.hide();
 	};	
+	
 })();
+

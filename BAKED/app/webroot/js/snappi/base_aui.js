@@ -61,7 +61,8 @@
 			SNAPPI.STATE.hints['HINT_Filmstrip'] = true;
 			SNAPPI.STATE.hints['HINT_Keydown_Preview'] = true;
 			// SNAPPI.STATE.hints['HINT_PMToolbarEdit'] = true;
-			SNAPPI.Hint.flushQueue();		// if Hint already available
+			if (SNAPPI.Hint) SNAPPI.Hint.flushQueue();		// if Hint already available
+			
         });        
         Y.on('snappi:afterLightboxInit', function(){
             /**
@@ -330,7 +331,9 @@
         	return value ? true : false;
         },		
 		add_ynode : function(Y) {
+console.warn("Node.ynode() may not be compatible with ie8");			
 			Y = Y || _Y;
+			if (Y.Node.prototype.ynode) return;
 	        Y.Node.prototype.dom = function(){
 	            return Y.Node.getDOMNode(this);
 	        };

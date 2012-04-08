@@ -31,6 +31,7 @@
     SNAPPI.namespace('SNAPPI.onYready');
     SNAPPI.onYready.Rating = function(Y){
 		if (_Y === null) _Y = Y;
+		if (SNAPPI.Rating) return;
 		// custom listeners, global
 		var eventString = 'snappi:ratingChanged';
 		if (!Rating.listen[eventString]) {
@@ -38,9 +39,11 @@
 				r.node.loadingmask.hide();
 			});		
 		}		
+		SNAPPI.Rating = Rating;
 	}
+	
+	
 	var _ratingCSS;
-
 	var _getStarValueFromEvent = function(ev) {
 		// 14 = width of 1 smiley -1 (i.e. 15-1=14)
 		var w = ev.currentTarget.hasClass('wide') ? 23 : 14;
@@ -386,8 +389,6 @@ if (!_Y) {
 			return this.value;
 		}
 	}; // end Rating.prototype
-	
-	SNAPPI.Rating = Rating;
 })();
 /*
  * UNUSED METHODS
