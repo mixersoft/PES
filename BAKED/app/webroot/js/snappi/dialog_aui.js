@@ -1,4 +1,6 @@
 (function(){
+	if (typeof SNAPPI.Dialog !== 'undefined') return; 	// firefox/firebug 1.9.1 bug
+	
 	var _Y = null;
     SNAPPI.namespace('SNAPPI.onYready');
     SNAPPI.onYready.Dialog = function(Y){

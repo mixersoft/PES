@@ -22,6 +22,8 @@
  *
  */
 (function(){
+	if (typeof SNAPPI.Gallery !== 'undefined') return; 	// firefox/firebug 1.9.1 bug
+	
 	var _Y = null;
     SNAPPI.namespace('SNAPPI.onYready');
     SNAPPI.onYready.Gallery = function(Y){
@@ -31,7 +33,6 @@
 	     * make global
 	     */
 	    SNAPPI.Gallery = Gallery;
-		
 	}
 	
 	var Factory = null;	// closure, init in onYready()
@@ -42,7 +43,6 @@
     	Factory[cfg.type].build(this, cfg);
     	return this;
     };
-    
     Gallery.find = {}; 			// gallery lookup
     
     Gallery.getFromDom = function(dom) {
@@ -1796,3 +1796,4 @@
     };
     
 })();
+console.warn("XXX: complete load gallery.js");

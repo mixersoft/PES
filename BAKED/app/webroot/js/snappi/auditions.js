@@ -25,7 +25,7 @@
  *
  */
 (function(){
-
+	if (typeof SNAPPI.Auditions !== 'undefined') return; 	// firefox/firebug 1.9.1 bug
     var _Y = null;
     SNAPPI.namespace('SNAPPI.onYready');
     SNAPPI.onYready.Audition = function(Y){

@@ -307,8 +307,9 @@
 			if (SNAPPI.onYready) {
 				for (var f in SNAPPI.onYready) {
 					try {
-						SNAPPI.onYready[f](Y);
+						var fn = SNAPPI.onYready[f];
 						delete 	SNAPPI.onYready[f];
+						fn(Y);
 					} catch (e){}
 				}
 			}			
@@ -437,7 +438,9 @@ console.warn("Node.ynode() may not be compatible with ie8");
 		}
 		var modules = module_group[cfg.module_group];
 		if (modules) {
-			onlazyload = cfg.ready || function(){return true;};	// closure for onlazyload
+			onlazyload = cfg.ready || function(){
+				return true;
+			};	// closure for onlazyload
 			delete cfg.ready;
 			LazyLoad.use(modules, onlazyload, cfg);
 		}
