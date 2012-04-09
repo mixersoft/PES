@@ -11,15 +11,16 @@
 	$state['displayPage']['perpage'] = $this->params['paging'][$paginateModel]['options']['limit'] ;
 	$total = $state['displayPage']['count'] + 0;	// as int
 	$state['displayPage']['total'] = $total;	// as int;
+	$controllerAttrs = Configure::read('controller');
 
 	if ($isXhr) {
 		// XHR response, no headers for members
 		if (!$isInner) {
 			if ($isWide) {
-				echo $this->element('/member/header-wide', compact('total', 'isPreview', 'state'));
-			} else echo $this->element('/member/header', compact('total', 'isPreview', 'state'));
+				echo $this->element('/member/header-wide', compact('total', 'isPreview', 'state', 'controllerAttrs'));
+			} else echo $this->element('/member/header', compact('total', 'isPreview', 'state', 'controllerAttrs'));
 		}
-		echo $this->element('/member/paging-inner', compact('isPreview', 'isWide', 'total'));
+		echo $this->element('/member/paging-inner', compact('isPreview', 'isWide', 'total', 'controllerAttrs'));
 		
 		$this->Layout->blockStart('javascript');
 ?> 
@@ -42,11 +43,11 @@
 <div class='gallery-container'>
 		<?php 
 			if ($isWide) {
-				echo $this->element('/member/header-wide', compact('total', 'isPreview', 'state'));
-			} else echo $this->element('/member/header', compact('total', 'isPreview', 'state'));
+				echo $this->element('/member/header-wide', compact('total', 'isPreview', 'state', 'controllerAttrs'));
+			} else echo $this->element('/member/header', compact('total', 'isPreview', 'state', 'controllerAttrs'));
 		?>
 	<section class="<?php if ($isWide) echo "wide "; ?>gallery person">	
-	<?php echo $this->element('/member/paging-inner', compact('isPreview', 'isWide', 'total')); ?>
+	<?php echo $this->element('/member/paging-inner', compact('isPreview', 'isWide', 'total', 'controllerAttrs')); ?>
 	
 </div>
 

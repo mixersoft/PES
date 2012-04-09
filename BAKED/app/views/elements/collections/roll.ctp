@@ -61,7 +61,7 @@
 				echo $this->element('/collections/header-wide', compact('total', 'isPreview', 'state', 'controllerAttrs'));
 			} else echo $this->element('/collections/header', compact('total', 'isPreview', 'state', 'controllerAttrs'));
 		?>
-	<section class="<?php if ($isWide) echo "wide "; ?>gallery group">	
+	<section class="<?php if ($isWide) echo "wide "; ?>gallery collection">	
 	<?php echo $this->element('/collections/paging-inner', compact('isPreview', 'isWide', 'total', 'controllerAttrs')); ?>
 	</section>
 </div>
@@ -87,7 +87,7 @@
 				for (var listen in listeners) {
 					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
 				}					
-<?php if (!$isPreview) echo "SNAPPI.Paginator.paginate_CircleMemberGallery('.gallery.group');" ?>;				
+<?php if (!$isPreview) echo "SNAPPI.Paginator.paginate_CircleMemberGallery('.gallery.collection');" ?>;				
 				if (parent.all('.FigureBox.Group').size() == 0) {
 					var emptyMsg = Y.one('#markup .empty-circle-gallery-message');
             		if (emptyMsg) parent.append(emptyMsg.removeClass('hide'));	

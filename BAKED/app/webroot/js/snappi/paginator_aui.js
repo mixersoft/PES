@@ -116,9 +116,13 @@
 	 * @params CSS selector to Gallery node, i.e. section.gallery.person
 	 */
 	Paginator.paginate_CircleMemberGallery = function(selector){
-			var target, baseurl, NAME = selector;	
+			var target, baseurl, type, NAME = selector;	
 			target = _Y.one(NAME);	// XHR response is child of _Y.one(NAME);
-			var type = /person/.test(selector) ? 'Members' : 'Circles';
+			switch(selector) {
+				case '.gallery.person': type = 'Members'; break;
+				case '.gallery.group': type = 'Circles'; break;
+				case '.gallery.collection': type = 'Stories'; break;
+			}
 				
 			var DELAY = 1000;	// delay_task			
 			

@@ -12,20 +12,21 @@
 	$state['displayPage']['perpage'] = $this->params['paging'][$paginateModel]['options']['limit'] ;	
 	$total = $state['displayPage']['count'] + 0;	// as int
 	$state['displayPage']['total'] = $total;	// as int;	
+	$controllerAttrs = Configure::read('controller');
 
 
 	if ($isXhr) {
 		// XHR response
 		if ($isInner) {
 			// from paginator
-			echo $this->element('/group/paging-inner', compact('isPreview', 'isWide', 'total'));
+			echo $this->element('/group/paging-inner', compact('isPreview', 'isWide', 'total', 'controllerAttrs'));
 		} else {
 			// isPreview  TODO: wrap in .gallery class for trigger consistency???
 			// initial page of gallery.group from /groups/home
 			if ($isWide) {
-				echo $this->element('/group/header-wide', compact('total', 'isPreview', 'state'));
-			} else echo $this->element('/group/header', compact('total', 'isPreview', 'state'));
-			echo $this->element('/group/paging-inner', compact('isPreview', 'isWide', 'total'));
+				echo $this->element('/group/header-wide', compact('total', 'isPreview', 'state', 'controllerAttrs'));
+			} else echo $this->element('/group/header', compact('total', 'isPreview', 'state', 'controllerAttrs'));
+			echo $this->element('/group/paging-inner', compact('isPreview', 'isWide', 'total', 'controllerAttrs'));
 		}
 		
 		$this->Layout->blockStart('javascript');
@@ -57,11 +58,11 @@
 <div class='gallery-container'>
 		<?php 
 			if ($isWide) {
-				echo $this->element('/group/header-wide', compact('total', 'isPreview', 'state'));
-			} else echo $this->element('/group/header', compact('total', 'isPreview', 'state'));
+				echo $this->element('/group/header-wide', compact('total', 'isPreview', 'state', 'controllerAttrs'));
+			} else echo $this->element('/group/header', compact('total', 'isPreview', 'state', 'controllerAttrs'));
 		?>
 	<section class="<?php if ($isWide) echo "wide "; ?>gallery group">	
-	<?php echo $this->element('/group/paging-inner', compact('isPreview', 'isWide', 'total')); ?>
+	<?php echo $this->element('/group/paging-inner', compact('isPreview', 'isWide', 'total', 'controllerAttrs')); ?>
 	</section>
 </div>
 

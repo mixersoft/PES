@@ -32,6 +32,22 @@ if (empty($this->passedArgs['wide'])) {
                         </section>
 					</section>
 				</article>
+				<article>
+        	    	<section class="recent tabbed-area cur-nav-fix">  
+            		    <h1>Stories</h1>      		
+                		<section class="wrap">
+                          <section id="snaps">
+<?php
+	// tagged collections
+//	$ajaxSrc = Router::url(array('action'=>'groups', AppController::$uuid));
+	$options = array('plugin'=>'','controller'=>'stories','action'=>'all', '?'=>array('gallery'=>1, 'preview'=>1)); 
+	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + $options);
+	echo "<div id='collections-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' delay='500'></div>";
+?>	                          	
+                          </section>
+                        </section>
+					</section>
+				</article>
 			</div>        	
 		</div>
 		<div class="grid_5 body-right">

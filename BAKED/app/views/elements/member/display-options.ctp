@@ -12,6 +12,7 @@
 	$orderBy_options['last_login'] = array('A_markup'=>$this->Paginator->sort('Last Visit', 'last_login', $paginate_desc));
 	$orderBy_options['created'] = array('A_markup'=>$this->Paginator->sort('Member Since', 'created', $paginate_desc));
 	$orderBy_options['asset_count'] = array('A_markup'=>$this->Paginator->sort('Photos', 'asset_count', $paginate_desc ));
+	$orderBy_options['collection_count'] = array('A_markup'=>$this->Paginator->sort('Stories', 'collection_count', $paginate_desc ));
 	$orderBy_options['groups_user_count'] = array('A_markup'=>$this->Paginator->sort('Circles', 'groups_user_count', $paginate_desc));
 	$orderBy_selected = !empty($passed['sort']) ? $passed['sort'] : 'last_login';
 	$btn_active['orderBy'] = isset($passed['sort']);
@@ -33,7 +34,7 @@
 	$this->Layout->blockStart('inner_DisplayOptions'); ?> 
 	    	<ul class="filter inline">
 	    		<li class='label'>Filter</li>
-				<li class="btn white">Date Taken<span class="menu-open"></span></li>
+				<li class="btn white">Photos<span class="menu-open"></span></li>
 			</ul>
 	        <ul class="sort inline inline-break  right">
 	        	<li class='label'>Sort</li>
