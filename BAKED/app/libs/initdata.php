@@ -162,8 +162,7 @@ class Data {
 		$acl_groups[]=array(  'title'=>'assets:setprop', 'role'=>$role);
 		$acl_groups[]=array(  'title'=>'assets:delete', 'role'=>$role);
 		$acl_groups[]=array(  'title'=>'assets:getcc', 'role'=>$role);
-		$acl_groups[]=array(  'title'=>'assets:set_as_photo', 'role'=>$role);
-		$acl_groups[]=array(  'title'=>'assets:set_as_group_cover', 'role'=>$role);
+		$acl_groups[]=array(  'title'=>'assets:set_as_cover', 'role'=>$role);
 		
 		$acl_groups[]=array(  'title'=>'provideraccounts:view', 'role'=>$role);
 		$acl_groups[]=array(  'title'=>'provideraccounts:home', 'role'=>$role);

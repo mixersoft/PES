@@ -1035,47 +1035,44 @@ debug("WARNING: This code path is not tested");
 			}
 		}
 	}
-	function set_as_photo($id) {
-		$this->Asset->id = $id;
-		$src = $this->Asset->field('src_thumbnail');
-		$User = ClassRegistry::init('User');
-		$User->id = AppController::$ownerid;
-		$ret = $User->saveField('src_thumbnail', Stagehand::getImageSrcBySize($src, 'sq'));
-		if ($ret) $this->Session->setFlash('Your photo was successfully set to this photo');
-		else $this->Session->setFlash('There was an error setting your photo. Please try again.');
-		$next = env('HTTP_REFERER');
-		$this->redirect($next, null, true);
-	}
 
-	function set_as_group_cover($id, $gid=null) {
-		if ($gid==null && Session::read('lookup.context.keyName')=='group') $gid = Session::read('lookup.context.uuid');
-		$next = env('HTTP_REFERER');
-		if (!$gid) {
-			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'group'));
+	function set_as_cover($asset_id, $target_id, $model) {
+		$forceXHR = setXHRDebug($this, 0);
+		if (!$target_id) {
+			$message = sprintf(__('Invalid %s', true), $model);
+		} else {
+			$Model = ClassRegistry::init($model);
+			$this->Asset->disablePermissionable();
+			$this->Asset->id = $asset_id;
+			$src = $this->Asset->field('src_thumbnail');
+			$Model->id = $target_id;
+			if (isset($Model->belongsTo['Owner'])) $Model->belongsTo['Owner']['counterCache']=false;
+			$ret = $Model->saveField('src_thumbnail', Stagehand::getImageSrcBySize($src, 'tn'));
+			if ($ret) {
+				$message = ('The cover photo was successfully set.');
+			} else {
+				if (!$Model->hasPermission('write',$target_id)) {
+					$message = ('You do not have permission to set the cover photo for this item.');
+				} else $message = ('There was an error setting the cover photo. Please try again.');
+			}
+		}
+		if ($this->RequestHandler->isAjax() || $forceXHR) {
+			$sucess = $ret ? true : false;
+			$response = compact('asset_id', 'target_id', 'model');
+			$this->viewVars['jsonData'] = compact('success', 'message', 'response');
+			$done = $this->renderXHRByRequest('json', '/elements/dumpSQL', null, $forceXHR);
+		} else {
+			$next = env('HTTP_REFERER');	
+			$this->Session->setFlash($message);
 			$this->redirect($next, null, true);
 		}
-		$Group = ClassRegistry::init('Group');
-		if (!$Group->hasPermission('write',$gid)) {
-			$this->Session->setFlash('You do not have permission to set the cover photo for this group.');
-			$this->redirect($next, null, true);
-		}
-		$this->Asset->id = $id;
-		$src = $this->Asset->field('src_thumbnail');
-		$Group->id = $gid;
-		$ret = $Group->saveField('src_thumbnail', Stagehand::getImageSrcBySize($src, 'tn'));
-		if ($ret) {
-			$this->Session->setFlash('The group cover photo was successfully set.');
-			$this->redirect($next, null, true);
-		}
-		$this->Session->setFlash('There was an error setting the group cover photo. Please try again.');
-		$this->redirect($next, null, true);
 	}
 
 	
 	function updateExif($uuid) {
 		return parent::__updateExif($uuid);
 	}
-	function trends($id = null) {
+	function trends($target_id = null) {
 		if (!$id) {
 			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'Snap'));
 			$this->redirectSafe();

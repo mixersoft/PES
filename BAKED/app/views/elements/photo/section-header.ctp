@@ -7,6 +7,7 @@
 			case 'Group': $label = $data['Group']['title']; break;
 			case 'User': $label = $data['User']['username']; break;
 			case 'Photo': $label = $data['Asset']['caption']; break; 
+			case 'Collection': $label = $data['Collection']['title']; break; 
 			case 'Tag': $label = $data['Tag']['name']; break; 
 			default: $label = $controllerAttrs['label'];
 		}
@@ -14,6 +15,7 @@
 		$label = "&nbsp;";
 	}	
 	if (empty($badge_src)) $badge = "";
+	else if ($controllerAttrs['class'] == 'Collection') $badge = "";
 	else $badge = $this->Html->image($badge_src, array(
 		'title'=>'Click to go to the home page.',
 		'class'=>'badge-tiny', 

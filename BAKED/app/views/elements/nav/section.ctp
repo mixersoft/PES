@@ -86,7 +86,6 @@ if (AppController::$uuid) {
 				$moreActions['Delete'] = array('action'=>'delete', 'confirm'=>'Are you sure you want to DELETE this photo from your account?');
 				$moreActions['UnShare'] = array('action'=>'unshare', 'confirm'=>'Are you sure you want to UNSHARE this photo from all groups?');
 			}
-			$moreActions['Set as My Photo'] = array('action'=>'set_as_photo', 0=>null);
 			// TODO: we should check writeOk on Group
 			if ($contextKeyName=='Group' ) {
 				$gid = $context['uuid'];

@@ -260,8 +260,7 @@
 	      	dragNode = nodeList.get('node')[0];
 	    	try {
 	        	var controllerJSONData = SNAPPI.STATE.controller;
-	        	if (controllerJSONData.name == 'Groups') {
-	        		 
+	        	if ( ['Groups', 'Collections', 'Users', 'Tags'].indexOf(controllerJSONData.name)!== -1)  {
 	            	if(nodeList.size() > 1){  // check if user drags more than one img.
 	            		alert("please drag one picture to set your icon. use ctrl to un-select photo");
 	            		return false;
@@ -277,33 +276,13 @@
 	            	
 	
 	            	dropTarget.one('img').setAttribute('src', dragNode.get('src'));
-	            	
-	            	var uri = '/photos/set_as_group_cover/' + imgId + '/' + currentGroupId;
+	            	var uri = '/photos/set_as_cover/' + imgId + '/' + currentGroupId + '/' + controllerJSONData.class + '/.json';
 	    			var callback = {
 	    				complete : function(id, o, args) {
 	    					var check;
 	    				}
 	    			};
-	    			SNAPPI.io.get(uri, callback, '', '', '');
-	        	} else { // not in group page
-	        		// check if user drags more than one img.
-	            	if(nodeList.size() > 1){
-	            		alert("please drag one picture to set your icon.");
-	            		return false;
-	            	}
-	            	
-	            	var imgId = dragNode.ancestor('.FigureBox').uuid;
-	            	
-	            	dragNode = nodeList.get('node')[0];
-	            	dropTarget.one('img').setAttribute('src', dragNode.get('src'));
-	            	
-	            	var uri = '/photos/set_as_photo/' + imgId;
-	    			var callback = {
-	    				complete : function(id, o, args) {
-	    					var check;
-	    				}
-	    			};
-	    			SNAPPI.io.get(uri, callback, '', '', '');
+	    			SNAPPI.io.get(uri, callback, '', '', '');	        		
 	        	}
 	    	} catch (e) {}  
 	    	return true;

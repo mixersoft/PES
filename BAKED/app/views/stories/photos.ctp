@@ -1,3 +1,9 @@
+<?php
+	$this->Layout->blockStart('itemHeader');
+		$badge_src = Stagehand::getSrc($data['Collection']['src_thumbnail'], 'sq');
+		echo $this->element('nav/section', compact('badge_src'));
+	$this->Layout->blockEnd();
+?>
 <div class="stories photos">
 	<?php 
 		// $photostreams = $this->Html->link('Photostream', $this->passedArgs + array('action'=>'photostreams'));

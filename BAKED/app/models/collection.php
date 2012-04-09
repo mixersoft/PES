@@ -90,7 +90,7 @@ class Collection extends AppModel {
 					if (!empty($data[$model]['owner_id'])) $data[$model]['isOwner'] = $data[$model]['owner_id'] == AppController::$ownerid;
 				}
 			}
-		} catch (Exception $e) {}		
+		} catch (Exception $e) {}	
 		if ($primary && !Configure::read('controller.isXhr') && isset($results[0]['Collection']['owner_id'])){
 			if ($results[0]['Collection']['id'] == Configure::read('controller.xhrFrom.uuid')) {
 				// establish ownership of this particular Collection
@@ -362,7 +362,7 @@ class Collection extends AppModel {
 				break;
 		}
 		if ($replace) {
-			$HABTM_Model->query("DELETE FROM `{$table}` WHERE `collection_id`={$collectionId};");	
+			$HABTM_Model->query("DELETE FROM `{$table}` WHERE `collection_id`='{$collectionId}';");	
 		}
 		
 		$INSERT_aids = "INSERT IGNORE INTO `{$table}` ({$columns}) VALUES :chunk: ";
