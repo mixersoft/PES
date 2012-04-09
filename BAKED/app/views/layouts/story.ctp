@@ -21,8 +21,11 @@
 	<script type="text/javascript" src="http://yui.yahooapis.com/combo?3.3.0/build/yui/yui-min.js"></script>
     <script type="text/javascript" src="/app/pagemaker/static/js/play.js"></script> 
 </html>
-<?php echo $this->element('analytics'); ?>
+<?php if (empty($this->params['url']['iframe'])) {
+	 echo $this->element('analytics'); 
+?>
 <!--  share this  -->
 <script type="text/javascript">var switchTo5x=false;</script>
 <script type="text/javascript" src="http://w.sharethis.com/button/buttons.js"></script>
 <script type="text/javascript">stLight.options({publisher: "ur-1fda4407-f1c8-d8ff-b0bd-1f1ff46eeb72"}); </script>
+<?php } ?>

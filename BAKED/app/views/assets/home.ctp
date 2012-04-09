@@ -101,7 +101,7 @@
 			$xhrSrc = Router::url($xhrSrc);
 			echo "<div id='tags-preview-xhr' class='gallery tags xhr-get' xhrSrc='{$xhrSrc}'  delay='8000'></div>";
 		?>	
-		<?php echo $this->element('tags', array('domId'=>'assets-tags', 'data'=>$data))?>
+		<?php echo $this->element('tags', array('uuid'=>AppController::$uuid, 'model'=>'Asset')); ?>
 			</section>
 			
 			<section class="details">

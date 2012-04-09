@@ -1,8 +1,9 @@
 <?php
+$ownerCount = $data['Tag']['tagged_count'];
+$badge_src=Stagehand::$default_badges['Tag'];
 if (empty($this->passedArgs['wide'])) {
 	$this->Layout->blockStart('itemHeader');
-		$badge_src=Stagehand::$default_badges['Tag'];
-		echo $this->element('nav/section', compact('badge_src')); 
+		echo $this->element('nav/section', compact('badge_src'));
 ?>
 <div class="properties hide container_16">
 	<dl class="grid_16">
@@ -48,30 +49,11 @@ if (empty($this->passedArgs['wide'])) {
 		</span>
 	</dl>
 </div>
-<?php 
-	
-	$this->Layout->blockEnd();	} 
-	// tagged photos
-	$options = array('plugin'=>'','action'=>'photos', '?'=>array('gallery'=>1, 'preview'=>1));
-	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + $options);
-	echo "<div id='gallery-photo-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' delay='0'></div>";
-?>
+<?php $this->Layout->blockEnd();	} ?>
 
-<?php
-	// tagged collections
-//	$ajaxSrc = Router::url(array('action'=>'groups', AppController::$uuid));
-	$options = array('plugin'=>'','action'=>'stories', '?'=>array('gallery'=>1, 'preview'=>1)); 
-	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + $options);
-	echo "<div id='collections-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' delay='500'></div>";
-?>	
-
-<?php
-	// tagged groups
-//	$ajaxSrc = Router::url(array('action'=>'groups', AppController::$uuid));
-	$options = array('plugin'=>'','action'=>'groups', '?'=>array('gallery'=>1, 'preview'=>1)); 
-	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + $options);
-	echo "<div id='groups-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' delay='500'></div>";
-?>	
+<div class="tags photos">
+	<?php echo $this->element('/collections/roll', compact('badge_src', 'ownerCount'));?>
+</div>
 
 <?php $this->Layout->blockStart('relatedContent');?>
 <aside id="related-content" class="related-content container_16 hide">		    	
@@ -81,37 +63,41 @@ if (empty($this->passedArgs['wide'])) {
         	    	<section class="recent tabbed-area cur-nav-fix">  
             		    <h1>Recent Activity</h1>      		
                 		<section class="wrap">
-                          <section id="snaps">
+                            <section id="snaps">
                           </section>
                         </section>
 					</section>
 				</article>
 				<article>
-					<a name='discussion'></a>
-					<section class="discussion">
-						<h1><?php __('Discussion'); ?></h1>			
-					<?php
-	$xhrSrc = array('plugin'=>'', 'action'=>'discussion', $this->passedArgs[0]);
-	$xhrSrc = Router::url($xhrSrc);
-	echo "<div id='paging-comments' class='paging-content wrap xhr-get' xhrSrc='{$xhrSrc}'  xhrTarget='paging-comments' delay='8000'></div>";
-						?>	
+					<section class="collections tabbed-area cur-nav-fix">  
+						<h1>Circles</h1>      		
+						<section class="wrap">
+						  <section id="collections">
+<?php
+// this should be only the circles which include user photos
+	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'groups', '?'=>array('preview'=>1)));
+	echo "<div id='groups-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}'  delay='500'></div>";
+?>							  	
+						  </section>
+						</section>
 					</section>
-				</article>				
+				</article>
 			</div>        	
 		</div>
 		<div class="grid_5 body-right">
             <section id="tag-cloud" class="trends">
 				<h1><?php __('Trends');?></h1>
-<?php 
-	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show');
-	$xhrFrom = Configure::read('controller.xhrFrom');
-	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom),'preview'=>1);
-	$xhrSrc = Router::url($xhrSrc);
-	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}' delay='8000'></div>";
-?>
+<?php	// tagCloud
+		$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show', 'filter'=>'Collection');
+		$xhrFrom = Configure::read('controller.xhrFrom');
+		$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom),'preview'=>1);
+		$xhrSrc = Router::url($xhrSrc);	
+		echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}' delay='8000'></div>";	
+?>	
+			</section>
+        	<section class="people">
+        		<h1>People</h1>
 			</section>
 		</div>	
 </aside>
-<?php $this->Layout->blockEnd();?>
-
-
+<?php $this->Layout->blockEnd();?>	

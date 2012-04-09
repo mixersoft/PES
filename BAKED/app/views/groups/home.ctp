@@ -128,7 +128,7 @@ if (empty($this->passedArgs['wide'])) {
 	$xhrSrc = Router::url($xhrSrc);
 	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}' delay='8000'></div>";
 	// tag form 	
-	echo $this->element('tags', array('domId'=>'groups-tags', 'data'=>$data));
+	echo $this->element('tags', array('uuid'=>AppController::$uuid, 'model'=>'Group'));
 ?>
 			</section>
         	<section class="people">

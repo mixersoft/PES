@@ -327,6 +327,52 @@ class Collection extends AppModel {
 		if (!empty($conditions)) $paginate['conditions'] = @mergeAsArray($paginate['conditions'], $conditions);
 		return $paginate;
 	}	
+	/**
+	 * extract distinct asset UUIDs from html markup
+	 * @return array of distinct/unique UUIDs
+	 */
+	private function _getAssetsFromMarkup($markup){
+		$IMG_uuid_pattern = '/([A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12})\.JPG/i';
+		$count = preg_match_all($IMG_uuid_pattern, $markup, $matches);
+		return isset($matches[1]) ? array_unique($matches[1]) : array();
+	}
+	/**
+	 * add to AssetsCollection HABTM
+	 * @params $collectionId, Group uuid
+	 * @params $assets mixed, array or comma delim string of Asset uuids
+	 * @params $HABTM string, HABTM model className
+	 * @params $replace boolean, replace existing assetIds
+	 */
+	function insertIntoHABTM($collectionId, $assets, $HABTM = 'AssetsCollection', $replace=false){
+		$HABTM_Model = ClassRegistry::init($HABTM);
+		$userid = AppController::$userid;
+		if (is_string($assets))  $assets = explode(',', $assets );
+		foreach ($assets as $aid) {
+			$VALUES[]= "( UUID(), '{$collectionId}', '{$aid}', '{$userid}', now() )";
+		}	
+		switch($HABTM) {
+			case 'AssetsCollection': 
+				$table = 'assets_collections'; 
+				$columns = "`id`, `collection_id`, `asset_id`, `user_id`, `modified`";
+				break;
+			case 'CollectionsGroup': 
+				// TODO: CollectionsGroup is incomplete, $assets -> $groups
+				$table = 'collections_groups'; 
+				$columns = "`id`, `collection_id`, `group_id`, `user_id`, `modified`";
+				break;
+		}
+		if ($replace) {
+			$HABTM_Model->query("DELETE FROM `{$table}` WHERE `collection_id`={$collectionId};");	
+		}
+		
+		$INSERT_aids = "INSERT IGNORE INTO `{$table}` ({$columns}) VALUES :chunk: ";
+		$VALUES = insertByChunks($INSERT_aids, $VALUES);		
+		foreach ($VALUES as $chunk) {
+			$INSERT = str_replace(':chunk:', $chunk, $INSERT_aids);
+			$HABTM_Model->query($INSERT);	
+		}			
+		return true;
+	}
 
 	function save_page($data, $uuid = null, $action = null) {
 		if (!$uuid) {
@@ -340,7 +386,6 @@ class Collection extends AppModel {
 			$dataCollection = $this->find('first', $options);
 			if ($dataCollection) $uuid = $dataCollection['Collection']['id'];
 		}
-		// TODO: extract src_thumbnail, assets_collection_count
 		if ($uuid) {			// update
 			if (!$this->hasPermission('write',$uuid)) return false;
 			
@@ -351,23 +396,41 @@ class Collection extends AppModel {
 				$markup = $this->field('markup');
 				$markup .=  '\n'.$data['content'];	// append
 			}
-			$data['Collection']['markup'] = $markup;
-			$data['Collection']['assets_collection_count'] = count(explode('<img', $markup))-1;
-			if (isset($data['dest'])) $data['Collection']['title'] = $data['dest'];
-			$ret = $this->save($data);
 		} else {				// create
 			if (!AppController::$ownerid) return false;	
 								
 			$this->create();
 			$uuid = String::uuid(); 
-			// $data['Collection']['id'] = $uuid;
+			$data['Collection']['id'] = $uuid;
 			$data['Collection']['owner_id'] = AppController::$ownerid;
-			$data['Collection']['title'] = $data['dest'];
-			$data['Collection']['assets_collection_count'] = count(explode('<img', $markup))-1;
-			// $data['Collection']['asset_hash'] = $data['key'];
-			$data['Collection']['markup'] = $data['content'];
-			$ret = $this->save($data);
-			if ($ret) $uuid = $this->id;
+			$data['Collection']['src_thumbnail'] = null; 
+			$markup = $data['content'];
+		}
+		$aids = (array)$this->_getAssetsFromMarkup($markup);
+		
+		// find topRated Snap and set as cover photo
+		if (isset($data['Collection']['src_thumbnail']) && count($aids)) {
+			$options = array(
+				'conditions'=>array('Asset.id'=>$aids),
+				'fields'=>'Asset.id, Asset.src_thumbnail',
+				'permissionable'=>false,
+				'recursive' => -1,
+				'showEdits'=>true,
+				'join_shots'=>false, 
+				'order'=>'UserEdit.rating DESC, SharedEdit.score DESC' 
+			);
+			$this->Asset->Behaviors->detach('Taggable');
+			$topRated = $this->Asset->find('first', $options);
+			$data['Collection']['src_thumbnail'] = $topRated['Asset']['src_thumbnail'];
+		}
+
+		$data['Collection']['markup'] = $markup;
+		$data['Collection']['assets_collection_count'] = count($aids);
+		$data['Collection']['title'] = $data['dest'];
+		$ret = $this->save($data);
+		if ($ret) { // update habtm associations
+			$uuid = $this->id;
+			$this->insertIntoHABTM($uuid, $aids, 'AssetsCollection', $action == 'replace');
 		}
 		return $ret ? $uuid : false;
 	}

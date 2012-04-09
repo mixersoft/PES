@@ -40,7 +40,7 @@
             <section id="tag-cloud" class="trends">
 				<h1><?php __('Trends');?></h1>
 <?php 
-	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show', 'filter'=>'Group');
+	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show', 'filter'=>'Collection');
 	$xhrFrom = Configure::read('controller.xhrFrom');
 	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom),'preview'=>1);
 	$xhrSrc = Router::url($xhrSrc);

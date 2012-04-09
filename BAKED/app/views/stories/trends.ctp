@@ -1,12 +1,12 @@
 <?php 
 	$this->Layout->blockStart('itemHeader');
-		$badge_src = Stagehand::getSrc($data['Group']['src_thumbnail'], 'sq', $data['Group']['type']);
+		$badge_src = Stagehand::getSrc($data['Collection']['src_thumbnail'], 'sq');
 		echo $this->element('nav/section', compact('badge_src')); 
-	$this->Layout->blockEnd();
+	$this->Layout->blockEnd();	
 ?>
 <section id="tag-cloud" class="trends grid_16">
 <?php	// tagCloud
-	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show', 'filter'=>'Group');
+	$xhrSrc = array('plugin'=>'', 'controller'=>'tags','action'=>'show', 'filter'=>'Collection');
 	if (isset($this->passedArgs['perpage'])) $xhrSrc['perpage'] = $this->passedArgs['perpage'];
 	$xhrFrom = Configure::read('controller.xhrFrom');
 	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom), 'gallery'=>1, 'preview'=>0);

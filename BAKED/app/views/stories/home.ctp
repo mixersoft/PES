@@ -33,9 +33,11 @@
 <?php	$this->Layout->blockEnd(); ?>	
 <section class='story pagemaker-stage cf' <?php echo "uuid='".AppController::$uuid."'"; ?> >
 <?php 
-	$ajaxSrc = Router::url(Configure::read('passedArgs.complete') + array('action'=>'story'));
-	echo "<div id='gallery-story-xhr' class='xhr-get stage-body' xhrSrc='{$ajaxSrc}' delay='0'></div>";
+	$ajaxSrc = Router::url(Configure::read('passedArgs.complete') + array('action'=>'story', '?'=>array('iframe'=>1)));
+	// echo "<div id='gallery-story-xhr' class='xhr-get stage-body' xhrSrc='{$ajaxSrc}' delay='0'></div>";
+	echo "<iframe src='{$ajaxSrc}'' frameborder='0' style='overflow:hidden;' height='860' width='960'></iframe>";
 ?>
+
 </section>	
 <?php $this->Layout->blockStart('relatedContent');?>
 <aside id="related-content" class="related-content container_16 hide">		    	
@@ -85,6 +87,8 @@
 	$xhrSrc['?'] = array('xhrfrom'=>implode('~', $xhrFrom),'preview'=>1);
 	$xhrSrc = Router::url($xhrSrc);
 	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$xhrSrc}' delay='8000'></div>";
+	// tag form 	
+	echo $this->element('tags', array('uuid'=>AppController::$uuid, 'model'=>'Collection'));
 ?>	
 			</section>
         	<section class="people">

@@ -254,11 +254,12 @@ class AssetsController extends AppController {
 
 		// get assets for user=2010
 		$options = array(
-					'conditions'=>array('Asset.owner_id'=>'4c5f9050-d8bc-4baa-ad2d-03b0f67883f5')
-		, 'recursive'=>-1
-		, 'fields'=>'Asset.id, Asset.batchId, Asset.json_src, Asset.dateTaken, Asset.owner_id'
-		, 'order'=>'dateTaken'
-		, 'permissionable'=>false);
+			'conditions'=>array('Asset.owner_id'=>'4c5f9050-d8bc-4baa-ad2d-03b0f67883f5')
+			, 'recursive'=>-1
+			, 'fields'=>'Asset.id, Asset.batchId, Asset.json_src, Asset.dateTaken, Asset.owner_id'
+			, 'order'=>'dateTaken'
+			, 'permissionable'=>false
+		);
 		$data = $this->Asset->find('all', $options);
 		$batchData = Set::combine($data, '/Asset/id', null, '/Asset/batchId');
 		foreach ($batchData as $batchId=>$asset_keys){

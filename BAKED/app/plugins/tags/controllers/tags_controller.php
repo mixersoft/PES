@@ -191,8 +191,11 @@ class TagsController extends TagsAppController {
 			),			
 		),
 		'Collection'=>array(				
-			'limit'=>8,
-			'order'=>array('Collection.created'=>'DESC'),
+			'preview_limit'=>4,
+			'paging_limit' =>16,
+			'order'=>array('Collection.modified'=>'DESC'),
+			'recursive'=> -1,
+			'fields' =>'Collection.*',
 		),
 		'Group'=>array(	
 			'preview_limit'=>3,
@@ -574,6 +577,42 @@ class TagsController extends TagsAppController {
 		}
 	}
 	
+	function stories($keyname = null){
+		$this->layout = 'snappi';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';
+		if (!$keyname) {
+			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'tag'));
+			$this->redirectSafe();
+		}	
+				
+		$data = $this->__getTag($keyname);
+			
+		// paginate 
+		$paginateModel = 'Collection';
+		$Model = isset($this->{$paginateModel}) ? $this->{$paginateModel} : ClassRegistry::init('Collection');
+		$this->{$paginateModel} = $Model;	// add model to controller for paginate()
+		$Model->Behaviors->attach('Pageable');
+		$paginateArray = $Model->getPaginateCollectionsByTagId($keyname, $this->paginate[$paginateModel]);
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
+		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
+		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
+		// end paginate	
+		$this->viewVars['jsonData'][$paginateModel] = $pageData;
+		$done = $this->renderXHRByRequest('json', '/elements/collections/roll');
+		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
+						
+		$taggable = $paginateModel;
+		$data[$taggable] = $pageData;
+		$this->set(compact('data','keyname'));
+				
+		if (@empty($this->params['paging'][$paginateModel]['count'])) {
+			/*
+			 * handle no tags, no permission to view record
+			 */
+			$this->Session->setFlash("There are no Stories tagged {$keyname}.");
+		}
+	}
+
 	function groups($keyname = null){
 		$this->layout = 'snappi';
 		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';

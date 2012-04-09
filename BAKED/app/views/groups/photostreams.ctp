@@ -45,7 +45,7 @@ if (empty($this->passedArgs['wide'])) {
 </div>
 
 <?php	// tagCloud
-	$ajaxSrc = Router::url(array('plugin'=>'', 'controller'=>'tags','action'=>'show'));
+	$ajaxSrc = Router::url(array('plugin'=>'', 'controller'=>'tags', 'action'=>'show', 'filter'=>'Asset'));
 	echo "<div id='tags-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' delay='8000'></div>";
 ?>	
 <script type="text/javascript">
