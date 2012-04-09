@@ -431,8 +431,9 @@ console.log("delegateHost="+delegateHost._yuid);
 		} catch(e){	}
 		
 		try {	// try from cookie
-			href = PAGE.Cookie.pagemaker.STORY_ID+'_'+PAGE.Cookie.pagemaker.key; 
-			href = 'http://'+window.location.host + '/gallery/story/' + href + '?page=last'
+			// href = PAGE.Cookie.pagemaker.STORY_ID+'_'+PAGE.Cookie.pagemaker.key; 
+			// href = 'http://'+window.location.host + '/gallery/story/' + href + '?page=last'
+			href = 'http://'+window.location.host + '/stories/story/' + PAGE.Cookie.pagemaker.uuid + '?page=last'
 			if (href && href.search(STORY_ID) !==-1) {
 				menuItem.setAttribute('href', href);
 				menuItem.removeClass('disabled');

@@ -419,7 +419,6 @@ class Collection extends AppModel {
 			$data['Collection']['src_thumbnail'] = false; 
 			$markup = $data['content'];
 		}
-
 		$aids = (array)$this->_getAssetsFromMarkup($markup);
 		// find topRated Snap and set as cover photo
 		if (isset($data['Collection']['src_thumbnail']) && count($aids)) {

@@ -15,7 +15,7 @@
        	<link media="screen" type="text/css" href="/app/pagemaker/static/css/play.css" rel="stylesheet">
     </head>
      <?php flush(); ?>
-    <body>
+    <body style="overflow:hidden">
         <?php echo $content_for_layout; ?>
     </body>
 	<script type="text/javascript" src="http://yui.yahooapis.com/combo?3.3.0/build/yui/yui-min.js"></script>

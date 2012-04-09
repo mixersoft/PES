@@ -78,14 +78,15 @@ class StoriesController extends CollectionsController {
 		/*
 		 * main
 		 */
-		'home', 'groups', 'assets', 'discussion', 'trends', 'search', 
+		'home', 'story', 'photos', 'groups', 'assets', 'discussion', 'trends', 'search', 
 		/*
 		 * all
 		 */'index', 'all', 'most_active', 'most_views', 'most_recent', 'top_rated',   
 		/*
 		 * actions
-		 */'get_asset_info', 
-		
+		 */
+		 // experimental
+		 'import_page_gallery', 'get_asset_info',
 		);
 		$this->Auth->allow( array_merge($this->Auth->allowedActions , $allowedActions));
 		AppController::$writeOk = $this->Collection->hasPermission('write', AppController::$uuid);
@@ -811,6 +812,42 @@ class StoriesController extends CollectionsController {
 		$done = $this->renderXHRByRequest('json', '/elements/dumpSQL');
 		return;
     }
+
+	function import_page_gallery($filename) {
+		$forceXHR = setXHRDebug($this, 1);
+        $this->layout = 'snappi-guest';
+        $ret = 0;
+		$data = array();
+		// $data['content'] = $this->getContentFromFilename($filename);
+		$File = Configure::read('path.wwwroot').Configure::read('path.pageGalleryPrefix').DS.$filename.'.div';
+		if (file_exists($File)) {
+		 	$str = @file_get_contents($File);
+			$data['content'] = $str;
+		}	
+		$title = $data['dest'] = array_shift(explode('_',$filename));
+		$uuid = $this->Collection->save_page($data, null, 'replace');
+		$this->autoRender = false;
+		Configure::write('debug',0);
+		$success = $uuid ? true : false;
+		if ($success) {
+			header("HTTP/1.1 201 CREATED");
+			$message = "Your Story was saved.";
+			$response = array(
+				'uuid'=>$uuid,
+				'key'=>$uuid,
+				// 'key'=>$secretKeyDest, 
+				'title'=> $title,
+				// 'href'=>"/gallery/story/{$dest}_{$secretKeyDest}",
+				'href'=>"/stories/home/{$uuid}",
+			);
+		} else {
+			$message = "There was an error saving your Story. Please try again.";
+			$response = array();
+		}
+		$this->viewVars['jsonData'] = compact('success', 'message', 'response');
+		$done = $this->renderXHRByRequest('json', '/elements/dumpSQL');
+		return;
+	} 
 
 	function setprop(){
 		$forceXHR = setXHRDebug($this, 0, 1);
