@@ -1106,7 +1106,6 @@ LIMIT 5;";
 		if (!empty($this->data)) {
 				$this->Group->create();
 				$this->data['Group']['owner_id'] = AppController::$ownerid;
-//				$this->Group->Behaviors->Permissionable->settings['Group']['defaultBits'] = $this->data['Group']['privacy_groups'];
 				$this->data['Permission']['perms'] = $this->data['Group']['privacy_groups'];
 				if ($this->Group->save($this->data)) {
 					$this->Session->setFlash("Your group was created.");

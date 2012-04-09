@@ -276,7 +276,7 @@
 	            	
 	
 	            	dropTarget.one('img').setAttribute('src', dragNode.get('src'));
-	            	var uri = '/photos/set_as_cover/' + imgId + '/' + currentGroupId + '/' + controllerJSONData.class + '/.json';
+	            	var uri = '/photos/set_as_cover/' + imgId + '/' + currentGroupId + '/' + controllerJSONData['class'] + '/.json';
 	    			var callback = {
 	    				complete : function(id, o, args) {
 	    					var check;

@@ -9,6 +9,7 @@
  * configure SNAPPI.PM.util namespace as use singleton pattern
  */
 (function(){
+	if (typeof SNAPPI.PM.Util !== 'undefined') return; 	// firefox/firebug 1.9.1 bug
     /*
      * shorthand
      */
@@ -19,8 +20,6 @@
 	PM.onYready.Util = function(Y){
 		if (_Y === null) _Y = Y;
 	}
-    if (!SNAPPI.PM.util) {
-        // load once
         SNAPPI.PM.util = {
             /*
              * CONSTANTS
@@ -307,5 +306,4 @@ console.log("saveStory complete: statusText="+resp.statusText) ;
             	return src;
             },
         };
-    }
 })();

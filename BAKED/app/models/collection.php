@@ -18,7 +18,7 @@ class Collection extends AppModel {
 		'Tags.Taggable',
 		'Search.Searchable',
 		'Permissionable.Permissionable' => array(
-			'defaultBits'	=> 71,  
+			'defaultBits'	=> '0519', 			// public,    members only=71,  
 			'userModel'		=> 'User',
 			'groupModel'	=> 'Group',
 		),
@@ -374,7 +374,18 @@ class Collection extends AppModel {
 		return true;
 	}
 
+	function getDefaultPrivacy(){
+		$userid = AppController::$ownerid;
+		$field = 'privacy_collections';
+		$profile = AppController::getProfile($userid);
+		if (isset($profile['Profile'][$field])) {
+			return $profile['Profile'][$field];	
+		}  
+		return $this->Behaviors->Permissionable->settings['Collection']['defaultBits'];
+	}
+
 	function save_page($data, $uuid = null, $action = null) {
+		
 		if (!$uuid) {
 			// lookup by Collection.title, assumes title is unique by owner_id
 			// what about Guests? can we still use App::$owner_id???
@@ -398,16 +409,18 @@ class Collection extends AppModel {
 			}
 		} else {				// create
 			if (!AppController::$ownerid) return false;	
-								
+			$this->isCREATE = true;
 			$this->create();
 			$uuid = String::uuid(); 
 			$data['Collection']['id'] = $uuid;
 			$data['Collection']['owner_id'] = AppController::$ownerid;
-			$data['Collection']['src_thumbnail'] = null; 
+			// TODO: get default perms from profile
+			$data['Permission']['perms'] = $this->getDefaultPrivacy();		// public
+			$data['Collection']['src_thumbnail'] = false; 
 			$markup = $data['content'];
 		}
+
 		$aids = (array)$this->_getAssetsFromMarkup($markup);
-		
 		// find topRated Snap and set as cover photo
 		if (isset($data['Collection']['src_thumbnail']) && count($aids)) {
 			$options = array(
@@ -423,7 +436,6 @@ class Collection extends AppModel {
 			$topRated = $this->Asset->find('first', $options);
 			$data['Collection']['src_thumbnail'] = $topRated['Asset']['src_thumbnail'];
 		}
-
 		$data['Collection']['markup'] = $markup;
 		$data['Collection']['assets_collection_count'] = count($aids);
 		$data['Collection']['title'] = $data['dest'];

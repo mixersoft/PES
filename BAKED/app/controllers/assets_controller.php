@@ -1663,7 +1663,6 @@ $this->log("WARNING: json_exif['preview']['imageWidth'] may need to be scaled, i
 			$data['Asset']['id'] = $asset_id;
 			$data['Asset']['privacy_groups'] = $privacy;
 			$data['Permission']['perms'] = $privacy;
-//			$this->Asset->Behaviors->Permissionable->settings['Asset']['defaultBits'] = $privacy;
 			$ret = $this->Asset->save($data, false);
 			// $this->Session->setFlash("The privacy setting was successfully updated.");
 		}
