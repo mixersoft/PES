@@ -67,7 +67,7 @@
 		<li><span class='keypress'>Up arrow</span> Move up</li>
 		<li><span class='keypress'>Down arrow</span> Move down</li>
 		<li><span class='keypress'>Keypad 0-5</span> Apply rating to Snap</li>
-		<li><span class='keypress Ctrl-Cmd'>Ctrl-A</span> Select Sll</li>
+		<li><span class='keypress Ctrl-Cmd'>Ctrl-A</span> Select all</li>
 		<li><span class='keypress Ctrl-Cmd'>Ctrl-G</span> Group (selected) as Shot</li>
 	</ul>
 	<br /> 
