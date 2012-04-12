@@ -8,6 +8,8 @@ class PersonController extends UsersController {
 	public $titleName = 'People';
 	public $displayName = 'Person';	// section header
 	
+	// public $layout = 'snappi';
+	
 	public $helpers  = array(
 		'Tags.TagCloud',
 		// 'Time',
@@ -485,6 +487,7 @@ $this->log("role = ".AppController::$role, 	LOG_DEBUG);
 	}
 	
 	function trends($id = null) {
+		$this->layout = 'snappi';
 		if (!$id) {
 			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'member'));
 			$this->redirectSafe();

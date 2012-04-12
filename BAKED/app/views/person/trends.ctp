@@ -14,3 +14,20 @@
 	echo "<div id='paging-tags-xhr' class='xhr-get' delay='0' xhrSrc='{$xhrSrc}'></div>";
 ?>	
 </section>
+
+<?php $this->Layout->blockStart('javascript'); ?> 
+	<script type="text/javascript">
+		var initOnce = function() {
+			try {
+				var Y = SNAPPI.Y;
+				SNAPPI.mergeSessionData();
+			} catch (e) {}
+		};
+		try {
+			SNAPPI.xhrFetch.fetchXhr; 
+			initOnce(); 
+		} catch (e) {
+			PAGE.init.push(initOnce); 
+		}	// run from Y.on('domready') for HTTP request		
+	</script>
+<?php $this->Layout->blockEnd(); ?> 			
