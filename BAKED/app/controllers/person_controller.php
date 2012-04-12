@@ -78,7 +78,7 @@ class PersonController extends UsersController {
 			/*
 			 * main
 			 */
-			'search','home','photos','groups',
+			'search','home','photos','groups','trends',
 			/*
 			 * all
 			 */
