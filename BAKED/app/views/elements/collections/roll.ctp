@@ -33,9 +33,9 @@
 ?> 
 	<script type="text/javascript">
 		SNAPPI.mergeSessionData();
-		var listeners, parent = SNAPPI.Y.one('.gallery.group .container') 
+		var listeners, parent = SNAPPI.Y.one('.gallery.collection .container') 
 		listeners = {
-			'ContextMenuClick':{node:parent, type:'Group'}, 
+			'ContextMenuClick':{node:parent, type:'Collection'}, 
 			'LinkToClick': {node:parent},
 		};
 		for (var listen in listeners) {
@@ -76,11 +76,11 @@
 				var Y = SNAPPI.Y;
 				SNAPPI.mergeSessionData();
 				SNAPPI.UIHelper.nav.setDisplayOptions();
-				var parent = Y.one('.gallery.group .container');
+				var parent = Y.one('.gallery.collection .container');
 				var listeners = {
 					// 'WindowOptionClick':1, 
 					'DisplayOptionClick':null,
-					'ContextMenuClick':{node:parent, type:'Group'}, 
+					'ContextMenuClick':{node:parent, type:'Collection'}, 
 					'LinkToClick': {node:parent},					
 					'MultiSelect':parent,
 				};
@@ -88,7 +88,7 @@
 					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
 				}					
 <?php if (!$isPreview) echo "SNAPPI.Paginator.paginate_CircleMemberGallery('.gallery.collection');" ?>;				
-				if (parent.all('.FigureBox.Group').size() == 0) {
+				if (parent.all('.FigureBox.Collection').size() == 0) {
 					var emptyMsg = Y.one('#markup .empty-circle-gallery-message');
             		if (emptyMsg) parent.append(emptyMsg.removeClass('hide'));	
 				}

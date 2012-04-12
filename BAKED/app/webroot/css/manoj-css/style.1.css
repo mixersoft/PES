@@ -507,12 +507,6 @@ section.gallery-display-options nav.settings > ul.thumb-size > li.btn.white {
 	-webkit-box-shadow: 2px 2px 5px #FF0000; /* Safari and Chrome */
 	box-shadow: 2px 2px 5px #FF0000; 
 }
-.FigureBox.Group.selected figure > a > img , .FigureBox.Person.selected figure > a > img{
-	-webkit-box-shadow: 0px 2px 2px #FF0000; /* Safari and Chrome */
-	box-shadow: 2px 2px 8px #FF0000;
-	border-width: 2px;
-	margin: 2px;
-}
 
 .FigureBox.Photo {
 	padding: 2px;
@@ -1004,6 +998,9 @@ aside.related-content .body section > h1 {
 	background-color: #CCC;
 }
 
+.menu-item-group {
+	border-top: 1px solid black;
+}
 
 /*
  * drag-drop
@@ -1389,12 +1386,14 @@ ul.circle-thumb li.selected {
 } 
 
 
+
+/* gallery CSS */
+.gallery.group, .gallery.collection, .gallery.person, .gallery.tags {
+	padding: 4px;
+}
 /*
  * Group/Circle thumbnails
  */
-.gallery.group, .gallery.person, .gallery.tags {
-	padding: 4px;
-}
 .FigureBox.Group {
 	overflow: hidden;
 	display: inline-block;
@@ -1517,6 +1516,168 @@ ul.circle-thumb li.selected {
     padding: 10px;
     position: relative;	
 }
+/* /photos/home page grid_5 */
+/*  TODO: USE .tiny */
+.grid_5 .FigureBox.Group.sq  figure > a > img {
+	width: 33px;
+	height: 33px;
+}
+.grid_5 .FigureBox.Group.sq  figcaption {
+	width: 205px;
+}
+.grid_5 .FigureBox.Group.sq  figcaption .description {
+	display: none;
+}
+
+/*.FigureBox.Group.selected figure > a > img , .FigureBox.Collection.selected figure > a > img ,.FigureBox.Person.selected figure > a > img{*/
+.FigureBox.Group.selected figure > a > img , .FigureBox.Collection.selected figure > a > img ,.FigureBox.Person.selected figure > a > img{	
+	-webkit-box-shadow: 0px 2px 2px #FF0000; /* Safari and Chrome */
+	box-shadow: 2px 2px 8px #FF0000;
+	border-width: 2px;
+	margin: 2px;
+}
+
+/*
+ * Collection/Story thumbnails
+ * TODO: current same as Group
+ */
+.FigureBox.Collection {
+	overflow: hidden;
+	display: inline-block;
+	vertical-align: top;
+}
+.FigureBox.Collection:hover figure {
+	background: #fff88a;
+}
+.FigureBox.Collection.focus figure {
+	    /* same as .orange */
+	background: #f9c667 !important; /* Old browsers */	
+	background: -moz-linear-gradient(top, #f9c667 0%, #f79621 100%) !important; /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f9c667), color-stop(100%,#f79621)) !important; /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* IE10+ */
+	background: linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9c667', endColorstr='#f79621',GradientType=0 ) !important; /* IE6-9 */
+	border: 1px solid #f79621 !important;
+	color: #000 !important;	
+
+}
+.FigureBox.Collection figure {
+	font-size: 10pt;
+/*	thumbnail height */
+	xheight: 83px;
+}
+
+.FigureBox.Collection figure > img, .FigureBox.Collection figure > a > img {
+	border: 4px solid #fff;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-box-shadow: 0px 0px 8px #afb4b6;
+	-moz-box-shadow: 0px 0px 8px #afb4b6;
+	vertical-align: top;
+}
+
+.FigureBox.Collection  figcaption .extras li a {
+    color: #404040;
+    font-size: 11px;
+    font-weight: normal;
+    line-height: 18px;
+    text-decoration: none;
+}
+.FigureBox.Collection .label {
+	text-align: left;
+}
+
+.FigureBox.Collection .label span {
+	font-weight: normal;
+}
+.FigureBox.Collection .description {
+	font-size: 0.8em;
+}
+.FigureBox.Collection .extras li {
+	display: inline;
+	border-right: 1px solid #404040;
+	padding: 0 5px;
+}
+.FigureBox.Collection .extras li.last {
+	border-right: none;
+}
+.FigureBox.Collection .extras li.icon {
+	padding-left: 15px;
+}
+
+.FigureBox.Collection li.privacy.public {
+	background: url(/static/img/css-gui/earth.png) no-repeat left;
+}
+.FigureBox.Collection li.privacy.listing {
+	background: url(/static/img/css-gui/earth.png) no-repeat left;
+}
+.FigureBox.Collection li.privacy.members {
+	background: url(/static/img/css-gui/people.png) no-repeat left;
+}
+.FigureBox.Collection li.privacy.admin {
+	background: url(/static/img/css-gui/lock.png) no-repeat left;
+}
+.FigureBox.Collection.sq {
+	margin-bottom: 10px;
+}
+.FigureBox.Collection.sq figure {
+	margin:2px;
+	padding:2px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;		
+}
+.FigureBox.Collection.sq figure > a > img {
+}
+.FigureBox.Collection.sq  figcaption {
+	display: inline-block;
+	padding: 2px;
+/*	controls wrap for .extras.description*/
+	width: 214px;	
+}
+.FigureBox.Collection.ll {
+	margin-bottom: 10px;
+}
+.FigureBox.Collection.ll figure {
+	padding:2px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	background-color: #FFF;		
+}
+.FigureBox.Collection.ll  figcaption {
+	display: block;
+	padding: 2px 0;
+/*	controls wrap for .extras.description*/
+	width: 226px;	
+}
+.FigureBox.Collection.ll .label {
+	font-weight: bold;
+	font-size: 1.1em;
+}
+.FigureBox.Collection.bp {
+    background-color: #FFFFFF;
+    border: 1px solid #E5E5E5;
+    border-radius: 5px 5px 5px 5px;
+    overflow: hidden;
+    padding: 10px;
+    position: relative;	
+}
+/* /photos/home page grid_5 */
+/*  TODO: USE .tiny */
+.grid_5 .FigureBox.Collection.sq  figure > a > img {
+	width: 33px;
+	height: 33px;
+}
+.grid_5 .FigureBox.Collection.sq  figcaption {
+	width: 205px;
+}
+.grid_5 .FigureBox.Collection.sq  figcaption .description {
+	display: none;
+}
+
+
+
 
 
 section.item-header  {
@@ -1876,18 +2037,6 @@ aside.related-content.grid_5 > section {
 	
 }
 
-/* /photos/home page grid_5 */
-/*  TODO: USE .tiny */
-.grid_5 .FigureBox.Group.sq  figure > a > img {
-	width: 33px;
-	height: 33px;
-}
-.grid_5 .FigureBox.Group.sq  figcaption {
-	width: 205px;
-}
-.grid_5 .FigureBox.Group.sq  figcaption .description {
-	display: none;
-}
 
 .preview section.preview-body {
 	margin-bottom: 20px;

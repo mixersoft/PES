@@ -167,7 +167,12 @@
 			cfg = cfg || {};
 			// copied from SNAPPI.Gallery
 			var ID_LOOKUP = {
+				'Group': 'contextmenu-group-markup',
+				'Collection': 'contextmenu-collection-markup',
+				'Person': 'contextmenu-person-markup',
+				// from getGalleryType()
 				'group': 'contextmenu-group-markup',
+				'collection': 'contextmenu-collection-markup',
 				'person': 'contextmenu-person-markup',
 				'photo': 'contextmenu-photoroll-markup',
 				'photoPreview': 'contextmenu-photoroll-markup',
@@ -182,7 +187,7 @@
 	    	if (!SNAPPI.MenuAUI.find[CSS_ID]) {
 	    		var contextMenuCfg = {
 	    			TRIGGER: ' .FigureBox',
-	    			triggerType: type,		// NOTE: add .gallery.group to id=groups-preview-xhr
+	    			triggerType: type.toLowerCase(),		// NOTE: add .gallery.group to id=groups-preview-xhr
 	    			currentTarget: e.currentTarget,	// init TRIGGER is currentTarget
 	    			triggerRoot:  listenerNode,
 	    			init_hidden: false,
@@ -897,7 +902,7 @@ console.info('Getting Story for rolecount='+roleCount);
 			UIHelper.listen[action] = node.listen[action];
         },             
         /**
-         * @params cfg object, cfg.node, cfg.type = [group, photo, person], 
+         * @params cfg object, cfg.node, cfg.type = [group, photo, person, or Group|Collection|Person], 
          * 		i.e. .FigureBox.Group
          */
         ContextMenuClick : function(cfg) {
@@ -911,7 +916,7 @@ console.info('Getting Story for rolecount='+roleCount);
 				node.listen[action] = node.delegate('contextmenu', 
 	                function(e){
 	                	e.halt();
-	                	UIHelper.nav.toggle_ContextMenu(e);
+	                	UIHelper.nav.toggle_ContextMenu(e, cfg);
 	                }, selector, UIHelper);
 			}
 			// back reference

@@ -507,7 +507,7 @@
 
 		// deprecate: use GalleryFactory.nav.toggle_ContextMenu(this, e); instead
         toggle_ContextMenu : function(e) {
-        	SNAPPI.Factory.Gallery.nav.toggle_ContextMenu(this, e);
+        	Factory.nav.toggle_ContextMenu(this, e);
         	return;
         },
         stopLinkToClickListener : function(){

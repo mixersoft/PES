@@ -396,11 +396,14 @@
 		}catch(e){}
 	};
 	var _handle_clickOutside = function(e, hint){
-		var target = e.target;
-		if (!this.get('boundingBox').contains(e.target)) {
-			this.hide();	
-			this.clearIntervals();
+		if (hint.get('visible')==false) return false;	// skip if hidden
+		if (!hint.get('boundingBox').contains(e.target)) {
+			hint.hide();	
+			hint.clearIntervals();
+			e.halt();
+			return true;
 		};
+		return false;
 	}
 	var _handle_MenuDialogVisible = function(o, visible) {
 		// TODO: what is both menu & dialog visible, then one is hidden?
@@ -408,7 +411,25 @@
 		if (visible) Hint.instance.hide();
 		var check;
 	}
-	
+	var _handle_ResetDelayTimer = function(e, hint){
+		if (hint.get('visible')) return false; 			// skip if visible
+		if (_sleep_status.later) {
+			_sleep_status.later.cancel();
+// console.warn('resetting hint delay SLEEP timer on click');			
+			_sleep_status.later = _Y.later( _sleep_status['time'], hint, 
+				function(e){
+					hint.set('trigger', hint.triggers.join(',') );
+					_sleep_status['time'] = 0;
+					_sleep_status.later = null;
+					console.log('awake');				
+				}	
+			);
+		} else {
+			hint.clearIntervals();
+			hint.set('showDelay', hint.get('showDelay'));
+		}
+		return true;
+	}
 	/*
 	 * sleep timer for hints on hide() or close
 	 */
@@ -443,11 +464,11 @@
 				h.set('trigger', h.triggers.join(',') );
 				_sleep_status['time'] = 0;
 				_sleep_status.later = null;
-console.log('awake');				
+// console.log('awake');				
 			}	
 		);
 		h.set('trigger', '#blackhole');
-console.log("sleep for sec="+_sleep_status['time'])	;	
+// console.log("sleep for sec="+_sleep_status['time'])	;	
 	};
 	var _handle_Close = function(e, contentBox){
 		try {		// context: this = hint or ToolTip
@@ -581,8 +602,18 @@ console.log("sleep for sec="+_sleep_status['time'])	;
     		hint.set('footerContent', _Y.substitute(_bodyMarkup.doNotShow, cfg));
     		hint.listen = {};
     		hint.listen['visibleChange'] = hint.on('visibleChange', _handle_VisibleChange, hint);
-    		hint.listen['any-click'] = _Y.on('click', _handle_clickOutside, null, hint);
-    		hint.listen['any-contextmenu'] = _Y.on('contextmenu', _handle_clickOutside, null, hint);
+    		hint.listen['any-click'] = _Y.on('click', function(e, hint){
+// console.log("hint any-click");    			
+    			if (_handle_clickOutside(e, hint) == false) {
+    				_handle_ResetDelayTimer(e, hint);
+    			}
+    		}, null, hint, hint);
+    		hint.listen['any-contextmenu'] = _Y.on('contextmenu', function(e, hint){
+// console.log("hint contextmenu");    			
+    			if (_handle_clickOutside(e, hint) == false) {
+    				_handle_ResetDelayTimer(e, hint);
+    			}
+    		}, null, hint, hint);
     		hint.listen['show-all-tips'] = _Y.on('click', _handle_ShowAllTips , 'section.help li.btn.show-all-tips', hint);
     		hint.listen['menu-visible'] = _Y.on('snappi:menu-visible', _handle_MenuDialogVisible, null, hint);
     		hint.listen['dialog-visible'] = _Y.on('snappi:dialog-visible', _handle_MenuDialogVisible, null, hint);

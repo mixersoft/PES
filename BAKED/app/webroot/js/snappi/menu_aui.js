@@ -25,6 +25,7 @@
 			'contextmenu-hiddenshot-markup': CFG_Context_HiddenShot,
 			'contextmenu-group-markup': CFG_Context_FigureBox,		
 			'contextmenu-person-markup': CFG_Context_FigureBox,
+			'contextmenu-collection-markup': CFG_Context_FigureBox,
 		};		
 	}
 
@@ -1911,6 +1912,10 @@ console.log("delegateHost="+delegateHost._yuid);
 			'person': {
 				CSS_ID: 'contextmenu-person-markup',	
 				uri: '/combo/markup/personContextMenu',
+			}, 
+			'collection': {
+				CSS_ID: 'contextmenu-collection-markup',	
+				uri: '/combo/markup/collectionContextMenu',
 			}, 
 		}		
 		var typeDefaults = TYPE_LOOKUP[ cfg.triggerType ];

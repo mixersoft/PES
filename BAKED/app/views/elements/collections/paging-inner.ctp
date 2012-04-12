@@ -61,7 +61,7 @@ $PREVIEW_LIMIT = $isPreview ? 8 : false;
 				
 				// TODO: change to .FigureBox.Collection
 				?>
-		<article class='FigureBox Group <?php  echo $THUMBSIZE; ?>' id='<?php echo $collection['id'] ?>'>
+		<article class='FigureBox Collection <?php  echo $THUMBSIZE; ?>' id='<?php echo $collection['id'] ?>'>
 			<figure>
 				<?php
 					$linkTo =  Router::url(array('plugin'=>'','controller'=>$controllerAlias, 'action'=>'home', $collection['id']));
