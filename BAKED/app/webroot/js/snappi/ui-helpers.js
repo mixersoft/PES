@@ -854,7 +854,7 @@ console.info('Getting Story for rolecount='+roleCount);
         	
         	node.listen = node.listen || {};
             if (node.listen[action] == undefined) {
-				node.listen[action] = node.delegate('dblclick', 
+				node.listen[action] = node.delegate('click', 
 	                function(e){
 	            		var linkTo = e.currentTarget.getAttribute('linkTo');
 	            		if (linkTo) {
@@ -862,7 +862,7 @@ console.info('Getting Story for rolecount='+roleCount);
 	            			var CSS_ID = UIHelper.util.getContextMenuIdFromNode(e.currentTarget, cfg.type);
 	    					var menu = SNAPPI.MenuAUI.find[CSS_ID];
 	            			// if contextmenu is visible, hide
-		                	if (menu.get('visible')) { // menu may be closed BEFORE this event
+		                	if (menu && menu.get('visible')) { // menu may be closed BEFORE this event
 		                		UIHelper.nav.toggle_ContextMenu(e);	// hide contextmenu
 		                		return;		// allows temp disabling of listener
 		                	}
