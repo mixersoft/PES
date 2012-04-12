@@ -65,7 +65,7 @@ $PREVIEW_LIMIT = $isPreview ? 8 : false;
 			<figure>
 				<?php
 					$linkTo =  Router::url(array('plugin'=>'','controller'=>$controllerAlias, 'action'=>'home', $collection['id']));
-					$options = array('linkTo'=>$linkTo, 'url'=>$linkTo); 
+					$options = array('linkTo'=>$linkTo); 
 					if (isset($fields['title'])) $options['title'] = $fields['trim_caption'];
 					echo $this->Html->image( $fields['src_icon'] , $options); ?>
 				<figcaption>
