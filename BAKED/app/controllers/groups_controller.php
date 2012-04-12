@@ -24,51 +24,34 @@ class GroupsController extends AppController {
 		'Group'=>array(
 			'preview_limit'=>4,
 			'paging_limit' =>12,
-			// deprecate limit, big_limit
-			// set limit in PageableBehavior->getPerpageLimit()	
-			'limit' => 16,
-			'big_limit' =>36,
 			'order'=>array('Group.lastVisit'=>'DESC'),
 		),
 		'ProviderAccount'=>array(
 			'preview_limit'=>5,
 			'paging_limit' =>20,
-			// deprecate limit, big_limit
-			// set limit in PageableBehavior->getPerpageLimit()	
-				'limit' => 5,
-				'big_limit' =>20,
-				'order' => array('ProviderAccount.created'=>'ASC'),
-				'fields' =>'ProviderAccount.*',
+			'order' => array('ProviderAccount.created'=>'ASC'),
+			'fields' =>'ProviderAccount.*',
 		),	
 		'Asset'=>array(
 			'preview_limit'=>6,
 			'paging_limit' =>24,
-			// deprecate limit, big_limit
-			// set limit in PageableBehavior->getPerpageLimit()	
-				'limit' => 16,
-				'big_limit' =>48,
-				'photostream_limit' => 4,
-				// 'order' => array('dateTaken_syncd'=>'ASC'),
-				'order' => array('batchId'=>'DESC', 'dateTaken_syncd'=>'ASC'),
-				'showSubstitutes'=>0,
-				'extras'=>array(
-					'show_edits'=>true,
-					'join_shots'=>'Groupshot', 
-					'show_hidden_shots'=>false
-				),		
-				'recursive'=> -1,	
-				'fields' =>array("DATE_ADD(`Asset`.`dateTaken`, INTERVAL coalesce(`AssetsGroup`.dateTaken_offset,'00:00:00')  HOUR_SECOND) AS dateTaken_syncd",
-					'Asset.*'
-				),
+			'photostream_limit' => 4,	// deprecate?
+			// 'order' => array('dateTaken_syncd'=>'ASC'),
+			'order' => array('batchId'=>'DESC', 'dateTaken_syncd'=>'ASC'),
+			'showSubstitutes'=>0,
+			'extras'=>array(
+				'show_edits'=>true,
+				'join_shots'=>'Groupshot', 
+				'show_hidden_shots'=>false
+			),		
+			'recursive'=> -1,	
+			'fields' =>array("DATE_ADD(`Asset`.`dateTaken`, INTERVAL coalesce(`AssetsGroup`.dateTaken_offset,'00:00:00')  HOUR_SECOND) AS dateTaken_syncd",
+				'Asset.*'
+			),
 		),
 		'Member'=>array(
-			'preview_limit'=>16,
+			'preview_limit'=>9,
 			'paging_limit' =>24,
-			// deprecate limit, big_limit
-			// set limit in PageableBehavior->getPerpageLimit()
-			
-			'limit' => 8,
-			'big_limit' =>36,
 			'order'=>array('Member.lastVisit'=>'DESC'),
 			'recursive'=> -1,
 			'fields' =>'Member.*',

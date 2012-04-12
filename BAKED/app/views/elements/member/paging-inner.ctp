@@ -21,12 +21,10 @@ switch ($THUMBSIZE) {
 		$SHORT = 12; $LONG = 255;
 		break;
 }
-$PREVIEW_LIMIT = $isPreview ? 6 : false;
 ?>
 
 	<div class="container">
 <?php
-			if ($PREVIEW_LIMIT) $members = array_slice($members, 0, $PREVIEW_LIMIT);
 			$lookup_role = Configure::read('lookup.roles');
 			foreach ($members as $member) {
 				$role = array_search($member['primary_group_id'], $lookup_role, true);
@@ -59,9 +57,10 @@ $PREVIEW_LIMIT = $isPreview ? 6 : false;
 				?>
 		<article class='FigureBox Person <?php  echo $THUMBSIZE; ?>' id='<?php echo $member['id'] ?>'>
 			<figure>
-				<?php $options = array('url'=>array_merge(array('plugin'=>'','controller'=>'person', 'action'=>'home', $member['id'])));
-					$img = $this->Html->image( $fields['src_icon'] , $link_options);
-					echo $this->Html->link($img, "/person/home/{$member['id']}", array('escape'=>false) );
+				<?php 
+					$linkTo =  Router::url(array('plugin'=>'','controller'=>'person', 'action'=>'home', $member['id']));
+					$options = $isPreview ? array('url'=>$linkTo) : array('linkTo'=>$linkTo); 
+					echo $this->Html->image( $fields['src_icon'] , $options); 
 				?>
 				<figcaption>
 					<div class="label" title="<?php echo $fields['owner'] ?>"><?php echo String::insert(":new :trim_owner", $fields); ?></div>

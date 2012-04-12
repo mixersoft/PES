@@ -16,16 +16,13 @@ Configure::write('debug',1);
 	$controllerAttr = Configure::read('controller');
 	$isXhr = $controllerAttr['isXhr'];
 	$xhrFrom = $controllerAttr['xhrFrom']; 
-	$next = array('controller'=>$xhrFrom['alias'], 'action'=>'trends', $xhrFrom['uuid']);
-	
-	if (1) {
-		$passedArgs = Configure::read('passedArgs.min');
-		$next = $next + $passedArgs;
-		$tokens['total'] = $total; 
-		$tokens['linkTo'] = $this->Html->link('Show all', $next); 
-		$tokens['type'] = ($total==1 ? "Tag. " : "Tags. ");
-		$header_content = String::insert("Total <span class=''>:total</span> :type :linkTo", $tokens);
-	}
+	$next = array('controller'=>$xhrFrom['alias'], 'action'=>'trends', $xhrFrom['uuid'])+$passedArgs;
+	if (isset($this->passedArgs['filter'])) $next['filter'] = $this->passedArgs['filter'];
+	if ($next['controller'] == 'my') unset($next[0]);
+	$tokens['total'] = $total; 
+	$tokens['linkTo'] = $this->Html->link('Show all', $next); 
+	$tokens['type'] = ($total==1 ? "Tag. " : "Tags. ");
+	$header_content = String::insert("Total <span class=''>:total</span> :type :linkTo", $tokens);
 	
 	if ($isRelated) {	// &gallery=1
 		if ($total==0) {

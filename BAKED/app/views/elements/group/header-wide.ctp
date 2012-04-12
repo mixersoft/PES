@@ -13,7 +13,7 @@
 		'll'=>AppController::$http_static[1].'/static/img/css-gui/img_3.gif',
 	);
 	$tokens['total'] = $total; 
-	if ($controllerAttrs['name'] == 'Collections') {
+	if ($controllerAttrs['name'] == 'Groups') {
 		// action == 'all'
 		$tokens['type'] = ($total==1 ? "{$controllerAttrs['label']}" : "{$controllerAttrs['titleName']}");
 	} else {
@@ -23,10 +23,10 @@
 		$xhrFrom = Configure::read('controller.xhrFrom');
 		$passedArgs = Configure::read('passedArgs.min');
 		// $next = array('controller'=>$xhrFrom['alias'],'action'=>'groups', $xhrFrom['uuid']) + $passedArgs;
-		if ($xhrFrom['alias'] == $controllerAttrs['alias']) {
+		if ($xhrFrom['action'] == 'all') {
 			$next = array('controller'=>$controllerAttrs['alias'],'action'=>'all', $xhrFrom['uuid']) + $passedArgs;
-		} else $next = array('controller'=>$xhrFrom['alias'],'action'=>$controllerAttrs['alias'], $xhrFrom['uuid']) + $passedArgs;
-		$tokens['linkTo'] = $this->Html->link('Show all', $next); 
+		} else $next = array('controller'=>$controllerAttrs['alias'],'action'=>$controllerAttrs['action'], $xhrFrom['uuid']) + $passedArgs;
+		if ($next['controller'] == 'my') unset($next[0]);		$tokens['linkTo'] = $this->Html->link('Show all', $next); 
 		$header_content = String::insert("Total <span class=''>:total</span> :type :linkTo", $tokens);
 	}
 	$isRelated = empty($this->params['url']['gallery']);

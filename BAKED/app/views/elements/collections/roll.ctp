@@ -32,7 +32,7 @@
 		$this->Layout->blockStart('javascript');
 ?> 
 	<script type="text/javascript">
-		SNAPPI.mergeSessionData();
+		SNAPPI.mergeSessionData(); // XHR response
 		var listeners, parent = SNAPPI.Y.one('.gallery.collection .container') 
 		listeners = {
 			'ContextMenuClick':{node:parent, type:'Collection'}, 

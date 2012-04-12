@@ -25,7 +25,15 @@
 		$this->Layout->blockStart('javascript');
 ?> 
 	<script type="text/javascript">
-		SNAPPI.mergeSessionData();
+		SNAPPI.mergeSessionData(); // XHR response
+		var listeners, parent = SNAPPI.Y.one('.gallery.collection .container') 
+		listeners = {
+			'ContextMenuClick':{node:parent, type:'Person'}, 
+			'LinkToClick': {node:parent},
+		};
+		for (var listen in listeners) {
+			if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
+		}		
 	</script>
 <?php 
 		$this->Layout->blockEnd();	
@@ -62,8 +70,8 @@
 				var listeners = {
 					// 'WindowOptionClick':1, 
 					'DisplayOptionClick':null,
-					// 'ContextMenuClick':{node:parent, type:'Person'}, 
-					// 'LinkToClick': {node:parent},
+					'ContextMenuClick':{node:parent, type:'Person'}, 
+					'LinkToClick': {node:parent},
 					'MultiSelect':null,
 				};
 				for (var listen in listeners) {
@@ -71,7 +79,6 @@
 				}					
 
 <?php if (!$isPreview) echo "SNAPPI.Paginator.paginate_CircleMemberGallery('.gallery.person');" ?>;				
-
 				Y.fire('snappi:after_GalleryInit', this); 
 			} catch (e) {}
 		};

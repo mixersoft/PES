@@ -22,12 +22,10 @@ switch ($THUMBSIZE) {
 		$SHORT = 20; $LONG = 255;
 		break;
 }
-$PREVIEW_LIMIT = $isPreview ? 8 : false;
 ?>
 
 	<div class="container">
 <?php
-			if ($PREVIEW_LIMIT) $groups = array_slice($groups, 0, $PREVIEW_LIMIT); 
 			foreach ($groups as $group) { 
 				/*
 				 * TODO: move this to LabelHelper when complete
@@ -65,7 +63,7 @@ $PREVIEW_LIMIT = $isPreview ? 8 : false;
 			<figure>
 				<?php
 					$linkTo =  Router::url(array('plugin'=>'','controller'=>$controllerAlias, 'action'=>'home', $group['id']));
-					$options = array('linkTo'=>$linkTo, 'url'=>$linkTo); 
+					$options = $isPreview ? array('url'=>$linkTo) : array('linkTo'=>$linkTo);  
 					if (isset($fields['title'])) $options['title'] = $fields['trim_caption'];
 					echo $this->Html->image( $fields['src_icon'] , $options); ?>
 				<figcaption>

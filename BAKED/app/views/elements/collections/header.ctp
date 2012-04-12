@@ -22,9 +22,10 @@
 	if ($isPreview) {
 		$xhrFrom = $controllerAttrs['xhrFrom'];
 		$passedArgs = Configure::read('passedArgs.min');
-		if ($xhrFrom['alias'] == $controllerAttrs['alias']) {
+		if ($xhrFrom['action'] == 'all') {
 			$next = array('controller'=>$controllerAttrs['alias'],'action'=>'all', $xhrFrom['uuid']) + $passedArgs;
-		} else $next = array('controller'=>$xhrFrom['alias'],'action'=>$controllerAttrs['alias'], $xhrFrom['uuid']) + $passedArgs;
+		} else $next = array('controller'=>$controllerAttrs['alias'],'action'=>$controllerAttrs['action'], $xhrFrom['uuid']) + $passedArgs;
+		if ($next['controller'] == 'my') unset($next[0]);
 		$tokens['linkTo'] = $this->Html->link('Show all', $next); 
 		$header_content = String::insert("Total <span class=''>:total</span> :type :linkTo", $tokens);
 	}

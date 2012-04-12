@@ -22,26 +22,15 @@ class PersonController extends UsersController {
 		'User'=>array(
 			'preview_limit'=>16,
 			'paging_limit' =>24,
-			// deprecate limit, big_limit
-			// set limit in PageableBehavior->getPerpageLimit()
-			'limit'=>16,
-			'big_limit' =>24,
-			
 			'order'=>array('User.last_login'=>'desc'),
 		),
 		'ProviderAccount'=>array(
-			'limit' => 5,
-			'big_limit' =>20,
 			'order' => array('ProviderAccount.created'=>'ASC'),
 			'fields' =>'ProviderAccount.*',
 		),
 		'Asset'=>array(
 			'preview_limit'=>6,
 			'paging_limit' =>24,
-			// deprecate limit, big_limit
-			// set limit in PageableBehavior->getPerpageLimit()
-			'limit' => 16,
-			'big_limit' =>24,
 			'photostream_limit' => 4,
 			'order' => array('Asset.dateTaken'=>'ASC'),
 //			'contain' => array('Owner.id', 'Owner.username'), 
@@ -64,10 +53,6 @@ class PersonController extends UsersController {
 		'Membership'=>array(
 			'preview_limit'=>4,
 			'paging_limit' =>8,
-			// deprecate limit, big_limit
-			// set limit in PageableBehavior->getPerpageLimit()
-			'limit' => 8,
-			'big_limit' =>36,
 			'order'=>array('Membership.title'=>'ASC'),
 			'recursive'=> -1,
 			'fields' =>'Membership.*',

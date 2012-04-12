@@ -23,10 +23,6 @@ class AssetsController extends AppController {
 		'Asset'=>array(
 			'preview_limit'=>6,
 			'paging_limit' =>24,
-			// deprecate limit, big_limit
-			// set limit in PageableBehavior->getPerpageLimit()	
-			'limit' => 16,
-			'big_limit' =>48,
 			// 'order'=>array('Asset.dateTaken'=>'ASC'),
 			'order'=>array('SharedEdit.score DESC', 'Asset.modified'=>'DESC'),
 			'extras'=>array(
@@ -38,10 +34,6 @@ class AssetsController extends AppController {
 		'Group'=>array(
 			'preview_limit'=>4,
 			'paging_limit' =>8,
-			// deprecate limit, big_limit
-			// set limit in PageableBehavior->getPerpageLimit()
-			'limit' => 8,
-			'big_limit' =>36,
 			'order'=>array('Group.title'=>'ASC'),
 			'recursive'=> -1,
 			'fields' =>'Group.*',
