@@ -1,3 +1,4 @@
+<div class='hide'>
 <div id="hint-new-story" class="hint container_x"><div class="message blue rounded-5 wrap-v">
 	<h1>Select Some Snaps to Get Started</h1>
 	<p>Select some snaps to use in your new Story.</p>
@@ -21,5 +22,6 @@
 	</ul>
 	<br />
 	{next}
+</div>
 </div>
 </div>
