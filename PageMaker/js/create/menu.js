@@ -418,37 +418,46 @@ console.log("delegateHost="+delegateHost._yuid);
 	};
 	// called on menu.show()
 	MenuItems.play_beforeShow = function(menuItem, menu){
-		var parent = menuItem.get('parentNode');
-		var STORY_ID = parent.one('#story_id').get('value');
+		var parent, STORY_ID, uuid, href; 
+		parent = menuItem.get('parentNode');
+		STORY_ID = parent.one('#story_id').get('value');
+		try {
+			uuid = PAGE.Cookie.pagemaker.uuid;
+		} catch(e){	}
+		// invalid conditions
+		if (
+			(!STORY_ID)
+			|| (STORY_ID && PAGE.Cookie.pagemaker.STORY_ID && STORY_ID !== PAGE.Cookie.pagemaker.STORY_ID)
+		){
+			menuItem.addClass('disabled');
+			return;
+		}
+		
 		if (menuItem.originalTitle) menuItem.set('title', menuItem.originalTitle);
-		try { // try from link
-			var href = menu.one('.play a').get('href') + '?page=last';	
-			if (href && href.search(STORY_ID) !==-1) {
+		try { // try from link, cookie.uuid matches play uuid
+			href = menu.one('.play a').get('href') + '?page=last';	
+			if (href && href.search(uuid) !==-1) {
 				menuItem.setAttribute('href', href);
 				menuItem.removeClass('disabled');
 				return;
 			} 
 		} catch(e){	}
 		
-		try {	// try from cookie
-			// href = PAGE.Cookie.pagemaker.STORY_ID+'_'+PAGE.Cookie.pagemaker.key; 
-			// href = 'http://'+window.location.host + '/gallery/story/' + href + '?page=last'
-			href = 'http://'+window.location.host + '/stories/story/' + PAGE.Cookie.pagemaker.uuid + '?page=last'
-			if (href && href.search(STORY_ID) !==-1) {
-				menuItem.setAttribute('href', href);
-				menuItem.removeClass('disabled');
-				return;
-			} 
-		} catch(e){	}
+		if (uuid) {	// set from cookie
+			href = 'http://'+window.location.host + '/stories/story/' + uuid + '?page=last'
+			menuItem.setAttribute('href', href);
+			menuItem.removeClass('disabled');
+			return;
+		}
 		
-		try{ // new STORY_ID, has not been saved yet. try from title
-			if (STORY_ID) {
-				menuItem.originalTitle = menuItem.originalTitle || menuItem.get('title');
-				menuItem.set('title', menuItem.originalTitle + " Don't forget to click Save if this is the first page of your Story.");
-				menuItem.removeClass('disabled');
-				return;
-			} 
-		}catch(e){}
+		if (STORY_ID) {
+			menuItem.originalTitle = menuItem.originalTitle || menuItem.get('title');
+			menuItem.set('title', menuItem.originalTitle + " Don't forget to click Save if this is the first page of your Story.");
+			menuItem.removeClass('disabled');
+			return;
+		} 
+		
+		// default 
 		menuItem.addClass('disabled');
 	};			
 	MenuItems.play_click = function(menuItem, menu){

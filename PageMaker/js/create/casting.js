@@ -13,6 +13,7 @@
  *
  */
 (function(){
+	if (SNAPPI.PM && typeof SNAPPI.PM.Casting !== 'undefined') return; 	// firefox/firebug 1.9.1 bug
 	/*
      * shorthand
      */
