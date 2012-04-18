@@ -9,7 +9,7 @@
  * configure SNAPPI.PM.util namespace as use singleton pattern
  */
 (function(){
-	if (typeof SNAPPI.PM.Util !== 'undefined') return; 	// firefox/firebug 1.9.1 bug
+	if (SNAPPI.PM && typeof SNAPPI.PM.util !== 'undefined') return; 	// firefox/firebug 1.9.1 bug
     /*
      * shorthand
      */
@@ -20,7 +20,7 @@
 	PM.onYready.Util = function(Y){
 		if (_Y === null) _Y = Y;
 	}
-        SNAPPI.PM.util = {
+        PM.util = {
             /*
              * CONSTANTS
              */
@@ -196,7 +196,7 @@
                 	},
                     complete: function(status, resp, arguments){
                         if (resp.statusText == "OK" || resp.statusText == "CREATED") {
-console.log("saveStory complete: statusText="+resp.statusText) ;                       	
+// console.log("saveStory complete: statusText="+resp.statusText) ;                       	
                             // if (cfg.success) cfg.success(arguments);
                         }
                     },

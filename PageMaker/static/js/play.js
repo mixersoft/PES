@@ -267,7 +267,6 @@
 						}
 					}
 				}, this);
-console.warn('init, page='+i);	
 				// scale photos on each page to target height or width
 				this.scale( {
 					w : containerW,
@@ -347,11 +346,31 @@ console.warn('init, page='+i);
 				}
 			}
 		},
-
+		isPageLoaded : function(loading){
+			loading.all('img').some(function(n,i,l){
+				if (!n.get('naturalHeight')) {
+					done = false;
+					return true;	// break .some()
+				}
+				done = true;
+			});
+			return done;
+		},
+		loadPageImages : function(page) {
+			page = page || this;
+			page.all('img').each(function(photo) {
+				var src = photo.getAttribute('qsrc');
+				if (src) {
+					photo.setAttribute('src', src);
+					photo.setAttribute('qsrc', '');
+				}
+			});
+		},
 		/*
 		 * called on next page click
 		 */
 		showPage : function(index) {
+			if (index < 0 || index > _totalPages-1) return;
 			if (!this.isPreview) {
 				this.container.one('#pagenum').set('innerHTML',
 						(index + 1) + "/" + (_totalPages));
@@ -367,31 +386,39 @@ console.warn('init, page='+i);
 
 			var pages = this.content.all('div.pageGallery');
 			pages.each(function(page, i) {
-				if (page.get('id') == 'share')
-					return;
+				if (page.get('id') == 'share') 	return;
+				 
 				if (i == index) {
-					if (CONFIG.DEFER_IMG_LOAD) {
-						page.all('img').each(function(photo) {
-							var src = photo.getAttribute('qsrc');
-							if (src) {
-								photo.setAttribute('src', src);
-								photo.setAttribute('qsrc', '');
-							}
-						});
-					}
+					if (CONFIG.DEFER_IMG_LOAD) this.loadPageImages(page);
 					page.removeClass('hidden').removeClass('hide');
-				} else {
-					page.addClass('hide');
+					return;
+				} else if (i == index+1) {
+					// pre-load next page
+					if (CONFIG.DEFER_IMG_LOAD) {
+						var cancel = _Y.later(2000, this, function(page){
+							var loading = pages.item(index);
+							if (this.isPageLoaded(loading)) {
+								this.loadPageImages(page);
+								cancel.cancel();
+							}
+						}, page, true);
+					}
 				}
+				page.addClass('hide');
 			}, this);
 		},
-		handlePageClick: function(e) {
-			var button = _Y.Lang.isString(e) ? _Y.one('#'+e) : e.currentTarget;
-			if (button.hasClass('disabled')) return;
-			switch (button.get('id')) {
+		handlePageClick: function(e, direction) {
+			if (!direction) {
+				var button = _Y.Lang.isString(e) ? _Y.one('#'+e) : e.currentTarget;
+				if (button.hasClass('disabled')) return;
+				direction = button.get('id');
+			}
+			switch (direction) {
+				case 'prev':
 				case 'prevPage':
 					this.showPage(--_pageIndex);
 					break;		
+				case 'next':	
 				case 'nextPage':
 					this.showPage(++_pageIndex);
 					break;
@@ -620,7 +647,7 @@ console.warn('winresize');
 			} catch (e) {
 				pageRect = _Y.Node.getDOMNode(page);
 			}
-console.warn("pageRect="+ pageRect.W +':'+ pageRect.H);			
+// console.warn("pageRect="+ pageRect.W +':'+ pageRect.H);			
 			if (cfg.w && cfg.h && (cfg.h / cfg.w > pageRect.H / pageRect.W)) {
 				delete cfg.h;  	// use cfg.w as bound, all pages same width
 			} else {
@@ -758,23 +785,21 @@ console.warn("pageRect="+ pageRect.W +':'+ pageRect.H);
 		keyAccelerate : function(e) {
 			if (!this.container.one("#centerbox").hasClass('hide')) {
 				// change Photo
-				e.preventDefault();
 				var charStr = e.charCode + '';
 				if (charStr.search(this.cfg.charCode.nextPatt) == 0) {
-					this.nextPhotoClick();
+					this.nextPhotoClick(); e.preventDefault();
 				} else if (charStr.search(this.cfg.charCode.prevPatt) == 0) {
-					this.prevPhotoClick();
+					this.prevPhotoClick(); e.preventDefault();
 				} else if (charStr.search(this.cfg.charCode.closePatt) == 0) {
-					this.closeLightBox();
+					this.closeLightBox(); e.preventDefault();
 				}
 			} else // change pages
 			{
-				e.preventDefault();
 				var charStr = e.charCode + '';
 				if (charStr.search(this.cfg.charCode.nextPatt) == 0) {
-					this.nextPageClick();
+					this.handlePageClick(e, 'next'); e.preventDefault();
 				} else if (charStr.search(this.cfg.charCode.prevPatt) == 0) {
-					this.prevPageClick();
+					this.handlePageClick(e, 'prev'); e.preventDefault();
 				}
 			}
 		},		
