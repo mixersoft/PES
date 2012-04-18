@@ -74,6 +74,7 @@
 		// server conde
 		FOOTER_H : 142, // based on HTML markup
 		MARGIN_W : 22,
+		DEFER_IMG_LOAD: true,		// delay IMG load by moving IMG.src => IMG.qsrc
 		layout : {
 			centerBoxW : 480,
 			centerBoxH : 480
@@ -219,13 +220,19 @@
 			}
 			this.indexedPhotos = this.indexPhotos();
 
-			_totalPages = 0;
-			var offset, origRect, 
+			var offset, origRect, pageNo,
 				pages = this.content.all('div.pageGallery');
+			
+			pageNo = _getFromQs('page') || 1;
+			_totalPages = pages.size();
+			if (pageNo == 'last') {
+				pageNo = _totalPages
+				_pageIndex = pageNo - 1; // zero based index
+			} else _pageIndex = pageNo-1;
+				
 			pages.each(function(page, i) {
 				if (page.get('id') == 'share')
 					return;
-				_totalPages++;
 
 				if (page.hasClass('hide')) {
 					page.removeClass('hide');
@@ -238,28 +245,7 @@
 					H : _px2i(page.getStyle('height'))
 				};
 				if (this.isPreview) {
-					if (page.hasClass('hide')) {
-						page.addClass('hidden');
-						page.removeClass('hide');
-						var restoreHide = true;
-					}
-					// need to get layout info for this page
 					offset={X:0,Y:0};	// use position:relative for this.content
-					if (restoreHide) {
-						page.addClass('hide');
-						page.removeClass('hidden');
-					}
-									
-					// page.addClass('hidden');
-					// page.removeClass('hide');
-					// // need to get layout info for this page
-					// offset = {
-						// X : page.get('offsetLeft'),
-						// Y : page.get('offsetTop')
-					// };
-					// origRect = _Y.merge(origRect, offset);
-					// page.addClass('hide');
-					// page.removeClass('hidden');
 				}
 				page.origRect = origRect;
 
@@ -273,32 +259,24 @@
 						H : _px2i(photo.getStyle('height'))
 					};
 					photo.origRect = origRect;
+					if (CONFIG.DEFER_IMG_LOAD && i+1 != pageNo) {
+						var src = photo.getAttribute('src');
+						if (src) {
+							photo.setAttribute('qsrc', src);
+							photo.setAttribute('src', '');
+						}
+					}
 				}, this);
-
+console.warn('init, page='+i);	
 				// scale photos on each page to target height or width
-				try {
-					var pageRect = page.origRect;
-				} catch (e) {
-					pageRect = _Y.Node.getDOMNode(page);
-				}
-				if (containerH / containerW > pageRect.H / pageRect.W) {
-					this.scale( {
-						w : containerW,
-						element : page
-					});
-				} else {
-					this.scale( {
-						h : containerH,
-						element : page
-					});
-				}
+				this.scale( {
+					w : containerW,
+					h: containerH,
+					node: page
+				});
 			}, this);
 
-			var pageNo = _getFromQs('page') || 1;
-			if (pageNo == 'last') {
-				pageNo = _totalPages;
-				_pageIndex = pageNo - 1; // zero based index
-			} else if (parseInt(pageNo)) _pageIndex = parseInt(pageNo)-1;
+			
 			if (this.isPreview) {
 				this.showPage(pageNo - 1);
 				this.startListeners();
@@ -392,6 +370,15 @@
 				if (page.get('id') == 'share')
 					return;
 				if (i == index) {
+					if (CONFIG.DEFER_IMG_LOAD) {
+						page.all('img').each(function(photo) {
+							var src = photo.getAttribute('qsrc');
+							if (src) {
+								photo.setAttribute('src', src);
+								photo.setAttribute('qsrc', '');
+							}
+						});
+					}
 					page.removeClass('hidden').removeClass('hide');
 				} else {
 					page.addClass('hide');
@@ -495,7 +482,9 @@
 		showPhoto : function(photo, animate) {
 			var animation = this.cfg.animation;
 			var img = this.container.one("#centerbox > img");
-			var src = _stripCrop(photo.img.get('src'));
+			var src = photo.img.get('src');
+			if (!src) src = photo.img.get('qsrc')
+			_stripCrop(src);
 			var isCached = _isSrcCached(src);
 			var _animateOnDelta = function(){
 				var dim = _getNaturalDim(img, animation);
@@ -596,30 +585,47 @@
 					page.addClass('hidden');	// cant get offsets with page.hide
 				}
 				if (page.get('id') != "share") {
-					var pageRect = {
-						W : _px2i(page.getStyle('width')),
-						H : _px2i(page.getStyle('height'))
-					};
-					if (containerH / containerW > pageRect.H / pageRect.W) {
-						this.scale( {
-							w : containerW,
-							element : page
-						});
-					} else {
-						this.scale( {
-							h : containerH,
-							element : page
-						});
-					}
+console.warn('winresize');					
+					this.scale( {
+						w : containerW,
+						h: containerH,
+						node: page
+					});
+					// var pageRect = {
+						// W : _px2i(page.getStyle('width')),
+						// H : _px2i(page.getStyle('height'))
+					// };
+					// if (containerH / containerW > pageRect.H / pageRect.W) {
+						// this.scale( {
+							// w : containerW,
+							// element : page
+						// });
+					// } else {
+						// this.scale( {
+							// h : containerH,
+							// element : page
+						// });
+					// }
 				}
 			}, this);
 			this.showPage(_pageIndex);
-			if (e) PM.pageMakerPlugin.external_Y.fire('snappi-pm:resize', this, containerH);
+			if (e && PM.pageMakerPlugin) PM.pageMakerPlugin.external_Y.fire('snappi-pm:resize', this, containerH);
 		},
 
 		scale : function(cfg) {
 			var nativeMaxRes, MAX_HEIGHT = this.cfg.NATIVE_PAGE_GALLERY_H;
-			var page = cfg.element;
+			var pageRect, page = cfg.node;		// deprecate cfg.element
+			try {
+				pageRect = page.origRect;
+			} catch (e) {
+				pageRect = _Y.Node.getDOMNode(page);
+			}
+console.warn("pageRect="+ pageRect.W +':'+ pageRect.H);			
+			if (cfg.w && cfg.h && (cfg.h / cfg.w > pageRect.H / pageRect.W)) {
+				delete cfg.h;  	// use cfg.w as bound, all pages same width
+			} else {
+				delete cfg.w;  	// use cfg.h as bound, all pages same height
+			}
 
 			var scale, ratio_w = 0, ratio_h = 0;
 			var offset, origRect = page.origRect;
@@ -646,18 +652,19 @@
 				backgroundColor : 'lightgray'
 			});
 			if (this.isPreview) {
-				// get actual offset AFTER scaled size is set
-				if (page.hasClass('hide')) {
-					page.addClass('hidden');
-					page.removeClass('hide');
-					var restoreHide = true;
-				}
-				// need to get layout info for this page
 				offset={X:0,Y:0};	// space for preview offset
-				if (restoreHide) {
-					page.addClass('hide');
-					page.removeClass('hidden');
-				}
+				// // get actual offset AFTER scaled size is set
+				// if (page.hasClass('hide')) {
+					// page.addClass('hidden');
+					// page.removeClass('hide');
+					// var restoreHide = true;
+				// }
+				// need to get layout info for this page
+				// offset={X:0,Y:0};	// space for preview offset
+				// if (restoreHide) {
+					// page.addClass('hide');
+					// page.removeClass('hidden');
+				// }
 			}
 			// scale photos relative to original layout
 			var photos = page.all("img");
@@ -824,9 +831,9 @@
 					player.init();
 				},'#content > div:first-child', this )
 
-				_Y.on("domready", function() {
-					player.init();
-				});
+				// _Y.on("domready", function() {
+					// player.init();
+				// });
 			}
 		});
 	}
