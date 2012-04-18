@@ -367,6 +367,14 @@
     
     var _handle_VisibleChange = function(e){
 		if (e.newVal == true && e.prevVal==false) {
+			// check for inactivity time against global
+			var inactivity_ms = new Date().getTime() - SNAPPI.last_action_ms;
+			if (inactivity_ms < this.get('showDelay')) {
+				hint.clearIntervals();
+				hint.set('showDelay', this.get('showDelay'));
+				return;
+			}
+			
 			// this == hint
 			// var trigger = e.currentTarget._cfg.trigger;
 			var triggerNode = this.get('currentNode');
@@ -415,7 +423,7 @@
 		if (hint.get('visible')) return false; 			// skip if visible
 		if (_sleep_status.later) {
 			_sleep_status.later.cancel();
-// console.warn('resetting hint delay SLEEP timer on click');			
+console.warn('resetting hint delay SLEEP timer on click');			
 			_sleep_status.later = _Y.later( _sleep_status['time'], hint, 
 				function(e){
 					hint.set('trigger', hint.triggers.join(',') );
@@ -425,6 +433,7 @@
 				}	
 			);
 		} else {
+			// TODO: is this ALREADY handled in _handle_VisibleChange(), SNAPPI.last_action_ms
 			hint.clearIntervals();
 			hint.set('showDelay', hint.get('showDelay'));
 		}
@@ -603,7 +612,7 @@
     		hint.listen = {};
     		hint.listen['visibleChange'] = hint.on('visibleChange', _handle_VisibleChange, hint);
     		hint.listen['any-click'] = _Y.on('click', function(e, hint){
-// console.log("hint any-click");    			
+console.log("hint any-click");    			
     			if (_handle_clickOutside(e, hint) == false) {
     				_handle_ResetDelayTimer(e, hint);
     			}

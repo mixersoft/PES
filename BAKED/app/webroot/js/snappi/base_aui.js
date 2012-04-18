@@ -12,6 +12,15 @@
         Y = Y || _Y || SNAPPI.Y;
         
         SNAPPI.mergeSessionData();
+        
+        _Y.on('click', function(e){
+// console.log("global any-click");    
+			SNAPPI.last_action_ms = new Date().getTime();			
+		}, document);
+		_Y.on('contextmenu', function(e){
+// console.log("global any-click");    
+			SNAPPI.last_action_ms = new Date().getTime();			
+		}, document);
 
         SNAPPI.MenuAUI.initMenus();
 
@@ -183,7 +192,7 @@
 	 * force static host to snappi-cn for these conditions, usually 10.1.2.207
 	 */
 	if (window.location.host.match( /10\.1\.2\./i )) Config.staticHost.FORCE_HOST = window.location.host;
-	if (window.location.host.match( /aws\.snaphappi\.com/i )) Config.staticHost.FORCE_HOST = '10.1.2.207';
+	if (window.location.host.match( /aws\.snaphappi\.com/i )) Config.staticHost.FORCE_HOST = '10.1.2.210';
 	/*
 	 * end force static host
 	 */

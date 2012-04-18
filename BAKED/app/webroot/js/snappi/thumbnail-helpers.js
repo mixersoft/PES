@@ -78,6 +78,7 @@
 		e.halt();	// intercepts/stops A.click action
 	};
 	MultiSelect.multiSelectHandler = function(e) {
+		SNAPPI.last_action_ms = new Date().getTime();
 		var active, target = e.target;
 		active = (_Y.UA.os == "macintosh") ? (e.metaKey || e.shiftKey) : (e.ctrlKey || e.shiftKey)
 		if (!active) {
