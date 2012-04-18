@@ -24,9 +24,9 @@
 			?>
 			</div>
 		<div class="wrap-v">
-			<div class="alpha prefix_1 grid_1"><a href='http://www.spreadfirefox.com/?q=affiliates&id=0&t=68'><img src='/img/providers/firefox.png'></a></div>	
-			<div class="prefix_1 grid_1"><a href='http://www.google.com/chrome'><img src='/img/providers/chrome.png'></a></div>
-			<div class="prefix_1 grid_1 "><a href='http://www.apple.com/safari/download/'><img src='/img/providers/safari.png'></a></div>	
+			<div class="alpha prefix_1 grid_1"><a href='http://www.spreadfirefox.com/?q=affiliates&id=0&t=68'><img src='/static/img/providers/firefox.png'></a></div>	
+			<div class="prefix_1 grid_1"><a href='http://www.google.com/chrome'><img src='/static/img/providers/chrome.png'></a></div>
+			<div class="prefix_1 grid_1 "><a href='http://www.apple.com/safari/download/'><img src='/static/img/providers/safari.png'></a></div>	
 		</div>
 	</div>
 </section>

@@ -8,10 +8,10 @@
         </p>
         <h3>Connect to your account at:</h3>
         <div id='provider-list' class='center'>
-        	<a href='/provider_accounts/view/src:snappi?autocreate=1'><img title='grab your photos from Snaphappi' src='/img/providers/snappi.png'></a>
-            <a href='/flickr/connect?auth=1'><img title='grab your photos from flickr' src='/img/providers/flickr.png'></a>
-			<img title='grab your photos from picasaweb (not yet implemented)' src='/img/providers/picasaweb-disabled.png'>
-			<img title='grab your photos from facebook (not yet implemented)' src='/img/providers/fb-disabled.png'>
+        	<a href='/provider_accounts/view/src:snappi?autocreate=1'><img title='grab your photos from Snaphappi' src='/static/img/providers/snappi.png'></a>
+            <a href='/flickr/connect?auth=1'><img title='grab your photos from flickr' src='/static/img/providers/flickr.png'></a>
+			<img title='grab your photos from picasaweb (not yet implemented)' src='/static/img/providers/picasaweb-disabled.png'>
+			<img title='grab your photos from facebook (not yet implemented)' src='/static/img/providers/fb-disabled.png'>
         </div><h2>Try our Sample Album</h2>
         <p>
             Or, if you just want a quick demo of our service, feel free to play with photos from our sample photo album.
