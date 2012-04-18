@@ -293,13 +293,19 @@
 					this.container.one('#glass > div#bottom').setStyle('opacity', 0.7);
 					this.container.one('#glass > .loading').remove();					
 				} catch (e) {}
-
+				
+				// get sharethis script after done loading first page
+				var cancel = _Y.later(2000, this, function(){
+					var loading = pages.item(_pageIndex);
+					if (this.isPageLoaded(loading)) {
+						try {
+							cancel.cancel();
+							this.load_ShareThisScripts();
+						} catch (e){}
+					}
+				}, null, true);
 			}
-			try {
-				_Y.one('div.sharethis').removeClass('hide');	
-			} catch (e){}
 		},
-
 		startListeners : function(start) {
 			if (start === false) {
 				this.stopListeners();
@@ -356,7 +362,10 @@
 			});
 			return done;
 		},
-		loadPageImages : function(page) {
+		/**
+		 * load deferred IMG on pageGallery by setting IMG.src from IMG.qsrc
+		 */
+		load_DeferredPageImages : function(page) {
 			page = page || this;
 			page.all('img').each(function(photo) {
 				var src = photo.getAttribute('qsrc');
@@ -365,6 +374,15 @@
 					photo.setAttribute('qsrc', '');
 				}
 			});
+		},
+		load_ShareThisScripts : function(){
+			var sharethis = ["http://w.sharethis.com/button/buttons.js"];
+			var switchTo5x=false;
+			_Y.Get.script(sharethis, {onSuccess : function() {
+			    stLight.options({publisher: "ur-1fda4407-f1c8-d8ff-b0bd-1f1ff46eeb72"});
+			    var check;
+			}});
+			_Y.one('div.sharethis').removeClass('hide');
 		},
 		/*
 		 * called on next page click
@@ -389,7 +407,7 @@
 				if (page.get('id') == 'share') 	return;
 				 
 				if (i == index) {
-					if (CONFIG.DEFER_IMG_LOAD) this.loadPageImages(page);
+					if (CONFIG.DEFER_IMG_LOAD) this.load_DeferredPageImages(page);
 					page.removeClass('hidden').removeClass('hide');
 					return;
 				} else if (i == index+1) {
@@ -398,7 +416,7 @@
 						var cancel = _Y.later(2000, this, function(page){
 							var loading = pages.item(index);
 							if (this.isPageLoaded(loading)) {
-								this.loadPageImages(page);
+								this.load_DeferredPageImages(page);
 								cancel.cancel();
 							}
 						}, page, true);
@@ -823,7 +841,7 @@ console.warn('winresize');
 			};
 		}
 
-		YUI(PM.yuiConfig.yui).use("event-delegate", "node", "anim",
+		YUI(PM.yuiConfig.yui).use("event-delegate", "node", "anim", "get",
 		/*
 		 * yui callback
 		 */
@@ -855,10 +873,6 @@ console.warn('winresize');
 				_Y.on('contentready', function(e){
 					player.init();
 				},'#content > div:first-child', this )
-
-				// _Y.on("domready", function() {
-					// player.init();
-				// });
 			}
 		});
 	}

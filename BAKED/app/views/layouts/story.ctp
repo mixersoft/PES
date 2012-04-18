@@ -6,7 +6,7 @@
 <html>
     <head>
         <!--[if IE]><style> img {behavior: url(/app/pagemaker/static/js/fixnaturalwh.htc)}</style><![endif]-->
-        <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge" /><![endif]-->
+        <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=9">[endif]-->
         <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
 		<title>
 			<?php echo $title_for_layout; ?>
@@ -24,8 +24,5 @@
 <?php if (empty($this->params['url']['iframe'])) {
 	 echo $this->element('analytics'); 
 ?>
-<!--  share this  -->
 <script type="text/javascript">var switchTo5x=false;</script>
-<script type="text/javascript" src="http://w.sharethis.com/button/buttons.js"></script>
-<script type="text/javascript">stLight.options({publisher: "ur-1fda4407-f1c8-d8ff-b0bd-1f1ff46eeb72"}); </script>
-<?php } ?>
+<?php  }  ?>
