@@ -32,9 +32,13 @@
  	<?php foreach ($page_gallery as $row) {
 		echo $row;
 	} ?> 
-	<?php if (!$isPreview && $link) { ?>
+	<?php if (!$isPreview && $link) { 
+			if (!empty($this->params['url']['iframe'])) {
+				$href = "javascript:parent.window.location.href='{$link}';";
+			} else $href = $link;
+	?>
 		<div id="share">Share this story: <a id="share-link" href="<?php
-		echo $link ?>"><?php echo $link ?></a>
+		echo $href ?>"><?php echo $link ?></a>
 		</div>
 	<?php } ?>
 </div>
