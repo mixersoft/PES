@@ -1,0 +1,255 @@
+body {
+	background: url("/static/img/css-gui/snappi-top.png") no-repeat scroll 8px -150px black;
+}
+/* http://nicolasgallagher.com/micro-clearfix-hack/ */
+/* For modern browsers */
+.cf:before,
+.cf:after {
+    content:"";
+    display:table;
+}
+.cf:after {
+    clear:both;
+}
+/* For IE 6/7 (trigger hasLayout) */
+.cf {
+    zoom:1;
+}
+.left {
+	float: left;
+}
+.right {
+	float: right;
+}
+.center {
+	text-align: center;
+}
+
+/*
+ * use Y.Node.toggleClass() to show/hide
+ */
+.hide {
+    display: none;
+}
+
+.hidden {
+    visibility: hidden;
+}
+
+.disabled {
+    color: gray;
+}
+#glass {
+    position: absolute;
+    margin: 0 auto;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 90;
+	overflow:hidden;
+	cursor: pointer;
+}
+
+#glass > div.loading {
+    background: black url('/static/img/css-pm/ajax-loading-img-hg.black.gif') center center no-repeat;
+    width: 100%;
+    height: 100%;
+}
+
+#glass > div#bottom {
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    z-index: 91;
+    opacity: 0;
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=70)";
+	filter: alpha(opacity=70);		
+    background-color: black;
+}
+
+#centerbox {
+    top: 100px;
+    width: 480px;
+    min-height: 480px;
+    background: url('/static/img/css-pm/ajax-loading-img-hg.gif') #ffffff center no-repeat;
+    margin: auto;
+    position: relative;
+    z-index: 100;
+    border: solid 1px #FFFFFF;
+	overflow:hidden;
+}
+
+/*
+ * copied from slimbox2.css, renamed to prevPhoto/nextPhoto
+ */
+#prevPhoto, #nextPhoto {
+    display: block;
+    position: absolute;
+    z-index: 120;
+    top: 30px;
+    width: 50%;
+    height: 100%;
+    outline: none;
+    cursor: pointer;
+}
+#prevPhoto.hide, #nextPhoto.hide {
+	display: none;
+} 
+
+#prevPhoto {
+    left: 0;
+}
+
+#prevPhoto:hover {
+    background: transparent url('/static/img/css-pm/prevlabel.gif') no-repeat 0 15%;
+}
+
+#nextPhoto {
+    right: 0;
+}
+
+#nextPhoto:hover{
+    background: transparent url('/static/img/css-pm/nextlabel.gif') no-repeat 100% 15%;
+}
+
+#prevPage {
+    
+    display: inline;
+    
+}
+
+#prevPage, #nextPage {
+	cursor: pointer;
+	display: inline-block;
+	line-height: 28px;
+	width: 63px;
+	height: 28px;
+} 
+#prevPage.disabled, #nextPage.disabled {
+		opacity: 0.5;
+		cursor: default;
+}
+#prevPage {
+	-webkit-border-radius: 5px 0 0 5px ;
+	-moz-border-radius: 5px 0 0 5px ;
+	padding: 0 20px 0 50px;
+	background: transparent url('/static/img/css-pm/prevlabel.gif') no-repeat left;	
+}
+#nextPage {
+	padding: 0 50px 0 20px;
+	-webkit-border-radius: 0 5px 5px 0;
+	-moz-border-radius: 0 5px 5px 0;
+	background: transparent url('/static/img/css-pm/nextlabel.gif') no-repeat right;	
+} 
+#closeBox {
+    height: 30px;
+    width: 100%;
+    background-color: #ffffff;
+    background: transparent url('/static/img/css-pm/closelabel.gif') no-repeat right;
+    background-position: 97%;
+    z-index: 130;
+	margin: 0;
+}
+
+#lightBoxPhoto {
+    z-index: 110;
+}
+
+a:link, a:visited {
+    text-decoration: none;
+}
+div#header {
+	height:38px;
+	margin:0;
+}
+div#header div, div#footer div, div#share div  {
+	color: white;
+    text-align: center;
+    vertical-align:middle;
+    margin: 3px;
+    font-family: arial;
+}
+div#paging {
+    display: inline-block;
+    left: 0;
+    position: absolute;
+    text-shadow: none;
+    top: 6px;
+    width: 100%;
+    height: 32px;
+}
+div#paging > div {
+	text-align: center;
+	width: 318px;
+	margin: 0 auto;
+}
+
+div.sharethis {
+	height: 32px;
+}
+
+div.scroll-wrap {
+	overflow-x: scroll;
+}
+div#content {
+    margin: 0 3px;
+    min-height: 200px;
+    z-index: 10;
+}
+div.page-wrap {
+	overflow: hidden;
+	display: inline;
+	float: left;
+}
+
+div.pageGallery {
+    position: relative;
+}
+
+div.pageGallery > img, div.pageGallery figure > img  {
+	position: absolute;
+	cursor: pointer;
+	border-spacing: 2px;
+	border-style: solid;
+	border-color: transparent;
+
+}
+
+div#share {
+    margin: 20px;
+    font-size: 10pt;
+    text-align: center;
+    vertical-align:middle;    
+}
+
+a#share-link:link, a#share-link:visited {
+    color: yellow;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.error-page-gallery {
+    color: white;
+    border: red 1px solid;
+    margin: 20% 20% 20% 20%;
+    padding: 20px;
+    text-align: center;
+    font-size: 1.4em;
+}
+
+#footer {
+    margin: 10px auto;
+    color: white;
+    text-align: center;
+    vertical-align:middle;    
+}
+#footer a {
+	display: block;
+}
+#footer img {
+	border: none;
+}
