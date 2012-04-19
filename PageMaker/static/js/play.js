@@ -376,11 +376,13 @@
 			});
 		},
 		load_ShareThisScripts : function(){
+			var publisherId = 'ur-1fda4407-f1c8-d8ff-b0bd-1f1ff46eeb72';
+			var markup = '<script type="text/javascript">var switchTo5x=false;</script>';
+			_Y.one('head').append(markup);
 			var sharethis = ["http://w.sharethis.com/button/buttons.js"];
-			var switchTo5x=false;
-			_Y.Get.script(sharethis, {onSuccess : function() {
-			    stLight.options({publisher: "ur-1fda4407-f1c8-d8ff-b0bd-1f1ff46eeb72"});
-			    var check;
+			_Y.Get.script(sharethis, {onSuccess : function(e) {
+			    stLight.options({publisher: publisherId });
+			    // stLight.onReady();
 			}});
 			_Y.one('div.sharethis').removeClass('hide');
 		},

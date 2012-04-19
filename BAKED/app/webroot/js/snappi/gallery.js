@@ -1796,4 +1796,3 @@
     };
     
 })();
-console.warn("XXX: complete load gallery.js");
