@@ -425,8 +425,6 @@
 
 			var pages = this.content.all('div.pageGallery');
 			pages.each(function(page, i) {
-				if (page.get('id') == 'share') 	return;
-				 
 				if (i == index) {
 					if (CONFIG.DEFER_IMG_LOAD) this.load_DeferredPageImages(page);
 					page.removeClass('hidden').removeClass('hide');

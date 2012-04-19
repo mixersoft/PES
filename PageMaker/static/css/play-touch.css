@@ -218,6 +218,9 @@ div.pageGallery > img, div.pageGallery figure > img  {
 	border-color: transparent;
 
 }
+.yui3-scrollview-child {
+	background-color: #888;
+}
 
 div#share {
     margin: 20px;
@@ -246,6 +249,7 @@ a#share-link:link, a#share-link:visited {
     color: white;
     text-align: center;
     vertical-align:middle;    
+    font-family: arial;
 }
 #footer a {
 	display: block;

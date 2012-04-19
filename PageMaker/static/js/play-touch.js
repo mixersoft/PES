@@ -72,7 +72,7 @@
 		// is
 		// determined in the
 		// server conde
-		FOOTER_H : 87, //142, // based on HTML markup
+		FOOTER_H : 87 + 75, //FOOTER_H=67+scrollH=20+75, // based on HTML markup
 		MARGIN_W : 22,
 		DEFER_IMG_LOAD: true,		// delay IMG load by moving IMG.src => IMG.qsrc
 		layout : {
@@ -85,6 +85,10 @@
 			boxH : 40,
 			boxAnimH : 37
 		},
+		flick: {
+	        minDistance:10,
+	        minVelocity:0.3,
+	    },
 		charCode : {
 			nextPatt : /(^110$)|(^39$)|(^32$)|(^54$)/, // n,right,space,
 			// keypad right
@@ -194,6 +198,7 @@
 		cfg = cfg || {};
 		this.container = null; 		// outer node, default 'BODY'
 		this.content = null;		// child of this.container, parent of .pageGallery
+		this.scrollView = null;		// scrollView class for touch scrolling
 		_Y = cfg.Y || PM.Y;		// check: external_Y from Plugin instance
 		cfg = _Y.merge(CONFIG, cfg);
 		try {	// set container, content nodes
@@ -292,6 +297,10 @@
 			}, this);
 
 			this.scrollWrap(this.content);
+			this.addScrollView({
+				srcNode: '#content',
+				width: containerRect.W,
+			});
 			
 			if (this.isPreview) {
 				this.showPage(pageNo - 1);
@@ -368,6 +377,46 @@
 			}
 			// move share to footer
 			_Y.one('#footer').prepend(scrollContent.one('#share-link'));
+		},
+		/*
+		 * add YUI3 ScrollView class for touch scrolling
+		 */
+		addScrollView : function(cfg) {
+			cfg = _Y.merge(this.cfg,cfg);
+			
+			var scrollview = new _Y.ScrollView({
+		        srcNode: cfg.srcNode,
+		        width: cfg.width,
+		        flick: {
+			        minDistance: cfg.flick.minDistance,
+			        minVelocity: cfg.flick.minVelocity,
+			        axis: cfg.width ? 'x' : 'y'
+			    }
+		    });
+		    /* Plug in pagination support */
+		    scrollview.plug(_Y.Plugin.ScrollViewPaginator, {
+		        selector: ".page-wrap" // elements definining page boundaries
+		    });
+		    // update page
+		    scrollview.pages.after('indexChange', function(e){
+		    	_pageIndex = e.newVal;
+		    	this.showPage(e.newVal);
+		    }, this);
+		    scrollview.render();
+		    
+		    // prevent click after a flick, move to this.activateLightBox()
+		    // this.content.delegate("click", function(e) {
+			    // // Prevent links from navigating as part of a scroll gesture
+			    // if (Math.abs(this.scrollview.lastScrolledAmt) > 2) {
+			        // e.preventDefault();
+			    // }
+			// }, "a", this);
+		    
+		    // Prevent default image drag behavior
+		    scrollview.get("contentBox").delegate("mousedown", function(e) {
+		        e.preventDefault();
+		    }, "img");
+		    this.scrollview = scrollview;
 		},
 		startListeners : function(start) {
 			if (start === false) {
@@ -475,8 +524,6 @@
 
 			var pages = this.content.all('div.pageGallery');
 			pages.each(function(page, i) {
-				if (page.get('id') == 'share') 	return;
-				 
 				if (i == index) {
 					if (CONFIG.DEFER_IMG_LOAD) this.load_DeferredPageImages(page);
 					page.removeClass('hidden').removeClass('hide');
@@ -493,7 +540,6 @@
 						}, page, true);
 					}
 				}
-				// page.addClass('hide');
 			}, this);
 		},
 		handlePageClick: function(e, direction) {
@@ -505,11 +551,11 @@
 			switch (direction) {
 				case 'prev':
 				case 'prevPage':
-					this.showPage(--_pageIndex);
+					this.scrollview.pages.prev();
 					break;		
 				case 'next':	
 				case 'nextPage':
-					this.showPage(++_pageIndex);
+					this.scrollview.pages.next();
 					break;
 			}
 		},
@@ -535,6 +581,11 @@
 		/* Called on click of a photo */
 
 		activateLightBox : function(e) {
+			// Prevent activation as part of a scroll gesture
+		    if (Math.abs(this.scrollview.lastScrolledAmt) > 2) {
+		        e.preventDefault();
+		        return;
+		    }
 			if (this.container.one("#centerbox").get('clientHeight')>0)
 				return;
 			var target = e.target;
@@ -874,7 +925,10 @@
 			};
 		}
 
-		YUI(PM.yuiConfig.yui).use("event-delegate", "node", "anim", "get",
+		YUI(PM.yuiConfig.yui).use("event-delegate", "node", "anim", "get", 
+			"scrollview-base", 
+			"scrollview-paginator",
+			// "scrollview-scrollbars",  // bug in webkit rendering
 		/*
 		 * yui callback
 		 */
