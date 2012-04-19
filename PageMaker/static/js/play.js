@@ -95,7 +95,12 @@
 		}
 	};
 
-	var _pageIndex = 0, _curPhotoIndex, _totalPages = 0;
+	/*
+	 * static properties
+	 */
+	var _containerRect, _pageIndex = 0, _curPhotoIndex, _totalPages = 0;
+	var _contentW, _contentH;	// for touch scrolling;
+
 	/*
 	 * helper functions
 	 */
@@ -161,6 +166,28 @@
 		}
 		return isCached;
 	};
+	
+	/**
+	 * the W,H boundaries of the container > .pageGallery 
+	 * - used for scaling the pageGallery
+	 * - works for both touch and normal layouts
+	 */
+	var _getContainerRect = function(container, cfg, force){
+		if (!force && _containerRect) return _containerRect; 
+		cfg = cfg || {};
+		_containerRect = {};
+		_containerRect.H = 0 - (cfg.FOOTER_H || 0);	// offsets
+		_containerRect.W = 0 - (cfg.MARGIN_W || 0);
+		if (container.get('tagName') == 'BODY') {
+			_containerRect.H += container.get('winHeight');
+			_containerRect.W += container.get('winWidth');
+		} else {
+			container = container.ancestor('.aui-dialog-bd') || container;
+			_containerRect.H += container.get('clientHeight');
+			_containerRect.W += container.get('clientWidth');
+		}
+		return _containerRect;
+	}
 
 	var Player = function(cfg) {
 		cfg = cfg || {};
@@ -210,14 +237,7 @@
 			}
 		},
 		init : function(e) {
-			var containerH = 0 - this.cfg.FOOTER_H, containerW = 0 - this.cfg.MARGIN_W;
-			if (this.container.get('tagName') == 'BODY') {
-				containerH += this.container.get('winHeight');
-				containerW += this.container.get('winWidth');
-			} else {
-				containerH += this.container.get('clientHeight');
-				containerW += this.container.get('clientWidth');
-			}
+			var containerRect = _getContainerRect(this.container, this.cfg);
 			this.indexedPhotos = this.indexPhotos();
 
 			var offset, origRect, pageNo,
@@ -229,7 +249,7 @@
 				pageNo = _totalPages
 				_pageIndex = pageNo - 1; // zero based index
 			} else _pageIndex = pageNo-1;
-				
+			
 			pages.each(function(page, i) {
 				if (page.get('id') == 'share')
 					return;
@@ -268,11 +288,8 @@
 					}
 				}, this);
 				// scale photos on each page to target height or width
-				this.scale( {
-					w : containerW,
-					h: containerH,
-					node: page
-				});
+				containerRect.node = page;
+				this.scale( containerRect );
 			}, this);
 
 			
@@ -376,6 +393,8 @@
 			});
 		},
 		load_ShareThisScripts : function(){
+			if (typeof _load_sharethis == 'undefined') return;
+			
 			var publisherId = 'ur-1fda4407-f1c8-d8ff-b0bd-1f1ff46eeb72';
 			var markup = '<script type="text/javascript">var switchTo5x=false;</script>';
 			_Y.one('head').append(markup);
@@ -613,17 +632,7 @@
 		 * NOTE: when deployed in "Designer", containerH != containerH
 		 */
 		winResize : function(e) {
-			var containerH = 0 - this.cfg.FOOTER_H, containerW = 0 - this.cfg.MARGIN_W;
-			if (this.container.get('tagName') == 'BODY') {
-				containerH += this.container.get('winHeight');
-				containerW += this.container.get('winWidth');
-			} else {
-				// use .aui-dialog-bd to scale .pageGallery inside stage
-				// or this.container to SCROLL .pageGallery inside stage
-				var container = this.container.ancestor('.aui-dialog-bd') || this.container;
-				containerH +=  container.get('clientHeight');
-				containerW += container.get('clientWidth');
-			}			
+			var containerRect = _getContainerRect(this.container, this.cfg, 'force');		
 			
 			var pages = this.content.all('div.pageGallery');
 			pages.each(function(page, i) {
@@ -632,27 +641,8 @@
 					page.addClass('hidden');	// cant get offsets with page.hide
 				}
 				if (page.get('id') != "share") {
-console.warn('winresize');					
-					this.scale( {
-						w : containerW,
-						h: containerH,
-						node: page
-					});
-					// var pageRect = {
-						// W : _px2i(page.getStyle('width')),
-						// H : _px2i(page.getStyle('height'))
-					// };
-					// if (containerH / containerW > pageRect.H / pageRect.W) {
-						// this.scale( {
-							// w : containerW,
-							// element : page
-						// });
-					// } else {
-						// this.scale( {
-							// h : containerH,
-							// element : page
-						// });
-					// }
+					containerRect.node = page;
+					this.scale( containerRect );
 				}
 			}, this);
 			this.showPage(_pageIndex);
@@ -668,22 +658,22 @@ console.warn('winresize');
 				pageRect = _Y.Node.getDOMNode(page);
 			}
 // console.warn("pageRect="+ pageRect.W +':'+ pageRect.H);			
-			if (cfg.w && cfg.h && (cfg.h / cfg.w > pageRect.H / pageRect.W)) {
-				delete cfg.h;  	// use cfg.w as bound, all pages same width
+			if (cfg.W && cfg.H && (cfg.H / cfg.W > pageRect.H / pageRect.W)) {
+				delete cfg.H;  	// use cfg.W as bound, all pages same width
 			} else {
-				delete cfg.w;  	// use cfg.h as bound, all pages same height
+				delete cfg.W;  	// use cfg.H as bound, all pages same height
 			}
 
 			var scale, ratio_w = 0, ratio_h = 0;
-			var offset, origRect = page.origRect;
-			if (cfg.w != undefined) {
-				ratio_w = origRect.W / cfg.w;
+			var offset, scaledRect ={}, origRect = page.origRect;
+			if (cfg.W != undefined) {
+				ratio_w = origRect.W / cfg.W;
 				nativeMaxRes = origRect.W
 						/ (MAX_HEIGHT / origRect.H * origRect.W);
 				scale = Math.max(ratio_w, ratio_h);
 			}
-			if (cfg.h != undefined) {
-				ratio_h = origRect.H / cfg.h;
+			if (cfg.H != undefined) {
+				ratio_h = origRect.H / cfg.H;
 				nativeMaxRes = (origRect.H / MAX_HEIGHT);
 				scale = Math.max(ratio_w, ratio_h);
 			}
@@ -692,33 +682,23 @@ console.warn('winresize');
 			scale = (scale > 1) ? scale : 1;
 
 			// scale pages relative to original layout
+			scaledRect.W = (origRect.W) / scale;
+			scaledRect.H = (origRect.H) / scale;
 			page.setStyles( {
 				// left, top set by CSS
-				width : (origRect.W) / scale + "px",
-				height : (origRect.H) / scale + "px",
+				width : scaledRect.W + "px",
+				height : scaledRect.H + "px",
 				backgroundColor : 'lightgray'
 			});
 			if (this.isPreview) {
 				offset={X:0,Y:0};	// space for preview offset
-				// // get actual offset AFTER scaled size is set
-				// if (page.hasClass('hide')) {
-					// page.addClass('hidden');
-					// page.removeClass('hide');
-					// var restoreHide = true;
-				// }
-				// need to get layout info for this page
-				// offset={X:0,Y:0};	// space for preview offset
-				// if (restoreHide) {
-					// page.addClass('hide');
-					// page.removeClass('hidden');
-				// }
 			}
 			// scale photos relative to original layout
 			var photos = page.all("img");
 			var border_offset, bottomRight;	// space for border width
 			photos.each(function(photo) {
 				bottomRight = bottomRight || photo;
-				var scaledRect, origRect = photo.origRect;
+				origRect = photo.origRect;
 				// +5 to compensate for rounding errors
 				if (origRect.X+origRect.W > bottomRight.origRect.X+bottomRight.origRect.W+5) bottomRight = photo;
 				if (origRect.Y+origRect.H > bottomRight.origRect.Y+bottomRight.origRect.H+5) bottomRight = photo;
