@@ -68,11 +68,10 @@
 	var CONFIG = {
 		container : 'body',
 		content : '#content',
-		NATIVE_PAGE_GALLERY_H : 800 - 82, // this height
-		// is
-		// determined in the
-		// server conde
-		FOOTER_H : 142, // based on HTML markup
+		NATIVE_PAGE_GALLERY_H : 800 - 82, // this height ????
+		// pageGallery margin = 20px
+		// wrap = 16px
+		FOOTER_H : 36, // before header, footer
 		MARGIN_W : 22,
 		DEFER_IMG_LOAD: true,		// delay IMG load by moving IMG.src => IMG.qsrc
 		layout : {
@@ -186,7 +185,7 @@
 			_containerRect.H += container.get('clientHeight');
 			_containerRect.W += container.get('clientWidth');
 		}
-		return _containerRect;
+		return _Y.merge(_containerRect); // return copy
 	}
 
 	var Player = function(cfg) {
@@ -237,6 +236,11 @@
 			}
 		},
 		init : function(e) {
+			// set cfg.FOOTER_H offset
+			try {
+				this.cfg.FOOTER_H += this.container.one('#header').get('clientHeight');
+				this.cfg.FOOTER_H += this.container.one('#footer').get('clientHeight');
+			}catch(e){}
 			var containerRect = _getContainerRect(this.container, this.cfg);
 			this.indexedPhotos = this.indexPhotos();
 
@@ -337,9 +341,6 @@
 							this
 						);
 					}
-					// if (!this.listen['prevPageClick']) this.listen['prevPageClick'] = this.container.one(
-							// '#prevPage').on('click', this.prevPageClick, this);
-					// // photo nav
 					if (!this.listen['lightbox']) {
 						this.listen['lightbox'] = this.container.one('#glass')
 							.delegate('click', this.handleLightboxClick,
@@ -648,6 +649,7 @@
 		},
 
 		scale : function(cfg) {
+			cfg = _Y.merge(cfg);	// copy
 			var nativeMaxRes, MAX_HEIGHT = this.cfg.NATIVE_PAGE_GALLERY_H;
 			var pageRect, page = cfg.node;		// deprecate cfg.element
 			try {

@@ -116,18 +116,13 @@ body {
     background: transparent url('/static/img/css-pm/nextlabel.gif') no-repeat 100% 15%;
 }
 
-#prevPage {
-    
-    display: inline;
-    
-}
-
 #prevPage, #nextPage {
-	cursor: pointer;
-	display: inline-block;
-	line-height: 28px;
-	width: 63px;
-	height: 28px;
+    display: inline-block;
+    height: 28px;
+    line-height: 32px;
+    margin: 2px auto;
+    vertical-align: middle;
+    width: 63px;
 } 
 #prevPage.disabled, #nextPage.disabled {
 		opacity: 0.5;
@@ -163,35 +158,35 @@ a:link, a:visited {
     text-decoration: none;
 }
 div#header {
-	height:38px;
+	height:32px;
 	margin:0;
 }
-div#header div, div#footer div, div#share div  {
+#header, #footer, #share {
 	color: white;
     text-align: center;
-    vertical-align:middle;
     margin: 3px;
     font-family: arial;
 }
+
 div#paging {
-    display: inline-block;
-    left: 0;
-    position: absolute;
-    text-shadow: none;
-    top: 6px;
-    width: 100%;
     height: 32px;
+    left: 0;
+    position:absolute;
+    width: 100%;
 }
 div#paging > div {
-	text-align: center;
-	width: 318px;
-	margin: 0 auto;
+	vertical-align:middle;
+	display: inline-block;
 }
-
 div.sharethis {
 	height: 32px;
 }
-
+#fullscreen {
+	cursor:pointer;
+	height: 32px;
+	right: 8px;
+    position:absolute;
+}
 div.scroll-wrap {
 	overflow-x: scroll;
 }
@@ -250,9 +245,6 @@ a#share-link:link, a#share-link:visited {
     text-align: center;
     vertical-align:middle;    
     font-family: arial;
-}
-#footer a {
-	display: block;
 }
 #footer img {
 	border: none;

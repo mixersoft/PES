@@ -35,7 +35,7 @@
 <?php 
 	$ajaxSrc = Router::url(Configure::read('passedArgs.complete') + array('action'=>'story', '?'=>array('iframe'=>1)));
 	// echo "<div id='gallery-story-xhr' class='xhr-get stage-body' xhrSrc='{$ajaxSrc}' delay='0'></div>";
-	echo "<iframe src='{$ajaxSrc}'' frameborder='0' style='overflow:hidden;' height='860' width='960'></iframe>";
+	echo "<iframe src='{$ajaxSrc}' frameborder='0'></iframe>";
 ?>
 
 </section>	
@@ -103,6 +103,10 @@
 		var Y = SNAPPI.Y;
 		SNAPPI.mergeSessionData();
 		SNAPPI.xhrFetch.init(); 
+		var iframe = Y.one('section.pagemaker-stage > iframe');
+		var h = iframe.get('winHeight')-iframe.get('offsetTop')-16; 
+		h = Math.min(800,Math.max(500,h));	// 500 < h < 800px
+		iframe.setStyle('height', h+'px');
 	};
 	try {SNAPPI.xhrFetch.fetchXhr; initOnce(); }			// run now for XHR request, or
 	catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request

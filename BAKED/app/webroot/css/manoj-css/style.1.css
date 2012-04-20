@@ -2867,7 +2867,11 @@ span.keypress {
 #menu-pm-toolbar-edit ul.inline li.btn.disabled {
 	border-color: #888;
 }
-
+section.pagemaker-stage > iframe {
+	width:960px;
+	height:768px;
+	overflow:hidden;
+}
 
 /* welcome-preview */
 section.welcome-preview .message {

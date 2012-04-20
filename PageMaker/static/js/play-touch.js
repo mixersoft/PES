@@ -69,10 +69,9 @@
 		container : 'body',
 		content : '#content',
 		NATIVE_PAGE_GALLERY_H : 800 - 82, // this height
-		// is
-		// determined in the
-		// server conde
-		FOOTER_H : 87 + 75, //FOOTER_H=67+scrollH=20+75, // based on HTML markup
+		// pageGallery margin = 20px
+		// wrap = 16px
+		FOOTER_H : 36, // before header, footer
 		MARGIN_W : 22,
 		DEFER_IMG_LOAD: true,		// delay IMG load by moving IMG.src => IMG.qsrc
 		layout : {
@@ -243,6 +242,11 @@
 			}
 		},
 		init : function(e) {
+			// set cfg.FOOTER_H offset
+			try {
+				this.cfg.FOOTER_H += this.container.one('#header').get('clientHeight');
+				this.cfg.FOOTER_H += this.container.one('#footer').get('clientHeight');
+			}catch(e){}
 			var containerRect = _getContainerRect(this.container, this.cfg);
 			this.indexedPhotos = this.indexPhotos();
 
@@ -375,8 +379,6 @@
 					scrollContent.setStyle('width', _totalPages * containerRect.W+'px');
 				break;
 			}
-			// move share to footer
-			_Y.one('#footer').prepend(scrollContent.one('#share-link'));
 		},
 		/*
 		 * add YUI3 ScrollView class for touch scrolling
@@ -432,9 +434,6 @@
 							this
 						);
 					}
-					// if (!this.listen['prevPageClick']) this.listen['prevPageClick'] = this.container.one(
-							// '#prevPage').on('click', this.prevPageClick, this);
-					// // photo nav
 					if (!this.listen['lightbox']) {
 						this.listen['lightbox'] = this.container.one('#glass')
 							.delegate('click', this.handleLightboxClick,
@@ -754,6 +753,7 @@
 			cfg = _Y.merge(cfg);	// copy
 			var nativeMaxRes, MAX_HEIGHT = this.cfg.NATIVE_PAGE_GALLERY_H;
 			var pageRect, page = cfg.node;		// deprecate cfg.element
+			var scaleTo, scale, ratio_w = 0, ratio_h = 0;
 			try {
 				pageRect = page.origRect;
 			} catch (e) {
@@ -761,20 +761,20 @@
 			}
 // console.warn("pageRect="+ pageRect.W +':'+ pageRect.H);			
 			if (cfg.W && cfg.H && (cfg.H / cfg.W > pageRect.H / pageRect.W)) {
-				delete cfg.H;  	// use cfg.W as bound, all pages same width
+				scaleTo = 'same-width';
+				// delete cfg.H;  	// use cfg.W as bound, all pages same width
 			} else {
-				delete cfg.W;  	// use cfg.H as bound, all pages same height
+				scaleTo = 'same-height';
+				// delete cfg.W;  	// use cfg.H as bound, all pages same height
 			}
 
-			var scale, ratio_w = 0, ratio_h = 0;
 			var offset, scaledRect ={}, origRect = page.origRect;
-			if (cfg.W != undefined) {
+			if (scaleTo == 'same-width') {
 				ratio_w = origRect.W / cfg.W;
 				nativeMaxRes = origRect.W
 						/ (MAX_HEIGHT / origRect.H * origRect.W);
 				scale = Math.max(ratio_w, ratio_h);
-			}
-			if (cfg.H != undefined) {
+			} else if (scaleTo == 'same-height') {
 				ratio_h = origRect.H / cfg.H;
 				nativeMaxRes = (origRect.H / MAX_HEIGHT);
 				scale = Math.max(ratio_w, ratio_h);
