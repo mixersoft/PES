@@ -429,8 +429,8 @@
 					if (!this.listen['pageClick']) {
 						this.listen['pageClick'] = this.container.delegate(
 							'click', 
-							this.handlePageClick, 
-							'#nextPage, #prevPage', 
+							this.handlePageClick,
+							'div#paging > div.next, div#paging > div.prev', 
 							this
 						);
 					}
@@ -439,7 +439,7 @@
 							.delegate('click', this.handleLightboxClick,
 									'div, span', this);
 					}
-					// TODO: use custom-hover to subscribe to keypress
+					// No Key listeners for touch
 					if (!this.listen['keypress']) this.listen['keypress'] = _Y.on('keypress', this.keyAccelerate,
 							document, this);
 					if (!this.listen['activateLightBox']) this.listen['activateLightBox'] = this.content.delegate(
@@ -491,7 +491,7 @@
 			});
 		},
 		load_ShareThisScripts : function(){
-			if (typeof _load_sharethis == 'undefined') return;
+			if (!_load_sharethis) return;
 			
 			var publisherId = 'ur-1fda4407-f1c8-d8ff-b0bd-1f1ff46eeb72';
 			var markup = '<script type="text/javascript">var switchTo5x=false;</script>';
@@ -512,13 +512,13 @@
 				this.container.one('#pagenum').set('innerHTML',
 						(index + 1) + "/" + (_totalPages));
 				if (index == 0) {
-					this.container.one('#prevPage').addClass('disabled');
+					this.container.one('#paging .prev').addClass('disabled');
 				} else
-					this.container.one('#prevPage').removeClass('disabled');
+					this.container.one('#paging .prev').removeClass('disabled');
 				if (index == _totalPages - 1) {
-					this.container.one("#nextPage").addClass('disabled');
+					this.container.one("#paging .next").addClass('disabled');
 				} else
-					this.container.one("#nextPage").removeClass('disabled');
+					this.container.one("#paging .next").removeClass('disabled');
 			}
 
 			var pages = this.content.all('div.pageGallery');
@@ -542,21 +542,12 @@
 			}, this);
 		},
 		handlePageClick: function(e, direction) {
-			if (!direction) {
-				var button = _Y.Lang.isString(e) ? _Y.one('#'+e) : e.currentTarget;
+			if (e) {
+				var button = _Y.Lang.isString(e) ? _Y.one('#paging .'+e) : e.currentTarget;
 				if (button.hasClass('disabled')) return;
-				direction = button.get('id');
 			}
-			switch (direction) {
-				case 'prev':
-				case 'prevPage':
-					this.scrollview.pages.prev();
-					break;		
-				case 'next':	
-				case 'nextPage':
-					this.scrollview.pages.next();
-					break;
-			}
+			if (direction == 'next' || button.hasClass('next')) this.scrollview.pages.next();
+			else if (direction == 'prev' || button.hasClass('prev')) this.scrollview.pages.prev();
 		},
 		indexPhotos : function() {
 			var indexed = [];
@@ -709,7 +700,7 @@
 			var nextPhoto = this.indexedPhotos[++_curPhotoIndex];
 			if (thisPhoto.index[page] != nextPhoto.index[page]) {
 				// we are on last IMG of current page
-				this.handlePageClick('nextPage');
+				this.handlePageClick(null, 'next');
 			}
 			
 			this.showPhoto(nextPhoto);
@@ -723,7 +714,7 @@
 			var nextPhoto = this.indexedPhotos[--_curPhotoIndex];
 			if (thisPhoto.index[page] != nextPhoto.index[page]) {
 				// we are on first IMG of current page
-				this.handlePageClick('prevPage');;
+				this.handlePageClick(null, 'prev');
 			}
 			this.showPhoto(nextPhoto);
 		},

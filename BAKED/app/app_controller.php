@@ -116,12 +116,15 @@ class AppController extends Controller {
 		$pattern = '/' . implode('|', $options) . '/i';
 		$isTouch = (bool)preg_match($pattern, env('HTTP_USER_AGENT'));
 		
-		$TOUCH_SUBDOMAIN= "touch";
-		$exclude = array($TOUCH_SUBDOMAIN, 'git3');
+		$SUBDOMAIN = array('touch'=>"touch", 'desktop'=>'preview');
+		$exclude = array('git3', 'dev', 'touch-debug');
 		$pattern = '/' . implode('|', $exclude) . '/i';
 		$isExclude = (bool)preg_match($pattern, env('HTTP_HOST'));
-    	if ($isTouch && !$isExclude) {
-			$next = "http://{$TOUCH_SUBDOMAIN}.snaphappi.com".env('REQUEST_URI');
+    	if ($isTouch && !$isExclude && strpos(env('HTTP_HOST'),$SUBDOMAIN['touch'])!=0 ) {
+			$next = "http://{$SUBDOMAIN['touch']}.snaphappi.com".env('REQUEST_URI');
+			$this->redirect($next, null, true);
+		} else if (!$isTouch && !$isExclude && strpos(env('HTTP_HOST'),$SUBDOMAIN['touch'])===0 ){
+			$next = "http://{$SUBDOMAIN['desktop']}.snaphappi.com".env('REQUEST_URI');
 			$this->redirect($next, null, true);
 		}
 	}

@@ -1,7 +1,7 @@
 <?php echo header('Pragma: no-cache');
 	  echo header('Cache-control: no-cache');
 	  echo header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); 
-	  if (0 || strpos(env('SERVER_NAME'),'touch.')===0) $play_filename = 'play-touch';
+	  if (0 || strpos(env('SERVER_NAME'),'touch')===0) $play_filename = 'play-touch';
 	  else $play_filename = 'play';
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -25,6 +25,6 @@
 </html>
 <?php if (empty($this->params['url']['iframe'])) {
 	 echo $this->element('analytics'); 
+	 echo '<script type="text/javascript">var switchTo5x=false; _load_sharethis=1;</script>';
+	}
 ?>
-<script type="text/javascript">var switchTo5x=false; _load_sharethis=true;</script>
-<?php  }  ?>

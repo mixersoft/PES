@@ -117,7 +117,7 @@ body {
 }
 
 
-#prevPage, #nextPage {
+#paging .prev, #paging .next {
     display: inline-block;
     height: 28px;
     line-height: 32px;
@@ -125,17 +125,17 @@ body {
     vertical-align: middle;
     width: 63px;
 } 
-#prevPage.disabled, #nextPage.disabled {
+#paging .disabled {
 		opacity: 0.5;
 		cursor: default;
 }
-#prevPage {
+#paging .prev {
 	-webkit-border-radius: 5px 0 0 5px ;
 	-moz-border-radius: 5px 0 0 5px ;
 	padding: 0 20px 0 50px;
 	background: transparent url('/static/img/css-pm/prevlabel.gif') no-repeat left;	
 }
-#nextPage {
+#paging .next {
 	padding: 0 50px 0 20px;
 	-webkit-border-radius: 0 5px 5px 0;
 	-moz-border-radius: 0 5px 5px 0;
@@ -186,7 +186,7 @@ div.sharethis {
 #fullscreen {
 	cursor:pointer;
 	height: 32px;
-	right: 8px;
+	left: 8px;
     position:absolute;
 }
 div#content {
