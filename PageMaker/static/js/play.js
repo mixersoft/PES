@@ -166,6 +166,34 @@
 		return isCached;
 	};
 	
+	/*
+	 * animate lightbox photo transition
+	 */
+	var _animateOnDelta = function(img, animate){
+		var animation = this.cfg.animation;
+		var top, delta, 
+			dim = _getNaturalDim(img, animation),
+			centerbox = this.container.one("#centerbox"),
+			centerboxH = centerbox.get('clientHeight');
+		delta = Math.abs(centerbox.get('clientWidth') - dim.W)
+				+ Math.abs(centerboxH - dim.H);
+		top = Math.max(0,(centerbox.ancestor('#glass').get('clientHeight') - dim.H)/2);
+		if (animate || delta >= 50) {
+			img.setStyle('opacity', 0.5);
+			this.animateBox.call(this, top, dim.W, dim.H, 1000);
+			_Y.later(2000, img, function(){
+				img.setStyle('opacity', 1);		// timeout
+			})	
+		} else {
+			centerbox.setStyles( {
+				width : dim.W,
+				height : dim.H,
+				top : top,
+			});
+			this.container.one("#closeBox").removeClass('hidden');
+			img.setStyle('opacity', 1);
+		}				
+	}	
 	/**
 	 * the W,H boundaries of the container > .pageGallery 
 	 * - used for scaling the pageGallery
@@ -537,44 +565,22 @@
 		},
 
 		showPhoto : function(photo, animate) {
-			var animation = this.cfg.animation;
 			var img = this.container.one("#centerbox > img");
 			var src = photo.img.get('src');
 			if (!src) src = photo.img.get('qsrc')
 			_stripCrop(src);
-			var isCached = _isSrcCached(src);
-			var _animateOnDelta = function(){
-				var dim = _getNaturalDim(img, animation);
-				var delta, centerbox = this.container.one("#centerbox");
-				delta = Math.abs(centerbox.get('clientWidth') - dim.W)
-						+ Math.abs(centerbox.get('clientHeight') - dim.H);
-				if (animate || delta >= 50) {
-					img.setStyle('opacity', 0.5);
-					this.animateBox.call(this, dim.W, dim.H, 1000);
-					_Y.later(2000, img, function(){
-						img.setStyle('opacity', 1);		// timeout
-					})	
-				} else {
-					centerbox.setStyles( {
-						width : dim.W,
-						height : dim.H
-					});
-					this.container.one("#closeBox").removeClass('hidden');
-					img.setStyle('opacity', 1);
-				}				
-			}
-			if (isCached) {
+			if (_isSrcCached(src)) {
 				img.set('src', src);
 				_Y.later(50, this, function(){
-					return _animateOnDelta.call(this);
+					return _animateOnDelta.call(this, img, animate);
 				})
 			} else {
 				// async load img from server
 				img.setStyle('opacity', 0.5);
-				var detach = img.on('load', function(e, img, animation) {
+				var detach = img.on('load', function(e, img, animate) {
 					detach.detach();
-					return _animateOnDelta.call(this);
-				}, this, img, this.cfg.animation);					
+					return _animateOnDelta.call(this, img, animate);
+				}, this, img, animate);						
 				img.set('src', src);
 			}
 			if (_curPhotoIndex == this.indexedPhotos.length - 1) {
@@ -750,14 +756,15 @@
 		 * Animates the center box with enlarged image Accepts element object of
 		 * the image to enlarged
 		 */
-		animateBox : function(W, H, delta) {
+		animateBox : function(X, W, H, delta) {
 			var img = this.container.one("#centerbox > img");
 			img.setStyle('opacity', 0.5);
 			var boxAnim = new _Y.Anim( {
 				node : this.container.one("#centerbox"),
 				to : {
 					width : W,
-					height : H
+					height : H,
+					top: X,
 				}
 			});
 			var duration = Math.min(delta / 1000, this.cfg.animation.overlayDuration);
