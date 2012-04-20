@@ -857,14 +857,15 @@
 		 * Animates the center box with enlarged image Accepts element object of
 		 * the image to enlarged
 		 */
-		animateBox : function(W, H, delta) {
+		animateBox : function(X, W, H, delta) {
 			var img = this.container.one("#centerbox > img");
 			img.setStyle('opacity', 0.5);
 			var boxAnim = new _Y.Anim( {
 				node : this.container.one("#centerbox"),
 				to : {
 					width : W,
-					height : H
+					height : H,
+					top: X,
 				}
 			});
 			var duration = Math.min(delta / 1000, this.cfg.animation.overlayDuration);

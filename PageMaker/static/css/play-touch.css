@@ -115,7 +115,17 @@ body {
 #nextPhoto:hover{
     background: transparent url('/static/img/css-pm/nextlabel.gif') no-repeat 100% 15%;
 }
-
+#paging {
+    height: 32px;
+    left: 0;
+    position:absolute;
+    width: 100%;
+    z-index: 50;
+}
+#paging > div {
+	vertical-align:middle;
+	display: inline-block;
+}
 #paging .prev, #paging .next {
     display: inline-block;
     height: 28px;
@@ -169,17 +179,7 @@ div#header {
     font-family: arial;
 }
 
-div#paging {
-    height: 32px;
-    left: 0;
-    position:absolute;
-    width: 100%;
-    z-index: 100;
-}
-div#paging > div {
-	vertical-align:middle;
-	display: inline-block;
-}
+
 div.sharethis {
 	height: 32px;
 }
@@ -188,6 +188,7 @@ div.sharethis {
 	height: 32px;
 	left: 8px;
     position:absolute;
+    z-index: 60;
 }
 div.scroll-wrap {
 	overflow-x: scroll;
