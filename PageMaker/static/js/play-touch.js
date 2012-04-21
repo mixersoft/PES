@@ -326,10 +326,11 @@
 				this.scale( containerRect );
 				this.pageWrap(page);
 			}, this);
-
-			this.scrollWrap(this.content);
-			this.addScrollView({
-				srcNode: '#content',
+			
+			var scrollWrap = this.scrollWrap(this.content, _totalPages);
+			scrollWrap.all('.page-wrap').setStyles({width: containerRect.W+'px'});
+			this.addScrollView_Page({
+				srcNode: scrollWrap,
 				width: containerRect.W,
 			});
 			
@@ -388,29 +389,18 @@
 			return wrap;
 		}, 
 		/*
-		 *  add scrollWrap for touch
+		 *  add scrollWrap for touch, this is cfg.srcNode for ScrollView
 		 */
-		scrollWrap : function(scrollContent, direction){
-			var containerRect = _getContainerRect(this.container),
-				wrap = scrollContent.create('<div class="scroll-wrap"></div>');
+		scrollWrap : function(scrollContent, total, direction){
+			var	wrap = scrollContent.create('<div class="scroll-wrap"></div>');
 			scrollContent.replace(wrap);
 			wrap.append(scrollContent);
-			switch(direction) {
-				case 'V':
-				case 'Vertical':
-					// no need for vertical scrolling
-					// container.setStyle('height', _totalPages * containerRect.H+'px');
-				break;
-				case 'H':
-				default:
-					scrollContent.setStyle('width', _totalPages * containerRect.W+'px');
-				break;
-			}
+			return wrap;
 		},
 		/*
 		 * add YUI3 ScrollView class for touch scrolling
 		 */
-		addScrollView : function(cfg) {
+		addScrollView_Page : function(cfg) {
 			cfg = _Y.merge(this.cfg,cfg);
 			
 			var scrollview = new _Y.ScrollView({
@@ -447,6 +437,89 @@
 		    }, "img");
 		    this.scrollview = scrollview;
 		},
+		addScrollView_Photo: function(target){
+			/*
+			 *  touch scrollview
+			 */
+			var wrap = this.getScrollViewMarkup_Photo(target);
+			var PHOTO_SCROLL_W = 640+20;
+			var cfg = {
+				srcNode: wrap,
+				width: PHOTO_SCROLL_W,
+			} 
+			cfg = _Y.merge(this.cfg, cfg);
+			wrap.all('.page-wrap').setStyles({width: cfg.width+'px'});
+			var photo_Scrollview = new _Y.ScrollView({
+		        srcNode: cfg.srcNode,
+		        width: cfg.width,
+		        flick: {
+			        minDistance: cfg.flick.minDistance,
+			        minVelocity: cfg.flick.minVelocity,
+			        axis: cfg.width ? 'x' : 'y'
+			    }
+		    });
+		    /* Plug in pagination support */
+		    photo_Scrollview.plug(_Y.Plugin.ScrollViewPaginator, {
+		        selector: "li.page-wrap" // elements definining page boundaries
+		    });
+		    // update page
+		    photo_Scrollview.pages.after('indexChange', function(e){
+		    	_curPhotoIndex = e.newVal;
+		    	this.showPhoto(e.newVal);
+		    }, this);
+		    photo_Scrollview.render();
+		    
+		    // scroll to clicked photo
+		    photo_Scrollview.pages.set('index', _curPhotoIndex);
+		    // this.showPhoto(_curPhotoIndex);
+		    // photo_Scrollview.pages.scrollTo(_curPhotoIndex);
+		    
+		    // prevent click after a flick, move to this.activateLightBox()
+		    // this.content.delegate("click", function(e) {
+			    // // Prevent links from navigating as part of a scroll gesture
+			    // if (Math.abs(this.photo_Scrollview.lastScrolledAmt) > 2) {
+			        // e.preventDefault();
+			    // }
+			// }, "a", this);
+		    
+		    // Prevent default image drag behavior
+		    photo_Scrollview.get("contentBox").delegate("mousedown", function(e) {
+		        e.preventDefault();
+		    }, "img");
+		    return photo_Scrollview;
+		},
+		getScrollViewMarkup_Photo: function(target, force){
+			var srcNode = this.container.one("#centerbox .scroll-wrap");
+			if (srcNode) 
+				return srcNode;
+			
+			_curPhotoIndex = -1;	// rload photo==1 to center in ScrollView
+			var photo, src, tokens, title
+				markup = "<li class='page-wrap'><img src='{src}' qsrc='{qsrc}' title='{title}'></li>", 
+				scrollContent = _Y.Node.create('<ul></ul>');
+			for ( var i in this.indexedPhotos) {
+				photo = this.indexedPhotos[i];
+				src = photo.img.get('src');
+				if (!src) src = photo.img.getAttribute('qsrc');
+				src = _stripCrop(src);
+				
+				tokens = {src: '', qsrc: ''};
+				tokens['title'] = photo.img.get('title');
+				if (photo.img == target) {
+					_curPhotoIndex = parseInt(i);		// found clicked photo
+					tokens['src'] = src;
+				} else if ( i == 0 ) {	// preload photo 0 for proper alignment in scrollView
+					tokens['src'] = src;					
+				} else if (CONFIG.DEFER_IMG_LOAD) {
+					tokens['qsrc'] = src;
+				} else tokens['src'] = src;
+				scrollContent.append(_Y.substitute(markup, tokens));
+			}
+			// var closeBox = this.container.one("#centerbox #closeBox");
+			// this.container.one("#centerbox").setContent(closeBox).append(scrollContent);
+			this.container.one("#centerbox").setContent(scrollContent);
+			return this.scrollWrap(scrollContent, this.indexedPhotos.length);
+		},		
 		startListeners : function(start) {
 			if (start === false) {
 				this.stopListeners();
@@ -603,23 +676,26 @@
 		        e.preventDefault();
 		        return;
 		    }
-			if (this.container.one("#centerbox").get('clientHeight')>0)
-				return;
-			var target = e.target;
-			// find index of clicked photo
-			for ( var i in this.indexedPhotos) {
-				if (target == this.indexedPhotos[i].img) {
-					_curPhotoIndex = i;
-					break;
-				}
-			}
 			var overlay = this.container.one("#glass").removeClass('hide');
-			var centerBox = this.container.one("#centerbox").setStyle('opacity',0)
-					.removeClass('hide');
-			var player = this;
-			player.showPhoto(this.indexedPhotos[i], 'animate');
-			this.animateOpacity(1, this.cfg.animation.overlayDuration,
-					centerBox);			
+			var centerBox = this.container.one("#centerbox").removeClass('hide');;
+			centerBox.setStyles({
+				'opacity':0,
+				'left': (centerBox.get('winWidth') - centerBox.get('clientWidth'))/2,
+				'top': (centerBox.get('winHeight') - centerBox.get('clientHeight'))/2,  	
+			})
+			this.animateOpacity(1, this.cfg.animation.overlayDuration, centerBox);						
+			if (this.photo_Scrollview) {
+				// just find clicked photo
+				for ( var i in this.indexedPhotos) {
+					if (this.indexedPhotos[i].img == e.target) {
+						_curPhotoIndex = parseInt(i);	// found clicked photo
+						break;
+					}
+				}
+				this.photo_Scrollview.pages.set('index', _curPhotoIndex);
+			} else {
+			    this.photo_Scrollview = this.addScrollView_Photo(e.target);
+			}
 		},
 
 		handleLightboxClick : function(e) {
@@ -654,49 +730,28 @@
 			this.animateOpacity(0, this.cfg.animation.overlayDuration,
 					_container.one("#centerbox"), function() {
 						// hide #glass after animation complete
-					_container.one("#centerbox").setStyles( {
-						width : this.cfg.layout.centerBoxW + 'px',
-						height : this.cfg.layout.centerBoxH + 'px'
-					}).addClass('hide');
-					_container.one("#lightBoxPhoto").set("src", "");
-					_container.one("#glass").addClass('hide');
-				});
+						_container.one("#centerbox").addClass('hide');
+						_container.one("#glass").addClass('hide');
+					});
 		},
-
-		showPhoto : function(photo, animate) {
-			var animation = this.cfg.animation;
-			var img = this.container.one("#centerbox > img");
-			var src = photo.img.get('src');
-			if (!src) src = photo.img.get('qsrc')
-			_stripCrop(src);
-			if (_isSrcCached(src)) {
-				img.set('src', src);
-				_Y.later(50, this, function(){
-					return _animateOnDelta.call(this, img, animate);
-				})
-			} else {
-				// async load img from server
-				img.setStyle('opacity', 0.5);
-				var detach = img.on('load', function(e, img, animate) {
-					detach.detach();
-					return _animateOnDelta.call(this, img, animate);
-				}, this, img, animate);					
-				img.set('src', src);
+		showPhoto : function(index) {
+			var preload = [index, index+1, index-1]; // load before and after
+			var src, img,
+				photos = _Y.all('#centerbox li.page-wrap > img');
+			for (var i in preload) {
+				try {
+					img = photos.item(preload[i]);
+					if (!img) continue; 
+					src = img.getAttribute('qsrc');
+					if (src) {
+						img.setAttribute('src', src);
+						img.setAttribute('qsrc', '');
+					} 
+				} catch (e) {
+					console.error('Player.showPhoto() for scrollView');
+				}
 			}
-			if (_curPhotoIndex == this.indexedPhotos.length - 1) {
-				// at last IMG, disable Next
-				this.container.one("#nextPhoto").addClass('hide');
-			} else {
-				this.container.one("#nextPhoto").removeClass('hide');
-			}	
-			if (_curPhotoIndex == 0) {
-				// at first IMG, disable Prev
-				this.container.one("#prevPhoto").addClass('hide');
-			} else {
-				this.container.one("#prevPhoto").removeClass('hide');
-			}			
 		},
-
 		nextPhotoClick : function() {
 			var page = 0, top = 1, left = 2;
 			if (_curPhotoIndex + 1 == this.indexedPhotos.length)
@@ -923,7 +978,7 @@
 			};
 		}
 
-		YUI(PM.yuiConfig.yui).use("event-delegate", "node", "anim", "get", 
+		YUI(PM.yuiConfig.yui).use("event-delegate", "node", "anim", "get", 'substitute',
 			"scrollview-base", 
 			"scrollview-paginator",
 			// "scrollview-scrollbars",  // bug in webkit rendering

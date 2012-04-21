@@ -73,14 +73,13 @@ body {
 
 #centerbox {
     top: 60px;
-    width: 480px;
-    min-height: 480px;
+    width: 660px;
+    height: 660px;
     background: url('/static/img/css-pm/ajax-loading-img-hg.gif') #ffffff center no-repeat;
-    margin: auto;
+    padding: 10px;
     position: relative;
-    z-index: 100;
-    border: solid 1px #FFFFFF;
 	overflow:hidden;
+	z-index: 100;
 }
 
 /*
@@ -190,18 +189,10 @@ div.sharethis {
     position:absolute;
     z-index: 60;
 }
-div.scroll-wrap {
-	overflow-x: scroll;
-}
 div#content {
     margin: 0 3px;
     min-height: 200px;
     z-index: 10;
-}
-div.page-wrap {
-	overflow: hidden;
-	display: inline;
-	float: left;
 }
 
 div.pageGallery {
@@ -251,4 +242,31 @@ a#share-link:link, a#share-link:visited {
 }
 #footer img {
 	border: none;
+}
+
+
+/* scrollView CSS */
+.scroll-wrap {
+	white-space:nowrap;
+}
+
+.page-wrap {
+	overflow: hidden;
+	display: inline-block;
+}
+
+
+.scroll-wrap ul {
+	margin: 0;
+}
+
+li.page-wrap {
+	list-style-type: none;
+	margin: 2px auto;
+	vertical-align: middle;
+	text-align: center
+}
+
+li.page-wrap > img {
+	margin: 10px auto;
 }
