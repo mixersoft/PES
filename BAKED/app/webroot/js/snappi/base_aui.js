@@ -70,6 +70,7 @@
 			SNAPPI.STATE.hints['HINT_Filmstrip'] = true;
 			SNAPPI.STATE.hints['HINT_Keydown_Preview'] = true;
 			// SNAPPI.STATE.hints['HINT_PMToolbarEdit'] = true;
+			
 			if (SNAPPI.Hint) SNAPPI.Hint.flushQueue();		// if Hint already available
 			
         });        

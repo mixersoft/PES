@@ -143,7 +143,7 @@
     	HINT_Preview:{
     		css_id:'hint-preview-markup',
     		uri: '/help/markup/tooltips', 
-    		// showDelay:3000,
+    		showDelay: 9000,
     		showArrow: false,
     		align:  { points: [ 'tc', 'tc' ] },
     		trigger: 'body',
@@ -369,9 +369,11 @@
 		if (e.newVal == true && e.prevVal==false) {
 			// check for inactivity time against global
 			var inactivity_ms = new Date().getTime() - SNAPPI.last_action_ms;
+// console.error("inactivity_ms="+inactivity_ms+", showDelay="+this.get('showDelay'));			
 			if (inactivity_ms < this.get('showDelay')) {
 				hint.clearIntervals();
 				hint.set('showDelay', this.get('showDelay'));
+// console.error('_handle_VisibleChange: clearIntervals, reset='+this.get('showDelay'));				
 				return;
 			}
 			
@@ -423,7 +425,7 @@
 		if (hint.get('visible')) return false; 			// skip if visible
 		if (_sleep_status.later) {
 			_sleep_status.later.cancel();
-console.warn('resetting hint delay SLEEP timer on click');			
+// console.warn('resetting hint delay SLEEP timer on click');			
 			_sleep_status.later = _Y.later( _sleep_status['time'], hint, 
 				function(e){
 					hint.set('trigger', hint.triggers.join(',') );
@@ -434,6 +436,7 @@ console.warn('resetting hint delay SLEEP timer on click');
 			);
 		} else {
 			// TODO: is this ALREADY handled in _handle_VisibleChange(), SNAPPI.last_action_ms
+// console.warn('_handle_ResetDelayTimer: clearIntervals, delay=' + hint.get('showDelay'));				
 			hint.clearIntervals();
 			hint.set('showDelay', hint.get('showDelay'));
 		}
@@ -453,6 +456,7 @@ console.warn('resetting hint delay SLEEP timer on click');
 			_sleep_status.later = false;
 			h.set('hideDelay', 10000);
 			h.set('showDelay', 0);
+			SNAPPI.last_action_ms = 0;		// disable last_action check
 // console.log('force awake, triggers='+h.triggers.join(','));				
 			return;
 		}
@@ -612,16 +616,18 @@ console.warn('resetting hint delay SLEEP timer on click');
     		hint.listen = {};
     		hint.listen['visibleChange'] = hint.on('visibleChange', _handle_VisibleChange, hint);
     		hint.listen['any-click'] = _Y.on('click', function(e, hint){
-console.log("hint any-click");    			
-    			if (_handle_clickOutside(e, hint) == false) {
-    				_handle_ResetDelayTimer(e, hint);
-    			}
+    			_handle_ResetDelayTimer(e, hint);
+    			_handle_clickOutside(e, hint)
+// console.log("hint any-click");    		    				
+    			
+    			// if (_handle_clickOutside(e, hint) == false) {
+    				// _handle_ResetDelayTimer(e, hint);
+    			// }
     		}, null, hint, hint);
     		hint.listen['any-contextmenu'] = _Y.on('contextmenu', function(e, hint){
 // console.log("hint contextmenu");    			
-    			if (_handle_clickOutside(e, hint) == false) {
-    				_handle_ResetDelayTimer(e, hint);
-    			}
+    			_handle_ResetDelayTimer(e, hint);
+    			_handle_clickOutside(e, hint)
     		}, null, hint, hint);
     		hint.listen['show-all-tips'] = _Y.on('click', _handle_ShowAllTips , 'section.help li.btn.show-all-tips', hint);
     		hint.listen['menu-visible'] = _Y.on('snappi:menu-visible', _handle_MenuDialogVisible, null, hint);
@@ -635,6 +641,10 @@ console.log("hint any-click");
 			contentBox.listen['close'] = contentBox.delegate('click', _handle_Close, 'span.close', hint, contentBox);
     		contentBox.listen['show-next'] = contentBox.delegate('click', _handle_ShowNextTip, 'span.show-next', hint);    		
     	}else{		// reuse hint
+    		/*
+    		 * TODO: BUG: showDelay is stuck on the first loaded Hint, the different
+    		 * triggers show determine the showDelay
+    		 */
     		try {
     			var update, trigger, triggers = cfg.trigger.split(',');
     			for (var i in triggers) {
