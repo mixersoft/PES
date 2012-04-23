@@ -1190,7 +1190,26 @@ debug("WARNING: This code path is not tested");
 			}
 		}
 	}
-
+	function __getAssetsFromBatchId($batchId) {
+		if (strpos($batchId, ',')!==false) $batchId = explode(',', $batchId);
+		$options = array(
+			'conditions'=>array(
+				'Asset.batchId'=>$batchId, 
+				'Asset.owner_id'=>AppController::$ownerid,
+			), 
+			// 'fields'=>array('id'),
+			'extras' => array(
+				'join_shots'=>false,	// get ALL photos
+				'show_edits' => false,
+			),							
+		);
+		$data = $this->Asset->find('all',$options);
+		return Set::extract($data, '/Asset/id');
+	}
+	/**
+	 * @params $this->data[Asset][id] string (optional), Comma delim string of Asset UUIDs
+	 * @params $this->data[Asset][batchId] string (optional), Comma delim string of Asset batchIds
+	 */
 	function setprop(){
 		$forceXHR = setXHRDebug($this, 0, 1);
 		$success = true; $message=array(); $response=array();
@@ -1207,12 +1226,15 @@ debug("WARNING: This code path is not tested");
 			if ($this->data) {
 				// check write permission????
 				$fields = array_keys($this->data['Asset']);
-				$aids = (array)@explode(',', $this->data['Asset']['id']);
+				if (!empty($this->data['Asset']['id'])) {			
+					$aids = explode(',', $this->data['Asset']['id']);
+				} elseif (!empty($this->data['Asset']['batchId'])) {
+					$aids = $this->__getAssetsFromBatchId($this->data['Asset']['batchId']);
+				}
 				$ret = true; 
 				//TODO: begin SQL transaction for batch commit
 				$updateBestShot_assetIds = array();
 				$activePerAssetFields = array_intersect(array('rating','rotate','tags','chunk','privacy','unshare'), $fields);
-// debug($aids);				
 				foreach ($aids as $aid) {
 					if (count($activePerAssetFields)==0) break;	// skip if ther eare not active PerAssset Fields
 					/*
