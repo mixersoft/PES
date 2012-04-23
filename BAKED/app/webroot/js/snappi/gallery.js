@@ -510,11 +510,6 @@
         	Factory.nav.toggle_ContextMenu(this, e);
         	return;
         },
-        stopLinkToClickListener : function(){
-        	try {
-        		this.node.listen['LinkToClick'].detach();
-        	} catch(e) {}
-        },
         // restore state from SNAPPI.STATE
         // TODO: should get state from cakephp Session / user profile
         restoreState : function(){

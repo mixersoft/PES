@@ -2,6 +2,7 @@
 	<ul>
 		<li action='rating' class='before-show'></li>
 		<li action='zoom' title='Show a 640px version of this Snap.'>Zoom In</li>
+		<li action='linkTo' title='Go to the Snap home page'>Goto Snap</li>
 <!-- 		<li action='autoRotate' class='before-show'><a target="_blank">autorotate JPG</a></li> -->
 		<div class="menu-item-group">
 		<li action='showHiddenShot' class='before-show' title='Show hidden Snaps for this Shot'>Show Hidden</li>

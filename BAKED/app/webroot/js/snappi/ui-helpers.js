@@ -149,17 +149,17 @@
 	    		SNAPPI.MenuAUI.CFG[CSS_ID].load(itemMenuCfg);
 	    		e.container.one(itemMenuCfg.force_TRIGGER).setAttribute('uuid', SNAPPI.STATE.controller.xhrFrom.uuid);
 	    		// stop LinkToClickListener
-	    		listenerNode.listen['disable_LinkToClick'] = true;
+	    		listenerNode.listen['disable_ThumbnailClick'] = true;
 	    	} else {
 	    		var menu = SNAPPI.MenuAUI.toggleEnabled(CSS_ID, e);
 				if (menu.get('disabled')) {
 					menu.enable();
 					menu.show();
-					listenerNode.listen['disable_LinkToClick'] = false;
+					listenerNode.listen['disable_ThumbnailClick'] = false;
 				} else {
 					menu.disable();
 					menu.hide();
-					listenerNode.listen['disable_LinkToClick'] = true;
+					listenerNode.listen['disable_ThumbnailClick'] = true;
 				}
 	    	}	    	
 		},

@@ -829,6 +829,22 @@ console.log("delegateHost="+delegateHost._yuid);
 		SNAPPI.Factory.Thumbnail.PhotoZoom.bindSelected(audition, previewBody, {gallery:g});
 		return false;
 	}
+	MenuItems.linkTo_click = function(menuItem, menu, e){
+		// menu.hide();
+		var thumbnail = menu.get('currentNode');	// target
+		var g = MenuItems.getGalleryFromTarget(thumbnail);
+		var linkTo = thumbnail.one('img').getAttribute('linkTo');
+		if (g.castingCall.CastingCall) {
+        	linkTo += '?ccid=' + g.castingCall.CastingCall.ID;
+			try {
+				var shotType = gcastingCall.CastingCall.Auditions.ShotType;
+				if (shotType == 'Groupshot'){
+					linkTo += '&shotType=Groupshot';
+				}
+			} catch (e) {}
+        }
+		window.location.href = linkTo;
+	}
 	MenuItems.refresh_click = function(menuItem, menu, e){
 		var thumbnail = menu.get('currentNode');	// target
 		var img = thumbnail.one('figure > img');

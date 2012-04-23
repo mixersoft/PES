@@ -220,7 +220,7 @@
         			host: g,			// add Gallery.ContextMenu backreference
 				}; 
         		var menu = SNAPPI.MenuAUI.CFG[CSS_ID].load(contextMenuCfg);
-        		g.node.listen['disable_LinkToClick'] = true;
+        		g.node.listen['disable_ThumbnailClick'] = true;
         	} else {
         		var menu = SNAPPI.MenuAUI.toggleEnabled(CSS_ID, e);
         		// if (g._cfg.listeners.indexOf('LinkToClick')> -1) {
@@ -228,10 +228,10 @@
 	        		if (menu.get('disabled')) {
 	        			// TODO: nav to attribute "linkTo"
 	        			// Factory.listeners.LinkToClick.call(this);
-	        			g.node.listen['disable_LinkToClick'] = false;
+	        			g.node.listen['disable_ThumbnailClick'] = false;
 	        		} else {
 	        			// g.stopLinkToClickListener();
-	        			g.node.listen['disable_LinkToClick'] = true;
+	        			g.node.listen['disable_ThumbnailClick'] = true;
 	        		}
         		// }
         	}
@@ -259,7 +259,7 @@
 	                this.node.listen['LinkToClick'] = this.node.delegate('click', function(e){
 	            		var linkTo = e.currentTarget.getAttribute('linkTo');
 	            		if (linkTo) {
-	            			if (this.listen['disable_LinkToClick']) {
+	            			if (this.listen['disable_ThumbnailClick']) {
 	            				GalleryFactory.nav.toggle_ContextMenu(this.Gallery, e);
 		                		return;		// allows temp disabling of listener
 		                	}
@@ -277,6 +277,55 @@
 	            		} 	                	
 	                }, '.FigureBox > figure > img', this.node);
 				}
+	        },
+	        ZoomClick: function(forceStart) {
+	            if (this.node.listen['ZoomClick'] == undefined || forceStart ) {
+	            	// section.gallery.photo or div.filmstrip.photo
+	                this.node.listen['ZoomClick'] = this.node.delegate('click', function(e){
+	            			if (this.listen['disable_ThumbnailClick']) {
+	            				GalleryFactory.nav.toggle_ContextMenu(this.Gallery, e);
+		                		return;		// allows temp disabling of listener
+		                	}
+		                	var g = this.Gallery;	// closure
+var _showZoom = function(e, g) { 					         
+		// copied from MenuItems.zoom_click
+		var thumbnail = e.target.ancestor('.FigureBox.Photo');	// target
+		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
+		if (e.ctrlKey || e.metaKey) {
+			var src = audition.Audition.Photo.Img.Src.rootSrc;
+			src = audition.getImgSrcBySize(audition.urlbase+src,'bp');
+			window.open(src, '_blank');
+			return;
+		}
+		var cfg = {
+			// selector: [CSS selector, copies outerHTML and substitutes tokens as necessary],
+			markup: "<div id='preview-zoom' class='preview-body'></div>",
+			uri: '/combo/markup/null',
+			height: 400,
+			width: 400,
+			skipRefresh: true,
+		};
+		var dialog = SNAPPI.Alert.load(cfg); // don't resize yet
+		var previewBody = dialog.getStdModNode('body').one('.preview-body');
+		_Y.once('snappi:preview-change', 
+	        	function(thumb){
+	        		if (thumb.Thumbnail._cfg.type == 'PhotoZoom' ) {
+	        			_Y.fire('snappi:dialog-body-rendered', dialog);
+	        		}
+	        	}, '.FigureBox.PhotoZoom figure > img', dialog
+	        )		
+		SNAPPI.Factory.Thumbnail.PhotoZoom.bindSelected(audition, previewBody, {gallery:g});
+}
+// use lazyLoad in case Alert not ready
+		                	SNAPPI.LazyLoad.extras({
+					        	module_group:'alert',
+					        	ready: function(){
+					        		_showZoom(e, g);
+					        	},
+					        });
+		                    e.halt();		            			
+	                }, '.FigureBox > figure > img', this.node);
+				}	        	
 	        },
 	        ThumbsizeClick : function(action) {
 	        	// for .gallery.photo nav.settings, NOT .filmstrip .window-options
@@ -350,7 +399,7 @@
 		            			// context menu is visible
 		            			if(!gallery.contextMenu.getNode().hasClass('hide')){
 		                			gallery.contextMenu.show();
-		                			gallery.stopLinkToClickListener();
+		                			gallery.node.listen['disable_ThumbnailClick'] = true;
 		            			}
 		            		}
 		            		// set focus
@@ -514,7 +563,7 @@
 	        			'</section>',
 			node: 'div.gallery-container > section.gallery.photo',
 			render: true,
-			listeners: ['Keydown', 'Mouseover', 'LinkToClick', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick', 'DisplayOptionClick'],
+			listeners: ['Keydown', 'Mouseover', 'ZoomClick', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick', 'DisplayOptionClick'],
 			draggable: true,
 			hideHiddenShotByCSS: true,
 			size: 'lm',
@@ -629,7 +678,6 @@
 	        tnType: 'Photo',	// thumbnail Type
 			node: '#lightbox section.gallery.lightbox',
 			render: true,
-			// listeners: ['Keydown', 'Mouseover', 'LinkToClick', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick'],
 			listeners: ['MultiSelect', 'WindowOptionClick'],
 			draggable: false,
 			// droppable: true,			// make Lightbox.node droppable instead
@@ -788,7 +836,7 @@
 	    handle_focusClick: function(e){
 	    	var gallery = this.Gallery;
 	    	
-			if (gallery.node.listen['disable_LinkToClick']) {
+			if (gallery.node.listen['disable_ThumbnailClick']) {
 				// hide contextmenu with this click
 				GalleryFactory.nav.toggle_ContextMenu(gallery, e);
         		return;		// allows temp disabling of listener
@@ -881,7 +929,7 @@
 		build: GalleryFactory.Photo.build,
 		handle_focusClick: function(e){
 	    	var gallery = this.Gallery;
-			if (gallery.node.listen['disable_LinkToClick']) {
+			if (gallery.node.listen['disable_ThumbnailClick']) {
 				// hide contextmenu with this click
 				GalleryFactory.nav.toggle_ContextMenu(gallery, e);
         		return;		// allows temp disabling of listener
@@ -1059,7 +1107,7 @@
 		handle_focusClick: function(e){
 			// also check: DialogHelper.bindSelected2DialogHiddenShot(). which one is used?
 	    	var gallery = this.Gallery;
-			if (gallery.node.listen['disable_LinkToClick']) {
+			if (gallery.node.listen['disable_ThumbnailClick']) {
 				// hide contextmenu with this click
 				GalleryFactory.nav.toggle_ContextMenu(gallery, e);
         		return;		// allows temp disabling of listener
@@ -1087,7 +1135,7 @@
 	        			'</section>',
 			node: 'div.gallery-container > section.gallery.photo',
 			render: true,
-			listeners: ['Keydown', 'Mouseover', 'LinkToClick', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick'],
+			listeners: ['Keydown', 'Mouseover', 'MultiSelect', 'HiddenShotClick', 'Contextmenu', 'WindowOptionClick', 'ZoomClick'],
 			draggable: true,
 			hideHiddenShotByCSS: true,
 			size: 'lm',
