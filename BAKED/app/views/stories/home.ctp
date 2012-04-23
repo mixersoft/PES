@@ -1,4 +1,7 @@
 <?php
+	$isTouch =  (1 || strpos(env('SERVER_NAME'),'touch')===0); 
+	$iFrameHeight = $isTouch ? 'height="515"' : 'height="800"';  // only for ipad landscape
+
 	$this->Layout->blockStart('itemHeader');
 		$badge_src = Stagehand::getSrc($data['Collection']['src_thumbnail'], 'sq');
 		echo $this->element('nav/section', compact('badge_src'));
@@ -35,7 +38,7 @@
 <?php 
 	$ajaxSrc = Router::url(Configure::read('passedArgs.complete') + array('action'=>'story', '?'=>array('iframe'=>1)));
 	// echo "<div id='gallery-story-xhr' class='xhr-get stage-body' xhrSrc='{$ajaxSrc}' delay='0'></div>";
-	echo "<iframe src='{$ajaxSrc}' frameborder='0'></iframe>";
+	echo "<iframe src='{$ajaxSrc}' frameborder='0' {$iFrameHeight} width='960'></iframe>";
 ?>
 
 </section>	
@@ -104,9 +107,13 @@
 		SNAPPI.mergeSessionData();
 		SNAPPI.xhrFetch.init(); 
 		var iframe = Y.one('section.pagemaker-stage > iframe');
-		var h = iframe.get('winHeight')-iframe.get('offsetTop')-16; 
-		h = Math.min(800,Math.max(500,h));	// 500 < h < 800px
-		iframe.setStyle('height', h+'px');
+		if (iframe.getAttribute('qsrc')) {
+			var h = iframe.get('winHeight')-iframe.get('offsetTop')-16; 
+			h = Math.min(800,Math.max(500,h));	// 500 < h < 800px
+			iframe.setAttribute('height', h);
+alert(iframe.getAttribute('height'));
+			iframe.set('src',iframe.getAttribute('qsrc')).setAttribute('qsrc','');
+		}
 	};
 	try {SNAPPI.xhrFetch.fetchXhr; initOnce(); }			// run now for XHR request, or
 	catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request

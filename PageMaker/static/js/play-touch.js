@@ -276,6 +276,7 @@
 			}catch(e){}
 			var containerRect = _getContainerRect(this.container, this.cfg);
 			this.indexedPhotos = this.indexPhotos();
+			// this.container.addClass('hidden');
 
 			var offset, origRect, pageNo,
 				pages = this.content.all('div.pageGallery');
@@ -333,7 +334,7 @@
 				srcNode: scrollWrap,
 				width: containerRect.W,
 			});
-			
+			// this.container.removeClass('hidden');
 			if (this.isPreview) {
 				this.showPage(pageNo - 1);
 				this.startListeners();
@@ -449,6 +450,10 @@
 			} 
 			cfg = _Y.merge(this.cfg, cfg);
 			wrap.all('.page-wrap').setStyles({width: cfg.width+'px'});
+			
+			// hack: add img WxH on scrollView render for proper alignment 
+		    var firstPhotoHack = _Y.one('#centerbox li.page-wrap > img').setStyles({height:480});
+		    
 			var photo_Scrollview = new _Y.ScrollView({
 		        srcNode: cfg.srcNode,
 		        width: cfg.width,
@@ -462,12 +467,15 @@
 		    photo_Scrollview.plug(_Y.Plugin.ScrollViewPaginator, {
 		        selector: "li.page-wrap" // elements definining page boundaries
 		    });
-		    // update page
+		    
+		    photo_Scrollview.render();
+		    firstPhotoHack.setStyles({height:null});
+		    
+		    // show Photo
 		    photo_Scrollview.pages.after('indexChange', function(e){
 		    	_curPhotoIndex = e.newVal;
 		    	this.showPhoto(e.newVal);
 		    }, this);
-		    photo_Scrollview.render();
 		    
 		    // scroll to clicked photo
 		    photo_Scrollview.pages.set('index', _curPhotoIndex);
@@ -692,6 +700,7 @@
 						break;
 					}
 				}
+				this.photo_Scrollview.show();
 				this.photo_Scrollview.pages.set('index', _curPhotoIndex);
 			} else {
 			    this.photo_Scrollview = this.addScrollView_Photo(e.target);
@@ -730,9 +739,10 @@
 			this.animateOpacity(0, this.cfg.animation.overlayDuration,
 					_container.one("#centerbox"), function() {
 						// hide #glass after animation complete
-						_container.one("#centerbox").addClass('hide');
-						_container.one("#glass").addClass('hide');
-					});
+						this.container.one("#centerbox").addClass('hide');
+						this.container.one("#glass").addClass('hide');
+						this.photo_Scrollview.hide();
+					}, this);
 		},
 		showPhoto : function(index) {
 			var preload = [index, index+1, index-1]; // load before and after
@@ -785,7 +795,7 @@
 		 */
 		winResize : function(e) {
 			var containerRect = _getContainerRect(this.container, this.cfg, 'force');		
-			
+			// scale pageGalleries
 			var pages = this.content.all('div.pageGallery');
 			pages.each(function(page, i) {
 				if (page.hasClass('hide')) {
@@ -798,6 +808,18 @@
 				}
 			}, this);
 			this.showPage(_pageIndex);
+			// center scrollView Photo
+			if (this.photo_Scrollview.get('visible')) {
+				this.photo_Scrollview.hide();
+				var centerBox = this.container.one('#centerbox');
+				centerBox.setStyles({
+					'left': (centerBox.get('winWidth') - centerBox.get('clientWidth'))/2,
+					'top': (centerBox.get('winHeight') - centerBox.get('clientHeight'))/2,  	
+				})
+				_Y.later(500, this, function(){
+					this.photo_Scrollview.show();
+				}, this)
+			}
 			if (e && PM.pageMakerPlugin) PM.pageMakerPlugin.external_Y.fire('snappi-pm:resize', this, containerH);
 		},
 
@@ -811,7 +833,7 @@
 			} catch (e) {
 				pageRect = _Y.Node.getDOMNode(page);
 			}
-// console.warn("pageRect="+ pageRect.W +':'+ pageRect.H);			
+console.warn("pageRect="+ pageRect.W +':'+ pageRect.H);			
 			if (cfg.W && cfg.H && (cfg.H / cfg.W > pageRect.H / pageRect.W)) {
 				scaleTo = 'same-width';
 				// delete cfg.H;  	// use cfg.W as bound, all pages same width
