@@ -681,6 +681,10 @@ $this->log($newAsset, LOG_DEBUG);
 			} else 
 				$filterConditions[] = "IF(UserEdit.rating, UserEdit.rating, SharedEdit.score)>={$options['rating']}";
 		}
+		if (isset($options['batchId'])) {
+			$batchIds = (strpos($options['batchId'], ',')!==false) ? explode(',', $options['batchId']) : $options['batchId'];
+			$filterConditions[] = array("Asset.batchId"=>$batchIds);
+		}
 		if (isset($options['q'])) {
 			// text search, 
 			$searchKeys = array('caption', 'keyword', 'tags');

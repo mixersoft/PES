@@ -438,6 +438,31 @@ $this->log("role = ".AppController::$role, 	LOG_DEBUG);
 		$this->render('photostreams');
 	}
 
+	/*
+	 * TODO: make JSON only
+	 */ 
+	function batch_ids($id = null) {
+		$forceXHR = setXHRDebug($this, 0);
+		$this->layout='ajax';	
+		$this->autoRender = false;
+		if (!$id) $id = AppController::$ownerid;
+		$options = array(
+			'conditions'=>array(
+				'Asset.owner_id'=>$id,
+			), 
+			'fields'=>array('DISTINCT Asset.batchId'),
+			'permissionable'=>false,					// is this ok? needed for DISTINCT
+			'extras' => array(
+				'join_shots'=>false,	// get ALL photos
+				'show_edits' => false,
+			),							
+		);
+		$this->User->Asset->Behaviors->detach('Taggable');
+		$data = $this->User->Asset->find('all',$options);
+		$this->viewVars['jsonData']['batchIds'] = Set::extract($data, '/Asset/batchId');
+		$done = $this->renderXHRByRequest('json', '/elements/dumpSQL', null);
+	}
+	
 	function groups($id = null){
 		$this->layout = 'snappi';
 		$this->helpers[] = 'Time';
