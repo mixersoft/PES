@@ -634,6 +634,7 @@
         /*
          * scroll ".gallery .filmstrip" to show focus in center
          * @params m mixed, _Y.Node (.FigureBox), uuid, or index
+         * context == SNAPPI.Gallery
          */
         scrollFocus: function(m) {
         	var i, thumbs, selected, parent = this.container.ancestor('.filmstrip');
@@ -674,10 +675,9 @@
 				var scrollLeft = (i+offset + 0.5) * width - center; 
 				parent.set('scrollLeft', scrollLeft);
 				thumbs = thumbs || parent.all('.FigureBox');
-				// set focus
 				thumbs.removeClass('focus').item(i).addClass('focus');
+				return thumbs.item(i);
         	} catch (e) {}
-        	
         },
         /**
          * for shot gallery 

@@ -737,8 +737,12 @@
 						 this.Gallery = this.orig_Gallery;
 					}
 				}
-				if (g.container.hasClass('filmstrip')) {
-					g.scrollFocus(selected);	
+				if (g.container.hasClass('one-row')) {
+					var oldFocus = g.container.one('.focus');
+					if (oldFocus == g.scrollFocus(selected)) {
+						// we are at the end of the filmstrip, get prev/next page
+						SNAPPI.Factory.Gallery[g._cfg.type]['handle_paginate'].call(g, direction, g, null);
+					};
 				} else g.setFocus(selected);
 				parent = this.ancestor('.preview-body');
 				ThumbnailFactory[type].bindSelected(selected, parent, {gallery: g});

@@ -448,7 +448,7 @@ var _showZoom = function(e, g) {
 		                	try {
 					    		switch(action[0]) {
 					    			case 'paginate':
-					    				fn = GalleryFactory[this.Gallery._cfg.type]['handle_'+action[0]];
+					    				fn = GalleryFactory[this.Gallery._cfg.type]['handle_paginate'];
 					    				break;
 					    		}
 			                	try {
