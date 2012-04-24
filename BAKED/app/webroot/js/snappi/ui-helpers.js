@@ -235,6 +235,7 @@
 									if (i==0) args.node.setContent(option);
 									else args.node.append(option);
 								}
+								args.node.append('<option value="null">(remove)</option>');
 							}
 							return false;
 						}, 
@@ -254,7 +255,9 @@
 		filter: {
 			batchId: function(dom) {
 				var n = dom.ynode();
-				var href = SNAPPI.io.setNamedParams(window.location.href, {'batchId':n.get('value')})
+				var value = n.get('value');
+				value = 'null' ? null : value;
+				var href = SNAPPI.io.setNamedParams(window.location.href, {'batchId':value})
 				window.location.href = href;
 			},
 			rating: function(e) {
