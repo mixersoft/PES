@@ -187,7 +187,76 @@
 		}		
 	};
 	UIHelper.action = {
+		get: {
+			filterByOptions: function(dom) {
+				var container = dom.ynode();
+				if (container.io) return;
+				// TODO: check if we have already loaded batchIds
+				var controller = SNAPPI.STATE.controller;
+				var href = '/'+controller.alias+'/batch_ids/';
+				if (controller.alias == 'my') href += '.json';
+				else href += controller.xhrFrom.uuid +'/.json';
+				var check;
+		/*
+		 * plugin _Y.Plugin.IO
+		 */
+		var loadingmaskTarget = container.get('parentNode');
+		container.plug(_Y.LoadingMask, {
+			strings: {loading:''}, 	// BUG: A.LoadingMask
+			target: loadingmaskTarget,
+		});    			
+		container.loadingmask._conf.data.value['target'] = loadingmaskTarget;
+		container.loadingmask.overlayMask._conf.data.value['target'] = container.loadingmask._conf.data.value['target'];
+		container.loadingmask.set('zIndex', 10);
+		container.loadingmask.overlayMask.set('zIndex', 10);
+		var args = {
+				uri: href,
+				node: container, 
+		};
+		args.loadingmask = container.loadingmask;
+		var	ioCfg = {
+   					uri: args.uri,
+					context: container,
+					arguments: args, 
+					method: "POST",
+					dataType: 'json',
+					on: {
+						successJson: function(e, i, o,args){
+							var resp = o.responseJson;
+							if (resp.response && resp.response.batchIds) {
+								var selected, option, value, dateLabel;	// tranform JSON to options
+								selected = args.node.one('option').get('value');
+								for (var i in resp.response.batchIds) {
+									value = resp.response.batchIds[i];
+									dateLabel = SNAPPI.util.formatUnixtimeAsTimeAgo(value);
+									option = args.node.create('<option></option>');
+									option.set('value', value).setContent(dateLabel);
+									if (value == selected) option.set('selected', 'selected');
+									if (i==0) args.node.setContent(option);
+									else args.node.append(option);
+								}
+							}
+							return false;
+						}, 
+						complete: function(e, i, o, args) {
+							args.loadingmask.hide();
+						},
+						failure : function (e, i, o, args) {
+							// post failure or timeout
+						},
+					}
+			};
+		container.loadingmask.show();	
+		container.plug(_Y.Plugin.IO, SNAPPI.IO.pluginIO_RespondAsJson(ioCfg));				
+				
+			}
+		},
 		filter: {
+			batchId: function(dom) {
+				var n = dom.ynode();
+				var href = SNAPPI.io.setNamedParams(window.location.href, {'batchId':n.get('value')})
+				window.location.href = href;
+			},
 			rating: function(e) {
 				var href = window.location.href;
 				if (e.target.hasClass('remove')) {  	// remove tag

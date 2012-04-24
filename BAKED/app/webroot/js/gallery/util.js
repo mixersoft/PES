@@ -276,6 +276,33 @@
                 };
                 return date.getUTCFullYear() + '-' + lpad(date.getUTCMonth() + 1) + '-' + lpad(date.getUTCDate()) + 'T' + lpad(date.getUTCHours()) + ':' + lpad(date.getUTCMinutes()) + ':' + lpad(date.getUTCSeconds());
             },
+            // output JS date to string in local time zone
+            formatUnixtimeAsDate: function(unixtime){
+            	var date = new Date(unixtime*1000)
+                var lpad = function(n, padding){
+                	if (padding == undefined) padding = '0';
+                    return n.toString().length == 1 ? padding + n : n;
+                };
+                var h = date.getHours();
+                var dd = (h>12) ? 'pm' : 'am';
+                h = (h>12) ? h-12 : ((h==0) ? 12 : h);
+                return date.getFullYear() + '-' + lpad(date.getMonth() + 1) + '-' + lpad(date.getDate()) + '&nbsp;' + h + ':' + lpad(date.getMinutes()) + dd;
+            },
+            formatUnixtimeAsTimeAgo: function(unixtime){
+            	// var date = new Date(unixtime*1000);
+            	var difference = new Date().getTime() - (unixtime * 1000);
+            	var daysAgo =  Math.floor(difference/1000/60/60/24);
+    			difference -= daysAgo*1000*60*60*24;
+    			if (daysAgo >= 7) return this.formatUnixtimeAsDate(unixtime);
+    			
+            	var hoursAgo = Math.floor(difference/1000/60/60);
+    			difference -= hoursAgo*1000*60*60;
+    			var minsAgo = Math.floor(difference/1000/60);
+    			var label = daysAgo ? daysAgo+'d ':'';
+    			label += hoursAgo ? hoursAgo+'h ':'';
+    			label += minsAgo ? minsAgo+'h ':'';
+    			return label ? label +' ago' : '0m ago';
+            },
             /**
              * Parse datetime string into a Javascript Date, assumed to be UTC time by default
              *

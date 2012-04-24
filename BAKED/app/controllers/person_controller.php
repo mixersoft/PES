@@ -451,6 +451,7 @@ $this->log("role = ".AppController::$role, 	LOG_DEBUG);
 				'Asset.owner_id'=>$id,
 			), 
 			'fields'=>array('DISTINCT Asset.batchId'),
+			'order'=>array('batchId DESC'),
 			'permissionable'=>false,					// is this ok? needed for DISTINCT
 			'extras' => array(
 				'join_shots'=>false,	// get ALL photos
