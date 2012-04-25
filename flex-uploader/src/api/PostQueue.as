@@ -77,7 +77,9 @@ package api
 				}
 			}
 		}
-		
+		/**
+		 * deprecated? see UploaderUI::postUploadFile()
+		 */ 
 		public function doPost():void{
 			clearTimeout(this.queueTimer);
 			if(this.queueIndex<this.queue.length){
