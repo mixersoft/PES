@@ -89,6 +89,8 @@ class ProviderAccount extends AppModel {
 			} else 	$response['message'][]="Error creating provider account, data={$providerAccount}";
 			
 		} else {
+			$data['ProviderAccount']['baseurl'] = $providerAccount['baseurl'];
+			$this->save(array('id'=>$data['ProviderAccount']['id'], 'baseurl'=>$data['ProviderAccount']['baseurl'] ));
 			$response['message'][] = "ProviderAccount already exists. id={$data['ProviderAccount']['id']}";
 		}
 		$response['success'] = isset($response['success']) ? $response['success'] && $ret : $ret;

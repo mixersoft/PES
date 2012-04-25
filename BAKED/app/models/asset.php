@@ -442,6 +442,23 @@ AND includes.asset_id='{$assetId}';
 			// 'with'=> 'Tagged',			
 		// )
 	);
+	/*
+	 * update selected Asset fields if imported again
+	 * @return array, list of fields to update;
+	 */ 
+	function __updateAssetFields($old, $new){
+		$fieldlist = array('id', 'modified');	
+		// do NOT overwrite if NEW is empty
+		if (!empty($new['json_exif'])) $fieldlist[]='json_exif';
+		if (!empty($new['json_iptc'])) $fieldlist[]='json_iptc';
+		if (!empty($new['dateTaken'])) $fieldlist[]='dateTaken';
+		if (!empty($new['src_thumbnail'])) $fieldlist[]='src_thumbnail';
+		if (!empty($new['json_src'])) $fieldlist[]='json_src';
+		// do NOT overwrite if old exists
+		if (empty($old['caption'])) $fieldlist[]='caption';
+		if (empty($old['keyword'])) $fieldlist[]='keyword';
+		return $fieldlist;
+	}
 
 	function addIfNew($asset, $providerAccount, $baseurl, $photoPath, $isOriginal, & $response){
 		$ret = true;
@@ -458,6 +475,8 @@ AND includes.asset_id='{$assetId}';
 // $this->log('$filename_no_counter =>'.$filename_no_counter,LOG_DEBUG);		
 		$uuid = !empty($asset['id']) ? $asset['id'] : String::uuid();
 		$shardPath = $Import->shardKey($uuid, $uuid);
+		// TODO: BUG: $providerAccount['baseurl'] is only the INITIAL baseurl. does
+		// not change when 2nd folder is imported
 		$src['orig']= cleanPath($providerAccount['baseurl'].DS.$asset['rel_path'], 'http');		// original relpath in the clear
 		$src['root']= $shardPath;
 		// $src['preview']= $Import->getImageSrcBySize($shardPath, 'bp');	// deprecate??
@@ -476,33 +495,6 @@ AND includes.asset_id='{$assetId}';
 		// add provider_account_id for generating asset_hash
 		$asset['provider_account_id'] = $providerAccount['id'];
 		$asset_hash = getAssetHash($asset, $photoPath, $filename_no_counter );
-		/*
-		 *  check if asset already exists, by asset.id OR asset_hash 
-		 */
-		$this->Behaviors->detach('Taggable');
-		$checkDupes_options = array(
-			'recursive' => -1,
-			'conditions' => array( 'Asset.owner_id' => $userid,
-				'OR'=>array(
-					'Asset.id'=>$asset['id'], 
-					'Asset.asset_hash'=>array($asset_hash, $asset['asset_hash']),
-				)
-			),
-			'extras'=>array(
-				'show_edits'=>false,
-				'join_shots'=>false, 
-				'show_hidden_shots'=>false		
-			),
-			'permissionable'=>false,
-		);
-		$data = $this->find('first', $checkDupes_options);
-// $this->log( "checkDupes_options data=".print_r($data, true), LOG_DEBUG);		
-		if (!empty($data['Asset']['id'])) {
-			// found
-			$response['message'][]="photo already imported";
-			return array('Asset'=>$data['Asset']);
-		}
-		
 		$assetTemplate = array(
 			'owner_id'=>$userid,						// owner, might be redundant
 			'provider_account_id' => $providerAccount['id'],
@@ -535,16 +527,56 @@ AND includes.asset_id='{$assetId}';
 		 */
 		pack_json_keys($newAsset);		// from php_lib
 		$newAsset = array_merge($assetTemplate, $newAsset);
-		$data = array('Asset'=>$newAsset);
-$this->log("insert newAsset", LOG_DEBUG);		
-$this->log($newAsset, LOG_DEBUG);
+		
+		/*
+		 *  check if asset already exists, by asset.id OR asset_hash 
+		 */
+		$this->Behaviors->detach('Taggable');
+		$checkDupes_options = array(
+			'recursive' => -1,
+			'conditions' => array( 'Asset.owner_id' => $userid,
+				'OR'=>array(
+					'Asset.id'=>$asset['id'], 
+					'Asset.asset_hash'=>array($asset_hash, $asset['asset_hash']),
+				)
+			),
+			'extras'=>array(
+				'show_edits'=>false,
+				'join_shots'=>false, 
+				'show_hidden_shots'=>false		
+			),
+			'permissionable'=>false,
+		);		
+		$duplicate = $this->find('first', $checkDupes_options);
+// $this->log( "checkDupes_options data=".print_r($data, true), LOG_DEBUG);		
+		if (!empty($duplicate['Asset']['id'])) {
+			// found 
+			$fieldlist = $this->__updateAssetFields($duplicate['Asset'], $newAsset);
+			$newAsset = array_intersect_key($newAsset, array_flip($fieldlist)); 
+			$duplicate['Asset'] = array_merge($duplicate['Asset'], $newAsset);
+			$ret = $this->save($duplicate, true, $fieldlist);
+			if (!$ret) {
+$this->log( " ERROR: this->__updateAssetFields()".print_r($newAsset, true), LOG_DEBUG);					
+				$response['message'][]="ERROR updating fields of duplicate Asset";
+			} else {
+				$response['message'][]="Photo fields updated";
+			}
+			$response['response'][]=$newAsset;
+$this->log('__updateAssetFields =>'.print_r($newAsset, true),LOG_DEBUG);				
+			return array('Asset'=>$duplicate['Asset']);
+		}
+
+		
+		
 		/*
 		 * $asset is correct
 		 *************************************************************/
-		
+$this->log("insert newAsset", LOG_DEBUG);		
+$this->log($newAsset, LOG_DEBUG);
 		/*
 		 * insert row in assets table
 		 */
+		$data = array('Asset'=>$newAsset);
 		// config Permissionable for CREATE to skip 'write' permission check
 		$this->isCREATE = true;
 		$this->create();
