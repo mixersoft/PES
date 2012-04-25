@@ -300,7 +300,7 @@
     			var minsAgo = Math.floor(difference/1000/60);
     			var label = daysAgo ? daysAgo+'d ':'';
     			label += hoursAgo ? hoursAgo+'h ':'';
-    			label += minsAgo ? minsAgo+'h ':'';
+    			label += minsAgo ? minsAgo+'m ':'';
     			return label ? label +' ago' : '0m ago';
             },
             /**

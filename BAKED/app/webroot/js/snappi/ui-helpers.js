@@ -232,10 +232,9 @@
 									option = args.node.create('<option></option>');
 									option.set('value', value).setContent(dateLabel);
 									if (value == selected) option.set('selected', 'selected');
-									if (i==0) args.node.setContent(option);
-									else args.node.append(option);
+									args.node.append(option);
 								}
-								args.node.append('<option value="null">(remove)</option>');
+								args.node.append('<option value="">(remove filter)</option>');
 							}
 							return false;
 						}, 
@@ -256,7 +255,7 @@
 			batchId: function(dom) {
 				var n = dom.ynode();
 				var value = n.get('value');
-				value = 'null' ? null : value;
+				if (!value) value = null;
 				var href = SNAPPI.io.setNamedParams(window.location.href, {'batchId':value})
 				window.location.href = href;
 			},

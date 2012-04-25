@@ -39,8 +39,13 @@
 	
 	$btn_state['filter-rating'] = isset($passed['rating']) ? 'selected' : '';
 	
-	$btn_state['filter-batchId'] = isset($passed['batchId']) ? 'selected' : '';
-	$batchId_option = isset($passed['batchId']) ? $passed['batchId'] : 'Date Uploaded';
+	if (isset($passed['batchId'])) {
+		$btn_state['filter-batchId'] = 'selected';
+		$filter_option['batchId'] = array('value'=>$passed['batchId'], 'label'=>date('Y-m-d h:ia',$passed['batchId']) ); 
+	} else {
+		$btn_state['filter-batchId'] = false;
+		$filter_option['batchId'] = array('value'=>'', 'label'=>'Date Uploaded' );
+	}
 	
 	$btn_state['filter-tag'] = (!empty($passed['Tag']) || Session::read('lookup.context.keyName')=='Tag') ? 'selected' : '';
 	
@@ -69,7 +74,7 @@
 					<span class="btn remove rounded-5  <?php echo $btn_state['filter-tag'] ? '' : 'hide'; ?>"  title="click to REMOVE this filter" action="filter:tag">x</span>Tag&nbsp;<input type='text' class='tag copy-paste' maxlength='40'  value='' /></li>
 				<li class="btn white batch-id <?php echo $btn_state['filter-batchId']; ?>  action="filter:batch-id"">
 					<select onmousedown="SNAPPI.UIHelper.action.get.filterByOptions(this);" onchange="SNAPPI.UIHelper.action.filter.batchId(this);" title='Date Uploaded'>
-	             		<option value='<?php echo $batchId_option;  ?>' selected='<?php echo $btn_state['filter-batchId']; ?>'><?php echo date('Y-m-d h:ia',$batchId_option);   ?></option>
+	             		<option value='<?php echo $filter_option['batchId']['value'];  ?>' selected='<?php echo $btn_state['filter-batchId']; ?>'><?php echo $filter_option['batchId']['label'];  ?></option>
 	             	</select>
 				</li>
 				<li class="btn white disabled">Date Taken <a><img src="/static/img/css-gui/arrow.png" alt=""></a></li>
