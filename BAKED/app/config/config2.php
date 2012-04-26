@@ -29,7 +29,7 @@ $config['register'] = array(
 );
 
 $config['desktop.uploader'] = array(
-	'version'=>'1.8.4'
+	'version'=>'1.8.5'
 );
 
 /*
