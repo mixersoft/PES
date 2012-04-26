@@ -450,7 +450,8 @@ $this->log("role = ".AppController::$role, 	LOG_DEBUG);
 			'conditions'=>array(
 				'Asset.owner_id'=>$id,
 			), 
-			'fields'=>array('DISTINCT Asset.batchId'),
+			'fields'=>array('Asset.batchId', "COUNT('id') AS count"),
+			'group'=>'Asset.batchId',
 			'order'=>array('batchId DESC'),
 			'permissionable'=>false,					// is this ok? needed for DISTINCT
 			'extras' => array(
@@ -460,7 +461,7 @@ $this->log("role = ".AppController::$role, 	LOG_DEBUG);
 		);
 		$this->User->Asset->Behaviors->detach('Taggable');
 		$data = $this->User->Asset->find('all',$options);
-		$this->viewVars['jsonData']['batchIds'] = Set::extract($data, '/Asset/batchId');
+		$this->viewVars['jsonData']['batchIds'] = Set::combine($data, '/Asset/batchId', '/Asset/count');
 		$done = $this->renderXHRByRequest('json', '/elements/dumpSQL', null);
 	}
 	

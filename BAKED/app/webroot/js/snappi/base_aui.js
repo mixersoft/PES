@@ -193,7 +193,7 @@
 	 * force static host to snappi-cn for these conditions, usually 10.1.2.207
 	 */
 	if (window.location.host.match( /10\.1\.2\./i )) Config.staticHost.FORCE_HOST = window.location.host;
-	if (window.location.host.match( /aws\.snaphappi\.com/i )) Config.staticHost.FORCE_HOST = '10.1.2.210';
+	if (window.location.host.match( /aws\.snaphappi\.com/i )) Config.staticHost.FORCE_HOST = '10.1.2.203';
 	/*
 	 * end force static host
 	 */

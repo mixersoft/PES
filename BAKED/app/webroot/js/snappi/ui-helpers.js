@@ -224,11 +224,12 @@
 						successJson: function(e, i, o,args){
 							var resp = o.responseJson;
 							if (resp.response && resp.response.batchIds) {
-								var selected, option, value, dateLabel;	// tranform JSON to options
+								var selected, option, value, count, dateLabel;	// tranform JSON to options
 								selected = args.node.one('option').get('value');
 								for (var i in resp.response.batchIds) {
-									value = resp.response.batchIds[i];
-									dateLabel = SNAPPI.util.formatUnixtimeAsTimeAgo(value);
+									value = i;
+									count = resp.response.batchIds[i];
+									dateLabel = SNAPPI.util.formatUnixtimeAsTimeAgo(value)+ ' ('+ count + ')';
 									option = args.node.create('<option></option>');
 									option.set('value', value).setContent(dateLabel);
 									if (value == selected) option.set('selected', 'selected');
