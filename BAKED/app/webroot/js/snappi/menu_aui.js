@@ -1179,7 +1179,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	};	
 	MenuItems.express_upload_click = function(menuItem, menu, properties){
 		var isExpress = menuItem.get('innerHTML')[0] == '▶';
-		isExpress = !isExpress;
+		isExpress = isExpress ? 0 : 1;		// toggle value
 		var cfg = {
 			gid: properties.id,
 			isExpress: isExpress,
