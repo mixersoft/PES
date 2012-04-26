@@ -89,7 +89,7 @@ class ProviderAccount extends AppModel {
 			} else 	$response['message'][]="Error creating provider account, data={$providerAccount}";
 			
 		} else {
-			$data['ProviderAccount']['baseurl'] = $providerAccount['baseurl'];
+			$data['ProviderAccount']['baseurl'] = isset($providerAccount['baseurl']) ? $providerAccount['baseurl'] : '';
 			$this->save(array('id'=>$data['ProviderAccount']['id'], 'baseurl'=>$data['ProviderAccount']['baseurl'] ));
 			$response['message'][] = "ProviderAccount already exists. id={$data['ProviderAccount']['id']}";
 		}

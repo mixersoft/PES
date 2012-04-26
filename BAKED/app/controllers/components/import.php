@@ -336,13 +336,13 @@ $this->log("WARNING: missing exif[root][imageSize], (see castingCall), path={$pa
 		$OS = Configure::read('Config.os');
 		$src = cleanPath($src, $OS);
 		$dest = cleanPath($stagepath.DS.$dest, $OS);		
-//$this->log("Import->import2stage, src={$src}, dest={$dest}", LOG_DEBUG);	
+// $this->log("Import->import2stage, src={$src}, dest={$dest}", LOG_DEBUG);	
 		if (file_exists($dest)) {
 			// DO NOT overwrite if file is bigger
-			if (filesize($dest) <= filesize($src)) return false;
+			if (filesize($dest) > filesize($src)) return false;
 		}	
 		$result = copy($src, $dest);
-//$this->log("result={$result}", LOG_DEBUG);		
+// $this->log("result={$result}", LOG_DEBUG);		
 		if ($move && $result) unlink($src);
 		return $result;
 	}

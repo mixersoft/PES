@@ -121,6 +121,7 @@ class MyController extends PersonController {
 		$conditions = array('provider_name'=>$data['ProviderAccount']['provider_name'], 'user_id'=>AppController::$userid);
 		if (!empty($data['ProviderAccount']['id']) ) $conditions['id'] = $data['ProviderAccount']['id'];
 		$paData = $this->ProviderAccount->addIfNew($data['ProviderAccount'], $conditions,  $response);
+		$paData['baseurl'] = isset($data['ProviderAccount']['baseurl']) ? $data['ProviderAccount']['baseurl'] : $paData['baseurl']; 
 		/****************************************************
 		 * setup data['Asset'] to create new Asset
 		 */
@@ -128,13 +129,19 @@ class MyController extends PersonController {
 		if (isset($profile['Profile']['privacy_assets'])) {
 			$data['Asset']['perms'] = $profile['Profile']['privacy_assets'];
 		}	
-// $this->log("MyController::__importPhoto, asset=".print_r($paData, true), LOG_DEBUG);			
+		
+// $this->log("MyController::__importPhoto, paData=".print_r($paData, true), LOG_DEBUG);			
 		$assetData = $this->Asset->addIfNew($data['Asset'], $paData['ProviderAccount'], $baseurl, $move_to_src_root, $isOriginal, $response);		
-// $this->log("MyController::__importPhoto, asset=".print_r($assetData, true), LOG_DEBUG);		
-		// move file to staging server 
+// $this->log("MyController::__importPhoto, this->Asset->addIfNew(), asset=".print_r($assetData, true), LOG_DEBUG);		
+		/*
+		 *  move file to staging server,
+		 * 	NOTE: for DUPLICATE files, 
+		 * 		asset fields are updated in DB, see Asset::__updateAssetFields()
+		 * 		files are COPIED only if larger
+		 */   
 		$src = json_decode($assetData['Asset']['json_src'], true);
 		$stage=array('src'=>$move_to_src_root, 'dest'=>$src['root']);
-// $this->log("MyController::__importPhoto, ".print_r($stage, true), LOG_DEBUG);		
+// $this->log("MyController::__importPhoto staging files, ".print_r($stage, true), LOG_DEBUG);		
 	 	if ($ret3 = $Import->import2stage($stage['src'], $stage['dest'], null, $move = true)) {
 	 		$response['message'][]="file staged successfully, dest={$stage['dest']}";
 		} else $response['message'][]="Error staging file, src={$stage['src']}";
@@ -189,11 +196,19 @@ class MyController extends PersonController {
 		$data['Asset']['rel_path'] = basename($move_to_src_root);
 		$data['ProviderAccount']['provider_name']=$PROVIDER_NAME;
 // $this->log($data['Asset'], LOG_DEBUG);		
+		/***************************************************************
+		 * experimental: replace mode, replace existing with original
+		 * 	pass to Asset::addIfNew()
+		 ***************************************************************/ 
+		 if (!empty($this->params['url']['replace'])){
+		 	$data['Asset']['replace-preview-with-original'] = true;
+		 };
+		
 		/*
 		 * import into DB
 		 */
-//$this->log("MyController::__upload_javascript() BEGIN VALUMS/JAVASCRIPT IMPORT", LOG_DEBUG);
-//		$this->log($data, LOG_DEBUG);
+$this->log("MyController::__upload_javascript() BEGIN VALUMS/JAVASCRIPT IMPORT", LOG_DEBUG);
+$this->log($data, LOG_DEBUG);
 		$response = $this->__importPhoto($data, $UPLOAD_FOLDER, $move_to_src_root, 'ORIGINAL');	// autoRotate=false
 		if ($response['success'] && isset($response['response']['Asset']['id'])) {
 			/*
@@ -289,7 +304,7 @@ $this->log("__upload_AIRclient(): upload success, owner_id={$userid}, file dest=
 		 * import into DB
 		 */
 $this->log("before __importPhoto  >>>>>>>>>>>>>>>", LOG_DEBUG);	
-$this->log($this->data['Asset'], LOG_DEBUG);
+// $this->log($this->data['Asset'], LOG_DEBUG);
 		// for AIR: autoRotate==true
 		$response = $this->__importPhoto($this->data, $UPLOAD_FOLDER, $move_to_src_root, "PREVIEW");
 $this->log($response['message'], LOG_DEBUG);		

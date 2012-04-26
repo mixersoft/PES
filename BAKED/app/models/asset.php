@@ -452,8 +452,11 @@ AND includes.asset_id='{$assetId}';
 		if (!empty($new['json_exif'])) $fieldlist[]='json_exif';
 		if (!empty($new['json_iptc'])) $fieldlist[]='json_iptc';
 		if (!empty($new['dateTaken'])) $fieldlist[]='dateTaken';
-		if (!empty($new['src_thumbnail'])) $fieldlist[]='src_thumbnail';
-		if (!empty($new['json_src'])) $fieldlist[]='json_src';
+		
+		// these src fields are derived from UUID, do NOT update if UUID will not change
+		// if (!empty($new['src_thumbnail'])) $fieldlist[]='src_thumbnail';
+		// if (!empty($new['json_src'])) $fieldlist[]='json_src';
+		
 		// do NOT overwrite if old exists
 		if (empty($old['caption'])) $fieldlist[]='caption';
 		if (empty($old['keyword'])) $fieldlist[]='keyword';
@@ -473,14 +476,10 @@ AND includes.asset_id='{$assetId}';
 		$file_relpath = cleanPath(substr($photoPath,strlen($baseurl)),'http');
 		$filename_no_counter = preg_replace('/(.*)(~\d+)(\.jpg)/i','${1}${3}',$asset['rel_path']);	
 // $this->log('$filename_no_counter =>'.$filename_no_counter,LOG_DEBUG);		
-		$uuid = !empty($asset['id']) ? $asset['id'] : String::uuid();
-		$shardPath = $Import->shardKey($uuid, $uuid);
-		// TODO: BUG: $providerAccount['baseurl'] is only the INITIAL baseurl. does
-		// not change when 2nd folder is imported
-		$src['orig']= cleanPath($providerAccount['baseurl'].DS.$asset['rel_path'], 'http');		// original relpath in the clear
-		$src['root']= $shardPath;
-		// $src['preview']= $Import->getImageSrcBySize($shardPath, 'bp');	// deprecate??
-		$src['thumb']= $Import->getImageSrcBySize($shardPath, 'tn');
+		/*
+		 *  WARNING:ProviderAccount.baseurl DB field is only the INITIAL baseurl. 
+		 *  $providerAccount['baseurl'] value is manually updated in MyController::__importPhoto()
+		 */  
 
 		/*
 		 * get extended exif from uploaded file, if available.
@@ -503,14 +502,8 @@ AND includes.asset_id='{$assetId}';
 			'uploadId' => $timestamp,
 		);		
 		$newAsset = array(
-			'id' => $uuid,
-			'provider_key' => $uuid,
 			'asset_hash' =>  $asset_hash,	
-			'json_src' => $src,
-			'src_thumbnail' => $src['thumb'],
 			'json_exif' => $asset['json_exif'],
-			// 'json_preview_exif' => !empty($asset['json_exif']['preview']) ? $asset['json_exif']['preview'] : null,	// deprecate?
-//			'json_iptc' => $meta['iptc'],
 			'dateTaken' => !empty($asset['json_exif']['DateTimeOriginal']) ? $asset['json_exif']['DateTimeOriginal'] : null,
 			'isFlash' => $asset['json_exif']['isFlash'],
 			'isRGB' => !empty($asset['json_exif']['isRGB']) ? $asset['json_exif']['isRGB']: null,
@@ -520,14 +513,9 @@ AND includes.asset_id='{$assetId}';
 		if (empty($asset['caption']))   {
 			$newAsset['caption'] = pathinfo($filename_no_counter, PATHINFO_FILENAME);
 		}
-
-		/*
-		 * set default Asset perms from Profile
-		 *		override Plugin default set in Asset model
-		 */
 		pack_json_keys($newAsset);		// from php_lib
 		$newAsset = array_merge($assetTemplate, $newAsset);
-		
+
 		/*
 		 *  check if asset already exists, by asset.id OR asset_hash 
 		 */
@@ -535,10 +523,7 @@ AND includes.asset_id='{$assetId}';
 		$checkDupes_options = array(
 			'recursive' => -1,
 			'conditions' => array( 'Asset.owner_id' => $userid,
-				'OR'=>array(
 					'Asset.id'=>$asset['id'], 
-					'Asset.asset_hash'=>array($asset_hash, $asset['asset_hash']),
-				)
 			),
 			'extras'=>array(
 				'show_edits'=>false,
@@ -547,52 +532,87 @@ AND includes.asset_id='{$assetId}';
 			),
 			'permissionable'=>false,
 		);		
+		/***************************************************************
+		 * experimental: replace mode, replace existing with original
+		 * 		from MyController::__upload_javascript()
+		 ***************************************************************/
+		if (!empty($asset['replace-preview-with-original'])) {
+			$checkDupes_options['conditions'] = array( 
+				'Asset.owner_id' => $userid,
+				'Asset.dateTaken' => $newAsset['dateTaken'],
+				'Asset.caption' => $newAsset['caption'],
+				'substr(Asset.json_exif, 1,70)' =>  substr($newAsset['json_exif'], 0, 70),
+			);
+			unset($newAsset['id']);	// this is not the original UUID 
+		}; 
 		$duplicate = $this->find('first', $checkDupes_options);
-// $this->log( "checkDupes_options data=".print_r($data, true), LOG_DEBUG);		
+// $this->log( "checkDupes_options options=".print_r($checkDupes_options, true), LOG_DEBUG);		
+// $this->log( "checkDupes_options FOUND, data=".print_r($duplicate, true), LOG_DEBUG);
 		if (!empty($duplicate['Asset']['id'])) {
-			// found 
+			// found Duplicate
+			
 			$fieldlist = $this->__updateAssetFields($duplicate['Asset'], $newAsset);
 			$newAsset = array_intersect_key($newAsset, array_flip($fieldlist)); 
 			$duplicate['Asset'] = array_merge($duplicate['Asset'], $newAsset);
-			$ret = $this->save($duplicate, true, $fieldlist);
+// $this->log( "checkDupes_options SAVE FIELDSLIST=".print_r($fieldlist, true), LOG_DEBUG);			
+			$ret = $this->save($duplicate, FALSE, $fieldlist);
 			if (!$ret) {
-$this->log( " ERROR: this->__updateAssetFields()".print_r($newAsset, true), LOG_DEBUG);					
+$this->log( " ERROR: this->__updateAssetFields()".print_r($duplicate['Asset'], true), LOG_DEBUG);					
 				$response['message'][]="ERROR updating fields of duplicate Asset";
 			} else {
-				$response['message'][]="Photo fields updated";
+				$response['message'][]="FOUND duplicate UUID, Photo fields updated";
 			}
 			$response['response'][]=$newAsset;
-$this->log('__updateAssetFields =>'.print_r($newAsset, true),LOG_DEBUG);				
-			return array('Asset'=>$duplicate['Asset']);
-		}
+$this->log('__updateAssetFields =>'.print_r($response, true),LOG_DEBUG);	
+			$data = array('Asset'=>$duplicate['Asset']);
+		} else {
+			// no Duplicate, save new Asset 
 
-		
-		
-		/*
-		 * $asset is correct
-		 *************************************************************/
-$this->log("insert newAsset", LOG_DEBUG);		
-$this->log($newAsset, LOG_DEBUG);
-		/*
-		 * insert row in assets table
-		 */
-		$data = array('Asset'=>$newAsset);
-		// config Permissionable for CREATE to skip 'write' permission check
-		$this->isCREATE = true;
-		$this->create();
-		$this->Behaviors->detach('Taggable');
-/*
- * TODO: BUG: SQL Error: 1052: Column 'id' in where clause is ambiguous
- * 		for counterCache on a permissionable
- */			
-		$this->belongsTo['Owner']['counterCache']=false;
-		if ($ret = $this->save($data)) {
-// $this->log( "save asset, data=".print_r($data, true), LOG_DEBUG);				
-			$response['message'][]="photo imported successfully";
-		} else 	$response['message'][]="Error creating asset, id={$asset['id']}";
-		$response['success'] = isset($response['success']) ? $response['success'] && $ret : $ret;
-		$data = $this->read();
-// $this->log( "AFTER save asset, data=".print_r($data, true), LOG_DEBUG);			
+			// these fields are derived from NEW $uuid
+			$uuid = !empty($asset['id']) ? $asset['id'] : String::uuid();
+			$shardPath = $Import->shardKey($uuid, $uuid);
+			$src['root']= $shardPath;
+			$src['thumb']= $Import->getImageSrcBySize($shardPath, 'tn');
+			$src['orig']= cleanPath($providerAccount['baseurl'].DS.$asset['rel_path'], 'http');		// original relpath in the clear
+			
+			// add UUID derived fields
+			$newAsset['id'] = $uuid;
+			$newAsset['provider_key'] = $uuid;
+			$newAsset['src_thumbnail'] = $src['thumb'];
+			$newAsset['json_src'] = $src;
+			pack_json_keys($newAsset);		// from php_lib
+			
+			/*
+			 * $asset is correct
+			 *************************************************************/
+$this->log("insert newAsset=".print_r($newAsset, true), LOG_DEBUG);		
+			/*
+			 * insert row in assets table
+			 */
+			$data = array('Asset'=>$newAsset);
+			// config Permissionable for CREATE to skip 'write' permission check
+			$this->isCREATE = true;
+			/*
+			 * set default Asset perms from Profile
+			 *		override Plugin default set in Asset model
+			 */		
+			// $data['AssetPermission']['perms'] = ???	
+			
+			$this->create();
+			$this->Behaviors->detach('Taggable');
+	/*
+	 * TODO: BUG: SQL Error: 1052: Column 'id' in where clause is ambiguous
+	 * 		for counterCache on a permissionable
+	 */			
+			$this->belongsTo['Owner']['counterCache']=false;
+			if ($ret = $this->save($data)) {
+	// $this->log( "save asset, data=".print_r($data, true), LOG_DEBUG);				
+				$response['message'][]="photo imported successfully";
+			} else 	$response['message'][]="Error creating asset, id={$asset['id']}";
+			$response['success'] = isset($response['success']) ? $response['success'] && $ret : $ret;
+			$data = $this->read();
+	// $this->log( "AFTER save asset, data=".print_r($data, true), LOG_DEBUG);
+		}			
 		return $data; 			
 	}
 

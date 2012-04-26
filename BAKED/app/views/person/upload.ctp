@@ -8,7 +8,12 @@
 	$this->Layout->blockStart('itemHeader');
 		$badge_src = Stagehand::getSrc($data['User']['src_thumbnail'], 'sq', 'Person');
 		echo $this->element('nav/section', compact('badge_src'));  
-	$this->Layout->blockEnd();		
+	$this->Layout->blockEnd();	
+	
+	/*
+	 * experimental: replace mode to find/replace existing photo with original
+	 */ 
+	$replace = isset($this->params['url']['replace']);  	
 ?>
 <style type="text/css">
 #valums-file-uploader {
@@ -81,6 +86,7 @@ var initOnce = function() {
 			uploader.setParams({
 				'batchId': timestamp,
 				'groupIds': gids,
+<?php  echo $replace ? "'replace': 1," : '' ;  /* replace mode	*/	?>			
 			});  
 			var check;  
 		},
