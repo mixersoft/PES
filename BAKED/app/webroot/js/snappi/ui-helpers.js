@@ -393,17 +393,24 @@
 		},
 	}
 	UIHelper.create = {
+		MAX_HEIGHT: 800,
+		MAX_WIDTH: 960,
 		getStage_modal : function(cfg){
 			cfg = cfg || {};
-			var MAX_HEIGHT = 800;	
 			var PADDING_TOP = 140;	// header+offsets = 140px
 			var markup = "<div id='stage-2' class='pagemaker-stage'><div class='stage-body'></div></div>";
+			var isHD = (SNAPPI.util.getFromQs('media') == 'print');
+			if (isHD) {
+				var body = _Y.one('body');
+				this.MAX_HEIGHT = body.get('winHeight')-50;
+				this.MAX_WIDTH = body.get('winWidth')-50;
+			}
 			var dialogCfg = {
 				// selector: '#stage-2',
 				markup: markup,
     			// uri: '/combo/markup/importComplete',
-    			height: MAX_HEIGHT,		// -> dialog.top
-    			width: 940,
+    			height: this.MAX_HEIGHT,		// -> dialog.top
+    			width: this.MAX_WIDTH,
     			tokens: {},
     		};
     		var stage, dialog = SNAPPI.Dialog.find['dialog-alert']; 
@@ -553,7 +560,9 @@
 				auditions: cfg.batch, 
 				tryout: null,			// reset tryout, using auditions instead
 				sortedhash: null,		// deprecate: reset tryout, using auditions instead
-				fnDisplaySize: {h:800},
+				fnDisplaySize: {
+					h: this.MAX_HEIGHT,
+				},
 				// stage: this.getStage_modal(), 	// use PMPlugin.setStage()
 				noHeader: true,
 				useHints: true,

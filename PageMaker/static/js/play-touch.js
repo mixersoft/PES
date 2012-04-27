@@ -22,13 +22,14 @@
    	try {
 		// load from PageMakerPlugin
 		var _Y = null;
-		// var Plugin = null;
+		var Plugin = null;
 		var PM = SNAPPI.namespace('SNAPPI.PM');
 		PM.namespace('PM.onYready');
 		// Yready init
 		PM.onYready.Play = function(Y){
 			if (_Y === null) _Y = Y;
 			PM.bootstrapY = false;
+			Plugin = PM.PageMakerPlugin.instance;
 		}  		
    	} catch (e) {
 		// same as base_aui.js
@@ -825,7 +826,12 @@
 
 		scale : function(cfg) {
 			cfg = _Y.merge(cfg);	// copy
-			var nativeMaxRes, MAX_HEIGHT = this.cfg.NATIVE_PAGE_GALLERY_H;
+			var nativeMaxRes, MAX_HEIGHT;
+			try {	// get pageGallery maxH for rendering
+            	MAX_HEIGHT = (Plugin.sceneCfg.fnDisplaySize.h-82) || PM.util.NATIVE_PAGE_GALLERY_H;	
+            } catch(e){
+            	MAX_HEIGHT = this.cfg.NATIVE_PAGE_GALLERY_H;
+            }
 			var pageRect, page = cfg.node;		// deprecate cfg.element
 			var scaleTo, scale, ratio_w = 0, ratio_h = 0;
 			try {

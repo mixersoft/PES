@@ -167,11 +167,15 @@
             if (PM.util.getFromQs('dpi')) displayDpi = PM.util.getFromQs('dpi');
             else if (PM.util.isRehearsal()==false) displayDpi = 150; // for print rendering
             
-            
+            try {	// get pageGallery maxH for rendering
+            	var maxH = (Plugin.sceneCfg.fnDisplaySize.h-82) || PM.util.NATIVE_PAGE_GALLERY_H;	
+            } catch(e){
+            	maxH = PM.util.NATIVE_PAGE_GALLERY_H;
+            }
             
             var productionCfg = {
                     fitWithin: {
-                        h: PM.util.NATIVE_PAGE_GALLERY_H // only 1 value, w or h, required, 6.5
+                        h: maxH // only 1 value, w or h, required, 6.5
                     },
                     minDpi: displayDpi,
                     borderColor: "lightgray",
