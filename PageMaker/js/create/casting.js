@@ -255,6 +255,7 @@
     Casting.CustomFitArrangement = function (Pr, cfg) {
     	// this is a syncronous call
     	var callback = {
+    		success2: cfg.callback.success,
 			success: function(A, cfg){
 				var scene = null;
 				if (Pr.arrangement) scene = Casting.ChronoCast(Pr, cfg);
@@ -512,7 +513,7 @@
              * approximate the best crop rect, by constraining size and focus.
              * we'll let the user adjust
              */
-            var minHalfW, minHalfH;
+            var minHalfW, minHalfH, scaleW, scaleH;
             var focusInMiddle = 1.5;
             // scale factor to keep focus in middle third of crop
             // get min distance from focus to photo edge
@@ -537,7 +538,9 @@
                 // see if we have an close crop match within 10%;
                 if (cropVariance < 0.10) {
                     // exact match, scale cropRect to match exact crop, will check size later
-                    this.crop.scale2Max = MIN(bestCrop.w, Aud.size.w) / (this.crop.minSize.w);
+                    scaleW = MIN(bestCrop.w, Aud.size.w) / (this.crop.minSize.w);
+                    scaleH = MIN(bestCrop.h, Aud.size.h) / (this.crop.minSize.h);
+                    this.crop.scale2Max = MIN(scaleW, scaleH);
                 }
                 
                 // find scale2Max, the min ratio for "Aud.radius/Cr.radius"
@@ -575,12 +578,12 @@
             x = (x < 0) ? 0 : ((this.crop.focus.a + w / 2 > Aud.size.w) ? (Aud.size.w - w) : x);
             var y = (this.crop.focus.b - h / 2);
             y = (y < 0) ? 0 : ((this.crop.focus.b + h / 2 > Aud.size.h) ? (Aud.size.h - h) : y);
+            this.crop.maxDim = Math.max(Aud.size.w, Aud.size.h);
             this.crop.x = x;
             this.crop.y = y;
-            this.crop.w = w;
-            this.crop.h = h;
+            this.crop.w = Math.min(w, this.crop.maxDim);
+            this.crop.h = Math.min(h, this.crop.maxDim);
             this.crop.dpi = this.crop.w / this.renderSize.w;
-            this.crop.maxDim = Math.max(Aud.size.w, Aud.size.h);
             return (this.crop.w >= this.minSize.w);
         }
     };
@@ -595,7 +598,7 @@
                 w: 6.5 // only 1 value, w or h, required
             },
             renderUnitsPerInch: 1,
-            minDpi: 300
+            minDpi: 150,				// media=print
         };
         var Arr = {
             w: 6, // use format?

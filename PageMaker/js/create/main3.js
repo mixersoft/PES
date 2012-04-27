@@ -163,8 +163,10 @@
             /********************************************
              * choose minimum displayDpi for rendering
              */
-            var displayDpi = 300; // for print rendering
-            displayDpi = 72; // for monitor rendering, low res photos
+            var displayDpi = 72; // for monitor rendering, low res photos
+            if (PM.util.getFromQs('dpi')) displayDpi = PM.util.getFromQs('dpi');
+            else if (PM.util.isRehearsal()==false) displayDpi = 150; // for print rendering
+            
             
             
             var productionCfg = {

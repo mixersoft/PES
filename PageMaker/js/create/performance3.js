@@ -156,7 +156,8 @@
             cfg = _Y.merge(cfg, {
                 label: this.label,
                 useHints: this.useHints,
-                isRehearsal: true,				// TODO: for now, use preview when casting
+                // cfg.isRehearsal => setCropSize for casting
+                isRehearsal: PM.util.isRehearsal(), 
                 // roleCount: parseInt(this.roleCount)
                 callback: {
                 	success: function(scene){

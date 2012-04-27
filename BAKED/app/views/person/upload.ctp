@@ -93,12 +93,13 @@ var initOnce = function() {
 		onComplete:function(){
 			var LLcfg = {
 					module_group: 'alert',
-					ready: function(){
+					ready: function(Y){
 						var cfg = {
 							selector: '#markup .alert-upload-complete',
 							uri: '/help/markup/dialogs',
 						};
-						SNAPPI.Alert.load(cfg);
+						if (Y.one('.alert-upload-complete')) return;
+						else SNAPPI.Alert.load(cfg);
 					},
 				}
 			SNAPPI.LazyLoad.extras(LLcfg);

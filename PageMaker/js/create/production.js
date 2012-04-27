@@ -254,7 +254,12 @@
             /*
              * start the sequence to POST page gallery and load
              */
-            cfg.isRehearsal = true;
+			if (cfg.isRehearsal == undefined) cfg.isRehearsal = PM.util.isRehearsal();
+			/*
+			 * FORCE bp IMG with cfg.isRehearsal == true
+			 * 		br IMG with cfg.isRehearsal == false
+			 */
+			// cfg.isRehearsal = false;   
             var renderedPerformance = this.getPerformance(cfg, scene);
     		Plugin.stage.body.setContent(renderedPerformance);
     		renderedPerformance.unscaled_pageGallery = Plugin.stage.body.get('innerHTML');
@@ -279,7 +284,6 @@
         getPerformance: function(cfg, scene){
             var Pr = this;
             var cast, snappiAud, token, extra, pageGallery, scale2Rehearsal;
-            scale2Rehearsal = this.previewDpi / this.minDpi;
             
             pageGallery = Plugin.stage.create('<div></div>');
             pageGallery.addClass('pageGallery hidden').setStyles({
@@ -304,54 +308,38 @@
                 castSrc = cast.audition.src;
                 
                 if (cfg.isRehearsal) {
+                	scale2Rehearsal = this.previewDpi / this.minDpi;
                     cast.minSize.h *= scale2Rehearsal;
                     cast.minSize.w *= scale2Rehearsal;
                     cast.position.x *= scale2Rehearsal;
                     cast.position.y *= scale2Rehearsal;
-                    if (cfg.spacing) {
-                        // add gaps
-                        cast.position.x += cfg.spacing;
-                        cast.position.y += cfg.spacing;
-                        cast.minSize.h -= 2 * cfg.spacing;
-                        cast.minSize.w -= 2 * cfg.spacing;
-                        
-                        /*
-                         * NOTE: we may not need to adjust crop for borders, the
-                         * brower can automatically resize. but will it be
-                         * proportional?
-                         */
-                        cast.crop.x += cfg.spacing;
-                        cast.crop.y += cfg.spacing;
-                        cast.crop.h -= 2 * cfg.spacing;
-                        cast.crop.w -= 2 * cfg.spacing;
-                    }
-                    cropRect = PM.util.getCropSpec(cast.crop, true);
-					// var thumbnail_prefix = cfg.thumbPrefix || 'bp';	// bp == 640px
+                }
+                if (cfg.spacing) {
+                    // add gaps in final dimensions
+                    cast.position.x += cfg.spacing;
+                    cast.position.y += cfg.spacing;
+                    cast.minSize.h -= 2 * cfg.spacing;
+                    cast.minSize.w -= 2 * cfg.spacing;
+                    
+                    /*
+                     * NOTE: we may not need to adjust crop for borders, the
+                     * brower can automatically resize. but will it be
+                     * proportional?
+                     */
+                    cast.crop.x += cfg.spacing;
+                    cast.crop.y += cfg.spacing;
+                    cast.crop.h -= 2 * cfg.spacing;
+                    cast.crop.w -= 2 * cfg.spacing;
+                }
+                if (cfg.isRehearsal) {
+                	cropRect = PM.util.getCropSpec(cast.crop, true);
                 	thumbnail_prefix = this.getThumbPrefix(cast.crop, cfg);
                     castSrcCropped = PM.util.addCropSpec(castSrc, cropRect, thumbnail_prefix);
+                } else {
+                	cropRect = PM.util.getCropSpec(cast.crop);
+                	castSrcCropped = PM.util.addCropSpec(castSrc, cropRect);
                 }
-                else {
-                    if (cfg.spacing) {
-                        // add gaps in final dimensions
-                        
-                        cast.position.x += renderSizeSpacing.spacing;
-                        cast.position.y += renderSizeSpacing.spacing;
-                        cast.minSize.h -= 2 * renderSizeSpacing.spacing;
-                        cast.minSize.w -= 2 * renderSizeSpacing.spacing;
-                        
-                        /*
-                         * NOTE: we may not need to adjust crop for borders, the
-                         * brower can automatically resize. but will it be
-                         * proportional?
-                         */
-                        cast.crop.x += renderSizeSpacing.spacing;
-                        cast.crop.y += renderSizeSpacing.spacing;
-                        cast.crop.h -= 2 * renderSizeSpacing.spacing;
-                        cast.crop.w -= 2 * renderSizeSpacing.spacing;
-                    }
-                    cropRect = PM.util.getCropSpec(cast.crop);
-                    castSrcCropped = PM.util.addCropSpec(castSrc, cropRect);
-                }
+                
                 castSrcCropped = SNAPPI.PM.util.addSubdomain(castSrcCropped);
                 tokens = {
                 	src: castSrcCropped,
@@ -396,6 +384,8 @@
         	} catch (e) {}
 			return 'bp';
         },
+        // deprecate: use .perform() check for ?media=print/screen to set cfg.isRehearsal
+        // TODO: add cfg.dpi when cfg.isRehearsal=false
         rehearse: function(cfg, scene){
             cfg.isRehearsal = true;
             return this.perform(cfg, scene);
@@ -446,7 +436,6 @@
                  */
                 // TODO: need to pass cfg.isRehearsal here 
                 // so we know whether to use autorotated previewSrc
-                cfg.isRehearsal = true;
                 var scene;
 //                scene = Casting.SimpleCast(Pr, cfg);
 //                scene = Casting.ChronoCast(Pr, cfg);
@@ -455,9 +444,16 @@
 				if (!cfg.arrangement) {
 					// get arrangement from server XHR
 					var callback = {
+						success2: function(A, cfg){
+							var scene = null;
+							if (Pr.arrangement) scene = Casting.ChronoCast(Pr, cfg);
+							Pr.scene.current = scene;
+        					scene.performance = Pr.perform(cfg, scene);
+							if (cfg.callback && cfg.callback.success) cfg.callback.success(scene);
+						},
 						success: function(scene){
 							Pr.scene.current = scene;
-            				scene.performance = Pr.rehearse(cfg, scene);
+            				scene.performance = Pr.perform(cfg, scene);
 							if (cfg.callback && cfg.callback.success) cfg.callback.success(scene);
 						},
 						failure: function(){
@@ -476,7 +472,7 @@
                  **************************************************************/
             }
             Pr.scene.current = scene;
-            scene.performance = Pr.rehearse(cfg, scene);
+            scene.performance = Pr.perform(cfg, scene);
             // syncronous return path, no XHR
             if (cfg.callback && cfg.callback.success) cfg.callback.success(scene);	
             else return scene;

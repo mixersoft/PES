@@ -140,29 +140,31 @@ $this->log("WARNING: missing exif[root][imageSize], (see castingCall), path={$pa
 		
 		// guess isOriginal from root filesize
 		$getimagesize = getimagesize($path, $iptc);
+// $this->log( "Import->getMeta, getimagesize=".print_r($getimagesize, true), LOG_DEBUG);		
 		list($width, $height, $type, $attr) = $getimagesize;
 		if ($isOriginal === null) $isOriginal = (max($width, $height) > 640);		
-				
+// $this->log( "Import->getMeta, isOriginal=".print_r($isOriginal, true), LOG_DEBUG);				
 		if (is_string($exif_0)) {	
 			// process json_exif from v1.8.3 snappi-uploader via POST
 			$exif_0 = json_decode($exif_0, true);
 		} 
-		
+// $this->log( "Import->getMeta, exif_0 FROM DB=".print_r(array_filter_keys($exif_0, ImportComponent::$EXIF_FIELDS), true), LOG_DEBUG);			
 		/*
 		 * get EXIF data
 		 * 1. array_filter_keys($exif_0, ImportComponent::$EXIF_DO_NOT_CHANGE) fields take priority, i.e. original exif[Orientation]
 		 * 2. use file exif data before POST or DB exif 
 		 */ 
 		$exif = @exif_read_data($path);
+// $this->log( "Import->getMeta, exif FROM FILE=".print_r(array_filter_keys($exif, ImportComponent::$EXIF_FIELDS), true), LOG_DEBUG);		
 		if (empty($exif)) $exif = $exif_0;
 		else if ($exif && $exif_0) $exif = array_merge($exif, array_filter_keys($exif_0, ImportComponent::$EXIF_DO_NOT_CHANGE));
-		
 		// this is a fix to preserve manual rotates, 
 		// currently saved in json_exif, NOT UserEdit.rotate
 		if (isset($exif_0['preview']['Orientation'])) {
 			$exif['preview'] = $exif_0['preview'];
+// $this->log( "Import->getMeta, ********* USING exif_0['preview']", LOG_DEBUG);			
 		};
-		
+// $this->log( "Import->getMeta, exif MERGED=".print_r(array_filter_keys($exif, ImportComponent::$EXIF_FIELDS), true), LOG_DEBUG);			
 		
 		$data = array('exif'=>NULL, 'iptc'=>NULL);
 // debug($exif);		
@@ -174,6 +176,7 @@ $this->log("WARNING: missing exif[root][imageSize], (see castingCall), path={$pa
 				$autoRotate = true; $isPreview = true;
 			}
 			$data['exif'] = $this->_augmentFromExif($data['exif'], $autoRotate, $isPreview); 
+// $this->log( "Import->getMeta, this->_augmentFromExif, exif =".print_r(array_filter_keys($data['exif'] , ImportComponent::$EXIF_FIELDS), true), LOG_DEBUG);			
 		}
 		if (!$data['exif']) {		// use actual imagesize from filepath
 			$data['exif'] = $this->_augmentNoExif($exif, $getimagesize, $path);
@@ -254,10 +257,19 @@ $this->log("WARNING: missing exif[root][imageSize], (see castingCall), path={$pa
 			$this->log("ERROR: _augmentFromPreview(): exif[COMPUTED] dimensions > 640px, use _augmentFromOriginal()??? ", LOG_DEBUG);
 		}
 		if ($autoRotate) $this->_autoRotateExifDim($exif_0, $rootAttr, $exif);
+		if (	
+			// FORCE COMPUTED VALUE IF $exif_0['ExifImageLength'] flipped
+			!empty($exif_0['COMPUTED'])
+			&& $exif_0['COMPUTED']['Width'] == $exif_0['ExifImageLength']
+		) {
+			$this->_autoRotateExifDim($exif_0, $rootAttr, $exif);
+$this->log( "Import->_augmentFromExif(), FORCE COMPUTED VALUE FIX, rootAttr=".print_r($rootAttr, true), LOG_DEBUG);			
+		}
 		
 		unset ($exif_0['imageWidth']);
 		unset ($exif_0['imageHeight']);
 		unset ($exif_0['COMPUTED']);
+		
 		/*
 		 * add Exif attributes for root Audition.Photo.Img on Server
 		 * 	- HANDLED IN casting_call.php
@@ -265,6 +277,7 @@ $this->log("WARNING: missing exif[root][imageSize], (see castingCall), path={$pa
 		$exif['root'] = $rootAttr;
 		// safety check
 		$exif = array_diff_key($exif, array_flip(ImportComponent::$EXIF_DO_NOT_CHANGE));
+// $this->log( "Import->_augmentFromExif(), +++++++ exif BEFORE MERGE=".print_r($exif, true), LOG_DEBUG);			
 		return array_merge($exif_0, $exif);
 	}
 	function _augmentNoExif($exif_0, $getimagesize, $filepath) {

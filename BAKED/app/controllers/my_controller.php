@@ -207,8 +207,8 @@ class MyController extends PersonController {
 		/*
 		 * import into DB
 		 */
-$this->log("MyController::__upload_javascript() BEGIN VALUMS/JAVASCRIPT IMPORT", LOG_DEBUG);
-$this->log($data, LOG_DEBUG);
+// $this->log("MyController::__upload_javascript() BEGIN VALUMS/JAVASCRIPT IMPORT", LOG_DEBUG);
+// $this->log($data, LOG_DEBUG);
 		$response = $this->__importPhoto($data, $UPLOAD_FOLDER, $move_to_src_root, 'ORIGINAL');	// autoRotate=false
 		if ($response['success'] && isset($response['response']['Asset']['id'])) {
 			/*

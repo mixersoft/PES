@@ -488,6 +488,7 @@ AND includes.asset_id='{$assetId}';
 		// $asset['json_exif'] == json_exif from v1.8.3 snappi-uploader via POST
 		$exif_0 = (isset($asset['json_exif'])) ? $asset['json_exif'] : null;
 		$meta = $Import->getMeta($photoPath, $isOriginal, $exif_0);
+// $this->log( "Import->getMeta, IS_ORIGIGINAL={$isOriginal} EXIF=".print_r($meta['exif'], true), LOG_DEBUG);		
 		$asset['json_exif'] = $meta['exif'];
 		$asset['json_iptc'] = $meta['iptc'];
 
@@ -563,7 +564,7 @@ $this->log( " ERROR: this->__updateAssetFields()".print_r($duplicate['Asset'], t
 				$response['message'][]="FOUND duplicate UUID, Photo fields updated";
 			}
 			$response['response'][]=$newAsset;
-$this->log('__updateAssetFields =>'.print_r($response, true),LOG_DEBUG);	
+// $this->log('__updateAssetFields =>'.print_r($response, true),LOG_DEBUG);	
 			$data = array('Asset'=>$duplicate['Asset']);
 		} else {
 			// no Duplicate, save new Asset 
