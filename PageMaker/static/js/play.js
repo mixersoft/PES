@@ -301,10 +301,6 @@
 				if (page.get('id') == 'share')
 					return;
 
-				if (page.hasClass('hide')) {
-					page.removeClass('hide');
-					page.addClass('hidden');	// cant get offsets with page.hide
-				}
 				origRect = {
 					X : _px2i(page.getStyle('left')),
 					Y : _px2i(page.getStyle('top')),
@@ -454,24 +450,12 @@
 		 */
 		showPage : function(index) {
 			if (index < 0 || index > _totalPages-1) return;
-			if (!this.isPreview) {
-				this.container.one('#pagenum').set('innerHTML',
-						(index + 1) + "/" + (_totalPages));
-				if (index == 0) {
-					this.container.one('#paging .prev').addClass('disabled');
-				} else
-					this.container.one('#paging .prev').removeClass('disabled');
-				if (index == _totalPages - 1) {
-					this.container.one("#paging .next").addClass('disabled');
-				} else
-					this.container.one("#paging .next").removeClass('disabled');
-			}
-
-			var pages = this.content.all('div.pageGallery');
+			var title, pages = this.content.all('div.pageGallery');
 			pages.each(function(page, i) {
 				if (i == index) {
 					if (CONFIG.DEFER_IMG_LOAD) this.load_DeferredPageImages(page);
 					page.removeClass('hidden').removeClass('hide');
+					title = page.getAttribute('title');
 					return;
 				} else if (i == index+1) {
 					// pre-load next page
@@ -487,6 +471,20 @@
 				}
 				page.addClass('hide');
 			}, this);
+			if (!this.isPreview) {
+				var header;
+				if (title) header = '<b>'+ title + '</b>&nbsp;&nbsp;<span style="font-size:0.8em;">(' +(index + 1) + "/" + (_totalPages)+ ')</span>';
+				else header = (index + 1) + "/" + (_totalPages);
+				this.container.one('#pagenum').set('innerHTML',	header);
+				if (index == 0) {
+					this.container.one('#paging .prev').addClass('disabled');
+				} else
+					this.container.one('#paging .prev').removeClass('disabled');
+				if (index == _totalPages - 1) {
+					this.container.one("#paging .next").addClass('disabled');
+				} else
+					this.container.one("#paging .next").removeClass('disabled');
+			}
 		},
 		handlePageClick: function(e, direction) {
 			if (e) {
@@ -648,14 +646,8 @@
 			
 			var pages = this.content.all('div.pageGallery');
 			pages.each(function(page, i) {
-				if (page.hasClass('hide')) {
-					page.removeClass('hide');
-					page.addClass('hidden');	// cant get offsets with page.hide
-				}
-				if (page.get('id') != "share") {
-					containerRect.node = page;
-					this.scale( containerRect );
-				}
+				containerRect.node = page;
+				this.scale( containerRect );
 			}, this);
 			this.showPage(_pageIndex);
 			if (e && PM.pageMakerPlugin) PM.pageMakerPlugin.external_Y.fire('snappi-pm:resize', this, containerH);
@@ -714,7 +706,7 @@
 			}
 			// scale photos relative to original layout
 			var photos = page.all("img");
-			var border_offset, bottomRight;	// space for border width
+			var borderWidth, bottomRight;	// space for border width
 			photos.each(function(photo) {
 				bottomRight = bottomRight || photo;
 				origRect = photo.origRect;
@@ -738,18 +730,15 @@
 				}
 				photo.setStyles(scaledRect);
 			}, this);
-			border_offset= {
-				X: bottomRight.get('clientLeft'),
-				Y: bottomRight.get('clientTop'),
-			}
+			borderWidth = _px2i(bottomRight.getStyle('borderWidth'));
 			var br = {
-				bottom: ((bottomRight.origRect.Y + bottomRight.origRect.H) / scale + 2*border_offset.Y) ,
-				right: ((bottomRight.origRect.X + bottomRight.origRect.W)  / scale + 2*border_offset.X) ,
+				bottom: ((bottomRight.origRect.Y + bottomRight.origRect.H) / scale + 2*borderWidth) ,
+				right: ((bottomRight.origRect.X + bottomRight.origRect.W)  / scale + 2*borderWidth) ,
 			}
 			page.setStyles( {
 				// left, top set by CSS
-				width : br.right+border_offset.X +  "px",
-				height : br.bottom+border_offset.Y +  "px",
+				width : br.right+borderWidth +  "px",
+				height : br.bottom+borderWidth +  "px",
 			});
 		},
 

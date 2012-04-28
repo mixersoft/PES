@@ -626,24 +626,12 @@ this.content._isResizing = false;		// enable winResize
 		 */
 		showPage : function(index) {
 			if (index < 0 || index > _totalPages-1) return;
-			if (!this.isPreview) {
-				this.container.one('#pagenum').set('innerHTML',
-						(index + 1) + "/" + (_totalPages));
-				if (index == 0) {
-					this.container.one('#paging .prev').addClass('disabled');
-				} else
-					this.container.one('#paging .prev').removeClass('disabled');
-				if (index == _totalPages - 1) {
-					this.container.one("#paging .next").addClass('disabled');
-				} else
-					this.container.one("#paging .next").removeClass('disabled');
-			}
-
-			var pages = this.content.all('div.pageGallery');
+			var title, pages = this.content.all('div.pageGallery');
 			pages.each(function(page, i) {
 				if (i == index) {
 					if (CONFIG.DEFER_IMG_LOAD) this.load_DeferredPageImages(page);
 					page.removeClass('hidden').removeClass('hide');
+					title = page.getAttribute('title');
 					return;
 				} else if (i == index+1) {
 					// pre-load next page
@@ -658,6 +646,21 @@ this.content._isResizing = false;		// enable winResize
 					}
 				}
 			}, this);
+			
+			if (!this.isPreview) {
+				var header;
+				if (title) header = '<b>'+ title + '</b>&nbsp;&nbsp;<span style="font-size:0.8em;">(' +(index + 1) + "/" + (_totalPages)+ ')</span>';
+				else header = (index + 1) + "/" + (_totalPages);
+				this.container.one('#pagenum').set('innerHTML',	header);
+				if (index == 0) {
+					this.container.one('#paging .prev').addClass('disabled');
+				} else
+					this.container.one('#paging .prev').removeClass('disabled');
+				if (index == _totalPages - 1) {
+					this.container.one("#paging .next").addClass('disabled');
+				} else
+					this.container.one("#paging .next").removeClass('disabled');
+			}
 		},
 		handlePageClick: function(e, direction) {
 			if (e) {
