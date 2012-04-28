@@ -111,6 +111,7 @@ class AppController extends Controller {
 		return true;
 	}
 	function __redirectIfTouchDevice(){
+		$FORCE_TOUCH_DEVICE = 1;	// FOR debugging on desktop
 		// Story controller checks for touch device
 		$options = array('Android', 'iPod', 'iPhone', 'iPad','Opera Mobi','webOS', 'Windows Phone OS');			
 		$pattern = '/' . implode('|', $options) . '/i';
@@ -128,7 +129,7 @@ class AppController extends Controller {
 			$this->redirect($next, null, true);
 		}
 		// manually set isTouch for desktop debugging
-		$isTouch =  (0 || $isTouch);
+		$isTouch =  ($FORCE_TOUCH_DEVICE || $isTouch);
 		$this->set('isTouch', $isTouch);
 	}
 	function __setPageTitle() {

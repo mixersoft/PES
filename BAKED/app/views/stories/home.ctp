@@ -1,6 +1,8 @@
 <?php
 	// debug($isTouch); // set in AppController::__redirectIfTouchDevice()
-	$iFrameHeight = $isTouch ? 'height="515"' : 'height="800"';  // only for ipad landscape
+	// TODO: BUG: iframe is not resizing properly on touch
+	// ipad landscape height=515 
+	$iFrameHeight = $isTouch ? 'height="800"' : 'height="800"';  // only for ipad landscape
 
 	$this->Layout->blockStart('itemHeader');
 		$badge_src = Stagehand::getSrc($data['Collection']['src_thumbnail'], 'sq');

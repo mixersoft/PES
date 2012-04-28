@@ -270,19 +270,6 @@
 				if (child) this.content = child.get('parentNode');
 			}
 		},
-		moveOffscreen: function (value) {
-// try {
-// parent.window.SNAPPI.Y.one('.properties').append("<div style='color:red;position:relative;z-index:999;'>moveOffscreen(), value="+value+" </div>");
-// } catch (e){}			
-			if (value) this.content.setStyles({
-				position:'relative',
-				left:'2000px',
-			}) 
-			else this.content.setStyles({
-				position:null,
-				left:null,
-			}) 
-		},
 		init : function(e) {
 			// set cfg.FOOTER_H offset
 			try {
@@ -303,7 +290,7 @@
 				_pageIndex = pageNo - 1; // zero based index
 			} else _pageIndex = pageNo-1;
 			this.content._isResizing = true;		// disable winResize
-			this.moveOffscreen(true);
+this.container.addClass('hide');
 			pages.each(function(page, i) {
 				if (page.hasClass('hide')) {
 					page.removeClass('hide');
@@ -344,7 +331,10 @@
 				this.scale( containerRect );
 				this.pageWrap(page);
 			}, this);
-			
+this.container.removeClass('hide');	
+this.content._isResizing = false;		// enable winResize
+
+			// NOTE: pages must be visible for scrollWrap to get offsets			
 			var scrollWrap = this.scrollWrap(this.content, _totalPages);
 			scrollWrap.all('.page-wrap').setStyles({width: containerRect.W+'px'});
 			this.addScrollView_Page({
@@ -381,8 +371,6 @@
 					}
 				}, null, true);
 			}
-			this.content._isResizing = false;		// enable winResize
-			this.moveOffscreen(false);
 		},
 		/*
 		 * wrap pageGalleries for touch scrolling
@@ -816,23 +804,21 @@
 		 * NOTE: when deployed in "Designer", containerH != containerH
 		 */
 		winResize : function(e) {
-			this.moveOffscreen(true);
 			var containerRect = _getContainerRect(this.container, this.cfg, 'force');		
 			// scale pageGalleries
 			var pages = this.content.all('div.pageGallery');
+this.container.addClass('hide');			
 			pages.each(function(page, i) {
-				if (page.hasClass('hide')) {
-					page.removeClass('hide');
-					page.addClass('hidden');	// cant get offsets with page.hide
-				}
-				containerRect.node = page;
 // console.warn("winResize page="+i+"pageRect="+ page.origRect.W +':'+ page.origRect.W);					
 // try{
 // parent.window.SNAPPI.Y.one('.properties').append("<div style='color:green;position:relative;z-index:999;'>winResize() page="+i+", pageRect="+ page.origRect.W +':'+ page.origRect.H+"</div>");
 // } catch (e){}
+				containerRect.node = page;
 				this.scale( containerRect );
 			}, this);
 			this.showPage(_pageIndex);
+this.container.removeClass('hide');	
+			
 			// center scrollView Photo
 			if (this.photo_Scrollview && this.photo_Scrollview.get('visible')) {
 				this.photo_Scrollview.hide();
@@ -848,7 +834,7 @@
 			_Y.later(50, this, function(){
 				this.content._isResizing = false;		// enable winResize	
 			});
-			this.moveOffscreen(false);
+		
 			if (e && PM.pageMakerPlugin) PM.pageMakerPlugin.external_Y.fire('snappi-pm:resize', this, containerH);
 		},
 
@@ -868,9 +854,9 @@
 				pageRect = _Y.Node.getDOMNode(page);
 			}
 // console.warn("pageRect="+ pageRect.W +':'+ pageRect.H);	
-// try {
-// parent.window.SNAPPI.Y.one('.properties').append("<div style='color:red;position:relative;z-index:999;'>scale() , pageRect="+ pageRect.W +':'+ pageRect.H+"</div>");
-// } catch (e){}
+try {
+parent.window.SNAPPI.Y.one('.properties').append("<div style='color:red;position:relative;z-index:999;'>scale() , pageRect="+ pageRect.W +':'+ pageRect.H+"</div>");
+} catch (e){}
 			if (cfg.W && cfg.H && (cfg.H / cfg.W > pageRect.H / pageRect.W)) {
 				scaleTo = 'same-width';
 				// delete cfg.H;  	// use cfg.W as bound, all pages same width
@@ -908,7 +894,7 @@
 			}
 			// scale photos relative to original layout
 			var photos = page.all("img");
-			var border_offset, bottomRight;	// space for border width
+			var borderWidth, bottomRight;	// space for border width
 			photos.each(function(photo) {
 				bottomRight = bottomRight || photo;
 				origRect = photo.origRect;
@@ -932,18 +918,17 @@
 				}
 				photo.setStyles(scaledRect);
 			}, this);
-			border_offset= {
-				X: bottomRight.get('clientLeft'),
-				Y: bottomRight.get('clientTop'),
-			}
+		
+			// page must be .hidden or visible for clientLeft/Top
+			borderWidth = _px2i(bottomRight.getStyle('borderWidth'));
 			var br = {
-				bottom: ((bottomRight.origRect.Y + bottomRight.origRect.H) / scale + 2*border_offset.Y) ,
-				right: ((bottomRight.origRect.X + bottomRight.origRect.W)  / scale + 2*border_offset.X) ,
+				bottom: ((bottomRight.origRect.Y + bottomRight.origRect.H) / scale + 2*borderWidth) ,
+				right: ((bottomRight.origRect.X + bottomRight.origRect.W)  / scale + 2*borderWidth) ,
 			}
 			page.setStyles( {
 				// left, top set by CSS
-				width : br.right+border_offset.X +  "px",
-				height : br.bottom+border_offset.Y +  "px",
+				width : br.right+borderWidth +  "px",
+				height : br.bottom+borderWidth +  "px",
 			});
 		},
 
