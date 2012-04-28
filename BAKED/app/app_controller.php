@@ -115,18 +115,21 @@ class AppController extends Controller {
 		$options = array('Android', 'iPod', 'iPhone', 'iPad','Opera Mobi','webOS', 'Windows Phone OS');			
 		$pattern = '/' . implode('|', $options) . '/i';
 		$isTouch = (bool)preg_match($pattern, env('HTTP_USER_AGENT'));
-		
 		$SUBDOMAIN = array('touch'=>"touch", 'desktop'=>'preview');
 		$exclude = array('git3', 'dev', 'touch-debug');
 		$pattern = '/' . implode('|', $exclude) . '/i';
 		$isExclude = (bool)preg_match($pattern, env('HTTP_HOST'));
-    	if ($isTouch && !$isExclude && strpos(env('HTTP_HOST'),$SUBDOMAIN['touch'])!=0 ) {
+    	if ($isTouch && !$isExclude && strpos(env('HTTP_HOST'),$SUBDOMAIN['touch'])!==0 ) {
+// $this->log('redirect to touch.snaphappi', LOG_DEBUG);	    		
 			$next = "http://{$SUBDOMAIN['touch']}.snaphappi.com".env('REQUEST_URI');
 			$this->redirect($next, null, true);
 		} else if (!$isTouch && !$isExclude && strpos(env('HTTP_HOST'),$SUBDOMAIN['touch'])===0 ){
 			$next = "http://{$SUBDOMAIN['desktop']}.snaphappi.com".env('REQUEST_URI');
 			$this->redirect($next, null, true);
 		}
+		// manually set isTouch for desktop debugging
+		$isTouch =  (0 || $isTouch);
+		$this->set('isTouch', $isTouch);
 	}
 	function __setPageTitle() {
 		if ($this->RequestHandler->isAjax() || $this->RequestHandler->ext=='json') {

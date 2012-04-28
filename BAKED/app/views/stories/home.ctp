@@ -1,5 +1,5 @@
 <?php
-	$isTouch =  (1 || strpos(env('SERVER_NAME'),'touch')===0); 
+	// debug($isTouch); // set in AppController::__redirectIfTouchDevice()
 	$iFrameHeight = $isTouch ? 'height="515"' : 'height="800"';  // only for ipad landscape
 
 	$this->Layout->blockStart('itemHeader');

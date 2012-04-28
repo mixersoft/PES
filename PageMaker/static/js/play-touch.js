@@ -108,25 +108,26 @@
 	/*
 	 * helper functions
 	 */
+	var _getFromQs = function(name){
+        /*
+         * get a query param value by name from the current URL
+         */
+        name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+        var regexS = "[\\?&]" + name + "=([^&#]*)";
+        var regex = new RegExp(regexS);
+        var results = regex.exec(window.location.href);
+        if (results == null) 
+            return "";
+        else 
+            return results[1];
+	};
+		
 	var _px2i = function(sz) {
 		var nsz = sz.replace(/px/gi, "");
 		nsz = parseFloat(nsz);
 		return PM.Y.Lang.isNumber(nsz) ? nsz : null;
 	};
 
-	var _getFromQs = function(name) {
-		/*
-		 * get a query param value by name from the current URL
-		 */
-		name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
-		var regexS = "[\\?&]" + name + "=([^&#]*)";
-		var regex = new RegExp(regexS);
-		var results = regex.exec(window.location.href);
-		if (results == null)
-			return "";
-		else
-			return results[1];
-	};
 	var _sortByIndexASC = function(a, b) {
 		var retval;
 		if (a.index[0] == b.index[0]) {
@@ -269,6 +270,19 @@
 				if (child) this.content = child.get('parentNode');
 			}
 		},
+		moveOffscreen: function (value) {
+// try {
+// parent.window.SNAPPI.Y.one('.properties').append("<div style='color:red;position:relative;z-index:999;'>moveOffscreen(), value="+value+" </div>");
+// } catch (e){}			
+			if (value) this.content.setStyles({
+				position:'relative',
+				left:'2000px',
+			}) 
+			else this.content.setStyles({
+				position:null,
+				left:null,
+			}) 
+		},
 		init : function(e) {
 			// set cfg.FOOTER_H offset
 			try {
@@ -288,7 +302,8 @@
 				pageNo = _totalPages
 				_pageIndex = pageNo - 1; // zero based index
 			} else _pageIndex = pageNo-1;
-			
+			this.content._isResizing = true;		// disable winResize
+			this.moveOffscreen(true);
 			pages.each(function(page, i) {
 				if (page.hasClass('hide')) {
 					page.removeClass('hide');
@@ -325,6 +340,7 @@
 				}, this);
 				// scale photos on each page to target height or width
 				containerRect.node = page;
+// parent.window.SNAPPI.Y.one('.properties').append("<div style='color:red;position:relative;z-index:999;'>init() page="+i+", pageRect="+ page.origRect.W +':'+ page.origRect.H+"</div>");
 				this.scale( containerRect );
 				this.pageWrap(page);
 			}, this);
@@ -365,6 +381,8 @@
 					}
 				}, null, true);
 			}
+			this.content._isResizing = false;		// enable winResize
+			this.moveOffscreen(false);
 		},
 		/*
 		 * wrap pageGalleries for touch scrolling
@@ -555,8 +573,11 @@
 							"click", this.activateLightBox,
 							'div.pageGallery > img', this);					
 				}
-				this.listen.winResize = _Y.on('resize', this.winResize,
-						window, this);
+				this.listen.winResize = _Y.on('resize', function(e){
+						if (this.content._isResizing) return;
+						this.content._isResizing = true;
+						this.winResize(e);
+					},	window, this);
 			}
 		},
 
@@ -795,6 +816,7 @@
 		 * NOTE: when deployed in "Designer", containerH != containerH
 		 */
 		winResize : function(e) {
+			this.moveOffscreen(true);
 			var containerRect = _getContainerRect(this.container, this.cfg, 'force');		
 			// scale pageGalleries
 			var pages = this.content.all('div.pageGallery');
@@ -803,14 +825,16 @@
 					page.removeClass('hide');
 					page.addClass('hidden');	// cant get offsets with page.hide
 				}
-				if (page.get('id') != "share") {
-					containerRect.node = page;
-					this.scale( containerRect );
-				}
+				containerRect.node = page;
+// console.warn("winResize page="+i+"pageRect="+ page.origRect.W +':'+ page.origRect.W);					
+// try{
+// parent.window.SNAPPI.Y.one('.properties').append("<div style='color:green;position:relative;z-index:999;'>winResize() page="+i+", pageRect="+ page.origRect.W +':'+ page.origRect.H+"</div>");
+// } catch (e){}
+				this.scale( containerRect );
 			}, this);
 			this.showPage(_pageIndex);
 			// center scrollView Photo
-			if (this.photo_Scrollview.get('visible')) {
+			if (this.photo_Scrollview && this.photo_Scrollview.get('visible')) {
 				this.photo_Scrollview.hide();
 				var centerBox = this.container.one('#centerbox');
 				centerBox.setStyles({
@@ -821,6 +845,10 @@
 					this.photo_Scrollview.show();
 				}, this)
 			}
+			_Y.later(50, this, function(){
+				this.content._isResizing = false;		// enable winResize	
+			});
+			this.moveOffscreen(false);
 			if (e && PM.pageMakerPlugin) PM.pageMakerPlugin.external_Y.fire('snappi-pm:resize', this, containerH);
 		},
 
@@ -839,7 +867,10 @@
 			} catch (e) {
 				pageRect = _Y.Node.getDOMNode(page);
 			}
-console.warn("pageRect="+ pageRect.W +':'+ pageRect.H);			
+// console.warn("pageRect="+ pageRect.W +':'+ pageRect.H);	
+// try {
+// parent.window.SNAPPI.Y.one('.properties').append("<div style='color:red;position:relative;z-index:999;'>scale() , pageRect="+ pageRect.W +':'+ pageRect.H+"</div>");
+// } catch (e){}
 			if (cfg.W && cfg.H && (cfg.H / cfg.W > pageRect.H / pageRect.W)) {
 				scaleTo = 'same-width';
 				// delete cfg.H;  	// use cfg.W as bound, all pages same width

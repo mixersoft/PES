@@ -104,6 +104,20 @@
 	/*
 	 * helper functions
 	 */
+	var _getFromQs = function(name){
+        /*
+         * get a query param value by name from the current URL
+         */
+        name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+        var regexS = "[\\?&]" + name + "=([^&#]*)";
+        var regex = new RegExp(regexS);
+        var results = regex.exec(window.location.href);
+        if (results == null) 
+            return "";
+        else 
+            return results[1];
+	};
+	
 	var _px2i = function(sz) {
 		var nsz = sz.replace(/px/gi, "");
 		nsz = parseFloat(nsz);
@@ -653,7 +667,8 @@
 			try {	// get pageGallery maxH for rendering
             	MAX_HEIGHT = (Plugin.sceneCfg.fnDisplaySize.h-82) || PM.util.NATIVE_PAGE_GALLERY_H;	
             } catch(e){
-            	MAX_HEIGHT = this.cfg.NATIVE_PAGE_GALLERY_H;
+            	if (_getFromQs('media')=='print') MAX_HEIGHT = _Y.one('body').get('winHeight')-50;
+            	else MAX_HEIGHT = this.cfg.NATIVE_PAGE_GALLERY_H;
             }
 			var pageRect, page = cfg.node;		// deprecate cfg.element
 			try {
