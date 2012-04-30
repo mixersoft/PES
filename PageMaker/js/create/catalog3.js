@@ -93,8 +93,9 @@
         var rawJsonAuditions = _Y.JSON.stringify(Auditions);
         data = {
         	'data[CastingCall][Auditions]':rawJsonAuditions,
-        	'data[role_count]': auditions.length
+        	'data[role_count]': auditions.length,
         };
+        if (cfg.allowedRatios) data['data[allowed_ratios]'] = cfg.allowedRatios;
         var args = {
         	cfg: cfg,
         	Pr: Pr,

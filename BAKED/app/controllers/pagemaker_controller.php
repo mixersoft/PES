@@ -272,9 +272,12 @@ $time_start = isset($time_start) ? $time_start : microtime(true);
 		 */
 		App::import('Vendor', 'pagemaker', array('file'=>'pagemaker'.DS.'cluster-collage.4.php'));
 		$cropVarianceMax = 0.20; 
-		$maxHeight = 900;
+		$maxHeight = 940;
 		$maxWidth = 1600;
 		$collage = new ClusterCollage($cropVarianceMax, $maxHeight, $maxWidth);
+		if (!empty($this->data['allowed_ratios'])) {
+			$collage->setAllowedRatios(array_merge($collage->allowedRatios, $this->data['allowed_ratios']));  //H:W
+		}
 		try {
 			$collage->setPhotos($layoutPhotos, 'topRatedCutoff');
 			$arrangement = $collage->getArrangement();

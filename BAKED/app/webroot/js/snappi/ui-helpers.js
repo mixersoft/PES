@@ -834,6 +834,7 @@ console.info('Getting Story for rolecount='+roleCount);
 			cfg.spacing = 1;		// border spacing
 			cfg.arrangement = PAGE.jsonData.montage;
 			cfg.listeners = ['LinkToClick', 'MultiSelect', 'Contextmenu'];
+			cfg.allowedRatios = {'h':'544:960', 'v':'7:10'}; 
 						
 			// initialize stage and reuse later
 			var listener, stage = cfg.getStage(cfg);
