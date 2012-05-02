@@ -15,7 +15,7 @@
  * If you want to use a custom error logger, set this to your logger
  * instance. Your object should have a method log(string $message).
  */
-$min_errorLogger = false;
+$min_errorLogger = true;
 
 
 /**
@@ -120,7 +120,7 @@ $min_serveOptions['minifiers']['application/x-javascript'] = 'closureCompiler';
  * 
  * // = shortcut for DOCUMENT_ROOT 
  */
-$min_serveOptions['minApp']['allowDirs'] = array('//js', '//css', '//static');
+$min_serveOptions['minApp']['allowDirs'] = array('//js', '//css', '//static', '//min');
 
 /**
  * Set to true to disable the "f" GET parameter for specifying files.

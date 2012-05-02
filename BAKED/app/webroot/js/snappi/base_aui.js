@@ -207,9 +207,9 @@
 	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
 	    		pagemaker_comboBase: 'PageMaker&',	// filepath, not baseurl
 	    		pagemaker_useCombo: 1,
-	    		alloy_useCombo: true,
+	    		alloy_useCombo: 1,
 	    		yahoo_CDN: 0,
-	    		YUI_VERSION: '3.3.0',	// this is actually set in aui.js
+	    		YUI_VERSION: '3.4.0',	// this is actually set in aui.js
 	    		// yui_CDN == true => use "http://yui.yahooapis.com/combo?"
 				// yui_CDN == false => use snaphappi hosted yui libs: "/combo/js?"
 		    },
@@ -219,10 +219,10 @@
 	    		air_comboBase: 'app/air&',
 	    		snappi_useCombo: 1,
 	    		pagemaker_comboBase: 'PAGEMAKER&',	// filepath, not baseurl
-	    		pagemaker_useCombo: true,
-	    		alloy_useCombo: true,
+	    		pagemaker_useCombo: 1,
+	    		alloy_useCombo: 1,
 	    		yahoo_CDN: 0,
-	    		YUI_VERSION: '3.3.0',
+	    		YUI_VERSION: '3.4.0',
 	    	}
 	    }
 	namespace('CFG');
