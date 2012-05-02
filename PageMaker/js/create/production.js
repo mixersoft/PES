@@ -371,7 +371,7 @@
                 // just watch for img load, don't queue
                 SNAPPI.util3.ImageLoader.loadBySelector(pageGallery, 'div#content img', null, 100);
             }
-            
+            pageGallery.setAttribute('ccPage', SNAPPI.STATE.displayPage.page);
             return pageGallery;
         },
         getThumbPrefix: function(crop, cfg){

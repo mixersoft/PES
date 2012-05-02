@@ -95,7 +95,7 @@
         	'data[CastingCall][Auditions]':rawJsonAuditions,
         	'data[role_count]': auditions.length,
         };
-        if (cfg.allowedRatios) data['data[allowed_ratios]'] = cfg.allowedRatios;
+        if (cfg.allowedRatios) data['data[allowed_ratios]'] = _Y.JSON.stringify(cfg.allowedRatios);
         var args = {
         	cfg: cfg,
         	Pr: Pr,

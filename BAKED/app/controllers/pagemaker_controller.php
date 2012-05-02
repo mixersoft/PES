@@ -276,7 +276,7 @@ $time_start = isset($time_start) ? $time_start : microtime(true);
 		$maxWidth = 1600;
 		$collage = new ClusterCollage($cropVarianceMax, $maxHeight, $maxWidth);
 		if (!empty($this->data['allowed_ratios'])) {
-			$collage->setAllowedRatios(array_merge($collage->allowedRatios, $this->data['allowed_ratios']));  //H:W
+			$collage->setAllowedRatios(json_decode($this->data['allowed_ratios'], true));  //H:W
 		}
 		try {
 			$collage->setPhotos($layoutPhotos, 'topRatedCutoff');

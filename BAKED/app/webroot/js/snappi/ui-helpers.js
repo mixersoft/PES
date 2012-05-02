@@ -283,16 +283,50 @@
 		},
 		'section-view': {
 			montage: function(e, view){
+				var g, cfg, page; 
+				cfg = {perpage: 9}; // same as $this->Montage->getArrangement($Auditions, 9);	
 				if (!e.currentTarget.hasClass('focus')) {
 					SNAPPI.io.writeSession({'section-header.Photo':'Montage'});
 				}
 				e.currentTarget.addClass('focus').siblings().removeClass('focus');
+				try {
+					g = _Y.one('.gallery.photo').Gallery;	// coming from Gallery view
+				}catch(e){}
+				
 				var montage = _Y.one('.montage-container div.pageGallery');
-				if (montage) montage.ancestor('.montage-container').removeClass('hide');
-				else {
+				if ( montage 
+					&& montage.getAttribute('ccPage') == SNAPPI.STATE.displayPage.page 
+					&& montage.ancestor('.montage-container').hasClass('hide')
+				) {	// already rendered, same page, just un-hide
+					montage.ancestor('.montage-container').removeClass('hide');
+					_Y.one('.gallery-container').addClass('hide');
+					return;
+					
+				} else if ( montage 
+					&& montage.getAttribute('ccPage') == SNAPPI.STATE.displayPage.page )
+				{	// montage is showing current page, increment page
 					SNAPPI.setPageLoading(true);
-					SNAPPI.UIHelper.create._GET_MONTAGE();
+					cfg.page = SNAPPI.STATE.displayPage.page+1;	
+					if (g) cfg.gallery = g;	
+					// signal XHR request to get new castingCall
+				} else if (PAGE.jsonData.montage) {
+					// 1) first montage render, uses Roles.photo_id, do NOT slice auditionSH
+					SNAPPI.setPageLoading(true);
+					cfg.page = SNAPPI.STATE.displayPage.page;	// current page
+					cfg.batch = null;			// do not slice
+				} else {
+					// 2) coming from new Gallery page, sort/slice auditionSH
+					SNAPPI.setPageLoading(true);
+					cfg.page = SNAPPI.STATE.displayPage.page;	// current page
+					if (g && PAGE.jsonData.castingCall.parsedResults) {
+						cfg.gallery = g;
+						// cfg.auditionSH = cfg.gallery.auditionSH;	
+					} else {
+console.error("Error: expecting cfg.gallery and castingCall parsedResults");							
+					}
+					 
 				}
+				SNAPPI.UIHelper.create._GET_MONTAGE(cfg);
 				_Y.one('.gallery-container').addClass('hide');
 			},
 			gallery: function(e, view){
@@ -799,40 +833,91 @@
 				} 
 				return stage;
 		},
+		/*
+		 * called from:
+		 * 1. SectionView
+		 * 2. SectionOptionClick 'montage' from gallery view
+		 * 3.  /welcome/preview
+		 */
 		_GET_MONTAGE : function(cfg){
 			var cfg = cfg || {};
-			try {
-				var g = _Y.one('.gallery.photo').Gallery;
-				cfg.gallery = g;
-				cfg.batch = g.auditionSH.slice(0,16);	
-			} catch (e) {
-				var onDuplicate = SNAPPI.Auditions.onDuplicate_REPLACE;
-				var castingCall = cfg.castingCall || PAGE.jsonData.castingCall;
-				if (!castingCall.auditionSH) { 
-					var auditionSH = SNAPPI.Auditions.parseCastingCall(
-							castingCall, 
-							null, 
-							null, 
-							onDuplicate);
-					}
-				cfg.batch = castingCall.auditionSH;	
-				if (cfg.roleCount)	{
-					var max = Math.min(castingCall.auditionSH.count(), cfg.roleCount.hi);
-					var min = Math.min(castingCall.auditionSH.count(), cfg.roleCount.lo);
-					var roleCount = Math.floor(Math.random()*(max-min+1)) + min;
-console.info('Getting Story for rolecount='+roleCount);					
-					cfg.batch = cfg.batch.slice(0, roleCount);
+			if (!cfg.page) cfg.page = SNAPPI.STATE.displayPage.page;
+			var PERPAGE = cfg.perpage || 9,
+				start = (cfg.page-1)*PERPAGE;
+				
+			if (cfg.page !== SNAPPI.STATE.displayPage.page)	{
+				// get new castingCall, page=cfg.page
+				// XHR call
+				SNAPPI.setPageLoading(true);
+				if (!cfg.gallery) {
+					cfg.gallery = new SNAPPI.Gallery({
+						type:SNAPPI.STATE.galleryType,
+						render: false,
+					});
+					_Y.one('.gallery-container').addClass('hide');
 				}
+				var cancel = _Y.once('snappi:gallery-refresh-complete', function(){
+					// TODO: need to cancel this if the request fails 
+					if (_Y.one('.montage-container').hasClass('hide')) return;
+					// now get montage for this ccPage
+					UIHelper.create._GET_MONTAGE(cfg);
+					// update Gallery Paginator
+					try {
+						var paginator = SNAPPI.Paginator.find['.gallery.photo'];
+						paginator.setState({page:cfg.page});
+					} catch(e){
+	console.error("ERROR: paginator is not available to update");					
+					}					
+					SNAPPI.setPageLoading(false);
+				});
+				cfg.gallery.refresh({page: cfg.page, montage:1});
+				return;
 			}
 			
-			// skip slice, use Role.suggestedPhotoId
+			
+			/*
+			 * render current castingCall page correctly
+			 */
+			if (!cfg.batch && cfg.gallery && cfg.gallery.auditionSH) {
+				if (PAGE.jsonData.montage) cfg.batch = cfg.gallery.auditionSH;
+				else cfg.batch = cfg.gallery.auditionSH.slice(start,start+PERPAGE);
+			} else if (cfg.batch && cfg.roleCount){
+				// from /welcome/preview
+				var max = Math.min(castingCall.auditionSH.count(), cfg.roleCount.hi);
+				var min = Math.min(castingCall.auditionSH.count(), cfg.roleCount.lo);
+				var roleCount = Math.floor(Math.random()*(max-min+1)) + min;
+console.info('Getting Story for rolecount='+roleCount);					
+				cfg.batch = cfg.batch.slice(0, roleCount);
+			} else if (cfg.batch){
+				// just use cfg.batch, do not slice;
+				// we are probably using Role.suggestedPhotoId
+			} else if (!cfg.batch && PAGE.jsonData.montage){
+					// 1) first montage render, uses Roles.photo_id, do NOT slice auditionSH
+					SNAPPI.setPageLoading(true);
+					cfg.page = SNAPPI.STATE.displayPage.page;	// current page
+					// castingCall not yet parsed for montage view, PAGE.jsonData.montage
+					var onDuplicate = SNAPPI.Auditions.onDuplicate_REPLACE;
+					var castingCall = PAGE.jsonData.castingCall;
+					if (!castingCall.auditionSH) { 
+						var auditionSH = SNAPPI.Auditions.parseCastingCall(
+								castingCall, 
+								null, 
+								null, 
+								onDuplicate);
+						}
+					cfg.batch = castingCall.auditionSH;			// do not slice
+			}
+			
+			if (PAGE.jsonData.montage) {
+				cfg.arrangement = PAGE.jsonData.montage;
+				delete PAGE.jsonData.montage;	// can we delete this safely?
+			}
 			cfg.stageType = cfg.stageType || 'montage';
 			cfg.noHeader = true;
 			cfg.getStage = cfg.getStage || this.getStage_montage;
 			cfg.thumbnailMarkup = '<article class="FigureBox Montage"><figure><img src="{src}" title="{title}" linkTo="{linkTo}" style="height:{height}px;width:{width}px;left:{left}px;top:{top}px;border:{borderSpacing}px solid transparent;"></figure></article>';
 			cfg.isMontage = true;	// uses Pr.getThumbPrefix to get min thumb size by crop
 			cfg.spacing = 1;		// border spacing
-			cfg.arrangement = PAGE.jsonData.montage;
 			cfg.listeners = ['LinkToClick', 'MultiSelect', 'Contextmenu'];
 			cfg.allowedRatios = {'h':'544:960', 'v':'7:10'}; 
 						
@@ -1130,22 +1215,6 @@ console.info('Getting Story for rolecount='+roleCount);
 	                }, 'ul > li', node);
 				// back reference
 				UIHelper.listen[action] = node.listen[action];	   
-				
-				// TODO: move to UIHelper.init.section{}
-				// initialize state
-				try {
-					if (PAGE.jsonData.montage) {
-						// open montage view
-						node.one('li.montage').addClass('focus');
-						SNAPPI.UIHelper.create._GET_MONTAGE();
-						_Y.one('.gallery-container').addClass('hide');
-					} else {
-						node.one('li.gallery').addClass('focus'); 
-console.log('initializing GalleryView');						 
-					    new SNAPPI.Gallery({type:SNAPPI.STATE.galleryType});
-					    _Y.one('.montage-container').addClass('hide');
-					}				
-				} catch(e){}
 			}
         },        
         DragDrop : function(){

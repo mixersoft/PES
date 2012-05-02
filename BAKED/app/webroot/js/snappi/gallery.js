@@ -395,7 +395,8 @@
 			cfg.args = _Y.merge(cfg.args,{page: page});
 			cfg.successJson = function(e, i,o,args) {
 					var response = o.responseJson.response;
-					PAGE.jsonData.castingCall = response.castingCall;
+					// PAGE.jsonData.castingCall = response.castingCall;
+					PAGE.jsonData = response;
 					SNAPPI.mergeSessionData(response.castingCall);	// need this for paginate
 					var options = {
 						page: args.page,
