@@ -34,3 +34,6 @@
 [submodule "_git_modules/mrclay/minify"]
 	path = _git_modules/mrclay/minify
 	url = https://github.com/mrclay/minify.git
+[submodule "_git_modules/alloy-ui"]
+	path = _git_modules/alloy-ui
+	url = https://github.com/liferay/alloy-ui.git
