@@ -520,7 +520,6 @@ console.warn("Node.ynode() may not be compatible with ie8");
 			/*
 			 * primary scripts
 			 */
-			'snappi-event-hover',
 			'snappi-dragdrop', 
 			'snappi-sortedhash',
 			'snappi-group',
@@ -796,7 +795,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
             comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl='+hostCfg.snappi_comboBase,
             root: 'js/snappi/',						// base for combo loading, combo load uri = comboBase+root+[module-name]
             modules: {
-	    		'snappi-event-hover': {
+	    		'snappi-event-hover': {	// deprecate, use yui 'hover'
 	    			path: 'event_hover.js',
 	    			requires:['event',"event-synthetic"]
 	    		},
@@ -872,7 +871,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
                 },
                 'snappi-gallery': {
                     path: 'gallery.js',
-                    requires: ['node', 'event', 'event-key', 'snappi-event-hover', 
+                    requires: ['node', 'event', 'event-key', 
                     'snappi-util', // uses SNAPPI.ShotController
                     'snappi-auditions',
                     'snappi-rating', 'snappi-menu-aui', 'snappi-paginator', 'snappi-gallery-helpers', 'snappi-thumbnail-helpers',
@@ -1038,7 +1037,8 @@ console.warn("Node.ynode() may not be compatible with ie8");
 	        modules: {
 	            'AIR-ui-helpers': {
 	                path: 'ui-helpers.js',
-	                requires: ['snappi-event-hover', 'snappi-paginator'] 
+	                requires: ['snappi-paginator',
+	                ] 
 			    },		        	
 	            'AIR-helpers': {	//TODO: deprecate. move to ui-helpers.js
 	                path: 'helpers.js',

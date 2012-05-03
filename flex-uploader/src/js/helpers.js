@@ -207,7 +207,7 @@ console.log("load BEGIN: helpers.js");
 			
 	        
 	        /*
-	         * test snappi:hover
+	         * test hover
 	         */
 	       	var startDrop = function() {
 	    		LOG("hover start");
@@ -215,7 +215,7 @@ console.log("load BEGIN: helpers.js");
 	    	var stopDrop = function() {
 	    		LOG("hover stop");
 			}; 
-	    	_Y.one('#upload').on('snappi:hover', startDrop, stopDrop, this);	
+	    	_Y.one('#upload').on('hover', startDrop, stopDrop, this);	
 	  	} 
 	    catch (e) {
 	        LOG("SNAPPI.AIR.Test not available");

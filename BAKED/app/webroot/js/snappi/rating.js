@@ -393,7 +393,7 @@ if (!_Y) {
 /*
  * UNUSED METHODS
  *  
- *  // TODO: use snappi:hover event here
+ *  // TODO: use yui hover event here
 	Rating.XXXhandleMouseOver = function(e) {
 		e.stopPropagation();
 		var r, eTarget = e.target;

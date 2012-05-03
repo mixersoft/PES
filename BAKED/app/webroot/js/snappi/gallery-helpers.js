@@ -388,6 +388,7 @@ var _showZoom = function(e, g) {
 	        	return;
 	        },
 	        Mouseover : function(){
+	        	// TODO: convert to 'hover' event
 	        	if(this.node.listen['Mouseover'] == undefined){
 	        		this.node.listen['Mouseover'] = this.container.delegate('mouseover', 
 		        		function(e){
@@ -508,7 +509,7 @@ var _showZoom = function(e, g) {
 		            			document.stoplistening_Keydown = stopListening;
 		            		}
 		            	};
-		            	self.node.listen[action] = self.container.on('snappi:hover', startListening, stopListening, self);
+		            	self.node.listen[action] = self.container.on('hover', startListening, stopListening, self);
 		            	self.node.listen['Keydown_startListening'] = startListening;
 		            	self.node.listen['Keydown_stopListening'] = stopListening;
 	            	} catch(e){

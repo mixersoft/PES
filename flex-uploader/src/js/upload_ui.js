@@ -830,7 +830,7 @@ LOG("  >>>>>>>>>>>>  UPLOAD: last page complete, checking for any pending files,
     		} catch (e) {}
 		}, 	
 		listen_hover : function() {
-        	this.container.on('snappi:hover', this.startDropListener, this.stopDropListener, this);			
+        	this.container.on('hover', this.startDropListener, this.stopDropListener, this);			
 		},
 		// IMG.onload doesn't seem to fire
 		onImgLoadListener : function() {

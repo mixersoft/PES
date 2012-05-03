@@ -383,7 +383,7 @@
             		}
             	};
             	var delegateNode = self.node.ancestor('.preview-body') || _Y.one('.preview-body');
-            	self.node.listen[action] = delegateNode.on('snappi:hover', startListening, stopListening, self);
+            	self.node.listen[action] = delegateNode.on('hover', startListening, stopListening, self);
             	self.node.listen['Keydown_startListening'] = startListening;
 		        self.node.listen['Keydown_stopListening'] = stopListening;
             }

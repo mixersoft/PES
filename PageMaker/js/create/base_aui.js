@@ -127,7 +127,7 @@
 				'async-queue',
 			];
 			var modules_2 = [
-				'snappi-event-hover',
+				// 'snappi-event-hover',
 				'snappi-pm-main',
 				'snappi-pm-util','snappi-pm-catalog3','snappi-pm-node3',
 				'snappi-pm-datasource3','snappi-pm-casting','snappi-pm-audition',
@@ -459,7 +459,7 @@
             comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl='+hostCfg.snappi_comboBase,
             root: 'js/snappi/',						// base for combo loading, combo load uri = comboBase+root+[module-name]
             modules: {
-	    		'snappi-event-hover': {
+	    		'snappi-event-hover': {	// deprecate. use yui hover
 	    			path: 'event_hover.js',
 	    			requires:['event',"event-synthetic"]
 	    		},
@@ -535,7 +535,7 @@
                 },
                 'snappi-gallery': {
                     path: 'gallery.js',
-                    requires: ['node', 'event', 'event-key', 'snappi-event-hover', 
+                    requires: ['node', 'event', 'event-key', 
                     'snappi-util', // uses SNAPPI.ShotController
                     'snappi-auditions',
                     'snappi-rating', 'snappi-menu-aui', 'snappi-paginator', 'snappi-gallery-helpers', 'snappi-thumbnail-helpers',
