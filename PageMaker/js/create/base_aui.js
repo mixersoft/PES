@@ -188,7 +188,7 @@
 	    		pagemaker_useCombo: 1,		
 	    		alloy_useCombo: true,
 	    		yahoo_CDN: 0,
-	    		YUI_VERSION: '3.3.0',	// this is actually set in aui.js
+	    		YUI_VERSION: '3.4.0',	// this is actually set in aui.js
 	    		// yui_CDN == true => use "http://yui.yahooapis.com/combo?"
 				// yui_CDN == false => use snaphappi hosted yui libs: "/combo/js?"
 		    },
@@ -201,7 +201,7 @@
 	    		pagemaker_useCombo: 1,
 	    		alloy_useCombo: true,
 	    		yahoo_CDN: 0,
-	    		YUI_VERSION: '3.3.0',
+	    		YUI_VERSION: '3.4.0',
 	    	}
 	    }
 	namespace('CFG');

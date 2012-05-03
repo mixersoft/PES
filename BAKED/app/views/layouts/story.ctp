@@ -21,7 +21,7 @@
     <body style="overflow:hidden">
         <?php echo $content_for_layout; ?>
     </body>
-	<script type="text/javascript" src="http://yui.yahooapis.com/combo?3.3.0/build/yui/yui-min.js"></script>
+	<script type="text/javascript" src="/svc/lib/yui_3.4.0/yui/build/yui/yui-min.js"></script>
 	<script type="text/javascript" src="/app/pagemaker/static/js/<?php echo $play_filename; ?>.js"></script> 
 </html>
 <?php if (empty($this->params['url']['iframe'])) {

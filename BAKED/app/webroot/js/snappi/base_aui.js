@@ -206,7 +206,7 @@
 	    		air_comboBase: 'app/air&',
 	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
 	    		pagemaker_comboBase: 'PageMaker&',	// filepath, not baseurl
-	    		pagemaker_useCombo: 1,
+	    		pagemaker_useCombo: 0,
 	    		alloy_useCombo: 1,
 	    		yahoo_CDN: 0,
 	    		YUI_VERSION: '3.4.0',	// this is actually set in aui.js
