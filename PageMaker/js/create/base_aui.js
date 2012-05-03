@@ -109,48 +109,13 @@
     	},
     	load: function(cfg){
     		if (!PageMakerPlugin.loaded) {
-    			this._lazyLoad(cfg);
+    			LazyLoad.main();
     		}
     		else {
     			_Y.fire('snappi-pm:pagemaker-load-complete', _Y);
-    			this.external_Y.fire('snappi-pm:pagemaker-load-complete', _Y);
-    			// fire('snappi-pm:pagemaker-load-complete', PM.Y);
+    			PageMakerPlugin.instance.external_Y.fire('snappi-pm:pagemaker-load-complete', _Y);
     		}
     	},
-    	_lazyLoad: function(cfg){
-			cfg = cfg || {};	// closure for onlazyload
-			var self = this;
-			// supports WindowOptionClick, primary header menu, xhr init
-			var modules_1 = [
-				// '*',
-				'node', 'event', 'event-custom',
-				'async-queue',
-			];
-			var modules_2 = [
-				// 'snappi-event-hover',
-				'snappi-pm-main',
-				'snappi-pm-util','snappi-pm-catalog3','snappi-pm-node3',
-				'snappi-pm-datasource3','snappi-pm-casting','snappi-pm-audition',
-	    		'snappi-pm-arrangement','snappi-pm-role','snappi-pm-production',
-	    		'snappi-pm-tryout','snappi-pm-performance3',
-	    		'snappi-pm-play', 'snappi-pm-menu', 'snappi-pm-dialog',
-	    		'snappi-io', 'snappi-auditions'
-			];
-	
-			var modules = modules_1.concat(modules_2);
-			/*
-			 * callback
-			 */
-			var onlazyload = function(Y, result){
-				// wait for LazyLoad.helpers.after_LazyLoadCallback()
-				var detach = Y.on('snappi-pm:lazyload-complete', function(){
-					PageMakerPlugin.loaded = true;
-					Y.fire('snappi-pm:pagemaker-load-complete', Y);
-					self.external_Y.fire('snappi-pm:pagemaker-load-complete', Y);
-				})
-			}
-			LazyLoad.use(modules, onlazyload, null );
-		},
     	getHost: function(){
     		var o = Config.getHostConfig();
     		return o.host;
@@ -181,12 +146,12 @@
 	var _CFG = {		// frequently used startup Config params 
 			DEBUG : {	// default when hostname==git*
 	    		snappi_comboBase: 'baked/app/webroot&',
-	    		snappi_minify: 1,
+	    		snappi_minify: 0,
 	    		air_comboBase: 'app/air&',
-	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
+	    		snappi_useCombo: 0,					// <-- TESTING SNAPPI useCombo
 	    		pagemaker_comboBase: 'PageMaker&',	// filepath, not baseurl
-	    		pagemaker_useCombo: 1,		
-	    		alloy_useCombo: true,
+	    		pagemaker_useCombo: 0,		
+	    		alloy_useCombo: 1,
 	    		yahoo_CDN: 0,
 	    		YUI_VERSION: '3.4.0',	// this is actually set in aui.js
 	    		// yui_CDN == true => use "http://yui.yahooapis.com/combo?"
@@ -382,7 +347,58 @@
 		// begin loading modules
 		_Y.use.apply(_Y, modules);
 	}
+	LazyLoad.main =  function(cfg){
+		cfg = cfg || {};	// closure for onlazyload
 
+		// supports WindowOptionClick, primary header menu, xhr init
+		var modules_1 = [
+			// '*',
+			'node', 'event', 'event-custom',
+			'async-queue',
+		];
+		var modules_2 = [
+			// 'snappi-event-hover',
+			'snappi-pm-main',
+			'snappi-pm-util','snappi-pm-catalog3','snappi-pm-node3',
+			'snappi-pm-datasource3','snappi-pm-casting','snappi-pm-audition',
+    		'snappi-pm-arrangement','snappi-pm-role','snappi-pm-production',
+    		'snappi-pm-tryout','snappi-pm-performance3',
+    		'snappi-pm-play', 'snappi-pm-menu', 'snappi-pm-dialog',
+    		'snappi-io', 'snappi-auditions'
+		];
+
+		var modules = modules_1.concat(modules_2);
+		/*
+		 * callback
+		 */
+		var onlazyload = function(Y, result){
+			// wait for LazyLoad.helpers.after_LazyLoadCallback()
+			var detach = Y.on('snappi-pm:lazyload-complete', function(){
+				PageMakerPlugin.loaded = true;
+				Y.fire('snappi-pm:pagemaker-load-complete', Y);
+				PageMakerPlugin.instance.external_Y.fire('snappi-pm:pagemaker-load-complete', Y);
+			})
+		}
+		LazyLoad.use(modules, onlazyload, null );
+	};
+	
+	/**
+	 * load extra modules AFTER initial page rendering
+	 * @params cfg.module_group = string, set of modules to load by key
+	 */			
+	LazyLoad.extras = function(cfg){	// load on _Y.later() after initial startup
+		var module_group = {
+			'scrollView': ["scrollview-base", "scrollview-paginator"],
+		}
+		var modules = module_group[cfg.module_group];
+		if (modules) {
+			onlazyload = cfg.ready || function(){
+				return true;
+			};	// closure for onlazyload
+			delete cfg.ready;
+			LazyLoad.use(modules, onlazyload, cfg);
+		}
+	};
 
 	// static methods
 	/**
