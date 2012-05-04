@@ -213,10 +213,10 @@
             }
             var performance = new PM.Performance(performanceCfg);
             
-            performance.setStaging(Plugin.stage);
+            performance.setStaging(Plugin.stage, Plugin.sceneCfg);
             Plugin.performance = performance;
             
-			if (!Plugin.stage.noHeader) {
+			if (!Plugin.sceneCfg.noHeader) {
 	            /*
 	             * Page Gallery Getting Started
 	             */
@@ -314,7 +314,7 @@
                 performance.setStaging();
                 // NOTE: performance.getScene() will clear
                 // sceneCfg.stage.body
-                if (!Plugin.stage.noHeader) {
+                if (!Plugin.sceneCfg.noHeader) {
 	                /*
 	                 * Page Gallery Getting Started
 	                 */
@@ -354,7 +354,7 @@
         			// set in Catalog.getCustomFitArrangement()
         			delete Plugin.production.tryout;
         			delete Plugin.production.arrangement;
-        			delete Plugin.production.stage;		// delete this?
+        			// delete Plugin.production.stage;		// delete this?
         		} 
         	} catch(e) {}
         	
@@ -390,7 +390,7 @@
 			 */
 			// var stage = Plugin.stage;
         	// stage.setContent('');		// empty stage
-            performance.setStaging(Plugin.stage, sceneCfg.noHeader);
+            performance.setStaging(Plugin.stage, sceneCfg);
             
             if (sceneCfg.roleCount) {
                 performance.roleCount = sceneCfg.roleCount;

@@ -47,11 +47,13 @@
      * STATIC properties & methods
      */	
     PageMakerPlugin.instance = null;
-    PageMakerPlugin.loaded = false;
+    PageMakerPlugin.isLoaded = false;
+    PageMakerPlugin.isInitialized = false;
     /**
      * init player, attach to plugin instance
      */
-    PageMakerPlugin.startPlayer = function() {
+    PageMakerPlugin.startPlayer = function(cfg) {
+    	cfg = cfg || {};
     	var Plugin = PM.pageMakerPlugin;	// instance
     	if (!Plugin.player) {
     		Plugin.player = new PM.Player({
@@ -64,6 +66,33 @@
     	} else {
     		Plugin.player.setStage(Plugin.stage, Plugin.stage.body);
     	}
+    	// TODO: experimental, move to init when ready
+    	if (Plugin.sceneCfg.scrollView) {
+    		if (Plugin.player.scrollview) {
+    			// page-wrap pageGallery, then update dimensions
+    			// var player = SNAPPI.PM.PageMakerPlugin.instance.player;
+    			// // player.scrollView._uiDimensionsChange();
+    			// Plugin.player.scrollview.pages.set('total', cfg.page);
+    			// Plugin.player.scrollView.pages.set('index', cfg.page-1);
+    			Plugin.player.init();
+    			Plugin.player.showPage(cfg.page-1);
+    			Plugin.player.scrollview._uiDimensionsChange();
+    		} else if (1) {
+    			var cfg = {module_group:'scrollView'}
+				cfg.ready = function(Y){
+				    Plugin.player.init();
+				    Plugin.stage.scrollView = Plugin.player.scrollview;
+				}
+				LazyLoad.extras(cfg);
+				// PM.Y.ready('substitute',"scrollview-base", "scrollview-paginator", function(Y){
+					// cfg.ready(Y);
+				// })
+			}
+			return;
+    	}    	
+    	
+    	
+    	
     	switch (Plugin.sceneCfg.stageType) {
     		case 'modal': 
     			try {
@@ -108,10 +137,12 @@
     		return this;
     	},
     	load: function(cfg){
-    		if (!PageMakerPlugin.loaded) {
-    			LazyLoad.main();
-    		}
-    		else {
+    		if (!PageMakerPlugin.isLoaded) {
+    			// should load AND launch/initialize
+    			LazyLoad.main(cfg);
+    		} else {
+    			// protected: called from _load_PageMakerPlugin()
+console.info("PageMakerPlugin.load(): _Y.fire('snappi-pm:pagemaker-load-complete', _Y);");    			
     			_Y.fire('snappi-pm:pagemaker-load-complete', _Y);
     			PageMakerPlugin.instance.external_Y.fire('snappi-pm:pagemaker-load-complete', _Y);
     		}
@@ -148,7 +179,7 @@
 	    		snappi_comboBase: 'baked/app/webroot&',
 	    		snappi_minify: 0,
 	    		air_comboBase: 'app/air&',
-	    		snappi_useCombo: 0,					// <-- TESTING SNAPPI useCombo
+	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
 	    		pagemaker_comboBase: 'PageMaker&',	// filepath, not baseurl
 	    		pagemaker_useCombo: 0,		
 	    		alloy_useCombo: 1,
@@ -213,7 +244,7 @@
 	        loadOptional: false,
 	        combine: hostCfg.alloy_useCombo,	// yui & alloy combine values will match 
 	        allowRollup: true,
-	//      filter: "MIN",		// ['MIN','DEBUG','RAW'], default='RAW'        
+	     	// filter: "MIN",		// ['MIN','DEBUG','RAW'], default='RAW'        
 			// filter: "DEBUG",
 	        filter: hostCfg.alloy_useCombo ? 'MIN' : "RAW",
 	        insertBefore: 'css-start',
@@ -363,21 +394,27 @@
 			'snappi-pm-datasource3','snappi-pm-casting','snappi-pm-audition',
     		'snappi-pm-arrangement','snappi-pm-role','snappi-pm-production',
     		'snappi-pm-tryout','snappi-pm-performance3',
-    		'snappi-pm-play', 'snappi-pm-menu', 'snappi-pm-dialog',
-    		'snappi-io', 'snappi-auditions'
+    		'snappi-pm-menu', 'snappi-pm-dialog',
+    		'snappi-io', 'snappi-auditions',
+    		// "scrollview",
 		];
 
 		var modules = modules_1.concat(modules_2);
+		if (cfg.scrollView) modules.push('snappi-pm-play-touch');
+		else modules.push('snappi-pm-play');
 		/*
 		 * callback
 		 */
 		var onlazyload = function(Y, result){
 			// wait for LazyLoad.helpers.after_LazyLoadCallback()
-			var detach = Y.on('snappi-pm:lazyload-complete', function(){
-				PageMakerPlugin.loaded = true;
+			Y.once('snappi-pm:lazyload-complete', function(){
+				PageMakerPlugin.isLoaded = true;
 				Y.fire('snappi-pm:pagemaker-load-complete', Y);
 				PageMakerPlugin.instance.external_Y.fire('snappi-pm:pagemaker-load-complete', Y);
-			})
+			});
+			Y.once('snappi-pm:pagemaker-launch-complete', function(){
+				PageMakerPlugin.isInitialized = true;
+			}); 
 		}
 		LazyLoad.use(modules, onlazyload, null );
 	};
@@ -388,7 +425,7 @@
 	 */			
 	LazyLoad.extras = function(cfg){	// load on _Y.later() after initial startup
 		var module_group = {
-			'scrollView': ["scrollview-base", "scrollview-paginator"],
+			'scrollView': ['substitute', "scrollview-base", "scrollview-paginator"],
 		}
 		var modules = module_group[cfg.module_group];
 		if (modules) {
@@ -712,6 +749,10 @@
 			    },
 			    'snappi-pm-play': {
 			        path: 'static/js/play.js',
+			        requires: ["event-delegate", "node", "anim"]
+	           },
+	           'snappi-pm-play-touch': {
+			        path: 'static/js/play-touch.js',
 			        requires: ["event-delegate", "node", "anim"]
 	           },
 			}

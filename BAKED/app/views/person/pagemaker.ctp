@@ -74,9 +74,9 @@ var initOnce = function() {
 	// load PG designer
 	// after lightbox Load
 	var detach;
-	detach = SNAPPI.Y.on('snappi:afterLightboxInit',
+	SNAPPI.Y.once('snappi:afterLightboxInit',
 			function(){
-				detach.detach();
+console.warn("Warning: this menthod for calling pageMaker has been deprecated. use UIHelper.create.get_StoryPage()");				
 				var count = this.Gallery.auditionSH.size();
 				this.Gallery.container.setStyles(
 						{
@@ -89,7 +89,7 @@ var initOnce = function() {
 					SNAPPI.DragDrop.pluginDrag(n);
 				}, this);
 				SNAPPI.DragDrop.startListeners();
-				this.load_then_launch_PageMaker();
+				this.get_StoryPage();
 
 				// additional lightbox attrs
 				SNAPPI.MenuAUI.initMenus({'menu-pagemaker-selected-create-markup':1});

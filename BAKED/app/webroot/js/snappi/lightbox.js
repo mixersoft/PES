@@ -1282,42 +1282,8 @@
 			SNAPPI.flash.flash(resp.message);
 //			window.location.reload();
 		},
-		load_then_launch_PageMaker : function() {
-			/*
-			 * get http request for casting call - supports either GET or POST -
-			 * POST can take a larger data payload, i.e. 100s of UUIDs
-			 */
-			// TODO: add support for http GET
-			var uri = defaultCfg.GET_CASTINGCALL_URI;
-	
-			var aid, assetIds = new Array();
-			this.Gallery.container.all('.FigureBox').each(function(n, i, l) {
-				aid = n.get('id').replace(this._cfg.ID_PREFIX, '');
-				assetIds.push(aid);
-			}, this);
-			var aidsAsString = assetIds.join(",");
-			var postdata = "data[Asset][ids]=" + aidsAsString;
-	
-			var ioCfg = {
-				method : "POST",
-				data : postdata,
-				uri : uri
-			};
-			
-			// TODO: switch to using SNAPPI.io.post() internally 
-		
-			if (SNAPPI.PM.main) {
-				SNAPPI.PM.main.launch(ioCfg);
-			} else {
-				
-				SNAPPI.PM.pageMakerPlugin = new SNAPPI.PageMakerPlugin();
-				SNAPPI.PM.pageMakerPlugin.load( 
-					function() {
-						SNAPPI.PM.main.go(ioCfg);
-					}
-				);
-				return;
-			}
+		get_StoryPage : function() {
+			SNAPPI.UIHelper.create.get_StoryPage({gallery:this.Gallery});	
 		},
 		handleKeydown : function(e) {
 			// console.log(this.container.get('parentNode'));

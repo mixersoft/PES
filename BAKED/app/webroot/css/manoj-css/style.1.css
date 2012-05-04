@@ -2872,6 +2872,12 @@ section.pagemaker-stage > iframe {
 	overflow:hidden;
 }
 
+.montage-container .yui3-scrollview .yui3-scrollview-content {
+	white-space:nowrap;
+}
+.montage-container .yui3-scrollview  .page-wrap {
+	display: inline-block;
+}
 /* welcome-preview */
 section.welcome-preview .message {
 	padding: 20px 40px;

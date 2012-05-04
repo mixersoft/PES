@@ -261,9 +261,14 @@
 			 */
 			// cfg.isRehearsal = false;   
             var renderedPerformance = this.getPerformance(cfg, scene);
-    		Plugin.stage.body.setContent(renderedPerformance);
+            var playCfg = {};
+            if (cfg.scrollView) {
+            	Plugin.stage.body.append(renderedPerformance);
+            	playCfg['page'] = parseInt(renderedPerformance.getAttribute('ccPage') || 0); // set in Production.getPerformance()
+    		} else Plugin.stage.body.setContent(renderedPerformance);
+    		// TODO: need to specify page
     		renderedPerformance.unscaled_pageGallery = Plugin.stage.body.get('innerHTML');
-    		PM.PageMakerPlugin.startPlayer();
+    		PM.PageMakerPlugin.startPlayer(playCfg);
 //        	var url = this.postPageGallery(cfg, scene); // POST cmd to save on server
 			return renderedPerformance;
         },
@@ -371,7 +376,7 @@
                 // just watch for img load, don't queue
                 SNAPPI.util3.ImageLoader.loadBySelector(pageGallery, 'div#content img', null, 100);
             }
-            pageGallery.setAttribute('ccPage', SNAPPI.STATE.displayPage.page);
+            if (1 || cfg.scrollView) pageGallery.setAttribute('ccPage', SNAPPI.STATE.displayPage.page);
             return pageGallery;
         },
         getThumbPrefix: function(crop, cfg){

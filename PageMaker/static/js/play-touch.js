@@ -27,7 +27,7 @@
 		PM.namespace('PM.onYready');
 		// Yready init
 		PM.onYready.Play = function(Y){
-			if (_Y === null) _Y = Y;
+			if (_Y === null) _Y = PM.Y;
 			PM.bootstrapY = false;
 			Plugin = PM.PageMakerPlugin.instance;
 		}  		
@@ -292,10 +292,10 @@
 			this.content._isResizing = true;		// disable winResize
 this.container.addClass('hide');
 			pages.each(function(page, i) {
-				if (page.hasClass('hide')) {
-					page.removeClass('hide');
-					page.addClass('hidden');	// cant get offsets with page.hide
-				}
+				// if (page.hasClass('hide')) {
+					// page.removeClass('hide');
+					// page.addClass('hidden');	// cant get offsets with page.hide
+				// }
 				origRect = {
 					X : _px2i(page.getStyle('left')),
 					Y : _px2i(page.getStyle('top')),
@@ -317,13 +317,13 @@ this.container.addClass('hide');
 						H : _px2i(photo.getStyle('height'))
 					};
 					photo.origRect = origRect;
-					if (CONFIG.DEFER_IMG_LOAD && i+1 != pageNo) {
-						var src = photo.getAttribute('src');
-						if (src) {
-							photo.setAttribute('qsrc', src);
-							photo.setAttribute('src', '');
-						}
-					}
+					// if (CONFIG.DEFER_IMG_LOAD && i+1 != pageNo) {
+						// var src = photo.getAttribute('src');
+						// if (src) {
+							// photo.setAttribute('qsrc', src);
+							// photo.setAttribute('src', '');
+						// }
+					// }
 				}, this);
 				// scale photos on each page to target height or width
 				containerRect.node = page;
@@ -376,6 +376,7 @@ this.content._isResizing = false;		// enable winResize
 		 * wrap pageGalleries for touch scrolling
 		 */
 		pageWrap : function(pageGallery, direction) {
+			if (pageGallery.ancestor('.page-wrap')) return pageGallery.ancestor('.page-wrap');
 			var wrapStyle, 
 				containerRect = _getContainerRect(this.container);
 			switch(direction) {
@@ -400,6 +401,7 @@ this.content._isResizing = false;		// enable winResize
 		 *  add scrollWrap for touch, this is cfg.srcNode for ScrollView
 		 */
 		scrollWrap : function(scrollContent, total, direction){
+			if (scrollContent.ancestor('.scroll-wrap')) return scrollContent.ancestor('.scroll-wrap');
 			var	wrap = scrollContent.create('<div class="scroll-wrap"></div>');
 			scrollContent.replace(wrap);
 			wrap.append(scrollContent);
@@ -409,8 +411,10 @@ this.content._isResizing = false;		// enable winResize
 		 * add YUI3 ScrollView class for touch scrolling
 		 */
 		addScrollView_Page : function(cfg) {
+			if (this.scrollview) return this.scrollview;
+			if (!_Y.ScrollView) _Y = PM.Y;		// TODO: LazyLoad.extras() bug
+			// if (cfg.srcNode.all('.page-wrap').size() < 2)return;		// TODO: ScrollView with 1 page bug
 			cfg = _Y.merge(this.cfg,cfg);
-			
 			var scrollview = new _Y.ScrollView({
 		        srcNode: cfg.srcNode,
 		        width: cfg.width,
@@ -437,7 +441,7 @@ this.content._isResizing = false;		// enable winResize
 			    // if (Math.abs(this.scrollview.lastScrolledAmt) > 2) {
 			        // e.preventDefault();
 			    // }
-			// }, "a", this);
+			// }, "img", this);
 		    
 		    // Prevent default image drag behavior
 		    scrollview.get("contentBox").delegate("mousedown", function(e) {
@@ -446,6 +450,7 @@ this.content._isResizing = false;		// enable winResize
 		    this.scrollview = scrollview;
 		},
 		addScrollView_Photo: function(target){
+			if (this.photo_Scrollview) return this.photo_Scrollview;
 			/*
 			 *  touch scrollview
 			 */
@@ -501,6 +506,7 @@ this.content._isResizing = false;		// enable winResize
 		    photo_Scrollview.get("contentBox").delegate("mousedown", function(e) {
 		        e.preventDefault();
 		    }, "img");
+		    this.photo_Scrollview = photo_Scrollview;
 		    return photo_Scrollview;
 		},
 		getScrollViewMarkup_Photo: function(target, force){

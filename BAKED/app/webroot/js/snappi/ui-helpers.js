@@ -283,6 +283,10 @@
 		},
 		'section-view': {
 			montage: function(e, view){
+				/*
+				 * NOTE: first use, we don't know if we are in cfg.scrollView or NOT
+				 * test for PM.pageMakerPlugin.player.scrollview or PM.pageMakerPlugin.sceneCfg.scrollview
+				 */
 				var g, cfg, page; 
 				cfg = {perpage: 9}; // same as $this->Montage->getArrangement($Auditions, 9);	
 				if (!e.currentTarget.hasClass('focus')) {
@@ -293,7 +297,13 @@
 					g = _Y.one('.gallery.photo').Gallery;	// coming from Gallery view
 				}catch(e){}
 				
-				var montage = _Y.one('.montage-container div.pageGallery');
+				var montage;
+				try {
+					var index = PM.pageMakerPlugin.player.scrollview.pages.get('index');
+					montage = _Y.all('.montage-container div.pageGallery').item(index);
+				} catch(ex) {
+					montage = _Y.one('.montage-container div.pageGallery');
+				} 
 				if ( montage 
 					&& montage.getAttribute('ccPage') == SNAPPI.STATE.displayPage.page 
 					&& montage.ancestor('.montage-container').hasClass('hide')
@@ -301,7 +311,12 @@
 					montage.ancestor('.montage-container').removeClass('hide');
 					_Y.one('.gallery-container').addClass('hide');
 					return;
-					
+				} else if ( montage 
+					&& index
+					&& montage.getAttribute('ccPage') == (index+1) ) 
+				{	
+					// case where cfg.scrollView=1, scroll to next page 
+					cfg.page = index+2;
 				} else if ( montage 
 					&& montage.getAttribute('ccPage') == SNAPPI.STATE.displayPage.page )
 				{	// montage is showing current page, increment page
@@ -597,6 +612,7 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 				fnDisplaySize: {
 					h: this.MAX_HEIGHT,
 				},
+				// scrollView: 0,
 				// stage: this.getStage_modal(), 	// use PMPlugin.setStage()
 				noHeader: true,
 				useHints: true,
@@ -674,30 +690,20 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 		},		
 		/*
 		 * load/load/init/create lifecycle 
-		 * 	1a) load EXTERNAL plugin module, load_PageMakerPlugin 
-		 * 		-> listen: afterPageMakerPluginLoad, or onReady_PageMakerPlugin()
+		 * 	1a) load EXTERNAL plugin module, _load_PageMakerPlugin 
+		 * 		-> listen: _Y.once('snappi-pm:PageMakerPlugin-load-complete'
 		 *  1b) load PM Pagemaker modules, PMPlugin.load() 
-		 * 		-> listen:'snappi-pm:pagemaker-load-complete'
+		 * 		-> listen: _Y.once('snappi-pm:pagemaker-load-complete'
 		 *  2) init Pagemaker with castingCall, PM.main.launch() 
-		 * 		-> listen:'snappi-pm:pagemaker-launch-complete' 
+		 * 		-> listen: _Y.once('snappi-pm:pagemaker-launch-complete'
 		 *  3) create Story: Gallery.createPageGallery()
 		 */
 		// load 'pagemaker-base' MODULE if SNAPPI.PM.PageMakerPlugin class does not exist
-		load_PageMakerPlugin: function(external_Y, cfg){
+		_load_PageMakerPlugin: function(external_Y, cfg){
 			PM = SNAPPI.PM;
-			external_Y.once('snappi-pm:PageMakerPlugin-load-complete', function(){
-			    try {
-					/*
-		    		 * remove existing Hints, just show story hints
-		    		 */
-		    		SNAPPI.Hint.lookupHintByTriggerSH.clear();
-		    		SNAPPI.STATE.hints['HINT_PMToolbarEdit'] = true;
-		    		SNAPPI.STATE.hints['HINT_PMPlay'] = true;
-	    		} catch (e){}
-	    	});
 			
 			// check plugin
-			if (!PM || !PM.pageMakerPlugin) {
+			if (!PM || !PM.PageMakerPlugin.isLoaded) {
 				/*
 				 * lazyLoad PageMakerPlugin module
 				 */
@@ -716,49 +722,22 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 // console.info("snappi-pm:PageMakerPlugin-load-complete");					
 					// TODO: put in 'snappi-pm:afterPageMakerPluginLoad' handler?
 					PMPlugin = PM.pageMakerPlugin = new PM.PageMakerPlugin(external_Y);
-					PMPlugin.load();
+					PMPlugin.load({scrollView:cfg.scrollView});
 				};
 				SNAPPI.LazyLoad.use(modules, callback);
 				return;
 			}
 			
-			if (!SNAPPI.PM.main) {
-				// should be same as this.launch_Pagemaker()
-				// after-load: launch/create Pagemaker page 
-				var launched = _Y.on('snappi-pm:pagemaker-launch-complete', function(stage) {
-	        		launched.detach();
-	        		// node.ynode().set('innerHTML', 'Create Page');
-	        		var create = this.getCreate();
-	        		create();
-	        	}, this);
-		        	
-				// Plugin alread loaded, just launch Pagemaker
-				var sceneCfg = this.getSceneCfg(this.getCastingCall());
-				PMPlugin.setScene(sceneCfg);
-				PM.main.launch(PM.pageMakerPlugin);
-				return;
+			// DEPRECATE: use UIHelper.create.launch_PageMaker(cfg);
+			if (!PM || !PM.PageMakerPlugin.isInitialized) {		
+console.error("Error: should be calling UIHelper.create.launch_PageMaker(cfg);");				
 			} 
-			
-			// Plugin loaded AND launched, ready to create()
-			var Plugin = PM.pageMakerPlugin;
-			if (Plugin.stage 
-				&& Plugin.stage.stageType
-				&& cfg.stageType
-				&& Plugin.stage.stageType != cfg.stageType){
-				// redo pre-launch
-				cfg = _Y.merge(cfg, this.getCastingCall());
-				var ioCfg, sceneCfg = this.getSceneCfg(cfg);
-				if (this.isPost(cfg)) ioCfg = this.postCastingCall(cfg);
-				PMPlugin.setScene(sceneCfg).setPost(ioCfg);
-				var stage = (cfg.getStage) ? cfg.getStage() : this.getStage_modal();
-				PMPlugin.setStage(stage);
-				// ready to create?
-			} 
-			var create = this.getCreate(cfg);
-			_Y.later(100, this, create);
-			
+			// deprecate: checked by get_StoryPage, get_Montage
+console.error("Error: Plugin should already be ready, PM.PageMakerPlugin.isLoaded && PM.PageMakerPlugin.isInitialized;");				
 		},
-		// on 'snappi-pm:pagemaker-load-complete'
+		
+		
+		// called from 'snappi-pm:pagemaker-load-complete'
 		launch_PageMaker: function(cfg){
 // console.error("2a) on 'snappi-pm:pagemaker-load-complete'");	
 			var ioCfg, sceneCfg = this.getSceneCfg(cfg);
@@ -774,51 +753,75 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 		launchComplete_PageMakerPlugin: function(cfg){
 		},
 		// entry point for Stories
-		load_then_launch_PageMaker : function(cfg){
+		get_StoryPage : function(cfg) {
 			if (!cfg || !cfg.batch.count()) cfg = this.getCastingCall();
 			cfg.arrangement = null;
 			cfg.spacing = 2;		// border spacing
 			cfg.stageType = cfg.stageType || 'modal';
-			var g = cfg.gallery;
 			
-        	var loaded = _Y.on('snappi-pm:pagemaker-load-complete', function(PM_Y) {
-// console.error("1) load_then_launch_PageMaker(): snappi-pm:pagemaker-load-complete");        		
-        		loaded.detach();
+			try { // Plugin loaded+launched, run directly
+				var ready = PM.PageMakerPlugin.isLoaded && PM.PageMakerPlugin.isInitialized;
+				if (!ready) throw new Error();
+				var create = UIHelper.create.getCreate(cfg);
+        		_Y.later(100, this, create);
+        		return;
+			} catch(ex) {}
+			this.load_then_launch_PageMaker(cfg);
+		},
+		load_then_launch_PageMaker : function(cfg){
+			
+			_Y.once('snappi-pm:PageMakerPlugin-load-complete', function(){
+				// fired after 'snappi-pm:lazyload-complete' for 'pagemaker-base'
+			    try {
+					/*
+		    		 * remove existing Hints, just show story hints
+		    		 */
+		    		SNAPPI.Hint.lookupHintByTriggerSH.clear();
+		    		SNAPPI.STATE.hints['HINT_PMToolbarEdit'] = true;
+		    		SNAPPI.STATE.hints['HINT_PMPlay'] = true;
+	    		} catch (e){}
+	    	});
+	    	
+	    	_Y.once('snappi-pm:pagemaker-load-complete', function(PM_Y) {
+				// fired after 'snappi-pm:lazyload-complete' for PageMaker modules     		
 				UIHelper.create.launch_PageMaker(cfg);
         	});
-			
+	    	
 			// after-load: launch/create Pagemaker page 
-			var launched = _Y.on('snappi-pm:pagemaker-launch-complete', function(stage) {
-// console.error("4) load_then_launch_PageMaker(): snappi-pm:pagemaker-launch-complete"); 				
-        		launched.detach();
+			_Y.once('snappi-pm:pagemaker-launch-complete', function(stage) {
         		// node.ynode().set('innerHTML', 'Create Page');
         		// fn_create();
         		var create = UIHelper.create.getCreate(cfg);
         		_Y.later(100, this, create);
-        	}, g);
+        	}, cfg.gallery);
         	
-        	this.load_PageMakerPlugin(_Y, cfg);
+        	this._load_PageMakerPlugin(_Y, cfg);
+		},
+		get_Montage : function(cfg) {
+			try { // Plugin loaded+launched, run directly
+				var ready = PM.PageMakerPlugin.isLoaded && PM.PageMakerPlugin.isInitialized;
+				if (!ready) throw new Error();
+				// var scrollView = PM.pageMakerPlugin.player.scrollview;
+				var create = UIHelper.create.getCreate(cfg);
+        		_Y.later(100, this, create);
+        		return;
+			} catch(ex) {}
+			this.load_then_launch_Montage(cfg);
 		},
 		// set cfg.batch, cfg.getStage, cfg.gallery???
 		load_then_launch_Montage : function(cfg){
-			var g = cfg.gallery;
-
-        	var loaded = _Y.on('snappi-pm:pagemaker-load-complete', function(PM_Y) {
-        		loaded.detach();
+        	_Y.once('snappi-pm:pagemaker-load-complete', function(PM_Y) {
 				UIHelper.create.launch_PageMaker(cfg);
         	});
 			
 			// after-load: launch/create Pagemaker page 
-			var launched = _Y.on('snappi-pm:pagemaker-launch-complete', function(stage) {
-        		launched.detach();
+			_Y.once('snappi-pm:pagemaker-launch-complete', function(stage) {
         		// node.ynode().set('innerHTML', 'Create Page');
         		// fn_create();
         		var create = UIHelper.create.getCreate(cfg);
-        		// SNAPPI.setPageLoading(true);
         		_Y.later(100, this, create);
-        	}, g);
-        	
-        	this.load_PageMakerPlugin(_Y, cfg);
+        	}, cfg.gallery);
+        	this._load_PageMakerPlugin(_Y, cfg);
 		},
 		getStage_montage : function(cfg) {
 				cfg = cfg || {};
@@ -833,6 +836,21 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 				} 
 				return stage;
 		},
+		getScrollViewPageGallery: function(page) {
+			try {
+				var scrollView = PM.pageMakerPlugin.player.scrollview;
+				// var page = PM.pageMakerPlugin.player.scrollview;
+				var found, pageGalleries = _Y.all('.montage-container .pageGallery');
+				pageGalleries.some(function(n,i,l){
+					if (n.getAttribute('ccPage')==page) {
+						found = n;
+					}; 
+					return found;
+				})
+				return found;
+			} catch(ex) {}
+			return false;
+		},
 		/*
 		 * called from:
 		 * 1. SectionView
@@ -845,6 +863,21 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 			var PERPAGE = cfg.perpage || 9,
 				start = (cfg.page-1)*PERPAGE;
 				
+			var pageGallery = this.getScrollViewPageGallery(cfg.page);
+			if (pageGallery) {
+				// scrollView page, already rendered, just show this page
+				SNAPPI.setPageLoading(false); 	// c.transition bug
+				try {
+					var index = cfg.page-1;
+					PM.pageMakerPlugin.player.scrollview.pages.scrollTo(index, 0,0);	
+					var index = PM.pageMakerPlugin.player.scrollview.pages.set('index', index);				
+				} catch(e){
+console.error('ERROR: scrollView c.transition bug');					
+					PM.pageMakerPlugin.player.showPage(cfg.page); // manually show page
+				}
+				return;
+			}
+			
 			if (cfg.page !== SNAPPI.STATE.displayPage.page)	{
 				// get new castingCall, page=cfg.page
 				// XHR call
@@ -856,10 +889,11 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 					});
 					_Y.one('.gallery-container').addClass('hide');
 				}
-				var cancel = _Y.once('snappi:gallery-refresh-complete', function(){
+				var cancel = _Y.once('snappi:gallery-refresh-complete', function(g, cfg){
 					// TODO: need to cancel this if the request fails 
 					if (_Y.one('.montage-container').hasClass('hide')) return;
 					// now get montage for this ccPage
+					cfg.gallery = g;
 					UIHelper.create._GET_MONTAGE(cfg);
 					// update Gallery Paginator
 					try {
@@ -869,17 +903,17 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 	console.error("ERROR: paginator is not available to update");					
 					}					
 					SNAPPI.setPageLoading(false);
-				});
+				}, this, cfg);
 				cfg.gallery.refresh({page: cfg.page, montage:1});
 				return;
 			}
-			
 			
 			/*
 			 * render current castingCall page correctly
 			 */
 			if (!cfg.batch && cfg.gallery && cfg.gallery.auditionSH) {
-				if (PAGE.jsonData.montage) cfg.batch = cfg.gallery.auditionSH;
+				if (PAGE.jsonData.montage) 
+					cfg.batch = cfg.gallery.auditionSH;
 				else cfg.batch = cfg.gallery.auditionSH.slice(start,start+PERPAGE);
 			} else if (cfg.batch && cfg.roleCount){
 				// from /welcome/preview
@@ -918,21 +952,23 @@ console.info('Getting Story for rolecount='+roleCount);
 			cfg.thumbnailMarkup = '<article class="FigureBox Montage"><figure><img src="{src}" title="{title}" linkTo="{linkTo}" style="height:{height}px;width:{width}px;left:{left}px;top:{top}px;border:{borderSpacing}px solid transparent;"></figure></article>';
 			cfg.isMontage = true;	// uses Pr.getThumbPrefix to get min thumb size by crop
 			cfg.spacing = 1;		// border spacing
-			cfg.listeners = ['LinkToClick', 'MultiSelect', 'Contextmenu'];
 			cfg.allowedRatios = {'h':'544:960', 'v':'7:10'}; 
+			cfg.scrollView = 1;
 						
 			// initialize stage and reuse later
 			var listener, stage = cfg.getStage(cfg);
+			cfg.listeners = {'xxxLinkToClick':{node: stage}, 'MultiSelect':stage, 'xxxContextmenu':null};
 			if (!stage.listen) { 
 				/*
-				 * 
+				 * TODO: need to refactor
 				 */
 				stage.listen = {};
-				listener = 'MultiSelect';
-				stage.listen[listener] = UIHelper.listeners[listener](stage);
-				listener = 'LinkToClick';
-				stage.listen[listener] = UIHelper.listeners[listener]({node: stage});
-
+				for (var j in cfg.listeners) {
+					try {
+					listener = j;
+					stage.listen[listener] = UIHelper.listeners[listener](cfg.listeners[j]);
+					} catch (ex){}
+				}
 				// listener = 'Contextmenu';
 				// stage.listen[listener] = UIHelper.listeners[listener]({node: stage});
 				listener = 'render';
@@ -948,7 +984,7 @@ console.info('Getting Story for rolecount='+roleCount);
 						});        
 			}
 			SNAPPI.setPageLoading(true);
-			this.load_then_launch_Montage(cfg);
+			this.get_Montage(cfg);
 		},
 	}
 	UIHelper.util = {
@@ -1026,24 +1062,26 @@ console.info('Getting Story for rolecount='+roleCount);
 	            		var linkTo = e.currentTarget.getAttribute('linkTo');
 	            		if (linkTo) {
 	            			e.halt();	// intercepts A.click action
-	            			var CSS_ID = UIHelper.util.getContextMenuIdFromNode(e.currentTarget, cfg.type);
-	    					var menu = SNAPPI.MenuAUI.find[CSS_ID];
-	            			// if contextmenu is visible, hide
-		                	if (menu && menu.get('visible')) { // menu may be closed BEFORE this event
-		                		UIHelper.nav.toggle_ContextMenu(e);	// hide contextmenu
-		                		return;		// allows temp disabling of listener
-		                	}
-	                		try {	     
-	                			// TODO: find CastingCall from Gallery OR Montage       	
-			                	if (this.Gallery.castingCall.CastingCall) {
-			                    	linkTo += '?ccid=' + this.Gallery.castingCall.CastingCall.ID;
-									var shotType = this.Gallery.castingCall.CastingCall.Auditions.ShotType;
-									if (shotType == 'Groupshot'){
-										linkTo += '&shotType=Groupshot';
+	            			try {
+	            				var CSS_ID = UIHelper.util.getContextMenuIdFromNode(e.currentTarget, cfg.type);
+		    					var menu = SNAPPI.MenuAUI.find[CSS_ID];
+		            			// if contextmenu is visible, hide
+			                	if (menu && menu.get('visible')) { // menu may be closed BEFORE this event
+			                		UIHelper.nav.toggle_ContextMenu(e);	// hide contextmenu
+			                		return;		// allows temp disabling of listener
+			                	}
+		                		try {	     
+		                			// TODO: find CastingCall from Gallery OR Montage       	
+				                	if (this.Gallery.castingCall.CastingCall) {
+				                    	linkTo += '?ccid=' + this.Gallery.castingCall.CastingCall.ID;
+										var shotType = this.Gallery.castingCall.CastingCall.Auditions.ShotType;
+										if (shotType == 'Groupshot'){
+											linkTo += '&shotType=Groupshot';
+										}
 									}
-								}
-							} catch (e) {}
-	            			window.location.href = linkTo;
+								} catch (ex) {}
+		            			window.location.href = linkTo;
+	            			} catch(ex){}
 	            		} 
 	                }, '.FigureBox > figure > img, figure > a > img', node);
 			}

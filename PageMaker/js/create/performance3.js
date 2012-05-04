@@ -64,14 +64,15 @@
                 this.tryout = cfg; // TODO: should use instanceof here
             }
         },
-        setStaging: function(stage, noHeader){
+        setStaging: function(stage, cfg){
+        	cfg = cfg || {};
             stage = stage || Plugin.stage;
             
             var displaySize = this.fnDisplaySize();
             /*
              * add Header to PageGallery
              */
-            if (noHeader || stage.noHeader) {
+            if (cfg.noHeader || stage.noHeader) {
             	try{
             		stage.one('.stage-header').remove();
             	} catch(e){}
@@ -83,9 +84,13 @@
              * add Body
              */
             var body = this.getStageBody(stage);
-            body.setContent(''); // if body has existing Performance, reset before re-render
-            stage.append(body);
-            stage.body = body;			// TODO: deprecate, backreference needed?
+            if (!stage.contains(body)) {
+            	stage.append(body);		// ???: move to getStageBody()?
+            }
+            // if (cfg.scrollView) {
+            	// // skip
+            // } else body.setContent(''); // if body has existing Performance, reset before re-render
+            stage.body = body;			// used by Performance.perform()
             stage.performance = this;	// TODO: deprecate, backreference needed?
 			return stage;
         },
@@ -112,8 +117,7 @@
              * config Stage Body
              */
             var displayPixelsH, 
-            	displaySize = this.fnDisplaySize(),
-            	backgroundColor = '#000';
+            	displaySize = this.fnDisplaySize();
             var header = parent.one('.stage-header');
             if (header) {
             	displayPixelsH = displaySize.h - header.get('clientHeight');
@@ -140,7 +144,7 @@
              * config Production
              */
             this.useHints = cfg && cfg.useHints !== undefined ? cfg.useHints : this.useHints;
-            this.clearBody(Plugin.stage.body); // update body height in case of resize and clear
+            if (!cfg.scrollView) this.clearBody(Plugin.stage.body); // update body height in case of resize and clear
             
             var Pr = PM.pageMakerPlugin.production || Plugin.stage.production;
             // Pr.catalog = this.catalog;	// set in parent
@@ -149,10 +153,8 @@
              * get Tryout/Auditions, a formatted subset of rawCastingCall
              * tryout <- sceneCfg.auditions
              */
-            Pr.tryout = cfg && cfg.tryout || this.tryout ||
-	            new PM.Tryout({
-	                oStack: cfg && cfg.stack || this.stack
-	            });
+            Pr.tryout = cfg && cfg.tryout || this.tryout || new PM.Tryout();
+            
             cfg = _Y.merge(cfg, {
                 label: this.label,
                 useHints: this.useHints,

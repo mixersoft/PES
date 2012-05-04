@@ -1129,7 +1129,7 @@ console.log("delegateHost="+delegateHost._yuid);
 				});
 				delayed.delay(1000);
 				try {
-					SNAPPI.UIHelper.create.load_then_launch_PageMaker();	
+					SNAPPI.UIHelper.create.get_StoryPage();	
 				}catch (e) {}
 			} else { // nothing selected
 				// if NOT launched, then show create new story help if nothing is selected(?)
