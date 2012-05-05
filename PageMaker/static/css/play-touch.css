@@ -197,15 +197,13 @@ div#content {
 
 div.pageGallery {
     position: relative;
+    margin: 10px auto;
 }
 
 div.pageGallery > img, div.pageGallery figure > img  {
-	position: absolute;
+	border: 1px solid transparent;
 	cursor: pointer;
-	border-spacing: 2px;
-	border-style: solid;
-	border-color: transparent;
-
+	position: absolute;
 }
 .yui3-scrollview-child {
 	background-color: #888;

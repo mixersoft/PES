@@ -620,6 +620,11 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 				performance: null,		// reset performance
 				// thumbPrefix: 'bm',	// use 'bm' for montage
 			};
+			/*
+			 * NOTE: for rendering in Dialog, i.e. stage_modal
+			 * set cfg.MARGIN_W = 22,
+			 * for scrollView, cfg.MARGIN_W = 0 for full width scroll window, see play-touch.js defaults 
+			 */
 			sceneCfg = _Y.merge(sceneCfg, cfg);
 			return sceneCfg;
 		},
@@ -756,7 +761,7 @@ console.error("Error: Plugin should already be ready, PM.PageMakerPlugin.isLoade
 		get_StoryPage : function(cfg) {
 			if (!cfg || !cfg.batch.count()) cfg = this.getCastingCall();
 			cfg.arrangement = null;
-			cfg.spacing = 2;		// border spacing
+			cfg.spacing = cfg.batch.count()>10 ? 1 : 2;		// border spacing
 			cfg.stageType = cfg.stageType || 'modal';
 			
 			try { // Plugin loaded+launched, run directly
@@ -953,6 +958,7 @@ console.info('Getting Story for rolecount='+roleCount);
 			cfg.spacing = 1;		// border spacing
 			cfg.allowedRatios = {'h':'544:960', 'v':'7:10'}; 
 			cfg.scrollView = 1;
+			cfg.MARGIN_W = 0;		// this needs to be passed from sceneCfg -> playCfg
 						
 			_Y.once('snappi-pm:render', function(Pr, pageGallery) {
 				var page = pageGallery.getAttribute('ccPage');

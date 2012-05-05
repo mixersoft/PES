@@ -73,7 +73,7 @@
 		// pageGallery margin = 20px
 		// wrap = 16px
 		FOOTER_H : 36, // before header, footer
-		MARGIN_W : 22,
+		MARGIN_W : 0, 	// for Horizontal scrollView (play_touch.js only) use 0
 		DEFER_IMG_LOAD: true,		// delay IMG load by moving IMG.src => IMG.qsrc
 		layout : {
 			centerBoxW : 480,
@@ -207,6 +207,7 @@
 	var _getContainerRect = function(container, cfg, force){
 		if (force || !_containerRect) { 
 			cfg = cfg || {};
+			container = container.ancestor('.aui-dialog-bd') || container;
 			_containerRect = {};
 			_containerRect.H = 0 - (cfg.FOOTER_H || 0);	// offsets
 			_containerRect.W = 0 - (cfg.MARGIN_W || 0);
@@ -214,7 +215,6 @@
 				_containerRect.H += container.get('winHeight');
 				_containerRect.W += container.get('winWidth');
 			} else {
-				container = container.ancestor('.aui-dialog-bd') || container;
 				_containerRect.H += container.get('clientHeight');
 				_containerRect.W += container.get('clientWidth');
 			}
@@ -313,7 +313,7 @@ this.container.addClass('hide');
 						H : _px2i(photo.getStyle('height'))
 					};
 					photo.origRect = origRect;
-					// if (CONFIG.DEFER_IMG_LOAD && i+1 != pageNo) {
+					// if (CONFIG.DEFER_IMG_LOAD && i+1 != pageNo) { // NOTE: defer on create
 						// var src = photo.getAttribute('src');
 						// if (src) {
 							// photo.setAttribute('qsrc', src);
@@ -323,7 +323,6 @@ this.container.addClass('hide');
 				}, this);
 				// scale photos on each page to target height or width
 				containerRect.node = page;
-// parent.window.SNAPPI.Y.one('.properties').append("<div style='color:red;position:relative;z-index:999;'>init() page="+i+", pageRect="+ page.origRect.W +':'+ page.origRect.H+"</div>");
 				this.scale( containerRect );
 				this.pageWrap(page);
 			}, this);
@@ -853,9 +852,6 @@ this.container.removeClass('hide');
 				pageRect = _Y.Node.getDOMNode(page);
 			}
 // console.warn("pageRect="+ pageRect.W +':'+ pageRect.H);	
-try {
-parent.window.SNAPPI.Y.one('.properties').append("<div style='color:red;position:relative;z-index:999;'>scale() , pageRect="+ pageRect.W +':'+ pageRect.H+"</div>");
-} catch (e){}
 			if (cfg.W && cfg.H && (cfg.H / cfg.W > pageRect.H / pageRect.W)) {
 				scaleTo = 'same-width';
 				// delete cfg.H;  	// use cfg.W as bound, all pages same width
@@ -919,15 +915,15 @@ parent.window.SNAPPI.Y.one('.properties').append("<div style='color:red;position
 			}, this);
 		
 			// page must be .hidden or visible for clientLeft/Top
-			borderWidth = _px2i(bottomRight.getStyle('borderWidth'));
+			borderWidth = _px2i(bottomRight.getComputedStyle('borderRightWidth'));
 			var br = {
 				bottom: ((bottomRight.origRect.Y + bottomRight.origRect.H) / scale + 2*borderWidth) ,
 				right: ((bottomRight.origRect.X + bottomRight.origRect.W)  / scale + 2*borderWidth) ,
 			}
 			page.setStyles( {
 				// left, top set by CSS
-				width : br.right+borderWidth +  "px",
-				height : br.bottom+borderWidth +  "px",
+				width : br.right + borderWidth +  "px",
+				height : br.bottom + borderWidth +  "px",
 			});
 		},
 

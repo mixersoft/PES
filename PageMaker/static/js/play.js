@@ -730,7 +730,7 @@
 				}
 				photo.setStyles(scaledRect);
 			}, this);
-			borderWidth = _px2i(bottomRight.getStyle('borderWidth'));
+			borderWidth = _px2i(bottomRight.getComputedStyle('borderRightWidth'));
 			var br = {
 				bottom: ((bottomRight.origRect.Y + bottomRight.origRect.H) / scale + 2*borderWidth) ,
 				right: ((bottomRight.origRect.X + bottomRight.origRect.W)  / scale + 2*borderWidth) ,

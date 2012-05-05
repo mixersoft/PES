@@ -3,10 +3,7 @@
     margin: 10px auto;
 }
 .pageGallery > img, .pageGallery figure > img {
-	position: absolute;
+	border: 1px solid transparent;
 	cursor: pointer;
-	border-spacing: 2px;
-	border-style: solid;
-	border-color: transparent;
-
+	position: absolute;
 }

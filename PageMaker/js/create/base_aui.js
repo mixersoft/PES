@@ -61,6 +61,7 @@
     			content: Plugin.stage.body,
     			isPreview: true,
     			FOOTER_H: 20,
+    			// MARGIN_W: 0,		// 0px for scrollView, 22px for dialog?, set in sceneCfg?
     			Y: Plugin.external_Y,
     		});
     	} else {

@@ -200,15 +200,13 @@ div#content {
 
 div.pageGallery {
     position: relative;
+    margin: 10px auto;
 }
 
-div.pageGallery > img, div.pageGallery figure > img  {
-	position: absolute;
+.pageGallery > img, .pageGallery figure > img  {
+	border: 1px solid transparent;
 	cursor: pointer;
-	border-spacing: 2px;
-	border-style: solid;
-	border-color: transparent;
-
+	position: absolute;
 }
 
 div#share {

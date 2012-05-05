@@ -264,6 +264,7 @@
             var playCfg = {};
             if (cfg.scrollView) {
             	Plugin.stage.body.append(renderedPerformance);
+            	// TODO: move to sceneCfg;
             	playCfg['page'] = parseInt(renderedPerformance.getAttribute('ccPage') || 0); // set in Production.getPerformance()
     		} else Plugin.stage.body.setContent(renderedPerformance);
     		// TODO: need to specify page
@@ -293,7 +294,7 @@
             pageGallery = Plugin.stage.create('<div></div>');
             pageGallery.addClass('pageGallery hidden').setStyles({
                 // backgroundColor: cfg.borderColor,
-                margin: (cfg.margin) + "px auto",
+                // margin: (cfg.margin) + "px auto",
                 backgroundColor: cfg.borderColor,
             });
             scene = scene || Pr.scenes[Pr.scenes.length - 1];
@@ -303,7 +304,7 @@
             var outerDim = { r: 0, b: 0};
             var cropRect, src, castSrc, castSrcCropped, thumbnail_prefix;
             var tokens, node;
-            var MARKUP = cfg.thumbnailMarkup || '<img qsrc="{src}" title="{title}" linkTo="{linkTo}" style="height:{height}px;width:{width}px;left:{left}px;top:{top}px;border:{borderSpacing}px solid transparent;">';
+            var MARKUP = cfg.thumbnailMarkup || '<img qsrc="{src}" title="{title}" linkTo="{linkTo}" style="height:{height}px;width:{width}px;left:{left}px;top:{top}px;{borderWidth}">';
             for (var i = 0; i < scene.cast.length; i++) {
                 cast = scene.cast[i];
                 snappiAud = cast.audition.parsedAudition;
@@ -354,7 +355,7 @@
                     width: (cast.minSize.w),
                     left: (cast.position.x),
                     top: (cast.position.y),
-                    borderSpacing: cfg.spacing,
+                    borderWidth: (cfg.spacing>1) ? 'border-width:'+cfg.spacing+'px;' : '',
                 }
                 node = _Y.Node.create(_Y.substitute(MARKUP,tokens));
                 node.aud = snappiAud;
