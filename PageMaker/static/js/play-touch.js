@@ -292,10 +292,6 @@
 			this.content._isResizing = true;		// disable winResize
 this.container.addClass('hide');
 			pages.each(function(page, i) {
-				// if (page.hasClass('hide')) {
-					// page.removeClass('hide');
-					// page.addClass('hidden');	// cant get offsets with page.hide
-				// }
 				origRect = {
 					X : _px2i(page.getStyle('left')),
 					Y : _px2i(page.getStyle('top')),
@@ -371,6 +367,7 @@ this.content._isResizing = false;		// enable winResize
 					}
 				}, null, true);
 			}
+			this.scrollView.syncUI();
 		},
 		/*
 		 * wrap pageGalleries for touch scrolling
@@ -411,35 +408,36 @@ this.content._isResizing = false;		// enable winResize
 		 * add YUI3 ScrollView class for touch scrolling
 		 */
 		addScrollView_Page : function(cfg) {
-			if (this.scrollview) return this.scrollview;
+			if (this.scrollView) return this.scrollView;
 			if (!_Y.ScrollView) _Y = PM.Y;		// TODO: LazyLoad.extras() bug
-			// if (cfg.srcNode.all('.page-wrap').size() < 2)return;		// TODO: ScrollView with 1 page bug
+
 			cfg = _Y.merge(this.cfg,cfg);
-			var scrollview = new _Y.ScrollView({
+			var scrollView = new _Y.ScrollView({
 		        srcNode: cfg.srcNode,
 		        width: cfg.width,
 		        flick: {
 			        minDistance: cfg.flick.minDistance,
 			        minVelocity: cfg.flick.minVelocity,
 			        axis: cfg.width ? 'x' : 'y'
-			    }
+			    },
 		    });
 		    /* Plug in pagination support */
-		    scrollview.plug(_Y.Plugin.ScrollViewPaginator, {
+		    scrollView.plug(_Y.Plugin.ScrollViewPaginator, {
 		        selector: ".page-wrap" // elements definining page boundaries
 		    });
+		    scrollView.plug(_Y.Plugin.ScrollViewScrollbars);
+		    scrollView.render();
 		    // update page
-		    scrollview.pages.after('indexChange', function(e){
+		    scrollView.pages.after('indexChange', function(e){
 		    	_pageIndex = e.newVal;
 		    	this.showPage(e.newVal);
 		    }, this);
-		    scrollview.render();
 		    
 		    // Prevent default image drag behavior
-		    scrollview.get("contentBox").delegate("mousedown", function(e) {
+		    scrollView.get("contentBox").delegate("mousedown", function(e) {
 		        e.preventDefault();
 		    }, "img");
-		    this.scrollview = scrollview;
+		    this.scrollView = scrollView;
 		},
 		addScrollView_Photo: function(target){
 			if (this.photo_Scrollview) return this.photo_Scrollview;
@@ -665,8 +663,8 @@ this.content._isResizing = false;		// enable winResize
 				var button = _Y.Lang.isString(e) ? _Y.one('#paging .'+e) : e.currentTarget;
 				if (button.hasClass('disabled')) return;
 			}
-			if (direction == 'next' || button.hasClass('next')) this.scrollview.pages.next();
-			else if (direction == 'prev' || button.hasClass('prev')) this.scrollview.pages.prev();
+			if (direction == 'next' || button.hasClass('next')) this.scrollView.pages.next();
+			else if (direction == 'prev' || button.hasClass('prev')) this.scrollView.pages.prev();
 		},
 		indexPhotos : function() {
 			var indexed = [];
@@ -691,7 +689,7 @@ this.content._isResizing = false;		// enable winResize
 
 		activateLightBox : function(e) {
 			// Prevent activation as part of a scroll gesture
-		    if (Math.abs(this.scrollview.lastScrolledAmt) > 2) {
+		    if (Math.abs(this.scrollView.lastScrolledAmt) > 2) {
 		        e.preventDefault();
 		        return;
 		    }
@@ -1026,7 +1024,7 @@ parent.window.SNAPPI.Y.one('.properties').append("<div style='color:red;position
 		YUI(PM.yuiConfig.yui).use("event-delegate", "node", "anim", "get", 'substitute',
 			"scrollview-base", 
 			"scrollview-paginator",
-			// "scrollview-scrollbars",  // bug in webkit rendering
+			"scrollview-scrollbars",  // bug in webkit rendering
 		/*
 		 * yui callback
 		 */

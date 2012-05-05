@@ -66,32 +66,6 @@
     	} else {
     		Plugin.player.setStage(Plugin.stage, Plugin.stage.body);
     	}
-    	// TODO: experimental, move to init when ready
-    	if (Plugin.sceneCfg.scrollView) {
-    		if (Plugin.player.scrollview) {
-    			// page-wrap pageGallery, then update dimensions
-    			// var player = SNAPPI.PM.PageMakerPlugin.instance.player;
-    			// // player.scrollView._uiDimensionsChange();
-    			// Plugin.player.scrollview.pages.set('total', cfg.page);
-    			// Plugin.player.scrollView.pages.set('index', cfg.page-1);
-    			Plugin.player.init();
-    			Plugin.player.showPage(cfg.page-1);
-    			Plugin.player.scrollview._uiDimensionsChange();
-    		} else if (1) {
-    			var cfg = {module_group:'scrollView'}
-				cfg.ready = function(Y){
-				    Plugin.player.init();
-				    Plugin.stage.scrollView = Plugin.player.scrollview;
-				}
-				LazyLoad.extras(cfg);
-				// PM.Y.ready('substitute',"scrollview-base", "scrollview-paginator", function(Y){
-					// cfg.ready(Y);
-				// })
-			}
-			return;
-    	}    	
-    	
-    	
     	
     	switch (Plugin.sceneCfg.stageType) {
     		case 'modal': 
@@ -109,7 +83,25 @@
     		case 'montage': 	// no edit menu for montage
     			break;
     	}
-    	Plugin.player.init();
+    	if (Plugin.sceneCfg.scrollView) {
+    		if (PageMakerPlugin.isLoaded 
+    			&& PageMakerPlugin.isInitialized 
+    			&& Plugin.player.scrollView) {
+    			// page-wrap pageGallery, then update dimensions, 
+    			// SNAPPI.PM.PageMakerPlugin.instance.player.scrollView
+    			Plugin.player.init();
+    			// Plugin.player.scrollView.syncUI();	// calls _uiDimensionsChange(), called by init()
+    			Plugin.player.scrollView.pages.set('index', cfg.page-1);
+    		} else {
+    			var cfg = {module_group:'scrollView'}
+				cfg.ready = function(Y){
+				    Plugin.player.init();
+				    Plugin.stage.scrollView = Plugin.player.scrollView;
+				}
+				LazyLoad.extras(cfg);
+			}
+    	} else Plugin.player.init();
+    	return;
     };
     
     
@@ -424,7 +416,7 @@ console.info("PageMakerPlugin.load(): _Y.fire('snappi-pm:pagemaker-load-complete
 	 */			
 	LazyLoad.extras = function(cfg){	// load on _Y.later() after initial startup
 		var module_group = {
-			'scrollView': ['substitute', "scrollview-base", "scrollview-paginator"],
+			'scrollView': ['substitute', "scrollview-base", "scrollview-paginator", "scrollview-scrollbars"],
 		}
 		var modules = module_group[cfg.module_group];
 		if (modules) {

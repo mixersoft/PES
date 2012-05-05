@@ -285,7 +285,7 @@
 			montage: function(e, view){
 				/*
 				 * NOTE: first use, we don't know if we are in cfg.scrollView or NOT
-				 * test for PM.pageMakerPlugin.player.scrollview or PM.pageMakerPlugin.sceneCfg.scrollview
+				 * test for PM.pageMakerPlugin.player.scrollView or PM.pageMakerPlugin.sceneCfg.scrollView
 				 */
 				var g, cfg, page; 
 				cfg = {perpage: 9}; // same as $this->Montage->getArrangement($Auditions, 9);	
@@ -299,7 +299,7 @@
 				
 				var montage;
 				try {
-					var index = PM.pageMakerPlugin.player.scrollview.pages.get('index');
+					var index = PM.pageMakerPlugin.player.scrollView.pages.get('index');
 					montage = _Y.all('.montage-container div.pageGallery').item(index);
 				} catch(ex) {
 					montage = _Y.all('.montage-container div.pageGallery').last();
@@ -801,7 +801,7 @@ console.error("Error: Plugin should already be ready, PM.PageMakerPlugin.isLoade
 			try { // Plugin loaded+launched, run directly
 				var ready = PM.PageMakerPlugin.isLoaded && PM.PageMakerPlugin.isInitialized;
 				if (!ready) throw new Error();
-				// var scrollView = PM.pageMakerPlugin.player.scrollview;
+				// var scrollView = PM.pageMakerPlugin.player.scrollView;
 				var create = UIHelper.create.getCreate(cfg);
         		_Y.later(100, this, create);
         		return;
@@ -838,8 +838,8 @@ console.error("Error: Plugin should already be ready, PM.PageMakerPlugin.isLoade
 		},
 		getScrollViewPageGallery: function(page) {
 			try {
-				var scrollView = PM.pageMakerPlugin.player.scrollview;
-				// var page = PM.pageMakerPlugin.player.scrollview;
+				var scrollView = PM.pageMakerPlugin.player.scrollView;
+				// var page = PM.pageMakerPlugin.player.scrollView;
 				var found, pageGalleries = _Y.all('.montage-container .pageGallery');
 				pageGalleries.some(function(n,i,l){
 					if (n.getAttribute('ccPage')==page) {
@@ -869,10 +869,9 @@ console.error("Error: Plugin should already be ready, PM.PageMakerPlugin.isLoade
 				SNAPPI.setPageLoading(false); 	// c.transition bug
 				try {
 					var index = cfg.page-1;
-					// PM.pageMakerPlugin.player.scrollview.pages.scrollTo(index, 0,0);	
-					var index = PM.pageMakerPlugin.player.scrollview.pages.set('index', index);				
+					// PM.pageMakerPlugin.player.scrollView.pages.scrollTo(index, 0,0);	
+					var index = PM.pageMakerPlugin.player.scrollView.pages.set('index', index);				
 				} catch(e){
-console.error('ERROR: scrollView c.transition bug');					
 					PM.pageMakerPlugin.player.showPage(cfg.page); // manually show page
 				}
 				return;
@@ -900,7 +899,7 @@ console.error('ERROR: scrollView c.transition bug');
 						var paginator = SNAPPI.Paginator.find['.gallery.photo'];
 						paginator.setState({page:cfg.page});
 					} catch(e){
-	console.error("ERROR: paginator is not available to update");					
+	console.warn("ERROR: paginator is not available to update");					
 					}					
 					SNAPPI.setPageLoading(false);
 				}, this, cfg);
@@ -957,8 +956,8 @@ console.info('Getting Story for rolecount='+roleCount);
 						
 			_Y.once('snappi-pm:render', function(Pr, pageGallery) {
 				var page = pageGallery.getAttribute('ccPage');
-				// scrollview not ready yet....
-				if (page && PM.pageMakerPlugin.player.scrollview) PM.pageMakerPlugin.player.scrollview.pages.set('index', page-1);
+				// scrollView not ready yet....
+				if (page && PM.pageMakerPlugin.player.scrollView) PM.pageMakerPlugin.player.scrollView.pages.set('index', page-1);
 			});						
 			// initialize stage and reuse later
 			var listener, stage = cfg.getStage(cfg);
@@ -978,15 +977,15 @@ console.info('Getting Story for rolecount='+roleCount);
 				// stage.listen[listener] = UIHelper.listeners[listener]({node: stage});
 				listener = 'render';
 				stage.listen[listener] = _Y.on('snappi-pm:render', 
-						/*
-		    			 * @params P Performance
-		    			 * @params node div.pageGallery
-		    			 */
-						function(P, node){
-							if (!node.ancestor('.montage-container')) return; 
-							stage.removeClass('hide');
-							SNAPPI.setPageLoading(false);
-						});        
+					/*
+	    			 * @params P Performance
+	    			 * @params node div.pageGallery
+	    			 */
+					function(P, node){
+						if (!node.ancestor('.montage-container')) return; 
+						stage.removeClass('hide');
+						SNAPPI.setPageLoading(false);
+					});        
 			}
 			SNAPPI.setPageLoading(true);
 			this.get_Montage(cfg);
