@@ -302,7 +302,7 @@
 					var index = PM.pageMakerPlugin.player.scrollview.pages.get('index');
 					montage = _Y.all('.montage-container div.pageGallery').item(index);
 				} catch(ex) {
-					montage = _Y.one('.montage-container div.pageGallery');
+					montage = _Y.all('.montage-container div.pageGallery').last();
 				} 
 				if ( montage 
 					&& montage.getAttribute('ccPage') == SNAPPI.STATE.displayPage.page 
@@ -509,7 +509,7 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 		    			} catch(e){}	
 		    			return;		    			
 		    	};
-	    		stage.listen['render'] = _Y.on('snappi-pm:render', function(Performance, node){
+	    		stage.listen['render'] = _Y.on('snappi-pm:render', function(Pr, node){
 		    			_setStageDim(node);
 		    			var CSS_ID = 'menu-pm-toolbar-edit';	
 						SNAPPI.PM.Menu.copyMenuToDialogHeader(CSS_ID, null);
@@ -529,7 +529,7 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 	    		/*
 	    		 * on first render
 	    		 */	
-	    		_Y.once('snappi-pm:render', function(){	
+	    		_Y.once('snappi-pm:render', function(Pr, pageGallery){	
 	    			try {
 	    			SNAPPI.Hint.flushQueue();		// if Hint already available    			
 					SNAPPI.Hint.instance.set('disabled', false);
@@ -869,7 +869,7 @@ console.error("Error: Plugin should already be ready, PM.PageMakerPlugin.isLoade
 				SNAPPI.setPageLoading(false); 	// c.transition bug
 				try {
 					var index = cfg.page-1;
-					PM.pageMakerPlugin.player.scrollview.pages.scrollTo(index, 0,0);	
+					// PM.pageMakerPlugin.player.scrollview.pages.scrollTo(index, 0,0);	
 					var index = PM.pageMakerPlugin.player.scrollview.pages.set('index', index);				
 				} catch(e){
 console.error('ERROR: scrollView c.transition bug');					
@@ -955,10 +955,15 @@ console.info('Getting Story for rolecount='+roleCount);
 			cfg.allowedRatios = {'h':'544:960', 'v':'7:10'}; 
 			cfg.scrollView = 1;
 						
+			_Y.once('snappi-pm:render', function(Pr, pageGallery) {
+				var page = pageGallery.getAttribute('ccPage');
+				// scrollview not ready yet....
+				if (page && PM.pageMakerPlugin.player.scrollview) PM.pageMakerPlugin.player.scrollview.pages.set('index', page-1);
+			});						
 			// initialize stage and reuse later
 			var listener, stage = cfg.getStage(cfg);
-			cfg.listeners = {'xxxLinkToClick':{node: stage}, 'MultiSelect':stage, 'xxxContextmenu':null};
 			if (!stage.listen) { 
+				cfg.listeners = {'xxxLinkToClick':{node: stage}, 'MultiSelect':stage, 'xxxContextmenu':null};
 				/*
 				 * TODO: need to refactor
 				 */

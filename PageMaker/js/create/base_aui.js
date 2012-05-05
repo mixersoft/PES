@@ -245,7 +245,7 @@ console.info("PageMakerPlugin.load(): _Y.fire('snappi-pm:pagemaker-load-complete
 	        combine: hostCfg.alloy_useCombo,	// yui & alloy combine values will match 
 	        allowRollup: true,
 	     	// filter: "MIN",		// ['MIN','DEBUG','RAW'], default='RAW'        
-			// filter: "DEBUG",
+			// filter: "RAW",
 	        filter: hostCfg.alloy_useCombo ? 'MIN' : "RAW",
 	        insertBefore: 'css-start',
 			groups: {
@@ -385,7 +385,7 @@ console.info("PageMakerPlugin.load(): _Y.fire('snappi-pm:pagemaker-load-complete
 		var modules_1 = [
 			// '*',
 			'node', 'event', 'event-custom',
-			'async-queue',
+			'async-queue', 
 		];
 		var modules_2 = [
 			// 'snappi-event-hover',
@@ -396,7 +396,6 @@ console.info("PageMakerPlugin.load(): _Y.fire('snappi-pm:pagemaker-load-complete
     		'snappi-pm-tryout','snappi-pm-performance3',
     		'snappi-pm-menu', 'snappi-pm-dialog',
     		'snappi-io', 'snappi-auditions',
-    		// "scrollview",
 		];
 
 		var modules = modules_1.concat(modules_2);

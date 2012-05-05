@@ -435,14 +435,6 @@ this.content._isResizing = false;		// enable winResize
 		    }, this);
 		    scrollview.render();
 		    
-		    // prevent click after a flick, move to this.activateLightBox()
-		    // this.content.delegate("click", function(e) {
-			    // // Prevent links from navigating as part of a scroll gesture
-			    // if (Math.abs(this.scrollview.lastScrolledAmt) > 2) {
-			        // e.preventDefault();
-			    // }
-			// }, "img", this);
-		    
 		    // Prevent default image drag behavior
 		    scrollview.get("contentBox").delegate("mousedown", function(e) {
 		        e.preventDefault();

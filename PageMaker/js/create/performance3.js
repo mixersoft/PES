@@ -170,8 +170,8 @@
 			            /*
 			             * fire event: 'snappi-pm:render'
 			             */
-			            PM.Y.fire('snappi-pm:render', this, node);
-			            PM.pageMakerPlugin.external_Y.fire('snappi-pm:render', this, node);
+			            PM.Y.fire('snappi-pm:render', Pr, node);
+			            PM.pageMakerPlugin.external_Y.fire('snappi-pm:render', Pr, node);
                 	},
                 	failure: function(){
                 		console.error('Error: performance.getScene()');

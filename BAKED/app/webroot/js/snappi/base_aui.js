@@ -506,7 +506,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
 		     * add custom/synthetic hover event
 		     */
 		    "event-synthetic", "event-mouseenter", 
-		    
+		    'transition',
 			/*
 		     * 'async-queue': required by snappi-imageloader, singleton init()
 		     */
