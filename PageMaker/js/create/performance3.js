@@ -163,7 +163,7 @@
                 // roleCount: parseInt(this.roleCount)
                 callback: {
                 	success: function(scene){
-                		if (scene) {
+                		if (scene) {	// TODO: DEPRECATE addSaveToGalleryBtn()
 			                PM.node.addSaveToGalleryBtn();
 			            }
 			            var node = scene.performance;

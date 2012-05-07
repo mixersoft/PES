@@ -650,7 +650,7 @@
 				this.scale( containerRect );
 			}, this);
 			this.showPage(_pageIndex);
-			if (e && PM.pageMakerPlugin) PM.pageMakerPlugin.external_Y.fire('snappi-pm:resize', this, containerH);
+			if (e && PM.pageMakerPlugin) PM.pageMakerPlugin.external_Y.fire('snappi-pm:resize', this, containerRect.H);
 		},
 
 		scale : function(cfg) {

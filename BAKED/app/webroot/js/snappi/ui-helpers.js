@@ -446,7 +446,7 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 		},
 	}
 	UIHelper.create = {
-		MAX_HEIGHT: 800,
+		MAX_HEIGHT: 800,	// used by getStage_modal
 		MAX_WIDTH: 960,
 		getStage_modal : function(cfg){
 			cfg = cfg || {};
@@ -842,8 +842,29 @@ console.error("Error: Plugin should already be ready, PM.PageMakerPlugin.isLoade
 					stage = _Y.one(selector);
 					stage.noHeader = cfg.noHeader;
 					stage.stageType = 'montage';
+					
+					// if (!loading) {	// add loading page
+	            		// var loading = _Y.Node.create('<div class="loading"></div>');
+	            		// loading.setStyle('height', 66 +'px');
+	            		// stage.body.append(loading);		// will wrap in Player.init()
+	            	// }
+	            	
 				} 
+				UIHelper.create.resizeStage_montage(stage, cfg);
 				return stage;
+		},
+		resizeStage_montage : function(stage, cfg) {
+			try {	// for Hscrolling
+				var ratio = cfg.allowedRatios['v'].split(':');
+				cfg.maxScaledH = Math.min(UIHelper.create.MAX_HEIGHT, UIHelper.create.MAX_WIDTH * ratio[0]/ratio[1]); // maxW * H/W + scaled margin
+			} catch(e){
+				cfg.maxScaledH = UIHelper.create.MAX_HEIGHT;
+			}				
+			// scale montage stage to winHeight, move to getStage()?
+			var scaledH = stage.get('winHeight') - stage.get('offsetTop')	// does NOT include stage.header;
+			scaledH = Math.min(scaledH, cfg.maxScaledH);
+			stage.setStyle('height', scaledH+'px');	// scale .stage-body height to fit to screen
+			return stage;
 		},
 		getScrollViewPageGallery: function(page) {
 			try {
@@ -964,22 +985,27 @@ console.info('Getting Story for rolecount='+roleCount);
 			cfg.scrollView = 1;
 			cfg.MARGIN_W = 0;		// this needs to be passed from sceneCfg -> playCfg
 						
+			// initialize stage and reuse later
+			var listener, 
+				stage = cfg.getStage(cfg);	// stage DOM is created here
+			_Y.one('.gallery-container').addClass('hide');
+				
 			_Y.once('snappi-pm:render', function(Pr, pageGallery) {
 				var loading = PMPlugin.stage.body.one('.loading');
             	if (!loading) {
             		loading = _Y.Node.create('<div class="loading"></div>');
+            		loading.setStyle('height', 66 +'px');
             		pageGallery.insert(loading, 'after');		// will wrap in Player.init()
+            	} else if (SNAPPI.STATE.displayPage.page ==  SNAPPI.STATE.displayPage.pageCount) {
+					PMPlugin.stage.listen['load-next-page'].detach();
+					PMPlugin.stage.body.one('.loading').ancestor('.page-wrap').remove();
             	} else 
         			pageGallery.insert(loading.ancestor('.page-wrap'), 'after');	// move to back
-        		loading.setStyle('height', pageGallery.get('clientHeight')+'px');
             	
 				var page = pageGallery.getAttribute('ccPage') || 0;
 				PM.PageMakerPlugin.startPlayer({page:page});
-			});						
+			});			
 			
-			
-			// initialize stage and reuse later
-			var listener, stage = cfg.getStage(cfg);
 			if (!stage.listen) { 
 				cfg.listeners = {'xxxLinkToClick':{node: stage}, 'MultiSelect':stage, 'xxxContextmenu':null};
 				/*
@@ -1021,7 +1047,6 @@ console.info('Getting Story for rolecount='+roleCount);
 					});
 			}
 			SNAPPI.setPageLoading(true);
-			_Y.one('.gallery-container').addClass('hide');
 			this.get_Montage(cfg);
 		},
 	}

@@ -132,6 +132,7 @@
         try {
         	SNAPPI.PM.cfg = {
                     fn_DISPLAY_SIZE: function(){
+console.error('DEPRECATE: SNAPPI.PM.cfg.fn_DISPLAY_SIZE() in main()');                    	
                         return {
                             h: 600
                         };

@@ -1871,6 +1871,10 @@ section.item-header .window-options ul {
 .wrap-page-report {
 	width: 20%;
 }
+.aui-paginator-current-page {
+	background-color: #F9C667; 	/*	 orange */
+	border: 1px solid #F79621;
+}
 .aui-paginator-current-page-report {
 	display: block;
 	text-align:center;
@@ -2264,6 +2268,7 @@ section.discussion div.wrap {
  */
 #footer {
 	margin-top: 10px;
+	min-height: 30px;
 }
 #footer span {
 	font-size: 8pt;
@@ -2877,6 +2882,7 @@ section.pagemaker-stage > iframe {
 }
 .montage-container .yui3-scrollview  .page-wrap {
 	display: inline-block;
+	vertical-align: middle;
 }
 .montage-container .yui3-scrollview  .page-wrap .loading {
     background: black url('/static/img/css-pm/ajax-loading-img-hg.black.gif') center center no-repeat;
