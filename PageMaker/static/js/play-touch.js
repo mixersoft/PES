@@ -270,7 +270,7 @@
 				if (child) this.content = child.get('parentNode');
 			}
 		},
-		init : function(e) {
+		init : function() {
 			// set cfg.FOOTER_H offset
 			try {
 				this.cfg.FOOTER_H += this.container.one('#header').get('clientHeight');
@@ -326,6 +326,7 @@ this.container.addClass('hide');
 				this.scale( containerRect );
 				this.pageWrap(page);
 			}, this);
+			if (this.content.one('.loading')) this.pageWrap(this.content.one('.loading'));	// append loading page
 this.container.removeClass('hide');	
 this.content._isResizing = false;		// enable winResize
 
@@ -336,6 +337,7 @@ this.content._isResizing = false;		// enable winResize
 				srcNode: scrollWrap,
 				width: containerRect.W,
 			});
+			this.scrollView.syncUI();
 			// this.container.removeClass('hidden');
 			if (this.isPreview) {
 				this.showPage(pageNo - 1);
@@ -366,7 +368,6 @@ this.content._isResizing = false;		// enable winResize
 					}
 				}, null, true);
 			}
-			this.scrollView.syncUI();
 		},
 		/*
 		 * wrap pageGalleries for touch scrolling
@@ -430,6 +431,11 @@ this.content._isResizing = false;		// enable winResize
 		    scrollView.pages.after('indexChange', function(e){
 		    	_pageIndex = e.newVal;
 		    	this.showPage(e.newVal);
+		    	if (_pageIndex == e.currentTarget.get('total')-1) {
+		    		// on('snappi-pm:scroll-to-last-page', function(PM.PageMakerPlugin.instance.player))
+		    		_Y.fire('scroll-to-last-page', this);
+		    		PM.PageMakerPlugin.instance.external_Y.fire('snappi-pm:scroll-to-last-page', this);
+		    	}
 		    }, this);
 		    
 		    // Prevent default image drag behavior

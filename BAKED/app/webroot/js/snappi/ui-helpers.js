@@ -308,6 +308,7 @@
 					&& montage.getAttribute('ccPage') == SNAPPI.STATE.displayPage.page 
 					&& montage.ancestor('.montage-container').hasClass('hide')
 				) {	// already rendered, same page, just un-hide
+return; 	// DEPRECATE: USE _Y.on('snappi-pm:scroll-to-last-page'					
 					montage.ancestor('.montage-container').removeClass('hide');
 					_Y.one('.gallery-container').addClass('hide');
 					return;
@@ -315,11 +316,14 @@
 					&& index
 					&& montage.getAttribute('ccPage') == (index+1) ) 
 				{	
+return; 	// DEPRECATE: USE _Y.on('snappi-pm:scroll-to-last-page'						
 					// case where cfg.scrollView=1, scroll to next page 
 					cfg.page = index+2;
 				} else if ( montage 
 					&& montage.getAttribute('ccPage') == SNAPPI.STATE.displayPage.page )
 				{	// montage is showing current page, increment page
+return; 	// DEPRECATE: USE _Y.on('snappi-pm:scroll-to-last-page'						
+					// TODO: DEPRECATE. use PM.Y.on('snappi-pm:scroll-to-last-page', function(PM.PageMakerPlugin.instance.player))
 					SNAPPI.setPageLoading(true);
 					cfg.page = SNAPPI.STATE.displayPage.page+1;	
 					if (g) cfg.gallery = g;	
@@ -961,16 +965,25 @@ console.info('Getting Story for rolecount='+roleCount);
 			cfg.MARGIN_W = 0;		// this needs to be passed from sceneCfg -> playCfg
 						
 			_Y.once('snappi-pm:render', function(Pr, pageGallery) {
-				var page = pageGallery.getAttribute('ccPage');
-				// scrollView not ready yet....
-				if (page && PM.pageMakerPlugin.player.scrollView) PM.pageMakerPlugin.player.scrollView.pages.set('index', page-1);
+				var loading = PMPlugin.stage.body.one('.loading');
+            	if (!loading) {
+            		loading = _Y.Node.create('<div class="loading"></div>');
+            		pageGallery.insert(loading, 'after');		// will wrap in Player.init()
+            	} else 
+        			pageGallery.insert(loading.ancestor('.page-wrap'), 'after');	// move to back
+        		loading.setStyle('height', pageGallery.get('clientHeight')+'px');
+            	
+				var page = pageGallery.getAttribute('ccPage') || 0;
+				PM.PageMakerPlugin.startPlayer({page:page});
 			});						
+			
+			
 			// initialize stage and reuse later
 			var listener, stage = cfg.getStage(cfg);
 			if (!stage.listen) { 
 				cfg.listeners = {'xxxLinkToClick':{node: stage}, 'MultiSelect':stage, 'xxxContextmenu':null};
 				/*
-				 * TODO: need to refactor
+				 * TODO: need to refactor, move listeners to UIHelper.listeners
 				 */
 				stage.listen = {};
 				for (var j in cfg.listeners) {
@@ -991,9 +1004,24 @@ console.info('Getting Story for rolecount='+roleCount);
 						if (!node.ancestor('.montage-container')) return; 
 						stage.removeClass('hide');
 						SNAPPI.setPageLoading(false);
-					});        
+					});
+				listener = 'load-next-page';
+				stage.listen[listener] = _Y.on('snappi-pm:scroll-to-last-page', 
+					/*
+	    			 * @params PM.PageMakerPlugin.instance.player
+	    			 */
+					function(player){
+						SNAPPI.setPageLoading(true);
+						var cfg = {};
+						cfg.page = SNAPPI.STATE.displayPage.page+1;	
+						try {
+							cfg.gallery = _Y.one('.gallery.photo').Gallery;	// coming from Gallery view
+						}catch(e){}
+						UIHelper.create._GET_MONTAGE(cfg);
+					});
 			}
 			SNAPPI.setPageLoading(true);
+			_Y.one('.gallery-container').addClass('hide');
 			this.get_Montage(cfg);
 		},
 	}

@@ -264,13 +264,11 @@
             var playCfg = {};
             if (cfg.scrollView) {
             	Plugin.stage.body.append(renderedPerformance);
-            	// TODO: move to sceneCfg;
-            	playCfg['page'] = parseInt(renderedPerformance.getAttribute('ccPage') || 0); // set in Production.getPerformance()
-    		} else Plugin.stage.body.setContent(renderedPerformance);
-    		// TODO: need to specify page
-    		renderedPerformance.unscaled_pageGallery = Plugin.stage.body.get('innerHTML');
-    		PM.PageMakerPlugin.startPlayer(playCfg);
-//        	var url = this.postPageGallery(cfg, scene); // POST cmd to save on server
+    		} else {	// stage==modal,  
+    			Plugin.stage.body.setContent(renderedPerformance);
+    			// POST raw/unscaled HTML to server when saving page
+    			renderedPerformance.unscaled_pageGallery = renderedPerformance.get('outerHTML');
+    		}
 			return renderedPerformance;
         },
         postPageGallery: function(cfg, scene){

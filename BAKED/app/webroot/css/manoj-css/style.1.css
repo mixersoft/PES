@@ -2878,6 +2878,12 @@ section.pagemaker-stage > iframe {
 .montage-container .yui3-scrollview  .page-wrap {
 	display: inline-block;
 }
+.montage-container .yui3-scrollview  .page-wrap .loading {
+    background: black url('/static/img/css-pm/ajax-loading-img-hg.black.gif') center center no-repeat;
+    width: 100%;
+    height: 100%;
+}
+
 /* welcome-preview */
 section.welcome-preview .message {
 	padding: 20px 40px;

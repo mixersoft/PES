@@ -78,12 +78,11 @@ $this->viewVars['jsonData']['STATE'] = $state;
 					var perpage = PAGE.jsonData.montage.Roles.length;
 					// NOTE: montage is sorted/sliced and uses Roles.photo_id
 					SNAPPI.UIHelper.create._GET_MONTAGE({perpage:perpage, batch:null});
-					_Y.one('.gallery-container').addClass('hide');
 				} else {
 					node.one('li.gallery').addClass('focus'); 
 console.log('initializing GalleryView');						 
 				    new SNAPPI.Gallery({type:SNAPPI.STATE.galleryType});
-				    _Y.one('.montage-container').addClass('hide');
+				    SNAPPI.Y.one('.montage-container').addClass('hide');
 				}				
 			} catch(e){}
 			SNAPPI.STATE.hints = SNAPPI.STATE.hints || {}; 
