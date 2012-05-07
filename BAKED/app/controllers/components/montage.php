@@ -95,23 +95,26 @@ class MontageComponent extends Object
 		$arrangement['H'] /= $scale;
 	}
 	/*
-	 * 
-	 * 
-	 * 
-	 * 
-	 * 
-	 * montage bug  *********  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	 *  TODO: getting values DIFFERENT FROM PM.Auditions in Catalog.getCustomFitArrangement
-	 * 
-	 * 
-	 * 
+	 * NOTE: montage component used by /person/photos, etc.
+	 * 	NOT used by /pagemaker/arrangement/
 	 */
-	function getArrangement($Auditions, $count=16){
-		set_time_limit ( 10 );
+	function getArrangement($Auditions, $options=16){
+		if (is_array($options)) {
+			extract($options);	// $count, $allowed_ratios
+		} 
+		if (!isset($count)) $count = 16;
+		// config params for montage
+		$TIME_LIMIT_SEC = 10;
+		$MAX_WIDTH = 940; 	// .container_16 .grid_16
+		$MAX_HEIGHT = 940;
+		$ALLOWED_RATIOS = array('h'=>'544:960', 'v'=>'7:10');  // default for montage
+		$CROP_VARIANCE_MAX = 0.20;
+		
+		set_time_limit ( $TIME_LIMIT_SEC );
 		if (isset($Auditions['CastingCall']['Auditions'])) $Auditions = $Auditions['CastingCall']['Auditions'];
 		$photos = $Auditions['Audition'];
 		$baseurl = $Auditions['Baseurl'];
-		$count = $count <= 16 ? $count : 16;
+		// $count = $count <= 16 ? $count : 16;
 		$sortedPhotos = $this->__sortPhotos($this->__getPhotos($photos, $baseurl), null);
 		$layoutPhotos = count($sortedPhotos) > $count ? array_slice($sortedPhotos, 0, $count) : $sortedPhotos;
 // debug($layoutPhotos); exit;		
@@ -126,11 +129,12 @@ class MontageComponent extends Object
 		 */
 		App::import('Vendor', 'pagemaker', array('file'=>'pagemaker'.DS.'cluster-collage.4.php'));
 		$cropVarianceMax = 0.20; 
-		$maxHeight = 940;	// .container_16 .grid_16
-		$maxWidth = 940;
 Configure::write('debug', 0);
-		$collage = new ClusterCollage($cropVarianceMax, $maxHeight, $maxWidth);
-		$collage->setAllowedRatios(array('h'=>'544:960', 'v'=>'7:10'));  //H:W
+		if (isset($allowed_ratios) && !empty($allowed_ratios)) {
+			$ALLOWED_RATIOS = array_merge($ALLOWED_RATIOS, $allowed_ratios);
+		}
+		$collage = new ClusterCollage($CROP_VARIANCE_MAX, $MAX_HEIGHT, $MAX_WIDTH);
+		$collage->setAllowedRatios($ALLOWED_RATIOS);  //H:W
 		try {
 			$collage->setPhotos($layoutPhotos, 'topRatedCutoff');
 			$arrangement = $collage->getArrangement();

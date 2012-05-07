@@ -310,7 +310,10 @@ $this->log("role = ".AppController::$role, 	LOG_DEBUG);
 		if ($getMontage) {	
  			$this->Montage = loadComponent('Montage', $this);
 			$Auditions = $castingCall['CastingCall']['Auditions'];
-			$this->viewVars['jsonData']['montage'] = $this->Montage->getArrangement($Auditions, 9);
+			$options = array();
+			// $options['count'] = round(count($Auditions['Audition'])/2);
+			// $options['allowed_ratios'] = array('h'=>'1:'.round($options['count']/3), 'v'=>'1:'.round($options['count']/4));  // set for Hscroll
+			$this->viewVars['jsonData']['montage'] = $this->Montage->getArrangement($Auditions, $options);
 		}	
 			
 		$done = $this->renderXHRByRequest('json', '/elements/photo/roll', null, 0);
