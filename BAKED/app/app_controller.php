@@ -111,13 +111,13 @@ class AppController extends Controller {
 		return true;
 	}
 	function __redirectIfTouchDevice(){
-		$FORCE_TOUCH_DEVICE = 1;	// FOR debugging on desktop
+		$FORCE_TOUCH_DEVICE = 0;	// FOR debugging on desktop
 		// Story controller checks for touch device
 		$options = array('Android', 'iPod', 'iPhone', 'iPad','Opera Mobi','webOS', 'Windows Phone OS');			
 		$pattern = '/' . implode('|', $options) . '/i';
 		$isTouch = (bool)preg_match($pattern, env('HTTP_USER_AGENT'));
 		$SUBDOMAIN = array('touch'=>"touch", 'desktop'=>'preview');
-		$exclude = array('git3', 'dev', 'touch-debug');
+		$exclude = array('git3', 'dev', 'touch_debug');
 		$pattern = '/' . implode('|', $exclude) . '/i';
 		$isExclude = (bool)preg_match($pattern, env('HTTP_HOST'));
     	if ($isTouch && !$isExclude && strpos(env('HTTP_HOST'),$SUBDOMAIN['touch'])!==0 ) {
@@ -129,7 +129,7 @@ class AppController extends Controller {
 			$this->redirect($next, null, true);
 		}
 		// manually set isTouch for desktop debugging
-		$isTouch =  ($FORCE_TOUCH_DEVICE || $isTouch);
+		$isTouch =  ($FORCE_TOUCH_DEVICE || $isTouch || preg_match('/touch/i', env('HTTP_HOST')) );
 		$this->set('isTouch', $isTouch);
 	}
 	function __setPageTitle() {

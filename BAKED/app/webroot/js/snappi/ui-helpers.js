@@ -716,7 +716,6 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 				/*
 				 * lazyLoad PageMakerPlugin module
 				 */
-				var modules = ['pagemaker-base','snappi-dialog-aui']
 				var callback = function(Y, result){
 					PM = SNAPPI.PM;
 					/*
@@ -733,7 +732,10 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 					PMPlugin = PM.pageMakerPlugin = new PM.PageMakerPlugin(external_Y);
 					PMPlugin.load({scrollView:cfg.scrollView});
 				};
-				SNAPPI.LazyLoad.use(modules, callback);
+				SNAPPI.LazyLoad.extras({
+					module_group: 'pagemaker-plugin',
+					ready: callback,
+				});
 				return;
 			}
 			
@@ -880,6 +882,33 @@ console.error("Error: Plugin should already be ready, PM.PageMakerPlugin.isLoade
 				return found;
 			} catch(ex) {}
 			return false;
+		},
+		_PLAY_MONTAGE : function(cfg) { // for /stories/home
+			PM = SNAPPI.PM;
+			var PMPlugin = PM.pageMakerPlugin = new PM.PageMakerPlugin(SNAPPI.Y);
+						
+			// sceneCfg
+			var cfg = cfg || {};
+			cfg.stageType = 'montage';
+			cfg.noHeader = true;
+			cfg.getStage = UIHelper.create.getStage_montage;
+			// cfg.thumbnailMarkup = '<article class="FigureBox Montage"><figure><img src="{src}" title="{title}" linkTo="{linkTo}" style="height:{height}px;width:{width}px;left:{left}px;top:{top}px;border:{borderSpacing}px solid transparent;"></figure></article>';
+			cfg.isMontage = true;	// uses Pr.getThumbPrefix to get min thumb size by crop
+			cfg.spacing = 1;		// border spacing
+			cfg.allowedRatios = {'h':'544:960', 'v':'7:10'}; 
+			cfg.scrollView = 1;
+			cfg.page = 1;
+			cfg.isPreview = 0;
+			cfg.MARGIN_W = 0;		// this needs to be passed from sceneCfg -> playCfg
+			PMPlugin.stage = cfg.getStage(cfg);
+			PMPlugin.sceneCfg = cfg;
+			PMPlugin.stage.body =  PMPlugin.stage.one('#story-content').setStyle('overflow','visible');
+			PMPlugin.player = new PM.Player({
+				isPreview: cfg.isPreview,
+				FOOTER_H: 20,
+				Y: PMPlugin.external_Y,
+			}); 
+			PMPlugin.startPlayer(PMPlugin.sceneCfg);
 		},
 		/*
 		 * called from:

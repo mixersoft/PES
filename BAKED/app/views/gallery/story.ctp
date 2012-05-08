@@ -28,7 +28,7 @@
 		<span class='st_sharethis_large' displayText='ShareThis'></span>
 	</div>
 </div>
-<div id='content' class='hidden'>
+<div id='story-content' class='hidden'>
  	<?php foreach ($page_gallery as $row) {
 		echo $row;
 	} ?> 

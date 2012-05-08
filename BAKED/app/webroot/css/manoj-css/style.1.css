@@ -2876,7 +2876,10 @@ section.pagemaker-stage > iframe {
 	width:960px;
 	overflow:hidden;
 }
-
+section.story.container {
+	background-color: #000;
+	padding-top: 8px;
+}
 .montage-container .yui3-scrollview .yui3-scrollview-content {
 	white-space:nowrap;
 }

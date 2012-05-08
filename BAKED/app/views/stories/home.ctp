@@ -1,9 +1,6 @@
 <?php
 	// debug($isTouch); // set in AppController::__redirectIfTouchDevice()
-	// TODO: BUG: iframe is not resizing properly on touch
 	// ipad landscape height=515 
-	$iFrameHeight = $isTouch ? 'height="800"' : 'height="800"';  // only for ipad landscape
-
 	$this->Layout->blockStart('itemHeader');
 		$badge_src = Stagehand::getSrc($data['Collection']['src_thumbnail'], 'sq');
 		echo $this->element('nav/section', compact('badge_src'));
@@ -36,11 +33,10 @@
 		</dl>
 	</div>
 <?php	$this->Layout->blockEnd(); ?>	
-<section class='story pagemaker-stage cf' <?php echo "uuid='".AppController::$uuid."'"; ?> >
+<section class='story container' <?php echo "uuid='".AppController::$uuid."'"; ?> >
 <?php 
 	$ajaxSrc = Router::url(Configure::read('passedArgs.complete') + array('action'=>'story', '?'=>array('iframe'=>1)));
-	// echo "<div id='gallery-story-xhr' class='xhr-get stage-body' xhrSrc='{$ajaxSrc}' delay='0'></div>";
-	echo "<iframe src='{$ajaxSrc}' frameborder='0' {$iFrameHeight} width='960'></iframe>";
+	echo "<div id='gallery-story-xhr' class='xhr-get montage-container container' xhrSrc='{$ajaxSrc}' delay='0'></div>";
 ?>
 
 </section>	
@@ -106,16 +102,41 @@
 <script type="text/javascript">
 	var initOnce = function() {
 		var Y = SNAPPI.Y;
+		Y.one('#body-container').setStyle('background-color', '#000');
 		SNAPPI.mergeSessionData();
+// console.log('snappi:xhr-story-complete listener started');		
+		Y.once('snappi:xhr-story-complete', function(){
+// alert("'snappi:xhr-story-complete'");				
+			var Y = SNAPPI.Y;
+			// config render for /photos/home
+			Y.one('#glass').addClass('hide');
+			Y.one('#footer').addClass('hide');
+			Y.one('#body-container').setStyle('backgroundColor', '#000');
+							
+			// load Plugin and start Player
+			var callback = function(Y, result){
+				SNAPPI.PM.Y = Y;
+				Y.fire('snappi-pm:PageMakerPlugin-load-complete', Y);
+				SNAPPI.Y.fire('snappi-pm:PageMakerPlugin-load-complete', Y);
+				
+				var module_group = '<?php echo $isTouch ? 'play-touch' : 'play'; ?>';
+				
+				SNAPPI.PM.LazyLoad.extras({		// PM.LazyLoad
+					module_group: module_group,
+					ready: function (Y, result) {
+						// snappi-pm:pagemaker-PLAY-load-complete
+						SNAPPI.UIHelper.create._PLAY_MONTAGE();
+					} 
+				}) 
+			}
+			SNAPPI.LazyLoad.extras({
+				module_group: 'pagemaker-plugin',
+				ready: callback,
+			});			
+		});		
 		SNAPPI.xhrFetch.init(); 
-		var iframe = Y.one('section.pagemaker-stage > iframe');
-		if (iframe.getAttribute('qsrc')) {
-			var h = iframe.get('winHeight')-iframe.get('offsetTop')-16; 
-			h = Math.min(800,Math.max(500,h));	// 500 < h < 800px
-			iframe.setAttribute('height', h);
-alert(iframe.getAttribute('height'));
-			iframe.set('src',iframe.getAttribute('qsrc')).setAttribute('qsrc','');
-		}
+		
+
 	};
 	try {SNAPPI.xhrFetch.fetchXhr; initOnce(); }			// run now for XHR request, or
 	catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request

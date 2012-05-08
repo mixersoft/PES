@@ -373,7 +373,7 @@
             
             if (false && SNAPPI.util3.QUEUE_IMAGES) {
                 // just watch for img load, don't queue
-                SNAPPI.util3.ImageLoader.loadBySelector(pageGallery, 'div#content img', null, 100);
+                SNAPPI.util3.ImageLoader.loadBySelector(pageGallery, '#story-content img', null, 100);
             }
             if (1 || cfg.scrollView) pageGallery.setAttribute('ccPage', SNAPPI.STATE.displayPage.page);
             return pageGallery;

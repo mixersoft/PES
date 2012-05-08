@@ -446,6 +446,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
 			'hint':['snappi-hint'],
 			'preview': ['snappi-dialog-aui', 'snappi-auditions', 'snappi-hint'],
 			'alert': ['snappi-dialog-aui'],
+			'pagemaker-plugin': ['pagemaker-base','snappi-dialog-aui'],
 		}
 		var modules = module_group[cfg.module_group];
 		if (modules) {
@@ -738,7 +739,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
 	    }
         //                console.log("host=" + host);
 	    o.host = host;
-	    o.isLocalhost = /git/.test(host); // live vs dev site	
+	    o.isLocalhost = /(git|touch_debug)/.test(host); // live vs dev site	
 	    	
 	    if (o.isLocalhost) defaultCfg = CFG.DEBUG;
 	    else defaultCfg = CFG.PROD;

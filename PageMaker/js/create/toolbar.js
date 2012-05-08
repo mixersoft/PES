@@ -59,10 +59,10 @@
 			 * Read the YUI3 docs on mouseover for more. 
 			 */
 			 
-			Y.delegate("mouseover", activateTools, "#content", "img");
+			Y.delegate("mouseover", activateTools, "#story-content", "img");
 			Y.delegate("mouseover", showSubmenu, "#editlayer", ".replace");
 			
-			Y.delegate("mouseover", removeSubmenu, "#content", "img");
+			Y.delegate("mouseover", removeSubmenu, "#story-content", "img");
 			Y.delegate("click", toolsAction, "#editlayer","div");
 			
 			//Y.delegate("click", rate, "#editlayer", ".options");
@@ -123,7 +123,7 @@
 					Y.one('#editlayer').setStyles( {
 						width : Y.one(target).getStyle('width'),
 						height : Y.one(target).getStyle('height'),
-						top : Y.one('#content').get('offsetTop')+Y.one(target).get('offsetTop'),
+						top : Y.one('#story-content').get('offsetTop')+Y.one(target).get('offsetTop'),
 						left : getcurpageoffset+Y.one(target).get('offsetLeft'),
 						display: 'block'
 						
@@ -219,7 +219,7 @@
 			 * 
 			 */
 			function identify_src(){
-				var all_imgs = Y.one('#content').all('img');
+				var all_imgs = Y.one('#story-content').all('img');
 				
 				var src = "";
 				var length = 0;

@@ -25,7 +25,11 @@
     var PM = namespace('SNAPPI.PM');
     PM.name = 'Snaphappi PageMaker';
 	PM.namespace = namespace;
-	PM.onYready = {};
+	PM.onYready = {};		// init object
+	PM.onYready.PluginBase = function(Y) {
+		if (_Y === null) _Y = PM.Y;
+		PM.PageMakerPlugin = PageMakerPlugin;	
+	}
     PM.cfg = {};
     if (!SNAPPI.id) {
 		SNAPPI.id = PM.name;
@@ -42,12 +46,11 @@
     	this.listen = {};
     	PageMakerPlugin.instance = this;
     }
-    SNAPPI.PM.PageMakerPlugin = PageMakerPlugin;
     /*
      * STATIC properties & methods
      */	
     PageMakerPlugin.instance = null;
-    PageMakerPlugin.isLoaded = false;
+    PageMakerPlugin.isLoaded = false;		// PageMaker modules are loaded, not just plugin
     PageMakerPlugin.isInitialized = false;
     /**
      * init player, attach to plugin instance
@@ -67,7 +70,7 @@
     	} else {
     		Plugin.player.setStage(Plugin.stage, Plugin.stage.body);
     	}
-    	
+    	Plugin.sceneCfg = _Y.merge(Plugin.sceneCfg, cfg);
     	switch (Plugin.sceneCfg.stageType) {
     		case 'modal': 
     			try {
@@ -84,6 +87,7 @@
     		case 'montage': 	// no edit menu for montage
     			break;
     	}
+    	
     	if (Plugin.sceneCfg.scrollView) {
     		if (PageMakerPlugin.isLoaded 
     			&& PageMakerPlugin.isInitialized 
@@ -111,6 +115,7 @@
     	stage: null,
     	sceneCfg: {},	// sceneCfg??
     	ioCfg: {},
+    	startPlayer: PageMakerPlugin.startPlayer,
     	setStage: function(n) {	// currently not used
     		this.stage = n;
     		/*
@@ -400,7 +405,7 @@ console.info("PageMakerPlugin.load(): _Y.fire('snappi-pm:pagemaker-load-complete
 		var onlazyload = function(Y, result){
 			// wait for LazyLoad.helpers.after_LazyLoadCallback()
 			Y.once('snappi-pm:lazyload-complete', function(){
-				PageMakerPlugin.isLoaded = true;
+				PageMakerPlugin.isLoaded = true;	// acutally PageMaker.isLoaded
 				Y.fire('snappi-pm:pagemaker-load-complete', Y);
 				PageMakerPlugin.instance.external_Y.fire('snappi-pm:pagemaker-load-complete', Y);
 			});
@@ -418,6 +423,8 @@ console.info("PageMakerPlugin.load(): _Y.fire('snappi-pm:pagemaker-load-complete
 	LazyLoad.extras = function(cfg){	// load on _Y.later() after initial startup
 		var module_group = {
 			'scrollView': ['substitute', "scrollview-base", "scrollview-paginator", "scrollview-scrollbars"],
+			'play': ['snappi-pm-play-css', 'snappi-pm-play'],
+			'play-touch': ['snappi-pm-play-touch-css', 'substitute', "scrollview-base", "scrollview-paginator", "scrollview-scrollbars", 'snappi-pm-play-touch'],
 		}
 		var modules = module_group[cfg.module_group];
 		if (modules) {
@@ -446,7 +453,7 @@ console.info("PageMakerPlugin.load(): _Y.fire('snappi-pm:pagemaker-load-complete
 	    }
         //                console.log("host=" + host);
 	    o.host = host;
-	    o.isLocalhost = /git/.test(host); // live vs dev site	
+	    o.isLocalhost = /(git|touch_debug)/.test(host); // live vs dev site	
 	    	
 	    if (o.isLocalhost) defaultCfg = CFG.DEBUG;
 	    else defaultCfg = CFG.PROD;
@@ -806,14 +813,22 @@ console.info("PageMakerPlugin.load(): _Y.fire('snappi-pm:pagemaker-load-complete
 	    var yuiConfig_pagemaker_CSS = {
             combine: false,
             // base: '/app/air/js/css/',
-            base: 'http://' + hostCfg.host + '/app/pagemaker/css/',
+            base: 'http://' + hostCfg.host + '/app/pagemaker/',
 			comboBase: 'http://' + hostCfg.host + '/combo/js?baseurl='+hostCfg.pagemaker_comboBase,
-	        root: 'css',			// base for combo loading, combo load uri = comboBase+root+[module-name]
+	        root: '',			// base for combo loading, combo load uri = comboBase+root+[module-name]
             modules: {
             	'snappi-pm-create-css': {
-	                path: 'create.css',
+	                path: 'css/create.css',
 	                type: 'css'
-	            }       		     	        
+	            },  
+	            'snappi-pm-play-css': {
+	                path: 'static/css/play.css',
+	                type: 'css'
+	            },
+	            'snappi-pm-play-touch-css': {
+	                path: 'static/css/play-touch.css',
+	                type: 'css'
+	            },       		     	        
             }
         };    	
 		return yuiConfig_pagemaker_CSS; 

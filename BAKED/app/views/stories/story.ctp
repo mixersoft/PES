@@ -36,7 +36,7 @@
 		if ($isIFrame) echo $fullscreen; 
 	?>
 </div>
-<div id='content' class='cf hidden'>
+<div id='story-content' class='cf hidden'>
  	<?php foreach ($page_gallery as $row) {
 		echo $row;
 	} ?> 
@@ -47,3 +47,17 @@
 		echo '<a target="_new" href="http://snaphappi.com"><img src="'.AppController::$http_static[0].'/static/img/css-gui/snappi-top.png"></a>';
 	} ?>
 </div>
+<?php if ($isIFrame) {
+	$this->Layout->blockStart('javascript'); ?>
+<script type="text/javascript">
+	var initOnce = function() {
+// console.log('fire snappi:xhr-story-complete');
+		SNAPPI.Y.fire('snappi:xhr-story-complete');
+	};
+	try {SNAPPI.xhrFetch.fetchXhr; initOnce(); }			// run now for XHR request, or
+	catch (e) {PAGE.init.push(initOnce); }	// run from Y.on('domready') for HTTP request
+</script>
+<?php 
+	$this->Layout->blockEnd();
+}
+?>	

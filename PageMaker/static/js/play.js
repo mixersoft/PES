@@ -68,7 +68,7 @@
 	 */
 	var CONFIG = {
 		container : 'body',
-		content : '#content',
+		content : '#story-content',
 		NATIVE_PAGE_GALLERY_H : 800 - 82, // this height ????
 		// pageGallery margin = 20px
 		// wrap = 16px
@@ -255,8 +255,8 @@
 		this.cfg = cfg;
 		
 		// parent of div.pageGallery
-		this.isPreview = this.cfg.isPreview
-				|| PM.bootstrapY == false;
+		this.isPreview = this.cfg.isPreview != undefined ? this.cfg.isPreview 
+				: PM.bootstrapY == false;
 
 		// content
 		this.listen = {}; // detach handlers for active listener
@@ -863,7 +863,7 @@
 				var player = new PM.Player();
 				_Y.on('contentready', function(e){
 					player.init();
-				},'#content > div:first-child', this )
+				},'#story-content > div:first-child', this )
 			}
 		});
 	}
