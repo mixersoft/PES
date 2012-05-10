@@ -1,13 +1,25 @@
 <?php
-
 class ShareLink extends AppModel {
-
+	/*
+	 * NOTE: use STATIC for security level, skip security_level lookup table
+	 */ 
+	public static $SECURITY_LEVEL = array(
+		'NONE'=>1, 
+		'PASSWORD'=>2, 
+		'LOGIN'=>3
+	);
+	
+	function __construct() {
+       parent::__construct();
+       $this->validate['security_level']['InList']['rule'] = array('inList', array_values(ShareLink::$SECURITY_LEVEL));
+   }
+	
 	public $order = array('ShareLink.created' => 'desc');
-	public $belongsTo = array('SecurityLevel' => array('foreignKey' => 'security_level'));
+	// public $belongsTo = array('SecurityLevel' => array('foreignKey' => 'security_level'));
 	public $validate = array(
 		'secret_key' => array('rule' => 'notEmpty'),
 		'security_level' => array(
-			'InList' => array('rule' =>  array('inList', array(LEVEL_NONE, LEVEL_PASSWORD, LEVEL_LOGIN))),
+			'InList' => array('rule' =>  array('inList', array())),		// cant use static yet
 			'NotEmpty' => array('rule' => 'notEmpty'),
 			'hasPassword' =>  array('rule' => array('validateHasPassword')),
 		),
@@ -15,7 +27,7 @@ class ShareLink extends AppModel {
 			array('rule' => 'notEmpty'),
 		),
 		'target_url' => array(
-			array('rule' => array('url', true)),
+			// array('rule' => array('url', true)),		// doesn't validate with :[PORT] values
 			array('rule' => 'notEmpty'),
 		),
 		'active' => array(
@@ -62,7 +74,7 @@ class ShareLink extends AppModel {
 
 
 	public function validateHasPassword($data) {
-		if ($data['security_level'] == LEVEL_PASSWORD) {
+		if ($data['security_level'] == ShareLink::$SECURITY_LEVEL['PASSWORD']) {
 			if (empty($this->data['ShareLink']['hashed_password'])) {
 				return false;
 			}
@@ -73,7 +85,7 @@ class ShareLink extends AppModel {
 
 	public function createNew($data) {
 		$defaults = array(
-			'security_level' => LEVEL_NONE,
+			'security_level' => ShareLink::$SECURITY_LEVEL['NONE'],
 			'active' => 1,
 			'expiration_count' => null,
 			'expiration_date' => null,
@@ -86,6 +98,7 @@ class ShareLink extends AppModel {
 		if ($this->save($data)) {
 			return $this->findById($this->id);
 		} else {
+			debug($this->validationErrors);
 			return false;
 		}
 	}

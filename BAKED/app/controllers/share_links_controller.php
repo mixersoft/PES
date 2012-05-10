@@ -1,15 +1,27 @@
 <?php
 
 class ShareLinksController extends AppController {
+	public $layout = 'snappi-guest';
+	
+	public function test_links(){
+		$TARGET_UUID = '4f8e61aa-7e90-42f6-a9a2-3ca10afc480d';
+		$OWNER_UUID = '12345678-1111-0000-0000-venice------';
+		$this->set(compact('TARGET_UUID', 'OWNER_UUID'));
+	}
 
-
+	public function beforeFilter() {
+		parent::beforeFilter();
+		$this->Auth->allow('*');
+		$this->Auth->deny('view_login');
+	}
+		
 	public function form_create($targetId, $ownerId, $securityHash) {
 		if (empty($_GET['link'])) {
 			$this->cakeError('error404');
 		}
 		$link = $_GET['link'];
 
-		$securityCheck = md5($targetId . 'batman' . $ownerId . 'ironman' . $link);
+		$securityCheck = Security::hash($targetId . $ownerId . $link);
 		if ($securityCheck != $securityHash) {
 			debug('Security check not passed');
 			$this->cakeError('error404');
@@ -33,11 +45,12 @@ class ShareLinksController extends AppController {
 					$linkData['expiration_count'] = $this->data['ShareLink']['expiration_count'];
 				}
 			}
+debug($linkData);			
 			$result = $this->ShareLink->createNew($linkData);
 			if (is_array($result)) {
 				$this->redirect(array('action' => 'created', $result['ShareLink']['id']));
 			} else {
-				$this->Session->setFlash('Error to create the link');
+				$this->Session->setFlash('Error creating link');
 			}
 		} else {
 			$this->data['ShareLink']['security_level'] = 1;
@@ -78,13 +91,13 @@ class ShareLinksController extends AppController {
 			$this->_renderError($secretId, $shareLink);
 		} else {
 			switch ($shareLink['ShareLink']['security_level']) {
-				case LEVEL_NONE:
+				case ShareLink::$SECURITY_LEVEL['NONE']:
 					$this->_redirectToTarget($shareLink);
 				break;
-				case LEVEL_PASSWORD:
+				case ShareLink::$SECURITY_LEVEL['PASSWORD']:
 					$this->redirect(array('action' => 'ask_password', $secretId));
 				break;
-				case LEVEL_LOGIN:
+				case ShareLink::$SECURITY_LEVEL['LOGIN']:
 					$this->redirect(array('action' => 'view_login', $secretId));
 				break;
 			}
@@ -95,7 +108,7 @@ class ShareLinksController extends AppController {
 	function ask_password($secretId) {
 		$shareLink = $this->ShareLink->get($secretId);
 		$this->set(array('secretId' => $secretId));
-		if (!$shareLink) {
+		if (is_string($shareLink)) {
 			$this->_renderError($shareLink, $shareLink);
 		} else {
 			if (!empty($this->data['ShareLink']['password'])) {
