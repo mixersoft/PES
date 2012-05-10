@@ -596,7 +596,54 @@ CREATE TABLE IF NOT EXISTS `help` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+--
+-- Table structure for table `security_levels`
+--
 
+DROP TABLE IF EXISTS `security_levels`;
+CREATE TABLE IF NOT EXISTS `security_levels` (
+  `id` tinyint(2) NOT NULL AUTO_INCREMENT,
+  `name` varchar(250) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 AUTO_INCREMENT=4 ;
+
+--
+-- Dumping data for table `security_levels`
+--
+
+INSERT INTO `security_levels` (`id`, `name`) VALUES
+(1, 'None'),
+(2, 'Password'),
+(3, 'Login');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `share_links`
+--
+
+DROP TABLE IF EXISTS `share_links`;
+CREATE TABLE IF NOT EXISTS `share_links` (
+  `id` char(36) CHARACTER SET latin1 NOT NULL,
+  `secret_key` char(36) CHARACTER SET latin1 NOT NULL,
+  `hashed_password` varchar(255) CHARACTER SET latin1 NOT NULL,
+  `security_level` tinyint(2) NOT NULL,
+  `expiration_date` datetime DEFAULT NULL,
+  `expiration_count` int(11) DEFAULT NULL,
+  `target_id` char(36) CHARACTER SET latin1 NOT NULL,
+  `target_url` varchar(300) CHARACTER SET latin1 NOT NULL,
+  `target_owner` char(255) CHARACTER SET latin1 NOT NULL,
+  `active` tinyint(1) NOT NULL,
+  `owner_id` char(255) CHARACTER SET latin1 NOT NULL,
+  `renewal_request` tinyint(1) NOT NULL DEFAULT '0',
+  `renewal_comment` text,
+  `count` int(11) NOT NULL DEFAULT '0',
+  `created` datetime NOT NULL,
+  `modified` datetime NOT NULL,
+  `algo_id` int(11) NOT NULL,
+  `algo_float_id` float(9,2) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
  
