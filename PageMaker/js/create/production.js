@@ -261,7 +261,6 @@
 			 */
 			// cfg.isRehearsal = false;   
             var renderedPerformance = this.getPerformance(cfg, scene);
-            var playCfg = {};
             if (cfg.scrollView) {
             	Plugin.stage.body.append(renderedPerformance);
     		} else {	// stage==modal,  
@@ -269,6 +268,7 @@
     			// POST raw/unscaled HTML to server when saving page
     			renderedPerformance.unscaled_pageGallery = renderedPerformance.get('outerHTML');
     		}
+    		if (1 || cfg.scrollView) renderedPerformance.setAttribute('ccPage', SNAPPI.STATE.displayPage.page);
 			return renderedPerformance;
         },
         postPageGallery: function(cfg, scene){
@@ -375,7 +375,7 @@
                 // just watch for img load, don't queue
                 SNAPPI.util3.ImageLoader.loadBySelector(pageGallery, '#story-content img', null, 100);
             }
-            if (1 || cfg.scrollView) pageGallery.setAttribute('ccPage', SNAPPI.STATE.displayPage.page);
+            // if (1 || cfg.scrollView) pageGallery.setAttribute('ccPage', SNAPPI.STATE.displayPage.page);
             return pageGallery;
         },
         getThumbPrefix: function(crop, cfg){
