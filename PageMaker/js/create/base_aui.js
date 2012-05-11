@@ -28,7 +28,6 @@
 	PM.onYready = {};		// init object
 	PM.onYready.PluginBase = function(Y) {
 		if (_Y === null) _Y = PM.Y;
-		PM.PageMakerPlugin = PageMakerPlugin;	
 	}
     PM.cfg = {};
     if (!SNAPPI.id) {
@@ -46,6 +45,7 @@
     	this.listen = {};
     	PageMakerPlugin.instance = this;
     }
+    PM.PageMakerPlugin = PageMakerPlugin;	// CANNOT USE PM.onYready() pattern because plugin onYready is the wrong Y.
     /*
      * STATIC properties & methods
      */	

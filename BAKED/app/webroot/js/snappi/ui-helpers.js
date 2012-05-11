@@ -514,6 +514,10 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 		    			return;		    			
 		    	};
 	    		stage.listen['render'] = _Y.on('snappi-pm:render', function(Pr, node){
+	    				// show pageGallery first
+	    				PM.PageMakerPlugin.startPlayer({page:1});
+	    				
+	    				// then set StageDim
 		    			_setStageDim(node);
 		    			var CSS_ID = 'menu-pm-toolbar-edit';	
 						SNAPPI.PM.Menu.copyMenuToDialogHeader(CSS_ID, null);
@@ -712,7 +716,13 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 			PM = SNAPPI.PM;
 			
 			// check plugin
-			if (!PM || !PM.PageMakerPlugin.isLoaded) {
+			try {
+				var isLoaded, isInitialized;
+				isLoaded = PM.PageMakerPlugin.isLoaded;
+				isInitialized = PM.PageMakerPlugin.isInitialized;
+			} catch (e){}
+			
+			if (!isLoaded) {
 				/*
 				 * lazyLoad PageMakerPlugin module
 				 */
@@ -740,7 +750,7 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 			}
 			
 			// DEPRECATE: use UIHelper.create.launch_PageMaker(cfg);
-			if (!PM || !PM.PageMakerPlugin.isInitialized) {		
+			if (!isInitialized) {		
 console.error("Error: should be calling UIHelper.create.launch_PageMaker(cfg);");				
 			} 
 			// deprecate: checked by get_StoryPage, get_Montage
