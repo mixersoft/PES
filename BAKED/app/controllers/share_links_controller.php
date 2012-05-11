@@ -37,15 +37,15 @@ class ShareLinksController extends AppController {
 			if ($this->data['ShareLink']['hashed_password']) {
 				$linkData['hashed_password'] = $this->data['ShareLink']['hashed_password'];
 			}
-			if ($this->data['ShareLink']['add_expiration']) {
-				if (!empty($this->data['ShareLink']['expiration_date'])) {
-					$linkData['expiration_date'] = $this->data['ShareLink']['expiration_date'];
-				}
-				if (!empty($this->data['ShareLink']['expiration_count'])) {
-					$linkData['expiration_count'] = $this->data['ShareLink']['expiration_count'];
-				}
+			if (!empty($this->data['ShareLink']['expiration_days'])) {
+				$date = date("Y-m-d h:m:s");// current date
+				$date = strtotime(date("Y-m-d h:m:s", strtotime($date)) . " +{$this->data['ShareLink']['expiration_days']} day");
+				$date = date ( "Y-m-d h:m:s" , $date );
+				$linkData['expiration_date'] = $date;
 			}
-debug($linkData);			
+			if (!empty($this->data['ShareLink']['expiration_count'])) {
+				$linkData['expiration_count'] = $this->data['ShareLink']['expiration_count'];
+			}
 			$result = $this->ShareLink->createNew($linkData);
 			if (is_array($result)) {
 				$this->redirect(array('action' => 'created', $result['ShareLink']['id']));

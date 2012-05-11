@@ -12,11 +12,16 @@ echo $this->Form->input('ShareLink.security_level', array(
 	'options' => array('1' => 'none', '2' => 'simple password', '3' => 'sign-on required'),
 ));
 echo $this->Form->input('ShareLink.hashed_password', array('type' => 'text'));
-echo $this->Form->input('ShareLink.add_expiration', array('type' => 'checkbox'));
+// echo $this->Form->input('ShareLink.add_expiration', array('type' => 'checkbox'));
 ?>
 <div id="ShareLinkExpirationFields">
 <?php
-echo $this->Form->input('ShareLink.expiration_date', array('empty' => '-', 'timeFormat' => '24'));
+echo $this->Form->input('ShareLink.expiration_days', array(
+	'label' => 'Expiration Date',
+	'type' => 'radio',
+	'options' => array('3' => '3 days', '7' => '1 week', '30' => '1 month'),
+));
+echo "<br />";
 echo $this->Form->input('ShareLink.expiration_count');
 ?>
 </div>
