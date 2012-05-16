@@ -584,6 +584,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
     		/*
     		 * snappi modules
     		 */
+    		'gallery-util', 
     		'snappi-sortedhash','snappi-io', 'snappi-io-helpers', 
     		'snappi-paginator', 'snappi-menu-aui', 
     		'snappi-dialog-aui', 
@@ -921,7 +922,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
                 },
                 'snappi-hint': {
                 	path: 'hint.js',
-                    requires: ['aui-tooltip', 'snappi-io', 'snappi-sortedhash', 'cookie']
+                    requires: ['aui-tooltip', 'gallery-util', 'snappi-io', 'snappi-sortedhash', 'cookie']
                 }
             }
         };

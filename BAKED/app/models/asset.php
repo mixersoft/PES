@@ -423,7 +423,7 @@ AND includes.asset_id='{$assetId}';
 //			'className' => 'AssetsGroupshot',
 //			'foreignKey' => 'groupshot_id',
 //			'dependent' => true,					// delete Asset deletes all related BestUsershots
-//		),			
+//		),	
 		
 	);
 
@@ -441,6 +441,12 @@ AND includes.asset_id='{$assetId}';
 		// 'Tag' => array(
 			// 'with'=> 'Tagged',			
 		// )
+		// 'Workorder' => array(	
+			// 'with' => 'AssetsWorkorder',		
+		// ),
+		// 'Task' => array(		
+			// 'with' => 'AssetsTask',		
+		// ),
 	);
 	/*
 	 * update selected Asset fields if imported again
@@ -984,7 +990,6 @@ $this->log("insert newAsset=".print_r($newAsset, true), LOG_DEBUG);
 		$paginate['extras']['group_as_shot_permission'] = $this->hasGroupAsShotPerm('User', $userid);
 		return $paginate;
 	}
-	
 	function getPaginatePhotosByTagId ($tagid , $paginate = array()) {
 		$paginateModel = 'Asset';
 //debug($paginateModel);			
@@ -1094,5 +1099,29 @@ $this->log("insert newAsset=".print_r($newAsset, true), LOG_DEBUG);
 		
 		return $paginate;
 	}
+
+
+
+	/**
+	 * Notes for workorderId: 
+	 *  - use $this->disablePermissionable(true);  TODO: check for security holes
+	 *  - in_array(AppController::$role, array('EDITOR', 'MANAGER'))
+	 *  - WorkOrder.active = 1
+	 */
+	function getPaginatePhotosByWorkorderTask ($woid , $taskid,  $paginate = array()) {
+		
+	}
+	
+
+
+
+
+
+
+
+
+
+
+
 }
 ?>

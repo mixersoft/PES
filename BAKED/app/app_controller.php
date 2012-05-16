@@ -111,7 +111,7 @@ class AppController extends Controller {
 		return true;
 	}
 	function __redirectIfTouchDevice(){
-		$FORCE_TOUCH_DEVICE = 0;	// FOR debugging on desktop
+		$FORCE_TOUCH_DEVICE = 1;	// FOR debugging on desktop
 		// Story controller checks for touch device
 		$options = array('Android', 'iPod', 'iPhone', 'iPad','Opera Mobi','webOS', 'Windows Phone OS');			
 		$pattern = '/' . implode('|', $options) . '/i';
