@@ -279,6 +279,11 @@ Config.jsGlobal.firebugLog("JSONParse Error, raw="+serverData);
 				// fire JS event
 				Config.jsGlobal.SNAPPI.AIR.UploadManager.fire_upload_status_changed(isUploading);
 			}
+			try {
+				if (Config.jsGlobal.SNAPPI.AIR.UploadManager.DELETE_UPLOADED_IMAGES_FROM_APP_STORAGE) {
+					this.file.deleteFile();
+				}	
+			}catch(e:Error){}
 		}
 		private function removeFileReferenceEventListeners():void {
 			if (this.file!= null) {

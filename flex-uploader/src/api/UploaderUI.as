@@ -628,16 +628,21 @@ package api
 				sessionId: sessionId
 			};				
 			var f:File = SnappiImage.checkImgSrcBySize(photo_id,'bp');
-			if (f) {
+			if (f && f.exists) f.deleteFile();	// force render of preview for upload
+			if (f && f.exists) {
+				/*
+				* NOTE: do NOT reuse bp image, render fresh with autorotate==false before upload
+				*/
 				// upload file exists, just post upload directly
 				this.postUploadFile(f, uploadCfg);
 			} else {
 				// create upload file async, THEN post upload from callback
+				var autorotate:Boolean = Config.jsGlobal.SNAPPI.AIR.UploadManager.AUTOROTATE_UPLOADED_IMAGES;
 				var resizeImg_Callback:Object = {
 					resInCb : true,
 					create : true,
 					replace : false,
-					autorotate : true,
+					autorotate : autorotate,		// DO NOT AUTOROTATE UPLOADED BP
 					rotate : 1,
 					callback : null		// uploadFile_Callback
 				};

@@ -60,6 +60,9 @@
 	 * static methods
 	 */
 	UploadManager.MAX_CONCURRENT_UPLOADS = 2;
+	UploadManager.DELETE_UPLOADED_IMAGES_FROM_APP_STORAGE = true;
+	UploadManager.AUTOROTATE_UPLOADED_IMAGES = false;
+	
 	UploadManager.activeSH = null; //init in onYready()
 	UploadManager.add = function(o){
 		return UploadManager.activeSH.add(o);
@@ -169,7 +172,7 @@ LOG("uploadError_Callback: upload failed with msg="+msg);
 		 * @responseReceived 
 		 */
 		uploadSuccess_Callback : function(f, serverData, responseReceived) {
-//			LOG("uploadSuccess_Callback");	
+			// LOG("uploadSuccess_Callback");	
 // LOG(" >>> uploadSuccess_Callback: COUNT="+UploadManager.count()+" < MAX="+UploadManager.MAX_CONCURRENT_UPLOADS);			
 			var uploader = this.uploadQueue;
 			try {
@@ -192,6 +195,7 @@ LOG("uploadError_Callback: upload failed with msg="+msg);
 					upload_status : 1
 				})
 				if (!uploader.isCancelling) {
+// LOG("uploadSuccess_Callback: doUpload()");					
 					uploader.doUpload();
 				}
 			} catch (ex) {
@@ -202,7 +206,7 @@ LOG("uploadError_Callback: upload failed with msg="+msg);
 		 * manage our disable or enable buttons
 		 */
 		uploadComplete_Callback : function(f) {
-//LOG("uploadComplete_Callback");			
+// LOG("uploadComplete_Callback");			
 			try {
 				var uploader = this.uploadQueue;
 				UploadManager.remove(this);

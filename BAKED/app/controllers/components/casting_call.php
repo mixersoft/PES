@@ -118,6 +118,7 @@ class CastingCallComponent extends Object {
 		if (isset($src['orig']))	$origSrc= $src['orig'];
 		
 		$exif = json_decode($row['json_exif'], true);
+		$ExifOrientation = !empty($exif['Orientation']) ? $exif['Orientation'] : 1;
 if (!isset($exif['root']['imageWidth'])) {
 	if (!isset($this->Import)) $this->Import = loadComponent('Import', $this);
 	$exif['root'] = @mergeAsArray( $exif['root'], $this->Import->fixRootImagesize($src));	
@@ -146,7 +147,7 @@ if (!isset($exif['root']['imageWidth'])) {
 		
 			$W = $exif['root']['imageWidth'];
 			$H = $exif['root']['imageHeight'];
-			$Orientation  = isset($exif['root']['Orientation']) ? $exif['root']['Orientation'] : 1;
+			$Orientation  = isset($exif['root']['Orientation']) ? $exif['root']['Orientation'] : $ExifOrientation;
 			if ( isset($exif['root']['isRGB'])) $isRGB  = $exif['root']['isRGB'];
 		} else {
 			$W = $exif['ExifImageWidth'];
@@ -166,7 +167,6 @@ if (!isset($exif['root']['imageWidth'])) {
 		$TS = strtotime($DateTaken);
 		$ExifColorSpace = !empty($exif['ColorSpace']) ? $exif['ColorSpace'] : null;
 		$ExifFlash = !empty($exif['Flash']) ? $exif['Flash'] & 1 : '';	// check bit 0
-		$ExifOrientation = !empty($exif['Orientation']) ? $exif['Orientation'] : 1;
 		$W = !empty($exif['ExifImageWidth']) ? $exif['ExifImageWidth'] : null;
 		$H = !empty($exif['ExifImageLength']) ? $exif['ExifImageLength'] : null;
 		$Crops = (!empty($row['crops'])) ? $this->formatCrops($row['crops']) : '';

@@ -134,7 +134,7 @@ $this->log("WARNING: missing exif[root][imageSize], (see castingCall), path={$pa
 	 * @param $autoRotate boolean, manually set autoRotate if known, otherwise assume Previews are autoRotated
 	 * @return array data[exif], data [iptc] 
 	 */
-	function getMeta($path, $isOriginal=null, $exif_0=array(), $autoRotate=null)
+	function getMeta($path, $isOriginal=null, $exif_0=array(), $autoRotate=false)
 	{
 		if (!file_exists($path)) return false;
 		
@@ -172,8 +172,12 @@ $this->log("WARNING: missing exif[root][imageSize], (see castingCall), path={$pa
 			$data['exif'] = array_filter_keys($exif, ImportComponent::$EXIF_FIELDS);
 			if ($isOriginal) {
 				$autoRotate = false; $isPreview = false;
-			} else {
-				$autoRotate = true; $isPreview = true;
+			} else {	
+				/*
+				 * DO NOT use $isOriginal to set autoRotate=true 
+				 * we are NOT autorotating previews from desktop uploader
+				 */ 
+				$autoRotate = false; $isPreview = true;
 			}
 			$data['exif'] = $this->_augmentFromExif($data['exif'], $autoRotate, $isPreview); 
 // $this->log( "Import->getMeta, this->_augmentFromExif, exif =".print_r(array_filter_keys($data['exif'] , ImportComponent::$EXIF_FIELDS), true), LOG_DEBUG);			
