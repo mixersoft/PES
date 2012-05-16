@@ -78,36 +78,13 @@
  */
 class DATABASE_CONFIG {
 	
-	var $aaa = array(
-		'driver' => 'mysqli',
+	var $workorders = array(
+		'driver' => 'mysql',
 		'persistent' => false,
 		'host' => 'localhost',
 		'login' => 'snaphappi',
 		'password' => 'snapsh0t',
-		'database' => 'openid',
-		'encoding' => 'UTF8', 
-		'prefix' => '',
-	);
-	
-	var $gallery = array(
-		'driver' => 'mysqli',
-		'persistent' => false,
-		'host' => 'localhost',
-		'login' => 'snaphappi',
-		'password' => 'snapsh0t',
-		'database' => 'gallery',
-		'encoding' => 'UTF8', 
-		'prefix' => '',
-	);	
-	
-	
-	var $baked = array(
-		'driver' => 'mysqli',
-		'persistent' => false,
-		'host' => 'localhost',
-		'login' => 'snaphappi',
-		'password' => 'snapsh0t',
-		'database' => 'snappi',
+		'database' => 'snappi_workorders',
 		'encoding' => 'UTF8', 
 		'prefix' => '',
 	);		
@@ -124,37 +101,12 @@ class DATABASE_CONFIG {
 	);
 	
 	var $test = array(
-		'driver' => 'mysqli',
+		'driver' => 'mysql',
 		'persistent' => false,
 		'host' => 'localhost',
 		'login' => 'snaphappi',
 		'password' => 'snapsh0t',
 		'database' => 'test',
-		'prefix' => '',
-	);	
-	
-/*
- * legacy
- */	
-
-		
-	var $js_demo = array(
-		'driver' => 'mysql',
-		'persistent' => false,
-		'host' => 'mysql.js.demo.snaphappi.com',
-		'login' => 'snaphappi',
-		'password' => 'snapp1',
-		'database' => 'snappi_js_demo',
-		'prefix' => '',
-	);	
-	
-	var $demo = array(
-		'driver' => 'mysql',
-		'persistent' => false,
-		'host' => 'mysql.demo.snaphappi.com',
-		'login' => 'snaphappi',
-		'password' => 'snapp1',
-		'database' => 'snappi_demo',
 		'prefix' => '',
 	);	
 
