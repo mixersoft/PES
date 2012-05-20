@@ -11,14 +11,27 @@ class TasksWorkorder extends AppModel {
 			'fields' => '',
 			'order' => 'task_sort, created'
 		),	
+		'Workorder' => array(								// User hasMany Usershots
+			'className' => 'Workorder',
+			'foreignKey' => 'workorder_id',
+			'conditions' => '',
+			'fields' => '',
+			'order' => ''
+		),	
 	);
 	public $hasMany = array(
 		'AssetsTask' => array(								// TasksWorkorder habtm Assets
 			'className' => 'AssetsTask',				
-			'foreignKey' => 'task_id',
+			'foreignKey' => 'tasks_workorder_id',
 			'dependent' => true,
 		),
 	);
+	
+	public $hasAndBelongsToMany = array(
+		'Asset' => array(								// Tasks habtm Workorder
+			'with' => 'AssetsTask',				
+		),
+	);	
 	
 	public function createNew ($options){
 		$taskWorkorder = $this->create($options);
@@ -33,21 +46,19 @@ class TasksWorkorder extends AppModel {
 	 * @params $assets, array optional, array of asset Ids 
 	 * 		use null to add new assets by LEFT JOIN 
 	 */
-	public function harvestAssets($woid){
+	public function harvestAssets($task_id, $woid = null){
+		if (!$woid) {
+			$woid = $this->field('workorder_id', array('id'=>$task_woid));
+		}
 		$model = ClassRegistry::init('AssetsWorkorder');
 		$options = array(
 			'recursive' => -1,
 		);  
 		$options['conditions'] = array('`AssetsWorkorder`.workorder_id'=>$woid);
-		$options['fields'] = array('asset_id');
-		$joins[] = array(
-			'table'=>'snappi_workorders.assets_tasks',
-			'alias'=>'AssetsTask',
-			'type'=>'LEFT',
-			'conditions'=>array("`AssetsTask`.asset_id = `{$model->name}`.asset_id"),
-		);
-		$options['conditions'][] = "`AssetsTask`.asset_id IS NULL";
-		$options['joins'] = $joins; 
+		$options['fields'] = array('`AssetsWorkorder`.asset_id');
+		$subSelect = "SELECT at.asset_id FROM assets_tasks at  JOIN tasks_workorders tw 
+ON ( tw.workorder_id = '{$woid}' AND    tw.task_id = '{$task_id}' AND    at.tasks_workorder_id = tw.id)  ";
+		$options['conditions'][] = $model->getDataSource()->expression("`{$model->alias}`.`asset_id` NOT IN ({$subSelect})");	
 		$data2 = $model->find('all', $options);
 		$assets = Set::extract("/{$model->name}/asset_id", $data2);
 		return $assets;
@@ -74,6 +85,19 @@ class TasksWorkorder extends AppModel {
 		if ($assetsTask) $ret = $this->AssetsTask->saveAll($assetsTask, array('validate'=>'first'));
 		else $ret = true;  	// nothing new to add;
 		return $ret;		
+	}
+	
+	public function getAssets($task_woid) {
+		$options = array(
+			'contain' => 'AssetsTask.asset_id',
+			'conditions' => array(
+				'`TasksWorkorder`.id'=>$task_woid,
+				'`TasksWorkorder`.operator_id' => AppController::$userid,
+			),
+		);
+		$data = $this->find('all', $options);
+		return Set::extract('/AssetsTask/asset_id', $data);
+		
 	}
 }
 ?>

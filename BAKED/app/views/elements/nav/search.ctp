@@ -65,7 +65,7 @@
 	// add context
 	$context = Session::read('lookup.context');
 //	if ($context) $next[Inflector::singularize($context['class'])] = $context['uuid'];
-	$titleName = $controllerAttrs['titleName']; // i.e. Me, Event, Wedding, Group, Person, etc.	
+	$titleName = isset($controllerAttrs['titleName']) ? $controllerAttrs['titleName'] : ''; // i.e. Me, Event, Wedding, Group, Person, etc.	
 	if (empty($this->params['named']['q'])) {
 		switch ($this->action) {
 			case 'all': $defaultString = "search {$controllerAttrs['alias']}"; 

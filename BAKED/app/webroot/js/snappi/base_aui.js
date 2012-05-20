@@ -114,8 +114,15 @@
         }         
         
         var delayed = new Y.DelayedTask( function() {
+        	var load_module;
+        	switch(SNAPPI.STATE.controller.name) {
+        		case 'Workorders': 
+        			load_module = 'workorder'; break;
+        		default: 
+        			load_module = 'gallery';
+        	}
 			SNAPPI.LazyLoad.extras({
-	        	module_group:'gallery',
+	        	module_group: load_module,
 	        }); 
 		});
 		delayed.delay(3000);	
@@ -443,6 +450,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
 	LazyLoad.extras = function(cfg){	// load on _Y.later() after initial startup
 		var module_group = {
 			'gallery': ['snappi-dialog-aui', 'snappi-hint', 'pagemaker-base'],
+			'workorder': ['snappi-dialog-aui', 'pagemaker-base'],
 			'hint':['snappi-hint'],
 			'preview': ['snappi-dialog-aui', 'snappi-auditions', 'snappi-hint'],
 			'alert': ['snappi-dialog-aui'],
@@ -580,7 +588,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
     		 * early load modules
     		 */
     		// 'AIR-firebug-stable',
-    		'AIR-firebug-1.2',
+    		// 'AIR-firebug-1.2',
     		/*
     		 * snappi modules
     		 */

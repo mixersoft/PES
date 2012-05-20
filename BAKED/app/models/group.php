@@ -599,7 +599,7 @@ SELECT `Group`.`owner_id`, GroupsUser.user_id, GroupsUser.role
 FROM `groups` AS `Group`
 JOIN groups_users AS GroupsUser ON GroupsUser.group_id=`Group`.`id` AND GroupsUser.isActive=1
 WHERE `Group`.`id` = '{$id}' AND GroupsUser.role='{$role}'";
-		$result = $this->Group->query($sql);
+		$result = $this->query($sql);
 		$userids = Set::extract($result, '/GroupsUser/user_id');
 		return $userids;
 	}

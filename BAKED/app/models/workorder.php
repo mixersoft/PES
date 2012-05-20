@@ -6,7 +6,7 @@ class Workorder extends AppModel {
 	public $hasMany = array(
 		'AssetsWorkorder' => array(								// Tasks habtm Workorder
 			'className' => 'AssetsWorkorder',				
-			'foreignKey' => 'asset_id',
+			'foreignKey' => 'workorder_id',
 			'dependent' => true,
 		),
 		'TasksWorkorder' => array(								// Tasks habtm Workorder
@@ -19,9 +19,37 @@ class Workorder extends AppModel {
 	public $hasAndBelongsToMany = array(
 		'Task' => array(								// Tasks habtm Workorder
 			'with' => 'TasksWorkorder',				
-		)
+		),
+		'Asset' => array(								// Tasks habtm Workorder
+			'with' => 'AssetsWorkorder',				
+		),
 	);	
 	
+
+	
+	public function TEST_createWorkorder($options) {
+		extract($options);		// $WOID, $SOURCE_MODEL, $SOURCE_ID, $CLIENT_ID
+		$ret = true;
+		if (!empty($WOID)) {
+			$data = $this->findById($WOID);
+			$assets = $this->harvestAssets($data);
+			if ($assets) {	// harvest workorder assets, if any
+				$ret = $this->addAssets($data, $assets);
+			}
+		} else {	// new
+			$data = $this->createNew($CLIENT_ID, $SOURCE_ID, $SOURCE_MODEL);
+			$ret = $this->addAssets($data); 
+		}		
+		if ($ret) {		// harvest tasksWorkorder photos, create tasksWorkorder, as necessary
+			// create NEW task if there are more photos to harvest
+			$assets = $this->TasksWorkorder->harvestAssets($data['Workorder']['id']);
+			if ($assets) {
+				$taskWorkorder = $this->TEST_createTaskWorkorder($data['Workorder']['id']);
+				$ret = $ret && $this->TasksWorkorder->addAssets($taskWorkorder, $assets);
+			}
+		}
+		return $this->read(null, $data['Workorder']['id']);
+	}
 	
 	
 	public function TEST_createTaskWorkorder($woid, $options=array()){
@@ -36,27 +64,7 @@ class Workorder extends AppModel {
 		return ($taskWorkorder) ? $this->TasksWorkorder->read() : false;
 	}
 	
-	public function TEST_createWorkorder($woid = null) {
-		$CLIENT_ID = '12345678-1111-0000-0000-venice------';
-		$SOURCE_ID = '4bbd3bc6-4d68-4a52-9dbb-11a0f67883f5';  // friends of snaphappi
-		$SOURCE_MODEL = 'Group';
-		// $SOURCE_ID = $CLIENT_ID;  // friends of snaphappi
-		// $SOURCE_MODEL = 'User';		
-		if ($woid) {
-			$data = $this->findById($woid);
-		} else $data = $this->createNew($CLIENT_ID, $SOURCE_ID, $SOURCE_MODEL);
-		$ret = $this->addAssets($data); 
-		if ($ret) {
-			// create NEW task if there are more photos to harvest
-			$assets = $this->TasksWorkorder->harvestAssets($data['Workorder']['id']);
-			if ($assets) {
-				$taskWorkorder = $this->TEST_createTaskWorkorder($data['Workorder']['id']);
-				$ret = $ret && $this->TasksWorkorder->addAssets($taskWorkorder, $assets);
-			}
-		}
-		return $this->read(null, $data['Workorder']['id']);
-	}
-	
+		
 	public function createNew ($clientId, $sourceId, $sourceModel, $options=array()){
 		$TEST_default = array(
 			'name'=>'Sort+Bestshot',
@@ -79,42 +87,55 @@ class Workorder extends AppModel {
 	 * @params $assets, array optional, array of asset Ids 
 	 * 		use null to add new assets by LEFT JOIN 
 	 */
+	public function harvestAssets($data){
+		// User: Assets.owner_id = $data['Workorder']['source_id']
+		// Group: AssetsGroup.group_id = $data['Workorder']['source_id']
+		$SOURCE_MODEL = $data['Workorder']['source_model'];
+		$SOURCE_ID = $data['Workorder']['source_id'];
+		$options = array(
+			'recursive' => -1,
+		);  
+		switch ($SOURCE_MODEL){
+			case 'User':
+				$model = ClassRegistry::init('Asset');
+				$options['conditions'] = array('`Asset`.owner_id'=>$SOURCE_ID);
+				$options['fields'] = array('`Asset`.id AS asset_id');
+				$options['extras'] = array(
+					'show_edits'=>false,
+					'join_shots'=>false, 
+					'show_hidden_shots'=>true,		
+				);
+				$options['permissionable'] = false;
+				$joins[] = array(
+					'table'=>'snappi_workorders.assets_workorders',
+					'alias'=>'AssetsWorkorder',		// use Shot instead of Groupshot
+					'type'=>'LEFT',
+					'conditions'=>array("`AssetsWorkorder`.asset_id = `Asset`.id"),
+				);
+				break;
+			case 'Group':
+				$model = ClassRegistry::init('AssetsGroup');
+				$options['conditions'] = array('`AssetsGroup`.group_id'=>$SOURCE_ID);
+				$options['fields'] = array('asset_id');
+				$joins[] = array(
+					'table'=>'snappi_workorders.assets_workorders',
+					'alias'=>'AssetsWorkorder',		// use Shot instead of Groupshot
+					'type'=>'LEFT',
+					'conditions'=>array("`AssetsWorkorder`.asset_id = `AssetsGroup`.asset_id"),
+				);
+				break;
+		}
+// ?? add already rated photos? NO, depends on task.
+		$options['conditions'][] = "`AssetsWorkorder`.asset_id IS NULL";
+		$options['joins'] = $joins; 
+		$data2 = $model->find('all', $options);
+		$assets = Set::extract("/{$model->name}/asset_id", $data2);		
+		return $assets;
+	}	
+	
 	public function addAssets($data, $assets = array()){
 		if (empty($assets)) {
-			// User: Assets.owner_id = $data['Workorder']['source_id']
-			// Group: AssetsGroup.group_id = $data['Workorder']['source_id']
-			$options = array(
-				'recursive' => -1,
-			);  
-			switch ($data['Workorder']['source_model']){
-				case 'User':
-					$model = ClassRegistry::init('Assets');
-					$options['conditions'] = array('`Assets`.owner_id'=>$data['Workorder']['source_id']);
-					$options['fields'] = array('id AS asset_id');
-					$options['extras'] = array(
-						'show_edits'=>false,
-						'join_shots'=>false, 
-						'show_hidden_shots'=>true,		
-					);
-					$options['permissionable'] = false;
-					break;
-				case 'Group':
-					$model = ClassRegistry::init('AssetsGroup');
-					$options['conditions'] = array('`AssetsGroup`.group_id'=>$data['Workorder']['source_id']);
-					$options['fields'] = array('asset_id');
-					break;
-			}
-// ?? add already rated photos? NO, depends on task.
-			$joins[] = array(
-				'table'=>'snappi_workorders.assets_workorders',
-				'alias'=>'AssetsWorkorder',		// use Shot instead of Groupshot
-				'type'=>'LEFT',
-				'conditions'=>array("`AssetsWorkorder`.asset_id = `{$model->name}`.asset_id"),
-			);
-			$options['conditions'][] = "`AssetsWorkorder`.asset_id IS NULL";
-			$options['joins'] = $joins; 
-			$data2 = $model->find('all', $options);
-			$assets = Set::extract("/{$model->name}/asset_id", $data2);
+			$assets = $this->harvestAssets($data);
 		} else if (isset($assets['id'])) {
 			$assets = Set::extract("/id", $assets);
 		} else if (is_string($assets)) {
@@ -136,6 +157,19 @@ class Workorder extends AppModel {
 		return $ret;
 	}
 	
+
+	public function getAssets($woid) {
+		$options = array(
+			'contain' => 'AssetsWorkorder.asset_id',
+			'conditions' => array(
+				'`Workorder`.id'=>$woid,
+				'`Workorder`.manager_id' => AppController::$userid,
+			),
+		);
+		$data = $this->find('all', $options);
+		return Set::extract('/AssetsWorkorder/asset_id', $data);
+		
+	}	
 	
 	
 }

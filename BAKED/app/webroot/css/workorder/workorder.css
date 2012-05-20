@@ -1,0 +1,9 @@
+body {
+	background: no-repeat scroll center top #F9C667;
+}
+
+nav.section-header h1 {
+	font-size: 9pt;
+	font-weight: normal;
+	cursor: pointer;
+}

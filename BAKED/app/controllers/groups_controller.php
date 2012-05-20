@@ -48,6 +48,20 @@ class GroupsController extends AppController {
 			'fields' =>array("DATE_ADD(`Asset`.`dateTaken`, INTERVAL coalesce(`AssetsGroup`.dateTaken_offset,'00:00:00')  HOUR_SECOND) AS dateTaken_syncd",
 				'Asset.*'
 			),
+			'joins' => array(
+				array(
+					'table'=>'assets_groups',
+					'alias'=>'AssetsGroup',
+					'type'=>'INNER',
+					'conditions'=>array('`AssetsGroup`.asset_id = `Asset`.id'),
+				),
+				array(
+					'table'=>'groups',
+					'alias'=>'Group',
+					'type'=>'INNER',
+					'conditions'=>array('`Group`.id = `AssetsGroup`.group_id'),
+				),
+			)
 		),
 		'Member'=>array(
 			'preview_limit'=>9,

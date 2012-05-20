@@ -178,19 +178,21 @@ AND includes.asset_id='{$assetId}';
 		$join_bestshot = !isset($queryData['extras']['join_bestshot']) || ($queryData['extras']['join_bestshot'] == true); // default true
 		$only_shots = !empty($queryData['extras']['only_shots']); // default false
 		if ($shotType == 'Groupshot') {
+			if (!in_array('assets_groups', Set::extract('/table',$queryData['joins']))){
+				$joins[] = array(
+						'table'=>'assets_groups',
+						'alias'=>'AssetsGroup',
+						'type'=>'INNER',
+						'conditions'=>array('`AssetsGroup`.asset_id = `Asset`.id'),
+					);
+				$joins[] =  array(
+						'table'=>'groups',
+						'alias'=>'Group',
+						'type'=>'INNER',
+						'conditions'=>array('`Group`.id = `AssetsGroup`.group_id'),
+					);			
+			};			
 			// join with Groupshots
-			$joins[] = array(
-					'table'=>'assets_groups',
-					'alias'=>'AssetsGroup',
-					'type'=>'INNER',
-					'conditions'=>array('`AssetsGroup`.asset_id = `Asset`.id'),
-				);
-			$joins[] =  array(
-					'table'=>'groups',
-					'alias'=>'Group',
-					'type'=>'INNER',
-					'conditions'=>array('`Group`.id = `AssetsGroup`.group_id'),
-				);			
 			$joins[] =  array(
 					'table'=>'assets_groupshots',
 					'alias'=>'AssetsGroupshot',
@@ -1108,8 +1110,57 @@ $this->log("insert newAsset=".print_r($newAsset, true), LOG_DEBUG);
 	 *  - in_array(AppController::$role, array('EDITOR', 'MANAGER'))
 	 *  - WorkOrder.active = 1
 	 */
-	function getPaginatePhotosByWorkorderTask ($woid , $taskid,  $paginate = array()) {
-		
+	function getPaginatePhotosByWorkorderId ($woid , $paginate = array()) {
+		if (in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) return $paginate;
+		$paginate['permissionable'] = false;
+		$joins[] = array(
+			'table'=>'snappi_workorders.assets_workorders',
+			'alias'=>'AssetsWorkorder',
+			'type'=>'INNER',
+			'conditions'=>array(
+				"`AssetsWorkorder`.`asset_id` = `Asset`.id",
+				"`AssetsWorkorder`.`workorder_id`"=>$woid,
+				
+			),
+		);
+		$joins[] = array(
+			'table'=>'snappi_workorders.workorders',
+			'alias'=>'Workorder',
+			'type'=>'INNER',
+			'conditions'=>array(
+				"`Workorder`.`id`" =>$woid,
+				'`Workorder`.manager_id' => AppController::$userid,
+			),
+		);
+		if (!empty($joins)) $paginate['joins'] = @mergeAsArray($paginate['joins'], $joins);
+		if (!empty($conditions)) $paginate['conditions'] = @mergeAsArray($paginate['conditions'], $conditions);
+		return $paginate;	
+	}
+	function getPaginatePhotosByTasksWorkorderId ($task_woid , $paginate = array()) {
+		if (in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) return $paginate;
+		$paginate['permissionable'] = false;
+		$joins[] = array(
+			'table'=>'snappi_workorders.assets_tasks',
+			'alias'=>'AssetsTask',
+			'type'=>'INNER',
+			'conditions'=>array(
+				"`AssetsTask`.`asset_id` = `Asset`.id",
+				"`AssetsTask`.`tasks_workorder_id`"=>$task_woid,
+				
+			),
+		);
+		$joins[] = array(
+			'table'=>'snappi_workorders.tasks_workorders',
+			'alias'=>'TasksWorkorder',
+			'type'=>'INNER',
+			'conditions'=>array(
+				"`TasksWorkorder`.`id`" =>$task_woid,
+				'`TasksWorkorder`.operator_id' => AppController::$userid,
+			),
+		);
+		if (!empty($joins)) $paginate['joins'] = @mergeAsArray($paginate['joins'], $joins);
+		if (!empty($conditions)) $paginate['conditions'] = @mergeAsArray($paginate['conditions'], $conditions);
+		return $paginate;	
 	}
 	
 
