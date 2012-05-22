@@ -2,6 +2,7 @@
 class Workorder extends AppModel {
 	public $name = 'Workorder';
 	public $useDbConfig = 'workorders';
+	public $actsAs = array('Brownie.Panel');
 	
 	public $hasMany = array(
 		'AssetsWorkorder' => array(								// Tasks habtm Workorder
@@ -26,7 +27,7 @@ class Workorder extends AppModel {
 	);	
 	
 
-	
+	// create new workorder AND tasksWorkder
 	public function TEST_createWorkorder($options) {
 		extract($options);		// $WOID, $SOURCE_MODEL, $SOURCE_ID, $CLIENT_ID
 		$ret = true;
@@ -41,8 +42,8 @@ class Workorder extends AppModel {
 			$ret = $this->addAssets($data); 
 		}		
 		if ($ret) {		// harvest tasksWorkorder photos, create tasksWorkorder, as necessary
-			// create NEW task if there are more photos to harvest
-			$assets = $this->TasksWorkorder->harvestAssets($data['Workorder']['id']);
+			// create NEW task if there are more photos to harvest for given task
+			$assets = $this->TasksWorkorder->harvestAssets(WorkordersController::$test['task_id'], $data['Workorder']['id']);
 			if ($assets) {
 				$taskWorkorder = $this->TEST_createTaskWorkorder($data['Workorder']['id']);
 				$ret = $ret && $this->TasksWorkorder->addAssets($taskWorkorder, $assets);
@@ -55,7 +56,7 @@ class Workorder extends AppModel {
 	public function TEST_createTaskWorkorder($woid, $options=array()){
 		$TEST_default = array(
 			'name'=>'Rate Photos',		// just test with one task for now
-			'task_id'=>'4fb294c2-525c-4871-9ba5-09fcf67883f5',
+			'task_id'=>WorkordersController::$test['task_id'],
 			'task_sort'=>0,
 		);
 		$options = array_merge($TEST_default, $options);

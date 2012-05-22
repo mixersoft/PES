@@ -1163,6 +1163,47 @@ console.log("delegateHost="+delegateHost._yuid);
 		menu.hide();
 		return;
 	};	
+	MenuItems.assign_workorder_beforeShow = function(menuItem, menu){
+		var role = SNAPPI.STATE.controller.ROLE;
+		if (/(EDITOR|MANAGER)/.test(role)) {
+			menuItem.show();
+		} else {
+			menuItem.hide();
+		}
+	}
+	MenuItems.assign_workorder_click = function(menuItem, menu){
+		var role = SNAPPI.STATE.controller.ROLE;
+		if (/(EDITOR|MANAGER)/.test(role)) {
+			// POST to 
+			var postData, ioCfg,
+				controller = SNAPPI.STATE.controller;
+			postData = {
+				"data[Workorder][source_id]": controller.xhrFrom.uuid,
+				"data[Workorder][source_model]": controller['class'],
+				"data[Workorder][editor_id]": controller.userid,	// override in controller
+				// manager_id: null,
+				// client_id: null,
+			}
+			ioCfg = {
+				uri: '/workorders/create/.json',
+				method: "POST",
+				qs: postData,
+				on: {
+					successJson: function(e, i,o,args) {
+						var resp = o.responseJson;
+						menu.hide();
+						if (resp.success) {
+							window.location.href = resp.response.next;
+						}
+					}
+				}
+			}
+			ioCfg = SNAPPI.IO.pluginIO_RespondAsJson(ioCfg);
+			menuItem.plug(_Y.Plugin.IO, ioCfg);
+		} else {
+			menuItem.hide();
+		}
+	}
 	// what's the diff between express_upload and direct_upload
 	MenuItems.express_upload_beforeShow = function(menuItem, menu, properties){
 		if (!MenuItems.confirmAuth(menuItem)) return;

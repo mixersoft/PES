@@ -3,10 +3,14 @@ class WorkordersController extends AppController {
 
 	public $name = 'Workorders';
 	public $layout = 'snappi';
+	// public $local_components = array('Brownie.panel');
+	
 	
 	public static $test = array();
 	function __construct() {
        parent::__construct();
+	   $this->components = array_merge($this->components, $this->local_components);
+	   WorkordersController::$test['task_id'] = '4fb294c2-525c-4871-9ba5-09fcf67883f5';  // only task
        WorkordersController::$test['circle']['woid'] = '4fb499f4-1f54-411e-a147-0cd0f67883f5';
 	   WorkordersController::$test['circle']['task_1'] = '4fb499f4-46a0-49cd-bd18-0cd0f67883f5';
 	   WorkordersController::$test['circle']['task_2'] = '4fb49ab0-449c-4650-90e5-0cd0f67883f5';
@@ -79,24 +83,86 @@ class WorkordersController extends AppController {
 		),
 	);
 	/*
+	 * POST, respond as JSON
+	 * check for Role in EDITOR/MANAGER
+	 * create new workorder if not exists, or update assignment
+	 * assign to AppController::$userid
+	 * harvest new Photos
+	 * create TaskWorkorders if not exists, (but we are not testing TasksWorkorders yet) and harvest new Photos
+	 * provide redirect to /workorder/photos/[workorder_id]
+	 * 
 	 * test workflow: create, $options['WOID'] = null > assign > harvest
 	 */ 
 	function create() {
-		$options = array();
-		// $options['SOURCE_MODEL'] = 'Group';
-		$options['SOURCE_MODEL'] = 'User';
-		$options['SOURCE_ID'] = WorkordersController::$test['client'][$options['SOURCE_MODEL']];
-		$options['CLIENT_ID'] = WorkordersController::$test['client']['User'];
-		
-		// reuse existing workorder
-		$options['WOID'] = WorkordersController::$test['person']['woid'];
-		
-		$this->Workorder->TEST_createWorkorder($options);
-		
-		$this->render('/elements/dumpSQL');
+		$forceXHR = setXHRDebug($this, 0);	
+		if (isset($this->data)) {
+			// POST
+			if (in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) {
+				$success = false;
+				$message = "You do not have permission to do this task.";
+	 		}
+			$options = array_filter_keys($this->data['Workorder'], array('source_id', 'source_model', 'client_id', 'manager_id', 'editor_id'));
+			
+			// TODO: for now, use AppController::$userid instead of assignment values
+			$options['client_id'] = $options['manager_id'] = $options['editor_id'] =  AppController::$userid;
+			
+			// TODO: for now, check for existing workorder, reuse if found
+			$existing = array(
+				'recursive'=>-1,
+				'conditions'=>array('Workorder.source_id'=>$options['source_id'])
+			);
+			$data =  $this->Workorder->find('first', $existing);
+			
+			if ($data) {	// existing found, just update manager_id
+				$this->Workorder->id = $data['Workorder']['id'];
+				$this->Workorder->saveField('manager_id', $options['manager_id'] );
+			} else {		// create new
+				$data = $this->Workorder->createNew($options['client_id'], $options['source_id'], $options['source_model']);
+			}
+			try {
+				$ret = $this->Workorder->addAssets($data);
+				if (isset($ret['AssetsWorkorder'])) {
+					// TODO: for now, create task, but don't use
+					$taskWorkorder = $this->Workorder->TEST_createTaskWorkorder($data['Workorder']['id']);
+					$ret = $ret && $this->Workorder->TasksWorkorder->addAssets($taskWorkorder);
+				}
+				
+				// format json response
+				$success = true;
+				$message = "OK";
+				$response = $this->Workorder->read(null, $data['Workorder']['id']);
+				$response['next'] = Router::url(array('controller'=>'workorders', 'action'=>'photos', $data['Workorder']['id']), true);
+				
+			} catch (Exception $e) {
+				$success = false;
+				$message = "Error /workorders/create";
+			}
+			$this->viewVars['jsonData'] = compact('success', 'message', 'response');
+			$done = $this->renderXHRByRequest('json', null , null, $forceXHR);
+			if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
+			
+		} else { 
+			// testing only
+			$options = array();
+			
+			// $options['SOURCE_MODEL'] = 'Group';
+			$options['SOURCE_MODEL'] = 'User';
+			$options['SOURCE_ID'] = WorkordersController::$test['client'][$options['SOURCE_MODEL']];
+			$options['CLIENT_ID'] = WorkordersController::$test['client']['User'];
+			
+			// reuse existing workorder
+			$options['WOID'] = WorkordersController::$test['person']['woid'];
+			
+			$this->Workorder->TEST_createWorkorder($options);
+			
+			$this->render('/elements/dumpSQL');
+		}
 	}
 	
-	// assign EDITOR TO workorder and taskWorkorder
+	/*
+	 * assign EDITOR TO workorder, grants access privileges to workorder assets 
+	 * NOTE: may also need to assign taskWorkorder
+	 */ 
 	function assign($wo_task_id = null) {
 		$EDITOR =  WorkordersController::$test['editor'];
 		$WOID = WorkordersController::$test['person']['woid'];
@@ -110,6 +176,14 @@ class WorkordersController extends AppController {
 		$this->Workorder->TasksWorkorder->saveField('operator_id', $EDITOR);
 		
 		$this->render('/elements/dumpSQL');
+	}
+	
+	/*
+	 * release editor assignment to remove access privileges
+	 * NOTE: we'll need to keep a log on assignments for auditing 
+	 */ 
+	function release($id, $editor_id){
+		
 	}
 	
 	//  get assets for assignment, replaced by /workorders/photos
@@ -143,6 +217,11 @@ class WorkordersController extends AppController {
 		$this->render('/elements/dumpSQL');
 	}
 	
+	/**
+	 * /workorder/photos grants access privileges to assigned workorder.manager_id
+	 * TODO: THERE IS NOT CHECK TO CONFIRM workorder.manager_id role=MANAGER
+	 * TODO: for now, just assume manager/editor are equivalent, don't use workorder_tasks  
+	 */ 
 	function photos($id = null){
 		$WOID = WorkordersController::$test['circle']['woid'];	// person or circle
 		if (!$id) $id = $WOID; $this->passedArgs[0] = $id;

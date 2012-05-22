@@ -46,7 +46,7 @@ class TasksWorkorder extends AppModel {
 	 * @params $assets, array optional, array of asset Ids 
 	 * 		use null to add new assets by LEFT JOIN 
 	 */
-	public function harvestAssets($task_id, $woid = null){
+	public function harvestAssets($task_id, $woid){
 		if (!$woid) {
 			$woid = $this->field('workorder_id', array('id'=>$task_woid));
 		}
@@ -66,7 +66,7 @@ ON ( tw.workorder_id = '{$woid}' AND    tw.task_id = '{$task_id}' AND    at.task
 	
 	public function addAssets($data, $assets = array()){
 		if (empty($assets)) {
-			$assets = $this->harvestAssets($data['TasksWorkorder']['workorder_id']);
+			$assets = $this->harvestAssets($data['TasksWorkorder']['task_id'], $data['TasksWorkorder']['workorder_id']);
 		} else if (isset($assets['id'])) {
 			$assets = Set::extract("/id", $assets);
 		} else if (is_string($assets)) {
