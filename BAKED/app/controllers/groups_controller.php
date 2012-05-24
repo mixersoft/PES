@@ -6,6 +6,7 @@ class GroupsController extends AppController {
 	public $displayName = 'Group';	// section header
 
 	public $components = array(
+		'Permissionable.Permissionable',
 		'Comments.Comments' => array( 'userModelClass' => 'User'),
 		'Search.Prg',
 	);

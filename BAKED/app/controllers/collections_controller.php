@@ -2,6 +2,8 @@
 class CollectionsController extends AppController {
 
 	var $name = 'Collections';
+	
+	public $components = array('Permissionable.Permissionable');
 
 	function index() {
 		$this->Collection->recursive = 0;

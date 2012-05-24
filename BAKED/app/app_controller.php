@@ -10,7 +10,6 @@ class AppController extends Controller {
 		'Session',
 		'RequestHandler',
 		'Auth',
-		'Permissionable.Permissionable',
 	);
 	static $http_static = null;
 	static $uuid = null;

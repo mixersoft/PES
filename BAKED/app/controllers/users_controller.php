@@ -435,6 +435,10 @@ class UsersController extends UsersPluginController {
 	
 	public $layout = 'snappi-guest';
 	
+	public $components = array(
+		'Permissionable.Permissionable',
+	);
+	
 	public $helpers  = array(
 		'Tags.TagCloud',
 		'Time','Text',

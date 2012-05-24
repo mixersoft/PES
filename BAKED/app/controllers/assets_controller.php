@@ -6,10 +6,11 @@ class AssetsController extends AppController {
 	public $displayName = 'Photo';	// section header
 
 	public $components = array(
+		'Permissionable.Permissionable',
 		'Comments.Comments' => array('userModelClass' => 'User'	),
 		'Search.Prg',
 	);
-
+	
 	public $helpers  = array(
 		'Tags.TagCloud',
 		// 'Time',
