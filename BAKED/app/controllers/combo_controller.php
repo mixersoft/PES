@@ -18,7 +18,8 @@ class ComboController extends AppController {
 		Configure::write('debug', 0);
         $qs = $_GET; // $this->params;
         $baseurl = @if_e($qs['baseurl'], '');
-        $wwwroot = Configure::read('path.wwwroot');       
+		if (strpos($baseurl, 'svc') === 0) 	$basepath = Configure::read('path.svcroot'); 	
+		else $basepath = Configure::read('path.wwwroot');       
         unset($qs['url'], $qs['baseurl']);
         if ( empty($qs)) {
             header('Content-Type: application/x-javascript');
@@ -29,7 +30,7 @@ class ComboController extends AppController {
             foreach ($scripts as $script) {
                 $i = strrpos($script, '_');
                 $script = substr_replace($script, '.', $i, 1);
-                $path = cleanpath($wwwroot.DS.$baseurl.DS.$script);
+                $path = cleanpath($basepath.DS.$baseurl.DS.$script);
                 $comboAsArray[] = file_get_contents($path);
             }
 			$output =  implode(' ', $comboAsArray);

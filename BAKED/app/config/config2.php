@@ -54,32 +54,34 @@ switch ($config['Config.os']) {
 		
 		$config['vendors'] = array('fileUploader'=>'valums-file-uploader-461068d'); 
 		$wwwroot = 'W:/www-git.3';
+		$svc_root = 'W:/www-svc';
 		$config['path'] = array(
 			'APIKEYS' => 'U:\Users\michael\PRIVATE\APIKEYS.php',
 			'wwwroot'=> $wwwroot,
+			'svcroot'=>$svc_root,
 			'local' => array( // deprecate, use 
-				'original'=>array('basepath'=>$wwwroot.'/svc/PREVIEWS', 'httpAlias'=>'svc/PREVIEWS'),
-				'preview'=>array('basepath'=>$wwwroot.'/svc/PREVIEWS', 'httpAlias'=>'svc/PREVIEWS'),
+				'original'=>array('basepath'=>$svc_root.'/svc/PREVIEWS', 'httpAlias'=>'svc/PREVIEWS'),
+				'preview'=>array('basepath'=>$svc_root.'/svc/PREVIEWS', 'httpAlias'=>'svc/PREVIEWS'),
 			),
-			'stageroot'=>array('basepath'=>$wwwroot.'/svc/STAGING', 'httpAlias'=>'svc/STAGING'),
+			'stageroot'=>array('basepath'=>$svc_root.'/svc/STAGING', 'httpAlias'=>'svc/STAGING'),
 			
 			'blank_user_photo'=> '/static/img/css-gui/snappi.png', 	// deprecate, use Stagehand::getSrc()
 
 //			'meanshift_tmp'=>'W:/usr/bin/meanshift/tmp',
 			'pageGalleryPrefix'=>'/svc/pages',
 			'pagemaker'=>array('catalog'=>$wwwroot.'\PAGEMAKER\static\arrangements'),
-			'autorender'=> $wwwroot.DS.'svc'.DS.'autorender'.DS.'Image.php',
+			'autorender'=> $svc_root.DS.'svc'.DS.'autorender'.DS.'Image.php',
 		);
 		$config['path']['fileUploader'] = array(
 				'vendorpath'=>$config['vendors']['fileUploader'],
 				'basepath'=>"/{$config['vendors']['fileUploader']}",
-				'folder_basepath'=>$wwwroot.DS.'svc'.DS.'upload'.DS,
+				'folder_basepath'=>$svc_root.DS.'svc'.DS.'upload'.DS,
 			);
 		$config['path']['airUploader'] = array(
-				'folder_basepath'=>$wwwroot.DS.'svc'.DS.'upload'.DS,
+				'folder_basepath'=>$svc_root.DS.'svc'.DS.'upload'.DS,
 			);			
 		$config['path']['storyMakerUploader'] = array(
-				'folder_basepath'=>$wwwroot.DS.'svc'.DS.'upload'.DS,
+				'folder_basepath'=>$svc_root.DS.'svc'.DS.'upload'.DS,
 				'baseurl'=>'svc'.DS.'upload'.DS,
 			);	
 		$config['http_static'] = array('http://snappi:88', 'http://snappi1:88');
@@ -93,14 +95,17 @@ switch ($config['Config.os']) {
 			case 'touch.snaphappi.com':
 			// case 'aws.snaphappi.com':
 				$wwwroot = '/www-dev';	
+				$svc_root = $wwwroot;
 				$config['http_static'] = array('http://snappi.snaphappi.com', 'http://snappi1.snaphappi.com'); 
 				break;
 			case 'dev2.snaphappi.com':
 			case 'gallery.snaphappi.com':
 				$wwwroot = '/www-dev2';
+				$svc_root = $wwwroot;
 				break;			
 			default:
 				$wwwroot = '/www-dev'; 
+				$svc_root = $wwwroot;
 				break;
 		}
 		
@@ -120,27 +125,28 @@ switch ($config['Config.os']) {
 		$config['path'] = array(
 			'APIKEYS' => '/home/michael/APIKEYS.php',
 			'wwwroot'=> $wwwroot,
+			'svcroot'=> $svc_root,
 			'local' => array( 
-				'original'=>array('basepath'=>$wwwroot.'/svc/PREVIEWS', 'httpAlias'=>'svc/PREVIEWS'),
-				'preview'=>array('basepath'=>$wwwroot.'/svc/PREVIEWS', 'httpAlias'=>'svc/PREVIEWS'),
+				'original'=>array('basepath'=>$svc_root.'/svc/PREVIEWS', 'httpAlias'=>'svc/PREVIEWS'),
+				'preview'=>array('basepath'=>$svc_root.'/svc/PREVIEWS', 'httpAlias'=>'svc/PREVIEWS'),
 			),
-			'stageroot'=>array('basepath'=>$wwwroot.'/svc/STAGING', 'httpAlias'=>'svc/STAGING'),
+			'stageroot'=>array('basepath'=>$svc_root.'/svc/STAGING', 'httpAlias'=>'svc/STAGING'),
 			'blank_user_photo'=> '/static/img/css-gui/snappi.png', 	// deprecate, use Stagehand::getSrc()
 			
 			'pageGalleryPrefix'=>'/svc/pages',
 			'pagemaker'=>array('catalog'=>$wwwroot.'/PAGEMAKER/static/arrangements'),
-			'autorender'=> $wwwroot.DS.'svc'.DS.'autorender'.DS.'Image.php',
+			'autorender'=> $svc_root.DS.'svc'.DS.'autorender'.DS.'Image.php',
 		);
 		$config['path']['fileUploader'] = array(
 				'vendorpath'=>$config['vendors']['fileUploader'],
 				'basepath'=>"/{$config['vendors']['fileUploader']}",
-				'folder_basepath'=>$wwwroot.DS.'svc'.DS.'upload'.DS,
+				'folder_basepath'=>$svc_root.DS.'svc'.DS.'upload'.DS,
 			);	
 		$config['path']['airUploader'] = array(
-				'folder_basepath'=>$wwwroot.DS.'svc'.DS.'upload'.DS,
+				'folder_basepath'=>$svc_root.DS.'svc'.DS.'upload'.DS,
 			);	
 		$config['path']['storyMakerUploader'] = array(
-				'folder_basepath'=>$wwwroot.DS.'svc'.DS.'upload'.DS,
+				'folder_basepath'=>$svc_root.DS.'svc'.DS.'upload'.DS,
 				'baseurl'=>'svc'.DS.'upload'.DS,
 			);		
 		break;		

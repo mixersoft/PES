@@ -121,6 +121,7 @@ class CastingCallComponent extends Object {
 		$ExifOrientation = !empty($exif['Orientation']) ? $exif['Orientation'] : 1;
 if (!isset($exif['root']['imageWidth'])) {
 	if (!isset($this->Import)) $this->Import = loadComponent('Import', $this);
+	// TODO: save $exif['root'] to $row['json_exif']
 	$exif['root'] = @mergeAsArray( $exif['root'], $this->Import->fixRootImagesize($src));	
 }	
 		if (!@empty($row[0]['FocusCenter'])) {
@@ -142,7 +143,6 @@ if (!isset($exif['root']['imageWidth'])) {
 		$FocusVector = array('Direction'=>0, 'Magnitude'=>0);
 		// $Rating = @ifed($row['rating'], null);		// owner rating
 		$LayoutHint = compact('FocusCenter', 'FocusVector');
-
 		if (isset($exif['root'])) { 	// $exif['root'] set in component/import.php
 		
 			$W = $exif['root']['imageWidth'];
