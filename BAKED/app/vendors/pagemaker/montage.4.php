@@ -3,7 +3,7 @@
 	  echo header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); 
       
 	  require_once 'cluster-collage.4.php';	 
-	  $appHost = 'git3:88'; 
+	  $appHost = 'snappi-dev'; 
 	  $appHost = 'aws.snaphappi.com';
 	  ?>
 <?php

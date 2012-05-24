@@ -208,7 +208,7 @@ console.error('DEPRECATE: SNAPPI.PM.cfg.fn_DISPLAY_SIZE() in main()');
 	
 	SNAPPI.Config = Config;	// make global
 	var _CFG = {		// frequently used startup Config params 
-			DEBUG : {	// default when hostname==git*
+			DEBUG : {	// default when hostname==git* or snappi-dev
 	    		snappi_comboBase: 'baked/app/webroot&',
 	    		snappi_minify: 0,
 	    		air_comboBase: 'app/air&',
@@ -676,7 +676,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
 				SNAPPI.isAIR = true;	// deprecate
 			} catch (e) {
 				alert("baseurl is not set");
-				SNAPPI.AIR.host = 'git3:88';
+				SNAPPI.AIR.host = 'snappi-dev';
 			}	
 			Config.staticHost.FORCE_HOST = SNAPPI.AIR.host;	// MULTIPLE subdomains doesn't work with AIR
 			/*
@@ -748,7 +748,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
 	    }
         //                console.log("host=" + host);
 	    o.host = host;
-	    o.isLocalhost = /(git|touch_debug)/.test(host); // live vs dev site	
+	    o.isLocalhost = /(snappi-dev|touch_debug|git|localhost)/.test(host); // live vs dev site	
 	    	
 	    if (o.isLocalhost) defaultCfg = CFG.DEBUG;
 	    else defaultCfg = CFG.PROD;
