@@ -11,6 +11,7 @@ class StoriesController extends CollectionsController {
 	public $validate = array();
 
 	public $components = array(
+		'Permissionable.Permissionable',
 		'Comments.Comments' => array('userModelClass' => 'User'	),
 		'Search.Prg',
 	);
