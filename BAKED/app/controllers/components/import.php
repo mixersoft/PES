@@ -143,7 +143,7 @@ $this->log("WARNING: missing exif[root][imageSize], (see castingCall), path={$pa
 // $this->log( "Import->getMeta, getimagesize=".print_r($getimagesize, true), LOG_DEBUG);		
 		list($width, $height, $type, $attr) = $getimagesize;
 		if ($isOriginal === null) $isOriginal = (max($width, $height) > 640);		
-// $this->log( "Import->getMeta, isOriginal=".print_r($isOriginal, true), LOG_DEBUG);				
+// $this->log( "Import->getMeta, isOriginal=".print_r($isOriginal, true), LOG_DEBUG);	
 		if (is_string($exif_0)) {	
 			// process json_exif from v1.8.3 snappi-uploader via POST
 			$exif_0 = json_decode($exif_0, true);
@@ -156,8 +156,8 @@ $this->log("WARNING: missing exif[root][imageSize], (see castingCall), path={$pa
 		 */ 
 		$exif = @exif_read_data($path);
 // $this->log( "Import->getMeta, exif FROM FILE=".print_r(array_filter_keys($exif, ImportComponent::$EXIF_FIELDS), true), LOG_DEBUG);		
-		if (empty($exif)) $exif = $exif_0;
-		else if ($exif && $exif_0) $exif = array_merge($exif, array_filter_keys($exif_0, ImportComponent::$EXIF_DO_NOT_CHANGE));
+		if (!isset($exif['DateTimeOriginal'])) $exif = $exif_0;
+		else if (isset($exif['DateTimeOriginal']) && $exif_0) $exif = array_merge($exif, array_filter_keys($exif_0, ImportComponent::$EXIF_DO_NOT_CHANGE));
 		// this is a fix to preserve manual rotates, 
 		// currently saved in json_exif, NOT UserEdit.rotate
 		if (isset($exif_0['preview']['Orientation'])) {
@@ -168,7 +168,7 @@ $this->log("WARNING: missing exif[root][imageSize], (see castingCall), path={$pa
 		
 		$data = array('exif'=>NULL, 'iptc'=>NULL);
 // debug($exif);		
-		if (!empty($exif)) {	// jpg exif data take priority
+		if (isset($exif['DateTimeOriginal'])) {	// jpg exif data take priority
 			$data['exif'] = array_filter_keys($exif, ImportComponent::$EXIF_FIELDS);
 			if ($isOriginal) {
 				$autoRotate = false; $isPreview = false;
@@ -249,17 +249,13 @@ $this->log("WARNING: missing exif[root][imageSize], (see castingCall), path={$pa
 			$rootAttr['imageHeight'] = $exif_0['COMPUTED']['Height'];	// preview
 			$rootAttr['isRGB'] = !empty($exif_0['ColorSpace']) ? ($exif_0['ColorSpace'] == 1) : 0;
 			if ($autoRotate) $rootAttr['Orientation']=1;
-			$exif['ApertureFNumber'] = $exif_0['COMPUTED']['ApertureFNumber']; 
+			$exif['ApertureFNumber'] = !empty($exif_0['COMPUTED']['ApertureFNumber']) ? $exif_0['COMPUTED']['ApertureFNumber'] : '0'; 
 			$exif['isFlash'] =  !empty($exif_0['Flash']) ? ($exif_0['Flash'] & 1) : 0;  // checks bit 0
 		} else {
 			// $rootAttr['isRGB'] = !empty($exif_0['ColorSpace']) ? ($exif_0['ColorSpace'] == 1) : 0;
 			$this->log("ERROR: _augmentFromPreview(): no exif['COMPUTED'] data, use _augmentNoExif()", LOG_DEBUG);
 		}
 		
-		if ($isPreview && max($rootAttr['imageWidth'], $rootAttr['imageHeight']) > 640) {
-			debug("ERROR: _augmentFromPreview(): exif[COMPUTED] dimensions > 640px, use _augmentFromOriginal()??? ");
-			$this->log("ERROR: _augmentFromPreview(): exif[COMPUTED] dimensions > 640px, use _augmentFromOriginal()??? ", LOG_DEBUG);
-		}
 		if ($autoRotate) $this->_autoRotateExifDim($exif_0, $rootAttr, $exif);
 		if (	
 			// FORCE COMPUTED VALUE IF $exif_0['ExifImageLength'] flipped
@@ -352,7 +348,7 @@ $this->log( "Import->_augmentFromExif(), FORCE COMPUTED VALUE FIX, rootAttr=".pr
 		if (!file_exists(dirname($stagepath.DS.$dest))) mkdir(dirname($stagepath.DS.$dest), 2775, true);
 		$OS = Configure::read('Config.os');
 		$src = cleanPath($src, $OS);
-		$dest = cleanPath($stagepath.DS.$dest, $OS);		
+		$dest = cleanPath($stagepath.DS.$dest, $OS);
 // $this->log("Import->import2stage, src={$src}, dest={$dest}", LOG_DEBUG);	
 		if (file_exists($dest)) {
 			// DO NOT overwrite if file is bigger

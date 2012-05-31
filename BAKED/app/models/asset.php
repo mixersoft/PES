@@ -532,7 +532,7 @@ AND includes.asset_id='{$assetId}';
 		$checkDupes_options = array(
 			'recursive' => -1,
 			'conditions' => array( 'Asset.owner_id' => $userid,
-					'Asset.id'=>$asset['id'], 
+					'OR'=>array('Asset.id'=>$asset['id'], 'Asset.asset_hash'=>$asset_hash),
 			),
 			'extras'=>array(
 				'show_edits'=>false,

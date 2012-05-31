@@ -114,7 +114,7 @@ class GalleryComponent extends Object
 		$exif = @exif_read_data($path);
 //debug($path);		
 //debug($exif);		
-		if(!empty($exif))
+		if(isset($exif['DateTimeOriginal']))
 		{
 			if(isset($exif['COMPUTED']['Width']))
 			{
