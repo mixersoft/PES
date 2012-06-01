@@ -82,11 +82,12 @@ ON ( tw.workorder_id = '{$woid}' AND    tw.task_id = '{$task_id}' AND    at.task
 			);
 		}
 		// $data['AssetsTask'] = $assetsTask;
-		if ($assetsTask) $ret = $this->AssetsTask->saveAll($assetsTask, array('validate'=>'first'));
-		else $ret = true;  	// nothing new to add;
-		return $ret;		
+		$count = count($assetsTask);
+		if ($count) {
+			$ret = $this->AssetsTask->saveAll($assetsTask, array('validate'=>'first'));
+			return $ret ? $count : false;
+		} else return true;  	// nothing new to add;
 	}
-	
 	public function getAssets($task_woid) {
 		$options = array(
 			'contain' => 'AssetsTask.asset_id',

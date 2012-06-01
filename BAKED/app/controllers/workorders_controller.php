@@ -9,8 +9,9 @@ class WorkordersController extends AppController {
 	public static $test = array();
 	function __construct() {
        parent::__construct();
-	   $this->components = array_merge($this->components, $this->local_components);
+	   // $this->components = array_merge($this->components, $this->local_components);
 	   WorkordersController::$test['task_id'] = '4fb294c2-525c-4871-9ba5-09fcf67883f5';  // only task
+	   
        WorkordersController::$test['circle']['woid'] = '4fb499f4-1f54-411e-a147-0cd0f67883f5';
 	   WorkordersController::$test['circle']['task_1'] = '4fb499f4-46a0-49cd-bd18-0cd0f67883f5';
 	   WorkordersController::$test['circle']['task_2'] = '4fb49ab0-449c-4650-90e5-0cd0f67883f5';
@@ -117,14 +118,14 @@ class WorkordersController extends AppController {
 				$this->Workorder->id = $data['Workorder']['id'];
 				$this->Workorder->saveField('manager_id', $options['manager_id'] );
 			} else {		// create new
-				$data = $this->Workorder->createNew($options['client_id'], $options['source_id'], $options['source_model']);
+				$data = $this->Workorder->createNew($options['client_id'], $options['source_id'], $options['source_model'], $options);
 			}
 			try {
 				$ret = $this->Workorder->addAssets($data);
-				if (isset($ret['AssetsWorkorder'])) {
+				if (is_numeric($ret)) {
 					// TODO: for now, create task, but don't use
 					$taskWorkorder = $this->Workorder->TEST_createTaskWorkorder($data['Workorder']['id']);
-					$ret = $ret && $this->Workorder->TasksWorkorder->addAssets($taskWorkorder);
+					$ret = $this->Workorder->TasksWorkorder->addAssets($taskWorkorder);
 				}
 				
 				// format json response

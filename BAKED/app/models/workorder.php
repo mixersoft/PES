@@ -2,7 +2,7 @@
 class Workorder extends AppModel {
 	public $name = 'Workorder';
 	public $useDbConfig = 'workorders';
-	public $actsAs = array('Brownie.Panel');
+	// public $actsAs = array('Brownie.Panel');
 	
 	public $hasMany = array(
 		'AssetsWorkorder' => array(								// Tasks habtm Workorder
@@ -68,7 +68,7 @@ class Workorder extends AppModel {
 		
 	public function createNew ($clientId, $sourceId, $sourceModel, $options=array()){
 		$TEST_default = array(
-			'name'=>'Sort+Bestshot',
+			'name'=>'edit photos',
 		);
 		$options = array_merge($TEST_default, $options);
 		$workorder = $this->create($options);
@@ -76,6 +76,8 @@ class Workorder extends AppModel {
 		$workorder['client_id'] = $clientId;
 		$workorder['source_id'] = $sourceId;
 		$workorder['source_model'] = $sourceModel;
+		// assign workorder at create for now
+		if (isset($options['manager_id'])) $workorder['manager_id'] = $options['manager_id'];
 		$data['Workorder'] = $workorder;
 		
 		$ret = $this->saveAll($data, array('validate'=>'first'));
@@ -151,11 +153,12 @@ class Workorder extends AppModel {
 				'asset_id'=>$aid,
 			);
 		}
-// debug($assetsWorkorder);
 		// $data['AssetsWorkorder'] = $assetsWorkorder;
-		if ($assetsWorkorder) $ret = $this->AssetsWorkorder->saveAll($assetsWorkorder, array('validate'=>'first'));
-		else $ret = true;  	// nothing new to add;
-		return $ret;
+		$count = count($assetsWorkorder);
+		if ($count) {
+			$ret = $this->AssetsWorkorder->saveAll($assetsWorkorder, array('validate'=>'first'));
+			return $ret ? $count : false;
+		} else return true;  	// nothing new to add;
 	}
 	
 
