@@ -161,20 +161,42 @@ class WorkordersController extends AppController {
 	}
 	
 	/*
-	 * assign EDITOR TO workorder, grants access privileges to workorder assets 
-	 * NOTE: may also need to assign taskWorkorder
+	 * from HTTP POST
+	 * 		$this->data[manager_id]=UUID
+	 * 		$this->data[task_id]=UUID (optional)
+	 *		$this->data[editor_id]=UUID (optional)
+	 * assign MANAGER TO workorder, grants access privileges to workorder assets
+	 * (optional) assign editor to tasksWorkorder 
 	 */ 
-	function assign($wo_task_id = null) {
-		$EDITOR =  WorkordersController::$test['editor'];
-		$WOID = WorkordersController::$test['person']['woid'];
-		$TASK_1 =  WorkordersController::$test['person']['task_1'] ;
-		$TASK_2 =  WorkordersController::$test['person']['task_1'] ;
+	function assign($id=null) {
+		extract($this->data); // manager_id, editor_id, task_id
 		
-		$this->Workorder->id = $WOID;
-		$this->Workorder->saveField('manager_id', $EDITOR);
+		$manager_id =  isset($manager_id) ? $manager_id :  WorkordersController::$test['editor'];
+		$editor_id =  isset($editor_id) ? $editor_id :  $manager_id;
 		
-		$this->Workorder->TasksWorkorder->id = $TASK_1;
-		$this->Workorder->TasksWorkorder->saveField('operator_id', $EDITOR);
+		// if null, use test workorder & task_workorder
+		if (!$id) { 
+			$id = WorkordersController::$test['person']['woid'];
+			$task_id = WorkordersController::$test['person']['task_1'] ;
+		}
+		
+		$this->Workorder->id = $id;
+		$ret = $this->Workorder->saveField('manager_id', $manager_id);
+		if ($ret) $message[] = "Workorder {$id}: manager set to {$manager_id}";
+		
+		if ($task_id) {
+			$this->Workorder->TasksWorkorder->id = $task_id;
+			$ret = $ret && $this->Workorder->TasksWorkorder->saveField('operator_id', $editor_id);
+			if ($ret) $message[] = "Workorder {$id}/Task {$task_id}: operator set to {$editor_id}";
+		}
+		
+		// format json response
+		$success = $ret;
+		$message = !empty($message) ? $message : "Error: There was problem assigning this workorder";
+		$response = compact('id', 'manager_id', 'task_id', 'editor_id');
+		$this->viewVars['jsonData'] = compact('success', 'message', 'response');
+		$done = $this->renderXHRByRequest('json', null , null, $forceXHR);
+		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
 		
 		$this->render('/elements/dumpSQL');
 	}
