@@ -116,7 +116,7 @@ class WorkordersController extends AppController {
 			
 			if ($data) {	// existing found, just update manager_id
 				$this->Workorder->id = $data['Workorder']['id'];
-				$this->Workorder->saveField('manager_id', $options['manager_id'] );
+				if (!empty($options['manager_id'])) $this->Workorder->saveField('manager_id', $options['manager_id'] );
 			} else {		// create new
 				$data = $this->Workorder->createNew($options['client_id'], $options['source_id'], $options['source_model'], $options);
 			}
