@@ -604,6 +604,9 @@ var _showZoom = function(e, g) {
             if (!cfg.size) delete cfg.size;	// merging undefined causes prob with default setting
             if (cfg.type == 'Photo') cfg = _Y.merge(SNAPPI.STATE.displayPage, cfg);
             cfg = _Y.merge(GalleryFactory[cfg.type].defaultCfg, cfg);	
+            // check for raw
+            var showHidden = SNAPPI.util.getFromQs('raw');
+            if (showHidden) cfg.hideHiddenShotByCSS = false;
             
             try {
             	if (!cfg.castingCall && cfg.castingCall !== false) cfg.castingCall = PAGE.jsonData.castingCall;
