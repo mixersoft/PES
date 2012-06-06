@@ -1250,12 +1250,14 @@ debug("WARNING: This code path is not tested");
 						'extras' => array(
 							'join_shots'=>false,	// get ALL photos
 						),
-//						'showSubstitutes'=>true,
 					);
-					if (!in_array('rating', $fields)) {
-					} else {
-//						$options['showEdits'] = true;
+					if (in_array('rating', $fields)) {
 						$options['extras']['show_edits'] = true;
+					}
+					if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
+						// TODO: incomplete. Should check for Workorder assignment to EDITOR
+						$this->Asset->disablePermissionable(true);
+						$options['fields']='Asset.*';
 					}
 					$data = $this->Asset->find('first',$options);
 					$asset_hash = $data['Asset']['asset_hash'];
@@ -1282,7 +1284,7 @@ debug("WARNING: This code path is not tested");
 						$data['UserEdit']['rating'] = $newRating;
 						$data['UserEdit']['id'] = String::uuid();
 						$data['UserEdit']['owner_id'] = AppController::$userid;
-						$data['UserEdit']['isEditor'] = AppController::$userid!=AppController::$ownerid;
+						$data['UserEdit']['isEditor'] = in_array(AppController::$role, array('EDITOR', 'MANAGER'));
 						$data['UserEdit']['asset_hash'] = $asset_hash;
 						$data['SharedEdit']['asset_hash'] = $asset_hash;
 						unset($data['AssetPermission']);

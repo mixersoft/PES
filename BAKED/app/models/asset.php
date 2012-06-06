@@ -124,7 +124,8 @@ AND includes.asset_id='{$assetId}';
 	
 	/**
 	 * join with Shared/UserEdits to add score, rating from User/Shared edits
-	 * 
+	 * 		$queryData['extras']['show_edits']=1
+	 * 		$queryData['extras']['hide_SharedEdits']=0
 	 */
 	public function joinWithEdits($queryData) {
 		// add manual joins for recursive=-1
@@ -149,14 +150,26 @@ AND includes.asset_id='{$assetId}';
 					'UserEdit.owner_id'=>AppController::$userid),
 			),
 		);
-		$queryData['joins'] = @mergeAsArray($queryData['joins'], $joins );
-		$queryData['fields'] = @mergeAsArray($queryData['fields'], 
-			array(
-				'SharedEdit.score, SharedEdit.votes',
-				// coalese takes first non-null value
-				'coalesce(UserEdit.rating, SharedEdit.score) AS rating',		// puts results in $results[0]
-				'coalesce(UserEdit.rotate, SharedEdit.rotate) AS rotate'
-		));
+		
+		if (!empty($queryData['extras']['hide_SharedEdits'])) {
+			array_shift($joins);	// for training sets only
+			$queryData['joins'] = @mergeAsArray($queryData['joins'], $joins );
+			$queryData['fields'] = @mergeAsArray($queryData['fields'], 
+				array(
+					"'0' AS score", "'0' AS votes", 
+					'coalesce(UserEdit.rating) AS rating',		// puts results in $results[0]
+					'coalesce(UserEdit.rotate) AS rotate'
+			));
+		} else {
+			$queryData['joins'] = @mergeAsArray($queryData['joins'], $joins );
+			$queryData['fields'] = @mergeAsArray($queryData['fields'], 
+				array(
+					'SharedEdit.score, SharedEdit.votes',
+					// coalese takes first non-null value
+					'coalesce(UserEdit.rating, SharedEdit.score) AS rating',		// puts results in $results[0]
+					'coalesce(UserEdit.rotate, SharedEdit.rotate) AS rotate'
+			));
+		}
 		return $queryData;
 	}
 

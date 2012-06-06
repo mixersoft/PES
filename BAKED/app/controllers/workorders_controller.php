@@ -67,16 +67,16 @@ class WorkordersController extends AppController {
 			'paging_limit' =>48,
 			'photostream_limit' => 4,	// deprecate?
 			'order' => array('batchId'=>'DESC', 'created'=>'ASC'),
-			'extras'=>array(
-				'show_edits'=>true,
-				'join_shots'=>'Usershot', 
-				'show_hidden_shots'=>false
-			),
 			// 'extras'=>array(
 				// 'show_edits'=>true,
-				// 'join_shots'=>false, 
+				// 'join_shots'=>'Usershot', 
 				// 'show_hidden_shots'=>false
 			// ),
+			'extras'=>array(
+				'show_edits'=>true,
+				'join_shots'=>false, 
+				'show_hidden_shots'=>false
+			),
 			'recursive'=> -1,	
 			'fields' =>array(
 				'Asset.*'
@@ -253,19 +253,23 @@ class WorkordersController extends AppController {
 		$this->layout = 'snappi';
 		$this->helpers[] = 'Time';
 		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';				
-		if (!$id) {
-			$this->Session->setFlash("ERROR: invalid Photo id.");
-			$this->redirect(array('action' => 'all'));
-		}
 		
 		// paginate 
 		$SOURCE_MODEL = $this->Workorder->field('source_model', array('id'=>$id));
+		if (!$id || !$SOURCE_MODEL) {
+			$this->Session->setFlash("ERROR: invalid Workorder id.");
+			$this->redirect(array('action' => 'all'));
+		}
 		$paginateModel = 'Asset';
 		$Model = ClassRegistry::init($paginateModel);
 		// map correct paginateArray based on $SOURCE_MODEL
 		$this->paginate[$paginateModel] = $this->paginate[$SOURCE_MODEL.$paginateModel];
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $Model->getPaginatePhotosByWorkorderId($id, $this->paginate[$paginateModel]);
+if (isset($this->params['url']['raw'])) {
+	$paginateArray['extras']['show_hidden_shots']=1;
+	$paginateArray['extras']['hide_SharedEdits']=1;
+}			
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = $this->paginate($paginateModel);
