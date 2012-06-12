@@ -180,6 +180,7 @@
 		 */
 		reuse : function(audition, cfg) {
 			// this = SNAPPI.Thumbnail
+			this._cfg = _Y.merge(this._cfg, cfg);
 			audition = audition || SNAPPI.Auditions.find(this.uuid);
 			// set id
 			SNAPPI.Auditions.bind(this.node, audition);

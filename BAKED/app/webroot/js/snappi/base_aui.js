@@ -535,7 +535,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
 			'snappi-group',
 			'snappi-thumbnail-helpers', 
 			'snappi-imageloader',
-			'gallery-util',
+			'snappi-util-misc',
 			'snappi-thumbnail',
 			'snappi-io',
 			'snappi-menu-aui',
@@ -543,7 +543,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
 			'snappi-gallery-helpers',
 			'snappi-io-helpers',
 			'snappi-ui-helpers',
-			'snappi-util',
+			'snappi-util-post',
 			'snappi-gallery', 
 			'snappi-lightbox',
 			'snappi-filter', 
@@ -592,7 +592,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
     		/*
     		 * snappi modules
     		 */
-    		'gallery-util', 
+    		'snappi-util-misc', 
     		'snappi-sortedhash','snappi-io', 'snappi-io-helpers', 
     		'snappi-paginator', 'snappi-menu-aui', 
     		'snappi-dialog-aui', 
@@ -820,7 +820,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
                 // },
                 'snappi-auditions': {
                     path: 'auditions.js',
-                    requires: ['node', 'gallery-util', 'snappi-group', 'snappi-sortedhash']
+                    requires: ['node', 'snappi-util-misc', 'snappi-group', 'snappi-sortedhash']
                 },	    		
         		'snappi-toolbutton': {
         			path:'toolbuttons.js',
@@ -873,8 +873,8 @@ console.warn("Node.ynode() may not be compatible with ie8");
                 },
                 'snappi-thumbnail': {
                     path: 'thumbnail3.js',
-                    requires: ['node', 'substitute', 'stylesheet', 'event', 'overlay', 'gallery-util', 'snappi-rating', 'snappi-group', 'snappi-dragdrop', 'snappi-thumbnail-helpers', 'snappi-imageloader']
-                    //'gallery-util' SNAPPI.util.hash(bindTo) may be deprecated 
+                    requires: ['node', 'substitute', 'stylesheet', 'event', 'overlay', 'snappi-util-misc', 'snappi-rating', 'snappi-group', 'snappi-dragdrop', 'snappi-thumbnail-helpers', 'snappi-imageloader']
+                    //'snappi-util-misc' SNAPPI.util.hash(bindTo) may be deprecated 
                 },
                 'snappi-thumbnail-helpers': {
                     path: 'thumbnail-helpers.js',
@@ -883,7 +883,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
                 'snappi-gallery': {
                     path: 'gallery.js',
                     requires: ['node', 'event', 'event-key', 
-                    'snappi-util', // uses SNAPPI.ShotController
+                    'snappi-util-post', // uses SNAPPI.ShotController
                     'snappi-auditions',
                     'snappi-rating', 'snappi-menu-aui', 'snappi-paginator', 'snappi-gallery-helpers', 'snappi-thumbnail-helpers',
                     // 'snappi-dialog-aui', 
@@ -895,7 +895,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
                 },
                 'snappi-lightbox': {
                     path: 'lightbox.js',
-                    requires: ['node', 'substitute', 'event', 'io', 'dd', 'dd-plugin', 'snappi-util', 'snappi-sortedhash', 'snappi-gallery', 'snappi-dragdrop',  'snappi-rating', 
+                    requires: ['node', 'substitute', 'event', 'io', 'dd', 'dd-plugin', 'snappi-util-post', 'snappi-sortedhash', 'snappi-gallery', 'snappi-dragdrop',  'snappi-rating', 
                     // 'snappi-domJsBinder',
                                /*
                                 * experimental
@@ -905,8 +905,12 @@ console.warn("Node.ynode() may not be compatible with ie8");
                                ]
                     // snappi-util -> SNAPPI.shotController, SNAPPI.ratingManager, SNAPPI.io (move)
                 },
-                'snappi-util': {
-                    path: 'util.js',
+                'snappi-util-misc': {
+                    path: 'util-misc.js',
+                    requires: ['node']
+                },
+                'snappi-util-post': {
+                    path: 'util-post.js',
                     requires: ['node', 'event-custom', 'io', 'substitute',
                                'snappi-rating', 
                                // 'snappi-lightbox'
@@ -930,7 +934,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
                 },
                 'snappi-hint': {
                 	path: 'hint.js',
-                    requires: ['aui-tooltip', 'gallery-util', 'snappi-io', 'snappi-sortedhash', 'cookie']
+                    requires: ['aui-tooltip', 'snappi-util-misc', 'snappi-io', 'snappi-sortedhash', 'cookie']
                 }
             }
         };
@@ -958,7 +962,8 @@ console.warn("Node.ynode() may not be compatible with ie8");
 	            comboBase: 'http://' + Config.getStaticHost(1) + '/combo/js?baseurl='+hostCfg.snappi_comboBase,
 	            root: 'js/gallery/',						// base for combo loading, combo load uri = comboBase+root+[module-name]
 	            modules: {
-	                'gallery-util': {
+	            	// TODO: deprecate. refactored, moved to 'snappi-util-misc'
+	                'gallery-util': {	
 	                    path: 'util.js',
 	                    requires: ['node']
 	                },
