@@ -30,7 +30,9 @@ class JsonView extends View {
 		$output = json_encode($response);
 		$output .= $this->element('dumpSQL');
 		JsonView::$once = true;
-		return $output; 
+		if (isset($this->params['url']['callback']) && strpos($this->params['url']['callback'],'YUI.Env.JSONP')===0){
+			return "{$this->params['url']['callback']}({$output})";
+		} else 	return $output; 
 	}
 }
 ?>
