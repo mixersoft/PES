@@ -96,6 +96,7 @@ AND includes.asset_id='{$assetId}';
 	 */
 	public function beforeFind($queryData) {
 // debug("Model:Asset beforeFind()");
+// debug($queryData['extras']);
 // debug($queryData['order']); // use extras for shot options
 			        // add belongsTo fields???
 		if (!empty($queryData['extras']['join_shots'])) {
@@ -182,6 +183,7 @@ AND includes.asset_id='{$assetId}';
 	 * 			'join_shots'=>['Groupshot'|'Usershot' (default)], 
 	 * 			'show_hidden_shots'=>boolean, default false, 
 	 * 			'join_bestshot'=>boolean, default true, join/shot bestShot
+	 * 			'only_bestshot_system' => for workorder processing, only join to BestShotSystem
 	 * 			'only_shots'=>boolean, default false
 	 * 	)
 	 * @param $showHidden boolean, default false. use true to show Hidden shots
@@ -189,6 +191,7 @@ AND includes.asset_id='{$assetId}';
 	public function joinWithShots($queryData, $show_hidden_shots=false){
 		$shotType = $queryData['extras']['join_shots'];	// Groupshot or Usershot
 		$join_bestshot = !isset($queryData['extras']['join_bestshot']) || ($queryData['extras']['join_bestshot'] == true); // default true
+		$only_bestshot_system = !empty($queryData['extras']['only_bestshot_system']); // default false
 		$only_shots = !empty($queryData['extras']['only_shots']); // default false
 		if ($shotType == 'Groupshot') {
 			if (!in_array('assets_groups', Set::extract('/table',$queryData['joins']))){
@@ -225,6 +228,8 @@ AND includes.asset_id='{$assetId}';
 						'type'=>'LEFT',
 						'conditions'=>array('`BestShotSystem`.groupshot_id = `Shot`.id','`BestShotSystem`.user_id IS NULL'),
 					);	
+			}
+			if ($join_bestshot && !$only_bestshot_system ) {
 				$joins[] =  array(
 						'table'=>'best_groupshots',
 						'alias'=>'BestShotOwner',
@@ -251,7 +256,11 @@ AND includes.asset_id='{$assetId}';
 					'table'=>'usershots',
 					'alias'=>'Shot',		// use Shot instead of Usershot
 					'type'=>'LEFT',
-					'conditions'=>array(' `Shot`.id = `AssetsUsershot`.usershot_id','`Shot`.owner_id = `Asset`.owner_id'),
+					'conditions'=>array(
+						' `Shot`.id = `AssetsUsershot`.usershot_id',
+						// Note: this should still be Asset.owner_id for EDITOR shots
+						'`Shot`.owner_id = `Asset`.owner_id'
+					),
 				);			
 			if ($join_bestshot) {				
 				$joins[] =  array(
@@ -260,6 +269,8 @@ AND includes.asset_id='{$assetId}';
 						'type'=>'LEFT',
 						'conditions'=>array('`BestShotSystem`.usershot_id = `Shot`.id','`BestShotSystem`.user_id IS NULL'),
 					);	
+				}
+			if ($join_bestshot && !$only_bestshot_system ) {	
 				$joins[] =  array(
 						'table'=>'best_usershots',
 						'alias'=>'BestShotOwner',
@@ -284,6 +295,11 @@ AND includes.asset_id='{$assetId}';
 		if ($show_hidden_shots && !$join_bestshot) {
 			// show hidden shots, but do NOT care which ones are best
 			$conditions = array();
+		} else if ($show_hidden_shots && $join_bestshot && $only_bestshot_system ) {
+			// TODO: not fully tested, check other conditions on this tree
+			// show hidden shots, and get bestShotSytem only, for workorder processing
+			$conditions = array();
+			$fields[] = "COALESCE(`BestShotSystem`.`asset_id`) = `Asset`.`id` AS `best_shot`";
 		} else if ($show_hidden_shots && $join_bestshot) {
 			// show hidden shots, and get bestShots
 			$conditions = array();

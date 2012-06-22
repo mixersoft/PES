@@ -312,6 +312,14 @@ if (isset($this->params['url']['raw'])) {
 		
 		// $this->render('/elements/dumpSQL');
 	}	
+
+	/**
+	 * workorder version of /assets/home
+	 * 	set ACL using workorder assignment, not permissionable
+	 */
+	function snap($id=null) {
+		
+	}
 	
 }
 ?>

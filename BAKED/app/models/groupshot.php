@@ -85,6 +85,44 @@ class Groupshot extends AppModel {
 		}
 		return $top_rated['Asset']['id'];
 	}	
+	/*
+	 * TODO: clean up hack
+	 * Problem: Workorder (WMS) access is /workorders/photos/[woid], NOT /groups/photos/[group_id]
+	 * Hack: check that Assets are from the SAME owner, Asset.owner_id are ALL THE SAME
+	 * 		then use AssetsGroup.group_id as $group_id
+	 * TODO: we should really check if Asset.owner_id == Workorder.source_id
+	 * @params $assetIds array of Asset ids
+	 * @params $group_id default value
+	 */
+	private function _getGroupIdForWorkorderProcessing($assetIds, $group_id){
+		$options = array(
+			'fields'=>array('`Asset`.id'), 
+			'conditions'=>array('`Asset`.id'=>$assetIds),
+			'contain'=>array(
+				'AssetsGroup'=>array('fields'=>'`AssetsGroup`.group_id',
+					'conditions'=>array('`AssetsGroup`.group_id'=>$group_id)),
+			),
+			'recursive' => 2,
+			'order'=>'`SharedEdit`.score DESC, `Asset`.dateTaken ASC',		
+			'extras'=>array(
+				'show_edits'=>true,
+				'join_shots'=>'Groupshot', 		
+				'show_hidden_shots'=>true,
+				'join_bestshot'=>false,
+			),
+		);
+		$Asset = $this->AssetsGroupshot->Asset;
+		if (in_array('WorkorderPermissionable', $Asset->Behaviors->attached())) {
+			// TODO: match with Asset::joinWithShots()
+			$checkdata = $Asset->find('all', $options);
+			// check that all Assets have same owner_id
+debug($checkdata);			
+			$groupIds = array_unique(Set::extract('/AssetsGroup/group_id', $checkdata));
+			if (count($groupIds) == 1) {
+				return array_pop($groupIds);
+			} else return false;
+		} else return $group_id;	// default value
+	}
 	/**
 	 * groupAsShot
 	 * @param array $assetIds 
@@ -100,7 +138,7 @@ class Groupshot extends AppModel {
 		$Asset = $this->AssetsGroupshot->Asset;
 		$Asset->Behaviors->detach('Taggable');
 //		$Asset->contain('AssetsGroup.group_id');
-		// filter $assetIds to check group_id;
+		$group_id = $this->_getGroupIdForWorkorderProcessing($assetIds, $group_id);
 		$options = array(
 			'fields'=>'`Asset`.id', 
 			'conditions'=>array('`Asset`.id'=>$assetIds),
@@ -110,18 +148,24 @@ class Groupshot extends AppModel {
 			),
 			'recursive' => 2,
 			'order'=>'`SharedEdit`.score DESC, `Asset`.dateTaken ASC',		
-//			'hideHiddenShots'=>false,	// deprecated
-//			'showEdits'=>true,
 			'extras'=>array(
 				'show_edits'=>true,
 				'join_shots'=>'Groupshot', 		
 				'show_hidden_shots'=>true,
 				'join_bestshot'=>false,
 			),
-			// TODO: permissionable does NOT obey recursive or containable()
-			// TODO: not sure if we can ignore permissionable in Groups?
-			'permissionable'=>false,	
 		);
+		if (in_array('Permissionable', $Asset->Behaviors->attached())) {
+			// permissionable does NOT obey recursive or containable()
+			$options['permissionable'] = false;
+		}
+		if ($owner_id === false) {
+			$success = false;
+			$message[] = 'Groupshot->groupAsShot: Error saving shot, Asset.owner_ids do not match';
+			$resp0 = compact('success', 'message', 'response');
+			return $resp0;
+		} 
+		
 		$data = $Asset->find('all', $options);
 		$assetIds = Set::extract($data, '/Asset/id');
 	
@@ -198,6 +242,8 @@ class Groupshot extends AppModel {
 	 */
 	public function unGroupShot ($deleteShotIds) {
 		$success = false; $message=array(); $response=array();
+		
+		$group_id = $this->_getGroupIdForWorkorderProcessing($deleteShotIds, $group_id);
 		if (!empty($deleteShotIds)) {
 			// TODO: delete old/orphaned Shots using QUEUE
 			$sql_deleteCascadeShots = "
@@ -224,6 +270,7 @@ WHERE Shot.id IN ";
 	public function removeFromShot ($assetIds, $shotId) {
 		$success = false; $message=array(); $response=array();
 		if (!empty($assetIds)) {
+			
 			$assetIds_IN = "('" . join("','", $assetIds)  ."')"; 
 			// TODO: delete old/orphaned Shots using QUEUE
 			$sql_removeFromShot = "
@@ -273,16 +320,18 @@ WHERE `Shot`.id = '{$shotId}'";
 			'fields'=>array('`Asset`.id','`BestShotSystem`.`asset_id`','`BestShotSystem`.`id`'),
 			'conditions'=>array('`Shot`.id'=>$shotIds),
 			'order'=>'`SharedEdit`.score DESC, `Asset`.dateTaken ASC',	
-//			'showEdits'=>true,
 			'extras'=>array(
 				'show_edits'=>true,
 				'join_shots'=>'Groupshot', 
 				'show_hidden_shots'=>true, 
 			),
-			'permissionable'=>false,	
 		);
 		$Asset = $this->AssetsGroupshot->Asset;
 		$Asset->Behaviors->detach('Taggable');
+		if (in_array('Permissionable', $Asset->Behaviors->attached())) {
+			// permissionable does NOT obey recursive or containable()
+			$options['permissionable'] = false;
+		}
 		$data = $Asset->find('all',$options);
 // debug($data);		
 		$topScoreAsset = $data[0];

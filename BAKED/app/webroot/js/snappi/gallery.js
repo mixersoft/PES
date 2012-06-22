@@ -1101,6 +1101,20 @@
         applyShowSubstitutes: function(){
 			this.toggleSubstitutes(_Y.one('#show-substitutes'), SNAPPI.STATE.showSubstitutes);
         },		
+        /*
+         * for workorder processing by role=EDITOR/MANAGER
+         */
+        addWorkorderData: function (data){
+        	var role = SNAPPI.STATE.controller.ROLE;
+        	if (/(EDITOR|MANAGER)/.test(role)) auth = true;
+			if (!auth) return data;
+			if (/Workorders|TasksWorkorders/.test(SNAPPI.STATE.controller.name)) {
+				var woid = SNAPPI.STATE.controller.xhrFrom.uuid;
+				data['data[Workorder][type]'] = SNAPPI.STATE.controller.name; 
+				data['data[Workorder][woid]'] = woid;
+			}
+			return data;
+        },
 		/**
 		 * TODO: move to ShotController.groupAsShot(), or postGroupAsShot()
 		 * deprecate: check if lightbox.postGroupAsShot is used or lightbox.Gallery.groupAsShot
@@ -1123,6 +1137,8 @@
 				'data[shotType]' : cfg.shotType,
 				'data[uuid]': cfg.uuid	// group or person UUID
 			};
+			data = this.addWorkorderData(data);
+			
 			var uri = '/photos/shot/.json';
 			var args = {
 					aids: aids,
@@ -1230,6 +1246,7 @@
 					'data[shotType]' : cfg.shotType,
 					'data[uuid]': cfg.uuid
 				};
+			data = this.addWorkorderData(data);	
 			var uri = '/photos/shot/.json';	
 			var sort = SNAPPI.sortConfig.byTime;
 			if (/\/sort:.*\.rating/.test(SNAPPI.STATE.controller.here)) {
@@ -1348,6 +1365,7 @@
 					'data[shotType]' : cfg.shotType,
 					'data[uuid]': cfg.uuid
 				};
+			data = this.addWorkorderData(data);	
 			var uri = '/photos/shot/.json';	
 			var sort = SNAPPI.sortConfig.byTime;
 			if (/\/sort:.*\.rating/.test(SNAPPI.STATE.controller.here)) {
@@ -1514,6 +1532,7 @@
 					'data[shotType]' : cfg.shotType,
 					'data[setBestshot]': 1
 			};
+			data = this.addWorkorderData(data);
 			var uri = '/photos/setprop/.json';	
 			var args = {
 				thumbnail: selected, 

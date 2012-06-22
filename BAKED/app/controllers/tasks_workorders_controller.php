@@ -30,7 +30,8 @@ class TasksWorkordersController extends AppController {
 			'extras'=>array(
 				'show_edits'=>true,
 				'join_shots'=>'Groupshot', 
-				'show_hidden_shots'=>false
+				'show_hidden_shots'=>false,
+				'group_as_shot_permission'=>'Groupshot',
 			),
 			// 'extras'=>array(
 				// 'show_edits'=>true,
@@ -64,7 +65,8 @@ class TasksWorkordersController extends AppController {
 			'extras'=>array(
 				'show_edits'=>true,
 				'join_shots'=>'Usershot', 
-				'show_hidden_shots'=>false
+				'show_hidden_shots'=>false,
+				'group_as_shot_permission'=>'Usershot',
 			),
 			// 'extras'=>array(
 				// 'show_edits'=>true,
@@ -143,7 +145,24 @@ debug($assets);
 		$Model = ClassRegistry::init($paginateModel);
 		$this->paginate[$paginateModel] = $this->paginate[$SOURCE_MODEL.$paginateModel];
 		$Model->Behaviors->attach('Pageable');
-		$paginateArray = $Model->getPaginatePhotosByTasksWorkorderId($id, $this->paginate[$paginateModel]);
+		$Model->Behaviors->attach('WorkorderPermissionable', array('type'=>$this->modelClass, 'uuid'=>$id));
+		// $paginateArray = $Model->getPaginatePhotosByTasksWorkorderId($id, $this->paginate[$paginateModel]);
+		$paginateArray = $this->paginate[$paginateModel];
+		
+/*
+ * operator options
+ *   	raw = hide_SharedEdits=1;show_hidden_shots=0
+ * 		= hide score, editor not influenced by existing score
+ * 		= show ONLY UserEdit.rating, by AppController::userid
+ * 		= show hidden shots, why? for training sets, but required for workorders?
+ * 		?? = join to BestShotSystem only, for workorder processing?
+ * 		
+ */  	
+if (!empty($this->params['url']['raw'])) {
+	$paginateArray['extras']['show_hidden_shots']=0;
+	$paginateArray['extras']['hide_SharedEdits']=1;
+	$paginateArray['extras']['bestshot_system_only']=1;
+}	
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = $this->paginate($paginateModel);

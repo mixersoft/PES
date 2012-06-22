@@ -71,11 +71,46 @@ class Usershot extends AppModel {
 		}
 		return $top_rated['Asset']['id'];
 	}
+	/*
+	 * TODO: clean up hack
+	 * Problem: Workorder (WMS) access is /workorders/photos/[woid], NOT /person/photos/[owner_id]
+	 * Hack: check that Assets are from the SAME owner, Asset.owner_id are ALL THE SAME
+	 * 		then use Asset.owner_id as $owner_id
+	 * TODO: we should really check if Asset.owner_id == Workorder.source_id
+	 * @params $assetIds array of Asset ids
+	 * @params $owner_id default value
+	 */
+	private function _getOwnerIdForWorkorderProcessing($assetIds, $owner_id){
+		$options = array(
+			'fields'=>array('`Asset`.id','`Asset`.owner_id'), 
+			'conditions'=>array('`Asset`.id'=>$assetIds),
+			'order'=>'`SharedEdit`.score DESC, `Asset`.dateTaken ASC',		
+			'extras'=>array(
+				'show_edits' => true,
+				'join_shots'=>'Usershot', 
+				'show_hidden_shots'=>true,
+				'join_bestshot'=>false,
+			),  //default
+		);
+		$Asset = $this->AssetsUsershot->Asset;
+		if (in_array('WorkorderPermissionable', $Asset->Behaviors->attached())) {
+			// TODO: match with Asset::joinWithShots()
+			$checkdata = $Asset->find('all', $options);
+			// check that all Assets have same owner_id
+			$ownerIds = array_unique(Set::extract('/Asset/owner_id', $checkdata));
+			if (count($ownerIds) == 1) {
+				return array_pop($ownerIds);
+			} else return false;
+		} else return $owner_id;	// default value
+	}
 	/**
 	 * groupAsShot
 	 * @param array $assetIds 
 	 * @param string $owner_id - uuid of assets' owner, AppController::$ownerid, from 'acts_as_owner'
 	 * 		taken from /person/photos/[$uuid], used by ROLE=EDITOR/MANAGER/ADMIN/ROOT
+	 * TODO: how do you get this value for workorders? $uuid is woid...
+	 * 		need Workorder.source_id, 
+	 * 		hack: check that Asset.owner_id are all the same with array_unique(), use this value 
 	 * @param string $bestshot_ownerId
  	 * 		sets BestShotOwner when same as AppController::$userid
 	 * @return array('shotId', 'bestshotId')  or FALSE on error
@@ -89,10 +124,8 @@ class Usershot extends AppModel {
 		$Asset->contain();
 		// filter $assetIds to check owner_id;
 		$options = array(
-			'fields'=>'`Asset`.id', 
-			'conditions'=>array('`Asset`.id'=>$assetIds, 
-				'`Asset`.owner_id'=>$owner_id
-			),
+			'fields'=>array('`Asset`.id','`Asset`.owner_id'), 
+			'conditions'=>array('`Asset`.id'=>$assetIds),
 			'order'=>'`SharedEdit`.score DESC, `Asset`.dateTaken ASC',		
 			'extras'=>array(
 				'show_edits' => true,
@@ -100,12 +133,21 @@ class Usershot extends AppModel {
 				'show_hidden_shots'=>true,
 				'join_bestshot'=>false,
 			),  //default
-			// TODO: permissionable does NOT obey recursive or containable()
-			'permissionable'=>false,	
 		);
-		$data = $Asset->find('all', $options);
+		if (in_array('Permissionable', $Asset->Behaviors->attached())) {
+			// permissionable does NOT obey recursive or containable()
+			$options['permissionable'] = false;
+		}
+		$owner_id = $this->_getOwnerIdForWorkorderProcessing($assetIds, $owner_id);
+		if ($owner_id === false) {
+			$success = false;
+			$message[] = 'Usershot->groupAsShot: Error saving shot, Asset.owner_ids do not match';
+			$resp0 = compact('success', 'message', 'response');
+			return $resp0;
+		} 
+		$options['conditions']['`Asset`.owner_id'] = $owner_id;
+		$data = $Asset->find('all', $options);	// should be cached on Workorder Processing
 		$assetIds = Set::extract('/Asset/id', $data);
-// debug($assetIds);		
 
 
 		/*
@@ -129,7 +171,7 @@ class Usershot extends AppModel {
 		// create Usershot
 		// add assetIds to AssetsUsershot
 		$insert = array();
-		$insert['Usershot']['owner_id'] = $owner_id;
+		$insert['Usershot']['owner_id'] = $owner_id; // MUST be Asset.owner_id, see Asset::joinWithShots();
 		foreach ($assetIds as $assetId) {
 			$insert['AssetsUsershot'][]['asset_id'] = $assetId;
 		}		
@@ -178,11 +220,20 @@ class Usershot extends AppModel {
 	/**
 	 * remove Delete Shot and related AssetsShots, BestShots
 	 * @param array $deleteShotIds array of UUIDs
-	 * @param string $owner_id - uuid of assets' owner, usually AppController::$ownerid, unless EDITOR
+	 * @param string $owner_id - uuid of assets' owner, usually AppController::$ownerid
+	 * TODO: is $owner_id still requried in the context of Workorder Processing?
 	 * @return false on error
 	 */
 	public function unGroupShot ($deleteShotIds, $owner_id) {
 		$success = false; $message=array(); $response=array();
+		
+		$owner_id = $this->_getOwnerIdForWorkorderProcessing($deleteShotIds, $owner_id);
+		if ($owner_id === false) {
+			$success = false;
+			$message[] = 'Usershot->unGroupShot: Error saving shot, Asset.owner_ids do not match';
+			return compact('success', 'message', 'response');
+		} 
+		
 		if (!empty($deleteShotIds)) {
 			// TODO: delete old/orphaned Shots using QUEUE
 			$sql_deleteCascadeShots = "
@@ -211,6 +262,14 @@ WHERE `Shot`.owner_id = '{$owner_id}' AND `Shot`.id IN ";
 	public function removeFromShot ($assetIds, $shotId, $owner_id) {
 		$success = false; $message=array(); $response=array();
 		if (!empty($assetIds)) {
+
+			$owner_id = $this->_getOwnerIdForWorkorderProcessing($assetIds, $owner_id);
+			if ($owner_id === false) {
+				$success = false;
+				$message[] = 'Usershot->removeFromShot: Error saving shot, Asset.owner_ids do not match';
+				return compact('success', 'message', 'response');
+			} 
+				
 			$assetIds_IN = "('" . join("','", $assetIds)  ."')"; 
 			// TODO: delete old/orphaned Shots using QUEUE
 			$sql_removeFromShot = "
@@ -260,16 +319,18 @@ WHERE `Shot`.id = '{$shotId}' AND `Shot`.owner_id = '{$owner_id}'";
 			'fields'=>array('`Asset`.id','`BestShotSystem`.`id`','`BestShotSystem`.`asset_id`','`BestShotSystem`.`id`'),
 			'conditions'=>array('`Shot`.id'=>$shotIds),
 			'order'=>'`SharedEdit`.score DESC, `Asset`.dateTaken ASC',	
-//			'showEdits'=>true,
 			'extras'=>array(
 				'show_edits'=>true,
 				'join_shots'=>'Usershot', 
 				'show_hidden_shots'=>true, 
 			),
-			'permissionable'=>false,	
 		);
 		$Asset = $this->AssetsUsershot->Asset;
 		$Asset->Behaviors->detach('Taggable');
+		if (in_array('Permissionable', $Asset->Behaviors->attached())) {
+			// permissionable does NOT obey recursive or containable()
+			$options['permissionable'] = false;
+		}
 		$data = $Asset->find('all',$options);
 		$topScoreAsset = $data[0];
 		$model = 'BestUsershotSystem';

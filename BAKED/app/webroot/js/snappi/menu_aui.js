@@ -22,7 +22,9 @@
 			'menu-uploader-folder-markup': CFG_Menu_Uploader_Folder,
 			// context menus
 			'contextmenu-photoroll-markup': CFG_Context_Photoroll,
+			'contextmenu-photoroll-markup-workorder': CFG_Context_Photoroll,
 			'contextmenu-hiddenshot-markup': CFG_Context_HiddenShot,
+			'contextmenu-hiddenshot-markup-workorder': CFG_Context_HiddenShot,
 			'contextmenu-group-markup': CFG_Context_FigureBox,		
 			'contextmenu-person-markup': CFG_Context_FigureBox,
 			'contextmenu-collection-markup': CFG_Context_FigureBox,
@@ -365,10 +367,15 @@ console.log("delegateHost="+delegateHost._yuid);
 	var MenuItems = function(){}; 
 	MenuItems.confirmAuth = function(menuItem){
 		try { // authenticated
-			if (!SNAPPI.STATE.controller.userid) {
+			var auth = false,
+				role = SNAPPI.STATE.controller.ROLE;
+			if (SNAPPI.STATE.controller.userid) auth = true;
+			if (/(EDITOR|MANAGER)/.test(role)) auth = true;
+			if (!auth) {
 				menuItem.addClass('disabled').set('title', 'Sign in to perform this action'); 
 				return false;	
-			} return true;
+			}
+			return true;
 		} catch(e){
 			return false;
 		}
@@ -834,6 +841,23 @@ console.log("delegateHost="+delegateHost._yuid);
 		var thumbnail = menu.get('currentNode');	// target
 		var g = MenuItems.getGalleryFromTarget(thumbnail);
 		var linkTo = thumbnail.one('img').getAttribute('linkTo');
+		if (g.castingCall.CastingCall) {
+        	linkTo += '?ccid=' + g.castingCall.CastingCall.ID;
+			try {
+				var shotType = gcastingCall.CastingCall.Auditions.ShotType;
+				if (shotType == 'Groupshot'){
+					linkTo += '&shotType=Groupshot';
+				}
+			} catch (e) {}
+        }
+		window.location.href = linkTo;
+	}
+	MenuItems.workorder_linkTo_click = function(menuItem, menu, e){
+		// menu.hide();
+		var thumbnail = menu.get('currentNode');	// target
+		var g = MenuItems.getGalleryFromTarget(thumbnail);
+		var linkTo = thumbnail.one('img').getAttribute('linkTo');
+		linkTo = linkTo.replace('/photos/home', '/workorders/snap');
 		if (g.castingCall.CastingCall) {
         	linkTo += '?ccid=' + g.castingCall.CastingCall.ID;
 			try {
@@ -1633,7 +1657,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	 * @return
 	 */
 	CFG_Context_Photoroll.load = function(cfg){
-		var CSS_ID = 'contextmenu-photoroll-markup';
+		var CSS_ID = cfg.CSS_ID || 'contextmenu-photoroll-markup';
 		var TRIGGER = ' .FigureBox';
 		var defaultCfg = {
 				// constrain: true,
@@ -1646,6 +1670,9 @@ console.log("delegateHost="+delegateHost._yuid);
 				container: _Y.one('#markup'),
 				uri: '/combo/markup/photoRollContextMenu',
 		};
+		// self-document XHR request for debugging
+		if (cfg.CSS_ID) MARKUP.uri += '?id='+ cfg.CSS_ID;
+		
 		// reuse, if found
 		if (Menu.find[CSS_ID]) 
 			return Menu.find[CSS_ID];

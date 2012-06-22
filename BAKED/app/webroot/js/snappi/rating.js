@@ -471,7 +471,12 @@ if (!_Y) {
 	 * @params cfg.callbacks
 	 */
 	AssetRatingController.setProp = function(container, cfg){
-		var uri = "/photos/setprop/.json";
+		var uri;
+		if (SNAPPI.STATE.controller.class == 'workorder') {
+			uri = "/workorders/setprop/.json";
+		} else {
+			uri = "/photos/setprop/.json";
+		}
 		var postData = {
 			'data[Asset][id]' : cfg.ids,
 		};	
@@ -484,7 +489,7 @@ if (!_Y) {
 			postKey = 'data['+k+']';
 			postData[postKey] = cfg.actions[k];
 		}
-		
+		postData = AssetRatingController.addWorkorderData(postData);
     	/*
 		 * plugin _Y.Plugin.IO
 		 */
@@ -537,6 +542,17 @@ if (!_Y) {
 		container.loadingmask.show();		//DEBUG: loadingmask is NOT showing here
 		container.io.start();			
 	}
+	AssetRatingController.addWorkorderData = function (data){
+    	var role = SNAPPI.STATE.controller.ROLE;
+    	if (/(EDITOR|MANAGER)/.test(role)) auth = true;
+		if (!auth) return data;
+		if (/Workorders|TasksWorkorders/.test(SNAPPI.STATE.controller.name)) {
+			var woid = SNAPPI.STATE.controller.xhrFrom.uuid;
+			data['data[Workorder][type]'] = SNAPPI.STATE.controller.name; 
+			data['data[Workorder][woid]'] = woid;
+		}
+		return data;
+   	};
 	AssetRatingController.postRating = function(value, ids, r, options) {
 		// r = SNAPPI.Rating, node = r.node. for cleanup of loadingMask?
 			var node = r.node;

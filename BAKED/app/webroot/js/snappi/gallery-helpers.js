@@ -208,12 +208,17 @@
         	}
         	if (g.node.hasClass('hiddenshots') || g.node.hasClass('hidden-shot')) {
         		CSS_ID = 'contextmenu-hiddenshot-markup';
+        	}
+        	
+        	if (SNAPPI.STATE.controller.class=='Workorder') {
+        		CSS_ID += '-workorder';
         	} 
         	
         	// load/toggle contextmenu
         	if (!SNAPPI.MenuAUI.find[CSS_ID]) {
         		var contextMenuCfg = {
         			// triggerType: 'photo',				// .gallery.photo
+        			CSS_ID: CSS_ID,
         			triggerRoot: g.container,
         			currentTarget:e.currentTarget,
         			init_hidden: false,

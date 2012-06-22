@@ -1213,6 +1213,11 @@ debug("WARNING: This code path is not tested");
 	/**
 	 * @params $this->data[Asset][id] string (optional), Comma delim string of Asset UUIDs
 	 * @params $this->data[Asset][batchId] string (optional), Comma delim string of Asset batchIds
+	 * 
+	 * for Workorder edits, add the following qs params for WorkorderPermissionable access
+	 * 		data[Workorder][type] = ['Workorder' | 'TasksWorkorder' ]
+	 *		data[Workorder][woid] = [uuid] Workorder.id or TasksWorkorder.id
+	 * 
 	 */
 	function setprop(){
 		$forceXHR = setXHRDebug($this, 0, 1);
@@ -1246,6 +1251,7 @@ debug("WARNING: This code path is not tested");
 					 */
 					$this->Asset->contain('ProviderAccount');
 					$options = array(
+						'fields'=>'`Asset`.*',
 						'conditions'=>array('Asset.id'=>$aid),
 						'extras' => array(
 							'join_shots'=>false,	// get ALL photos
@@ -1255,12 +1261,21 @@ debug("WARNING: This code path is not tested");
 						$options['extras']['show_edits'] = true;
 					}
 					if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
-						// TODO: incomplete. Should check for Workorder assignment to EDITOR
-						$this->Asset->disablePermissionable(true);
-						$options['fields']='Asset.*';
+						extract($this->data['Workorder']);
+						// data[Workorder][type] = [Workorder|TasksWorkorder]
+						// data[Workorder][woid] = [uuid]
+						if (isset($type) && isset($woid)) {
+							$this->Asset->Behaviors->attach('WorkorderPermissionable', array('type'=>$type, 'uuid'=>$woid));
+						}
 					}
 					$data = $this->Asset->find('first',$options);
-					$asset_hash = $data['Asset']['asset_hash'];
+					if (empty($data)) {
+						// possible no permission on Asset
+						 $response[$aid] = "Asset not found, uuid={$aid}. check permissions.";
+						 $ret = 0;
+						 continue;
+					}
+ 					$asset_hash = $data['Asset']['asset_hash'];
 					// get asset_hash for each asset. why?
 					
 					//TODO: consolidate all Asset operations into one SQL stmt
@@ -1445,6 +1460,21 @@ $this->log("WARNING: json_exif['preview']['imageWidth'] may need to be scaled, i
 		if ($this->RequestHandler->isAjax() || $forceXHR) {		
 			$this->layout='ajax';
 			$this->autoRender=false;
+			
+		/*
+		 * detect Workorder, setup WorkorderPermissionable
+		 */	
+// TODO: move to beforeFilter? 
+if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
+	extract($this->data['Workorder']);
+	// data[Workorder][type] = [Workorder|TasksWorkorder]
+	// data[Workorder][woid] = [uuid]
+	if (isset($type) && isset($woid)) {
+		$this->Asset->Behaviors->attach('WorkorderPermissionable', array('type'=>$type, 'uuid'=>$woid));
+		$bestshot_ownerId = AppController::$ownerid;  // show owner's bestshots ???
+		$uuid =  AppController::$ownerid;
+	}
+}	
 
 			/*
 			 * use this sample data to test a post
@@ -1555,10 +1585,12 @@ $this->log("WARNING: json_exif['preview']['imageWidth'] may need to be scaled, i
 	 */
 	function __groupAsShot( $assetIds, $uuid, $shotType='Usershot', $shotId = null,  $bestshot_ownerId = null ){
 //debug('/photos/setprop: groupAsShot');		
+		if ($bestshot_ownerId = null) $bestshot_ownerid = AppController::$userid;
 		/*
 		 * TODO: snappi Editors must set $owner_id to Asset owner, NOT Auth user
 		 */
-		if ($bestshot_ownerId = null) $bestshot_ownerid = AppController::$userid;
+	 
+// debug($shotType);		
 		switch ($shotType) {
 			case 'Usershot':
 				$Usershot = ClassRegistry::init('Usershot');
