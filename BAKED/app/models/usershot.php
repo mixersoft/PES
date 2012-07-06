@@ -96,6 +96,7 @@ class Usershot extends AppModel {
 		if (in_array('WorkorderPermissionable', $Asset->Behaviors->attached())) {
 			// TODO: match with Asset::joinWithShots()
 			$checkdata = $Asset->find('all', $options);
+// debug($checkdata);			
 			// check that all Assets have same owner_id
 			$ownerIds = array_unique(Set::extract('/Asset/owner_id', $checkdata));
 			if (count($ownerIds) == 1) {
@@ -182,7 +183,9 @@ class Usershot extends AppModel {
 			// WARNING: assumes hiddenShot assets are ALL lower rated than visible shots
 			$insert['BestUsershotSystem']['asset_id'] = $assetIds[0];
 			// now sort by UserEdit.rating, then SharedEdit.score DESC
-			if ($bestshot_ownerId == AppController::$userid) {
+			if ($bestshot_ownerId == AppController::$userid 
+				||  in_array('WorkorderPermissionable', $Asset->Behaviors->attached())
+			) {
 				// set BestUsershotOwner by UserEdit.rating	
 				$bestshotAlias='BestUsershotOwner';
 			} else {
@@ -191,7 +194,6 @@ class Usershot extends AppModel {
 			}
 			$insert[$bestshotAlias]['asset_id'] = $this->_getTopRatedByRatingScore($data);
 			$insert[$bestshotAlias]['user_id'] = $bestshot_ownerId;
-			
 			// save to AssetsUsershot, BestUsershot, etc.
 			$ret = $this->saveAll($insert, array('validate'=>'first'));
 		} 
@@ -220,20 +222,10 @@ class Usershot extends AppModel {
 	/**
 	 * remove Delete Shot and related AssetsShots, BestShots
 	 * @param array $deleteShotIds array of UUIDs
-	 * @param string $owner_id - uuid of assets' owner, usually AppController::$ownerid
-	 * TODO: is $owner_id still requried in the context of Workorder Processing?
 	 * @return false on error
 	 */
-	public function unGroupShot ($deleteShotIds, $owner_id) {
+	public function unGroupShot ($deleteShotIds) {
 		$success = false; $message=array(); $response=array();
-		
-		$owner_id = $this->_getOwnerIdForWorkorderProcessing($deleteShotIds, $owner_id);
-		if ($owner_id === false) {
-			$success = false;
-			$message[] = 'Usershot->unGroupShot: Error saving shot, Asset.owner_ids do not match';
-			return compact('success', 'message', 'response');
-		} 
-		
 		if (!empty($deleteShotIds)) {
 			// TODO: delete old/orphaned Shots using QUEUE
 			$sql_deleteCascadeShots = "
@@ -241,7 +233,7 @@ DELETE FROM `Shot`, `Best`, `AssetsShots`
 USING `usershots` AS `Shot`
 INNER JOIN `best_usershots` AS `Best` ON (`Best`.usershot_id = `Shot`.id)
 INNER JOIN `assets_usershots` AS `AssetsShots` ON (`AssetsShots`.usershot_id = `Shot`.id)
-WHERE `Shot`.owner_id = '{$owner_id}' AND `Shot`.id IN ";
+WHERE `Shot`.id IN ";
 			$sql_deleteCascadeShots .= "('".implode("','",$deleteShotIds)."')";
 			$ret = $this->query($sql_deleteCascadeShots); // always true
 		} 

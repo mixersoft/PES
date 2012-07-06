@@ -1106,11 +1106,11 @@
          */
         addWorkorderData: function (data){
         	var role = SNAPPI.STATE.controller.ROLE;
-        	if (/(EDITOR|MANAGER)/.test(role)) auth = true;
+        	var auth = /(EDITOR|MANAGER)/.test(role);
 			if (!auth) return data;
-			if (/Workorders|TasksWorkorders/.test(SNAPPI.STATE.controller.name)) {
+			if (/Workorder|TasksWorkorder/.test(SNAPPI.STATE.controller['class'])) {
 				var woid = SNAPPI.STATE.controller.xhrFrom.uuid;
-				data['data[Workorder][type]'] = SNAPPI.STATE.controller.name; 
+				data['data[Workorder][type]'] = SNAPPI.STATE.controller['class']; 
 				data['data[Workorder][woid]'] = woid;
 			}
 			return data;
@@ -1458,7 +1458,7 @@
 				if (!photoGallery) {
 					// still not found, try to find by CSS
 					photoGallery = _Y.one('section#nav-filmstrip .gallery.photo');
-					if (!photoGallery) photoGallery = _Y.one('.gallery-contaienr .gallery.photo');				
+					if (!photoGallery) photoGallery = _Y.one('.gallery-container .gallery.photo');				
 					if (photoGallery && photoGallery.Gallery) photoGallery = photoGallery.Gallery;
 				}
 

@@ -180,8 +180,8 @@ $previewOrientation = 	isset($exif['preview']['Orientation']) ? $exif['preview']
 		$Fix = compact('Crops', 'Rating', 'Rotate', 'Scrub', 'Score', 'Votes');
 		$AutoRender = ($row['provider_name']=='snappi');
 		$Caption = (!empty($row['caption'])) ? $row['caption'] : '';
-		
-
+		$OwnerId = $row['owner_id'];
+		$ProviderAccountId = $row['provider_account_id'];
 		$CameraId = (!empty($row['cameraId'])) ? $row['cameraId'] : '';
 //		$IsFlash = (!empty($row['isFlash'])) ? $row['isFlash'] : ''; // same as $ExifFlash
 //		$IsRGB = (!empty($row['isRGB'])) ? $row['isRGB'] : '';		 // same as ExifOrientation
@@ -195,6 +195,7 @@ $previewOrientation = 	isset($exif['preview']['Orientation']) ? $exif['preview']
 			 * extended properties
 			 */
 	//		'IsFlash','IsRGB','UploadId',
+			'OwnerId', 'ProviderAccountId',
 			'BatchId','Keyword','Created'
 		);
 		if (isset($row['asset_count'])) {

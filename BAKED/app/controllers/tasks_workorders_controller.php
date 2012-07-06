@@ -3,7 +3,7 @@ class TasksWorkordersController extends AppController {
 
 	public $name = 'TasksWorkorders';
 	public $layout = 'snappi';
-
+	
 	public static $test = array();
 	function __construct() {
        parent::__construct();
@@ -80,6 +80,36 @@ class TasksWorkordersController extends AppController {
 		),	
 	);
 	
+	function beforeFilter(){
+		parent::beforeFilter();
+		// TODO: add ACLs for TasksWorkorder
+		$this->Auth->allow('*');
+		if (!empty($this->passedArgs[0])) {
+			$this->__saveWorkorderToSession($this->passedArgs[0]);
+		}	
+	}
+	
+	function __saveWorkorderToSession($twoid){
+		$options = array(
+			'contain'=>array('Workorder'),
+			'conditions'=>array('TasksWorkorder.id'=>$twoid),
+		);
+		$row = $this->TasksWorkorder->find('first', $options);
+		if (empty($row)) return;
+		
+		// Save active Workorder to Session for POST processing through other controllers 
+		Session::write("WMS.{$twoid}.Workorder", $row['Workorder']);
+		$this->__setOwnerId($twoid, $row);
+	}
+	
+	function __setOwnerId ($twoid, $data=null){
+		// Save active Workorder to Session for POST processing through other controllers 
+		if (empty($data)) $data = Session::read("WMS.{$twoid}");
+		if ($data['Workorder']['source_model']=='User') AppController::$ownerid = $data['Workorder']['source_id']; 
+		if ($data['Workorder']['source_model']=='Group') AppController::$ownerid = $data['Workorder']['client_id'];
+	}
+	
+	
 	function assign($wo_task_id = null) {
 		$EDITOR = TasksWorkordersController::$test['editor'] ;
 		$WOID = TasksWorkordersController::$test['person']['woid'];
@@ -138,15 +168,14 @@ debug($assets);
 			'conditions'=>array('TasksWorkorder.id'=>$id)
 		);
 		$data = $this->TasksWorkorder->find('first', $options);
-		
+
 		// paginate 
-		$SOURCE_MODEL = $data['Workorder']['source_model'];
+		$SOURCE_MODEL = Session::read("WMS.{$id}.Workorder.source_model"); // TasksWorkordersController::$source_model;
 		$paginateModel = 'Asset';
 		$Model = ClassRegistry::init($paginateModel);
 		$this->paginate[$paginateModel] = $this->paginate[$SOURCE_MODEL.$paginateModel];
 		$Model->Behaviors->attach('Pageable');
 		$Model->Behaviors->attach('WorkorderPermissionable', array('type'=>$this->modelClass, 'uuid'=>$id));
-		// $paginateArray = $Model->getPaginatePhotosByTasksWorkorderId($id, $this->paginate[$paginateModel]);
 		$paginateArray = $this->paginate[$paginateModel];
 		
 /*
@@ -159,7 +188,7 @@ debug($assets);
  * 		
  */  	
 if (!empty($this->params['url']['raw'])) {
-	$paginateArray['extras']['show_hidden_shots']=0;
+	$paginateArray['extras']['show_hidden_shots']=1;
 	$paginateArray['extras']['hide_SharedEdits']=1;
 	$paginateArray['extras']['bestshot_system_only']=1;
 }	

@@ -1223,6 +1223,9 @@ debug("WARNING: This code path is not tested");
 		$forceXHR = setXHRDebug($this, 0, 1);
 		$success = true; $message=array(); $response=array();
 		$resp0 = compact('success', 'message', 'response'); 
+		if (in_array('Taggable', $this->Asset->Behaviors->attached()) ) {
+			$this->Asset->Behaviors->detach('Taggable');	
+		}
 		if ($this->RequestHandler->isAjax() || $forceXHR) {		
 			$this->layout='ajax';
 			$this->autoRender=false;
@@ -1233,6 +1236,18 @@ debug("WARNING: This code path is not tested");
 			//					$this->data['Asset']['id']='4bbb3976-a080-44f5-84c8-11a0f67883f5';
 			//					$this->data['Asset']['rating']=4;
 			if ($this->data) {
+				
+				if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
+					extract($this->data['Workorder']);
+					// data[Workorder][type] = [Workorder|TasksWorkorder]
+					// data[Workorder][woid] = [uuid]
+					if (isset($type) && isset($woid)) {
+						$this->Asset->Behaviors->attach('WorkorderPermissionable', array('type'=>$type, 'uuid'=>$woid));
+						$wms = Session::read("WMS.{$woid}");
+						$bestshot_ownerId = $wms['Workorder']['source_id'];  // set Bestshot owner to client_id
+					}
+				}
+				
 				// check write permission????
 				$fields = array_keys($this->data['Asset']);
 				if (!empty($this->data['Asset']['id'])) {			
@@ -1249,10 +1264,11 @@ debug("WARNING: This code path is not tested");
 					/*
 					 * one asset_id per DB call
 					 */
-					$this->Asset->contain('ProviderAccount');
+					// $this->Asset->contain('ProviderAccount');
 					$options = array(
 						'fields'=>'`Asset`.*',
 						'conditions'=>array('Asset.id'=>$aid),
+						'contain'=>'ProviderAccount',
 						'extras' => array(
 							'join_shots'=>false,	// get ALL photos
 						),
@@ -1260,14 +1276,14 @@ debug("WARNING: This code path is not tested");
 					if (in_array('rating', $fields)) {
 						$options['extras']['show_edits'] = true;
 					}
-					if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
-						extract($this->data['Workorder']);
-						// data[Workorder][type] = [Workorder|TasksWorkorder]
-						// data[Workorder][woid] = [uuid]
-						if (isset($type) && isset($woid)) {
-							$this->Asset->Behaviors->attach('WorkorderPermissionable', array('type'=>$type, 'uuid'=>$woid));
-						}
-					}
+					// if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
+						// extract($this->data['Workorder']);
+						// // data[Workorder][type] = [Workorder|TasksWorkorder]
+						// // data[Workorder][woid] = [uuid]
+						// if (isset($type) && isset($woid)) {
+							// $this->Asset->Behaviors->attach('WorkorderPermissionable', array('type'=>$type, 'uuid'=>$woid));
+						// }
+					// }
 					$data = $this->Asset->find('first',$options);
 					if (empty($data)) {
 						// possible no permission on Asset
@@ -1414,13 +1430,13 @@ $this->log("WARNING: json_exif['preview']['imageWidth'] may need to be scaled, i
 				if (!empty($this->data['updateBestshot']) && count($updateBestShot_assetIds)) {
 					// updateBestshot
 					$Usershot = ClassRegistry::init('Usershot');
-					$Usershot->updateBestShotFromTopRated(AppController::$ownerid, null, $updateBestShot_assetIds); 
+					$Usershot->updateBestShotFromTopRated($bestshot_ownerId, null, $updateBestShot_assetIds); 
 					$Groupshot = ClassRegistry::init('Groupshot');
-					$Groupshot->updateBestShotFromTopRated(AppController::$userid, null, $updateBestShot_assetIds); 
+					$Groupshot->updateBestShotFromTopRated($bestshot_ownerId, null, $updateBestShot_assetIds); 
 				}
 				if (!empty($this->data['setBestshot'])) {
 					$Shot = ClassRegistry::init($this->data['shotType']);
-					$Shot->setBestshot(AppController::$userid, $this->data['Shot']['id'], $this->data['Asset']['id'] );
+					$Shot->setBestshot($bestshot_ownerId, $this->data['Shot']['id'], $this->data['Asset']['id'] );
 					$ret = true;
 				}
 
@@ -1457,10 +1473,12 @@ $this->log("WARNING: json_exif['preview']['imageWidth'] may need to be scaled, i
 		$forceXHR = setXHRDebug($this, 0);
 		$success = true; $message=$response=array();
 		$resp0 = compact('success', 'message', 'response'); 
+		if (in_array('Taggable', $this->Asset->Behaviors->attached()) ) {
+			$this->Asset->Behaviors->detach('Taggable');	
+		}
 		if ($this->RequestHandler->isAjax() || $forceXHR) {		
 			$this->layout='ajax';
 			$this->autoRender=false;
-			
 		/*
 		 * detect Workorder, setup WorkorderPermissionable
 		 */	
@@ -1471,8 +1489,8 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 	// data[Workorder][woid] = [uuid]
 	if (isset($type) && isset($woid)) {
 		$this->Asset->Behaviors->attach('WorkorderPermissionable', array('type'=>$type, 'uuid'=>$woid));
-		$bestshot_ownerId = AppController::$ownerid;  // show owner's bestshots ???
-		$uuid =  AppController::$ownerid;
+		$wms = Session::read("WMS.{$woid}");
+		$bestshot_ownerId = $wms['Workorder']['source_id'];  // set Bestshot owner to client_id
 	}
 }	
 
@@ -1503,11 +1521,12 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 				 */								
 				// group Assets into a Shot
 				if (in_array('group', $fields) ) {
-					// update substitution group
+					// update bestShot group
 					$shotId = null;
 					$shotType = $this->data['shotType'];
-					$uuid =  $this->data['uuid'];	
-					$resp1 = $this->__groupAsShot($aids, $uuid, $shotType, $shotId);
+					$uuid =  $this->data['uuid'];
+					
+					$resp1 = $this->__groupAsShot($aids, $uuid, $shotType, $shotId, $bestshot_ownerId);
 					$success = $success && $resp1['success'];
 					$resp0 = Set::merge($resp0, $resp1);
 					$resp0['success'] = $success;
@@ -1519,9 +1538,9 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 						// ungroup the entire shot
 						$shotIds = explode(',',$this->data['Shot']['id']);
 						$shotType = $this->data['shotType'];
-						$uuid = ($shotType == 'Usershot') ? $this->data['uuid'] : null;
+						$shot_owner_id = ($shotType == 'Usershot') ? $this->data['uuid'] : null;
 						$hiddenShot_CC  = $this->__hiddenShots($shotIds, $shotType);
-						$resp1 = $this->__ungroupShot($shotIds, $shotType, $uuid);
+						$resp1 = $this->__ungroupShot($shotIds, $shotType, $aids);
 						$success = $success && $resp1['success'];
 						if ($resp1['success']) {
 							// add hiddenShots back to photoroll using castingcall
@@ -1545,10 +1564,16 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 						$aids = explode(',',$this->data['Asset']['id']);
 						$shotId = $this->data['Shot']['id'];
 						$shotType = $this->data['shotType'];
-						$uuid = ($shotType == 'Usershot') ? $this->data['uuid'] : null;
+						$hasPerm = $this->Asset->hasPerm($aids, 'removeFromShot', $shotType);
+						$aids = $hasPerm[true]; // just drop no perm $assetIds
+						if (!empty($hasPerm[false])) {
+							$resp0['message'][] = "Warning: no permissions on aid=".explode(','.$hasPerm[false]);	
+						}
+						$shot_owner_id = ($shotType == 'Usershot') ? $this->data['uuid'] : null;
+						$currentTarget_aid = $aids[0];
 						// if data[Asset][id], just remove $aids from the Group
 						// update isBest for remaining Group
-						$resp1 = $this->__removeFromShot($aids, $shotId, $shotType, $uuid);
+						$resp1 = $this->__removeFromShot($aids, $shotId, $shotType, $shot_owner_id, $currentTarget_aid);
 						$success = $success && $resp1['success'];
 						$resp0 = Set::merge($resp0, $resp1);
 						$resp0['success'] = $success;
@@ -1580,23 +1605,25 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 	 * @params $uuid string, Usershot=owner_id, Groupshot=group_id 
 	 * @params $shotType string, [Usershot | Groupshot]
 	 * @params $shotId string, uuid of shot, null to create new shot
-	 * @params $userid string, for BestShotOwner, logged in user 
+	 * @params $bestshot_ownerId string, for BestShotOwner, logged in user 
 	 * @return array('shotId', 'bestshotId') or false
 	 */
 	function __groupAsShot( $assetIds, $uuid, $shotType='Usershot', $shotId = null,  $bestshot_ownerId = null ){
 //debug('/photos/setprop: groupAsShot');		
-		if ($bestshot_ownerId = null) $bestshot_ownerid = AppController::$userid;
-		/*
-		 * TODO: snappi Editors must set $owner_id to Asset owner, NOT Auth user
-		 */
-	 
-// debug($shotType);		
+		$hasPerm = $this->Asset->hasPerm($assetIds, 'groupAsShot', $shotType);
+		$assetIds = $hasPerm[true];
+		if ($hasPerm[false]) {
+			$resp['message']['groupAsShot'] = "Warning: no permissions on aid=".explode(','.$hasPerm[false]);	
+		}
+		if ($bestshot_ownerId == null) $bestshot_ownerid = AppController::$userid;
 		switch ($shotType) {
 			case 'Usershot':
 				$Usershot = ClassRegistry::init('Usershot');
 				$resp = $Usershot->groupAsShot($assetIds, $uuid, $bestshot_ownerId);				
 				break;
 			case 'Groupshot':
+					// TODO: check Group Permission Settings: Permissionable->READ, or 
+					// TODO: check WorkorderPermissionable->READ
 				$Groupshot = $this->Asset->Groupshot;
 				$resp = $Groupshot->groupAsShot($assetIds, $uuid, $bestshot_ownerId);				
 				break;
@@ -1607,11 +1634,15 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 		return $resp;
 	}
 	
-	function __removeFromShot($assetIds, $shotId, $shotType='Usershot', $owner_id = null ) {
-//		return $this->Asset->Shot->removeFromShot($assetIds, $shotIds);
+	function __removeFromShot($assetIds, $shotId, $shotType='Usershot') {
+		$hasPerm = $this->Asset->hasPerm($assetIds, 'removeFromShot', $shotType);
+		$assetIds = $hasPerm[true];
+		if ($hasPerm[false]) {
+			$resp['message']['removeFromShot'] = "Warning: no permissions on aid=".explode(','.$hasPerm[false]);	
+		}
 		switch ($shotType) {
 			case 'Usershot':
-				if (!isset($owner_id)) $owner_id = AppController::$ownerid;
+				$owner_id = 'DEPRECATE owner_id';				
 				$Usershot = ClassRegistry::init('Usershot');
 				$resp = $Usershot->removeFromShot($assetIds, $shotId, $owner_id);				
 				break;
@@ -1623,18 +1654,28 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 		return $resp;		
 	}
 	/**
-	 * @params $owner_id string, 
+	 * @param $shotIds array of UUID (DEPRECATE)
+	 * @param $shotType
 	 * 		UserShot: $uuid of owner == Asset.owner_id, or /person/photos/[$uuid]
 	 * 		GroupShot: null
+	 * @param $assetIds, array of UUID (asset) in Shot, used to verify permission, belongsTo ShotId
 	 */ 
-	function __ungroupShot($shotIds, $shotType='Usershot', $owner_id = null){ // $uuid?
-		if (!$owner_id) $owner_id = AppController::$ownerid;
+	function __ungroupShot($shotIds, $shotType='Usershot', $assetIds = array()){
+		$shotIds = array_unique($shotIds);
+		if (count($shotIds)>1) debug("WARNING: hasPerm not checked for count($shotIds)>1");				
 		switch ($shotType) {
 			case 'Usershot':
+				$extras['shotIds'] = $shotIds;
+				$hasPerm = $this->Asset->hasPerm($assetIds, 'ungroupShot', $shotType, $extras);
+				$assetIds = $hasPerm[true];
+				if ($hasPerm[false]) {
+					$resp['message']['removeFromShot'] = "Warning: no permissions on aid=".explode(','.$hasPerm[false]);	
+				}
 				$Usershot = ClassRegistry::init('Usershot');
-				$resp = $Usershot->unGroupShot($shotIds, $owner_id);				
+				$resp = $Usershot->unGroupShot($shotIds);				
 				break;
 			case 'Groupshot':
+debug("WARNING: hasPerm not checked for Groupshot");
 				$Groupshot = $this->Asset->Groupshot;
 				$resp = $Groupshot->unGroupShot($shotIds);				
 				break;
@@ -1644,26 +1685,16 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 	
 	function __hiddenShots($shotIds, $shotType){
 		if (is_string($shotIds)) $shotIds = explode(',', $shotIds);
-		$paginateModel = 'Asset';
-		Configure::write('paginate.Model', $paginateModel);
-		$this->paginate[$paginateModel]['limit']  = empty($this->params['url']['preview']) ? $this->paginate[$paginateModel]['limit'] : $this->paginate[$paginateModel]['big_limit'];
-
-		// get paginate joins/conditions from model
-		$Model = isset($this->{$paginateModel}) ? $this->{$paginateModel} : ClassRegistry::init('Asset');
-		$this->paginate[$paginateModel] = $Model->getPaginatePhotosByShotId($shotIds, $this->paginate[$paginateModel], $shotType);
-		$this->paginate[$paginateModel]['showSubstitutes'] = true;	// do NOT hide substitutes in results 
-
-		/*
-		 * get paginate options
-		 */ 
-		$this->paginate[$paginateModel] = $Model->getPaginateOptions($this->paginate[$paginateModel], $paginateModel);
-		Configure::write('paginate.Options.'.$paginateModel, $this->paginate[$paginateModel]);
-		// end paginate options
 		
-		// paginate
+		// paginate 
+		$paginateModel = 'Asset';
+		$Model = $this->Asset;
+		$Model->Behaviors->attach('Pageable');
+		$paginateArray = $Model->getPaginatePhotosByShotId($shotIds, $this->paginate[$paginateModel], $shotType);
+// debug($paginateArray);
+		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
-		// TODO: refactor. use standard form for paging count
-		$this->params['paging']['total'][$paginateModel] = $this->params['paging'][$paginateModel]['count'];
+// debug(Set::extract('/owner_id', $pageData));				
 		/*
 		 * end Paginate
 		 */

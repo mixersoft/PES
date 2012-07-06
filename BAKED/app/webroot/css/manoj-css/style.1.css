@@ -91,6 +91,7 @@ li.label {
 
 li.btn {
 	padding: 4px;
+	border-radius: 5px;
 	-moz-border-radius: 5px;
 	-webkit-border-radius: 5px;
 	cursor: pointer;	
@@ -1234,7 +1235,7 @@ section.filmstrip section.gallery.lightbox {
 	min-height: 39px;
 }
 #dialog-photo-roll-hidden-shots .aui-dialog-bd {
-	overflow: hidden;		/*for accurate g.setFilmstripWidth()*/
+	overflow-x: hidden;		/*for accurate g.setFilmstripWidth()*/
 }
 #dialog-hidden-shot {
 	width: 662px;
@@ -2931,7 +2932,7 @@ span.align-preview-icons > a > img {
 }
 
 #dialog-alert .aui-dialog-bd {
-	overflow: hidden;
+	overflow-x: hidden;
 }
 
 

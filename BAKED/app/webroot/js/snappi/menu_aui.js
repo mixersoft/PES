@@ -1703,8 +1703,8 @@ console.log("delegateHost="+delegateHost._yuid);
 				constrain: true,
 		}
 		cfg = _Y.merge(defaultCfg, cfg);
-				
-		var CSS_ID = 'contextmenu-hiddenshot-markup';
+		
+		var CSS_ID = cfg.CSS_ID || 'contextmenu-hiddenshot-markup';
 		var TRIGGER = ' .FigureBox.Photo';
 		var MARKUP = {
 				id: CSS_ID,

@@ -395,7 +395,7 @@
 		defaultCfg: {
 			type: 'PhotoPreview',
     		ID_PREFIX: 'preview-',
-    		size: 'bp',
+    		size: 'bm',
     		showExtras: true,
     		showRatings: true,
     		showSizes: true,
@@ -435,7 +435,7 @@
 			/*
 			 * set attributes based on thumbnail size
 			 */
-			audition = audition || SNAPPI.Auditions.find(this.id);
+			audition = audition || SNAPPI.Auditions.find(this.uuid || this.id);
 			var node = this.node;
 			
 			var src, linkTo, title, score, votes, exists, tooltip, shotCount, sizeCfg;

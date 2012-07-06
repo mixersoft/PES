@@ -5,7 +5,6 @@ class WorkordersController extends AppController {
 	public $layout = 'snappi';
 	// public $local_components = array('Brownie.panel');
 	
-	
 	public static $test = array();
 	function __construct() {
        parent::__construct();
@@ -36,7 +35,8 @@ class WorkordersController extends AppController {
 			'extras'=>array(
 				'show_edits'=>true,
 				'join_shots'=>'Groupshot', 
-				'show_hidden_shots'=>false
+				'show_hidden_shots'=>false,
+				'group_as_shot_permission'=>'Groupshot',
 			),
 			// 'extras'=>array(
 				// 'show_edits'=>true,
@@ -67,22 +67,49 @@ class WorkordersController extends AppController {
 			'paging_limit' =>48,
 			'photostream_limit' => 4,	// deprecate?
 			'order' => array('batchId'=>'DESC', 'created'=>'ASC'),
-			// 'extras'=>array(
-				// 'show_edits'=>true,
-				// 'join_shots'=>'Usershot', 
-				// 'show_hidden_shots'=>false
-			// ),
 			'extras'=>array(
 				'show_edits'=>true,
-				'join_shots'=>false, 
-				'show_hidden_shots'=>false
+				'join_shots'=>'Usershot', 
+				'show_hidden_shots'=>false,
+				'group_as_shot_permission'=>'Usershot',
 			),
+			// 'extras'=>array(
+				// 'show_edits'=>true,
+				// 'join_shots'=>false, 
+				// 'show_hidden_shots'=>false
+			// ),
 			'recursive'=> -1,	
 			'fields' =>array(
 				'Asset.*'
 			),
 		),
 	);
+	
+	function beforeFilter(){
+		parent::beforeFilter();
+		// TODO: add ACLs for Workorder
+		$this->Auth->allow('*');
+		if (!empty($this->passedArgs[0])) {
+			$this->__saveWorkorderToSession($this->passedArgs[0]);
+		}	
+	}
+
+	function __saveWorkorderToSession($woid){
+		$row = $this->Workorder->read(null, $woid);
+		if (empty($row)) return;
+		
+		// Save active Workorder to Session for POST processing through other controllers 
+		Session::write("WMS.{$woid}.Workorder", $row['Workorder']);
+		$this->__setOwnerId($woid, $row);
+	}
+	
+	function __setOwnerId ($woid, $data=null){
+		// Save active Workorder to Session for POST processing through other controllers 
+		if (empty($data)) $data = Session::read("WMS.{$woid}");
+		if ($data['Workorder']['source_model']=='User') AppController::$ownerid = $data['Workorder']['source_id']; 
+		if ($data['Workorder']['source_model']=='Group') AppController::$ownerid = $data['Workorder']['client_id'];
+	}
+	
 	/*
 	 * POST, respond as JSON
 	 * check for Role in EDITOR/MANAGER
@@ -248,27 +275,39 @@ class WorkordersController extends AppController {
 	function photos($id = null){
 		$WOID = WorkordersController::$test['circle']['woid'];	// person or circle
 		if (!$id) $id = $WOID; $this->passedArgs[0] = $id;
-		
+
 		$forceXHR = setXHRDebug($this, 0);
 		$this->layout = 'snappi';
 		$this->helpers[] = 'Time';
 		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';				
-		
-		// paginate 
-		$SOURCE_MODEL = $this->Workorder->field('source_model', array('id'=>$id));
-		if (!$id || !$SOURCE_MODEL) {
+		if (!$id) {
 			$this->Session->setFlash("ERROR: invalid Workorder id.");
 			$this->redirect(array('action' => 'all'));
 		}
+
+		// paginate 
+		$SOURCE_MODEL = Session::read("WMS.{$id}.Workorder.source_model"); // WorkordersController::$source_model;
 		$paginateModel = 'Asset';
 		$Model = ClassRegistry::init($paginateModel);
 		// map correct paginateArray based on $SOURCE_MODEL
 		$this->paginate[$paginateModel] = $this->paginate[$SOURCE_MODEL.$paginateModel];
 		$Model->Behaviors->attach('Pageable');
-		$paginateArray = $Model->getPaginatePhotosByWorkorderId($id, $this->paginate[$paginateModel]);
+		$Model->Behaviors->attach('WorkorderPermissionable', array('type'=>$this->modelClass, 'uuid'=>$id));
+		$paginateArray = $this->paginate[$paginateModel];
+		
+/*
+ * operator options
+ *   	raw = hide_SharedEdits=1;show_hidden_shots=0
+ * 		= hide score, editor not influenced by existing score
+ * 		= show ONLY UserEdit.rating, by AppController::userid
+ * 		= show hidden shots, why? for training sets, but required for workorders?
+ * 		?? = join to BestShotSystem only, for workorder processing?
+ * 		
+ */ 		
 if (isset($this->params['url']['raw'])) {
 	$paginateArray['extras']['show_hidden_shots']=1;
 	$paginateArray['extras']['hide_SharedEdits']=1;
+	// $paginateArray['extras']['bestshot_system_only']=0;
 }			
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);

@@ -544,7 +544,7 @@ if (!_Y) {
 	}
 	AssetRatingController.addWorkorderData = function (data){
     	var role = SNAPPI.STATE.controller.ROLE;
-    	if (/(EDITOR|MANAGER)/.test(role)) auth = true;
+    	var auth = /(EDITOR|MANAGER)/.test(role);
 		if (!auth) return data;
 		if (/Workorders|TasksWorkorders/.test(SNAPPI.STATE.controller.name)) {
 			var woid = SNAPPI.STATE.controller.xhrFrom.uuid;
