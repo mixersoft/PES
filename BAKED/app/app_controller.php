@@ -704,28 +704,6 @@ class AppController extends Controller {
 	}
 
 	/**
-	 * @deprecated, moved to pageable behavior
-	 * @param $paginateModel
-	 * @param $action
-	 * @return unknown_type
-	 */
-	function getPerpageLimit($paginateModel, $action = null) {
-		if ($action===null) $action = $this->action;
-		$perpageProfileData = $this->Session->read("profile.{$action}.perpage");
-		if($perpageProfileData){
-			$limit = $perpageProfileData;
-		} else if (empty($this->params['url']['preview']) ) {
-			// get a full page, NOT a preview page
-			$limit = $this->paginate[$paginateModel]['big_limit'];
-		} else {
-			// preview page
-			$limit = $this->paginate[$paginateModel]['limit'];
-		}		
-		return $limit;
-	}
-
-
-	/**
 	 * override Comments View
 	 */
 	public function callback_commentsView($displayType, $processActions = true) {

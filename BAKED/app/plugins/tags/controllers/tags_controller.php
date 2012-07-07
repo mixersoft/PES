@@ -153,6 +153,7 @@ class TagsController extends TagsAppController {
 	public $titleName = 'Tags';
 	public $displayName = 'Tag';
 	public $components = array(
+		'Permissionable.Permissionable',
 		'Comments.Comments' => array(  'userModelClass' => 'User'	),
 		'Search.Prg',
 	);
@@ -171,18 +172,10 @@ class TagsController extends TagsAppController {
 		'Tagged'=>array(
 			'preview_limit'=>10,
 			'paging_limit' =>64,
-			// deprecate limit, big_limit
-			// set limit in PageableBehavior->getPerpageLimit()				
-			'limit'=>10,
-			'big_limit'=>64,
 		),
 		'Asset'=>array(
 			'preview_limit'=>6,
 			'paging_limit' =>24,
-			// deprecate limit, big_limit
-			// set limit in PageableBehavior->getPerpageLimit()				
-			'limit' => 6,
-			'big_limit' =>48,
 			'order'=>array('Asset.dateTaken'=>'ASC'),
 			'extras'=>array(
 				'show_edits'=>true,
@@ -200,10 +193,6 @@ class TagsController extends TagsAppController {
 		'Group'=>array(	
 			'preview_limit'=>3,
 			'paging_limit' =>8,
-			// deprecate limit, big_limit
-			// set limit in PageableBehavior->getPerpageLimit()			
-			'limit' => 8,
-			'big_limit' =>36,
 			'order'=>array('Group.title'=>'ASC'),
 		),
 		'Comment' =>array(
@@ -484,6 +473,7 @@ class TagsController extends TagsAppController {
 	 * - used for showing cloud from /[users|groups|tags]/trends
 	 */
 	function show_more() {
+debug("WARNING: /tags/show_more is deprecated");		
 		$paginateModel = 'Tagged';	
 		$this->paginate[$paginateModel]['preview_limit'] = $this->getPerpageLimit($paginateModel, 'trends');
 		$this->show();

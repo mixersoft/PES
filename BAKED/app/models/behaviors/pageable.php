@@ -62,7 +62,7 @@ class PageableBehavior extends ModelBehavior {
  *		check user profile, Session::read("profile.{$action}")
  *	3) querystring params, including &preview for preview perpage limit
  * 	4) Controller->paginate array 
- *		check $controller->paginate[$Model->name]['big_limit'] or ['limit']
+ *		check $controller->paginate[$Model->name]['paging_limit'] or ['preview_limit']
  *  TODO:  refactor, use 'limit' and 'preview' in settings
  *  
  *  saves total count in $controller->params['paging']['total'][$Model->name]
@@ -131,7 +131,7 @@ class PageableBehavior extends ModelBehavior {
  *		(optional) check for explicit named param in passedArgs, /perpage:
  *		check user profile, Session::read("profile.{$action}.perpage")
  *		check querystring &preview=1 for
- *		check $controller->paginate[$Model->name]['big_limit'] or ['limit']
+ *		check $controller->paginate[$Model->name]['paging_limit'] or ['preview_limit']
  * @param $Model
  * @param string action, lookup key in profile array
  * @param boolean $checkPerpage, check Configure::read('passedArgs.perpage') 
