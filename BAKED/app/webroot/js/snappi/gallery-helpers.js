@@ -610,7 +610,7 @@ var _showZoom = function(e, g) {
             if (cfg.type == 'Photo') cfg = _Y.merge(SNAPPI.STATE.displayPage, cfg);
             cfg = _Y.merge(GalleryFactory[cfg.type].defaultCfg, cfg);	
             // check for raw
-            var showHidden = SNAPPI.util.getFromQs('raw');
+            var showHidden = SNAPPI.util.getFromNamed('raw');
             if (showHidden) cfg.hideHiddenShotByCSS = false;
             
             try {

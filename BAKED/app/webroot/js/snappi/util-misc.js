@@ -244,6 +244,19 @@
                 else 
                     return results[1];
             },
+            getFromNamed: function(name){
+                /*
+                 * get a query param value by name from the current URL
+                 */
+                name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+                var regexS = '(\/'+name+'[^:\/]*:)([^\/]*)';
+                var regex = new RegExp(regexS);
+                var results = regex.exec(window.location.href);
+                if (results == null) 
+                    return "";
+                else 
+                    return results[1];
+            },
             parseExifDateTime: function(sDateTime){
                 // valid formats = ["yyyy-MM-dd HH:mm:ss", "yyyy-MM-ddTHH:mm:ss"];
                 var date, time, parts = sDateTime.split(' ');

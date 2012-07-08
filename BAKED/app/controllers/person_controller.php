@@ -293,7 +293,7 @@ $this->log("role = ".AppController::$role, 	LOG_DEBUG);
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $Model->getPaginatePhotosByUserId($id, $this->paginate[$paginateModel]);
 
-if (isset($this->params['url']['raw'])) {
+if (!empty($this->passedArgs['raw'])) {
 	$paginateArray['extras']['show_hidden_shots']=1;
 }
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);

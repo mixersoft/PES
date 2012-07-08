@@ -310,7 +310,7 @@ class AssetsController extends AppController {
 		$Model = $this->Asset;
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $this->paginate[$paginateModel];
-if (isset($this->params['url']['raw'])) {
+if (!empty($this->passedArgs['raw'])) {
 	$paginateArray['extras']['show_hidden_shots']=1;
 }		
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
