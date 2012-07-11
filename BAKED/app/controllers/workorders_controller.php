@@ -5,6 +5,8 @@ class WorkordersController extends AppController {
 	public $layout = 'snappi';
 	// public $local_components = array('Brownie.panel');
 	
+	public $scaffold;
+	
 	public static $test = array();
 	function __construct() {
        parent::__construct();
@@ -66,7 +68,7 @@ class WorkordersController extends AppController {
 			'preview_limit'=>6,
 			'paging_limit' =>48,
 			'photostream_limit' => 4,	// deprecate?
-			'order' => array('batchId'=>'DESC', 'created'=>'ASC'),
+			'order' => array('dateTaken'=>'ASC'),
 			'extras'=>array(
 				'show_edits'=>true,
 				'join_shots'=>'Usershot', 
@@ -91,7 +93,8 @@ class WorkordersController extends AppController {
 		$this->Auth->allow('*');
 		if (!empty($this->passedArgs[0])) {
 			$this->__saveWorkorderToSession($this->passedArgs[0]);
-		}	
+		}
+		$this->Workorder->Asset->Behaviors->detach('Permissionable');	
 	}
 
 	function __saveWorkorderToSession($woid){
@@ -236,22 +239,6 @@ class WorkordersController extends AppController {
 		
 	}
 	
-	//  get assets for assignment, replaced by /workorders/photos
-	function assignment($wo_task_id = null) {
-		$EDITOR = '12345678-1111-0000-0000-editor------';
-		$WOID = '4fb499f4-1f54-411e-a147-0cd0f67883f5';
-		$TASK_1 = '4fb499f4-46a0-49cd-bd18-0cd0f67883f5';
-		$TASK_2 = '4fb49ab0-449c-4650-90e5-0cd0f67883f5';
-		
-		// $assets
-		if (1) {
-			$assets = $this->Workorder->getAssets($WOID);
-		} else {
-			$assets = $this->Workorder->TasksWorkorder->getAssets($TASK_1);
-		}
-		$this->render('/elements/dumpSQL');
-	}
-	
 	function harvest($id=null) {
 		$WOID = WorkordersController::$test['circle']['woid'];	// person or circle
 		if (!$id) $id = $WOID; $this->passedArgs[0] = $WOID;
@@ -304,7 +291,7 @@ class WorkordersController extends AppController {
  * 		?? = join to BestShotSystem only, for workorder processing?
  * 		
  */ 		
-if (isset($this->params['url']['raw'])) {
+if (!empty($this->passedArgs['raw'])) {
 	$paginateArray['extras']['show_hidden_shots']=1;
 	$paginateArray['extras']['hide_SharedEdits']=1;
 	// $paginateArray['extras']['bestshot_system_only']=0;
@@ -352,13 +339,92 @@ if (isset($this->params['url']['raw'])) {
 		// $this->render('/elements/dumpSQL');
 	}	
 
+	
 	/**
-	 * workorder version of /assets/home
-	 * 	set ACL using workorder assignment, not permissionable
+	 * utility methods for testing, test data, etc.
 	 */
-	function snap($id=null) {
-		
+	 
+ 	/**
+	 * get assets from live site, 
+	 * 	export to local filesystem, or 
+	 * 	stage to local filesystem
+	 */  
+	function export($id, $stage = true) {
+		set_time_limit(600);
+		$baseurl = "http://dev.snaphappi.com".Stagehand::$stage_baseurl;
+		if ($stage) {
+			$dest_basepath = Stagehand::$stage_basepath; 
+		} else {
+			$dest_basepath = '/home/michael/Downloads/snappi-export/'.$id;		
+		}
+
+		$assets = $this->Workorder->getAssets($id);
+		// $assets = array_slice($assets, 0,55);
+		foreach ($assets as $aid) {
+			if ($stage) {
+					$data = $this->Workorder->Asset->read('json_src', $aid);
+					$json_src = json_decode($data['Asset']['json_src'], true);
+					$dest = $dest_basepath.DS.$json_src['root'];
+					$preview = str_replace('/', '/.thumbs/', $json_src['root']);
+					$src = $baseurl.Stagehand::getImageSrcBySize($preview, 'bp');
+					if (!file_exists(dirname($dest))) mkdir(dirname($dest), 0777,true);
+					$ret = copy($src,$dest);
+					if (!$ret) {
+						$errors[]="error: copy {$src} {$dest}";
+					} else {
+						debug("copy {$src} > {$dest}");
+					}
+			} else {
+				$dest = cleanpath($dest_basepath.DS.$aid.'.jpg');
+				if (!file_exists($dest)){
+				// copy asset to local folder
+					$data = $this->Workorder->Asset->read('json_src', $aid);
+					$data = json_decode($data['Asset']['json_src'], true);
+					$preview = str_replace('/', '/.thumbs/', $data['root']);
+					$src = $baseurl.Stagehand::getImageSrcBySize($preview, 'bp');
+					if (!file_exists(dirname($dest))) mkdir(dirname($dest), 0777,true);
+					$ret = copy($src,$dest);
+					if (!$ret) {
+						$errors[]="error: copy {$src} {$dest}";
+					} else {
+						debug("copy {$src} > {$dest}");
+					}
+				}
+			}
+		}
+		debug("result={$ret}");
+		if (!empty($errors)) debug($errors);
+		$this->render('/elements/dumpSQL');
 	}
+
+	//  read Asset.json_exif and put into cameraId
+	function exif2camera ($woid) {
+		$assets = $this->Workorder->getAssets($woid);
+		$options = array(
+			'conditions' => array(
+				'`Asset`.id'=>$assets,
+			),
+			// 'limit'=>1,
+		);
+		$Asset = $this->Workorder->Asset; 
+		$data = $Asset->find('all', $options);
+		foreach ($data as $row) {
+			$json_exif = json_decode($row['Asset']['json_exif'], true);
+			$camera_string = "{$json_exif['Make']} {$json_exif['Model']}";
+			$Asset->id = $row['Asset']['id'];
+			$ret = $Asset->savefield('cameraId', $camera_string);
+			if (!$ret) {
+				$errors[] = "Error saving camera string={$camera_string} for id={$row['Asset']['id']}";
+			} else {
+				debug("{$row['Asset']['id']}={$camera_string}");
+			}
+		}
+		debug("result={$ret}");
+		if (!empty($errors)) debug($errors);
+		$this->render('/elements/dumpSQL');
+	}
+	
+	 
 	
 }
 ?>
