@@ -379,7 +379,7 @@ AND includes.asset_id='{$assetId}';
 //			debug("elapsed=".(microtime(1) - $start));		
 		}
 		if ($primary && !Configure::read('controller.isXhr') && isset($results[0]['Asset']['owner_id'])){
-			if ($results[0]['Asset']['id'] == Configure::read('controller.xhrFrom.uuid')) {
+			if (isset($results[0]['Asset']['id']) && $results[0]['Asset']['id'] == Configure::read('controller.xhrFrom.uuid')) {
 				// establish ownership of this particular Asset
 				Configure::write('controller.isOwner', $results[0]['Asset']['owner_id'] == AppController::$ownerid);
 				Configure::write('controller.owner', $results[0]['ProviderAccount']['display_name']);
