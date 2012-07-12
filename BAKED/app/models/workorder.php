@@ -55,7 +55,7 @@ class Workorder extends AppModel {
 	
 	public function TEST_createTaskWorkorder($woid, $options=array()){
 		$TEST_default = array(
-			'name'=>'Rate Photos',		// just test with one task for now
+			// 'name'=>'Rate Photos',		// just test with one task for now
 			'task_id'=>WorkordersController::$test['task_id'],
 			'task_sort'=>0,
 		);
@@ -85,11 +85,12 @@ class Workorder extends AppModel {
 	}
 	
 	/**
-	 * add assets to an existing workorder, i.e. harvest new photos
-	 * @params $data array, from workorder->find('first')
-	 * @params $assets, array optional, array of asset Ids 
-	 * 		use null to add new assets by LEFT JOIN 
+	 * get Assets/AssetsGroup to add to WorkorderAssets
+	 * @param $task_id, FK to Task
+	 * @param $woid, FK to Workorder 
+	 * @param $filter string [NEW|ALL]
 	 */
+	 
 	public function harvestAssets($data){
 		// User: Assets.owner_id = $data['Workorder']['source_id']
 		// Group: AssetsGroup.group_id = $data['Workorder']['source_id']
@@ -136,8 +137,14 @@ class Workorder extends AppModel {
 		return $assets;
 	}	
 	
-	public function addAssets($data, $assets = array()){
-		if (empty($assets)) {
+	/**
+	 * add assets to an existing Workorder, i.e. harvest new photos from Assets/AssetsGroup
+	 * @param $data array, from workorder->find('first')
+	 * @param $assets, array optional, array of asset Ids 
+	 * 		default 'NEW' assets by LEFT JOIN using harvest()
+	 */
+	public function addAssets($data, $assets = 'NEW'){
+		if ($assets == 'NEW') {
 			$assets = $this->harvestAssets($data);
 		} else if (isset($assets['id'])) {
 			$assets = Set::extract("/id", $assets);
@@ -157,10 +164,16 @@ class Workorder extends AppModel {
 		$count = count($assetsWorkorder);
 		if ($count) {
 			$ret = $this->AssetsWorkorder->saveAll($assetsWorkorder, array('validate'=>'first'));
+			if ($ret) $this->resetStatus($woid);
 			return $ret ? $count : false;
 		} else return true;  	// nothing new to add;
 	}
 	
+	public function resetStatus($woid) {
+		$status = $this->read('status', $woid); 
+		if ($status == 'done') $this->saveField('status', 'ready');
+		// TODO: add entry to status log?
+	}
 
 	public function getAssets($woid) {
 		$options = array(

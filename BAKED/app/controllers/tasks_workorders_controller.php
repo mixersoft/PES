@@ -4,20 +4,11 @@ class TasksWorkordersController extends AppController {
 	public $name = 'TasksWorkorders';
 	public $layout = 'snappi';
 	
+	public $scaffold;
+	
 	public static $test = array();
 	function __construct() {
        parent::__construct();
-       TasksWorkordersController::$test['circle']['woid'] = '4fb499f4-1f54-411e-a147-0cd0f67883f5';
-	   TasksWorkordersController::$test['circle']['task_1'] = '4fb499f4-46a0-49cd-bd18-0cd0f67883f5';
-	   TasksWorkordersController::$test['circle']['task_2'] = '4fb49ab0-449c-4650-90e5-0cd0f67883f5';
-	   
-	   TasksWorkordersController::$test['person']['woid'] = '4fb6a572-01b4-4382-b459-125cf67883f5';
-	   TasksWorkordersController::$test['person']['task_1'] = '4fb6aa08-94ac-4ce7-b6ec-125cf67883f5';
-	   TasksWorkordersController::$test['person']['task_2'] = '4fb6bd58-9a58-4047-a78c-125cf67883f5';
-	   TasksWorkordersController::$test['person']['task_3'] = '4fb86f72-bf68-432e-b317-125cf67883f5';
-		
-	   TasksWorkordersController::$test['client']['User'] = '12345678-1111-0000-0000-venice------';
-	   TasksWorkordersController::$test['client']['Group'] = '4bbd3bc6-4d68-4a52-9dbb-11a0f67883f5';  // friends of snaphappi
 	   TasksWorkordersController::$test['editor'] = '12345678-1111-0000-0000-editor------';
 	}
 	
@@ -82,6 +73,10 @@ class TasksWorkordersController extends AppController {
 	
 	function beforeFilter(){
 		parent::beforeFilter();
+		if (in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) {
+			throw new Exception("Error: TasksWorkorder actions require Role privileges");
+ 		}
+		
 		// TODO: add ACLs for TasksWorkorder
 		$this->Auth->allow('*');
 		if (!empty($this->passedArgs[0])) {
@@ -110,42 +105,67 @@ class TasksWorkordersController extends AppController {
 	}
 	
 	
-	function assign($wo_task_id = null) {
-		$EDITOR = TasksWorkordersController::$test['editor'] ;
-		$WOID = TasksWorkordersController::$test['person']['woid'];
-		$TASK_WO = TasksWorkordersController::$test['person']['task_3'];
-		
-		$this->TasksWorkorder->id = $TASK_WO;
-		$this->TasksWorkorder->saveField('operator_id', $EDITOR);
+	function assign($id, $DEVoptions = null) {
+		try {
+			extract($this->data); // manager_id, editor_id, task_id
+			if ($DEVoptions == 'me') {
+				$editor_id =  isset($editor_id) ? $editor_id :  AppController::$userid;
+			}
+			$this->TasksWorkorder->id = $id;
+			$ret = $this->TasksWorkorder->saveField('operator_id', $editor_id);
+			if ($ret) $message[] = "TasksWorkorder {$id}: operator set to {$editor_id}";
+			else throw new Exception("Error saving editor assignment, twoid={$id}", 1);
+			
+			// format json response
+			$success = $ret;
+			$response = compact('id', 'task_id', 'editor_id');
+		}catch(Exception $e) {
+			$success = false;
+			$message[] = $e->getMessage();
+		}
+		$this->viewVars['jsonData'] = compact('success', 'message', 'response');
+		$done = $this->renderXHRByRequest('json', null , null, $forceXHR);
+		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
 		
 		$this->render('/elements/dumpSQL');
 	}
 	
-	function assignment($wo_task_id = null) {
-		$EDITOR = TasksWorkordersController::$test['editor'] ;
-		$WOID = TasksWorkordersController::$test['person']['woid'];
-		$TWOID = TasksWorkordersController::$test['person']['task_3'];
-		
-		// $assets
-		$assets = $this->TasksWorkorder->getAssets($TWOID);
+	function assignment($twoid) {
+		$assets = $this->TasksWorkorder->getAssets($twoid);
 debug($assets);		
 		$this->render('/elements/dumpSQL');
 	}
 	
-	function harvest($id=null) {
-		$TWOID = TasksWorkordersController::$test['person']['task_2'];	// person or circle
-		if (!$id) $id = $TWOID; $this->passedArgs[0] = $TWOID;
-		
+	/**
+	 * harvest new AssetsWorkorder to [new|existing] TaskWorkorder
+	 */
+	function harvest($id) {
+		if (empty($this->data)) {
+			// throw new Exception("Error: HTTP POST required", 1);
+		}
 		$options = array(
 			'recursive'=>-1,
 			'conditions'=>array('`TasksWorkorder`.id'=>$id)
 		);
 		$data = $this->TasksWorkorder->find('first', $options);
-		$assets = $this->TasksWorkorder->harvestAssets($data['TasksWorkorder']['task_id'], $data['TasksWorkorder']['workorder_id']);
+		if (!$data) throw new Exception("Error TasksWorkorder not found, id={$id}", 1);
+		
+		//TODO: add TasksWorkorder.in_batches Boolean. better field name??? realtime? 
+		// to specify if new Assets should be added as a NEW TasksWorkorder for same Task
+		$data['TasksWorkorder']['in_batches'] = true;
+		
+		$assets = $this->TasksWorkorder->harvestAssets($data['TasksWorkorder']['task_id'], $data['TasksWorkorder']['workorder_id'], 'NEW');
 		if (!empty($assets)) {
-			$options = array_filter_keys($data['TasksWorkorder'], array('workorder_id', 'task_id', 'task_sort'));
-			$taskWorkorder = $this->TasksWorkorder->createNew($options);
-			$this->TasksWorkorder->addAssets($taskWorkorder, $assets);
+			// NEW assets found, create NEW TasksWorkorder for NEW assets (realtime wo processing)
+			if ($data['TasksWorkorder']['in_batches']) {
+				$options = array_filter_keys($data['TasksWorkorder'], array('workorder_id', 'task_id', 'task_sort'));
+				$taskWorkorder = $this->TasksWorkorder->createNew($options);
+				$ret = $this->TasksWorkorder->addAssets($taskWorkorder, $assets);
+				if (!$ret) throw new Exception("Error adding new Assets to AssetsTasks, twoid={$id}", 1);
+			} else { // add NEW Assets to existing TasksWorkorder
+				$ret = $this->TasksWorkorder->addAssets($taskWorkorder, $assets);
+				if (!$ret) throw new Exception("Error harvesting new Assets to AssetsTasks, twoid={$id}", 1);
+			}
 		}
 		
 		$this->render('/elements/dumpSQL');
@@ -187,10 +207,10 @@ debug($assets);
  * 		?? = join to BestShotSystem only, for workorder processing?
  * 		
  */  	
-if (!empty($this->params['url']['raw'])) {
+if (!empty($this->passedArgs['raw'])) {
 	$paginateArray['extras']['show_hidden_shots']=1;
 	$paginateArray['extras']['hide_SharedEdits']=1;
-	$paginateArray['extras']['bestshot_system_only']=1;
+	// $paginateArray['extras']['bestshot_system_only']=1;
 }	
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);

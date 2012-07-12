@@ -1,4 +1,6 @@
 <?php
+class DuplicateException extends Exception{}
+
 class WorkordersController extends AppController {
 
 	public $name = 'Workorders';
@@ -12,20 +14,7 @@ class WorkordersController extends AppController {
        parent::__construct();
 	   // $this->components = array_merge($this->components, $this->local_components);
 	   WorkordersController::$test['task_id'] = '4fb294c2-525c-4871-9ba5-09fcf67883f5';  // only task
-	   
-       WorkordersController::$test['circle']['woid'] = '4fb499f4-1f54-411e-a147-0cd0f67883f5';
-	   WorkordersController::$test['circle']['task_1'] = '4fb499f4-46a0-49cd-bd18-0cd0f67883f5';
-	   WorkordersController::$test['circle']['task_2'] = '4fb49ab0-449c-4650-90e5-0cd0f67883f5';
-	   
-	   WorkordersController::$test['person']['woid'] = '4fb6a572-01b4-4382-b459-125cf67883f5';
-	   WorkordersController::$test['person']['task_1'] = '4fb6aa08-94ac-4ce7-b6ec-125cf67883f5';
-	   WorkordersController::$test['person']['task_2'] = '4fb6bd58-9a58-4047-a78c-125cf67883f5';
-	   WorkordersController::$test['person']['task_3'] = '4fb86f72-bf68-432e-b317-125cf67883f5';
-	   
-	   WorkordersController::$test['client']['User'] = '12345678-1111-0000-0000-venice------';
-	   WorkordersController::$test['client']['Group'] = '4bbd3bc6-4d68-4a52-9dbb-11a0f67883f5';  // friends of snaphappi
 	   WorkordersController::$test['editor'] = '12345678-1111-0000-0000-editor------';
-	   
 	}
 
 	public $paginate = array(
@@ -89,12 +78,16 @@ class WorkordersController extends AppController {
 	
 	function beforeFilter(){
 		parent::beforeFilter();
+		if (in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) {
+			throw new Exception("Error: Workorder actions require Role privileges");
+ 		}
+				
 		// TODO: add ACLs for Workorder
 		$this->Auth->allow('*');
 		if (!empty($this->passedArgs[0])) {
 			$this->__saveWorkorderToSession($this->passedArgs[0]);
 		}
-		$this->Workorder->Asset->Behaviors->detach('Permissionable');	
+		$this->Workorder->Asset->Behaviors->detach('Permissionable'); // mutually exclusive	
 	}
 
 	function __saveWorkorderToSession($woid){
@@ -125,13 +118,10 @@ class WorkordersController extends AppController {
 	 * test workflow: create, $options['WOID'] = null > assign > harvest
 	 */ 
 	function create() {
-		$forceXHR = setXHRDebug($this, 0);	
-		if (isset($this->data)) {
-			// POST
-			if (in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) {
-				$success = false;
-				$message = "You do not have permission to do this task.";
-	 		}
+		try{
+		 	$forceXHR = setXHRDebug($this, 0);	
+			if (empty($this->data)) throw new Exception("Error: HTTP POST required", 1);
+			
 			$options = array_filter_keys($this->data['Workorder'], array('source_id', 'source_model', 'client_id', 'manager_id', 'editor_id'));
 			
 			// TODO: for now, use AppController::$userid instead of assignment values
@@ -143,87 +133,78 @@ class WorkordersController extends AppController {
 				'conditions'=>array('Workorder.source_id'=>$options['source_id'])
 			);
 			$data =  $this->Workorder->find('first', $existing);
-			
 			if ($data) {	// existing found, just update manager_id
-				$this->Workorder->id = $data['Workorder']['id'];
-				if (!empty($options['manager_id'])) $this->Workorder->saveField('manager_id', $options['manager_id'] );
+				throw new DuplicateException("Warning: existing Workorder for type={source_id={$options['source_model']}}, id={$options['source_id']}", 1);
 			} else {		// create new
 				$data = $this->Workorder->createNew($options['client_id'], $options['source_id'], $options['source_model'], $options);
-			}
-			try {
 				$ret = $this->Workorder->addAssets($data);
 				if (is_numeric($ret)) {
 					// TODO: for now, create task, but don't use
 					$taskWorkorder = $this->Workorder->TEST_createTaskWorkorder($data['Workorder']['id']);
-					$ret = $this->Workorder->TasksWorkorder->addAssets($taskWorkorder);
+					$ret = $this->Workorder->TasksWorkorder->addAssets($taskWorkorder, "NEW");
 				}
-				
-				// format json response
-				$success = true;
-				$message = "OK";
-				$response = $this->Workorder->read(null, $data['Workorder']['id']);
-				$response['next'] = Router::url(array('controller'=>'workorders', 'action'=>'photos', $data['Workorder']['id']), true);
-				
-			} catch (Exception $e) {
-				$success = false;
-				$message = "Error /workorders/create";
 			}
+			
+			// format json response
+			$success = true;
+			$message = "OK";
+			$response = $this->Workorder->read(null, $data['Workorder']['id']);
+			$response['next'] = Router::url(array('controller'=>'workorders', 'action'=>'photos', $data['Workorder']['id']), true);
+		}catch (DuplicateException $e) {
+			//TODO: for now, just assign workorder if it already exists
+			$this->Workorder->id = $data['Workorder']['id'];
+			if (!empty($options['manager_id'])) $this->Workorder->saveField('manager_id', $options['manager_id'] );
+			$success = true;
+			$message = "OK";
+			$response = $this->Workorder->read(null, $data['Workorder']['id']);
+			$response['next'] = Router::url(array('controller'=>'workorders', 'action'=>'photos', $data['Workorder']['id']), true);
 			$this->viewVars['jsonData'] = compact('success', 'message', 'response');
-			$done = $this->renderXHRByRequest('json', null , null, $forceXHR);
-			if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
+		}catch (Exception $e) {
+			$message =  $e->getMessage(); 
 			
-		} else { 
-			// testing only
-			$options = array();
-			
-			// $options['SOURCE_MODEL'] = 'Group';
-			$options['SOURCE_MODEL'] = 'User';
-			$options['SOURCE_ID'] = WorkordersController::$test['client'][$options['SOURCE_MODEL']];
-			$options['CLIENT_ID'] = WorkordersController::$test['client']['User'];
-			
-			// reuse existing workorder
-			$options['WOID'] = WorkordersController::$test['person']['woid'];
-			
-			$this->Workorder->TEST_createWorkorder($options);
-			
-			$this->render('/elements/dumpSQL');
 		}
+		$this->viewVars['jsonData'] = compact('success', 'message', 'response');
+		$done = $this->renderXHRByRequest('json', null , null, $forceXHR);
+		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
 	}
 	
-	/*
+	/**
 	 * from HTTP POST
 	 * 		$this->data[manager_id]=UUID
-	 * 		$this->data[task_id]=UUID (optional)
+	 * 		$this->data[task_id]=UUID (optional), TasksWorkorder.id
 	 *		$this->data[editor_id]=UUID (optional)
 	 * assign MANAGER TO workorder, grants access privileges to workorder assets
-	 * (optional) assign editor to tasksWorkorder 
+	 * (optional) assign editor to tasksWorkorder if task_id provided
+	 * @param $DEVoptions string, use /[id]/me to assign to current user for testing 
 	 */ 
-	function assign($id=null) {
-		extract($this->data); // manager_id, editor_id, task_id
-		
-		$manager_id =  isset($manager_id) ? $manager_id :  WorkordersController::$test['editor'];
-		$editor_id =  isset($editor_id) ? $editor_id :  $manager_id;
-		
-		// if null, use test workorder & task_workorder
-		if (!$id) { 
-			$id = WorkordersController::$test['person']['woid'];
-			$task_id = WorkordersController::$test['person']['task_1'] ;
+	function assign($id, $DEVoptions = null) {
+		try {
+			extract($this->data); // manager_id, editor_id, task_id
+			if ($DEVoptions == 'me') {
+				$manager_id = isset($manager_id) ? $manager_id : AppController::$userid; 
+				$editor_id =  isset($editor_id) ? $editor_id :  $manager_id;
+			}
+			
+			$this->Workorder->id = $id;
+			$ret = $this->Workorder->saveField('manager_id', $manager_id);
+			if ($ret) $message[] = "Workorder {$id}: manager set to {$manager_id}";
+			else throw new Exception("Error saving manager assignment, woid={$id}", 1);
+			
+			
+			if ($task_id) {
+				$this->Workorder->TasksWorkorder->id = $task_id;
+				$ret = $this->Workorder->TasksWorkorder->saveField('operator_id', $editor_id);
+				if ($ret) $message[] = "Workorder {$id}/Task {$task_id}: operator set to {$editor_id}";
+				else throw new Exception("Error saving editor assignment, twoid={$task_id}", 1);
+			}
+			
+			// format json response
+			$success = $ret;
+			$response = compact('id', 'manager_id', 'task_id', 'editor_id');
+		}catch(Exception $e) {
+			$success = false;
+			$message[] = $e->getMessage();
 		}
-		
-		$this->Workorder->id = $id;
-		$ret = $this->Workorder->saveField('manager_id', $manager_id);
-		if ($ret) $message[] = "Workorder {$id}: manager set to {$manager_id}";
-		
-		if ($task_id) {
-			$this->Workorder->TasksWorkorder->id = $task_id;
-			$ret = $ret && $this->Workorder->TasksWorkorder->saveField('operator_id', $editor_id);
-			if ($ret) $message[] = "Workorder {$id}/Task {$task_id}: operator set to {$editor_id}";
-		}
-		
-		// format json response
-		$success = $ret;
-		$message = !empty($message) ? $message : "Error: There was problem assigning this workorder";
-		$response = compact('id', 'manager_id', 'task_id', 'editor_id');
 		$this->viewVars['jsonData'] = compact('success', 'message', 'response');
 		$done = $this->renderXHRByRequest('json', null , null, $forceXHR);
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
@@ -239,17 +220,19 @@ class WorkordersController extends AppController {
 		
 	}
 	
-	function harvest($id=null) {
-		$WOID = WorkordersController::$test['circle']['woid'];	// person or circle
-		if (!$id) $id = $WOID; $this->passedArgs[0] = $WOID;
-		
+	/**
+	 * harvest new Assets to existing workorder
+	 */
+	function harvest($id) {
+		if (empty($this->data)) {
+			// throw new Exception("Error: HTTP POST required", 1);
+		}
 		$options = array(
 			'recursive'=>-1,
 			'conditions'=>array('Workorder.id'=>$id)
 		);
 		$data = $this->Workorder->find('first', $options);
-		$assets = $this->Workorder->harvestAssets($data);
-		if (!empty($assets)) $this->Workorder->addAssets($data, $assets);
+		$count = $this->Workorder->addAssets($data, 'NEW');
 		
 		$this->render('/elements/dumpSQL');
 	}
@@ -260,9 +243,6 @@ class WorkordersController extends AppController {
 	 * TODO: for now, just assume manager/editor are equivalent, don't use workorder_tasks  
 	 */ 
 	function photos($id = null){
-		$WOID = WorkordersController::$test['circle']['woid'];	// person or circle
-		if (!$id) $id = $WOID; $this->passedArgs[0] = $id;
-
 		$forceXHR = setXHRDebug($this, 0);
 		$this->layout = 'snappi';
 		$this->helpers[] = 'Time';
@@ -339,6 +319,60 @@ if (!empty($this->passedArgs['raw'])) {
 		// $this->render('/elements/dumpSQL');
 	}	
 
+
+	/**
+	 * Training methods, 
+	 * TODO: move to training controller
+	 * 
+	 */
+	 /**
+	  * clone TaskWorkorder for new operator
+	  * NOTES: 
+	  * 	- uses harvest(ALL) to add all Assets to TasksWorkorder
+	  * 	- assigns task to $operator_id
+	  */
+	 public function train ($woid, $task_id, $operator_id, $dataset='ALL') {
+	 	try {
+		 	$forceXHR = setXHRDebug($this, 0);	
+			if (empty($this->data)) throw new Exception("Error: HTTP POST required", 1);
+			
+			$options = array_filter_keys($this->data['Workorder'], array('source_id', 'source_model', 'client_id', 'manager_id', 'editor_id'));
+			
+			// TODO: for now, use AppController::$userid instead of assignment values
+			$options['client_id'] = $options['manager_id'] = AppController::$userid;
+			
+			// NOTE: find existing workorder. REQUIRED
+			$data =  $this->Workorder->findById($woid);
+			if (!$data) throw new Exception("Error: workorder not found, id={$woid}");		
+		
+			// TODO: TESTING ONLY, add to Task,
+			$task_id = WorkordersController::$test['task_id'];
+			$task_options = array(
+				'task_id'=>$task_id,
+				'task_sort'=>0,
+				'operator_id' => $operator_id,
+			);
+			$taskWorkorder = $this->Workorder->TEST_createTaskWorkorder($data['Workorder']['id'], $task_options);
+			$ret = $this->Workorder->TasksWorkorder->addAssets($taskWorkorder, $dataset);
+			
+			// format json response
+			$success = true;
+			$message = "OK";
+			$response = $this->Workorder->read(null, $data['Workorder']['id']);
+			$response['next'] = Router::url(array('controller'=>'task_workorders', 'action'=>'photos', $taskWorkorder['TasksWorkorder']['id']), true);
+				
+			$this->viewVars['jsonData'] = compact('success', 'message', 'response');
+			$done = $this->renderXHRByRequest('json', null , null, $forceXHR);
+			if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
+		} catch (Exception $e) {
+			$success = false;
+			$message =  $e->getMessage(); 
+			$this->viewVars['jsonData'] = compact('success', 'message', 'response');
+			$done = $this->renderXHRByRequest('json', null , null, $forceXHR);
+			return;
+		}
+	}
+	 
 	
 	/**
 	 * utility methods for testing, test data, etc.

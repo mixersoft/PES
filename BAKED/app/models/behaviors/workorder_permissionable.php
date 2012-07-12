@@ -65,6 +65,10 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
  */
 	public function beforeFind(Model $Model, $queryData) {
 // debug("WorkorderPermissionable::beforeFind()");		
+		if (in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) {
+			throw new Exception("Error: WorkorderPermissionable Behavior requires role privileges.", 1);
+		};
+
 		extract($this->settings[$Model->alias]);
 		switch ($type) {
 			case 'TasksWorkorder': 
