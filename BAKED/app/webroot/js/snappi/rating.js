@@ -352,6 +352,9 @@ if (!_Y) {
 			if (!value) value = this.value;
 			// 14 = width of 1 smiley -1 (i.e. 15-1=14)
 			var position;
+			if (value === -1) {
+				position = -1*_cfg.max;
+			}
 			if (this.node.hasClass('wide')) {
 				// or 23 = width for wide smiley, iOS touch padding
 				position = value ? (115 - 23 * value) : 116;
@@ -373,7 +376,7 @@ if (!_Y) {
 		setValue : function(v) {
 			if (v > this.stars)
 				v = this.stars;
-			if (v < 0 || !v)
+			if (v < -1 || !v)
 				v = 0;
 			this.value = Math.round(v);
 		},

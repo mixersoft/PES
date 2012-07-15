@@ -9,6 +9,11 @@ class WorkordersController extends AppController {
 	
 	public $scaffold;
 	
+	public $helpers  = array(
+		'Text',
+		'Layout',
+	);
+	
 	public static $test = array();
 	function __construct() {
        parent::__construct();
@@ -18,6 +23,12 @@ class WorkordersController extends AppController {
 	}
 
 	public $paginate = array(
+		'Workorder'=>array(
+			'preview_limit'=>4,
+			'paging_limit' =>20,
+			'order'=>array('Workorder.work_status'=>'ASC', 'Workorder.created'=>'ASC'),
+			'recursive'=> -1,
+		),
 		'GroupAsset'=>array(
 			'preview_limit'=>6,
 			'paging_limit' =>48,
@@ -104,6 +115,25 @@ class WorkordersController extends AppController {
 		if (empty($data)) $data = Session::read("WMS.{$woid}");
 		if ($data['Workorder']['source_model']=='User') AppController::$ownerid = $data['Workorder']['source_id']; 
 		if ($data['Workorder']['source_model']=='Group') AppController::$ownerid = $data['Workorder']['client_id'];
+	}
+	
+	function all() {
+		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
+		// paginate 
+		$paginateModel = 'Workorder';
+		$Model = $this->Workorder;
+		$this->helpers[] = 'Time';
+		$Model->Behaviors->attach('Pageable');
+		$paginateArray = $this->paginate[$paginateModel];
+		// $paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
+		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
+		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
+		// end paginate		
+		
+		$this->viewVars['jsonData'][$paginateModel] = $pageData;
+		$done = $this->renderXHRByRequest('json');
+		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
 	}
 	
 	/*
@@ -233,7 +263,9 @@ class WorkordersController extends AppController {
 		);
 		$data = $this->Workorder->find('first', $options);
 		$count = $this->Workorder->addAssets($data, 'NEW');
-		
+		/**
+		 * should offer switch to add to TasksWorkorders in batches or not 
+		 */
 		$this->render('/elements/dumpSQL');
 	}
 	
@@ -386,7 +418,7 @@ if (!empty($this->passedArgs['raw'])) {
 	function export($id, $stage = true) {
 		set_time_limit(600);
 		$baseurl = "http://dev.snaphappi.com".Stagehand::$stage_baseurl;
-		if ($stage) {
+		if ($stage === true) {
 			$dest_basepath = Stagehand::$stage_basepath; 
 		} else {
 			$dest_basepath = '/home/michael/Downloads/snappi-export/'.$id;		

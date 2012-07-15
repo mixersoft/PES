@@ -9,7 +9,7 @@ class TasksWorkorder extends AppModel {
 			'foreignKey' => 'task_id',
 			'conditions' => '',
 			'fields' => '',
-			'order' => 'task_sort, created'
+			'order' => '`TasksWorkorder`.task_sort, `TasksWorkorder`.created'
 		),	
 		'Workorder' => array(								// User hasMany Usershots
 			'className' => 'Workorder',

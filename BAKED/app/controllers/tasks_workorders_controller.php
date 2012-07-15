@@ -172,9 +172,6 @@ debug($assets);
 	}
 	
 	function photos($id = null){
-		$TWOID = TasksWorkordersController::$test['circle']['task_1'];
-		if (!$id) $id = $TWOID; $this->passedArgs[0] = $id;	
-		
 		$forceXHR = setXHRDebug($this, 0);
 		$this->layout = 'snappi';
 		$this->helpers[] = 'Time';

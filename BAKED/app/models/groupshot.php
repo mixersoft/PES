@@ -238,12 +238,11 @@ debug($checkdata);
 	 * @param array $deleteShotIds array of UUIDs
 	 * @return false on error
 	 * 
-	 * TODO: should we check owner/permissions here? require either moderator/admin or group membership
+	 * TODO: we should check owner/permissions here? require either moderator/admin or group membership
 	 */
 	public function unGroupShot ($deleteShotIds) {
 		$success = false; $message=array(); $response=array();
 		
-		$group_id = $this->_getGroupIdForWorkorderProcessing($deleteShotIds, $group_id);
 		if (!empty($deleteShotIds)) {
 			// TODO: delete old/orphaned Shots using QUEUE
 			$sql_deleteCascadeShots = "

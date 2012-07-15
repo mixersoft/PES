@@ -10,6 +10,7 @@ class AppController extends Controller {
 		'Session',
 		'RequestHandler',
 		'Auth',
+		'DebugKit.Toolbar',
 	);
 	static $http_static = null;
 	static $uuid = null;
