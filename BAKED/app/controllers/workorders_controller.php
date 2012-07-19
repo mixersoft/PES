@@ -5,6 +5,8 @@ class WorkordersController extends AppController {
 
 	public $name = 'Workorders';
 	public $layout = 'snappi';
+	public $titleName = 'Workorders';
+	public $displayName = 'Workorder';	// section header
 	// public $local_components = array('Brownie.panel');
 	
 	public $scaffold;
@@ -18,16 +20,16 @@ class WorkordersController extends AppController {
 	function __construct() {
        parent::__construct();
 	   // $this->components = array_merge($this->components, $this->local_components);
-	   WorkordersController::$test['task_id'] = '4fb294c2-525c-4871-9ba5-09fcf67883f5';  // only task
-	   WorkordersController::$test['editor'] = '12345678-1111-0000-0000-editor------';
 	}
 
 	public $paginate = array(
 		'Workorder'=>array(
+			'limit'=>2,
 			'preview_limit'=>4,
 			'paging_limit' =>20,
 			'order'=>array('Workorder.work_status'=>'ASC', 'Workorder.created'=>'ASC'),
-			'recursive'=> -1,
+			'recursive'=> 1,
+			'contain'=>array('TasksWorkorder'),
 		),
 		'GroupAsset'=>array(
 			'preview_limit'=>6,
@@ -91,6 +93,7 @@ class WorkordersController extends AppController {
 		parent::beforeFilter();
 		if (in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) {
 			throw new Exception("Error: Workorder actions require Role privileges");
+			// TODO: use Auth component to redirect to /users/signin
  		}
 				
 		// TODO: add ACLs for Workorder
@@ -99,6 +102,13 @@ class WorkordersController extends AppController {
 			$this->__saveWorkorderToSession($this->passedArgs[0]);
 		}
 		$this->Workorder->Asset->Behaviors->detach('Permissionable'); // mutually exclusive	
+		
+		/*
+		 * for testing only
+		 */ 
+		$task = $this->Workorder->Task->find('first');
+		WorkordersController::$test['task_id'] = $task['Task']['id']; 
+		WorkordersController::$test['editor'] = '12345678-1111-0000-0000-editor------';
 	}
 
 	function __saveWorkorderToSession($woid){
@@ -122,18 +132,48 @@ class WorkordersController extends AppController {
 		$this->helpers[] = 'Time';
 		// paginate 
 		$paginateModel = 'Workorder';
-		$Model = $this->Workorder;
+		$Model = $this->{$paginateModel};
 		$this->helpers[] = 'Time';
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $this->paginate[$paginateModel];
 		// $paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
-		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
+		$rawPageData = $this->paginate($paginateModel);
+		$pageData = Set::extract($rawPageData, "{n}.{$paginateModel}");
 		// end paginate		
-		
 		$this->viewVars['jsonData'][$paginateModel] = $pageData;
+		$data[$paginateModel] = $pageData;
+		
+		// extract hasMany relationships: TasksWorkorders from rawPageData
+		$hasManyModel = 'TasksWorkorder';
+		$data[$hasManyModel] = Set::combine( $rawPageData, "{n}.{$paginateModel}.id", "{n}.{$hasManyModel}");
+		
+		// lookups for belongsTo relationships, do NOT page, change to Behavior
+		$lookup['Group'] = Set::extract('/Workorder[source_model=Group]/source_id', $data);
+		$lookup['User']= Set::extract('/Workorder[source_model=User]/source_id', $data);
+		$lookup['Task']= array_unique(Set::extract('/TasksWorkorder/task_id', $rawPageData));
+
+		$manager_ids = Set::extract('/Workorder/manager_id', $data);
+		$operator_ids = Set::extract('/TasksWorkorder/operator_id', $rawPageData);
+		$lookup['User'] = array_unique(array_merge($lookup['User'], $manager_ids, $operator_ids));
+		foreach (array_keys($lookup) as $paginateModel) {
+			$Model = ClassRegistry::init($paginateModel);
+			$options = array(
+				'permissionable'=>false,
+				'conditions'=>array("{$paginateModel}.id"=>$lookup[$paginateModel]),
+			);
+			$belongsTo = $Model->find('all', $options);
+			$data[$paginateModel] = Set::combine( $belongsTo, "{n}.{$paginateModel}.id","{n}.{$paginateModel}");
+			// end paginate		
+			$this->viewVars['jsonData'][$paginateModel] = $data[$paginateModel];
+		}
+		
+		
 		$done = $this->renderXHRByRequest('json');
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
+		
+		
+		$this->set(compact('data'));
 	}
 	
 	/*
@@ -363,10 +403,10 @@ if (!empty($this->passedArgs['raw'])) {
 	  * 	- uses harvest(ALL) to add all Assets to TasksWorkorder
 	  * 	- assigns task to $operator_id
 	  */
-	 public function train ($woid, $task_id, $operator_id, $dataset='ALL') {
+	 public function train ($woid, $task_id=null, $operator_id=null, $dataset='ALL') {
 	 	try {
-		 	$forceXHR = setXHRDebug($this, 0);	
-			if (empty($this->data)) throw new Exception("Error: HTTP POST required", 1);
+		 	$forceXHR = setXHRDebug($this, 1);	
+			// if (empty($this->data)) throw new Exception("Error: HTTP POST required", 1);
 			
 			$options = array_filter_keys($this->data['Workorder'], array('source_id', 'source_model', 'client_id', 'manager_id', 'editor_id'));
 			
@@ -378,7 +418,8 @@ if (!empty($this->passedArgs['raw'])) {
 			if (!$data) throw new Exception("Error: workorder not found, id={$woid}");		
 		
 			// TODO: TESTING ONLY, add to Task,
-			$task_id = WorkordersController::$test['task_id'];
+			if (!$task_id) $task_id = WorkordersController::$test['task_id'];
+			
 			$task_options = array(
 				'task_id'=>$task_id,
 				'task_sort'=>0,
@@ -391,18 +432,23 @@ if (!empty($this->passedArgs['raw'])) {
 			$success = true;
 			$message = "OK";
 			$response = $this->Workorder->read(null, $data['Workorder']['id']);
-			$response['next'] = Router::url(array('controller'=>'task_workorders', 'action'=>'photos', $taskWorkorder['TasksWorkorder']['id']), true);
+			$response['next'] = Router::url(array('controller'=>'tasks_workorders', 'action'=>'photos', $taskWorkorder['TasksWorkorder']['id']), true);
 				
 			$this->viewVars['jsonData'] = compact('success', 'message', 'response');
 			$done = $this->renderXHRByRequest('json', null , null, $forceXHR);
 			if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
+			
+			$this->redirect($response['next'], null, true);
+			
 		} catch (Exception $e) {
 			$success = false;
 			$message =  $e->getMessage(); 
 			$this->viewVars['jsonData'] = compact('success', 'message', 'response');
 			$done = $this->renderXHRByRequest('json', null , null, $forceXHR);
-			return;
+			
 		}
+		debug($this->viewVars['jsonData']);
+		$this->render('/elements/dumpSQL');
 	}
 	 
 	

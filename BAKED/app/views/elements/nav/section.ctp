@@ -117,6 +117,9 @@ if (AppController::$uuid) {
 	}
 } else { // 'all' pages
 	switch ($controllerAttrs['name']) {
+		case 'Workorders':
+			$badgeType = 'person';
+			break;
 		case 'Users':	// Person/Me
 			$home = array('action'=>'all');
 			$actions['Most Recent'] = array('action'=>'most_recent');

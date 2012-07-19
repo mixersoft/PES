@@ -6,7 +6,7 @@
 	$primary = Session::read("nav.primary");
 	$controllerAttrs = Configure::read('controller');
 	try {
-		if (!isset($data)) throw new Exception();
+		if (!isset($data)) throw new Exception("Error: no data for section header");
 		switch ($controllerAttrs['class']) {
 			case 'Workorder': 
 				$label = "Workorder: {$data['Workorder']['id']}"; 
@@ -34,8 +34,9 @@
 <nav class="section-header container_16">
 	<h1 class="grid_7"><?php echo $badge . $label ?></h1>
     <ul class="inline grid_5">
+    	<li><?php echo "lookup {$data['Workorder']['source_model']}:{$data['Workorder']['source_id']}" ?>
+    	</li>
 		<li class="gallery rounded-5 white" action='section-view:gallery'><a>Gallery</a></li>
-		<li class="disabled"><a>Timeline</a></li>
 	</ul>
     <aside class="grid_4">
       	<?php echo $this->element('nav/search')?>

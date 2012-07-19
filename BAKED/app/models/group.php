@@ -57,7 +57,7 @@ class Group extends AppModel {
 		$permAlias = $this->getPermissionAlias();
 		// merge permissions
 		try {
-			if ($primary && isset($results[0][$model])) {
+			if ($primary && isset($results[0][$model]) && class_exists('Permissionable')) {
 				$member_owner_group_ids = Permissionable::getGroupIds();
 				foreach ($results as $i => & $data) {
 					if (isset($data[$permAlias]['perms'])) $data[$model]['perms'] = $data[$permAlias]['perms'];
