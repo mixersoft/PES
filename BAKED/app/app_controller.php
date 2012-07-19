@@ -490,7 +490,7 @@ class AppController extends Controller {
 		);
 		$extended_controllerAttr = $extras = array();	
 		AppController::$uuid = isset($this->passedArgs[0]) ? $this->passedArgs[0] : null;
-		if (in_array($this->name, array('Assets', 'Groups', 'Users', 'Collections', 'Tags'))) {
+		if (in_array($this->name, array('Assets', 'Groups', 'Users', 'Collections', 'Tags', 'Workorders'))) {
 			/*
 			 * sluggable processing. this method requires 2 DB calls. (cached)
 			 */
@@ -514,9 +514,6 @@ class AppController extends Controller {
 		$controllerAttr = array_merge( $controllerAttr , $extended_controllerAttr, $extras);
 
 		if (in_array(AppController::$role, array('EDITOR','MANAGER','ADMIN','ROOT'))) {
-			// set in /person/photos for now, 
-			// TODO: deprecate once workorder assignments are complete
-			AppController::$ownerid = Session::read('Auth.User.acts_as_ownerid');
 			if (!AppController::$ownerid) AppController::$ownerid =  AppController::$userid;
 			$controllerAttr['userid'] = AppController::$ownerid;
 			$controllerAttr['ROLE'] =  AppController::$role;

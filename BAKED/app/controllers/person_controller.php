@@ -234,7 +234,6 @@ class PersonController extends UsersController {
 		if ($this instanceof PersonController && in_array(AppController::$role,array('EDITOR','MANAGER','ADMIN','ROOT'))){
 			// act as person
 			AppController::$ownerid = AppController::$uuid;
-			Session::write('Auth.User.acts_as_ownerid', AppController::$ownerid);
 			Configure::write('controller.userid', AppController::$ownerid);
 $this->log("/users/photos: acts_as_ownerid", 	LOG_DEBUG);					
 			Permissionable::setGroupOwnershipsMemberships(AppController::$ownerid);  

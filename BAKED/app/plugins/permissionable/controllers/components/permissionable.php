@@ -43,12 +43,6 @@ class PermissionableComponent extends Object {
 				$auth['Permissions']['actions'] = array('*');
 				$controller->Session->write('Auth.Permissions', $auth['Permissions']);
 				$controller->Session->setFlash("Permissionable: root user");
-				$ownerid = Session::read('Auth.User.acts_as_ownerid');
-				if ($ownerid && $ownerid != Permissionable::getUserId()) {
-					Permissionable::setUserId($ownerid);					
-					Permissionable::setGroupOwnershipsMemberships($ownerid);  
-					$controller->Session->write('Auth.Permissions.group_ids', Permissionable::$group_ids);
-				}
 			} else {
 				Permissionable::setUserId($user['User']['id']);
 				Permissionable::setGroupId($user['User']['primary_group_id']);  // primary group = role
