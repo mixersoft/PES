@@ -188,6 +188,20 @@ class Workorder extends AppModel {
 		
 	}	
 	
-	
+
+	function updateAllCounts() {
+		$SQL = "
+UPDATE snappi_workorders.`workorders` as Workorder
+LEFT JOIN (
+	SELECT w.id AS workorder_id, COUNT(DISTINCT aw.asset_id) AS `assets_workorder_count`
+	FROM snappi_workorders.`workorders` w
+	LEFT JOIN snappi_workorders.assets_workorders aw ON w.id = aw.workorder_id
+	GROUP BY w.id
+) AS t ON (`Workorder`.id = t.workorder_id)
+SET Workorder.assets_workorder_count = t.assets_workorder_count;
+";
+		$result = $this->query($SQL);
+		return true;
+	}
 }
 ?>

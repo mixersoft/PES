@@ -126,5 +126,21 @@ class TasksWorkorder extends AppModel {
 		return Set::extract('/AssetsTask/asset_id', $data);
 		
 	}
+
+	function updateAllCounts() {
+		$SQL = "
+UPDATE snappi_workorders.`tasks_workorders` as TWorkorder
+LEFT JOIN (
+	SELECT w.id AS workorder_id, COUNT(DISTINCT at.asset_id) AS `assets_task_count`
+	FROM snappi_workorders.`tasks_workorders` w
+	LEFT JOIN snappi_workorders.assets_tasks at ON w.id = at.tasks_workorder_id
+	GROUP BY w.id
+) AS t ON (`TWorkorder`.id = t.workorder_id)
+SET TWorkorder.assets_task_count = t.assets_task_count;
+";
+		$result = $this->query($SQL);
+		return true;
+	}
+	
 }
 ?>
