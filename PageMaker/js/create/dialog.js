@@ -12,7 +12,7 @@
     
 
 	var BUTTONS_OK_CANCEL = [{
-			text: 'OK',
+			label:'OK',
 			handler: null
 		},{
 			test: 'Cancel',
@@ -20,7 +20,7 @@
 		}],
 			
 		BUTTONS_CLOSE =[{
-			text: 'Close',
+			label:'Close',
 			handler: function(){this.close();}
 		}];
 	
@@ -100,7 +100,7 @@
 			modal: true,
 			buttons: [
 			{
-				text: 'Apply',
+				label:'Apply',
 				handler: function() {
 					var check;
 					var content = this.get('contentBox');
@@ -142,7 +142,7 @@
 			modal: true,
 			buttons: [
 			{
-				text: 'Apply',
+				label:'Apply',
 				handler: function() {
 					var content = this.get('contentBox');
 					var selected = content.one('.selected');
@@ -187,7 +187,7 @@
 			modal: true,
 			buttons: [
 			// {
-				// text: 'Sign in',
+				// label:'Sign in',
 				// handler: function() {
 					// var content = this.get('contentBox');
 				// }
@@ -245,10 +245,10 @@
 			body.setContent(_cfg.bodyNode);
 		} else if (_cfg.selector) {
 			var markup = _Y.one(_cfg.selector).get('parentNode.innerHTML');
-			if (_cfg.tokens) markup = _Y.substitute(markup, _cfg.tokens);
+			if (_cfg.tokens) markup = _Y.Lang.sub(markup, _cfg.tokens);
 			body.setContent(markup);
 		} else if (_cfg.markup) {	
-			if (_cfg.tokens) _cfg.markup = _Y.substitute(_cfg.markup, _cfg.tokens);
+			if (_cfg.tokens) _cfg.markup = _Y.Lang.sub(_cfg.markup, _cfg.tokens);
 			body.setContent(_cfg.markup);
 		} else if (_cfg.uri) {
 			// XHR content for dialog contentBox
@@ -268,7 +268,7 @@
 				on: {
 					success: _cfg.success || function(e, i, o, args) {
 						if (args && args.tokens) {
-							var markup = _Y.substitute(o.responseText, args.tokens);
+							var markup = _Y.Lang.sub(o.responseText, args.tokens);
 						} else markup = o.responseText;
 						body.setContent(markup);	// closure
 						return false; 

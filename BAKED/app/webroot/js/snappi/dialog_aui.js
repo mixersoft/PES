@@ -19,15 +19,15 @@
     
 
 	var BUTTONS_OK_CANCEL = [{
-			text: 'OK',
+			label:'OK',
 			handler: null
 		},{
-			text: 'Cancel',
+			label:'Cancel',
 			handler: function(){this.close();}
 		}],
 			
 		BUTTONS_CLOSE =[{
-			text: 'Close',
+			label:'Close',
 			handler: function(){this.close();}
 		}];
 	
@@ -199,7 +199,7 @@
 			buttons: [
 			{
 				// TODO: convert this toggle button to tabs in the contentBox
-				text: 'Show Public Circles',
+				label: 'Show Public Circles',
 				handler: function() {
 					var dialog = this;
 					var uri = dialog.io.get('uri');
@@ -229,7 +229,7 @@
 				}
 			},
 			{
-				text: 'Remove from Circle',
+				label:'Remove from Circle',
 				handler: function() {
 					var check;
 					var content = this.get('contentBox');
@@ -253,7 +253,7 @@
 				}
 			},
 			{
-				text: 'Share with Circle',
+				label: 'Share with Circle',
 				handler: function() {
 					var check;
 					var content = this.get('contentBox');
@@ -302,7 +302,7 @@
 			modal: true,
 			buttons: [
 			{
-				text: 'Apply',
+				label:'Apply',
 				handler: function(e) {
 					var content = this.get('contentBox');
 					var setting = content.one('.selected');
@@ -358,7 +358,7 @@
 			modal: true,
 			buttons: [
 			// {
-				// text: 'Sign in',
+				// label:'Sign in',
 				// handler: function() {
 					// var content = this.get('contentBox');
 				// }
@@ -418,7 +418,7 @@
 			alert.setStdModContent('body', _cfg.bodyNode);
 		} else if (_cfg.selector && _Y.one(_cfg.selector)) {
 			var markup = _Y.one(_cfg.selector).outerHTML();
-			if (_cfg.tokens) markup = _Y.substitute(markup, _cfg.tokens);
+			if (_cfg.tokens) markup = _Y.Lang.sub(markup, _cfg.tokens);
 			// body.setContent(markup);
 			alert.setStdModContent('body', markup);
 		} else if (_cfg.markup) {	
@@ -450,7 +450,7 @@
 						// get added markup from #markup
 						if (args && args.cfg.selector) markup = _Y.one(args.cfg.selector);
 						if (args && args.tokens) {
-							markup = _Y.substitute(markup.outerHTML(), args.tokens);
+							markup = _Y.Lang.sub(markup.outerHTML(), args.tokens);
 						} else markup = markup.outerHTML();
 						this.setStdModContent('body', markup);
 						content = this.getStdModNode('body').one('*');
