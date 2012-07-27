@@ -190,7 +190,7 @@
 		} else {
 			// CREATE new ratingGroup
 			var ratingGroup = parent.one('.'+_cfg.className);
-			if (!ratingGroup) ratingGroup = parent.create(_Y.substitute(
+			if (!ratingGroup) ratingGroup = parent.create(_Y.Lang.sub(
 					"<div class='{className}'></div>", _cfg));
 			try {
 				parent.one('ul > li.rating').append(ratingGroup);	
@@ -475,7 +475,7 @@ if (!_Y) {
 	 */
 	AssetRatingController.setProp = function(container, cfg){
 		var uri;
-		if (SNAPPI.STATE.controller.class == 'workorder') {
+		if (SNAPPI.STATE.controller['class'] == 'workorder') {
 			uri = "/workorders/setprop/.json";
 		} else {
 			uri = "/photos/setprop/.json";

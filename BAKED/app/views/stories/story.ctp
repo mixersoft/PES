@@ -43,7 +43,7 @@
 </div>
 <div id="footer"> 
 	<?php if (!$isIFrame && !$isPreview) {
-		echo '<div id="share">Share this story: <a href="parent.window.location.href=\"'.$link.'\";" id="share-link">http://'.env('HTTP_HOST').'/stories/story/4f82af26-66e4-407f-aa75-66f70afc480d</a></div>';
+		echo '<div id="share">Share this story: <a href="" id="share-link">http://'.env('HTTP_HOST').'/stories/story/4f82af26-66e4-407f-aa75-66f70afc480d</a></div>';
 		echo '<a target="_new" href="http://snaphappi.com"><img src="'.AppController::$http_static[0].'/static/img/css-gui/snappi-top.png"></a>';
 	} ?>
 </div>

@@ -612,7 +612,7 @@
     		}
 			// set the tip before show
     		hint.set('headerContent', _bodyMarkup.close);
-    		hint.set('footerContent', _Y.substitute(_bodyMarkup.doNotShow, cfg));
+    		hint.set('footerContent', _Y.Lang.sub(_bodyMarkup.doNotShow, cfg));
     		hint.listen = {};
     		hint.listen['visibleChange'] = hint.on('visibleChange', _handle_VisibleChange, hint);
     		hint.listen['any-click'] = _Y.on('click', function(e, hint){

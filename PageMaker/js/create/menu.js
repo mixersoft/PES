@@ -390,7 +390,7 @@ console.log("delegateHost="+delegateHost._yuid);
                     var href = 'http://'+window.location.host + resp.response.href;
                     
                     // add Yellow link to stage
-                    var a = _Y.substitute('Share this Story: <a href="{href}" target="_blank">{href}</a>', {href: href});
+                    var a = _Y.Lang.sub('Share this Story: <a href="{href}" target="_blank">{href}</a>', {href: href});
                     if (!args.loadingNode.one('.play')) {
 	                    args.loadingNode.one('.stage-body').append('<div class="center play">'+a+'</div>');
                     } else args.loadingNode.one('.play').setContent(a);

@@ -529,7 +529,7 @@ this.content._isResizing = false;		// enable winResize
 				} else if (CONFIG.DEFER_IMG_LOAD) {
 					tokens['qsrc'] = src;
 				} else tokens['src'] = src;
-				scrollContent.append(_Y.substitute(markup, tokens));
+				scrollContent.append(_Y.Lang.sub(markup, tokens));
 			}
 			// var closeBox = this.container.one("#centerbox #closeBox");
 			// this.container.one("#centerbox").setContent(closeBox).append(scrollContent);

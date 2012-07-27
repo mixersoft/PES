@@ -863,7 +863,7 @@
                         value: json.Groups[i].id,
                         label: json.Groups[i].title
                     };
-                    var option = _Y.Node.create(_Y.substitute(optionMarkup, cfg));
+                    var option = _Y.Node.create(_Y.Lang.sub(optionMarkup, cfg));
                     selectNode.append(option);
                     option.dom()._value = cfg.value;
                     if(i >= 5){
@@ -1021,7 +1021,7 @@
 	                    label: json.Groups[i].title
 	                    
 	                };
-	                var option = _Y.Node.create(_Y.substitute(optionMarkup, cfg));
+	                var option = _Y.Node.create(_Y.Lang.sub(optionMarkup, cfg));
 	                selectNode.append(option);
 	                option.dom()._value = cfg.value;
 	                if(i >= 5){
@@ -1166,7 +1166,7 @@
 						value : cfg[i].id,
 						label : cfg[i].title
 					};
-					var option = _Y.Node.create(_Y.substitute(optionMarkup, tokens));
+					var option = _Y.Node.create(_Y.Lang.sub(optionMarkup, tokens));
 					selectNode.append(option);
 					option.dom()._value = tokens.value;
 					if(i >= 5){

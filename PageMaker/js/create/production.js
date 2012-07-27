@@ -355,7 +355,7 @@
                     top: (cast.position.y),
                     borderWidth: (cfg.spacing>1) ? 'border-width:'+cfg.spacing+'px;' : '',
                 }
-                node = _Y.Node.create(_Y.substitute(MARKUP,tokens));
+                node = _Y.Node.create(_Y.Lang.sub(MARKUP,tokens));
                 node.aud = snappiAud;
                 pageGallery.append(node);
                 

@@ -875,7 +875,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
                 },
                 'snappi-thumbnail': {
                     path: 'thumbnail3.js',
-                    requires: ['node', 'substitute', 'stylesheet', 'event', 'overlay', 'snappi-util-misc', 'snappi-rating', 'snappi-group', 'snappi-dragdrop', 'snappi-thumbnail-helpers', 'snappi-imageloader']
+                    requires: ['node', 'stylesheet', 'event', 'overlay', 'snappi-util-misc', 'snappi-rating', 'snappi-group', 'snappi-dragdrop', 'snappi-thumbnail-helpers', 'snappi-imageloader']
                     //'snappi-util-misc' SNAPPI.util.hash(bindTo) may be deprecated 
                 },
                 'snappi-thumbnail-helpers': {
@@ -897,7 +897,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
                 },
                 'snappi-lightbox': {
                     path: 'lightbox.js',
-                    requires: ['node', 'substitute', 'event', 'io', 'dd', 'dd-plugin', 'snappi-util-post', 'snappi-sortedhash', 'snappi-gallery', 'snappi-dragdrop',  'snappi-rating', 
+                    requires: ['node', 'event', 'io', 'dd', 'dd-plugin', 'snappi-util-post', 'snappi-sortedhash', 'snappi-gallery', 'snappi-dragdrop',  'snappi-rating', 
                     // 'snappi-domJsBinder',
                                /*
                                 * experimental
@@ -913,7 +913,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
                 },
                 'snappi-util-post': {
                     path: 'util-post.js',
-                    requires: ['node', 'event-custom', 'io', 'substitute',
+                    requires: ['node', 'event-custom', 'io', ,
                                'snappi-rating', 
                                // 'snappi-lightbox'
                                ]
@@ -924,7 +924,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
                 },  
                 'snappi-io-helpers': {
                     path: 'io_helpers.js',
-                    requires: ['async-queue', 'node', 'substitute', 'snappi-io']
+                    requires: ['async-queue', 'node', 'snappi-io']
                 },           
                 'snappi-ui-helpers': {
                     path: 'ui-helpers.js',

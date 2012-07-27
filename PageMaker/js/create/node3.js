@@ -61,13 +61,13 @@
                     title: cfg.title || ''
                 };
                 var tHeader = "<div class='photoSet-header' id='{id}'><h1>{title}</h1>Choose Photos per Page:<ul></ul></div>";
-                var node = _Y.Node.create(_Y.substitute(tHeader, tokens));
+                var node = _Y.Node.create(_Y.Lang.sub(tHeader, tokens));
                 
                 var UL = node.one('ul');
                 var sButtons = "<li class='stack-productions' title='Create a Page Gallery from a template for {n} photos. <br><b>Note:</b> These templates are for demonstration only. The system can be configured to accomodate a wide variety of page templates.'>{n} Photos</li>";
                 var btnList = [5, 6, 7, 9, 10];
                 for (var n in btnList) {
-                    var li = _Y.Node.create(_Y.substitute(sButtons, {
+                    var li = _Y.Node.create(_Y.Lang.sub(sButtons, {
                         n: btnList[n]
                     }));
                     li.dom().arrangement = {
@@ -139,7 +139,7 @@
                 label: cfg.label,
                 tooltip: cfg.tooltip ? "title='" + cfg.tooltip + "'" : ''
             };
-            var el = _Y.Node.create(_Y.substitute(strCb, tokens));
+            var el = _Y.Node.create(_Y.Lang.sub(strCb, tokens));
             if (cfg.label) 
                 el.addClass(cfg.label.replace(' ', '-').toLowerCase());
             return el;

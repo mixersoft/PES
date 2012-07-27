@@ -94,12 +94,12 @@
     				// tokens.labelLabel = wrapper.get('innerHTML');
     				// SNAPPI.filter.active.Rating = filter.value;
     			} else {
-	    			if (filter.labelHref) tokens.labelLabel = _Y.substitute(markup_A, tokens);
-	    			else tokens.labelLabel = _Y.substitute(markup_B, tokens);
+	    			if (filter.labelHref) tokens.labelLabel = _Y.Lang.sub(markup_A, tokens);
+	    			else tokens.labelLabel = _Y.Lang.sub(markup_B, tokens);
 	    			if (console) console.warn("deprecate SNAPPI.filter, use SNAPPI.STATE.filter instead");
 	    			SNAPPI.filter.active[filter['class']] = filter;
     			}
-    			var filterNode = this.container.create(_Y.substitute(markup, tokens));
+    			var filterNode = this.container.create(_Y.Lang.sub(markup, tokens));
     			this.container.one('ul').append(filterNode);
     		}
     	},
