@@ -115,13 +115,25 @@ $this->Layout->blockStart('itemHeader'); ?>
 		// get Montage
 		_Y.on('click', function(e){
 			var go = function(){
+				
+				var onDuplicate = SNAPPI.Auditions.onDuplicate_REPLACE;
+				var castingCall = PAGE.jsonData.castingCall;
+				if (!castingCall.auditionSH) { 
+					castingCall.auditionSH = SNAPPI.Auditions.parseCastingCall(
+						castingCall, 
+						null, 
+						null, 
+						onDuplicate);
+				}
+			
 				var storyCfg = {
-					castingCall: PAGE.jsonData.castingCall,
-					roleCount: {lo: 3, hi:6},
+					castingCall: castingCall,
+					roleCount: {lo: 4, hi:7},
 					getStage: SNAPPI.UIHelper.create.getStage_modal,
 					stageType: 'preview-ratings',		// determines menu to load
 					stageTitle: 'Snaphappi Stories',
 					hintId: 'HINT_Preview_StoryByRatings',
+					scrollView: 0,
 				}
 				SNAPPI.UIHelper.create._GET_MONTAGE(storyCfg);
 			};

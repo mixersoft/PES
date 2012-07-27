@@ -422,7 +422,7 @@
 			// body.setContent(markup);
 			alert.setStdModContent('body', markup);
 		} else if (_cfg.markup) {	
-			if (_cfg.tokens) _cfg.markup = _Y.substitute(_cfg.markup, _cfg.tokens);
+			if (_cfg.tokens) _cfg.markup = _Y.Lang.sub(_cfg.markup, _cfg.tokens);
 			// body.setContent(_cfg.markup);
 			alert.setStdModContent('body', _cfg.markup);
 		} else if (_cfg.uri) {

@@ -452,18 +452,22 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 			cfg = cfg || {};
 			var PADDING_TOP = 140;	// header+offsets = 140px
 			var markup = "<div id='stage-2' class='pagemaker-stage'><div class='stage-body'></div></div>";
-			var isHD = (SNAPPI.util.getFromQs('media') == 'print');
+			var MAX_HEIGHT, MAX_WIDTH,
+				isHD = (SNAPPI.util.getFromQs('media') == 'print');
 			if (isHD) {
 				var body = _Y.one('body');
-				this.MAX_HEIGHT = body.get('winHeight')-50;
-				this.MAX_WIDTH = body.get('winWidth')-50;
+				MAX_HEIGHT = body.get('winHeight')-50;
+				MAX_WIDTH = body.get('winWidth')-50;
+			} else {
+				MAX_HEIGHT = UIHelper.create.MAX_HEIGHT;
+				MAX_WIDTH = UIHelper.create.MAX_WIDTH;
 			}
 			var dialogCfg = {
 				// selector: '#stage-2',
 				markup: markup,
     			// uri: '/combo/markup/importComplete',
-    			height: this.MAX_HEIGHT,		// -> dialog.top
-    			width: this.MAX_WIDTH,
+    			height: MAX_HEIGHT,		// -> dialog.top
+    			width: MAX_WIDTH,
     			tokens: {},
     		};
     		var stage, dialog = SNAPPI.Dialog.find['dialog-alert']; 
@@ -608,7 +612,7 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 		 * cfg.batch, cfg.gallery
 		 */
 		getSceneCfg: function(cfg){
-			if (!cfg || !cfg.batch.count()) cfg = this.getCastingCall(); 
+			if (!cfg || !cfg.batch.count() ) cfg = this.getCastingCall(); 
 			/*
 			 * check if we need to POST to get complete/updated results
 			 */
@@ -906,7 +910,7 @@ console.error("Error: Plugin should already be ready, PM.PageMakerPlugin.isLoade
 			cfg.isMontage = true;	// uses Pr.getThumbPrefix to get min thumb size by crop
 			cfg.spacing = 1;		// border spacing
 			cfg.allowedRatios = {'h':'544:960', 'v':'7:10'}; 
-			cfg.scrollView = 1;
+			if (typeof(cfg.scrollView) == 'undefined' ) cfg.scrollView = 1;
 			cfg.page = 1;
 			cfg.isPreview = 0;
 			cfg.MARGIN_W = 0;		// this needs to be passed from sceneCfg -> playCfg
@@ -983,13 +987,15 @@ console.error("Error: Plugin should already be ready, PM.PageMakerPlugin.isLoade
 				if (PAGE.jsonData.montage) 
 					cfg.batch = cfg.gallery.auditionSH;
 				else cfg.batch = cfg.gallery.auditionSH.slice(start,start+PERPAGE);
-			} else if (cfg.batch && cfg.roleCount){
+			} else if (!cfg.batch && cfg.roleCount){
 				// from /welcome/preview
+				var castingCall = cfg.castingCall;
+				cfg.width = 960;
 				var max = Math.min(castingCall.auditionSH.count(), cfg.roleCount.hi);
 				var min = Math.min(castingCall.auditionSH.count(), cfg.roleCount.lo);
 				var roleCount = Math.floor(Math.random()*(max-min+1)) + min;
 console.info('Getting Story for rolecount='+roleCount);					
-				cfg.batch = cfg.batch.slice(0, roleCount);
+				cfg.batch = castingCall.auditionSH.slice(0, roleCount);
 			} else if (cfg.batch){
 				// just use cfg.batch, do not slice;
 				// we are probably using Role.suggestedPhotoId
@@ -1021,13 +1027,14 @@ console.info('Getting Story for rolecount='+roleCount);
 			cfg.isMontage = true;	// uses Pr.getThumbPrefix to get min thumb size by crop
 			cfg.spacing = 1;		// border spacing
 			cfg.allowedRatios = {'h':'544:960', 'v':'7:10'}; 
-			cfg.scrollView = 1;
+			if (typeof(cfg.scrollView) == 'undefined' ) cfg.scrollView = 1;
 			cfg.MARGIN_W = 0;		// this needs to be passed from sceneCfg -> playCfg
 						
 			// initialize stage and reuse later
 			var listener, 
 				stage = cfg.getStage(cfg);	// stage DOM is created here
-			_Y.one('.gallery-container').addClass('hide');
+							
+			if (_Y.one('.gallery-container')) _Y.one('.gallery-container').addClass('hide');
 				
 			_Y.once('snappi-pm:render', function(Pr, pageGallery) {
 				var loading = PMPlugin.stage.body.one('.loading');

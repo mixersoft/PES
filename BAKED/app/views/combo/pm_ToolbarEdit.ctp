@@ -1,3 +1,4 @@
+<div class="hide">
 <div id="menu-pm-toolbar-edit" class="menu-inline yui3-aui-overlaycontext-hidden hide">
 	<ul class='inline'>
 		<li class='story-id btn orange before-show' action='story_id' title='Enter a unique title which will be used to Save and Play-back your Story.'>
@@ -16,4 +17,5 @@
 		<li class='btn orange' action='shuffle' title='Shuffle Snaps into a new layout. Sign-in to save.'>Shuffle
 		</li>
 	</ul>
+</div>
 </div>
