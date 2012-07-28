@@ -104,13 +104,27 @@ class TasksWorkordersController extends AppController {
 		if ($data['Workorder']['source_model']=='Group') AppController::$ownerid = $data['Workorder']['client_id'];
 	}
 	
-	
+	/**
+	 * from HTTP POST
+	 * 		$this->data[manager_id]=UUID
+	 * 		$this->data[task_id]=UUID (optional), TasksWorkorder.id
+	 *		$this->data[editor_id]=UUID (optional)
+	 * assign EDITOR TO TasksWorkorder, grants access privileges to TasksWorkorder assets
+	 * @param $DEVoptions string, use /[id]/me to assign to current user for testing 
+	 */ 
 	function assign($id, $DEVoptions = null) {
-		try {
+		if (isset($this->data)) {
 			extract($this->data); // manager_id, editor_id, task_id
+		} else {
+			// TODO: testing only
+			// if (empty($this->data)) throw new Exception("Error: HTTP POST required", 1);
 			if ($DEVoptions == 'me') {
-				$editor_id =  isset($editor_id) ? $editor_id :  AppController::$userid;
-			}
+				if (AppController::$role == 'MANAGER') $manager_id = AppController::$userid;
+				$editor_id =  AppController::$userid;
+			}		
+		}
+		try {
+			// extract($this->data); // manager_id, editor_id, task_id
 			$this->TasksWorkorder->id = $id;
 			$ret = $this->TasksWorkorder->saveField('operator_id', $editor_id);
 			if ($ret) $message[] = "TasksWorkorder {$id}: operator set to {$editor_id}";
@@ -123,8 +137,14 @@ class TasksWorkordersController extends AppController {
 			$success = false;
 			$message[] = $e->getMessage();
 		}
+		
+		// admin only
+		if (strpos(env('HTTP_REFERER'),'/workorders/all')>1) {	// Admin only
+			$this->redirect(env('HTTP_REFERER'), null, true);
+		}
+		
 		$this->viewVars['jsonData'] = compact('success', 'message', 'response');
-		$done = $this->renderXHRByRequest('json', null , null, $forceXHR);
+		$done = $this->renderXHRByRequest('json', null , null);
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
 		
 		$this->render('/elements/dumpSQL');
@@ -166,6 +186,12 @@ debug($assets);
 				$ret = $this->TasksWorkorder->addAssets($taskWorkorder, $assets);
 				if (!$ret) throw new Exception("Error harvesting new Assets to AssetsTasks, twoid={$id}", 1);
 			}
+		}
+		
+		$this->Session->setFlash((int)$ret." new Snaps found.");
+		// admin only
+		if (strpos(env('HTTP_REFERER'),'/workorders/all')>1) {	// Admin only
+			$this->redirect(env('HTTP_REFERER'), null, true);
 		}
 		
 		$this->render('/elements/dumpSQL');

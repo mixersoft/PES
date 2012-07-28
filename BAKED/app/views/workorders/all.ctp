@@ -108,18 +108,19 @@ if (empty($this->passedArgs['wide'])) {
 				<?php
 					$label = 'assign';
 					if (!$isAssigned) {
-						$next = array('action' => 'assign', $taskWorkorder['id'], 'me');
+						$next = array('controller'=>'tasks_workorders','action' => 'assign', $taskWorkorder['id'], 'me');
 						$btn = $this->Html->link(__($label, true), $next);
 					} else $btn = $label;
 					echo '<li class="btn rounded-5 '.($isAssigned ? 'white disabled' : 'orange').'">'.$btn.'</li>';
 				?>&nbsp;
 				<?php
 					$label = 'harvest';
-					if ($isAssigned) {
-						$next = array('action' => 'harvest', $taskWorkorder['id']);
+					$enabled = $isAssigned && ($taskWorkorder['assets_task_count'] < $workorder['assets_workorder_count']);
+					if ($enabled) {
+						$next = array('controller'=>'tasks_workorders','action' => 'harvest', $taskWorkorder['id']);
 						$btn = $this->Html->link(__($label, true), $next);
 					} else $btn = $label;
-					echo '<li class="btn rounded-5 '.(!$isAssigned ? 'white disabled' : 'orange').'">'.$btn.'</li>';
+					echo '<li class="btn rounded-5 '.(!$enabled ? 'white disabled' : 'orange').'">'.$btn.'</li>';
 				?>&nbsp;
 			<ul>&nbsp;
 		</td>

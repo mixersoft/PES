@@ -102,7 +102,7 @@ class TasksWorkorder extends AppModel {
 				$ret = $this->AssetsTask->saveAll($assetsTask, array('validate'=>'first'));
 				if ($ret) {
 					$this->resetStatus($twoid);
-					$this->updateAllCounts();
+					$this->updateAllCounts();	// TODO: limit update to $woid
 				}
 				return $ret ? $count : false;
 			} else return true;  	// nothing new to add;

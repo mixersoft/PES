@@ -164,7 +164,10 @@ class Workorder extends AppModel {
 		$count = count($assetsWorkorder);
 		if ($count) {
 			$ret = $this->AssetsWorkorder->saveAll($assetsWorkorder, array('validate'=>'first'));
-			if ($ret) $this->resetStatus($woid);
+			if ($ret) {
+				$this->resetStatus($woid);
+				$this->updateAllCounts();	// TODO: limit update to $woid
+			}
 			return $ret ? $count : false;
 		} else return true;  	// nothing new to add;
 	}

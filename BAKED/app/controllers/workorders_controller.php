@@ -91,16 +91,10 @@ class WorkordersController extends AppController {
 	
 	function beforeFilter(){
 		parent::beforeFilter();
-		if (in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) {
-			throw new Exception("Error: Workorder actions require Role privileges");
-			// TODO: use Auth component to redirect to /users/signin
- 		}
-				
 		/*
 		 *	These actions are allowed for all users
 		 */
-		$myAllowedActions = array(			
-		);
+		$myAllowedActions = array(	);
 		$this->Auth->allow( array_merge($this->Auth->allowedActions , $myAllowedActions));
 		if (!empty($this->passedArgs[0])) {
 			$this->__saveWorkorderToSession($this->passedArgs[0]);
@@ -110,6 +104,10 @@ class WorkordersController extends AppController {
 		/*
 		 * for testing only
 		 */ 
+		if (in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) {
+			$this->Session->setFlash("Error: Workorder actions require Role privileges");
+ 		} 
+		 
 		$task = $this->Workorder->Task->find('first');
 		WorkordersController::$test['task_id'] = $task['Task']['id']; 
 		WorkordersController::$test['editor'] = '12345678-1111-0000-0000-editor------';
@@ -252,20 +250,25 @@ class WorkordersController extends AppController {
 	 * @param $DEVoptions string, use /[id]/me to assign to current user for testing 
 	 */ 
 	function assign($id, $DEVoptions = null) {
-		try {
+		if (isset($this->data)) {
 			extract($this->data); // manager_id, editor_id, task_id
+		} else {
+			// TODO: testing only
+			// if (empty($this->data)) throw new Exception("Error: HTTP POST required", 1);
 			if ($DEVoptions == 'me') {
-				$manager_id = isset($manager_id) ? $manager_id : AppController::$userid; 
-				$editor_id =  isset($editor_id) ? $editor_id :  $manager_id;
-			}
-			
+				if (AppController::$role == 'MANAGER') $manager_id = AppController::$userid;
+				$editor_id = AppController::$userid;
+			}		
+		}
+		try {
+			// extract($this->data); // manager_id, editor_id, task_id
 			$this->Workorder->id = $id;
 			$ret = $this->Workorder->saveField('manager_id', $manager_id);
 			if ($ret) $message[] = "Workorder {$id}: manager set to {$manager_id}";
 			else throw new Exception("Error saving manager assignment, woid={$id}", 1);
 			
 			
-			if ($task_id) {
+			if ($task_id && $editor_id) {
 				$this->Workorder->TasksWorkorder->id = $task_id;
 				$ret = $this->Workorder->TasksWorkorder->saveField('operator_id', $editor_id);
 				if ($ret) $message[] = "Workorder {$id}/Task {$task_id}: operator set to {$editor_id}";
@@ -279,6 +282,13 @@ class WorkordersController extends AppController {
 			$success = false;
 			$message[] = $e->getMessage();
 		}
+		
+		// admin only
+		if (strpos(env('HTTP_REFERER'),'/workorders/all')>1) {	// Admin only
+			$this->redirect(env('HTTP_REFERER'), null, true);
+		}
+		
+		
 		$this->viewVars['jsonData'] = compact('success', 'message', 'response');
 		$done = $this->renderXHRByRequest('json', null , null, $forceXHR);
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
@@ -310,6 +320,11 @@ class WorkordersController extends AppController {
 		/**
 		 * should offer switch to add to TasksWorkorders in batches or not 
 		 */
+		$this->Session->setFlash((int)$count." new Snaps found.");
+		// admin only
+		if (strpos(env('HTTP_REFERER'),'/workorders/all')>1) {
+			$this->redirect(env('HTTP_REFERER'), null, true);
+		}
 		$this->render('/elements/dumpSQL');
 	}
 	
