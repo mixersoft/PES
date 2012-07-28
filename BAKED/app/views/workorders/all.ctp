@@ -98,7 +98,7 @@ if (empty($this->passedArgs['wide'])) {
 				} else $btn = 'Go';
 				echo '<li class="btn rounded-5 '.(!$isAssigned ? 'white disabled' : 'orange').'">'.$btn.'</li>';
 			?>	&nbsp;
-				<li><?php echo "Task: {$data['Task'][$taskWorkorder['task_id']]['name']} ({$taskWorkorder['assets_task_count']} Snaps)"; ?>&nbsp;</li>
+				<li><?php echo "Task: {$data['Task'][ $taskWorkorder['task_id'] ]['name']} ({$taskWorkorder['assets_task_count']} Snaps)"; ?>&nbsp;</li>
 			</ul>&nbsp;
 		</td>	
 		<td><?php echo $label['operator_id']; ?>&nbsp;</td>		

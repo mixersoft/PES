@@ -100,7 +100,10 @@ class TasksWorkorder extends AppModel {
 			$count = count($assetsTask);
 			if ($count) {
 				$ret = $this->AssetsTask->saveAll($assetsTask, array('validate'=>'first'));
-				if ($ret) $this->resetStatus($twoid);
+				if ($ret) {
+					$this->resetStatus($twoid);
+					$this->updateAllCounts();
+				}
 				return $ret ? $count : false;
 			} else return true;  	// nothing new to add;
 		}catch(Exception $e) {

@@ -96,8 +96,12 @@ class WorkordersController extends AppController {
 			// TODO: use Auth component to redirect to /users/signin
  		}
 				
-		// TODO: add ACLs for Workorder
-		$this->Auth->allow('*');
+		/*
+		 *	These actions are allowed for all users
+		 */
+		$myAllowedActions = array(			
+		);
+		$this->Auth->allow( array_merge($this->Auth->allowedActions , $myAllowedActions));
 		if (!empty($this->passedArgs[0])) {
 			$this->__saveWorkorderToSession($this->passedArgs[0]);
 		}
@@ -362,13 +366,24 @@ if (!empty($this->passedArgs['raw'])) {
 			// // add owner_names to lookup.
 			// $this->getLookups(array('Users'=> array_keys(Set::combine($pageData, '/owner_id', ''))));
 		// }
-					
+				
+		/*
+		 * HACK: special XHR preview for testing WMS app w/Mauro
+		 */ 		
+		if (!empty($this->params['url']['preview'])
+			&& ($this->RequestHandler->isAjax() || $forceXHR)
+		) {
+				$this->render('XHR/preview', 'ajax');
+				return;
+		}		
+						
 		$done = $this->renderXHRByRequest('json', '/elements/photo/roll');
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
 		
 		/*
 		 * render page
-		 */ 
+		 */
+		 
 		$options = array(
 			'contain'=>array('TasksWorkorder.id', 'TasksWorkorder.task_sort', 'TasksWorkorder.operator_id'),
 			'conditions'=>array('Workorder.id'=>$id)
@@ -388,6 +403,8 @@ if (!empty($this->passedArgs['raw'])) {
 		}
 		$this->set(array('assets'=>$data,'class'=>'Asset'));
 		
+		
+		
 		// $this->render('/elements/dumpSQL');
 	}	
 
@@ -402,24 +419,26 @@ if (!empty($this->passedArgs['raw'])) {
 	  * NOTES: 
 	  * 	- uses harvest(ALL) to add all Assets to TasksWorkorder
 	  * 	- assigns task to $operator_id
+	  * TODO: OE system should get task_id, but for training, just use fixed value for now
 	  */
-	 public function train ($woid, $task_id=null, $operator_id=null, $dataset='ALL') {
+	 public function train ($woid, $task_id="null", $operator_id=null, $dataset='ALL') {
 	 	try {
 		 	$forceXHR = setXHRDebug($this, 1);	
-			// if (empty($this->data)) throw new Exception("Error: HTTP POST required", 1);
 			
-			$options = array_filter_keys($this->data['Workorder'], array('source_id', 'source_model', 'client_id', 'manager_id', 'editor_id'));
+			if (isset($this->data['Workorder'])) {
+				$data = $this->data;
+			} else {
+				// if (empty($this->data)) throw new Exception("Error: HTTP POST required", 1);
+				// NOTE: find existing workorder. REQUIRED
+				$data =  $this->Workorder->findById($woid);	
+				if (!$data) throw new Exception("Error: workorder not found, id={$woid}");		
+			}
 			
+			$options = array_filter_keys($data['Workorder'], array('source_id', 'source_model', 'client_id', 'manager_id', 'editor_id'));
 			// TODO: for now, use AppController::$userid instead of assignment values
 			$options['client_id'] = $options['manager_id'] = AppController::$userid;
-			
-			// NOTE: find existing workorder. REQUIRED
-			$data =  $this->Workorder->findById($woid);
-			if (!$data) throw new Exception("Error: workorder not found, id={$woid}");		
-		
 			// TODO: TESTING ONLY, add to Task,
-			if (!$task_id) $task_id = WorkordersController::$test['task_id'];
-			
+			if ($task_id=="null") $task_id = WorkordersController::$test['task_id'];
 			$task_options = array(
 				'task_id'=>$task_id,
 				'task_sort'=>0,
@@ -433,13 +452,12 @@ if (!empty($this->passedArgs['raw'])) {
 			$message = "OK";
 			$response = $this->Workorder->read(null, $data['Workorder']['id']);
 			$response['next'] = Router::url(array('controller'=>'tasks_workorders', 'action'=>'photos', $taskWorkorder['TasksWorkorder']['id']), true);
+			// TODO: return as JSON
+$this->redirect($response['next'], null, true);
 				
 			$this->viewVars['jsonData'] = compact('success', 'message', 'response');
 			$done = $this->renderXHRByRequest('json', null , null, $forceXHR);
 			if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
-			
-			$this->redirect($response['next'], null, true);
-			
 		} catch (Exception $e) {
 			$success = false;
 			$message =  $e->getMessage(); 
@@ -535,8 +553,5 @@ if (!empty($this->passedArgs['raw'])) {
 		if (!empty($errors)) debug($errors);
 		$this->render('/elements/dumpSQL');
 	}
-	
-	 
-	
 }
 ?>
