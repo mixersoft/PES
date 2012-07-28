@@ -187,8 +187,7 @@ debug($assets);
 				if (!$ret) throw new Exception("Error harvesting new Assets to AssetsTasks, twoid={$id}", 1);
 			}
 		}
-		
-		$this->Session->setFlash((int)$ret." new Snaps found.");
+		$this->Session->setFlash(is_numeric($ret) ? $ret : 0 ." new Snaps found.");
 		// admin only
 		if (strpos(env('HTTP_REFERER'),'/workorders/all')>1) {	// Admin only
 			$this->redirect(env('HTTP_REFERER'), null, true);

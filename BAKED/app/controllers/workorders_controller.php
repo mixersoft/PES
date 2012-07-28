@@ -320,7 +320,7 @@ class WorkordersController extends AppController {
 		/**
 		 * should offer switch to add to TasksWorkorders in batches or not 
 		 */
-		$this->Session->setFlash((int)$count." new Snaps found.");
+		$this->Session->setFlash(is_numeric($ret) ? $ret : 0 ." new Snaps found.");
 		// admin only
 		if (strpos(env('HTTP_REFERER'),'/workorders/all')>1) {
 			$this->redirect(env('HTTP_REFERER'), null, true);
