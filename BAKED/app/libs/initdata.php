@@ -126,10 +126,16 @@ class Data {
 		$acl_groups[]=array(  'isSystem'=>1, 'title'=>'*', 'role'=>'__admin', 'perm'=>$rw);
 
 		// supervisor/manager ACLs
-		$acl_groups[]=array(  'isSystem'=>1, 'title'=>'users:*', 'role'=>'__manager', 'perm'=>$r);
+		$role = '__manager';
+		$acl_groups[]=array(  'isSystem'=>1, 'title'=>'users:*', 'role'=>$role, 'perm'=>$r);
+		$acl_groups[]=array(  'title'=>'workorder:*', 'role'=>$role);
 
 		// editor ACLs
-		$acl_groups[]=array(  'isSystem'=>1, 'title'=>'users:*', 'role'=>'__editor', 'perm'=>$r);
+		$role = '__editor';
+		$acl_groups[]=array(  'isSystem'=>1, 'title'=>'users:*', 'role'=>$role, 'perm'=>$r);
+		$acl_groups[]=array(  'title'=>'workorder:photos', 'role'=>$role);
+		$acl_groups[]=array(  'title'=>'workorder:release', 'role'=>$role);
+		$acl_groups[]=array(  'title'=>'tasks_workorder:*', 'role'=>$role);
 
 		// user ACLs
 		/*
