@@ -57,9 +57,15 @@
 					<span class="header-btn orange rounded-5" onclick="SNAPPI.UIHelper.nav.toggle_fullscreen();">Normal View</span>
 				</li>
 			<?php if ( AppController::$ownerid) { ?>
-				<li class="menu-trigger-create">
-					<span class="header-btn green rounded-5"><b>+</b>&nbsp;Create</span>
-				</li>
+				<?php if ( in_array(AppController::$role, array('MANAGER','EDITOR')))  { 	// role=MANAGER/EDITOR				?>	
+					<li class="menu-trigger-wms">
+						<span class="header-btn orange rounded-5">&nbsp;WMS</span>
+					</li>
+				<?php  } else { 						// role=USER/GUEST					?>	
+					<li class="menu-trigger-create">
+						<span class="header-btn green rounded-5"><b>+</b>&nbsp;Create</span>
+					</li>
+				<?php  } ?>						
 				<li>
 					<span class="grey">Welcome,</span>
 					<a id='userAccountBtn' class='menu-open'><?php echo $displayName ?></a>
@@ -69,6 +75,9 @@
 				</li>
 				<li><a href="/users/signout">Sign out</a></li>				
 			<?php  } else { ?>
+				<li class="menu-trigger-create">
+					<span class="header-btn green rounded-5"><b>+</b>&nbsp;Create</span>
+				</li>
 				<li class="help" title="Ask questions or get help for this page." >
 					<span class="header-btn blue-gloss rounded-5"  onclick="SNAPPI.UIHelper.nav.showHelp(this);">?</span>
 				</li>
