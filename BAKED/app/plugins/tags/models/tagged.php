@@ -135,7 +135,12 @@ class Tagged extends TagsAppModel {
 	function getCloudConditions($query){
 		// get Conditions for current page (XHR parent)
 		$xhrFrom = Configure::read('controller.xhrFrom');
-		if ($xhrFrom) {
+		if (isset($query['conditions']['Tagged.model'])) {
+			$model = $query['conditions']['Tagged.model'];
+			$uuid = $xhrFrom['uuid'];
+			$getConditionsFor = array($model=>$uuid);
+		} else if ($xhrFrom) {
+			// TODO: deprecate lookup.xfr.xx.Model, use $query['conditions']['Tagged.model']
 			// filter tagCloud by Model
 			$uuid = $xhrFrom['uuid'];
 			// TODO: deprecate keyName usage
@@ -143,6 +148,7 @@ class Tagged extends TagsAppModel {
 			// $model = Configure::read("lookup.xfr.{$keyName}.Model");
 			$model = Configure::read("lookup.xfr.{$xhrFrom['alias']}.Model");
 			$getConditionsFor = array($model=>$uuid);
+// debug($getConditionsFor);				
 		} else {
 			$getConditionsFor = array();
 			$model = $query['model'];
@@ -153,7 +159,6 @@ class Tagged extends TagsAppModel {
 			$getConditionsFor[ Configure::read("lookup.xfr.{$context['keyName']}.Model")]=$context['uuid'];
 		}
 		$contextCloudConditions = null;
-//debug($getConditionsFor);			
 		foreach ($getConditionsFor as $model=>$uuid) {
 			if ($model=='*') {
 				// tags for all Models
