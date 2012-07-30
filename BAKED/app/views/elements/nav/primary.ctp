@@ -69,16 +69,16 @@
 					<span class="grey">Welcome,</span>
 					<a id='userAccountBtn' class='menu-open'><?php echo $displayName ?></a>
 				</li>	
-				<li class="help" title="Ask questions or get help for this page.">
-					<span class="header-btn rounded-5 <?php echo $help_status; ?>"  onclick="SNAPPI.UIHelper.nav.showHelp(this);">?</span>
+				<li class="help menu-trigger-help" title="Ask questions or get help for this page.">
+					<span class="header-btn rounded-5 <?php echo $help_status; ?>">?</span>
 				</li>
 				<li><a href="/users/signout">Sign out</a></li>				
 			<?php  } else { 						// guest 					?>
 				<li class="menu-trigger-create">
 					<span class="header-btn green rounded-5"><b>+</b>&nbsp;Create</span>
 				</li>				
-				<li class="help" title="Ask questions or get help for this page." >
-					<span class="header-btn rounded-5 <?php echo $help_status; ?>"  onclick="SNAPPI.UIHelper.nav.showHelp(this);">?</span>
+				<li class="help menu-trigger-help" title="Ask questions or get help for this page.">
+					<span class="header-btn rounded-5 <?php echo $help_status; ?>">?</span>
 				</li>
 				<li><a href="/users/signin">Sign in</a></li>
 				<li><a href="/users/register">Sign up</a></li>

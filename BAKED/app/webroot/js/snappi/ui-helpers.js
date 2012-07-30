@@ -60,7 +60,31 @@
 			}  
 			return false;
 		},
+		'showHints': function(btn, node){
+			// start gallery.Photo hints
+			SNAPPI.STATE.hints['HINT_Preview'] = true;
+			SNAPPI.STATE.hints['HINT_MultiSelect'] = true;
+			SNAPPI.STATE.hints['HINT_ContextMenu'] = true;
+			SNAPPI.STATE.hints['HINT_Create'] = true;
+			SNAPPI.STATE.hints['HINT_Bestshot'] = true;
+			SNAPPI.STATE.hints['HINT_HiddenShot'] = true;
+			SNAPPI.STATE.hints['HINT_Keydown_Gallery'] = true;
+			SNAPPI.STATE.hints['HINT_Montage'] = true;
+			SNAPPI.STATE.hints['HINT_DisplayOptions'] = true;
+			SNAPPI.STATE.hints['HINT_Lightbox'] = true;
+			SNAPPI.STATE.hints['HINT_Badge'] = true;
+			// from PhotoPreview load()
+			SNAPPI.STATE.hints['HINT_Filmstrip'] = true;
+			SNAPPI.STATE.hints['HINT_Keydown_Preview'] = true;
+			// SNAPPI.STATE.hints['HINT_PMToolbarEdit'] = true;
+			
+			if (SNAPPI.Hint){
+				// just flushQueue
+				SNAPPI.Hint.flushQueue();		// if Hint already available
+			}
+		}, 
 		'showHelp': function(btn, node){
+			
 			try {
 				var container = node || _Y.one('section.help');
 				btn = _Y.one() || _Y.one('nav.user li.help span');

@@ -21,6 +21,15 @@
 	 * 
 	 */
     Hint.CFG = {					// id:CSS_ID
+    	HINT_Preview:{
+    		css_id:'hint-preview-markup',
+    		uri: '/help/markup/tooltips', 
+    		showDelay: 100,
+    		showArrow: false,
+    		align:  { points: [ 'tc', 'tc' ] },
+    		trigger: 'body',
+    		anchor: '#content',
+    	},
     	HINT_MultiSelect:{
     		css_id:'hint-multiselect-markup',
     		uri: '/help/markup/tooltips', 
@@ -139,15 +148,6 @@
     		hideDelay: 500,
     		align:  { points: [ 'bc', 'tc' ] },
     		trigger: '#menu-pm-toolbar-edit .play',
-    	},
-    	HINT_Preview:{
-    		css_id:'hint-preview-markup',
-    		uri: '/help/markup/tooltips', 
-    		showDelay: 9000,
-    		showArrow: false,
-    		align:  { points: [ 'tc', 'tc' ] },
-    		trigger: 'body',
-    		anchor: '#content',
     	},
     	HINT_Preview_StoryByRatings:{
     		css_id:'hint-preview-story-ratings-markup',

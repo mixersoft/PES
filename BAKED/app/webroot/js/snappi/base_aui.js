@@ -54,27 +54,6 @@
 			delayed.delay(1000);	
 			SNAPPI.UIHelper.markup.set_ItemHeader_WindowOptions();
 			SNAPPI.setPageLoading(false); 
-			// start gallery.Photo hints
-			if (!PAGE.isDev ) {
-				SNAPPI.STATE.hints['HINT_Preview'] = true;
-				SNAPPI.STATE.hints['HINT_MultiSelect'] = true;
-				SNAPPI.STATE.hints['HINT_ContextMenu'] = true;
-				SNAPPI.STATE.hints['HINT_Create'] = true;
-				SNAPPI.STATE.hints['HINT_Bestshot'] = true;
-				SNAPPI.STATE.hints['HINT_HiddenShot'] = true;
-				SNAPPI.STATE.hints['HINT_Keydown_Gallery'] = true;
-				SNAPPI.STATE.hints['HINT_Montage'] = true;
-				SNAPPI.STATE.hints['HINT_DisplayOptions'] = true;
-				SNAPPI.STATE.hints['HINT_Lightbox'] = true;
-				SNAPPI.STATE.hints['HINT_Badge'] = true;
-				// from PhotoPreview load()
-				SNAPPI.STATE.hints['HINT_Filmstrip'] = true;
-				SNAPPI.STATE.hints['HINT_Keydown_Preview'] = true;
-				// SNAPPI.STATE.hints['HINT_PMToolbarEdit'] = true;
-				
-				if (SNAPPI.Hint) SNAPPI.Hint.flushQueue();		// if Hint already available
-			}
-			
         });        
         Y.on('snappi:afterLightboxInit', function(){
             /**

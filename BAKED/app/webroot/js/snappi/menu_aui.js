@@ -11,6 +11,7 @@
 		Menu.CFG = {
 			'menu-header-markup': CFG_Menu_Header,
 			'menu-header-create-markup': CFG_Menu_Header_Create,
+			'menu-header-help-markup': CFG_Menu_Header_Help,
 			'menu-item-header-markup': CFG_Menu_Item_Header,
 			'menu-photoPreview-actions': CFG_Menu_PreviewPhoto_Actions,
 			'menu-pagemaker-selected-create-markup': CFG_Menu_Pagemaker_Create, 
@@ -128,7 +129,7 @@
 		} catch (e) {
 			auth = null;
 		}	
-		defaultMenus = {};
+		defaultMenus = {'menu-header-help-markup': 1};
 		try {
 			if (/^(MANAGER|EDITOR)$/.test(SNAPPI.STATE.controller.ROLE)) {
 				defaultMenus['menu-header-wms-markup'] = 1;	
@@ -140,9 +141,7 @@
 		}
 			
 		if (auth) {
-			defaultMenus = _Y.merge(defaultMenus,{
-				'menu-header-markup': 1,	
-			});
+			defaultMenus['menu-header-markup'] = 1;
 		}		
 		
 		menus = _Y.merge(defaultMenus, menus);
@@ -1197,47 +1196,7 @@ console.log("delegateHost="+delegateHost._yuid);
 		menu.hide();
 		return;
 	};	
-	MenuItems.wms_create_workorder_beforeShow = function(menuItem, menu){
-		var role = SNAPPI.STATE.controller.ROLE;
-		if (/(EDITOR|MANAGER)/.test(role)) {
-			menuItem.show();
-		} else {
-			menuItem.hide();
-		}
-	}
-	MenuItems.wms_create_workorder_click = function(menuItem, menu){
-		var role = SNAPPI.STATE.controller.ROLE;
-		if (/(EDITOR|MANAGER)/.test(role)) {
-			// POST to 
-			var postData, ioCfg,
-				controller = SNAPPI.STATE.controller;
-			postData = {
-				"data[Workorder][source_id]": controller.xhrFrom.uuid,
-				"data[Workorder][source_model]": controller['class'],
-				"data[Workorder][editor_id]": controller.userid,	// override in controller
-				// manager_id: null,
-				// client_id: null,
-			}
-			ioCfg = {
-				uri: '/workorders/create/.json',
-				method: "POST",
-				qs: postData,
-				on: {
-					successJson: function(e, i,o,args) {
-						var resp = o.responseJson;
-						menu.hide();
-						if (resp.success) {
-							window.location.href = resp.response.next;
-						}
-					}
-				}
-			}
-			ioCfg = SNAPPI.IO.pluginIO_RespondAsJson(ioCfg);
-			menuItem.plug(_Y.Plugin.IO, ioCfg);
-		} else {
-			menuItem.hide();
-		}
-	}
+	
 	// what's the diff between express_upload and direct_upload
 	MenuItems.express_upload_beforeShow = function(menuItem, menu, properties){
 		if (!MenuItems.confirmAuth(menuItem)) return;
@@ -1510,6 +1469,67 @@ console.log("delegateHost="+delegateHost._yuid);
 		var target = menu.get('currentNode');
 		// TODO:
 	};	
+	
+	MenuItems.help_show_hints_beforeShow = function(menuItem, menu){
+		if (!SNAPPI.Hint) menuItem.addClass('disabled');
+		else menuItem.removeClass('disabled');
+	}
+	MenuItems.help_show_hints_click = function(menuItem, menu){
+		var btn = menu.get('currentNode');
+		SNAPPI.UIHelper.nav.showHints();
+		menu.hide();
+	}
+	
+	MenuItems.help_show_help_click = function(menuItem, menu){
+		var btn = menu.get('currentNode');
+		SNAPPI.UIHelper.nav.showHelp(btn);
+		menu.hide();
+	}
+	
+	/**
+	 * Workorder Management System
+	 */
+	MenuItems.wms_create_workorder_beforeShow = function(menuItem, menu){
+		var role = SNAPPI.STATE.controller.ROLE;
+		if (/(EDITOR|MANAGER)/.test(role)) {
+			menuItem.show();
+		} else {
+			menuItem.hide();
+		}
+	}
+	MenuItems.wms_create_workorder_click = function(menuItem, menu){
+		var role = SNAPPI.STATE.controller.ROLE;
+		if (/(EDITOR|MANAGER)/.test(role)) {
+			// POST to 
+			var postData, ioCfg,
+				controller = SNAPPI.STATE.controller;
+			postData = {
+				"data[Workorder][source_id]": controller.xhrFrom.uuid,
+				"data[Workorder][source_model]": controller['class'],
+				"data[Workorder][editor_id]": controller.userid,	// override in controller
+				// manager_id: null,
+				// client_id: null,
+			}
+			ioCfg = {
+				uri: '/workorders/create/.json',
+				method: "POST",
+				qs: postData,
+				on: {
+					successJson: function(e, i,o,args) {
+						var resp = o.responseJson;
+						menu.hide();
+						if (resp.success) {
+							window.location.href = resp.response.next;
+						}
+					}
+				}
+			}
+			ioCfg = SNAPPI.IO.pluginIO_RespondAsJson(ioCfg);
+			menuItem.plug(_Y.Plugin.IO, ioCfg);
+		} else {
+			menuItem.hide();
+		}
+	}
 
 	/*
 	 * MenuCfgs
@@ -1573,6 +1593,18 @@ console.log("delegateHost="+delegateHost._yuid);
 		var CSS_ID = 'menu-header-create-markup';
 		var TRIGGER = 'nav.user li.menu-trigger-create';
 		var XHR_URI = '/combo/markup/headerMenuCreate'; 
+		return _load_Single_Trigger_Menu(CSS_ID, TRIGGER, XHR_URI, cfg);
+	};
+	/**
+	 * load user Help menu
+	 * @param cfg
+	 * @return
+	 */
+	var CFG_Menu_Header_Help = function(){}
+	CFG_Menu_Header_Help.load = function(cfg){
+		var CSS_ID = 'menu-header-help-markup';
+		var TRIGGER = 'nav.user li.menu-trigger-help';
+		var XHR_URI = '/combo/markup/headerMenuHelp'; 
 		return _load_Single_Trigger_Menu(CSS_ID, TRIGGER, XHR_URI, cfg);
 	};
 	/**

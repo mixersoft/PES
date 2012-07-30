@@ -132,9 +132,17 @@ $this->Layout->blockStart('itemHeader'); ?>
 					getStage: SNAPPI.UIHelper.create.getStage_modal,
 					stageType: 'preview-ratings',		// determines menu to load
 					stageTitle: 'Snaphappi Stories',
-					hintId: 'HINT_Preview_StoryByRatings',
+					// hintId: 'HINT_Preview_StoryByRatings',
 					scrollView: 0,
 				}
+				_Y.once('snappi-pm:render', function(Pr, pageGallery) {
+					try{
+					SNAPPI.STATE.hints['HINT_Preview_StoryByRatings'] = true;
+					SNAPPI.Hint.flushQueue();
+					} catch(e) {
+						throw "SNAPPI.Hint not initialized";
+					}
+				});
 				SNAPPI.UIHelper.create._GET_MONTAGE(storyCfg);
 			};
 			if (!SNAPPI.Dialog) {
