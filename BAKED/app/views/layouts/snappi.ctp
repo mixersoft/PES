@@ -28,6 +28,7 @@
 	<script id='css-start' type='text/javascript'> 
 		PAGE = {jsonData:{STATE:{}, menu:{}}, init:[]}; 	
 		ALLOY_VERSION='alloy-1.5.0';
+		<?php if (Configure::read('isDev')) echo 'PAGE.isDev=1;' ?>
 	</script>
 	<link rel="stylesheet" type="text/css" media="all" href="<?php echo AppController::$http_static[1]; ?>/combo/js?baseurl=svc/lib/alloy-1.5.0/build&/aui-skin-classic/css/aui-skin-classic-all-min.css&/aui-loading-mask/assets/skins/sam/aui-loading-mask.css&/aui-overlay/assets/skins/sam/aui-overlay.css" />
 	<link rel="stylesheet" type="text/css" href="<?php echo AppController::$http_static[0]; ?>/min/b=static/css&amp;f=reset.css,960.css" />	

@@ -168,9 +168,15 @@ switch (env('SERVER_NAME')) {
 	case 'preview.snaphappi.com':
 	case 'touch.snaphappi.com':
 		Configure::write('debug', 0);
+		$config['isDev'] = 0;
 		break;
+	case 'preview':
+		$config['isDev'] = 1;
+		Configure::write('debug', 0);
+		break;	
 	case 'dev.snaphappi.com':
 	default:
+		$config['isDev'] = 1;
 		Configure::write('debug', 2);
 	break;
 }

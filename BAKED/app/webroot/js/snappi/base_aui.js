@@ -21,7 +21,7 @@
 // console.log("global any-click");    
 			SNAPPI.last_action_ms = new Date().getTime();			
 		}, document);
-
+		
         SNAPPI.MenuAUI.initMenus();
 
         /****************************************************************************
@@ -55,7 +55,7 @@
 			SNAPPI.UIHelper.markup.set_ItemHeader_WindowOptions();
 			SNAPPI.setPageLoading(false); 
 			// start gallery.Photo hints
-			if (!SNAPPI.Config.getHostConfig().isLocalhost) {
+			if (!PAGE.isDev ) {
 				SNAPPI.STATE.hints['HINT_Preview'] = true;
 				SNAPPI.STATE.hints['HINT_MultiSelect'] = true;
 				SNAPPI.STATE.hints['HINT_ContextMenu'] = true;
@@ -750,10 +750,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
 	    }
         //                console.log("host=" + host);
 	    o.host = host;
-	    o.isLocalhost = /(snappi-dev|touch_debug|git|localhost)/.test(host); // live vs dev site	
-	    	
-	    if (o.isLocalhost) defaultCfg = CFG.DEBUG;
-	    else defaultCfg = CFG.PROD;
+	    defaultCfg = (PAGE.isDev) ? CFG.DEBUG : CFG.PROD;
 	    
 	    // merge defaultCfg + overrides
 	    for (var prop in defaultCfg) {
