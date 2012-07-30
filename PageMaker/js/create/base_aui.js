@@ -453,10 +453,7 @@ console.info("PageMakerPlugin.load(): _Y.fire('snappi-pm:pagemaker-load-complete
 	    }
         //                console.log("host=" + host);
 	    o.host = host;
-	    o.isLocalhost = /(snappi-dev|touch_debug|git|localhost)/.test(host); // live vs dev site	
-	    	
-	    if (o.isLocalhost) defaultCfg = CFG.DEBUG;
-	    else defaultCfg = CFG.PROD;
+	    defaultCfg = (PAGE.isDev) ? CFG.DEBUG : CFG.PROD;
 	    
 	    // merge defaultCfg + overrides
 	    for (var prop in defaultCfg) {
