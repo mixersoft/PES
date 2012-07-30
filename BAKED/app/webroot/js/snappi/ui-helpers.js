@@ -84,10 +84,9 @@
 			}
 		}, 
 		'showHelp': function(btn, node){
-			
 			try {
 				var container = node || _Y.one('section.help');
-				btn = _Y.one() || _Y.one('nav.user li.help span');
+				btn = (btn && btn.hasClass('header-btn')) ? btn : _Y.one('nav.user li.help span');
 				if (/\/help\/topic/.test(window.location.href)) {
 					return;
 				}

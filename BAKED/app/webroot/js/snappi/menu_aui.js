@@ -1475,14 +1475,20 @@ console.log("delegateHost="+delegateHost._yuid);
 		else menuItem.removeClass('disabled');
 	}
 	MenuItems.help_show_hints_click = function(menuItem, menu){
-		var btn = menu.get('currentNode');
 		SNAPPI.UIHelper.nav.showHints();
 		menu.hide();
 	}
-	
-	MenuItems.help_show_help_click = function(menuItem, menu){
+	MenuItems.help_show_help_beforeShow = function(menuItem, menu){
 		var btn = menu.get('currentNode');
-		SNAPPI.UIHelper.nav.showHelp(btn);
+		if (btn.one('span').hasClass('green')) {
+			_Y.later(50, this, function(){
+				menu.hide();
+				SNAPPI.UIHelper.nav.showHelp(btn);	// close help
+			});
+		}
+	}
+	MenuItems.help_show_help_click = function(menuItem, menu){
+		SNAPPI.UIHelper.nav.showHelp();
 		menu.hide();
 	}
 	
