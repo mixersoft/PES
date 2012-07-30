@@ -73,15 +73,23 @@ class TasksWorkordersController extends AppController {
 	
 	function beforeFilter(){
 		parent::beforeFilter();
-		if (in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) {
-			throw new Exception("Error: TasksWorkorder actions require Role privileges");
- 		}
-		
-		// TODO: add ACLs for TasksWorkorder
-		$this->Auth->allow('*');
+		$myAllowedActions = array(	);
+		$this->Auth->allow( array_merge($this->Auth->allowedActions , $myAllowedActions));
 		if (!empty($this->passedArgs[0])) {
 			$this->__saveWorkorderToSession($this->passedArgs[0]);
 		}	
+		$this->TasksWorkorder->Asset->Behaviors->detach('Permissionable'); // mutually exclusive	
+		
+		/*
+		 * for testing only
+		 */ 
+		 if (in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) {
+			throw new Exception("Error: TasksWorkorder actions require Role privileges");
+ 		}
+	}
+
+	function beforeRender(){
+		
 	}
 	
 	function __saveWorkorderToSession($twoid){
@@ -213,6 +221,8 @@ debug($assets);
 
 		// paginate 
 		$SOURCE_MODEL = Session::read("WMS.{$id}.Workorder.source_model"); // TasksWorkordersController::$source_model;
+		$displayName = $SOURCE_MODEL=='User' ? 'Person' : 'Group';
+		Configure::write('controller.label', $displayName);					// for section-header
 		$paginateModel = 'Asset';
 		$Model = ClassRegistry::init($paginateModel);
 		$this->paginate[$paginateModel] = $this->paginate[$SOURCE_MODEL.$paginateModel];
@@ -273,5 +283,84 @@ if (!empty($this->passedArgs['raw'])) {
 		$this->viewPath = 'workorders';
 	}	
 	
+	/**
+	 * workorder version of /assets/home
+	 */
+	function snap($id = null){
+		$FILMSTRIP_LIMIT = 999;
+		$forceXHR = setXHRDebug($this, 0);
+		Configure::write('controller.label', 'Photo');
+		Configure::write('controller.titleName', 'Photos');
+		/*
+		 * navFilmstrip processing
+		 */
+		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
+		$ccid = (isset($this->params['url']['ccid'])) ? $ccid = $this->params['url']['ccid'] : null;
+		if ($ccid) {
+			$castingCall = $this->CastingCall->cache_Refresh($ccid, array('perpage_on_cache_stale'=>$FILMSTRIP_LIMIT));
+	// debug($ccid);			exit;
+	// debug($castingCall['CastingCall']['Request']); 	
+	// debug(Session::read('castingCall'));exit;	
+			$this->viewVars['jsonData']['castingCall'] = $castingCall;
+			$done = $this->renderXHRByRequest('json', null, null , 0);
+		
+			if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
+			
+			if (!$castingCall) {
+				// handle cacheMiss, drop $ccid from request
+				$this->redirect(Router::url($this->passedArgs));
+			}
+		}
+		/*
+		 * navFilmstrip done
+		 */
+		
+		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';
+		if (!$id) {
+			$this->Session->setFlash(sprintf(__('Invalid %s', true), 'asset'));
+			$this->redirectSafe();
+		}		
+		/*
+		 * get Permissionable associated data manually, add paging
+		 */
+		if (!empty($this->params['url']['shotType'])) {  
+			$shotType = $this->params['url']['shotType'];
+		} else if (!empty($castingCall['CastingCall']['Auditions']['ShotType'])) {
+			$shotType = $castingCall['CastingCall']['Auditions']['ShotType'];
+		} else {
+			$shotType = 'Usershot';
+		}
+		$options = array(
+			'conditions'=>array('Asset.id'=>$id),
+			'contain'=> array('Owner.id', 'Owner.username', 'ProviderAccount.id', 'ProviderAccount.provider_name', 'ProviderAccount.display_name'),
+			'fields'=>'Asset.*',		// MUST ADD 'fields' for  containable+permissionable
+			'extras'=>array(
+				'show_edits'=>true,
+				'join_shots'=>$shotType, 		// join shots to get shot_count?
+				'join_bestshot'=>false,			// do NOT need bestShots when we access by $asset_id
+				'show_hidden_shots'=>true,		// by $asset_id, hidden shots ok, or DONT join_bestshot
+			),
+		);
+		$data = $this->TasksWorkorder->Asset->find('first', $options);
+//debug($data);		
+		if (empty($data)) {
+			$this->Session->setFlash(sprintf(__('No %s found.', true), 'Photos'));
+			$this->redirectSafe();
+		} else {
+			$this->set('data', $data);	
+			$this->viewVars['jsonData']['Asset'][]=$data['Asset'];
+			Session::write('lookup.owner_names', Set::merge(Session::read('lookup.owner_names'), Set::combine($data, '/Owner/id', '/Owner/username')));
+			if (empty($castingCall['CastingCall'])) {
+				// cache miss, build a new castingCall with one photo
+				if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
+				$castingCall = $this->CastingCall->getCastingCall(array($data['Asset']), false);
+				$this->viewVars['jsonData']['castingCall'] = $castingCall; 
+			} 
+		}
+		
+		$this->viewPath = 'workorders';		
+	}
 }
 ?>

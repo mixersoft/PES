@@ -1,10 +1,4 @@
 <?php
-/*
- *  * WORKORDER VIEW (from: /elements/photos/roll)
- */ 
-echo $this->Html->css('workorder/workorder');
-
-
 /**
  * 
  * @param array $photos - usually $data['Asset'] from $Model->find()

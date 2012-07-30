@@ -28,6 +28,8 @@
 			'contextmenu-group-markup': CFG_Context_FigureBox,		
 			'contextmenu-person-markup': CFG_Context_FigureBox,
 			'contextmenu-collection-markup': CFG_Context_FigureBox,
+			// Workorder Managment System
+			'menu-header-wms-markup': CFG_Menu_Header_WMS,
 		};		
 	}
 
@@ -126,9 +128,17 @@
 		} catch (e) {
 			auth = null;
 		}	
-		defaultMenus = {
-			'menu-header-create-markup': 1,	
-		};		
+		defaultMenus = {};
+		try {
+			if (/^(MANAGER|EDITOR)$/.test(SNAPPI.STATE.controller.ROLE)) {
+				defaultMenus['menu-header-wms-markup'] = 1;	
+			} else {
+				defaultMenus['menu-header-create-markup'] = 1;	
+			}
+		} catch(e) {
+			throw "Error: SNAPPI.STATE.controller.ROLE not set";
+		}
+			
 		if (auth) {
 			defaultMenus = _Y.merge(defaultMenus,{
 				'menu-header-markup': 1,	
@@ -857,11 +867,11 @@ console.log("delegateHost="+delegateHost._yuid);
 		var thumbnail = menu.get('currentNode');	// target
 		var g = MenuItems.getGalleryFromTarget(thumbnail);
 		var linkTo = thumbnail.one('img').getAttribute('linkTo');
-		linkTo = linkTo.replace('/photos/home', '/workorders/snap');
+		linkTo = linkTo.replace('/photos/home', _Y.Lang.sub('/{alias}/snap', SNAPPI.STATE.controller));
 		if (g.castingCall.CastingCall) {
         	linkTo += '?ccid=' + g.castingCall.CastingCall.ID;
 			try {
-				var shotType = gcastingCall.CastingCall.Auditions.ShotType;
+				var shotType = g.castingCall.CastingCall.Auditions.ShotType;
 				if (shotType == 'Groupshot'){
 					linkTo += '&shotType=Groupshot';
 				}
@@ -1187,7 +1197,7 @@ console.log("delegateHost="+delegateHost._yuid);
 		menu.hide();
 		return;
 	};	
-	MenuItems.assign_workorder_beforeShow = function(menuItem, menu){
+	MenuItems.wms_create_workorder_beforeShow = function(menuItem, menu){
 		var role = SNAPPI.STATE.controller.ROLE;
 		if (/(EDITOR|MANAGER)/.test(role)) {
 			menuItem.show();
@@ -1195,7 +1205,7 @@ console.log("delegateHost="+delegateHost._yuid);
 			menuItem.hide();
 		}
 	}
-	MenuItems.assign_workorder_click = function(menuItem, menu){
+	MenuItems.wms_create_workorder_click = function(menuItem, menu){
 		var role = SNAPPI.STATE.controller.ROLE;
 		if (/(EDITOR|MANAGER)/.test(role)) {
 			// POST to 
@@ -1565,6 +1575,19 @@ console.log("delegateHost="+delegateHost._yuid);
 		var XHR_URI = '/combo/markup/headerMenuCreate'; 
 		return _load_Single_Trigger_Menu(CSS_ID, TRIGGER, XHR_URI, cfg);
 	};
+	/**
+	 * load WMS menu for role=MANAGER/EDITOR
+	 * @param cfg
+	 * @return
+	 */
+	var CFG_Menu_Header_WMS = function(){}
+	CFG_Menu_Header_WMS.load = function(cfg){
+		var CSS_ID = 'menu-header-wms-markup';
+		var TRIGGER = 'nav.user li.menu-trigger-wms';
+		var XHR_URI = '/combo/markup/headerMenuWMS'; 
+		return _load_Single_Trigger_Menu(CSS_ID, TRIGGER, XHR_URI, cfg);
+	};	
+	
 	/**
 	 * not currently used. see UIHelper.nav.toggle_ItemMenu(); 
 	 * @param cfg

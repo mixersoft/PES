@@ -1,4 +1,9 @@
 <?php 
+/*
+ *  * WORKORDER VIEW (from: /elements/photos/roll)
+ */ 
+echo $this->Html->css('workorder/workorder');
+
 $badge_src = Stagehand::getSrc($data['User']['src_thumbnail'], 'sq', 'Person');
 $ownerCount = $jsonData['castingCall']['CastingCall']['Auditions']['Total'];
 echo $this->element('/workorder/snap/gallery', compact('badge_src', 'ownerCount') );

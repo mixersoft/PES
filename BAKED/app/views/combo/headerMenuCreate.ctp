@@ -9,8 +9,5 @@
 		<li action='create_pagegallery' title="Select Snaps or Add to Lightbox to create a new Story" >
 			<a>New Story</a>
 		</li>
-		<li action='assign_workorder' class="before-show" title="TESTING: create new workorder and assign to MANAGER/EDITOR" >
-			<a>New Workorder Assignment</a>
-		</li>
 	</ul>
 </div>	

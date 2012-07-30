@@ -1,6 +1,6 @@
 <?php
 
-//debug(Configure::read('controller'));
+// debug(Configure::read('controller'));
 $controllerAttrs = Configure::read('controller');
 if (AppController::$uuid) {
 	$trail = Session::read("lookup.trail.".$controllerAttrs['label']);
@@ -118,6 +118,7 @@ if (AppController::$uuid) {
 } else { // 'all' pages
 	switch ($controllerAttrs['name']) {
 		case 'Workorders':
+		case 'TaskWorkorders':	
 			$badgeType = 'person';
 			break;
 		case 'Users':	// Person/Me
