@@ -580,6 +580,27 @@ ALTER TABLE `collections`
  ADD COLUMN `comment_count` MEDIUMINT(9) UNSIGNED AFTER `collections_group_count`,
  ADD COLUMN `privacy_secret_key` TINYINT UNSIGNED AFTER `comment_count`;
  
+ 
+ALTER TABLE `user_edits` ADD COLUMN `asset_id` CHAR(36) NOT NULL AFTER `id`;
+ALTER TABLE `shared_edits` ADD COLUMN `asset_id` CHAR(36) NOT NULL AFTER `asset_hash`;
+
+-- UPDATE user_edits ue
+-- JOIN assets a on a.asset_hash = ue.asset_hash
+-- SET ue.asset_id = a.id;
+
+-- UPDATE shared_edits se
+-- JOIN assets a on a.asset_hash = se.asset_hash
+-- SET se.asset_id = a.id;
+
+ALTER TABLE `user_edits`
+ DROP INDEX `fk_userEdits_users`,
+ ADD UNIQUE INDEX `fk_userEdits_users` USING BTREE(`owner_id`, `asset_id`),
+ DROP INDEX `fk_userEdits_assets`,
+ ADD INDEX `fk_userEdits_assets` USING BTREE(`asset_id`);
+
+ALTER TABLE `shared_edits`
+ DROP INDEX `asset_hash_UNIQUE`,
+ ADD UNIQUE INDEX `asset_hash_UNIQUE` USING BTREE(`asset_id`); 
   
 --
 -- Table structure for table `helps`

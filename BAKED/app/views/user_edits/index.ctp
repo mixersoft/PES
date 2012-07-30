@@ -3,7 +3,7 @@
 	<table cellpadding="0" cellspacing="0">
 	<tr>
 			<th><?php echo $this->Paginator->sort('id');?></th>
-			<th><?php echo $this->Paginator->sort('asset_hash');?></th>
+			<th><?php echo $this->Paginator->sort('asset_id');?></th>
 			<th><?php echo $this->Paginator->sort('owner_id');?></th>
 			<th><?php echo $this->Paginator->sort('isEditor');?></th>
 			<th><?php echo $this->Paginator->sort('isReviewed');?></th>

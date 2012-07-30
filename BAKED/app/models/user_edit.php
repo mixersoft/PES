@@ -14,7 +14,7 @@ class UserEdit extends AppModel {
 		),
 		'Asset' => array(
 			'className' => 'Asset',
-			'foreignKey' => 'asset_hash',
+			'foreignKey' => 'asset_id',
 			'conditions' => '',
 			'fields' => '',
 			'order' => ''
@@ -23,8 +23,8 @@ class UserEdit extends AppModel {
 	
 	public function saveEdit($data) {
 		// expecting $data['UserEdit'][]
-		// INSERT INTO `user_edits` (`rotate`, `rating`, `id`, `owner_id`, `asset_hash`, `modified`, `created`, `id`) VALUES (NULL, 0, NULL, '12345678-1111-0000-0000-venice------', '4d2bea302443acddcfd60f4ac7808b20', '2010-08-24 02:10:22', '2010-08-24 02:10:22', '4c732a0e-f71c-4243-aa4b-4f29d109ed39')
-		$fields = array('id', 'rotate', 'rating','asset_hash', 'owner_id');
+		// INSERT INTO `user_edits` (`rotate`, `rating`, `id`, `owner_id`, `asset_id`, `modified`, `created`, `id`) VALUES (NULL, 0, NULL, '12345678-1111-0000-0000-venice------', '4d2bea302443acddcfd60f4ac7808b20', '2010-08-24 02:10:22', '2010-08-24 02:10:22', '4c732a0e-f71c-4243-aa4b-4f29d109ed39')
+		$fields = array('id', 'rotate', 'rating','asset_id', 'owner_id');
 		$update_fields = array('rotate', 'rating', 'isEditor', 'isReviewed', 'modified');
 		$columns = array();
 		$values = array();

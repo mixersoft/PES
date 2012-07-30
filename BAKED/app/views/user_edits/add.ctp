@@ -3,7 +3,7 @@
 	<fieldset>
  		<legend><?php printf(__('Add %s', true), __('User Edit', true)); ?></legend>
 	<?php
-		echo $this->Form->input('asset_hash');
+		echo $this->Form->input('asset_id');
 		echo $this->Form->input('owner_id');
 		echo $this->Form->input('isEditor');
 		echo $this->Form->input('isReviewed');

@@ -168,7 +168,7 @@ class GroupsController extends AppController {
 SELECT Asset.src_thumbnail, SharedEdit.score, Asset.id
 FROM assets Asset
 LEFT JOIN assets_groups ag on ag.asset_id = Asset.id
-LEFT JOIN shared_edits AS `SharedEdit` ON (`SharedEdit`.`asset_hash` = `Asset`.`asset_hash`)
+LEFT JOIN shared_edits AS `SharedEdit` ON (`SharedEdit`.`asset_id` = `Asset`.`id`)
 WHERE group_id='{$gid}'
 order by score desc
 LIMIT 5;";

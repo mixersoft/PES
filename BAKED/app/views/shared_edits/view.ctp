@@ -3,7 +3,7 @@
 	<dl><?php $i = 0; $class = ' class="altrow"';?>
 		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Asset Hash'); ?></dt>
 		<dd<?php if ($i++ % 2 == 0) echo $class;?>>
-			<?php echo $sharedEdit['SharedEdit']['asset_hash']; ?>
+			<?php echo $sharedEdit['SharedEdit']['asset_id']; ?>
 			&nbsp;
 		</dd>
 		<dt<?php if ($i % 2 == 0) echo $class;?>><?php __('Rotate'); ?></dt>
@@ -36,8 +36,8 @@
 <div class="actions">
 	<h3><?php __('Actions'); ?></h3>
 	<ul>
-		<li><?php echo $this->Html->link(sprintf(__('Edit %s', true), __('Shared Edit', true)), array('action' => 'edit', $sharedEdit['SharedEdit']['asset_hash'])); ?> </li>
-		<li><?php echo $this->Html->link(sprintf(__('Delete %s', true), __('Shared Edit', true)), array('action' => 'delete', $sharedEdit['SharedEdit']['asset_hash']), null, sprintf(__('Are you sure you want to delete # %s?', true), $sharedEdit['SharedEdit']['asset_hash'])); ?> </li>
+		<li><?php echo $this->Html->link(sprintf(__('Edit %s', true), __('Shared Edit', true)), array('action' => 'edit', $sharedEdit['SharedEdit']['asset_id'])); ?> </li>
+		<li><?php echo $this->Html->link(sprintf(__('Delete %s', true), __('Shared Edit', true)), array('action' => 'delete', $sharedEdit['SharedEdit']['asset_id']), null, sprintf(__('Are you sure you want to delete # %s?', true), $sharedEdit['SharedEdit']['asset_id'])); ?> </li>
 		<li><?php echo $this->Html->link(sprintf(__('List %s', true), __('Shared Edits', true)), array('action' => 'index')); ?> </li>
 		<li><?php echo $this->Html->link(sprintf(__('New %s', true), __('Shared Edit', true)), array('action' => 'add')); ?> </li>
 		<li><?php echo $this->Html->link(sprintf(__('List %s', true), __('Assets', true)), array('controller' => 'assets', 'action' => 'index')); ?> </li>
@@ -82,7 +82,7 @@
 			<td><?php echo $data['provider_name'];?></td>
 			<td><?php echo $data['provider_key'];?></td>
 			<td><?php echo $data['provider_account_id'];?></td>
-			<td><?php echo $data['asset_hash'];?></td>
+			<td><?php echo $data['asset_id'];?></td>
 			<td><?php echo $data['user_id'];?></td>
 			<td><?php echo $data['caption'];?></td>
 			<td><?php echo $data['dateTaken'];?></td>

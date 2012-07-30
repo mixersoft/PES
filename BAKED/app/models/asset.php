@@ -191,13 +191,13 @@ AND includes.asset_id='{$assetId}';
 				'table'=>'shared_edits',
 				'alias'=>'SharedEdit',
 				'type'=>'LEFT',
-				'conditions'=>array("SharedEdit.asset_hash = Asset.asset_hash"),
+				'conditions'=>array("SharedEdit.asset_id = Asset.id"),
 			),
 			array(
 				'table'=>'user_edits',
 				'alias'=>'UserEdit',
 				'type'=>'LEFT',
-				'conditions'=>array("UserEdit.asset_hash=Asset.asset_hash",
+				'conditions'=>array("UserEdit.asset_id=Asset.id",
 					'UserEdit.owner_id'=>AppController::$userid),
 			),
 		);
@@ -464,7 +464,7 @@ AND includes.asset_id='{$assetId}';
 //		),					
 		'SharedEdit' => array(
 			'className' => 'SharedEdit',
-			'foreignKey' => 'asset_hash',
+			'foreignKey' => 'asset_id',
 			'conditions' => '',
 			'fields' => '',
 			'order' => ''
@@ -480,7 +480,7 @@ AND includes.asset_id='{$assetId}';
 	public $hasMany = array(
 		'UserEdit' => array(
 			'className' => 'UserEdit',
-			'foreignKey' => 'asset_hash',
+			'foreignKey' => 'asset_id',
 			'dependent' => false,
 			'conditions' => '',
 			'fields' => '',

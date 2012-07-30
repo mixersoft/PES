@@ -849,7 +849,12 @@ class StoriesController extends CollectionsController {
 		$done = $this->renderXHRByRequest('json', '/elements/dumpSQL');
 		return;
 	} 
-
+	
+	
+	/**
+	 * copied from AssetsController, not adapted to stories.
+	 * 	watch asset_hash
+	 */  
 	function setprop(){
 		$forceXHR = setXHRDebug($this, 0, 1);
 		$success = true; $message=array(); $response=array();

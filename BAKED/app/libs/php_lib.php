@@ -225,25 +225,6 @@ function loadComponent($component, &$controller = NULL, $args = '') {
 	return $c;
 }
 
-/**
- * 	BUG FIXED
- *	BelongsTo association doesn't seem to work alongside Permissionable
- *		fetch data manually, and merge
- *	@params object $Model - Model Class
- *	@params array $data - output array to merge belongsTo with
- */
-//function XXXmergeBelongsTo($Model, &$data) {
-//	$options = array('recursive'=>-1);
-//	foreach ( $Model->belongsTo as $alias=>$attr) {
-//		if ($attr['foreignKey']=='asset_hash') {
-//			$options['condition'] = array("{$alias}.asset_hash"=>$data[$Model->name][$attr['foreignKey']]);
-//		} else {
-//			$options['condition'] = array("{$alias}.id"=>$data[$Model->name][$attr['foreignKey']]);
-//		}
-//		$belongsTo = $Model->{$alias}->find('first', $options );
-//		$data[$alias] = $belongsTo[$alias];
-//	}
-//}
 
 /*
  * other helper functions

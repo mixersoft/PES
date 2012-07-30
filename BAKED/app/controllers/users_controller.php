@@ -542,7 +542,7 @@ class UsersController extends UsersPluginController {
 				$sql = "
 	SELECT Asset.src_thumbnail, SharedEdit.score, Asset.id
 	FROM assets Asset
-	LEFT JOIN shared_edits AS `SharedEdit` ON (`SharedEdit`.`asset_hash` = `Asset`.`asset_hash`)
+	LEFT JOIN shared_edits AS `SharedEdit` ON (`SharedEdit`.`asset_id` = `Asset`.`id`)
 	WHERE Asset.owner_id='{$uid}'
 	order by score desc
 	LIMIT 5;";
