@@ -1315,7 +1315,6 @@ debug("WARNING: This code path is not tested");
 						$data['UserEdit']['rating'] = $newRating;
 						$data['UserEdit']['id'] = String::uuid();
 						$data['UserEdit']['owner_id'] = AppController::$userid;
-						$data['UserEdit']['isEditor'] = in_array(AppController::$role, array('EDITOR', 'MANAGER'));
 						$data['UserEdit']['asset_hash'] = $asset_hash;
 						$data['SharedEdit']['asset_hash'] = $asset_hash;
 						unset($data['AssetPermission']);

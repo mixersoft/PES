@@ -208,7 +208,7 @@ AND includes.asset_id='{$assetId}';
 			$queryData['fields'] = @mergeAsArray($queryData['fields'], 
 				array(
 					"'0' AS score", "'0' AS votes", 
-					'coalesce(UserEdit.rating) AS rating',		// puts results in $results[0]
+					'coalesce(UserEdit.rating) AS rating',		// puts results in $results[0] for mergeResults
 					'coalesce(UserEdit.rotate) AS rotate'
 			));
 		} else {
@@ -217,7 +217,8 @@ AND includes.asset_id='{$assetId}';
 				array(
 					'SharedEdit.score, SharedEdit.votes',
 					// coalese takes first non-null value
-					'coalesce(UserEdit.rating, SharedEdit.score) AS rating',		// puts results in $results[0]
+					// 'coalesce(UserEdit.rating, SharedEdit.score) AS rating',		// puts results in $results[0]
+					'coalesce(UserEdit.rating) AS rating',		// puts results in $results[0]
 					'coalesce(UserEdit.rotate, SharedEdit.rotate) AS rotate'
 			));
 		}

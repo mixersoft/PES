@@ -216,8 +216,12 @@
             // Fix.Rotate in DB only, not in file
             var Fix = o.Audition.Photo.Fix;
             o.rotate = Fix.Rotate = parseInt(Fix.Rotate || 1);
-            o.rating = Fix.Rating  = parseFloat(Fix.Rating || 0);
             o.score = Fix.Score = parseFloat(Fix.Score || 0);
+            /*
+             * NOTE: render Audition.rating = Fix.Rating || Fix.Score
+             * show score as smileys if user has not added individual rating 
+             */
+            o.rating = Fix.Rating  = parseFloat(Fix.Rating || Fix.Score || 0);
 			o.votes = Fix.Votes = parseInt(Fix.Votes || 0);
 			o.orientation = Auditions.orientationSum(o.root_Orientation, o.rotate);
 			

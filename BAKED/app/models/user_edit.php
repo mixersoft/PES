@@ -24,18 +24,23 @@ class UserEdit extends AppModel {
 	public function saveEdit($data) {
 		// expecting $data['UserEdit'][]
 		// INSERT INTO `user_edits` (`rotate`, `rating`, `id`, `owner_id`, `asset_hash`, `modified`, `created`, `id`) VALUES (NULL, 0, NULL, '12345678-1111-0000-0000-venice------', '4d2bea302443acddcfd60f4ac7808b20', '2010-08-24 02:10:22', '2010-08-24 02:10:22', '4c732a0e-f71c-4243-aa4b-4f29d109ed39')
-//print_r($data);		
 		$fields = array('id', 'rotate', 'rating','asset_hash', 'owner_id');
+		$update_fields = array('rotate', 'rating', 'isEditor', 'isReviewed', 'modified');
 		$columns = array();
 		$values = array();
 		$update = array();
+		if (in_array('WorkorderPermissionable', $this->Asset->Behaviors->attached())) {
+			$fields = array_merge($fields, array('isEditor', 'isReviewed'));
+			$data['UserEdit']['isEditor'] = 1;	// record as editor action
+		}
 		foreach ($fields as $field) {
 			if (!isset($data['UserEdit'][$field])) continue;
 			$columns[] = $field;
 			$v = $data['UserEdit'][$field]===null ? "NULL" : "'{$data['UserEdit'][$field]}'";
 			$values[] = $v;
-			if ($field == 'rotate') $update[] = "`{$field}`=VALUES(`{$field}`)";	
-			if ($field == 'rating') $update[] = "`{$field}`=VALUES(`{$field}`)";				
+			if (in_array($field, $update_fields)){
+				$update[] = "`{$field}`=VALUES(`{$field}`)";				
+			}
 		}
 		$columns[] = 'modified';
 		$values[] = 'NOW()'; 
