@@ -210,7 +210,7 @@
         		CSS_ID = 'contextmenu-hiddenshot-markup';
         	}
         	
-        	if (/Workorder|TasksWorkorder/.test(SNAPPI.STATE.controller.class)) {
+        	if (/Workorder|TasksWorkorder/.test(SNAPPI.STATE.controller['class'])) {
         		CSS_ID += '-workorder';
         	} 
         	

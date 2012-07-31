@@ -393,7 +393,9 @@
 		var alert = Dialog.find[_cfg.id];
 		if (alert) {
 			try {	// destroy existing alert box
-				// alert.getStdModNode('body').setContent('');	
+				// TODO: listen to alert.on('destroy', function(e){}) to clean up dialog body 
+				// see ThumbnailFactory.actions.keydown for example
+				_Y.fire('snappi-alert:clear-body', alert, alert.getStdModNode('body'));
 				alert.setStdModContent('body', '');
 				alert.setStdModContent('footer', '');
 			}catch(e){}

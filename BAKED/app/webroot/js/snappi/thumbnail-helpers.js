@@ -386,6 +386,19 @@
             	self.node.listen[action] = delegateNode.on('hover', startListening, stopListening, self);
             	self.node.listen['Keydown_startListening'] = startListening;
 		        self.node.listen['Keydown_stopListening'] = stopListening;
+		        
+		        try {	// cleanup, detach all listeners when dialog closed
+		        	var d = SNAPPI.Dialog.find["dialog-alert"];
+	        		self.node.listen['destroy'] = d.on('destroy', function(e){
+	        			if (d.getStdModNode('body').contains(self.node)) {
+	        				for (var i in self.node.listen) {
+	        					if (self.node.listen[i].detach) self.node.listen[i].detach();
+	        				}
+	        			}
+	        		});
+		        } catch(e) {
+		        	throw ("ThumbnailFactory.actions.keydown: possible race condition, Alert should be available")
+		        }
             }
         },	
 	};
