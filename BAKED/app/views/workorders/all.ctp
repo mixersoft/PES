@@ -18,6 +18,9 @@ if (empty($this->passedArgs['wide'])) {
 			<th class="actions"><?php __('Actions');?></th>
 	</tr>
 	<?php
+	/**
+	 * Workorder
+	 */
 	$i = 0;
 	foreach ($data['Workorder'] as $workorder):
 		$class = null;
@@ -40,7 +43,7 @@ if (empty($this->passedArgs['wide'])) {
 			<?php
 				$isAssigned =  $workorder['manager_id'] == AppController::$userid;
 				if ($isAssigned) {
-					$next = array('action' => 'photos', $workorder['id']);
+					$next = array('action' => 'photos', $workorder['id'], 'raw'=>1) + Configure::read('passedArgs.min');
 					$btn = $this->Html->link(__('Go', true), $next, array('target'=>'_blank'));
 				} else $btn = 'Go';
 				echo '<li class="btn rounded-5 '.(!$isAssigned ? 'white disabled' : 'orange').'">'.$btn.'</li>';
@@ -83,6 +86,9 @@ if (empty($this->passedArgs['wide'])) {
 		</td>
 	</tr>
 	<?php
+				/**
+				 * TasksWorkorder BelongsTo Workorder
+				 */
 	foreach ($data['TasksWorkorder'][$workorder['id']] as $taskWorkorder):
 		$label = array();
 		$label['operator_id'] = $data['User'][$taskWorkorder['operator_id']]['username'];
@@ -93,7 +99,7 @@ if (empty($this->passedArgs['wide'])) {
 			<?php
 				$isAssigned =  $taskWorkorder['operator_id'] == AppController::$userid;
 				if ($isAssigned) {
-					$next = array('controller'=>'tasks_workorders', 'action' => 'photos', $taskWorkorder['id']);
+					$next = array('controller'=>'tasks_workorders', 'action' => 'photos', $taskWorkorder['id'], 'raw'=>1) + Configure::read('passedArgs.min');
 					$btn = $this->Html->link(__('Go', true), $next, array('target'=>'_blank'));
 				} else $btn = 'Go';
 				echo '<li class="btn rounded-5 '.(!$isAssigned ? 'white disabled' : 'orange').'">'.$btn.'</li>';
