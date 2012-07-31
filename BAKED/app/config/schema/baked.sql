@@ -601,6 +601,15 @@ ALTER TABLE `user_edits`
 ALTER TABLE `shared_edits`
  DROP INDEX `asset_hash_UNIQUE`,
  ADD UNIQUE INDEX `asset_hash_UNIQUE` USING BTREE(`asset_id`); 
+
+
+ALTER TABLE `snappi`.`user_edits` DROP COLUMN `asset_hash`;
+ 
+ALTER TABLE `shared_edits` DROP COLUMN `asset_hash`,
+ DROP PRIMARY KEY,
+ DROP INDEX `asset_hash_UNIQUE`,
+ ADD PRIMARY KEY  USING BTREE(`asset_id`);
+ 
   
 --
 -- Table structure for table `helps`
