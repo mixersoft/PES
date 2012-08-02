@@ -86,7 +86,7 @@ class AppController extends Controller {
 	 * @access public
 	 */
 	function beforeRender() {
-		if (in_array($this->name, array('Users', 'Groups', 'Assets', 'Collections', 'Tags'))) {
+		if (in_array($this->name, array('Users', 'Groups', 'Assets', 'Collections', 'Tags', 'Workorders', 'TasksWorkorders'))) {
 			unset($this->passedArgs['comment_view_type']);
 			$this->__setPageTitle();
 			$this->__addFiltersAsJsonData();
@@ -202,7 +202,7 @@ class AppController extends Controller {
 		 * build filter config as jsonData
 		 */
 		$controllerAttr = Configure::read('controller');
-		if (in_array($controllerAttr['name'], array('Users', 'Groups', 'Tags', 'Collections', 'Assets'))) {
+		if (in_array($controllerAttr['name'], array('Users', 'Groups', 'Tags', 'Collections', 'Assets', 'Workorders', 'TasksWorkorders'))) {
 			$filter=array();
 			$context = Session::read('lookup.context');
 			if ($context['keyName']) {
