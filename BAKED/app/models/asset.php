@@ -175,7 +175,7 @@ AND includes.asset_id='{$assetId}';
 	
 	/**
 	 * join with Shared/UserEdits to add score, rating from User/Shared edits
-	 * 		$queryData['extras']['show_edits']=1
+	 * 		$queryData['extras']['show_edits']=1		UserEdits+SharedEdits
 	 * 		$queryData['extras']['hide_SharedEdits']=0
 	 */
 	public function joinWithEdits($queryData) {
@@ -203,7 +203,7 @@ AND includes.asset_id='{$assetId}';
 		);
 		
 		if (!empty($queryData['extras']['hide_SharedEdits'])) {
-			array_shift($joins);	// for training sets only
+			array_shift($joins);	// for training sets only, remove join to SharedEdit
 			$queryData['joins'] = @mergeAsArray($queryData['joins'], $joins );
 			$queryData['fields'] = @mergeAsArray($queryData['fields'], 
 				array(
@@ -819,8 +819,13 @@ $this->log("insert newAsset=".print_r($newAsset, true), LOG_DEBUG);
 		if (isset($options['rating'])) {
 			if ($options['rating']==='0'){ 
 				$filterConditions[] = "SharedEdit.score IS NULL";
-			} else 
-				$filterConditions[] = "IF(UserEdit.rating, UserEdit.rating, SharedEdit.score)>={$options['rating']}";
+			} else if (!empty($options['raw'])) {
+				// skip join to SharedEdit table
+				// TODO: should really check $paginate['extras']['hide_SharedEdits]=1
+				$filterConditions[] = "UserEdit.rating>={$options['rating']}";
+			} else {
+				$filterConditions[] = "COALESCE(UserEdit.rating, SharedEdit.score)>={$options['rating']}";
+			}
 		}
 		if (isset($options['batchId'])) {
 			$batchIds = (strpos($options['batchId'], ',')!==false) ? explode(',', $options['batchId']) : $options['batchId'];
