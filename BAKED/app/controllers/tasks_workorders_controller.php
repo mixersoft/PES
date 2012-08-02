@@ -89,7 +89,7 @@ class TasksWorkordersController extends AppController {
 	}
 
 	function beforeRender(){
-		
+		parent::beforeRender();
 	}
 	
 	function __saveWorkorderToSession($twoid){
