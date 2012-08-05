@@ -1,0 +1,1214 @@
+@charset "utf-8";
+/* CSS Document */
+html, body, div, span, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, abbr, address, cite, code, del, dfn, em, img, ins, kbd, q, samp, small, strong, sub, sup, var, b, i, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, figcaption, figure, footer, header, hgroup, menu, nav, section, summary, time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+a {
+	text-decoration: none;
+	outline: none;
+}
+
+/* http://nicolasgallagher.com/micro-clearfix-hack/ */
+/* For modern browsers */
+.cf:before,
+.cf:after {
+    content:"";
+    display:table;
+}
+.cf:after {
+    clear:both;
+}
+/* For IE 6/7 (trigger hasLayout) */
+.cf {
+    zoom:1;
+}
+
+.hide {
+	display: none !important;
+}
+.hidden {
+	visibility: hidden !important;
+}
+.left {
+	float: left;
+}
+.right {
+	float: right;
+}
+.center {
+	text-align: center;
+}
+
+ul.inline {
+	font-size: 10pt;
+}
+ul.inline.center {
+	text-align: center;
+}
+ul.inline > li {
+	display: inline-block;
+	white-space: nowrap;
+	list-style-type: none;
+	margin: 2px auto;
+}
+
+li.label {
+	cursor: default !important;
+}
+
+li.btn {
+	padding: 4px;
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	cursor: pointer;	
+	background: transparent;
+	border: 1px solid transparent;
+	color: #000;	
+}
+li.btn > a {
+	color: inherit;
+	font-weight: normal;
+}
+
+li.btn.white {	
+	background: white;
+	border: 1px solid #D8D5D5;
+	color: #888888;
+}
+
+li.disabled , li.disabled > a {
+	color: #888 !important;
+	cursor: default !important;
+}
+
+
+.gallery {
+	overflow: hidden;
+	padding: 4px;
+	
+}
+section.filmstrip section.gallery-header ul > li {
+	padding: 2px 0;
+}
+section.filmstrip section.gallery-header ul.thumb-size > li {
+	padding: 2px 4px;
+}
+
+/*section.gallery-display-options ul.sort, section.wide.gallery-display-options ul.thumb-size  {*/
+.inline-break {
+	border-left: 1px solid #d8d5d5;
+}
+span.btn.remove {
+	background-color: #FFF;
+	border: 1px solid #D8D5D5;
+	color: red;
+    font-size: 0.9em;
+    font-weight: bold;
+    padding: 1px 4px;
+}
+
+
+/*
+ * adjustments for fluid layout
+ */
+.container_16 .container_16 {
+	margin: 0;
+	width: 100%;
+}
+
+/* thumbnails */
+.FigureBox figcaption {
+	line-height: 1.2;
+}
+.FigureBox figcaption .label {
+	cursor:default;
+}
+/*temp CSS for selected*/
+
+.FigureBox.Photo.selected {
+	border: 1px solid red;
+	-webkit-box-shadow: 2px 2px 5px #FF0000; /* Safari and Chrome */
+	box-shadow: 2px 2px 5px #FF0000; 
+}
+
+.FigureBox.Photo {
+	padding: 2px;
+	overflow: hidden;
+	border: 1px solid #e5e5e5;
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	float: left;
+	margin: 0 4px 10px 0;
+	position: relative;
+	background-color: #FFF;
+}
+
+.FigureBox.Photo:hover {
+	background: #fff88a;
+}
+.FigureBox.Photo.focus {
+    /* same as .orange */
+	background: #f9c667 !important; /* Old browsers */	
+	background: -moz-linear-gradient(top, #f9c667 0%, #f79621 100%) !important; /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f9c667), color-stop(100%,#f79621)) !important; /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* IE10+ */
+	background: linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9c667', endColorstr='#f79621',GradientType=0 ) !important; /* IE6-9 */
+	border: 1px solid #f79621 !important;
+	color: #000 !important;	
+}
+
+
+.FigureBox.Photo ul.extras {
+	list-style-type: none;
+	margin: 0px;
+	padding: 0px;
+}
+.FigureBox.Photo .extras li {
+	float: left;
+	margin: 5px 4px 0 0;
+}
+.FigureBox.Photo .extras li img {
+	float: left;
+}
+
+.FigureBox.Photo .extras li.rating {
+	padding: 2px 0 0 0;
+}
+.FigureBox.Photo .extras li.rating > img {
+	width: 13px;
+	height: 12px;
+}
+.FigureBox.Photo .extras li.score {
+	font-size: 11px;
+	background: -moz-linear-gradient(bottom, #eeeeee, #fff);
+	background: -webkit-gradient(linear, center bottom, center top, from(#eeeeee), to(#fff));
+	border: 1px solid #e2e2e2;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	width: 25px;
+	height: 17px;
+	line-height: 17px;
+	text-align: center;
+	font-family: Arial, Helvetica, sans-serif;
+	cursor: default;
+}
+.FigureBox.Photo .extras li.icon {
+	float: right;
+	cursor: pointer;
+}
+.FigureBox.Photo .extras li.info > img {
+	width: 16px;
+	height: 17px;
+}
+.FigureBox.Photo .extras li.context-menu > img {
+	width: 15px;
+	height: 16px;
+}
+
+/*
+ * .lm landscape/medium
+ */
+.FigureBox.lm > figure > img , .FigureBox.lm > figure > a > img {
+	width: 144px;
+	height: 96px;
+	display: inline-block;
+}
+
+/*
+ * .ll (landscape/large) == .large 
+ */
+
+.FigureBox.ll > figure > img, .FigureBox.ll > figure > a > img {
+	width: 222px;
+	height: 148px;
+}
+/*
+ * .sq (square) 
+ */
+.FigureBox.sq > figure > img, .FigureBox.sq > figure > a > img {
+	width: 75px;
+	height: 75px;
+}
+
+/*
+ * .tiny (lightbox square) 
+ * TODO: update lbx-tiny
+ */
+.FigureBox.tiny > figure > img {
+	width: 33px;
+	height: 33px;
+}
+
+
+
+.FigureBox.Photo .label {
+	font-size: 8pt;
+	padding-top: 2px;
+	text-align: center;
+}
+
+
+/* Hidden Shot icons */
+.FigureBox.Photo > figure {
+	position: relative;
+}
+
+.FigureBox.Photo.lbx-tiny div.hidden-shot {
+	display: none;
+}
+
+.FigureBox.Photo div.hidden-shot {
+	background: url(/static/img/css-gui/icon-hidden-shot-null.png) no-repeat scroll ;
+	position: absolute;
+	right: 4px;
+	bottom: 5px;
+	width: 32px;
+	height: 18px;
+	cursor: pointer;
+}
+.FigureBox.Photo.ll div.hidden-shot {
+	bottom: 20px;
+}
+
+.FigureBox.Photo div.hidden-shot.c2 {
+	background: url(/static/img/css-gui/icon-hidden-shot-2.png) no-repeat scroll ;
+}
+.FigureBox.Photo div.hidden-shot.c3 {
+	background: url(/static/img/css-gui/icon-hidden-shot-3.png) no-repeat scroll ;
+}
+.FigureBox.Photo div.hidden-shot.c4 {
+	background: url(/static/img/css-gui/icon-hidden-shot-4.png) no-repeat scroll ;
+}
+.FigureBox.Photo div.hidden-shot.c5 {
+	background: url(/static/img/css-gui/icon-hidden-shot-5.png) no-repeat scroll ;
+}
+.FigureBox.Photo div.hidden-shot.c6 {
+	background: url(/static/img/css-gui/icon-hidden-shot-6.png) no-repeat scroll ;
+}
+.FigureBox.Photo.hiddenshot-hide {
+    display: none;
+}
+section.gallery.hiddenshots {
+	padding: 4px 0;
+}
+
+section.gallery.hiddenshots .FigureBox.Photo.hiddenshot-hide {
+	display: block;
+}
+
+/* preview photo */
+.FigureBox.PhotoPreview {
+/*	float: none;*/
+	margin: 0 !important;
+	display: inline-block;
+}
+.FigureBox.PhotoPreview figcaption {
+	overflow: hidden;	
+}
+.FigureBox.PhotoPreview.bp {
+	border: none !important;
+	padding: 0;
+}
+/* copied from section.gallery-display-options */
+.FigureBox.PhotoPreview figcaption .extras {
+	border: 1px solid #D2D2D2;
+/*	light gray background  */
+	background: -moz-linear-gradient(bottom, #E2E6EB, #f5f5f5);
+	background: -webkit-gradient(linear, center bottom, center top, from(#E2E6EB), to(#f5f5f5));
+	line-height: 20px;
+	font-size: 10pt;
+	margin: 2px 0;
+	overflow: hidden;
+	padding: 0 4px;
+}
+.FigureBox.PhotoPreview figcaption .extras > li {
+	font-size: 10pt;
+	margin: 0px 2px;
+	cursor: default;
+}
+.FigureBox.PhotoPreview figcaption .extras li.btn {
+	background: #FFF;
+	border: 1px solid #D8D5D5;
+	border-radius: 5px;
+	color: #494949;
+}
+.FigureBox.PhotoPreview figcaption .extras li.btn.prev {
+	border-radius: 15px 0 0 15px;
+}
+.FigureBox.PhotoPreview figcaption .extras li.btn.radius-0 {
+	border-radius: 0;
+}
+.FigureBox.PhotoPreview figcaption .extras li.btn.next {
+	border-radius: 0 15px 15px 0;
+}
+.FigureBox figcaption .extras .keydown {
+	background:url(/static/img/css-gui/keyboard.1.png) no-repeat 0 -4px transparent;
+	width: 26px;
+	display:inline-block;
+}
+/*.FigureBox.PhotoPreview figcaption .extras li.caption{
+	font-weight: bold;
+	padding-right: 10px;
+	width: 154px;
+}*/
+.FigureBox.PhotoPreview figcaption .extras li.rating {
+}
+.FigureBox.PhotoPreview figcaption .extras li div.ratingGroup {
+	margin: 0 5px;
+    padding-top: 7px;
+}
+.FigureBox.PhotoPreview .extras li.score {
+	font-size: 11px;
+	background-color: #FFF;
+	border: 1px solid #E2E2E2;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	width: 25px;
+	height: 17px;
+	text-align: center;
+	font-family: Arial, Helvetica, sans-serif;
+	cursor: default;
+}
+.FigureBox.PhotoPreview .extras li.icon img {
+	vertical-align: text-top;
+}
+.FigureBox.PhotoPreview figcaption .extras li .sizes li.btn {
+	margin: 0 1px;
+	padding: 0 4px;
+}
+
+.FigureBox.PhotoPreview figcaption .extras nav.settings {
+}
+.FigureBox.PhotoPreview figcaption .extras nav.settings > ul {
+	display: inline-block;
+}
+.FigureBox.PhotoPreview figcaption .extras nav.settings > ul input[type=checkbox] {
+	margin: 1px 0 0 2px;
+	vertical-align: text-top;	
+}
+.FigureBox.PhotoPreview figcaption .extras li.label {
+	font-size: 1.0em;
+	color: black;
+}
+.FigureBox.PhotoPreview figcaption .extras .bg-sprite-wrap {
+	height:20px;
+}
+.FigureBox.PhotoPreview div.hidden-shot {
+	background: url(/static/img/css-gui/icon-hidden-shot-null.png) no-repeat scroll 0 bottom transparent;
+	width: 32px;
+	height: 18px;
+	padding-top: 5px;
+	cursor: pointer;
+}
+.FigureBox.PhotoPreview.ll div.hidden-shot {
+	bottom: 20px;
+}
+.FigureBox.PhotoPreview div.hidden-shot.c2 {
+	background-image: url(/static/img/css-gui/icon-hidden-shot-2.png);
+}
+.FigureBox.PhotoPreview div.hidden-shot.c3 {
+	background-image: url(/static/img/css-gui/icon-hidden-shot-3.png);
+}
+.FigureBox.PhotoPreview div.hidden-shot.c4 {
+	background-image: url(/static/img/css-gui/icon-hidden-shot-4.png);
+}
+.FigureBox.PhotoPreview div.hidden-shot.c5 {
+	background-image: url(/static/img/css-gui/icon-hidden-shot-5.png);
+}
+.FigureBox.PhotoPreview div.hidden-shot.c6 {
+	background-image: url(/static/img/css-gui/icon-hidden-shot-6.png);
+}
+
+/*
+ * montage
+ */
+.FigureBox.Montage.selected > figure > img {
+	border: 2px solid red !important;
+}
+
+
+
+/*
+ * Ratings
+ */
+/*
+ * previous version is div.ratingGroup. this div.rating holds a higher priority in css
+ * if i add .loading, all properties in .loading will be overrided by this div.ratingGroup
+ */
+div.ratingGroup {
+    margin: 0 auto;
+    background: url(/static/img/css-gui/smileyStarGrp.3.png) no-repeat;
+    background-position: -71px 0; /* init to 0 stars */
+    width: 71px; /* width of 5 stars */
+    height: 15px;
+	cursor:pointer;
+}
+
+div.ratingGroup.wide {
+	width: 115px;
+	background: url(/static/img/css-gui/smileyStarGrp.wide.3.png) no-repeat;
+	background-position: -115px 0; /* init to 0 stars */
+}
+
+div.ratingGroup.r0 {
+    background-position-x: -70px;
+}
+
+div.ratingGroup.r1 {
+    background-position: -56px bottom;
+}
+
+div.ratingGroup.r2 {
+    background-position: -42px bottom;
+}
+
+div.ratingGroup.r3 {
+    background-position: -28px bottom;
+}
+
+div.ratingGroup.r4 {
+    background-position: -14px bottom;
+}
+
+div.ratingGroup.r5 {
+    background-position: 0 bottom;
+}
+
+/*section {
+	overflow-x: hidden;
+}*/
+
+/*div.ratingGroup{
+	z-index:auto;
+}
+
+
+ul.photo-roll {
+	overflow-x: hidden;
+	margin: 0 auto;
+}*/
+/*
+ * filmstrip CSS
+ */
+.alpha-b1 {
+	margin-left: 9px;
+}
+.omega-b1 {
+	margin-right: 9px;
+}
+section.filmstrip {
+	border:1px solid #888888;
+	border-radius: 10px 10px 0px 0px;
+	overflow: hidden;
+}	
+
+section.filmstrip .gallery-header {
+	overflow: hidden;
+}
+section.filmstrip .gallery-header ul {
+	line-height: 24px;
+	font-size: 10pt;
+}
+section.filmstrip .gallery-header .toolbar > div {
+	display:inline-block;
+}
+section.filmstrip .gallery-header span.count {
+	display: inline-block;
+	font-size: 0.9em;
+	padding-left: 4px;
+}
+section.filmstrip .gallery-header .toolbar ul li {
+	height: 32px;
+}
+section.filmstrip .gallery-header .window-options > ul {
+	display: inline-block;
+	margin-left: 10px;
+	line-height: 24px;
+}
+section.filmstrip .gallery-header .toolbar {
+	margin-bottom: -1px;
+}
+section.filmstrip .toolbar ul li {
+	background:url(/static/img/css-gui/separator_bottom.gif) no-repeat bottom right ;
+	padding: 0px 10px;
+}
+section.filmstrip .toolbar ul li a{color:#000; font-size:11px;}
+
+section.filmstrip .toolbar ul li.none{
+	background:none;
+}
+
+
+/*  DUPICATES?  */
+.gallery .filmstrip-wrap {
+	
+}
+.gallery .filmstrip-wrap .filmstrip {
+/*	fixed filmstrip width to fill .filmstrip.wrap, sets HScroll on overflow */
+	width: 100%;
+/*	add Hscroll if .filmstrip.container width > .filmstrip width */
+	overflow-x: auto;
+/*	height needs to expand to accommodate Hscrollbar*/
+	height: auto;
+	display:inline-block;
+}
+.gallery .filmstrip-wrap .filmstrip > .container {
+	display:inline-block;
+/*	this value must be set in javascript to allow .container.one-row */
+	width: auto;	
+}
+.gallery .filmstrip .container.one-row {
+	height: auto;
+	min-height: 39px;
+}
+.gallery.photo.filmstrip {
+	border:1px solid #bdbcbd;
+	-webkit-border-radius:5px;
+	-moz-border-radius:5px;
+	background:#FFF;
+	padding: 0;
+}
+body.wide .gallery.photo.filmstrip.hiddenshots {
+	width: 640px;
+}
+
+.gallery.photo.filmstrip .container li.btn.prev {
+	border-radius: 15px 0 0 15px;
+	float: left;
+	list-style-type: none;
+}
+
+.gallery.photo.filmstrip .container li.btn.next {
+	border-radius: 0 15px 15px 0;
+	float: left;
+	list-style-type: none;
+}
+
+border-radius: 15px 0 0 15px;
+
+/*	lightbox filmstrip:  */
+section.filmstrip section.gallery.lightbox {
+	padding: 0;
+	margin-bottom: 1px;
+}
+#lightbox .filmstrip-wrap .filmstrip {
+	min-height: 39px;
+}
+#dialog-photo-roll-hidden-shots .aui-dialog-bd {
+	overflow-x: hidden;		/*for accurate g.setFilmstripWidth()*/
+}
+#dialog-hidden-shot {
+	width: 662px;
+	margin: 0;
+}
+#dialog-hidden-shot > section.filmstrip {
+	width: 660px;
+	border-radius: 0 0 10px 10px;
+}
+/* navFilmstrip */
+
+
+/* shotGallery must fit INSIDE grid_11 */
+#shot-gallery.filmstrip {
+	border-radius: 0 0 10px 10px;
+}
+#shot-gallery .gallery.photo.filmstrip {
+/*	640px less 10px margin */
+	width: 620px;
+}
+#shot-gallery .gallery-header {
+	clear: both;
+}
+
+
+section.filmstrip.minimize .gallery-header {
+	height: 5px;
+}
+section.filmstrip.minimize .filmstrip-wrap {
+	height: 0;
+}
+.gallery .filmstrip .FigureBox.Photo.lbx-tiny {
+	width:33px;
+	height:33px;
+	padding:3px;
+	overflow:hidden;
+	border:none;
+	border-radius:0px;
+	-moz-border-radius:0px;
+	-webkit-border-radius:0px;
+	float:left;
+	margin:0;
+	position:relative;
+}
+.gallery .filmstrip .FigureBox.Photo.lbx-tiny.selected {
+	border: 2px solid red;
+	padding: 1px;
+}
+.gallery .filmstrip .FigureBox.Photo.lbx-tiny > figure {
+	width:33px;
+	height:33px;
+}
+.gallery .filmstrip .FigureBox.Photo.lbx-tiny > figure > img {
+	width:33px;
+	height:33px;
+}
+
+.gallery .filmstrip .FigureBox.Photo {
+	margin: 0;
+}
+
+/*	hiddenShot-filmstrip:  */
+
+
+/*
+ * forms
+ */
+input[type='text'].field-help {
+	color: gray;
+}
+
+/*
+ * toolbar
+ */
+.toolbar input[type='checkbox'] {
+	vertical-align: text-bottom;
+	padding-right: 4px;
+}
+.toolbar .menu-open {
+	padding-right: 10px;
+}
+.gallery-header .toolbar input[type='checkbox'] {
+	vertical-align: text-top;
+}
+
+/*
+ * dialogs
+ */
+
+#dialog-alert .aui-dialog-hd {
+	background: #FFF;
+	border-color: #FFF;
+}
+#dialog-alert h1{
+	border-bottom: 1px solid #D2D2D2;
+	font-size: 14pt;
+	margin-bottom: 8px;
+}
+#dialog-alert p {
+	margin-bottom: 8px;
+}
+
+#dialog-alert .import-complete .copy-paste {
+	width: 100%;
+}
+#dialog-alert .import-complete ol {
+	padding: 0 40px;
+}
+
+#dialog-alert ul:not(.inline) li {
+	list-style-position: inside;
+	padding: 0 25px;
+	text-indent: -15px;
+}
+#dialog-alert .message {
+	padding: 10px;
+}
+
+
+/*TODO: deprecate ?*/
+ul.circle-thumb li.selected {
+	margin-right:16px;
+	margin-bottom:8px;
+}
+
+.dialog-vert-select li {
+	border: 2px solid transparent;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;	
+	margin: 10px 10px 0 10px;
+	padding: 4px 4px 4px 24px;
+	list-style-type: none;
+	cursor: pointer;
+}
+.dialog-vert-select li > div {
+	display: inline-block;
+	font-size: 10pt;
+	vertical-align: text-top;
+	width: 285px;
+}
+.dialog-vert-select li > div.term {
+	width: 120px;
+}
+.dialog-vert-select li:hover:not(.selected) {
+	border: 2px solid gray;
+} 
+.dialog-vert-select li.selected {
+	border: 2px solid red;
+} 
+
+
+
+/* gallery CSS */
+.gallery.group, .gallery.collection, .gallery.person, .gallery.tags {
+	padding: 4px;
+}
+/*
+ * Group/Circle thumbnails
+ */
+.FigureBox.Group {
+	overflow: hidden;
+	display: inline-block;
+	vertical-align: top;
+}
+.FigureBox.Group:hover figure {
+	background: #fff88a;
+}
+.FigureBox.Group.focus figure {
+	    /* same as .orange */
+	background: #f9c667 !important; /* Old browsers */	
+	background: -moz-linear-gradient(top, #f9c667 0%, #f79621 100%) !important; /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f9c667), color-stop(100%,#f79621)) !important; /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* IE10+ */
+	background: linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9c667', endColorstr='#f79621',GradientType=0 ) !important; /* IE6-9 */
+	border: 1px solid #f79621 !important;
+	color: #000 !important;	
+
+}
+.FigureBox.Group figure {
+	font-size: 10pt;
+/*	thumbnail height */
+	xheight: 83px;
+}
+
+.FigureBox.Group figure > img, .FigureBox.Group figure > a > img {
+	border: 4px solid #fff;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-box-shadow: 0px 0px 8px #afb4b6;
+	-moz-box-shadow: 0px 0px 8px #afb4b6;
+	vertical-align: top;
+}
+
+.FigureBox.Group  figcaption .extras li a {
+    color: #404040;
+    font-size: 11px;
+    font-weight: normal;
+    line-height: 18px;
+    text-decoration: none;
+}
+.FigureBox.Group .label {
+	text-align: left;
+}
+
+.FigureBox.Group .label span {
+	font-weight: normal;
+}
+.FigureBox.Group .description {
+	font-size: 0.8em;
+}
+.FigureBox.Group .extras li {
+	display: inline;
+	border-right: 1px solid #404040;
+	padding: 0 5px;
+}
+.FigureBox.Group .extras li.last {
+	border-right: none;
+}
+.FigureBox.Group .extras li.icon {
+	padding-left: 15px;
+}
+
+.FigureBox.Group li.privacy.public {
+	background: url(/static/img/css-gui/earth.png) no-repeat left;
+}
+.FigureBox.Group li.privacy.listing {
+	background: url(/static/img/css-gui/earth.png) no-repeat left;
+}
+.FigureBox.Group li.privacy.members {
+	background: url(/static/img/css-gui/people.png) no-repeat left;
+}
+.FigureBox.Group li.privacy.admin {
+	background: url(/static/img/css-gui/lock.png) no-repeat left;
+}
+.FigureBox.Group.sq {
+	margin-bottom: 10px;
+}
+.FigureBox.Group.sq figure {
+	margin:2px;
+	padding:2px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;		
+}
+.FigureBox.Group.sq figure > a > img {
+}
+.FigureBox.Group.sq  figcaption {
+	display: inline-block;
+	padding: 2px;
+/*	controls wrap for .extras.description*/
+	width: 214px;	
+}
+.FigureBox.Group.ll {
+	margin-bottom: 10px;
+}
+.FigureBox.Group.ll figure {
+	padding:2px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	background-color: #FFF;		
+}
+.FigureBox.Group.ll  figcaption {
+	display: block;
+	padding: 2px 0;
+/*	controls wrap for .extras.description*/
+	width: 226px;	
+}
+.FigureBox.Group.ll .label {
+	font-weight: bold;
+	font-size: 1.1em;
+}
+.FigureBox.Group.bp {
+    background-color: #FFFFFF;
+    border: 1px solid #E5E5E5;
+    border-radius: 5px 5px 5px 5px;
+    overflow: hidden;
+    padding: 10px;
+    position: relative;	
+}
+/* /photos/home page grid_5 */
+/*  TODO: USE .tiny */
+.grid_5 .FigureBox.Group.sq  figure > a > img {
+	width: 33px;
+	height: 33px;
+}
+.grid_5 .FigureBox.Group.sq  figcaption {
+	width: 205px;
+}
+.grid_5 .FigureBox.Group.sq  figcaption .description {
+	display: none;
+}
+
+/*.FigureBox.Group.selected figure > a > img , .FigureBox.Collection.selected figure > a > img ,.FigureBox.Person.selected figure > a > img{*/
+.FigureBox.Group.selected figure > a > img , .FigureBox.Collection.selected figure > a > img ,.FigureBox.Person.selected figure > a > img{	
+	-webkit-box-shadow: 0px 2px 2px #FF0000; /* Safari and Chrome */
+	box-shadow: 2px 2px 8px #FF0000;
+	border-width: 2px;
+	margin: 2px;
+}
+
+/*
+ * Collection/Story thumbnails
+ * TODO: current same as Group
+ */
+.FigureBox.Collection {
+	overflow: hidden;
+	display: inline-block;
+	vertical-align: top;
+}
+.FigureBox.Collection:hover figure {
+	background: #fff88a;
+}
+.FigureBox.Collection.focus figure {
+	    /* same as .orange */
+	background: #f9c667 !important; /* Old browsers */	
+	background: -moz-linear-gradient(top, #f9c667 0%, #f79621 100%) !important; /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f9c667), color-stop(100%,#f79621)) !important; /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* IE10+ */
+	background: linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9c667', endColorstr='#f79621',GradientType=0 ) !important; /* IE6-9 */
+	border: 1px solid #f79621 !important;
+	color: #000 !important;	
+
+}
+.FigureBox.Collection figure {
+	font-size: 10pt;
+/*	thumbnail height */
+	xheight: 83px;
+}
+
+.FigureBox.Collection figure > img, .FigureBox.Collection figure > a > img {
+	border: 4px solid #fff;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-box-shadow: 0px 0px 8px #afb4b6;
+	-moz-box-shadow: 0px 0px 8px #afb4b6;
+	vertical-align: top;
+}
+
+.FigureBox.Collection  figcaption .extras li a {
+    color: #404040;
+    font-size: 11px;
+    font-weight: normal;
+    line-height: 18px;
+    text-decoration: none;
+}
+.FigureBox.Collection .label {
+	text-align: left;
+}
+
+.FigureBox.Collection .label span {
+	font-weight: normal;
+}
+.FigureBox.Collection .description {
+	font-size: 0.8em;
+}
+.FigureBox.Collection .extras li {
+	display: inline;
+	border-right: 1px solid #404040;
+	padding: 0 5px;
+}
+.FigureBox.Collection .extras li.last {
+	border-right: none;
+}
+.FigureBox.Collection .extras li.icon {
+	padding-left: 15px;
+}
+
+.FigureBox.Collection li.privacy.public {
+	background: url(/static/img/css-gui/earth.png) no-repeat left;
+}
+.FigureBox.Collection li.privacy.listing {
+	background: url(/static/img/css-gui/earth.png) no-repeat left;
+}
+.FigureBox.Collection li.privacy.members {
+	background: url(/static/img/css-gui/people.png) no-repeat left;
+}
+.FigureBox.Collection li.privacy.admin {
+	background: url(/static/img/css-gui/lock.png) no-repeat left;
+}
+.FigureBox.Collection.sq {
+	margin-bottom: 10px;
+}
+.FigureBox.Collection.sq figure {
+	margin:2px;
+	padding:2px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;		
+}
+.FigureBox.Collection.sq figure > a > img {
+}
+.FigureBox.Collection.sq  figcaption {
+	display: inline-block;
+	padding: 2px;
+/*	controls wrap for .extras.description*/
+	width: 214px;	
+}
+.FigureBox.Collection.ll {
+	margin-bottom: 10px;
+}
+.FigureBox.Collection.ll figure {
+	padding:2px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	background-color: #FFF;		
+}
+.FigureBox.Collection.ll  figcaption {
+	display: block;
+	padding: 2px 0;
+/*	controls wrap for .extras.description*/
+	width: 226px;	
+}
+.FigureBox.Collection.ll .label {
+	font-weight: bold;
+	font-size: 1.1em;
+}
+.FigureBox.Collection.bp {
+    background-color: #FFFFFF;
+    border: 1px solid #E5E5E5;
+    border-radius: 5px 5px 5px 5px;
+    overflow: hidden;
+    padding: 10px;
+    position: relative;	
+}
+/* /photos/home page grid_5 */
+/*  TODO: USE .tiny */
+.grid_5 .FigureBox.Collection.sq  figure > a > img {
+	width: 33px;
+	height: 33px;
+}
+.grid_5 .FigureBox.Collection.sq  figcaption {
+	width: 205px;
+}
+.grid_5 .FigureBox.Collection.sq  figcaption .description {
+	display: none;
+}
+
+
+
+
+
+section.item-header  {
+	background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0, rgb(197,232,250)),color-stop(1, rgb(232,246,253))	);
+	background-image: -moz-linear-gradient(center bottom,rgb(197,232,250) 0%,rgb(232,246,253) 100%);
+	background: #FFFFC3;
+	-webkit-border-radius: 10px 10px 0 0;
+	-moz-border-radius: 10px 10px 0 0;
+	box-shadow: 0 0 5px #888888;
+	x-webkit-box-shadow: 0px 0px 7px #fff inset;
+	x-moz-box-shadow: 0px 0px 7px #fff inset;
+	overflow: hidden;
+}
+section.item-header.minimize {
+	height: 10px;
+}
+section.item-header  .wrap {
+	padding: 4px 0;	
+	overflow: hidden;
+}
+section.item-header ul {
+	height: 54px;	/*	window options adding 4px */	
+}
+section.item-header .thumbnail img {
+	width: 50px;
+	height: 50px;
+	vertical-align: text-bottom;
+}
+section.item-header .label {
+	font-size: 1.5em;
+}
+section.item-header .item-class {
+	font-weight: 700;
+}
+section.item-header .window-options ul {
+	height: auto;
+	padding-top: 30px;
+}
+
+/*
+ * Person/Circle thumbnails
+ */
+.gallery.person {
+	padding: 4px;
+}
+.FigureBox.Person {
+	overflow: hidden;
+	display: inline-block;
+	vertical-align: top;
+}
+.FigureBox.Person:hover figure {
+	background: #fff88a;
+}
+.FigureBox.Person.focus figure {
+	    /* same as .orange */
+	background: #f9c667 !important; /* Old browsers */	
+	background: -moz-linear-gradient(top, #f9c667 0%, #f79621 100%) !important; /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f9c667), color-stop(100%,#f79621)) !important; /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* IE10+ */
+	background: linear-gradient(top, #f9c667 0%,#f79621 100%) !important; /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9c667', endColorstr='#f79621',GradientType=0 ) !important; /* IE6-9 */
+	border: 1px solid #f79621 !important;
+	color: #000 !important;	
+
+}
+.FigureBox.Person figure {
+	font-size: 10pt;
+/*	thumbnail height */
+}
+
+.FigureBox.Person figure > a > img {
+	border: 4px solid #fff;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	-webkit-box-shadow: 0px 0px 8px #afb4b6;
+	-moz-box-shadow: 0px 0px 8px #afb4b6;
+	vertical-align: top;
+}
+
+.FigureBox.Person  figcaption .extras li a {
+    color: #404040;
+    font-size: 11px;
+    font-weight: normal;
+    line-height: 18px;
+    text-decoration: none;
+}
+.FigureBox.Person .label {
+	text-align: left;
+}
+
+.FigureBox.Person .label a {
+	text-decoration: none;
+}
+.FigureBox.Person .description {
+	font-size: 0.8em;
+}
+.FigureBox.Person .extras li {
+	display: inline;
+	border-right: 1px solid #404040;
+	padding-right: 5px;
+	margin-right: 5px;
+}
+.FigureBox.Person .extras li.last {
+	border-right: none;
+	margin-right: 0;
+}
+.FigureBox.Person .extras li.icon {
+	padding-left: 15px;
+}
+
+.FigureBox.Person.sq {
+	margin-bottom: 10px;
+}
+.FigureBox.Person.sq figure {
+	xmargin:2px;
+	padding:2px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;		
+}
+.FigureBox.Person.sq figure > a > img {
+	width: 75px;
+	height: 75px;
+	display: inline-block;
+}
+.FigureBox.Person.sq.small figure > a > img {
+	width: 48px;
+	height: 48px;
+}
+.FigureBox.Person.sq.tiny figure > a > img {
+	width: 33px;
+	height: 33px;
+}
+
+.FigureBox.Person.sq  figcaption {
+	display: inline-block;
+	padding: 2px;
+/*	controls wrap for .extras.description*/
+	width: 110px;	
+}
+.FigureBox.Person.lm {
+	margin-bottom: 10px;
+}
+.FigureBox.Person.lm figure {
+	padding:2px;
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	background-color: #FFF;		
+}
+.FigureBox.Person.lm figure > a > img {
+	width: 144px;
+	height: 96px;
+	display: inline-block;
+}
+.FigureBox.Person.lm  figcaption {
+	display: block;
+	padding: 2px 0;
+/*	controls wrap for .extras.description*/
+	xwidth: 226px;	
+}
+.FigureBox.Person.lm .label {
+	font-weight: bold;
+	font-size: 1.1em;
+}
