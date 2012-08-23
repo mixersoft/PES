@@ -63,7 +63,7 @@
 			 * */
 			private function checkDebug():Boolean {
 				try {
-					var devSrc:File = new File('W:\\www-git');	// assume this folder only exists on dev desktops
+					var devSrc:File = new File('W:\\www-dev');	// assume this folder only exists on dev desktops
 					if (devSrc.exists && devSrc.isDirectory) {
 						Config.DEBUG = true;
 						// on dev desktops, use app:src as root folder, unless app: is a privileged directory
@@ -103,7 +103,7 @@
 				Config.init();
 				MagickUtils.init();
 				var MODE:String = 'prod';	// dev.snaphappi.com
-//				MODE = 'dev';				// git.3:88
+				MODE = 'dev';				// snappi-dev
 				// see: bootstrap_html() for actual host values
 				
 				this.checkDebug();			// set app root folder inside project folder if DEBUG
@@ -155,7 +155,7 @@
 						break;
 					case 'dev':
 					default:				
-						if (Config.DEBUG) Config.HOST = "git3:88"
+						if (Config.DEBUG) Config.HOST = "snappi-dev"
 						else Config.HOST = "10.1.2.206";
 						break;
 				}
