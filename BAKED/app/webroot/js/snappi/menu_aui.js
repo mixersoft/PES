@@ -640,10 +640,11 @@ console.log("delegateHost="+delegateHost._yuid);
 		}
 	};	
 	MenuItems.delete_click = function(menuItem, menu, e){
-		var g, response, selected, isSelected, isContextMenu, isLightbox,
+		var g, response, selected, isSelected, isContextMenu, isSelectAll, isLightbox,
 			thumbnail = menu.get('currentNode');	// target
 		// contextmenu or selectall menu
-		isContextMenu = menuItem.ancestor('#contextmenu-photoroll-markup');
+		isContextMenu = menuItem.ancestor('#contextmenu-photoroll-markup')
+		isSelectAll = menuItem.ancestor('#menu-select-all-markup');
 		try {
 			g = (isContextMenu) ? 
 				MenuItems.getGalleryFromTarget(thumbnail)
@@ -660,7 +661,7 @@ console.log("delegateHost="+delegateHost._yuid);
 			return;
 		}
 		// single or batch operation
-		if (g && isContextMenu && e.shiftKey) {
+		if (g && (isSelectAll || (isContextMenu && e.shiftKey))) {
 			selected = g.getSelected();		// BATCH delete
 		} else selected = new SNAPPI.SortedHash(null, SNAPPI.Auditions.find(thumbnail.get('uuid')));
 		menu.hide();
