@@ -31,7 +31,7 @@ class PhotosController extends AssetsController {
 			 */
 			'export'
 		);
-		$this->Auth->allow( array_merge($this->Auth->allowedActions , $myAllowedActions));
+		$this->Auth->allow( $myAllowedActions);
 		// TODO: edit allowed for  'role-----0123-4567-89ab---------user'
 		// TODO: groups allowed for  'role-----0123-4567-89ab--------guest', 'role-----0123-4567-89ab---------user'
 	}	

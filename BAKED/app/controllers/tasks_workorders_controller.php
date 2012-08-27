@@ -74,7 +74,7 @@ class TasksWorkordersController extends AppController {
 	function beforeFilter(){
 		parent::beforeFilter();
 		$myAllowedActions = array(	);
-		$this->Auth->allow( array_merge($this->Auth->allowedActions , $myAllowedActions));
+		$this->Auth->allow( $myAllowedActions);
 		if (!empty($this->passedArgs[0])) {
 			$this->__saveWorkorderToSession($this->passedArgs[0]);
 		}	

@@ -89,7 +89,7 @@ class StoriesController extends CollectionsController {
 		 // experimental
 		 'import_page_gallery', 'get_asset_info',
 		);
-		$this->Auth->allow( array_merge($this->Auth->allowedActions , $allowedActions));
+		$this->Auth->allow($allowedActions);
 		AppController::$writeOk = $this->Collection->hasPermission('write', AppController::$uuid);
 	}
 

@@ -42,8 +42,10 @@ class MyController extends PersonController {
 			 */
 			'pagemaker', 'updateExif'
 		);
-		$this->Auth->allow( array_merge($this->Auth->allowedActions , $myAllowedActions));
-	
+		$removeAuth = array('photos', 'groups', 'trends', 'stories', 'photostreams', 'home', 
+			'all', 'most_active', 'most_recent','most_photos','most_groups','remove_photos'
+			);
+		$this->Auth->allowedActions = array_merge(array_diff($this->Auth->allowedActions , $removeAuth), $myAllowedActions);
 		// else auth redirect
 	}
 	
@@ -52,6 +54,9 @@ class MyController extends PersonController {
 		parent::home(MyController::$userid );
 	}
 	function photos() {
+		if (!MyController::$userid) {
+			
+		}
 		parent::photos(MyController::$userid );
 	}
 	function snaps() {
