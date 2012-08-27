@@ -32,12 +32,12 @@
   <flashCatalyst validateFlashCatalystCompatibility="false"/>
   <buildTargets>
     <buildTarget buildTargetName="default">
-      <airSettings airCertificatePath="W:/www-git/flex-uploader/snappi-dev-certificate.p12" airTimestamp="true" version="1">
+      <airSettings airCertificatePath="W:/www-dev/flex-uploader/snappi-dev-certificate.p12" airTimestamp="true" version="1">
         <airExcludes>
-          <pathEntry path="js"/>
           <pathEntry path="db/snaphappi-DEBUG - Copy.db3"/>
-          <pathEntry path="logs"/>
           <pathEntry path="db/snaphappi-DEBUG.db3"/>
+          <pathEntry path="logs"/>
+          <pathEntry path="js"/>
         </airExcludes>
       </airSettings>
       <actionScriptSettings version="1"/>
