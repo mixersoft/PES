@@ -27,6 +27,7 @@ files/
 *.log
 cake-core/
 cakephp-*/
+BAKED/*
 BAKED/app/webroot/static/lib/*
 BAKED/app/plugins/brownie
 
