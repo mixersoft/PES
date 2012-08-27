@@ -190,11 +190,11 @@ console.error('DEPRECATE: SNAPPI.PM.cfg.fn_DISPLAY_SIZE() in main()');
 	SNAPPI.Config = Config;	// make global
 	var _CFG = {		// frequently used startup Config params 
 			DEBUG : {	// default when hostname==git* or snappi-dev
-	    		snappi_comboBase: 'baked/app/webroot&',
+	    		snappi_comboBase: 'app/webroot&',
 	    		snappi_minify: 0,
 	    		air_comboBase: 'app/air&',
 	    		snappi_useCombo: 1,					// <-- TESTING SNAPPI useCombo
-	    		pagemaker_comboBase: 'PageMaker&',	// filepath, not baseurl
+	    		pagemaker_comboBase: 'PAGEMAKER&',	// filepath, not baseurl
 	    		pagemaker_useCombo: 0,
 	    		alloy_useCombo: 1,
 	    		yahoo_CDN: 0,
@@ -735,7 +735,8 @@ console.warn("Node.ynode() may not be compatible with ie8");
 	    }
         //                console.log("host=" + host);
 	    o.host = host;
-	    defaultCfg = (PAGE.isDev) ? CFG.DEBUG : CFG.PROD;
+	    defaultCfg = (PAGE.isDev) ? _CFG.DEBUG : _CFG.PROD;
+	    
 	    
 	    // merge defaultCfg + overrides
 	    for (var prop in defaultCfg) {

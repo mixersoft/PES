@@ -1,4 +1,3 @@
-
 */static/lib/*
 */uploads/*
 */bin-debug/*
@@ -12,18 +11,24 @@ snaphappi-DEBUG.db3
 
 DEV/AIR*
 
+#ignore aptana studio 3 files
 .buildpath
 .project
 .settings
-#ignore aptana studio 3 files
 
+#ignore cakephp tmp files
+svc/
+odesk/sharelinks
+app/tmp/*
+*/app/tmp/*
+app/webroot/static/lib/*
+app/plugins/brownie
 files/
 *.log
 cake-core/
 cakephp-*/
-*/*/app/tmp/*
-*/app/tmp/*
-#ignore cakephp tmp files
+BAKED/app/webroot/static/lib/*
+BAKED/app/plugins/brownie
 
 #ignore test JPG files
 .metadata
@@ -58,8 +63,5 @@ _ReSharper*/
 [Tt]est[Rr]esult*
 
 
-svc/
-HelloWorld
-HelloWorldSkins
-odesk/sharelinks
-BAKED/app/webroot/static/lib/*
+
+

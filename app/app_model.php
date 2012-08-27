@@ -2,8 +2,6 @@
 
 class AppModel extends Model {
 	
-//	public $useDbConfig = 'baked';  // uses mysqli driver  
-	
 	public $actsAs = array(
 		'Containable'
 	);

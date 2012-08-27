@@ -29,7 +29,7 @@ $config['register'] = array(
 );
 
 $config['desktop.uploader'] = array(
-	'version'=>'1.8.7'
+	'version'=>'1.8.6'		// confirm OSX works as 1.8.7 before upgrading
 );
 
 /*
@@ -53,7 +53,7 @@ switch ($config['Config.os']) {
 		);
 		
 		$config['vendors'] = array('fileUploader'=>'valums-file-uploader-461068d'); 
-		$wwwroot = 'W:/www-git.3';
+		$wwwroot = 'W:/www-dev';
 		$svc_root = 'W:/www-svc';
 		$config['path'] = array(
 			'APIKEYS' => 'U:\Users\michael\PRIVATE\APIKEYS.php',
