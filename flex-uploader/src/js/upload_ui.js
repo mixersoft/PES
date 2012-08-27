@@ -602,7 +602,7 @@ LOG(">>>>>>>>>>>>  startUploadPage  ============================ page="+page);
 		doUpload : function() {
 			var UploadManager = SNAPPI.AIR.UploadManager;
 			var remaining = this.flexUploadAPI.getCountByStatus('pending',this.batchId, this.baseurl,'=');
-			var max_concurrent_uploads = Math.min(remaining, UploadManager.MAX_CONCURRENT_UPLOADS);
+			var max_concurrent_uploads = UploadManager.MAX_CONCURRENT_UPLOADS;  // Math.min(remaining, UploadManager.MAX_CONCURRENT_UPLOADS);
 // LOG("REMAINING="+remaining+", COUNT="+UploadManager.count()+" < MAX="+max_concurrent_uploads);			
 			while (remaining && UploadManager.count() < max_concurrent_uploads) {
 				this.uploadItemIndex++;

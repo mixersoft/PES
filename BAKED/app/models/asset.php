@@ -464,7 +464,7 @@ AND includes.asset_id='{$assetId}';
 //		),					
 		'SharedEdit' => array(
 			'className' => 'SharedEdit',
-			'foreignKey' => 'asset_id',
+			'foreignKey' => 'id',
 			'conditions' => '',
 			'fields' => '',
 			'order' => ''
@@ -635,7 +635,6 @@ AND includes.asset_id='{$assetId}';
 			unset($newAsset['id']);	// this is not the original UUID 
 		}; 
 		$duplicate = $this->find('first', $checkDupes_options);
-// $this->log( "checkDupes_options options=".print_r($checkDupes_options, true), LOG_DEBUG);		
 // $this->log( "checkDupes_options FOUND, data=".print_r($duplicate, true), LOG_DEBUG);
 		if (!empty($duplicate['Asset']['id'])) {
 			// found Duplicate
@@ -643,7 +642,7 @@ AND includes.asset_id='{$assetId}';
 			$fieldlist = $this->__updateAssetFields($duplicate['Asset'], $newAsset);
 			$newAsset = array_intersect_key($newAsset, array_flip($fieldlist)); 
 			$duplicate['Asset'] = array_merge($duplicate['Asset'], $newAsset);
-// $this->log( "checkDupes_options SAVE FIELDSLIST=".print_r($fieldlist, true), LOG_DEBUG);			
+// $this->log( "checkDupes_options SAVE FIELDSLIST=".print_r($fieldlist, true), LOG_DEBUG);	
 			$ret = $this->save($duplicate, FALSE, $fieldlist);
 			if (!$ret) {
 $this->log( " ERROR: this->__updateAssetFields()".print_r($duplicate['Asset'], true), LOG_DEBUG);					
@@ -653,7 +652,7 @@ $this->log( " ERROR: this->__updateAssetFields()".print_r($duplicate['Asset'], t
 			}
 			$response['response'][]=$newAsset;
 // $this->log('__updateAssetFields =>'.print_r($response, true),LOG_DEBUG);	
-			$data = array('Asset'=>$duplicate['Asset']);
+			return array('Asset'=>$duplicate['Asset']);
 		} else {
 			// no Duplicate, save new Asset 
 
@@ -697,12 +696,16 @@ $this->log("insert newAsset=".print_r($newAsset, true), LOG_DEBUG);
 			if ($ret = $this->save($data)) {
 	// $this->log( "save asset, data=".print_r($data, true), LOG_DEBUG);				
 				$response['message'][]="photo imported successfully";
-			} else 	$response['message'][]="Error creating asset, id={$asset['id']}";
+			} else 	{
+				$response['message'][]="Error creating asset, id={$asset['id']}";
+				$this->id = $data['Asset']['id'];
+				// TODO: BUG:  $this->read() is not working properly
+				$ret = $this->read();
+			}
 			$response['success'] = isset($response['success']) ? $response['success'] && $ret : $ret;
-			$data = $this->read();
-	// $this->log( "AFTER save asset, data=".print_r($data, true), LOG_DEBUG);
+			return $ret;
 		}			
-		return $data; 			
+		throw new Exception('Error: invalid return');			
 	}
 
 	/*

@@ -144,11 +144,12 @@ class MyController extends PersonController {
 // $this->log("MyController::__importPhoto staging files, ".print_r($stage, true), LOG_DEBUG);		
 	 	if ($ret3 = $Import->import2stage($stage['src'], $stage['dest'], null, $move = true)) {
 	 		$response['message'][]="file staged successfully, dest={$stage['dest']}";
-		} else $response['message'][]="Error staging file, src={$stage['src']}";
+		} else $response['message'][]="Error staging file, src={$stage['src']} dest={$stage['dest']}";
 	 	$ret = $ret && $ret3;
 
 	 	$response['success'] = $ret ? 'true' : 'false';
 		$response['response'] = $assetData;
+// $this->log("MyController::__importPhoto JSON response, ".print_r($response, true), LOG_DEBUG);			
 		return $response;
 	}
 	/**
@@ -401,7 +402,9 @@ $this->log($response['message'], LOG_DEBUG);
 // $this->log($this->data, LOG_DEBUG);		
 // debug($_SERVER);
 		// exit(0);
+		Configure::write('debug', 0);		// preserve valid JSON response
 		$forceXHR = setXHRDebug($this, 0);
+$this->log("forceXHR=={$forceXHR}, debug=".Configure::read('debug'), LOG_DEBUG);		
 		$force_UNSECURE_LOGIN = true;
 		if (AppController::$role != 'USER') {
 			/*

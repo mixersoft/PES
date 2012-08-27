@@ -620,7 +620,9 @@ package api
 		public function getUploadFilePOSTurl():String{
 			return this.datasource.cfg.uploadHost;
 		}		
-		
+		/*
+		* called from: upload_ui.js: UploadQueue.doUpload()
+		*/
 		public function uploadFile(photo_id:String, handlers:Object, sessionId:String):void{
 			var uploadCfg:Object = {
 				photo_id : photo_id,
@@ -674,6 +676,9 @@ package api
 			navigateToURL( req  );
 			return;
 		}
+		/*
+		* called from success handler in uploadFile()
+		*/
 		private function postUploadFile(f:File, params:Object):void{
 			var handlers:Object = params.handlers;
 //			var sessionKey:String = 'CAKEPHP=' + params.sessionId;

@@ -79,6 +79,9 @@ package api
 			this.done = false;
 			UploadFile.UploadFileManager.push(this);
 		}
+		/*
+		* called from UploaderUI.postUploadFile()
+		*/
 		public function startUpload():void{
 			try{
 				if(this.file.exists){
@@ -197,6 +200,10 @@ package api
 			try {
 				var response:Object = JSON.decode(serverData);		// error
 			} catch (e:Error) {
+				if (!response) {
+					Config.jsGlobal.firebugLog("JSONParse Error, check Configure::read(debug) == 0");		
+					response = {success:false, message:'JSONParse Error, check Configure::read(debug)==0'};
+				}
 				response.success = false;
 Config.jsGlobal.firebugLog("JSONParse Error, raw="+serverData);				
 			}
