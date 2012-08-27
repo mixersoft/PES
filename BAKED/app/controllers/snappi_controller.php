@@ -289,7 +289,8 @@ class SnappiController extends AppController {
 		return;
 	}
 	/**
-	 * get current version for AIR application
+	 * get current version for AIR application, 
+	 * set in Configure::read('desktop.uploader')
 	 * 
 	 */
 	function uploader_version(){

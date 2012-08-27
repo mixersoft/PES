@@ -20,7 +20,7 @@
  * 
  * 
  */
-// console.log("load BEGIN: ui-helpers.js");	
+LOG("load BEGIN: ui-helpers.js");	
 (function() {
 		
 	var _Y = null;
@@ -740,7 +740,7 @@ LOG(' >>>>>>>>>>>>>  testSession(): starting next iteration    #'+args.i);
 		}
 	}
 	XhrHelper.signIn = function(postData) {
-		
+// LOG("*******  XhrHelper.signIn");		
 		SNAPPI.setPageLoading(true);
 		if (postData === undefined) {
 			postData = {};

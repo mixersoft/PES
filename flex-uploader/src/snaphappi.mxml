@@ -103,7 +103,7 @@
 				Config.init();
 				MagickUtils.init();
 				var MODE:String = 'prod';	// dev.snaphappi.com
-				MODE = 'dev';				// snappi-dev
+//				MODE = 'dev';				// snappi-dev
 				// see: bootstrap_html() for actual host values
 				
 				this.checkDebug();			// set app root folder inside project folder if DEBUG

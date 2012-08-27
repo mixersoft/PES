@@ -129,17 +129,19 @@
 		} catch (e) {
 			auth = null;
 		}	
-		defaultMenus = {'menu-header-help-markup': 1};
-		try {
-			if (/^(MANAGER|EDITOR)$/.test(SNAPPI.STATE.controller.ROLE)) {
-				defaultMenus['menu-header-wms-markup'] = 1;	
-			} else {
-				defaultMenus['menu-header-create-markup'] = 1;	
+		
+		if (!SNAPPI.isAIR) {
+			defaultMenus = {'menu-header-help-markup': 1};
+			try {
+				if (/^(MANAGER|EDITOR)$/.test(SNAPPI.STATE.controller.ROLE)) {
+					defaultMenus['menu-header-wms-markup'] = 1;	
+				} else {
+					defaultMenus['menu-header-create-markup'] = 1;	
+				}
+			} catch(e) {
+				throw "Error: SNAPPI.STATE.controller.ROLE not set";
 			}
-		} catch(e) {
-			throw "Error: SNAPPI.STATE.controller.ROLE not set";
-		}
-			
+		}	
 		if (auth) {
 			defaultMenus['menu-header-markup'] = 1;
 		}		

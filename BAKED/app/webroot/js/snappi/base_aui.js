@@ -198,7 +198,7 @@ console.error('DEPRECATE: SNAPPI.PM.cfg.fn_DISPLAY_SIZE() in main()');
 	    		pagemaker_useCombo: 0,
 	    		alloy_useCombo: 1,
 	    		yahoo_CDN: 0,
-	    		YUI_VERSION: '3.4.0',	// this is actually set in aui.js
+	    		YUI_VERSION: '3.4.0',	// this is actually determined by aui version, aui.js
 	    		// yui_CDN == true => use "http://yui.yahooapis.com/combo?"
 				// yui_CDN == false => use snaphappi hosted yui libs: "/combo/js?"
 		    },
@@ -214,7 +214,7 @@ console.error('DEPRECATE: SNAPPI.PM.cfg.fn_DISPLAY_SIZE() in main()');
 	    		YUI_VERSION: '3.4.0',
 	    	}
 	    }
-	namespace('CFG');
+	namespace('CFG');	// make global
 	CFG = _CFG;
 	
 	/**
@@ -304,6 +304,8 @@ console.error('DEPRECATE: SNAPPI.PM.cfg.fn_DISPLAY_SIZE() in main()');
 			LazyLoad.helpers.add_ynode(Y);
 			// defer inits until Y instance available
 			if (SNAPPI.onYready) {
+// console.log("before_LazyLoadCallback()  SNAPPI.onYready");				
+// console.log(SNAPPI.onYready);				
 				for (var f in SNAPPI.onYready) {
 					try {
 						var fn = SNAPPI.onYready[f];
@@ -569,7 +571,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
     		 * early load modules
     		 */
     		// 'AIR-firebug-stable',
-    		// 'AIR-firebug-1.2',
+    		'AIR-firebug-1.2',
     		/*
     		 * snappi modules
     		 */
@@ -601,19 +603,20 @@ console.warn("Node.ynode() may not be compatible with ie8");
     			try {
     				SNAPPI.AIR.Helpers.add_snappiHoverEvent(Y);
     			} catch (e) {}
-    			
     			/*********************************************************************************
     			 * domready init
     			 */
     			Y.on('domready', function(){
+// LOG("LazyLoad.AIRDesktopUploader  Y.on(domready)");    				
     				try {
-    					var detach = Y.on('snappi-air:markup-loaded', function(){
-							detach.detach();
+    					Y.once('snappi-air:markup-loaded', function(){
+// LOG('FIRED snappi-air:markup-loaded');    						
 							SNAPPI.AIR.Helpers.go();
     						SNAPPI.AIR.UIHelper.listeners.ImportComplete();
     						SNAPPI.AIR.XhrHelper.checkUpdate();
     					});
     					SNAPPI.AIR.XhrHelper.getMarkup();
+    					
 						Y.later(10000, this, function(){
 							Y.ready('snappi-hint', function(Y){
 									SNAPPI.namespace('SNAPPI.STATE.hints');
@@ -627,7 +630,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
 		
 		// before before_LazyLoad
 		var before_LazyLoad = function(){
-			ALLOY_VERSION='alloy-1.0.2';
+			// ALLOY_VERSION='alloy-1.5.0';		// set in bootstrap.html
 			namespace('SNAPPI.AIR');
 			SNAPPI.AIR.Config = Config;	// make global
 			SNAPPI.AIR.Config.CONSTANTS = {
@@ -724,6 +727,9 @@ console.warn("Node.ynode() may not be compatible with ie8");
 	    try {
 	        // get host from AIR bootstrap
 	        var host = SNAPPI.isAIR ? SNAPPI.AIR.host : window.location.host;
+	        if (SNAPPI.AIR.debug) {
+	        	PAGE.isDev = true;
+	        }
 	    } catch (e) {
 	        host = window.location.host;	// hostname:port number
 	    }
@@ -1031,8 +1037,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
 	        modules: {
 	            'AIR-ui-helpers': {
 	                path: 'ui-helpers.js',
-	                requires: ['snappi-paginator',
-	                ] 
+	                requires: ['snappi-paginator','snappi-io'], 
 			    },		        	
 	            'AIR-helpers': {	//TODO: deprecate. move to ui-helpers.js
 	                path: 'helpers.js',
