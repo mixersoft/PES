@@ -136,7 +136,6 @@ debug($checkdata);
 		
 		$owner_id = $owner_id ? $owner_id : AppController::$ownerid;
 		$Asset = $this->AssetsGroupshot->Asset;
-		$Asset->Behaviors->detach('Taggable');
 //		$Asset->contain('AssetsGroup.group_id');
 		$group_id = $this->_getGroupIdForWorkorderProcessing($assetIds, $group_id);
 		$options = array(
@@ -326,7 +325,6 @@ WHERE `Shot`.id = '{$shotId}'";
 			),
 		);
 		$Asset = $this->AssetsGroupshot->Asset;
-		$Asset->Behaviors->detach('Taggable');
 		if (in_array('Permissionable', $Asset->Behaviors->attached())) {
 			// permissionable does NOT obey recursive or containable()
 			$options['permissionable'] = false;
@@ -422,7 +420,6 @@ WHERE `Shot`.id = '{$shotId}'";
 				'permissionable'=>true,	
 			);
 			$Asset = $this->AssetsGroupshot->Asset;
-			$Asset->Behaviors->detach('Taggable');
 			$data = $Asset->find('all',$options);
 			
 			foreach ($shotIds as $shotId) {

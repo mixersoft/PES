@@ -121,7 +121,6 @@ class Usershot extends AppModel {
 		
 		$bestshot_ownerId = $bestshot_ownerId ? $bestshot_ownerId : AppController::$userid;
 		$Asset = $this->AssetsUsershot->Asset;
-		$Asset->Behaviors->detach('Taggable');
 		$Asset->contain();
 		// filter $assetIds to check owner_id;
 		$options = array(
@@ -318,7 +317,6 @@ WHERE `Shot`.id = '{$shotId}' AND `Shot`.owner_id = '{$owner_id}'";
 			),
 		);
 		$Asset = $this->AssetsUsershot->Asset;
-		$Asset->Behaviors->detach('Taggable');
 		if (in_array('Permissionable', $Asset->Behaviors->attached())) {
 			// permissionable does NOT obey recursive or containable()
 			$options['permissionable'] = false;
@@ -410,7 +408,6 @@ WHERE `Shot`.id = '{$shotId}' AND `Shot`.owner_id = '{$owner_id}'";
 				'permissionable'=>true,	
 			);
 			$Asset = $this->AssetsUsershot->Asset;
-			$Asset->Behaviors->detach('Taggable');
 			$data = $Asset->find('all',$options);
 			
 			foreach ($shotIds as $shotId) {

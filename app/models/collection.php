@@ -431,7 +431,6 @@ class Collection extends AppModel {
 				'join_shots'=>false, 
 				'order'=>'UserEdit.rating DESC, SharedEdit.score DESC' 
 			);
-			$this->Asset->Behaviors->detach('Taggable');
 			$topRated = $this->Asset->find('first', $options);
 			$data['Collection']['src_thumbnail'] = $topRated['Asset']['src_thumbnail'];
 		}
