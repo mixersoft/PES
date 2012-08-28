@@ -1095,12 +1095,17 @@ LIMIT 5;";
 	}
 
 
-	function create() {
+	function create($type=null) {
 		$this->layout = 'snappi';
 		$this->set('title_for_layout',"Create New Circle");
+		
+		$type = $type ? $type : 'Group';	// default
+		
+		
 		$step = @ifed($this->data['Group']['step'], 'create-choose');
 		if (!empty($this->data)) {
 				$this->Group->create();
+				$this->Group->isCREATE = true;
 				$this->data['Group']['owner_id'] = AppController::$ownerid;
 				$this->data['Permission']['perms'] = $this->data['Group']['privacy_groups'];
 				if ($this->Group->save($this->data)) {
@@ -1134,7 +1139,7 @@ LIMIT 5;";
 		
 		$policy =  $this->__getPolicyConfig();
 		$this->data['Group']= array_merge($policyDefaults, $this->data['Group']);				
-		$this->set(compact('step', 'privacy', 'policy','policyDefaultsJson'));
+		$this->set(compact('step', 'privacy', 'policy','policyDefaultsJson', 'type'));
 
 		//		debug($this->data);
 	}

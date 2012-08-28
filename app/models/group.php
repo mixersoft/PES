@@ -81,13 +81,17 @@ class Group extends AppModel {
 		 * for Permissionable
 		 * 		"Member" created groups must have Permission.gid = Group.id
 		 */
-		
 		if($created && (!isset($this->isCREATE) || $this->isCREATE==false)) {
 			$perms = $this->getPermission();
 			if ($perms['gid'] != $this->id){
 				$perms['gid'] = $this->id;
 				ClassRegistry::init('Permissionable.Permission')->save($perms, array('gid'));
 			}
+		}
+		if ($created && !empty($this->isCREATE)) {
+			// update Permissionable::$group_ids with new group
+			Permissionable::setGroupOwnershipsMemberships(Session::read('Auth'));  
+			Session::write('Auth.Permissions.group_ids', Permissionable::$group_ids);
 		}
 	}
 	

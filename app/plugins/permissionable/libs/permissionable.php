@@ -155,6 +155,7 @@ final class Permissionable {
 	/*
 	 * added for Snaphappi
 	 * set Permissionable::$group_ids to 'user' owned and membership groups, excludes isSystem=1  
+	 * @param mixed, either user_id,  $this->Auth-user(), or Session::read('Auth')
 	 */ 
 	public static function setGroupOwnershipsMemberships ($user) {
 		$User = ClassRegistry::init('User');
