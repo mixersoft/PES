@@ -14,7 +14,7 @@ class Group extends AppModel {
 	 * 
 	 */
 	public $actsAs = array(
-		'Tags.Taggable',	// TODO: why can't I load this on the fly????
+		// 'Tags.Taggable',	// attach behavior on the fly
 		'Search.Searchable',
 		'Comments.Sluggable' => array('label' => 'title'),	
 		'Permissionable.Permissionable' => array(
@@ -37,6 +37,7 @@ class Group extends AppModel {
 	);
 
 	public function findByTags($data = array()) {
+		$this->Behaviors->attach('Tags.Taggable');
 		$this->Tagged->Behaviors->attach('Containable', array('autoFields' => false));
 		$this->Tagged->Behaviors->attach('Search.Searchable');
 		$query = $this->Tagged->getQuery('all', array(
@@ -469,6 +470,7 @@ ORDER BY photos DESC;";
 	}
 	
 	function getPaginateGroupsByTagId ($tagid , $paginate = array()) {
+		$this->Behaviors->attach('Tags.Taggable');
 		$paginateModel = 'Group';
 //debug($paginateModel);			
 		// add context, refactor

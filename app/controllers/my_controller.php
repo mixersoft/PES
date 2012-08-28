@@ -506,7 +506,6 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 	
 		
 	function remove_photos($id){
-		$this->User->Asset->Behaviors->detach('Taggable');
 		$options = array('conditions'=>array('Asset.owner_id'=>$id), 
 			'fields'=>array('Asset.id', 'Asset.json_src', 'Asset.owner_id'),
 			'permissionable'=>false

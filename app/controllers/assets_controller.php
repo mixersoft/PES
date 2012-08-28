@@ -1223,9 +1223,6 @@ debug("WARNING: This code path is not tested");
 		$forceXHR = setXHRDebug($this, 0, 1);
 		$success = true; $message=array(); $response=array();
 		$resp0 = compact('success', 'message', 'response'); 
-		if (in_array('Taggable', $this->Asset->Behaviors->attached()) ) {
-			$this->Asset->Behaviors->detach('Taggable');	
-		}
 		if ($this->RequestHandler->isAjax() || $forceXHR) {		
 			$this->layout='ajax';
 			$this->autoRender=false;
@@ -1472,9 +1469,6 @@ $this->log("WARNING: json_exif['preview']['imageWidth'] may need to be scaled, i
 		$forceXHR = setXHRDebug($this, 0);
 		$success = true; $message=$response=array();
 		$resp0 = compact('success', 'message', 'response'); 
-		if (in_array('Taggable', $this->Asset->Behaviors->attached()) ) {
-			$this->Asset->Behaviors->detach('Taggable');	
-		}
 		if ($this->RequestHandler->isAjax() || $forceXHR) {		
 			$this->layout='ajax';
 			$this->autoRender=false;

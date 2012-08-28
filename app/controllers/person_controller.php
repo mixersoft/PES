@@ -34,7 +34,7 @@ class PersonController extends UsersController {
 			'preview_limit'=>6,
 			'paging_limit' =>24,
 			'photostream_limit' => 4,
-			'order' => array('Asset.dateTaken'=>'ASC'),
+			'order' => array('Asset.batchId'=>'DESC', 'Asset.dateTaken'=>'ASC'),	// most recent upload
 //			'contain' => array('Owner.id', 'Owner.username'), 
 			'conditions' => array(),
 //			'recursive'=> -1,
@@ -452,7 +452,6 @@ if (!empty($this->passedArgs['raw'])) {
 				'show_edits' => false,
 			),							
 		);
-		$this->User->Asset->Behaviors->detach('Taggable');
 		$data = $this->User->Asset->find('all',$options);
 		$this->viewVars['jsonData']['batchIds'] = Set::combine($data, '/Asset/batchId', '/Asset/count');
 		$done = $this->renderXHRByRequest('json', '/elements/dumpSQL', null);

@@ -119,8 +119,6 @@ class GroupsController extends AppController {
 			 'join', 'express_upload' // add to ACLs show require role='USER' but handle in controller for proper Flash msgs		
 		);
 		AppController::$writeOk = $this->Group->hasPermission('write',AppController::$uuid);
-		// TODO: why can't I just attach Taggable on the fly??
-		$this->Group->Behaviors->detach('Taggable');
 	}
 	
 	function beforeRender() {

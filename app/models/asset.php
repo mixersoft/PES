@@ -13,7 +13,7 @@ class Asset extends AppModel {
 	 * perm = 7 (rwd/---/---/--) 	- private
 	 */
 	public $actsAs = array(
-		'Tags.Taggable',
+		// 'Tags.Taggable',	// attach behavior on the fly
 		'Search.Searchable',
 		'Permissionable.Permissionable' => array(
 			'defaultBits'	=> 71,  
@@ -33,6 +33,7 @@ class Asset extends AppModel {
 	);
 
 	public function findByTags($data = array()) {
+		$this->Behaviors->attach('Tags.Taggable');
 		$this->Tagged->Behaviors->attach('Containable', array('autoFields' => false));
 		$this->Tagged->Behaviors->attach('Search.Searchable');
 		$query = $this->Tagged->getQuery('all', array(
@@ -44,6 +45,7 @@ class Asset extends AppModel {
 	}
 	
 	public function tagUsershot($tagString, $assetId, $replace = false) {
+		$this->Behaviors->attach('Tags.Taggable');
 		$ret = true;
 		$usershotSQL = "
 SELECT a.asset_id
@@ -52,6 +54,7 @@ JOIN assets_usershots AS includes ON a.usershot_id = includes.usershot_id
 AND includes.asset_id='{$assetId}';		
 		"; 	
 		$assetIds = Set::extract('/a/asset_id', $this->query($usershotSQL));
+		
 		if (empty($assetIds)) $assetIds = array($assetId); 
 		foreach ($assetIds as $aid) {
 			$ret = $ret && $this->saveTags($tagString, $aid, $replace);
@@ -608,7 +611,6 @@ AND includes.asset_id='{$assetId}';
 		/*
 		 *  check if asset already exists, by asset.id OR asset_hash 
 		 */
-		$this->Behaviors->detach('Taggable');
 		$checkDupes_options = array(
 			'recursive' => -1,
 			'conditions' => array( 'Asset.owner_id' => $userid,
@@ -687,7 +689,6 @@ $this->log("insert newAsset=".print_r($newAsset, true), LOG_DEBUG);
 			// $data['AssetPermission']['perms'] = ???	
 			
 			$this->create();
-			$this->Behaviors->detach('Taggable');
 	/*
 	 * TODO: BUG: SQL Error: 1052: Column 'id' in where clause is ambiguous
 	 * 		for counterCache on a permissionable
@@ -736,7 +737,6 @@ $this->log("insert newAsset=".print_r($newAsset, true), LOG_DEBUG);
 			default:
 				return false;
 		}
-		$this->Behaviors->detach('Taggable');
 		$this->belongsTo['Owner']['counterCache']=false;
 		$data = $this->find('all',$find_options);
 		// debug(Set::extract('/Asset/id', $data)); 
@@ -1084,6 +1084,7 @@ $this->log("insert newAsset=".print_r($newAsset, true), LOG_DEBUG);
 		return $paginate;
 	}
 	function getPaginatePhotosByTagId ($tagid , $paginate = array()) {
+		$this->Behaviors->attach('Tags.Taggable');
 		$paginateModel = 'Asset';
 //debug($paginateModel);			
 		// add context, refactor

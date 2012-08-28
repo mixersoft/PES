@@ -258,7 +258,11 @@ class TagsController extends TagsAppController {
 					}  
 				}
 				try {
-					$ret = ClassRegistry::init($class)->saveTags($strTags, $foreignKey, $replace);
+					$Model = ClassRegistry::init($class);
+					if (!in_array('Taggable', $Model->Behaviors->attached()) ) {
+						$Model->Behaviors->attach('Tags.Taggable');	
+					}
+					$ret = $Model->saveTags($strTags, $foreignKey, $replace);
 					if ($ret) {
 						$this->Session->setFlash(__d('tags', 'Tags saved.', true));
 					}
