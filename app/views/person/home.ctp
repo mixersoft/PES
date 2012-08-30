@@ -63,9 +63,13 @@ if (empty($this->passedArgs['wide'])) {
            	<div class="body">
 				<article>
          	    	<section class="recent tabbed-area cur-nav-fix">  
-            		    <h1>Recent Activity</h1>      		
+            		    <h1>Stories</h1>      		
                 		<section class="wrap">
-                            <section id="snaps">
+                          <section id="stories">
+<?php
+	$ajaxSrc = Router::url(Configure::read('passedArgs.min') + array('action'=>'stories', '?'=>array('preview'=>1)));
+	echo "<div id='collections-preview-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' delay='500' ></div>";
+?>	                            	
                           </section>
                         </section>
 					</section>
