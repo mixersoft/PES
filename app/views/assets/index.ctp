@@ -36,7 +36,7 @@ if (empty($this->passedArgs['wide'])) {
         	    	<section class="recent tabbed-area cur-nav-fix">  
             		    <h1>Stories</h1>      		
                 		<section class="wrap">
-                          <section id="snaps">
+                          <section id="stories">
 <?php
 	// tagged collections
 //	$ajaxSrc = Router::url(array('action'=>'groups', AppController::$uuid));
