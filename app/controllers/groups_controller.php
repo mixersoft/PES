@@ -1354,7 +1354,7 @@ LIMIT 5;";
 			} else {
 				if ($this->Group->delete($id)) {
 					$this->Session->setFlash(sprintf(__('%s deleted', true), 'Group'));
-					$this->redirect(array('controller'=>'my','action' => 'groups', AppController::$userid));
+					$this->redirect(array('controller'=>'my','action' => 'groups'));
 				}
 				$this->Session->setFlash(sprintf(__('%s was not deleted', true), 'Group'));
 			}
