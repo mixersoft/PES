@@ -205,7 +205,7 @@ LOG("toggle CONTEXT MENU, E="+e);
 				    				UIHelper.actions.setDisplayView(action[1]);
 				    				break;
 				    			case 'toggle-display-options':
-				    				UIHelper.actions.toggleDisplayOptions();
+				    				UIHelper.actions.toggle_DisplayOptions();
 				    				break;
 				    		}		                	
 		                }, 'nav.window-options > ul > li', UIHelper);
@@ -348,17 +348,6 @@ LOG("toggle CONTEXT MENU, E="+e);
 	    	uploader = uploader ||  SNAPPI.AIR.uploadQueue;
 	    	uploader.onDrop.call(this, droppedFolder);
 	    },
-		'goto' : function (o) {
-			window.location.href = o.options[o.selectedIndex].value;
-		}, 
-		/*
-		 * opens NATIVE browser from Flex
-		 */ 
-		'openPage' : function(page) {
-			// domParent.domWindow.flexAPI_UI = Config.UI == UploaderUI (UploaderUI.as);
-			_flexAPI_UI.openPage(page);
-			return false;
-		},		
 		'orderBy' : function (o) {
 			window.location.href = o.options[o.selectedIndex].value;
 		},
@@ -415,7 +404,7 @@ LOG("added to uploadQueue, count="+added+", open batchId="+batchId);
 			// flex_setDropTarget: js global defined in snaphappi.mxml,
 			flex_setDropTarget();		 // reset dropTarget in Flex
 		},
-		toggleDisplayOptions  : function(value){
+		toggle_DisplayOptions  : function(value){
 			SNAPPI.AIR.UIHelper.toggle_ContextMenu(false);	// hide contextmenu
 			try {
 				if (value != undefined) {
@@ -491,7 +480,20 @@ LOG("+++ set filter, status="+value);
 			SNAPPI.AIR.uploadQueue.action_retry();
 		},
 	}	
-	UIHelper.nav = UIHelper.actions;		// TODO: refactor
+	UIHelper.nav = {
+		'goto' : function (o) {
+			window.location.href = o.options[o.selectedIndex].value;
+		}, 
+		/*
+		 * opens NATIVE browser from Flex
+		 */ 
+		'openPage' : function(page) {
+			// domParent.domWindow.flexAPI_UI = Config.UI == UploaderUI (UploaderUI.as);
+			_flexAPI_UI.openPage(page);
+			return false;
+		},		
+
+	}	//UIHelper.actions;		// TODO: refactor
 	
 	UIHelper.menu = {
 		/**

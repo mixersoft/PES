@@ -60,7 +60,10 @@
 			}  
 			return false;
 		},
-		'showHints': function(btn, node){
+	
+	};
+	UIHelper.action = {
+				'showHints': function(btn, node){
 			// start gallery.Photo hints
 			SNAPPI.STATE.hints['HINT_Preview'] = true;
 			SNAPPI.STATE.hints['HINT_MultiSelect'] = true;
@@ -117,10 +120,10 @@
 				}
 			} catch(e) {}
 		},
-		toggleDisplayOptions  : function(o){
+		toggle_DisplayOptions  : function(o){
 			try {
 				SNAPPI.STATE.showDisplayOptions = SNAPPI.STATE.showDisplayOptions ? 0 : 1;
-				UIHelper.nav.setDisplayOptions();
+				UIHelper.action.setDisplayOptions();
 			} catch (e) {}
 		},
 		/*
@@ -138,7 +141,7 @@
 				}	
 			} catch (e) {}
 		},
-		toggle_fullscreen : function(value) {
+		toggle_Fullscreen : function(value) {
 			if (value == undefined) value = SNAPPI.STATE.controller.isWide ? false : true;
 			value = value ? 1 : null;
 			var here = SNAPPI.IO.setNamedParams(SNAPPI.STATE.controller.here, {wide: value});
@@ -207,9 +210,7 @@
 	    	} else {
 	    		SNAPPI.MenuAUI.toggleEnabled(CSS_ID, e);
 	    	}		
-		}		
-	};
-	UIHelper.action = {
+		},	
 		get: {
 			filterByOptions: function(dom) {
 				var container = dom.ynode();
@@ -1199,7 +1200,7 @@ console.info('Getting Story for rolecount='+roleCount);
 		    					var menu = SNAPPI.MenuAUI.find[CSS_ID];
 		            			// if contextmenu is visible, hide
 			                	if (menu && menu.get('visible')) { // menu may be closed BEFORE this event
-			                		UIHelper.nav.toggle_ContextMenu(e);	// hide contextmenu
+			                		UIHelper.action.toggle_ContextMenu(e);	// hide contextmenu
 			                		return;		// allows temp disabling of listener
 			                	}
 		                		try {	     
@@ -1236,7 +1237,7 @@ console.info('Getting Story for rolecount='+roleCount);
 				node.listen[action] = node.delegate('click', 
 	                function(e){
 	                	e.halt();
-	                	UIHelper.nav.toggle_ItemMenu(e);
+	                	UIHelper.action.toggle_ItemMenu(e);
 	                }, selector, UIHelper);
 			}
 			// back reference
@@ -1257,7 +1258,7 @@ console.info('Getting Story for rolecount='+roleCount);
 				node.listen[action] = node.delegate('contextmenu', 
 	                function(e){
 	                	e.halt();
-	                	UIHelper.nav.toggle_ContextMenu(e, cfg);
+	                	UIHelper.action.toggle_ContextMenu(e, cfg);
 	                }, selector, UIHelper);
 			}
 			// back reference
@@ -1304,7 +1305,7 @@ console.info('Getting Story for rolecount='+roleCount);
 				node.listen[action] = node.delegate('click', 
 	                function(e){
 	                	// hide contextmenu when opening display option menus
-	                	UIHelper.nav.toggle_ContextMenu(false);	
+	                	UIHelper.action.toggle_ContextMenu(false);	
 	                	var action = e.currentTarget.getAttribute('action').split(':');
 	                	try {
 			    		switch(action[0]) {

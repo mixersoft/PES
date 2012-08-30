@@ -516,7 +516,7 @@
 			this.hide();
 			_sleep_status.later = null;
 			e.currentTarget.setContent('Show All Tips');
-			SNAPPI.UIHelper.nav.showHelp();
+			SNAPPI.UIHelper.action.showHelp();
 		} else {
 			Hint.anyTrigger = true;
 			Hint.sleepHints(false);
@@ -525,7 +525,7 @@
 			SNAPPI.Hint.flushQueue();		// if Hint already available
 			// reset button
 			e.currentTarget.setContent('Hide Tips');
-			SNAPPI.UIHelper.nav.showHelp();
+			SNAPPI.UIHelper.action.showHelp();
 		}
 	}
     /**

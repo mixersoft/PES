@@ -64,7 +64,7 @@ $this->viewVars['jsonData']['STATE'] = $state;
 		try {
 			SNAPPI.setPageLoading(true);
 			SNAPPI.mergeSessionData();
-			SNAPPI.UIHelper.nav.setDisplayOptions();
+			SNAPPI.UIHelper.action.setDisplayOptions();
 			SNAPPI.STATE.galleryType = 'Photo';
 			SNAPPI.startListeners();	// catch any PAGE.jsonData.listeners by XHR
 			/*

@@ -71,7 +71,7 @@
 				}
 			?>
 			<li class='btn white' action='toggle-keydown'><span class='keydown'>&nbsp;</span></li>
-			<li class='btn white' onclick="SNAPPI.UIHelper.nav.toggle_fullscreen(true);">Fullscreen</li>
+			<li class='btn white' onclick="SNAPPI.UIHelper.action.toggle_Fullscreen(true);">Fullscreen</li>
 		</ul>
 	</nav> 
 	<?php echo $this->element('/photo/display-options');  ?>     

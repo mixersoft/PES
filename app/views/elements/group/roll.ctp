@@ -75,7 +75,7 @@
 			try {
 				var Y = SNAPPI.Y;
 				SNAPPI.mergeSessionData();
-				SNAPPI.UIHelper.nav.setDisplayOptions();
+				SNAPPI.UIHelper.action.setDisplayOptions();
 				var parent = Y.one('.gallery.group .container');
 				var listeners = {
 					// 'WindowOptionClick':1, 
