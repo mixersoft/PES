@@ -481,7 +481,7 @@ LOG ("filtered items="+this.count_filterItems + ", pages="+this.count_filterPage
 					if (status=='pending') status='ready'; 
 					n.one('b.status').setContent(status);
 					n.one('b.folder').setContent(this.baseurl);
-					SNAPPI.AIR.UIHelper.actions.toggle_DisplayOptions(true);
+					SNAPPI.AIR.UIHelper.actions.toggleDisplayOptions(true);
 					pageNode.append(n.get('innerHTML'));
 				} catch (e) {}	
 			} else if (pageNode) {

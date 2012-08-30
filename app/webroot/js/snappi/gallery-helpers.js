@@ -110,7 +110,7 @@
 		        		SNAPPI.io.savePreviewSize(this.Gallery._cfg.type, action[1]);
 	    			break;	 
 	    			case 'toggle-display-options':
-	    				SNAPPI.UIHelper.action.toggle_DisplayOptions();
+	    				SNAPPI.UIHelper.nav.toggleDisplayOptions();
 	    			break; 
 	    			case 'toggle-keydown':
 	    				if (e.currentTarget.hasClass('selected')) {
@@ -661,7 +661,7 @@ var _showZoom = function(e, g) {
 	        	}
         	} catch(e) {}
         	if (!Rating) SNAPPI.filter.initRating( parent.one('#filter-rating-parent'), 0);
-        	if (open) UIHelper.action.setDisplayOptions(open);
+        	if (open) UIHelper.nav.setDisplayOptions(open);
         },
         handle_hiddenShotClick : function(e){
         	var thumbnail = e.currentTarget.ancestor('.FigureBox');

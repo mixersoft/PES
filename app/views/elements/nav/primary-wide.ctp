@@ -54,7 +54,7 @@
 		<nav class='user grid_7'>
 			<ul class="right rightlink">
 				<li class="normal-view">
-					<span class="header-btn orange rounded-5" onclick="SNAPPI.UIHelper.action.toggle_Fullscreen();">Normal View</span>
+					<span class="header-btn orange rounded-5" onclick="SNAPPI.UIHelper.nav.toggle_fullscreen();">Normal View</span>
 				</li>
 			<?php if ( AppController::$ownerid) { ?>
 				<?php if ( in_array(AppController::$role, array('MANAGER','EDITOR')))  { 	// role=MANAGER/EDITOR				?>	

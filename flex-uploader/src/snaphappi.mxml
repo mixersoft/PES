@@ -150,8 +150,7 @@
 			private function bootstrap_html(domParent:HTML, location:String = 'prod'):void {
 				switch (location) {
 					case 'prod':
-						if (Config.DEBUG) Config.HOST = "dev.snaphappi.com"
-						else Config.HOST = "preview.snaphappi.com";
+						Config.HOST = "dev.snaphappi.com";
 //						Config.HOST = "aws.snaphappi.com";
 						break;
 					case 'dev':
