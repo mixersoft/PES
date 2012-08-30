@@ -168,7 +168,11 @@
 	 * @return
 	 */
 	Menu.initContextMenu = function(MARKUP, TRIGGER, cfg){
-		cfg = cfg || {};	// closure
+		cfg = cfg || {};
+		var key = cfg.lookup_key || MARKUP.id;
+		if (Menu.find[key]) {	// doublecheck to catch race condition
+			return Menu.find[key];	
+		}
 		
 		// set the correct TRIGGER
 		if (cfg.force_TRIGGER) TRIGGER = cfg.force_TRIGGER;	// hack: for UIHelper.toggle_ItemMenu to use contextmenu as normal menu
@@ -209,10 +213,11 @@
 				}					
 			}
 		, menu);
-		if (!menu.get('disabled')) Menu.startListener(menu, cfg.handle_click );
+		if (!menu.get('disabled')) {
+			Menu.startListener(menu, cfg.handle_click ); 
+		}
+		// add lookup reference
 		
-		// lookup reference
-		var key = cfg.lookup_key || MARKUP.id;
 		Menu.find[key] = menu;
 		if (cfg.host) cfg.host.ContextMenu = menu; 		// add back reference
 		return menu;
@@ -266,7 +271,8 @@
 			} 
 			var methodName = menuItem.getAttribute('action')+'_click';
 			if (MenuItems[methodName]) {
-				e.preventDefault();
+				e.stopImmediatePropagation();	
+				// e.preventDefault();
 				MenuItems[methodName](menuItem, this, e);
 			} else {
 				// default
@@ -1478,7 +1484,7 @@ console.log("delegateHost="+delegateHost._yuid);
 		else menuItem.removeClass('disabled');
 	}
 	MenuItems.help_show_hints_click = function(menuItem, menu){
-		SNAPPI.UIHelper.nav.showHints();
+		SNAPPI.UIHelper.action.showHints();
 		menu.hide();
 	}
 	MenuItems.help_show_help_beforeShow = function(menuItem, menu){
@@ -1486,12 +1492,12 @@ console.log("delegateHost="+delegateHost._yuid);
 		if (btn.one('span').hasClass('green')) {
 			_Y.later(50, this, function(){
 				menu.hide();
-				SNAPPI.UIHelper.nav.showHelp(btn);	// close help
+				SNAPPI.UIHelper.action.showHelp(btn);	// close help
 			});
 		}
 	}
 	MenuItems.help_show_help_click = function(menuItem, menu){
-		SNAPPI.UIHelper.nav.showHelp();
+		SNAPPI.UIHelper.action.showHelp();
 		menu.hide();
 	}
 	
@@ -1630,7 +1636,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	};	
 	
 	/**
-	 * not currently used. see UIHelper.nav.toggle_ItemMenu(); 
+	 * not currently used. see UIHelper.action.toggle_ItemMenu(); 
 	 * @param cfg
 	 * @return
 	 */
