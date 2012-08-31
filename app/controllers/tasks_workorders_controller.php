@@ -204,6 +204,10 @@ debug($assets);
 		$this->render('/elements/dumpSQL');
 	}
 	
+	/**
+	 * show TasksWorkorder as photo gallery
+	 * TODO: add Flagged status for individual photos
+	 */
 	function photos($id = null){
 		$forceXHR = setXHRDebug($this, 0);
 		$this->layout = 'snappi';
@@ -361,6 +365,25 @@ if (!empty($this->passedArgs['raw'])) {
 		}
 		
 		$this->viewPath = 'workorders';		
+	}
+
+	/**
+	 * flag a TasksWorkorder Asset for later reference and log a status message
+	 */
+	function flag () {
+		$forceXHR = setXHRDebug($this, 0);
+		if (!empty($this->data)) {
+			// just show POST vars for now
+			$this->viewVars['jsonData'] = $this->data;
+			
+			$flagHref = Router::url(array('action'=>'snap', $this->data['Asset']['id']), true);
+			$this->viewVars['jsonData']['flagHref'] = $flagHref;
+			$done = $this->renderXHRByRequest('json', null, null , 0);
+			
+			// mark TasksWorkorder as flagged
+			// 
+			
+		}
 	}
 }
 ?>

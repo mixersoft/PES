@@ -1545,6 +1545,53 @@ console.log("delegateHost="+delegateHost._yuid);
 			menuItem.hide();
 		}
 	}
+	MenuItems.wms_workorder_toggle_flag_click = function(menuItem, menu){
+		var role = SNAPPI.STATE.controller.ROLE;
+		if (/(EDITOR|MANAGER)/.test(role)) {
+			// POST to 
+			var postData, ioCfg, target, controller, model, isFlagged;
+			
+			isFlagged = menuItem.get('innerHTML')[0] == '▶';  // same as '&#x25B6;'
+			
+			controller = SNAPPI.STATE.controller;
+			model = controller['class'];
+			target = menu.get('currentNode');
+				
+			postData = {};
+			postData["data["+model+"][id]"] = controller.xhrFrom.uuid;
+			postData["data[Asset][id]"] = target.Thumbnail.uuid;
+			postData["data[flag]"] = isFlagged ? 0 : 1;
+			postData["data[message]"] = "Put status message here.";
+			if (menuItem.io) {
+				// TODO: loadingmask is in the wrong place, not visible
+				menuItem.loadingmask.show();
+				menuItem.io.set('data', postData);
+				menuItem.io.start();
+			} else {
+				ioCfg = {
+					uri: '/'+controller.alias+'/flag/.json',
+					method: "POST",
+					qs: postData,
+					on: {
+						successJson: function(e, i,o,args) {
+							var resp = o.responseJson;
+							menu.hide();
+							if (resp.success) {
+								isFlagged = isFlagged ? 0 : 1;		// toggle value
+								if (isFlagged) menuItem.setContent('&#x25B6; Flag');
+								else menuItem.setContent('Flag');
+							}
+							return false;	// do NOT replace menuItem content
+						}
+					}
+				}
+				ioCfg = SNAPPI.IO.pluginIO_RespondAsJson(ioCfg);
+				menuItem.plug(_Y.Plugin.IO, ioCfg);
+			}
+		} else {
+			menuItem.hide();
+		}
+	}
 
 	/*
 	 * MenuCfgs

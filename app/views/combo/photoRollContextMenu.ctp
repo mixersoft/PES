@@ -34,6 +34,8 @@
 		<li action='workorder_rotate' rotate='8' title='Rotate this Snap Counter-ClockWise 90 degrees'>Rotate CCW</li>		
 		<li action='workorder_rotate' rotate='6' title='Rotate this Snap ClockWise 90 degrees'>Rotate CW</li>
 		<li action='refresh'>refresh Thumbnail</li>
+		</div><div class="menu-item-group">
+		<li action='wms_workorder_toggle_flag' title='Flag this Snap for review'>Flag</li>	
 		</div>
 	</ul>
 </div>
