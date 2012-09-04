@@ -52,8 +52,10 @@
 		if (Lightbox.instance) return Lightbox.instance;
 		this._cfg = null;
 		this.node = null;
-		this.init(cfg);
-		Lightbox.instance = this;	// singleton Class
+		if (this.init(cfg)) Lightbox.instance = this;	// singleton Class
+		else {
+			console.warn('Lightbox.init() failed.');
+		}
 	};
 	
 	
@@ -62,14 +64,14 @@
 		init : function(cfg) {
 			this._cfg = _Y.merge(defaultCfg, cfg);
 			this.node = _Y.one('section.lightbox');
-			this.node.listen = this.node.listen  || {};
 			if (this.node) {
 				// rendered from cakePHP: app/views/elements/lightbox.ctp
-			} else { 
+			} else if (cfg) { 
 				// load/create lightbox asynchronously 
 				this.getMarkup(cfg);
 				return;
-			};
+			} else return false; 
+			this.node.listen = this.node.listen  || {};
 			this.node.removeClass('hide');
 			_Y.one('div.anchor-bottom').append(this.node);	// move to the right location
 			this.node.Lightbox = this;
