@@ -104,13 +104,17 @@ class WorkordersController extends AppController {
 		/*
 		 * for testing only
 		 */ 
-		if (in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) {
+		if (AppController::$role && in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) {
 			$this->Session->setFlash("Error: Workorder actions require Role privileges");
  		} 
-		 
+		
+		/*
+		 *  TODO: deprecate, check WorkordersController::$test['task_id']
+		 * 		$this->create(), 
+		 * 		$this->Workorder->TEST_createTaskWorkorder
+		 */ 
 		$task = $this->Workorder->Task->find('first');
 		WorkordersController::$test['task_id'] = $task['Task']['id']; 
-		WorkordersController::$test['editor'] = '12345678-1111-0000-0000-editor------';
 	}
 
 	function __saveWorkorderToSession($woid){

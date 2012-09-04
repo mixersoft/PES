@@ -9,7 +9,6 @@ class TasksWorkordersController extends AppController {
 	public static $test = array();
 	function __construct() {
        parent::__construct();
-	   TasksWorkordersController::$test['editor'] = '12345678-1111-0000-0000-editor------';
 	}
 	
 	public $paginate = array(
@@ -79,11 +78,10 @@ class TasksWorkordersController extends AppController {
 			$this->__saveWorkorderToSession($this->passedArgs[0]);
 		}	
 		$this->TasksWorkorder->Asset->Behaviors->detach('Permissionable'); // mutually exclusive	
-		
 		/*
 		 * for testing only
 		 */ 
-		 if (in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) {
+		 if (AppController::$role && in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) {
 			throw new Exception("Error: TasksWorkorder actions require Role privileges");
  		}
 	}
@@ -92,6 +90,10 @@ class TasksWorkordersController extends AppController {
 		parent::beforeRender();
 	}
 	
+	/**
+	 * save Workorder to Session::write("WMS.{$twoid}.Workorder") 
+	 * - required for activating WorkorderPermissionable in /photos/setprop
+	 */
 	function __saveWorkorderToSession($twoid){
 		$options = array(
 			'contain'=>array('Workorder'),
@@ -380,7 +382,19 @@ if (!empty($this->passedArgs['raw'])) {
 			$this->viewVars['jsonData']['flagHref'] = $flagHref;
 			$done = $this->renderXHRByRequest('json', null, null , 0);
 			
+			
+			
+			// mark asset as flagged 
+			$data['AssetsTask']['flagged'] = $this->data['flagged'];
+			// add flagged message to status table, as appropriate
 			// mark TasksWorkorder as flagged
+			if ($this->data['flagged']) {
+				// pick one
+				$data['TasksWorkorder']['id'] = $this->data['TasksWorkorder']['id'];
+				$data['TasksWorkorder']['flagged'] = $this->data['flagged'];
+				$data['TasksWorkorder']['status'] = 'flagged';
+				
+			}
 			// 
 			
 		}
