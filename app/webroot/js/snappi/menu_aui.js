@@ -825,6 +825,7 @@ console.log("delegateHost="+delegateHost._yuid);
 		// menu.hide();
 		var thumbnail = menu.get('currentNode');	// target
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
+		// for testing: ctrl-click to open JPG in new tab
 		if (e.ctrlKey || e.metaKey) {
 			var src = audition.Audition.Photo.Img.Src.rootSrc;
 			src = audition.getImgSrcBySize(audition.urlbase+src,'bp');
