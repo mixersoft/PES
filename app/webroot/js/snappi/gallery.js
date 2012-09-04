@@ -138,7 +138,13 @@
 	        // TODO: switch to _cfg.type
 	        switch (_cfg.ID_PREFIX) {
 	        case 'uuid-':
-	        	if (renderOnInit) this.render(_cfg); 
+	        	if (SNAPPI.util.getFromQs('focus')) {
+	        		_cfg.uuid = SNAPPI.util.getFromQs('focus');
+	        	}
+	        	if (renderOnInit) {
+	        		this.render(_cfg);
+	        		// this.scrollFocus();   // adapt for gallery view, not filmstrip
+	        	} 
 	        	var paging;
 	        	if (_cfg.isPreview !== true) {
 	        		paging = SNAPPI.Paginator.paginate_PhotoGallery(this);
