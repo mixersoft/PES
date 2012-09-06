@@ -49,7 +49,7 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
 		
 		// detach behavior permissionable, if attached. 
 		// TODO: check race condition.	
-		if (in_array('Permissionable', $Model->Behaviors->attached()) ) {
+		if ($Model->Behaviors->attached('Permissionable')) {
 			$Model->Behaviors->detach('Permissionable');	
 		}
 	}

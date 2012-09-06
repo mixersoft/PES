@@ -55,10 +55,10 @@ class Group extends AppModel {
 	
 	public function afterFind($results, $primary) {
 		$model = $this->alias;
-		$permAlias = $this->getPermissionAlias();
 		// merge permissions
 		try {
-			if ($primary && isset($results[0][$model]) && class_exists('Permissionable')) {
+			if ($primary && isset($results[0][$model]) && $this->Behaviors->attached('Permissionable')) {
+				$permAlias = $this->getPermissionAlias();
 				$member_owner_group_ids = Permissionable::getGroupIds();
 				foreach ($results as $i => & $data) {
 					if (isset($data[$permAlias]['perms'])) $data[$model]['perms'] = $data[$permAlias]['perms'];
@@ -425,8 +425,8 @@ ORDER BY photos DESC;";
 				'conditions'=>array("`HABTM`.group_id =`{$paginateModel}`.id"),
 			);
 			if ($userid == Permissionable::getRootUserId() ) $conditions[] = array();
-			else {
-				$permissionableAlias = $this->Behaviors->Permissionable->getPermissionAlias($this);
+			else if ($this->Behaviors->attached('Permissionable')) {
+				$permissionableAlias = $this->getPermissionAlias($this);
 				$conditions[] = array(
 					"`{$permissionableAlias}`.`perms` <> 567",
 					'OR'=>array(

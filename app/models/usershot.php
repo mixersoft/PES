@@ -134,7 +134,7 @@ class Usershot extends AppModel {
 				'join_bestshot'=>false,
 			),  //default
 		);
-		if (in_array('Permissionable', $Asset->Behaviors->attached())) {
+		if ($Asset->Behaviors->attached('Permissionable')) {
 			// permissionable does NOT obey recursive or containable()
 			$options['permissionable'] = false;
 		}
@@ -317,7 +317,7 @@ WHERE `Shot`.id = '{$shotId}' AND `Shot`.owner_id = '{$owner_id}'";
 			),
 		);
 		$Asset = $this->AssetsUsershot->Asset;
-		if (in_array('Permissionable', $Asset->Behaviors->attached())) {
+		if ($Asset->Behaviors->attached('Permissionable')) {
 			// permissionable does NOT obey recursive or containable()
 			$options['permissionable'] = false;
 		}

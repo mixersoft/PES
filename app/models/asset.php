@@ -888,7 +888,7 @@ $this->log("insert newAsset=".print_r($newAsset, true), LOG_DEBUG);
 	}				
 
 	function getPaginatePhotosByShotId ($shotId, $paginate = array(), $shotType = 'Usershot',  $skipContext = true) {
-		if (in_array('Permissionable', $this->Behaviors->attached()) ) {
+		if ($this->Behaviors->attached('Permissionable')) {
 			$this->Behaviors->detach('Permissionable');	
 		}
 

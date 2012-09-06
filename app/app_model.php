@@ -18,7 +18,7 @@ class AppModel extends Model {
 		$assoc_alias = empty($assoc_alias) ? $Model->name : $assoc_alias; 
 		if (!$this->Behaviors->attached('Permissionable')) return '';
 		
-		$alias = $this->Behaviors->Permissionable->getPermissionAlias($this);
+		$alias = $this->getPermissionAlias($this);
 		$gids = is_array(Permissionable::getGroupIds()) ? implode("','",Permissionable::getGroupIds()) : 0;
 		$oid = Permissionable::getUserId();
 		

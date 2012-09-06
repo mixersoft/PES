@@ -83,8 +83,8 @@ class Collection extends AppModel {
 		// merge permissions
 		try {
 			$model = $this->alias;
-			$permAlias = $this->getPermissionAlias();
-			if ($primary && isset($results[0][$model])) {
+			if ($primary && isset($results[0][$model]) && $this->Behaviors->attached('Permissionable')) {
+				$permAlias = $this->getPermissionAlias();
 				foreach ($results as $i => & $data) {
 					if (isset($data[$permAlias]['perms'])) $data[$model]['perms'] = $data[$permAlias]['perms'];
 					if (!empty($data[$model]['owner_id'])) $data[$model]['isOwner'] = $data[$model]['owner_id'] == AppController::$ownerid;

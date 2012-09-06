@@ -154,9 +154,10 @@ debug($checkdata);
 				'join_bestshot'=>false,
 			),
 		);
-		if (in_array('Permissionable', $Asset->Behaviors->attached())) {
+		if ($Asset->Behaviors->attached('Permissionable')) {
 			// permissionable does NOT obey recursive or containable()
 			$options['permissionable'] = false;
+			// $Asset->Behaviors->detach('Permissionable');  // just detach?
 		}
 		if ($owner_id === false) {
 			$success = false;
@@ -325,7 +326,7 @@ WHERE `Shot`.id = '{$shotId}'";
 			),
 		);
 		$Asset = $this->AssetsGroupshot->Asset;
-		if (in_array('Permissionable', $Asset->Behaviors->attached())) {
+		if ($Asset->Behaviors->attached('Permissionable')) {
 			// permissionable does NOT obey recursive or containable()
 			$options['permissionable'] = false;
 		}
