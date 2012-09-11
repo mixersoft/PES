@@ -1,4 +1,4 @@
-[submodule "jmcneese/permissionable"]
+﻿[submodule "jmcneese/permissionable"]
 	path = _git_modules/jmcneese/permissionable
 	url = https://github.com/jmcneese/permissionable.git
 [submodule "cakeDC/plugins/users"]
@@ -37,3 +37,6 @@
 [submodule "_git_modules/alloy-ui"]
 	path = _git_modules/alloy-ui
 	url = https://github.com/liferay/alloy-ui.git
+[submodule "_git_modules/thrift"]
+	path = _git_modules/thrift
+	url = git://github.com/apache/thrift.git
