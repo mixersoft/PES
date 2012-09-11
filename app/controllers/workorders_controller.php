@@ -165,9 +165,11 @@ class WorkordersController extends AppController {
 		foreach (array_keys($lookup) as $paginateModel) {
 			$Model = ClassRegistry::init($paginateModel);
 			$options = array(
-				'permissionable'=>false,
 				'conditions'=>array("{$paginateModel}.id"=>$lookup[$paginateModel]),
 			);
+			if ($Model->Behaviors->attached('Permissionable')) {
+				$Model->Behaviors->detach('Permissionable');
+			}
 			$belongsTo = $Model->find('all', $options);
 			$data[$paginateModel] = Set::combine( $belongsTo, "{n}.{$paginateModel}.id","{n}.{$paginateModel}");
 			// end paginate		
