@@ -42,10 +42,10 @@ if (empty($this->passedArgs['wide'])) {
 		<td><ul class="inline">
 			<?php
 				$isAssigned =  $workorder['manager_id'] == AppController::$userid;
-				if ($isAssigned) {
-					$next = array('action' => 'photos', $workorder['id'], 'raw'=>1) + Configure::read('passedArgs.min');
-					$btn = $this->Html->link(__('Go', true), $next, array('target'=>'_blank'));
-				} else $btn = 'Go';
+				$next = array('action' => 'photos', $workorder['id'], 'raw'=>1) + Configure::read('passedArgs.min');
+				$options = array('target'=>'_blank');
+				if (!$isAssigned) $options['onclick'] = "return false;";
+				$btn = $this->Html->link(__('Go', true), $next, $options);
 				echo '<li class="btn rounded-5 '.(!$isAssigned ? 'white disabled' : 'orange').'">'.$btn.'</li>';
 			?>&nbsp;
 		<ul>&nbsp;</td>	
@@ -98,10 +98,10 @@ if (empty($this->passedArgs['wide'])) {
 		<td><ul class="inline">
 			<?php
 				$isAssigned =  $taskWorkorder['operator_id'] == AppController::$userid;
-				if ($isAssigned) {
-					$next = array('controller'=>'tasks_workorders', 'action' => 'photos', $taskWorkorder['id'], 'raw'=>1) + Configure::read('passedArgs.min');
-					$btn = $this->Html->link(__('Go', true), $next, array('target'=>'_blank'));
-				} else $btn = 'Go';
+				$next = array('controller'=>'tasks_workorders', 'action' => 'photos', $taskWorkorder['id'], 'raw'=>1) + Configure::read('passedArgs.min');
+				$options = array('target'=>'_blank');
+				if (!$isAssigned) $options['onclick'] = "return false;";
+				$btn = $this->Html->link(__('Go', true), $next, $options);
 				echo '<li class="btn rounded-5 '.(!$isAssigned ? 'white disabled' : 'orange').'">'.$btn.'</li>';
 			?>	&nbsp;
 				<li><?php echo "Task: {$data['Task'][ $taskWorkorder['task_id'] ]['name']} ({$taskWorkorder['assets_task_count']} Snaps)"; ?>&nbsp;</li>
