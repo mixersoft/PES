@@ -19,9 +19,9 @@
  * under the License.
  */
 
-if (!defined('THRIFT_LIB_BASEPATH')) define('THRIFT_LIB_BASEPATH', 'W:/www-dev/');
-$GLOBALS['THRIFT_ROOT'] = THRIFT_LIB_BASEPATH.'app/vendors/THRIFT_ROOT/';
-$GEN_DIR = $GLOBALS['THRIFT_ROOT'].'packages';
+if (!defined('THRIFT_LIB_BASEPATH')) define('THRIFT_LIB_BASEPATH', 'W:/www-dev');
+$GLOBALS['THRIFT_ROOT'] = THRIFT_LIB_BASEPATH.'/app/vendors/THRIFT_ROOT';
+$GEN_DIR = $GLOBALS['THRIFT_ROOT'].'/packages';
 
 require_once $GLOBALS['THRIFT_ROOT'].'/Thrift.php';
 require_once $GLOBALS['THRIFT_ROOT'].'/transport/TTransport.php';
@@ -43,12 +43,18 @@ require_once $GEN_DIR.'/Hello/Hello_types.php';
 error_reporting(E_ALL);
 
 $SERVER = 'snappi-dev';
+$SERVER = '192.168.1.7';
 
-print "<br>SERVER={$SERVER}<br><br>";
+$SERVICE =  'HelloServer';
+
+print "<br>request={$SERVER}/thrift/service/{$SERVICE}<br><br>";
 
 try {
   if (!isset($argv) || (array_search('--http', $argv))) {
-    $socket = new THttpClient($SERVER, 80, '/thrift/helloServer.php');
+  	/*
+	 * cakephp controller=thrift, action=service
+	 */
+	$socket = new THttpClient($SERVER, 80, "/thrift/service/{$SERVICE}");
   } else {
     $socket = new TSocket('localhost', 9090);
   }
