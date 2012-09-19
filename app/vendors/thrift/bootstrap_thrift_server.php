@@ -9,9 +9,12 @@
  * 
  * 
  */
-$GLOBALS['THRIFT_SERVICE']['PACKAGE'] = 'Hello';
-$GLOBALS['THRIFT_SERVICE']['NAME'] = 'HelloService';		// use CamelCase
+// $GLOBALS['THRIFT_SERVICE']['PACKAGE'] = 'Hello';
+// $GLOBALS['THRIFT_SERVICE']['NAME'] = 'HelloService';		// use CamelCase
+// $GLOBALS['THRIFT_SERVICE']['NAMESPACE'] = 'snaphappi_tasks';
 
+
+if (empty($GLOBALS['THRIFT_SERVICE'])) throw new Exception('Error: $GLOBALS[THRIFT_SERVICE] is not set');
 
 function bootstrap_THRIFT_SERVER () {
 	debug("Thrift bootstrap for file=".__FILE__);
@@ -43,9 +46,10 @@ function process_THRIFT_SERVICE_REQUEST() {
 	// $handler   = new HelloServiceImpl();
 	// $processor = new HelloServiceProcessor($handler);
 	
-	$handler_class = "{$service['NAME']}Impl";
+	$handler_class = $service['NAME']."Impl";
+	$handler_class = empty($service['NAMESPACE']) ? $handler_class : $service['NAMESPACE'].'_'.$handler_class;
 	$handler   = new $handler_class();
-	$processor_class = "{$service['NAME']}Processor";
+	$processor_class = $service['NAME']."Processor";
 	$processor = new $processor_class($handler);
 	 
 	$transport = new TBufferedTransport(new TPhpStream(TPhpStream::MODE_R | TPhpStream::MODE_W));
