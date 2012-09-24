@@ -23,8 +23,8 @@
   * set service Globals
   */ 
 $GLOBALS['THRIFT_SERVICE']['PACKAGE'] = 'Tasks';
-$GLOBALS['THRIFT_SERVICE']['NAME'] = 'InitialUploadTask';		// use CamelCase
-$GLOBALS['THRIFT_SERVICE']['NAMESPACE'] = 'snaphappi_tasks';
+$GLOBALS['THRIFT_SERVICE']['NAME'] = 'URTaskControl';		// use CamelCase
+$GLOBALS['THRIFT_SERVICE']['NAMESPACE'] = 'snaphappi_api';
 
 
 if (!defined('THRIFT_LIB_BASEPATH')) define('THRIFT_LIB_BASEPATH', '/www-dev');
@@ -55,8 +55,8 @@ print("<br>LOADING Thrift Service (compiled), file=".$thrift_service_file);
 error_reporting(E_ALL);
 
 $SERVER = $_SERVER['SERVER_NAME'];
-$SERVER = '192.168.1.7';
-$SERVER = 'dev.snaphappi.com';
+// $SERVER = '192.168.1.7';
+// $SERVER = 'dev.snaphappi.com';
 
 print "<br>REQUEST={$SERVER}/thrift/service/{$service['NAME']}<br><br>";
 
@@ -81,12 +81,24 @@ try {
   $client_class = $service['NAME']."Client";
   $client_class = empty($service['NAMESPACE']) ? $client_class : $service['NAMESPACE'].'_'.$client_class;
   $client   = new $client_class($protocol);
+  
+print "<br> Client Class={$client_class}";    
 
   $transport->open();
   try {
-	  $e = $client->GetFolders("123456789");
-	  print "<br>GetFolders()=".print_r($e,true);
-	  
+  	$taskId = new snaphappi_api_TaskID(array('Task'=>'123456', 'Session'=>'SessionFor123456'));
+	print "<BR />Using TaskId=".print_r($taskId,true);
+	print "<BR />*************************************";
+	print "<BR />";	
+	
+	$e = $client->GetFolders($taskId);
+	print "<br>GetFolders()=".print_r($e,true);
+	
+	$e = $client->GetFiles($taskId);
+	print "<br>GetFiles()=".print_r($e,true);
+	
+	print "<BR />";
+	print "<BR />*************************************";	
   } catch (Exception $e){}
   $transport->close();
 
@@ -95,3 +107,9 @@ try {
 }
 
 ?>
+
+
+<DIV>
+	<BR /><BR />
+Once the helper app is installed, the following link should invoke it: <a href="snaphappi://0_abc_ur">snaphappi:0_aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t_ur</a>.
+</DIV>

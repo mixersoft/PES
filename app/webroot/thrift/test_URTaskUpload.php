@@ -19,7 +19,15 @@
  * under the License.
  */
 
-if (!defined('THRIFT_LIB_BASEPATH')) define('THRIFT_LIB_BASEPATH', 'W:/www-dev');
+ /*
+  * set service Globals
+  */ 
+$GLOBALS['THRIFT_SERVICE']['PACKAGE'] = 'Tasks';
+$GLOBALS['THRIFT_SERVICE']['NAME'] = 'URTaskUpload';		// use CamelCase
+$GLOBALS['THRIFT_SERVICE']['NAMESPACE'] = 'snaphappi_api';
+
+
+if (!defined('THRIFT_LIB_BASEPATH')) define('THRIFT_LIB_BASEPATH', '/www-dev');
 $GLOBALS['THRIFT_ROOT'] = THRIFT_LIB_BASEPATH.'/app/vendors/THRIFT_ROOT';
 $GEN_DIR = $GLOBALS['THRIFT_ROOT'].'/packages';
 
@@ -37,43 +45,57 @@ require_once $GLOBALS['THRIFT_ROOT'].'/protocol/TBinaryProtocol.php';
  * include everything here due to the bogus path setup.
  */
 error_reporting(0);
-// $GEN_DIR = '../gen-php';
-require_once $GEN_DIR.'/Hello/HelloService.php';
-require_once $GEN_DIR.'/Hello/Hello_types.php';
+$service = $GLOBALS['THRIFT_SERVICE'];
+$thrift_service_file = $GEN_DIR . "/{$service['PACKAGE']}/{$service['NAME']}.php";
+require_once $thrift_service_file;
+require_once $GEN_DIR.'/Tasks/Tasks_types.php';
+
+print("<br>LOADING Thrift Service (compiled), file=".$thrift_service_file);
+
 error_reporting(E_ALL);
 
-$SERVER = 'snappi-dev';
-$SERVER = '192.168.1.7';
+$SERVER = $_SERVER['SERVER_NAME'];
+// $SERVER = '192.168.1.7';
+// $SERVER = 'dev.snaphappi.com';
 
-$SERVICE =  'HelloServer';
-
-print "<br>request={$SERVER}/thrift/service/{$SERVICE}<br><br>";
+print "<br>REQUEST={$SERVER}/thrift/service/{$service['NAME']}<br><br>";
 
 try {
   if (!isset($argv) || (array_search('--http', $argv))) {
   	/*
 	 * cakephp controller=thrift, action=service
 	 */
-	$socket = new THttpClient($SERVER, 80, "/thrift/service/{$SERVICE}");
+	$socket = new THttpClient($SERVER, 80, "/thrift/service/{$service['NAME']}");
   } else {
     $socket = new TSocket('localhost', 9090);
   }
   // 
   $transport = new TBufferedTransport($socket, 1024, 1024);
   $protocol = new TBinaryProtocol($transport);
-  $client = new HelloServiceClient($protocol);
+  
+  
+  /*
+   * create client Class
+   */
+  // $client = new HelloServiceClient($protocol);
+  $client_class = $service['NAME']."Client";
+  $client_class = empty($service['NAMESPACE']) ? $client_class : $service['NAMESPACE'].'_'.$client_class;
+  $client   = new $client_class($protocol);
+  
+print "<br> Client Class={$client_class}";    
 
   $transport->open();
   try {
-	  $e = $client->say_hello();
-	  print "<br>say_hello()={$e}";
-	  
-	  $e = $client->say_foreign_hello(HelloLanguage::SPANISH);
-	  print "<br>say_foreign_hello()={$e}";
-	  
-	  $e = $client->say_hello_repeat(10);
-	  print "<br>say_hello_repeat()=".print_r($e,true);
-	  
+  	$taskId = new snaphappi_api_TaskID(array('Task'=>'123456', 'Session'=>'SessionFor123456'));
+	print "<BR />Using TaskId=".print_r($taskId,true);
+	print "<BR />*************************************";
+	print "<BR />";
+	
+	$e = $client->UploadFile($taskId, "C:\\temp\\1.jpg", null);
+	print "<br>UploadFile() is good if no exception, check server logs for detail";
+	
+	print "<BR />";
+	print "<BR />*************************************";
   } catch (Exception $e){}
   $transport->close();
 
@@ -82,3 +104,9 @@ try {
 }
 
 ?>
+
+
+<DIV>
+	<BR /><BR />
+Once the helper app is installed, the following link should invoke it: <a href="snaphappi://0_abc_ur">snaphappi:0_aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t_ur</a>.
+</DIV>
