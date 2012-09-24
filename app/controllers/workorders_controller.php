@@ -106,6 +106,7 @@ class WorkordersController extends AppController {
 		 */ 
 		if (AppController::$role && in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) {
 			$this->Session->setFlash("Error: Workorder actions require Role privileges");
+			$this->redirect('/users/signin', null, true);
  		} 
 		
 		/*

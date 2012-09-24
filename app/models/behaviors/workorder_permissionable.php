@@ -41,6 +41,9 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
  * @param array $settings
  */
 	public function setup(Model $Model, $settings = array()) {
+		if (AppController::$role && in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) {
+			throw new Exception("Error: WorkorderPermissionable Behavior requires role privileges.", 1);
+		};
 		if (!isset($this->settings[$Model->alias])) {
 			$this->settings[$Model->alias] = $this->_defaults;
 		}
@@ -64,8 +67,7 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
  * @return array
  */
 	public function beforeFind(Model $Model, $queryData) {
-// debug("WorkorderPermissionable::beforeFind()");		
-		if (in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) {
+		if (AppController::$role && in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) {
 			throw new Exception("Error: WorkorderPermissionable Behavior requires role privileges.", 1);
 		};
 

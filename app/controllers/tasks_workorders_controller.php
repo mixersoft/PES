@@ -82,8 +82,9 @@ class TasksWorkordersController extends AppController {
 		 * for testing only
 		 */ 
 		 if (AppController::$role && in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) {
-			throw new Exception("Error: TasksWorkorder actions require Role privileges");
- 		}
+			$this->Session->setFlash("Error: Workorder actions require Role privileges");
+			$this->redirect('/users/signin', null, true);
+ 		} 
 	}
 
 	function beforeRender(){
