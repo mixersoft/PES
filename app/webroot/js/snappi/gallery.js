@@ -1137,12 +1137,12 @@
 				aids.push(audition.id);
             });    
 			var data = {
+				'data[Asset][group]' : 1, // groupAsShot
 				'data[Asset][id]' : aids.join(','),
-				'data[Asset][group]' : '', // if '', then generate UUID on server
 				'data[ccid]' : SNAPPI.ShotController.getCCid(this),
 				'data[shotType]' : cfg.shotType,
-				'data[uuid]': cfg.uuid	// group or person UUID
 			};
+			if (cfg.group_id) data['data[group_id]'] = cfg.group_id; 
 			data = this.addWorkorderData(data);
 			
 			var uri = '/photos/shot/.json';
@@ -1244,14 +1244,14 @@
 	        }); 
 	        
 			var data = {
-					'data[Asset][id]' : post_aids.join(','),
+					'data[Asset][id]' : post_aids.join(','),	// deprecate. not required for Usershot, check Groupshot
 					'data[Shot][id]' : shotIds.join(','),
-					// TODO: ungroup or removefromshot
 					'data[Asset][ungroup]' : '1', // if '', then generate UUID on server
 					'data[ccid]' : SNAPPI.ShotController.getCCid(this),
 					'data[shotType]' : cfg.shotType,
-					'data[uuid]': cfg.uuid
 				};
+			if (cfg.group_id) data['data[group_id]'] = cfg.group_id; 
+							
 			data = this.addWorkorderData(data);	
 			var uri = '/photos/shot/.json';	
 			var sort = SNAPPI.sortConfig.byTime;
@@ -1363,14 +1363,14 @@
 	        }); 
 	        
 			var data = {
-					'data[Asset][id]' : post_aids.join(','),
+					'data[Asset][id]' : post_aids.join(','),	// deprecate
 					'data[Shot][id]' : shotId,
-					// TODO: ungroup or removefromshot
-					'data[Asset][remove]' : '1', // if '', then generate UUID on server
+					'data[Asset][remove]' : '1', 
 					'data[ccid]' : SNAPPI.ShotController.getCCid(this),
 					'data[shotType]' : cfg.shotType,
-					'data[uuid]': cfg.uuid
 				};
+			if (cfg.group_id) data['data[group_id]'] = cfg.group_id; 
+				
 			data = this.addWorkorderData(data);	
 			var uri = '/photos/shot/.json';	
 			var sort = SNAPPI.sortConfig.byTime;

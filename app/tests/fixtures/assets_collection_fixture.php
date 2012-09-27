@@ -5,7 +5,7 @@ class AssetsCollectionFixture extends CakeTestFixture {
 	// var $import = array('model' => 'AssetsCollection');
 
 	var $fields = array(
-		'id' => array('type' => 'string', 'null' => false, 'default' => NULL, 'length' => 36, 'collate' => 'latin1_general_ci', 'charset' => 'latin1', 'key' => 'primary'),
+		'id' => array('type' => 'string', 'null' => false, 'default' => NULL, 'length' => 36, 'collate' => 'latin1_general_ci', 'charset' => 'latin1', 'key' => ''),
 		'collection_id' => array('type' => 'string', 'null' => false, 'default' => NULL, 'length' => 36, 'key' => 'primary', 'collate' => 'latin1_general_ci', 'charset' => 'latin1'),
 		'asset_id' => array('type' => 'string', 'null' => false, 'default' => NULL, 'length' => 36, 'key' => 'primary', 'collate' => 'latin1_general_ci', 'charset' => 'latin1'),
 		'user_id' => array('type' => 'string', 'null' => false, 'default' => NULL, 'length' => 36, 'collate' => 'utf8_general_ci', 'charset' => 'utf8'),

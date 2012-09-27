@@ -958,10 +958,10 @@ debug("WARNING: This code path is not tested");
 // debug($shot);			
 						//TODO: need $uuid of Asset.owner_id, check when role=EDITOR, etc.			
 						if ($shot['count'] > 2 ) {
-							$resp2 = $this->__removeFromShot(array($aid), $shot['shot_id'], 'Usershot', $owner_id);
+							$resp2 = $this->__removeFromShot(array($aid), $shot['shot_id'], 'Usershot');
 						} else {
 							
-							$resp2 = $this->__ungroupShot(array($shot['shot_id']), 'Usershot', $owner_id);	
+							$resp2 = $this->__ungroupShot(array($shot['shot_id']), 'Usershot');	
 						}
 						$retval = $retval && ($resp2['success'] && $resp2['success']!=='false');
 						/*
@@ -1464,6 +1464,10 @@ $this->log("WARNING: json_exif['preview']['imageWidth'] may need to be scaled, i
 		$done = $this->renderXHRByRequest('json', null, null, $forceXHR);
 		return;
 	}
+
+
+
+
 	// from gallery.js: g.groupAsShot()
 	function shot(){
 		$forceXHR = setXHRDebug($this, 0);
@@ -1515,11 +1519,14 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 				// group Assets into a Shot
 				if (in_array('group', $fields) ) {
 					// update bestShot group
-					$shotId = null;
 					$shotType = $this->data['shotType'];
-					$uuid =  $this->data['uuid'];
-					
-					$resp1 = $this->__groupAsShot($aids, $uuid, $shotType, $shotId, $bestshot_ownerId);
+					if ($shotType=='Groupshot') {
+						$group_id =  $this->data['group_id'];	
+						if ($bestshot_ownerId == null) $bestshot_ownerid = AppController::$userid;
+						$resp1 = $this->__groupAsShot($aids, $shotType, $group_id, $bestshot_ownerId);
+					} else {
+						$resp1 = $this->__groupAsShot($aids, $shotType);
+					}
 					$success = $success && $resp1['success'];
 					$resp0 = Set::merge($resp0, $resp1);
 					$resp0['success'] = $success;
@@ -1533,7 +1540,7 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 						$shotType = $this->data['shotType'];
 						$shot_owner_id = ($shotType == 'Usershot') ? $this->data['uuid'] : null;
 						$hiddenShot_CC  = $this->__hiddenShots($shotIds, $shotType);
-						$resp1 = $this->__ungroupShot($shotIds, $shotType, $aids);
+						$resp1 = $this->__ungroupShot($shotIds, $shotType);
 						$success = $success && $resp1['success'];
 						if ($resp1['success']) {
 							// add hiddenShots back to photoroll using castingcall
@@ -1557,16 +1564,10 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 						$aids = explode(',',$this->data['Asset']['id']);
 						$shotId = $this->data['Shot']['id'];
 						$shotType = $this->data['shotType'];
-						$hasPerm = $this->Asset->hasPerm($aids, 'removeFromShot', $shotType);
-						$aids = $hasPerm[true]; // just drop no perm $assetIds
-						if (!empty($hasPerm[false])) {
-							$resp0['message'][] = "Warning: no permissions on aid=".explode(','.$hasPerm[false]);	
-						}
-						$shot_owner_id = ($shotType == 'Usershot') ? $this->data['uuid'] : null;
-						$currentTarget_aid = $aids[0];
+						
 						// if data[Asset][id], just remove $aids from the Group
-						// update isBest for remaining Group
-						$resp1 = $this->__removeFromShot($aids, $shotId, $shotType, $shot_owner_id, $currentTarget_aid);
+						// update bestshot for remaining Group
+						$resp1 = $this->__removeFromShot($aids, $shotId, $shotType);
 						$success = $success && $resp1['success'];
 						$resp0 = Set::merge($resp0, $resp1);
 						$resp0['success'] = $success;
@@ -1594,31 +1595,35 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 	
 	
 	/**
-	 * @params $assetIds string, CSV of asset uuids
-	 * @params $uuid string, Usershot=owner_id, Groupshot=group_id 
-	 * @params $shotType string, [Usershot | Groupshot]
-	 * @params $shotId string, uuid of shot, null to create new shot
-	 * @params $bestshot_ownerId string, for BestShotOwner, logged in user 
+	 * __groupAsShot
+	 * 		Usershot updated to support Usershot.priority, Usershot.active
+	 * 	TODO: update Groupshot so we can deprecate $bestshot_ownerId
+	 * 
+	 * @param $assetIds string, CSV of asset uuids
+	 * @param $shotType string, [Usershot | Groupshot]
+	 * @param $gid string (optional), for Groupshot=group_id, Usershot uses AppController::$userid
+	 * @param DEPRECATE $bestshot_ownerId string, for BestShotOwner, logged in user  
 	 * @return array('shotId', 'bestshotId') or false
 	 */
-	function __groupAsShot( $assetIds, $uuid, $shotType='Usershot', $shotId = null,  $bestshot_ownerId = null ){
-//debug('/photos/setprop: groupAsShot');		
-		$hasPerm = $this->Asset->hasPerm($assetIds, 'groupAsShot', $shotType);
-		$assetIds = $hasPerm[true];
-		if ($hasPerm[false]) {
-			$resp['message']['groupAsShot'] = "Warning: no permissions on aid=".explode(','.$hasPerm[false]);	
-		}
-		if ($bestshot_ownerId == null) $bestshot_ownerid = AppController::$userid;
+	function __groupAsShot( $assetIds, $shotType='Usershot', $gid=null, $bestshot_ownerId = null ){
+// debug('/photos/shot: groupAsShot');		
 		switch ($shotType) {
 			case 'Usershot':
 				$Usershot = ClassRegistry::init('Usershot');
-				$resp = $Usershot->groupAsShot($assetIds, $uuid, $bestshot_ownerId);				
+				$resp = $Usershot->groupAsShot($assetIds);				
 				break;
 			case 'Groupshot':
+				// ???: can we deprecate bestshot_owner_id for Groupshot?
+				$hasPerm = $this->Asset->hasPerm($assetIds, 'groupAsShot', 'Groupshot');
+				$assetIds = $hasPerm[true];
+				if ($hasPerm[false]) {
+					$resp['message']['groupAsShot'] = "Warning: no permissions on aid=".explode(','.$hasPerm[false]);	
+				}			
 					// TODO: check Group Permission Settings: Permissionable->READ, or 
 					// TODO: check WorkorderPermissionable->READ
+				if ($bestshot_ownerId == null) $bestshot_ownerid = AppController::$userid;
 				$Groupshot = $this->Asset->Groupshot;
-				$resp = $Groupshot->groupAsShot($assetIds, $uuid, $bestshot_ownerId);				
+				$resp = $Groupshot->groupAsShot($assetIds, $gid, $bestshot_ownerId);				
 				break;
 		}
 		// mark ccid as stale
@@ -1628,18 +1633,19 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 	}
 	
 	function __removeFromShot($assetIds, $shotId, $shotType='Usershot') {
-		$hasPerm = $this->Asset->hasPerm($assetIds, 'removeFromShot', $shotType);
-		$assetIds = $hasPerm[true];
-		if ($hasPerm[false]) {
-			$resp['message']['removeFromShot'] = "Warning: no permissions on aid=".explode(','.$hasPerm[false]);	
-		}
 		switch ($shotType) {
 			case 'Usershot':
-				$owner_id = 'DEPRECATE owner_id';				
 				$Usershot = ClassRegistry::init('Usershot');
-				$resp = $Usershot->removeFromShot($assetIds, $shotId, $owner_id);				
+				$resp = $Usershot->removeFromShot($assetIds, $shotId);				
 				break;
 			case 'Groupshot':
+				// deprecate		
+				$hasPerm = $this->Asset->hasPerm($assetIds, 'removeFromShot', 'Groupshot');
+				$assetIds = $hasPerm[true];
+				if ($hasPerm[false]) {
+					$resp['message']['removeFromShot'] = "Warning: no permissions on aid=".explode(','.$hasPerm[false]);	
+				}
+												
 				$Groupshot = $this->Asset->Groupshot;
 				$resp = $Groupshot->removeFromShot($assetIds, $shotId);				
 				break;
@@ -1651,19 +1657,11 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 	 * @param $shotType
 	 * 		UserShot: $uuid of owner == Asset.owner_id, or /person/photos/[$uuid]
 	 * 		GroupShot: null
-	 * @param $assetIds, array of UUID (asset) in Shot, used to verify permission, belongsTo ShotId
 	 */ 
-	function __ungroupShot($shotIds, $shotType='Usershot', $assetIds = array()){
+	function __ungroupShot($shotIds, $shotType='Usershot'){
 		$shotIds = array_unique($shotIds);
-		if (count($shotIds)>1) debug("WARNING: hasPerm not checked for count($shotIds)>1");				
 		switch ($shotType) {
 			case 'Usershot':
-				$extras['shotIds'] = $shotIds;
-				$hasPerm = $this->Asset->hasPerm($assetIds, 'ungroupShot', $shotType, $extras);
-				$assetIds = $hasPerm[true];
-				if ($hasPerm[false]) {
-					$resp['message']['removeFromShot'] = "Warning: no permissions on aid=".explode(','.$hasPerm[false]);	
-				}
 				$Usershot = ClassRegistry::init('Usershot');
 				$resp = $Usershot->unGroupShot($shotIds);				
 				break;

@@ -1003,13 +1003,8 @@ console.log("delegateHost="+delegateHost._yuid);
 				shotType: shotType,
 			};
 			// get userid or group_id for shot
-			if (/(User)|(Group)/.test(SNAPPI.STATE.controller['class'])) {
-				options.uuid = SNAPPI.STATE.controller.xhrFrom.uuid;
-			} else {
-				// get uuid from castingCall request
-				var request = g.castingCall.CastingCall.Request.split('/');
-				if (request[1] == 'my') options.uuid = SNAPPI.STATE.controller.userid;
-				else if (request[3]) options.uuid = request[3];
+			if (/Group/.test(SNAPPI.STATE.controller['class'])) {
+				options.group_id = SNAPPI.STATE.controller.xhrFrom.uuid;
 			}
 			g.groupAsShot(null, options);
 			return;
@@ -1067,7 +1062,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	};	
 	
 	MenuItems.removeFromShot_click = function(menuItem, menu){
-		var batch, thumbnail = menu.get('currentNode');	// target
+		var batch, options, thumbnail = menu.get('currentNode');	// target
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		var g = MenuItems.getGalleryFromTarget(menu);
 		var shotType = audition.Audition.Substitutions.shotType;
@@ -1080,22 +1075,18 @@ console.log("delegateHost="+delegateHost._yuid);
 		// count remaining assets
 		if (batch.count()==0) batch.add(audition);
 		var remaining = g.auditionSH.count() - batch.count();
+		options =  {
+			menu: menu,
+			loadingNode: menuItem,
+			shotType: shotType,
+		};
+		if (/Group/.test(SNAPPI.STATE.controller['class'])) {
+			options.group_id = SNAPPI.STATE.controller.xhrFrom.uuid;
+		}		
 		if (remaining > 1) {
-			g.removeFromShot(batch, {
-				menu: menu,
-				loadingNode: menuItem,
-				shotType: shotType,
-				shotUuid: audition.Audition.Substitutions.id,
-				uuid: SNAPPI.STATE.controller.xhrFrom.uuid
-			});
+			g.removeFromShot(batch, options);
 		} else {
-			// TODO: confirm delete
-			g.unGroupShot(batch, {
-				menu: menu,
-				loadingNode: menuItem,
-				shotType: shotType,
-				uuid: SNAPPI.STATE.controller.xhrFrom.uuid
-			});			
+			g.unGroupShot(batch, options);			
 		}
 	};
 	
@@ -1123,7 +1114,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	};
 		
 	MenuItems.ungroupShot_click = function(menuItem, menu){
-		var batch, thumbnail = menu.get('currentNode');	// target
+		var batch, options, thumbnail = menu.get('currentNode');	// target
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		var g = MenuItems.getGalleryFromTarget(menu);
 		var shotType = audition.Audition.Substitutions.shotType;
@@ -1134,12 +1125,15 @@ console.log("delegateHost="+delegateHost._yuid);
 		}			
 		batch = g.getSelected();
 		if (batch.count()==0) batch.add(audition);
-		g.unGroupShot(batch, {
+		options =  {
 			menu: menu,
 			loadingNode: menuItem,
 			shotType: shotType,
-			uuid: SNAPPI.STATE.controller.xhrFrom.uuid
-		});
+		};
+		if (/Group/.test(SNAPPI.STATE.controller['class'])) {
+			options.group_id = SNAPPI.STATE.controller.xhrFrom.uuid;
+		}
+		g.unGroupShot(batch, options);
 	};
 	
 	MenuItems.setBestshot_click = function(menuItem, menu){

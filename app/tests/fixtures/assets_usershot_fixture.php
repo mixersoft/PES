@@ -6,6 +6,7 @@ class AssetsUsershotFixture extends CakeTestFixture {
 
 
 	var $records = array(
+		// shot count=8
 		array(
 			'id' => '4ffc3062-f970-4823-8fb7-4d04f67883f5',
 			'asset_id' => '4bbb3976-3268-4073-878d-11a0f67883f5',
@@ -46,6 +47,8 @@ class AssetsUsershotFixture extends CakeTestFixture {
 			'asset_id' => '4bbb3976-d0ac-4115-b542-11a0f67883f5',
 			'usershot_id' => '4ffc3062-3a94-4f37-981b-4d04f67883f5'
 		),
+		
+		// shot count=2
 		array(
 			'id' => '4ffc306c-e3f8-44de-aa63-4d04f67883f5',
 			'asset_id' => '4bbb3976-22b8-442c-b29a-11a0f67883f5',
