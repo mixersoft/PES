@@ -34,9 +34,12 @@ class snaphappi_api_URTaskInfoImpl implements snaphappi_api_URTaskInfoIf {
         /**
 		 * @param TaskID
 		 * @return URTaskState, 			//  return array[IsCancelled] = boolean (?) 
+		 * 	URTaskState->IsCancelled Boolean (optional)
+		 *  URTaskState->FolderUpdateCount Int (optional), unique id for Folder state
+		 *  URTaskState->FileUpdateCount Int (optional), unique id for File state
 		 */
-        public function GetState($sessionID) {
-// error_log("GetState(sessionID)=".print_r($sessionID, true));
+        public function GetState($TaskID) {
+// error_log("GetState(sessionID)=".print_r($TaskID, true));
 			$options['IsCancelled'] = false;
 			$options['FolderUpdateCount'] = 1;
 			$options['FileUpdateCount'] = 2;
