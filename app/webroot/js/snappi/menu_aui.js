@@ -967,10 +967,12 @@ console.log("delegateHost="+delegateHost._yuid);
 			var g = MenuItems.getGalleryFromTarget(menu);
 			
 			// new pattern, reuse Thumbnail.PhotoPreview
+			_Y.once('snappi:dialog-body-rendered', function(){
+				menu.hide();
+			});
 			SNAPPI.Helper.Dialog.bindSelected2DialogHiddenShot(g, audition);
-			return;
 		} catch (e) {
-		}		
+		}	
 	};
 
 	MenuItems.groupAsShot_beforeShow = function(menuItem, menu){
