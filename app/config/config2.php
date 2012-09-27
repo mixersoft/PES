@@ -191,7 +191,11 @@ $lookup_roles['VISITOR']='role-----0123-4567-89ab------visitor';
  $lookup_roles['ROOT']='role-----0123-4567-89ab-cdef----root';
 $lookup_roles['ADMIN']='role-----0123-4567-89ab--------admin';
 $lookup_roles['MANAGER']='role-----0123-4567-89ab------manager';
+$lookup_roles['OPERATOR']='role-----0123-4567-89ab-----operator';
+// TODO: use OPERATOR, deprecate EDITOR
 $lookup_roles['EDITOR']='role-----0123-4567-89ab-------editor';
+$lookup_roles['SCRIPT']='role-----0123-4567-89ab-------script';
+
 $config['lookup.roles'] = $lookup_roles;
 
 /*

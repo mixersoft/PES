@@ -1,10 +1,16 @@
 <?php
-/* Permission Fixture generated on: 2012-09-21 20:10:33 : 1348258233 
- * 	see also : AssetsPermissionFixture
- * */
-class PermissionFixture extends CakeTestFixture {
-	var $name = 'Permission';
-	var $import = array('model' => 'Permission');
+/* Permission Fixture generated on: 2012-09-21 20:10:33 : 1348258233
+ * 	use for testing Permissionable.Permission behavior with Asset
+ *  TODO: for some reason, the permission_fixture is not working because of Model->alias?
+ *  
+ */
+class AssetPermissionFixture extends CakeTestFixture {
+	var $name = 'AssetPermissionFixture';
+	public $table = 'permissions';
+	var $import = array(
+		'model' => 'AssetPermission',
+		'table'=>'permissions'
+	);
 
 
 	var $records = array(
@@ -88,5 +94,29 @@ class PermissionFixture extends CakeTestFixture {
 			'gid' => 'role-----0123-4567-89ab---------user',
 			'perms' => '0519'
 		),
+		array(
+			'id' => '4bbb3907-006c-45e2-ab10-11a0f67883f5',
+			'model' => 'Asset',
+			'foreignId' => '4bbb3907-82f4-4452-90a5-11a0f67883f5',
+			'oid' => '12345678-1111-0000-0000-sardinia----',
+			'gid' => 'role-----0123-4567-89ab---------user',
+			'perms' => '0071'
+		),
+		array(
+			'id' => '4bbb3907-026c-473d-b0f9-11a0f67883f5',
+			'model' => 'Asset',
+			'foreignId' => '4bbb3907-7418-4c53-9e8f-11a0f67883f5',
+			'oid' => '12345678-1111-0000-0000-sardinia----',
+			'gid' => 'role-----0123-4567-89ab---------user',
+			'perms' => '0071'
+		),
+		array(
+			'id' => '4bbb3907-3ff8-4f34-868c-11a0f67883f5',
+			'model' => 'Asset',
+			'foreignId' => '4bbb3907-1d88-4f31-82e4-11a0f67883f5',
+			'oid' => '12345678-1111-0000-0000-sardinia----',
+			'gid' => 'role-----0123-4567-89ab---------user',
+			'perms' => '0071'
+		),		
 	);
 }

@@ -72,7 +72,8 @@ class Usershot extends AppModel {
 		return $top_rated['Asset']['id'];
 	}
 	/*
-	 * TODO: clean up hack
+	 * 
+	 * TODO:  deprecate, clean up hack, or deprecate
 	 * Problem: Workorder (WMS) access is /workorders/photos/[woid], NOT /person/photos/[owner_id]
 	 * Hack: check that Assets are from the SAME owner, Asset.owner_id are ALL THE SAME
 	 * 		then use Asset.owner_id as $owner_id
@@ -93,7 +94,7 @@ class Usershot extends AppModel {
 			),  //default
 		);
 		$Asset = $this->AssetsUsershot->Asset;
-		if (in_array('WorkorderPermissionable', $Asset->Behaviors->attached())) {
+		if ($Asset->Behaviors->attached('WorkorderPermissionable')) {
 			// TODO: match with Asset::joinWithShots()
 			$checkdata = $Asset->find('all', $options);
 // debug($checkdata);			
@@ -104,25 +105,49 @@ class Usershot extends AppModel {
 			} else return false;
 		} else return $owner_id;	// default value
 	}
+	
+	/**
+	 * Get Usershot.priority based on AppController::$role, 
+	 * use priority in GroupAsShot to determine privilege
+	 * 	USER = 10
+	 * 	EDITOR/MANAGER/OPERATOR = 20
+	 *  SCRIPT = 30, i.e. asset-group script
+	 * 
+	 * higher priority = lower Usershot.priority number
+	 * higher priority can *deactivate* lower priority shots
+	 * equal priority will *replace* existing shots
+	 */
+	private function _get_ShotPriority($role=null){
+		if (!$role) $role = AppController::$role;
+		$role_priority_lookup['USER'] = 10;
+		$role_priority_lookup['MANAGER'] = 20;
+		$role_priority_lookup['OPERATOR'] = 20;
+		$role_priority_lookup['EDITOR'] = 20;		// TODO: DEPRECATE EDITOR ROLE
+		$role_priority_lookup['GUEST'] = 40;
+		$role_priority_lookup['SCRIPT'] = 30;
+		return $role_priority_lookup[$role];
+	}
+	
 	/**
 	 * groupAsShot
+	 * 		group assetIds as a Usershot
+	 * 		check Usershot.priority for permission to deactivate/replace existing shots
+	 * 		include all hiddenShots (i.e. Assets) in new Usershot
+	 * 	NOTES: assumes only bestshots are visible in UI and submitted 
+	 * 		only considers score of submitted assetIds for new bestshot
+	 * 	WARNING: if user manually sets existing bestshot to a low scoring photo, it may
+	 * 		not become a NEW bestshot, despite higher Useredit.rating
+	 * 
 	 * @param array $assetIds 
-	 * @param string $owner_id - uuid of assets' owner, AppController::$ownerid, from 'acts_as_owner'
-	 * 		taken from /person/photos/[$uuid], used by ROLE=EDITOR/MANAGER/ADMIN/ROOT
-	 * TODO: how do you get this value for workorders? $uuid is woid...
-	 * 		need Workorder.source_id, 
-	 * 		hack: check that Asset.owner_id are all the same with array_unique(), use this value 
-	 * @param string $bestshot_ownerId
- 	 * 		sets BestShotOwner when same as AppController::$userid
-	 * @return array('shotId', 'bestshotId')  or FALSE on error
+	 * 
+	 * @return standard JSON response format
 	 */
-	public function groupAsShot ($assetIds, $owner_id, $bestshot_ownerId = null) {
+	public function groupAsShot ($assetIds) {
 		$success = false; $message=array(); $response=array();
+		$submitted = $assetIds;	// for AssetPermission check
 		
-		$bestshot_ownerId = $bestshot_ownerId ? $bestshot_ownerId : AppController::$userid;
 		$Asset = $this->AssetsUsershot->Asset;
-		$Asset->contain();
-		// filter $assetIds to check owner_id;
+		
 		$options = array(
 			'fields'=>array('`Asset`.id','`Asset`.owner_id'), 
 			'conditions'=>array('`Asset`.id'=>$assetIds),
@@ -130,72 +155,103 @@ class Usershot extends AppModel {
 			'extras'=>array(
 				'show_edits' => true,
 				'join_shots'=>'Usershot', 
-				'show_hidden_shots'=>true,
+				'show_hidden_shots'=>true,		// Asset.id != Bestshot.asset_id
 				'join_bestshot'=>false,
 			),  //default
 		);
-		if ($Asset->Behaviors->attached('Permissionable')) {
-			// permissionable does NOT obey recursive or containable()
-			$options['permissionable'] = false;
+		
+		$data = $Asset->find('all', $options);	
+// debug($data);		
+		$existing_shots = Set::combine($data, '/Shot/shot_id', '/Shot/shot_priority');
+		$permitted_AssetIds = Set::extract('/Asset/id', $data); // aids sorted by SharedEdit.score DESC in bestshot order
+// debug($assetIds);
+		// check permissions on submitted Assets
+		if (count($permitted_AssetIds)!=count($assetIds)) {
+			// throw new Exception('Error: No Permission on the following assetIds, aids='.print_r(array_diff($assetIds,$permitted_AssetIds),true)); 		
+			$message[] = 'Error: No Permission on the following assetIds';
+			$response['asset_ids'] = array_diff($assetIds,$permitted_AssetIds);
+			return compact('success', 'message', 'response');
 		}
-		$owner_id = $this->_getOwnerIdForWorkorderProcessing($assetIds, $owner_id);
-		if ($owner_id === false) {
-			$success = false;
-			$message[] = 'Usershot->groupAsShot: Error saving shot, Asset.owner_ids do not match';
-			$resp0 = compact('success', 'message', 'response');
-			return $resp0;
-		} 
-		$options['conditions']['`Asset`.owner_id'] = $owner_id;
-		$data = $Asset->find('all', $options);	// should be cached on Workorder Processing
-		$assetIds = Set::extract('/Asset/id', $data);
+		// check for same Asset.owner_id
+		$owner_ids = array_unique(Set::extract('/Asset/owner_id', $data));
+		if (count($owner_ids)!=1) {
+			$message[] = 'Error: group Photos do not belong to the same owner';
+			$response['Asset.owner_ids'] = $owner_ids;
+			return compact('success', 'message', 'response');
+		}
 
 
 		/*
-		 *  remove $assetIds from any existing shots
+		 * Confirm edit Shot priority, do we have permission to edit existing Shot?
+		 * 	higher priority can deactivate lower priority shots
+		 * 	equal priority will replace shots
+		 */ 
+		 $shot_priority = $this->_get_ShotPriority();
+		 $cleanup = array();
+		 foreach ($existing_shots as $shot_id=>$old_priority) {
+		 	if (!$shot_id) continue;
+		 	if ($old_priority < $shot_priority) {
+		 		// current role has lower priority, no privilege to change existing Shot
+		 		// no privilege or save as "lower" privilege???
+		 		$message = "Error: Current role has lower priority, no privilege to change existing Shot, role=".AppController::$role;
+				$response['existing_shots'] =  $existing_shots;				
+		 		return compact('success', 'message', 'response'); 
+		 	}
+		 	if ($old_priority == $shot_priority) $cleanup['unGroupShots'][] = $shot_id;
+			if ($old_priority > $shot_priority) $cleanup['deactivateShots'][] = $shot_id;
+		 } 
+		 
+		/*
+		 * if an Asset is ALREADY in a Shot: 
+		 * 		*ASSUME* that Asset is the Bestshot, and add all hiddenShots to NEW Shot
 		 */
-		$deleteShotIds = array_filter(Set::extract($data, '/Asset/shot_id'));
-		if (count($deleteShotIds))	{
+		if (count($existing_shots))	{
 			$hiddenShot_options = array(
-				'fields'=>"`AssetsUsershot`.asset_id",
-				'conditions'=>array('`AssetsUsershot`.usershot_id'=>$deleteShotIds),
+				'fields'=>array("`AssetsUsershot`.asset_id"),
+				'conditions'=>array(
+					'`AssetsUsershot`.usershot_id'=>array_keys($existing_shots),
+				),
 			); 
 			$Asset->AssetsUsershot = ClassRegistry::init('AssetsUsershot');
 			$hiddenShot_data = $Asset->AssetsUsershot->find('all', $hiddenShot_options);
-			$hiddenShotIds = Set::extract($hiddenShot_data, '/AssetsUsershot/asset_id');
-	//debug($hiddenShotIds); 		
-			$assetIds = array_unique(array_merge($assetIds, $hiddenShotIds));
-//debug($assetIds);
+			$hiddenShot_assetIds = Set::extract($hiddenShot_data, '/AssetsUsershot/asset_id');
+// debug($hiddenShot_assetIds); 		
+			$permitted_AssetIds = array_unique(array_merge($permitted_AssetIds, $hiddenShot_assetIds));
 		}
-
 
 		// create Usershot
 		// add assetIds to AssetsUsershot
 		$insert = array();
-		$insert['Usershot']['owner_id'] = $owner_id; // MUST be Asset.owner_id, see Asset::joinWithShots();
-		foreach ($assetIds as $assetId) {
+		$insert['Usershot']['owner_id'] = AppController::$userid; 
+		$insert['Usershot']['priority'] = $shot_priority; 
+		$insert['Usershot']['active'] = 1; 
+		foreach ($permitted_AssetIds as $assetId) {
 			$insert['AssetsUsershot'][]['asset_id'] = $assetId;
 		}		
-// debug($assetIds);
-		if (count($assetIds)) {
+// debug($permitted_AssetIds);
+		if (count($permitted_AssetIds)) {
 			// set Bestshot for NEW group
-			// set BestShotSystem by sort order, sort=='`SharedEdit`.score DESC, `Asset`.dateTaken ASC',
-			// WARNING: assumes hiddenShot assets are ALL lower rated than visible shots
-			$insert['BestUsershotSystem']['asset_id'] = $assetIds[0];
-			// now sort by UserEdit.rating, then SharedEdit.score DESC
-			if ($bestshot_ownerId == AppController::$userid 
-				||  in_array('WorkorderPermissionable', $Asset->Behaviors->attached())
-			) {
-				// set BestUsershotOwner by UserEdit.rating	
-				$bestshotAlias='BestUsershotOwner';
-			} else {
-				// set BestUsershotMember by UserEdit rating
-				$bestshotAlias='BestUsershotMember';
+			// set BestShotSystem by sort order, sort=='`SharedEdit`.score DESC, `Asset`.dateTaken ASC', 
+			// for *visible* assets only, ignores hiddenShot assets 
+			// EDITORS will set only BestShotSystem by default
+			$insert['BestUsershotSystem']['asset_id'] = $permitted_AssetIds[0];
+			if (false == $Asset->Behaviors->attached('WorkorderPermissionable')) {
+				// now sort by UserEdit.rating, then SharedEdit.score DESC
+				if (in_array(AppController::$userid, Set::extract($data, '/Asset/owner_id')))
+				{
+					// set BestUsershotOwner by UserEdit.rating	
+					$bestshotAlias='BestUsershotOwner';
+				} else {
+					// set BestUsershotMember by UserEdit rating
+					$bestshotAlias='BestUsershotMember';
+				}
+				$insert[$bestshotAlias]['asset_id'] = $this->_getTopRatedByRatingScore($data);
+				$insert[$bestshotAlias]['user_id'] = AppController::$userid;
 			}
-			$insert[$bestshotAlias]['asset_id'] = $this->_getTopRatedByRatingScore($data);
-			$insert[$bestshotAlias]['user_id'] = $bestshot_ownerId;
 			// save to AssetsUsershot, BestUsershot, etc.
 			$ret = $this->saveAll($insert, array('validate'=>'first'));
 		} 
+		
 // debug($insert); 
 		if (isset($ret)) {
 			$success = $ret != false;
@@ -203,13 +259,22 @@ class Usershot extends AppModel {
 			$response['groupAsShot']['shotId'] = $this->id;
 			$response['groupAsShot']['bestshotId'] = $insert[$bestshotAlias]['asset_id'];
 			$resp0 = compact('success', 'message', 'response');
-			// after saving NEW shot, delete old shots
-			if (!empty($deleteShotIds)) {
+			
+			// after saving NEW shot, cleanup old shots
+			// unGroupShot if same priority, deactivate shot if lower priority (higher number)
+// debug($cleanup);
+			if (!empty($cleanup['unGroupShots'])) {
 				// TODO: delete old/orphaned Shots using QUEUE
-				$resp1 = $this->unGroupShot($deleteShotIds, $owner_id);
+				$resp1 = $this->unGroupShot($cleanup['unGroupShots']);
 				$success = $success && $resp1['success'];
 				$resp0 = Set::merge($resp0, $resp1);
 			}
+			if (!empty($cleanup['deactivateShots'])) {
+				// TODO: deactivate old Shots using QUEUE
+				$resp1 = $this->_deactivateShot($cleanup['deactivateShots']);
+				$success = $success && $resp1['success'];
+				$resp0 = Set::merge($resp0, $resp1);
+			}			
 		} else {
 			$message[] = 'Usershot->groupAsShot: Error saving shot';
 			$resp0 = compact('success', 'message', 'response'); 			
@@ -219,50 +284,134 @@ class Usershot extends AppModel {
 	
 	
 	/**
-	 * remove Delete Shot and related AssetsShots, BestShots
+	 * Delete Shot and related AssetsShots, BestShots
 	 * @param array $deleteShotIds array of UUIDs
 	 * @return false on error
 	 */
 	public function unGroupShot ($deleteShotIds) {
+		if (!is_array($deleteShotIds)) throw new Exception('Error: $deleteShotIds should be an Array()');
 		$success = false; $message=array(); $response=array();
 		if (!empty($deleteShotIds)) {
+			
+			/*
+			 * Confirm unGroup Shot privilege and priority, do we have permission to edit existing Shot?
+			 * 	higher priority can deactivate lower priority shots
+			 * 	equal priority will replace shots
+			 */ 
+			 $shot_priority = $this->_get_ShotPriority();
+			 $data = $this->find('all', array('conditions'=>array('`Usershot`.id'=>$deleteShotIds)));
+			 foreach ($data as $row) {
+			 	$shot_id = $row['Usershot']['id'];
+			 	$old_priority = $row['Usershot']['priority'];
+			 	if ($old_priority < $shot_priority) {
+			 		// current role has lower priority, no privilege to change existing Shot
+			 		// no privilege or save as "lower" privilege???
+			 		$message = "Error: Current role has lower priority, no privilege to change existing Shot, role=".AppController::$role;
+					$response['existing_shots'][] = array_filter_keys($row['Usershot'], array('id', 'owner_id', 'priority'));				
+			 		return compact('success', 'message', 'response'); 
+			 	}
+			 	if ($old_priority == $shot_priority) $cleanup['unGroupShots'][] = $shot_id;
+				if ($old_priority > $shot_priority) $cleanup['deactivateShots'][] = $shot_id;
+				
+				// only owner_id can remove from a USER created Usershot
+				if ($old_priority == $this->_get_ShotPriority('USER')
+					&& AppController::$userid!=$row['Usershot']['owner_id']) 
+				{
+					$message = "Error: no privilege to remove from this Shot, Shot.owner_id={$row['Usershot']['owner_id']}";
+					$response['Usershot'] = array_filter_keys($row['Usershot'], array('id', 'owner_id', 'priority'));
+					return compact('success', 'message', 'response');
+				}
+				
+			 } 
+									
 			// TODO: delete old/orphaned Shots using QUEUE
-			$sql_deleteCascadeShots = "
-DELETE FROM `Shot`, `Best`, `AssetsShots`
-USING `usershots` AS `Shot`
-INNER JOIN `best_usershots` AS `Best` ON (`Best`.usershot_id = `Shot`.id)
-INNER JOIN `assets_usershots` AS `AssetsShots` ON (`AssetsShots`.usershot_id = `Shot`.id)
-WHERE `Shot`.id IN ";
-			$sql_deleteCascadeShots .= "('".implode("','",$deleteShotIds)."')";
-			$ret = $this->query($sql_deleteCascadeShots); // always true
+			if (!empty($cleanup['unGroupShots'])) {
+				$sql_deleteCascadeShots = "
+	DELETE FROM `Shot`, `Best`, `AssetsShots`
+	USING `usershots` AS `Shot`
+	INNER JOIN `best_usershots` AS `Best` ON (`Best`.usershot_id = `Shot`.id)
+	INNER JOIN `assets_usershots` AS `AssetsShots` ON (`AssetsShots`.usershot_id = `Shot`.id)
+	WHERE `Shot`.id IN ";
+				$sql_deleteCascadeShots .= "('".implode("','",$cleanup['unGroupShots'])."')";
+				$ret = $this->query($sql_deleteCascadeShots); // always true
+				$message[] = "Usershot->unGroupShot: OK";
+				$response['unGroupShot']['shotIds'] = $deleteShotIds;
+			}
+			if (!empty($cleanup['deactivateShots'])) {
+				// TODO: deactivate old Shots using QUEUE
+				$resp1 = $this->_deactivateShot($cleanup['deactivateShots']);
+				$message = Set::merge($message, $resp1['message']);
+				$response = Set::merge($message, $resp1['response']);
+			}	
 		} 
 		$success = true;
-		$message[] = "Usershot->unGroupShot: OK";
-		$response['unGroupShot']['shotIds'] = $deleteShotIds;
 		return compact('success', 'message', 'response');
 	}
-	
+
+	/**
+	 * Deactivate Shots, set usershots.active=0,
+	 * 	Deactivate shots that are lower priority, (higher Usershot.priority number) instead of deleting 
+	 * 		* called by groupAsShot, unGroupShot
+	 * ???: should we allow public access to this method??
+	 * 
+	 * @param array $deactivateShotIds array of UUIDs
+	 * @return standard JSON response 
+	 */
+	private function _deactivateShot ($deactivateShotIds) {
+		if (!is_array($deactivateShotIds)) throw new Exception('Error: $deactivateShotIds should be an Array()');
+		$success = false; $message=array(); $response=array();
+		if (!empty($deactivateShotIds)) {
+			// TODO: delete old/orphaned Shots using QUEUE
+			$sql_deactivateShots = "UPDATE `usershots` AS `Shot` SET `Shot`.active=0 WHERE `Shot`.id IN ('".implode("','",$deactivateShotIds)."')";
+			$ret = $this->query($sql_deactivateShots); // always true
+		} 
+		$success = true;
+		$message[] = "Usershot->deactivateShot: OK";
+		$response['deactivateShot']['shotIds'] = $deactivateShotIds;
+		return compact('success', 'message', 'response');
+	}
+		
 	/**
 	 * remove Asset from Shot, but keep shot
+	 * 		check Usershot.priority for privileges
+	 * 		if role=USER, only Usershot.owner_id can remove shots
 	 * @param array $assetIds, uuids should belong to shot 
 	 * @param uuid $shotId
-	 * @param string $owner_id - uuid of assets' owner, usually AppController::$ownerid, unless EDITOR
-	 * 		taken from /person/photos/[$uuid], used by ROLE=EDITOR/MANAGER/ADMIN/ROOT
-	 * @return aa array('success','bestShot')
+	 * @return standard JSON response 
 	 */
-	public function removeFromShot ($assetIds, $shotId, $owner_id) {
+	public function removeFromShot ($assetIds, $shotId) {
+		if (!is_array($assetIds)) throw new Exception('Error: $assetIds should be an Array()');
 		$success = false; $message=array(); $response=array();
 		if (!empty($assetIds)) {
-
-			$owner_id = $this->_getOwnerIdForWorkorderProcessing($assetIds, $owner_id);
-			if ($owner_id === false) {
-				$success = false;
-				$message[] = 'Usershot->removeFromShot: Error saving shot, Asset.owner_ids do not match';
+			
+			// TODO: check Permissionable or WorkorderPermissionable on submitted Assets
+					
+			/*
+			 * Confirm edit Shot priority, do we have permission to edit existing Shot?
+			 * 	higher priority can deactivate lower priority shots
+			 * 	equal priority will replace shots
+			 */ 
+			$shot_priority = $this->_get_ShotPriority();
+			$existing = $this->read(array('priority', 'owner_id'), $shotId);
+		 	if ($existing['Usershot']['priority'] < $shot_priority) {
+		 		// current role has lower priority, no privilege to change existing Shot
+		 		// no privilege or save as "lower" privilege???
+		 		$message = "Error: Current role has lower priority, no privilege to remove from existing Shot, role=".AppController::$role;
+				$response['existing_shot'] =  array($shotId=>$existing['Usershot']['priority']);				
+		 		return compact('success', 'message', 'response'); 
+		 	}
+			
+			// only owner_id can remove from a USER created Usershot
+			if ($existing['Usershot']['priority'] == $this->_get_ShotPriority('USER')
+				&& AppController::$userid!=$existing['Usershot']['owner_id']) 
+			{
+				$message = "Error: no privilege to remove from this Shot, Shot.owner_id={$existing['Usershot']['owner_id']}";
+				$response['Shot.owner_id'] = $existing['Usershot']['owner_id'];
 				return compact('success', 'message', 'response');
-			} 
-				
-			$assetIds_IN = "('" . join("','", $assetIds)  ."')"; 
+			}
+			
 			// TODO: delete old/orphaned Shots using QUEUE
+			$assetIds_IN = "('" . join("','", $assetIds)  ."')";
 			$sql_removeFromShot = "
 DELETE FROM `Best`, `AssetsShots`
 USING `usershots` AS `Shot`
@@ -270,7 +419,8 @@ INNER JOIN `assets_usershots` AS `AssetsShots` ON (`AssetsShots`.usershot_id = `
 	AND `AssetsShots`.asset_id IN {$assetIds_IN} )
 LEFT JOIN `best_usershots` AS `Best` ON (`Best`.usershot_id = `Shot`.id
 	AND `Best`.asset_id = `AssetsShots`.asset_id  )
-WHERE `Shot`.id = '{$shotId}' AND `Shot`.owner_id = '{$owner_id}'";
+WHERE `Shot`.id = '{$shotId}'";
+
 			$ret = $this->query($sql_removeFromShot); // always true
 			$response['removeFromShot']['assetIds'] = $assetIds;
 			$message[] = 'Usershot->removeFromShot: OK';
@@ -307,6 +457,7 @@ WHERE `Shot`.id = '{$shotId}' AND `Shot`.owner_id = '{$owner_id}'";
 	public function updateBestShotSystem($shotIds = array()) {
 		$success = false; $message=array(); $response=array();
 		$options = array(
+			'permissionable'=>false,
 			'fields'=>array('`Asset`.id','`BestShotSystem`.`id`','`BestShotSystem`.`asset_id`','`BestShotSystem`.`id`'),
 			'conditions'=>array('`Shot`.id'=>$shotIds),
 			'order'=>'`SharedEdit`.score DESC, `Asset`.dateTaken ASC',	
@@ -317,11 +468,8 @@ WHERE `Shot`.id = '{$shotId}' AND `Shot`.owner_id = '{$owner_id}'";
 			),
 		);
 		$Asset = $this->AssetsUsershot->Asset;
-		if ($Asset->Behaviors->attached('Permissionable')) {
-			// permissionable does NOT obey recursive or containable()
-			$options['permissionable'] = false;
-		}
 		$data = $Asset->find('all',$options);
+		
 		$topScoreAsset = $data[0];
 		$model = 'BestUsershotSystem';
 		if (empty($topScoreAsset['BestShotSystem']['asset_id'])) {

@@ -1,32 +1,88 @@
 <?php
-/* GroupsUser Fixture generated on: 2010-03-30 05:03:06 : 1269923886 */
+/* GroupsUser Fixture generated on: 2012-09-24 16:58:34 : 1348505914 */
 class GroupsUserFixture extends CakeTestFixture {
 	var $name = 'GroupsUser';
+	var $import = array('model' => 'GroupsUser');
 
-	var $fields = array(
-		'id' => array('type' => 'string', 'null' => false, 'default' => NULL, 'length' => 36, 'key' => 'primary'),
-		'user_id' => array('type' => 'string', 'null' => false, 'default' => NULL, 'length' => 36, 'key' => 'primary'),
-		'group_id' => array('type' => 'string', 'null' => false, 'default' => NULL, 'length' => 36, 'key' => 'primary'),
-		'isApproved' => array('type' => 'boolean', 'null' => true, 'default' => '1'),
-		'role' => array('type' => 'string', 'null' => false, 'default' => 'member', 'length' => 45),
-		'isActive' => array('type' => 'boolean', 'null' => false, 'default' => NULL),
-		'suspendUntil' => array('type' => 'datetime', 'null' => true, 'default' => NULL),
-		'lastVisit' => array('type' => 'timestamp', 'null' => true, 'default' => NULL),
-		'indexes' => array('PRIMARY' => array('column' => array('user_id', 'group_id'), 'unique' => 1), 'group_user_idx' => array('column' => array('group_id', 'user_id'), 'unique' => 1), 'fk_memberships_groups' => array('column' => 'group_id', 'unique' => 0), 'fk_memberships_users' => array('column' => 'user_id', 'unique' => 0)),
-		'tableParameters' => array('charset' => 'utf8', 'collate' => 'utf8_unicode_ci', 'engine' => 'MyISAM')
-	);
 
 	var $records = array(
 		array(
-			'id' => '4bb1802e-db04-48f5-8ba4-12f0f67883f5',
-			'user_id' => '4bb1802e-f2d8-4de3-bd19-12f0f67883f5',
-			'group_id' => '4bb1802e-06c4-4187-a054-12f0f67883f5',
+			'id' => '4bb46b3a-a674-44ad-aa02-0ee4f67883f5',
+			'user_id' => '12345678-1111-0000-0000-sardinia----',
+			'group_id' => 'member---0123-4567-89ab-000000000002',
 			'isApproved' => 1,
-			'role' => 'Lorem ipsum dolor sit amet',
+			'role' => 'member',
 			'isActive' => 1,
-			'suspendUntil' => '2010-03-30 05:38:06',
-			'lastVisit' => '1269923886'
+			'isExpress' => 0,
+			'suspendUntil' => NULL,
+			'lastVisit' => '2011-11-28 00:24:00',
+			'modified' => NULL,
+			'created' => NULL
+		),
+		array(
+			'id' => '4bb46b3a-a674-44ad-aa01-0ee4f67883f5',
+			'user_id' => '12345678-1111-0000-0000-venice------',
+			'group_id' => 'member---0123-4567-89ab-000000000002',
+			'isApproved' => 1,
+			'role' => 'member',
+			'isActive' => 1,
+			'isExpress' => 0,
+			'suspendUntil' => NULL,
+			'lastVisit' => '2011-11-28 00:24:00',
+			'modified' => NULL,
+			'created' => NULL
+		),
+		array(
+			'id' => '4bb46b3a-d3c4-4dda-bb03-0ee4f67883f5',
+			'user_id' => '12345678-1111-0000-0000-paris-------',
+			'group_id' => 'member---0123-4567-89ab-000000000003',
+			'isApproved' => 1,
+			'role' => 'owner',
+			'isActive' => 1,
+			'isExpress' => 0,
+			'suspendUntil' => NULL,
+			'lastVisit' => '2011-11-28 00:24:00',
+			'modified' => NULL,
+			'created' => NULL
+		),
+		array(
+			'id' => '4bb46b3a-a674-44ad-bb02-0ee4f67883f5',
+			'user_id' => '12345678-1111-0000-0000-sardinia----',
+			'group_id' => 'member---0123-4567-89ab-000000000003',
+			'isApproved' => 1,
+			'role' => 'member',
+			'isActive' => 1,
+			'isExpress' => 0,
+			'suspendUntil' => NULL,
+			'lastVisit' => '2011-11-28 00:24:00',
+			'modified' => NULL,
+			'created' => NULL
+		),
+		array(
+			'id' => '4bb46b3a-a674-44ad-bb01-0ee4f67883f5',
+			'user_id' => '12345678-1111-0000-0000-venice------',
+			'group_id' => 'member---0123-4567-89ab-000000000003',
+			'isApproved' => 1,
+			'role' => 'admin',
+			'isActive' => 1,
+			'isExpress' => 0,
+			'suspendUntil' => NULL,
+			'lastVisit' => '2011-11-28 00:24:00',
+			'modified' => NULL,
+			'created' => NULL
+		),
+		array(
+			'id' => '4bb46dab-25b0-49a2-cc02-0ee4f67883f5',
+			'user_id' => '12345678-1111-0000-0000-newyork-----',
+			'group_id' => 'member---0123-4567-89ab-000000000004',
+			'isApproved' => 1,
+			'role' => 'member',
+			'isActive' => 1,
+			'isExpress' => 0,
+			'suspendUntil' => NULL,
+			'lastVisit' => '2011-11-28 00:24:00',
+			'modified' => NULL,
+			'created' => NULL
 		),
 	);
 }
-?>

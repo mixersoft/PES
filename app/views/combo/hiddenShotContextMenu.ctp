@@ -1,4 +1,4 @@
-<div id="contextmenu-hiddenshot-markup" class="menu yui3-aui-overlaycontext-hidden">
+<div id="contextmenu-hiddenshot-markup" class="menu hide yui3-aui-overlaycontext-hidden">
 	<ul>
 		<li action='rating' class='before-show'>
 		</li>
@@ -14,7 +14,7 @@
 	</ul>
 </div>
 <!--  for WORKORER processing, role=EDITOR/MANAGER  -->
-<div id="contextmenu-hiddenshot-markup-workorder" class="menu yui3-aui-overlaycontext-hidden">
+<div id="contextmenu-hiddenshot-markup-workorder" class="menu hide yui3-aui-overlaycontext-hidden">
 	<ul>
 		<li action='rating' class='before-show'>
 		</li>

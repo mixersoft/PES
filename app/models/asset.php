@@ -62,7 +62,13 @@ AND includes.asset_id='{$assetId}';
 		return $ret;
 	}
 	/**
-	 * has permission on target
+	 * DEPRECATE after checking Groupshot 
+	 * 		Usershot->groupAsShot checks AssetPermission or WorkorderPermissionable
+	 *  	Usershot->removeFromShot checks Shot.owner_id for role=USER
+	 * 		Usershot->unGroupShot  checks Shot.owner_id for role=USER
+	 * 
+	 * 		Groupshot:  does it check permissions???
+	 * has permission on target, for groupAsShot, removeFromShot unGroupShot
 	 * @param array $assetIds
 	 * @param $perm [ read | write | groupAsShot | ungroupShot | removeFromShot | setBestshot ] 
 	 * @param $shotType [Usershot | Groupshot]
@@ -229,12 +235,17 @@ AND includes.asset_id='{$assetId}';
 	}
 
 	/**
-	 * joinWithShots
+	 * joinWithShots, join Asset with Usershot/Groupshot tables to allow hiding of hiddenShots
+	 * 		Usershot updated to support Usershot.priority, Usershot.active=1
+	 * 		WARNING: Groupshot NOT updated
+	 * 	TODO: add conditions/params to show inactive_shots, Usershot.active=0 
+	 *  
 	 * 	- currently required for $data['Asset']['shot_count']
 	 *  - use 'showHidden'==true && 'join_bestshot'=>false for groupAsShot
 	 * @param $queryData aa, from beforeFind 
 	 * $queryData['extras'] = array(
 	 * 			'join_shots'=>['Groupshot'|'Usershot' (default)], 
+	 * (NOT DONE) 	'show_inactive_shots'=>boolean, default false,	Usershots.active=0
 	 * 			'show_hidden_shots'=>boolean, default false, 
 	 * 			'join_bestshot'=>boolean, default true, join/shot bestShot
 	 * 			'only_bestshot_system' => for workorder processing, only join to BestShotSystem
@@ -242,7 +253,7 @@ AND includes.asset_id='{$assetId}';
 	 * 	)
 	 * @param $showHidden boolean, default false. use true to show Hidden shots
 	 */
-	public function joinWithShots($queryData, $show_hidden_shots=false){
+	public function joinWithShots($queryData, $show_hidden_shots=false, $show_inactive_shots=false){
 		$shotType = $queryData['extras']['join_shots'];	// Groupshot or Usershot
 		$join_bestshot = !isset($queryData['extras']['join_bestshot']) || ($queryData['extras']['join_bestshot'] == true); // default true
 		$only_bestshot_system = !empty($queryData['extras']['only_bestshot_system']); // default false
@@ -297,7 +308,7 @@ AND includes.asset_id='{$assetId}';
 						'conditions'=>array('`BestShotMember`.groupshot_id = `Shot`.id','`BestShotMember`.user_id'=>AppController::$userid),
 					);	
 			}
-			$fields = array('`Shot`.id AS `shot_id`', '`Shot`.assets_groupshot_count AS `shot_count`');
+			$fields = array('`Shot`.id AS `shot_id`', '`Shot`.owner_id AS `shot_owner_id`', '`Shot`.assets_groupshot_count AS `shot_count`');
 		} else {
 			// join with Usershots
 			$joins[] =  array(
@@ -311,9 +322,8 @@ AND includes.asset_id='{$assetId}';
 					'alias'=>'Shot',		// use Shot instead of Usershot
 					'type'=>'LEFT',
 					'conditions'=>array(
-						' `Shot`.id = `AssetsUsershot`.usershot_id',
-						// Note: this should still be Asset.owner_id for EDITOR shots
-						'`Shot`.owner_id = `Asset`.owner_id'
+						'`Shot`.id = `AssetsUsershot`.usershot_id',
+						'`Shot`.active'=>1,
 					),
 				);			
 			if ($join_bestshot) {				
@@ -338,14 +348,15 @@ AND includes.asset_id='{$assetId}';
 						'conditions'=>array('`BestShotMember`.usershot_id = `Shot`.id','`BestShotMember`.user_id'=>AppController::$userid),
 					);
 			};
-			$fields = array('`Shot`.id AS `shot_id`', '`Shot`.assets_usershot_count AS `shot_count`');
+			$fields = array('`Shot`.id AS `shot_id`', '`Shot`.owner_id AS `shot_owner_id`', '`Shot`.priority AS `shot_priority`', '`Shot`.assets_usershot_count AS `shot_count`');
 		}
 	
 		// show or hide hidden shots
 		Configure::write('afterFind.Asset.showHiddenShots', $show_hidden_shots);
 		// join_shots=1
 		// join_bestshots=0,1
-		// show_hidden_shots=0,1 
+		// show_hidden_shots=0,1
+		// show_inactive_shots=0,1  
 		if ($show_hidden_shots && !$join_bestshot) {
 			// show hidden shots, but do NOT care which ones are best
 			$conditions = array();
