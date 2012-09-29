@@ -238,14 +238,13 @@ AND includes.asset_id='{$assetId}';
 	 * joinWithShots, join Asset with Usershot/Groupshot tables to allow hiding of hiddenShots
 	 * 		Usershot updated to support Usershot.priority, Usershot.active=1
 	 * 		WARNING: Groupshot NOT updated
-	 * 	TODO: add conditions/params to show inactive_shots, Usershot.active=0 
 	 *  
 	 * 	- currently required for $data['Asset']['shot_count']
 	 *  - use 'showHidden'==true && 'join_bestshot'=>false for groupAsShot
 	 * @param $queryData aa, from beforeFind 
 	 * $queryData['extras'] = array(
 	 * 			'join_shots'=>['Groupshot'|'Usershot' (default)], 
-	 * (NOT DONE) 	'show_inactive_shots'=>boolean, default false,	Usershots.active=0
+	 *  		'show_inactive_shots'=>boolean, default false,	Usershots.active=0
 	 * 			'show_hidden_shots'=>boolean, default false, 
 	 * 			'join_bestshot'=>boolean, default true, join/shot bestShot
 	 * 			'only_bestshot_system' => for workorder processing, only join to BestShotSystem
@@ -325,7 +324,8 @@ AND includes.asset_id='{$assetId}';
 						'`Shot`.id = `AssetsUsershot`.usershot_id',
 						'`Shot`.active'=>1,
 					),
-				);			
+				);	
+			if (!empty($queryData['extras']['show_inactive_shots'])) unset($joins[1]['conditions']['`Shot`.active']);		
 			if ($join_bestshot) {				
 				$joins[] =  array(
 						'table'=>'best_usershots',

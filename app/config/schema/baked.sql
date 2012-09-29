@@ -610,7 +610,12 @@ ALTER TABLE `shared_edits` DROP COLUMN `asset_hash`,
  DROP INDEX `asset_hash_UNIQUE`,
  ADD PRIMARY KEY  USING BTREE(`asset_id`);
  
-  
+ALTER TABLE `snappi`.`usershots` 
+ ADD COLUMN `priority` TINYINT UNSIGNED NOT NULL DEFAULT 10 
+ 		COMMENT 'role: USER=10, EDITOR=20, SCRIPT=30' AFTER `owner_id`,
+ ADD COLUMN `active` TINYINT(1) DEFAULT 1 AFTER `priority`;
+ 
+   
 --
 -- Table structure for table `helps`
 --
