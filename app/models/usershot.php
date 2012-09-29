@@ -164,7 +164,6 @@ class Usershot extends AppModel {
 			),  //default
 		);
 		
-		if (AppController::$role == 'SCRIPT') $options['permissionable'] = false;
 		$data = $Asset->find('all', $options);	
 // debug($data);		
 		$existing_shots = Set::combine($data, '/Shot/shot_id', '/Shot/shot_priority');

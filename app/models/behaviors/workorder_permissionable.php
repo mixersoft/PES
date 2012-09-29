@@ -74,12 +74,17 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
 		extract($this->settings[$Model->alias]);
 		switch ($type) {
 			case 'TasksWorkorder': 
+				debug($type);
 				$queryData = $this->getPaginatePhotosByTasksWorkorderId($uuid, $queryData);
-			break;
+				break;
 			case 'Workorder': 
 				$queryData = $this->getPaginatePhotosByWorkorderId($uuid, $queryData);
-			break;
+				break;
+			default:
+				throw new Exception('ERROR: workorder permissionable initialized incorrectly, possible security violation.');
+				break;
 		}
+print_r($queryData);	
 		return $queryData;
 	}	
 	
@@ -103,7 +108,7 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
 	 *  - WorkOrder.active = 1
 	 */
 	function getPaginatePhotosByWorkorderId ($woid , $paginate = array()) {
-		if (in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) return $paginate;
+		// if (in_array(AppController::$role, array('EDITOR', 'MANAGER', 'OPERATOR', 'SCRIPT')) === false) return $paginate;
 		$paginate['permissionable'] = false;
 		$joins[] = array(
 			'table'=>'snappi_workorders.assets_workorders',
@@ -129,7 +134,7 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
 		return $paginate;	
 	}
 	function getPaginatePhotosByTasksWorkorderId ($task_woid , $paginate = array()) {
-		if (in_array(AppController::$role, array('EDITOR', 'MANAGER')) === false) return $paginate;
+		// if (in_array(AppController::$role, array('EDITOR', 'MANAGER', 'OPERATOR', 'SCRIPT')) === false) return $paginate;
 		$joins[] = array(
 			'table'=>'snappi_workorders.assets_tasks',
 			'alias'=>'AssetsTask',

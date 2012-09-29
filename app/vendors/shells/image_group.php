@@ -39,7 +39,7 @@ class ImageGroupShell extends Shell {
 		AppController::$userid = $data['User']['id'];
 		AppController::$role = 'SCRIPT'; 		// from conditions
 		
-		// set WorkordersPermissionable
+		// set WorkordersPermissionable 
 		$this->Asset->Behaviors->attach('WorkorderPermissionable',
 			array('type'=>'TasksWorkorder', 'uuid'=>$this->args['twid'])
 		);
