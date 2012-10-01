@@ -250,8 +250,10 @@ $previewOrientation = 	isset($exif['preview']['Orientation']) ? $exif['preview']
 		$Baseurl = Stagehand::$stage_baseurl;
 		//debug(compact('Audition','Total','Perpage','Pages','Page','Baseurl'));
 		// check permissions for groupAsShot 
-		$ShotType = Configure::read("paginate.Options.Asset.extras.join_shots");
-		$GroupAsShotPerm = Configure::read("paginate.Options.Asset.extras.group_as_shot_permission");
+		$pageable = Configure::read('paginate');
+		$paginateOptions = $pageable['Options'][ $pageable['Model'] ];
+		$ShotType = $paginateOptions['extras']['join_shots']; // Configure::read("paginate.Options.Asset.extras.join_shots");
+		$GroupAsShotPerm = $paginateOptions['extras']['group_as_shot_permission']; // Configure::read("paginate.Options.Asset.extras.group_as_shot_permission");
 		//
 
 		$Audition = array(); $Bestshot = array();

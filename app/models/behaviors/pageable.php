@@ -68,8 +68,8 @@ class PageableBehavior extends ModelBehavior {
  *  saves total count in $controller->params['paging']['total'][$Model->name]
  *  
  * @param AppModel $Model
- * @param array $paginateArray, from $controller->paginate[$Model->name]
  * @param Controller $controller originating controller
+ * @param array $paginateArray, from $controller->paginate[$Model->name]
  * @param string action, for Session::read("profile.{$action}.perpage")
  * @return array $controller->paginate[$Model->name]
  */	
@@ -82,16 +82,16 @@ class PageableBehavior extends ModelBehavior {
 			: $controller->params['named'];		
 		
 		
-		Configure::write('paginate.Model', $Model->alias);
+		$pageableAlias = isset($paginateArray['PageableAlias']) ? $paginateArray['PageableAlias'] : $Model->alias; 
+		Configure::write("paginate.Model", $pageableAlias);
 		
 		// move appendFilterConditions outside pageable behavior
 //		$paginateArray['conditions'] = @$Model->appendFilterConditions($this->named, $paginateArray['conditions']);
-		
 		/*
 		 * get paginate sort options, /sort:/direction:
 		 */ 
 		$paginateArray = $this->mergePaginateOptions($Model, $paginateArray, $action);
-		Configure::write('paginate.Options.'.$Model->alias, $paginateArray);
+		Configure::write("paginate.Options.{$pageableAlias}", $paginateArray);
 		$this->controller->paginate[$Model->name] = $paginateArray;
 		return $paginateArray;
 	}

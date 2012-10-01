@@ -836,6 +836,7 @@ $this->log("insert newAsset=".print_r($newAsset, true), LOG_DEBUG);
 			} else if (!empty($options['raw'])) {
 				// skip join to SharedEdit table
 				// TODO: should really check $paginate['extras']['hide_SharedEdits]=1
+				// but that value is set in $queryData
 				$filterConditions[] = "UserEdit.rating>={$options['rating']}";
 			} else {
 				$filterConditions[] = "COALESCE(UserEdit.rating, SharedEdit.score)>={$options['rating']}";

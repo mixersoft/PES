@@ -75,7 +75,8 @@ class AppModel extends Model {
 			return  $this->find('count', compact('conditions', 'recursive','extra'));
 		}
 		
-		$paginateOptions = Configure::read('paginate.Options.'.$this->alias);
+		$pageable = Configure::read('paginate');
+		$paginateOptions = $pageable['Options'][ $pageable['Model'] ];
 		// does $conditions == $paginateOptions['conditions'] ??
 		if ($conditions != $paginateOptions['conditions']) {
 			$paginateOptions['conditions'] = @mergeAsArray($paginateOptions['conditions'], $conditions);
