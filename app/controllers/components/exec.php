@@ -56,12 +56,12 @@ class ExecComponent extends Object
 		if($error) return $error;
 	}
 				
-	function exec($cmd, $options=NULL, $stdin=NULL)
+	function exec($cmd, $options=NULL, $stdin=NULL, &  $stdout = null)
 	{
 		if (ExecComponent::$OS == "win32"){
-			$return = $this->win32exec($cmd, $options, $stdin);
+			$return = $this->win32exec($cmd, $options, $stdin, $stdout);
 		} else {		
-			$return = $this->unixExec($cmd,$options, $stdin);
+			$return = $this->unixExec($cmd,$options, $stdin, $stdout);
 		}
 		return $return;
 	}
@@ -71,10 +71,12 @@ class ExecComponent extends Object
 	/**
 	 * exec in Win32 shell
 	 * @param $cmd - dos shell cmd
-	 * @param $path - default to Configure::read('bin.imagemagick')
+	 * @param $options - see $default
+	 * @param $stdin array of Strings for stdin
+	 * @param $stdout Object by reference
 	 * @return String error message or 0 if no errors 
 	 */
-	function win32exec($cmd, $options=array(), $stdin=array()){
+	function win32exec($cmd, $options=array(), $stdin=array(), &  $stdout = null){
 //		debug($stdin); 
 //		debug($cmd);
 		// Win32 defaults
@@ -100,11 +102,18 @@ class ExecComponent extends Object
 			// $this->log($options, LOG_DEBUG);		
 		}
 // $this->log($options, LOG_DEBUG);		
-		return $this->realExec($cmd, $options, $stdin);
+		return $this->realExec($cmd, $options, $stdin, $stdout);
 	}
 	
-
-	function unixExec($cmd, $options=NULL, $stdin=array()) 
+	/**
+	 * exec in linux/bash shell
+	 * @param $cmd - shell cmd
+	 * @param $options - see $default
+	 * @param $stdin array of Strings for stdin
+	 * @param $stdout Object by reference
+	 * @return String error message or 0 if no errors 
+	 */
+	function unixExec($cmd, $options=NULL, $stdin=array(), & $stdout= null) 
 	{
 
 		// unix defaults
@@ -124,10 +133,10 @@ class ExecComponent extends Object
 			2 => array('pipe', 'w')  // stderr
 		);		
 		
-		return $this->realExec($cmd, $options, $stdin);	
+		return $this->realExec($cmd, $options, $stdin, $stdout);	
 	}
 	
-	function realExec($cmd, $options, $stdin)
+	function realExec($cmd, $options, $stdin, & $stdout = null)
 	{
 		extract($options);
 		
@@ -136,10 +145,9 @@ class ExecComponent extends Object
 			1 => array('pipe', 'w'), // stdout
 			2 => array('pipe', 'w')  // stderr
 		);
-		if ($stdin && isset($title) && $title=='deliver')
+		if ($stdin && isset($title) && $title=='image-group')
 		{
 			$this->log($cmd, LOG_DEBUG);
-			$this->log($stdin, LOG_DEBUG);
 		} 
 // $this->log($env, LOG_DEBUG);
 
@@ -159,7 +167,14 @@ class ExecComponent extends Object
 			if ($h = proc_open($cmd, $descriptors, $pipes, $cwd, $env))
 			{
 	//			debug(implode("\n", $stdin));
-				if ($stdin) fwrite($pipes[0], implode("\n", $stdin));
+				if (is_array($stdin)) $stdin = implode("\n", $stdin);
+				if ($stdin) {
+					fwrite($pipes[0], $stdin);
+// $this->log("stdin **************** ", LOG_DEBUG);
+// $this->log($stdin, LOG_DEBUG);
+					fclose($pipes[0]);
+					unset($pipes[0]);
+				}
 				
 	//			$output=''; $errors='';
 	//			while ($line = fgets($pipes[1]))	$output .= $line;
@@ -194,10 +209,14 @@ class ExecComponent extends Object
 //		session_start();
 		
 //if (strpos($cmd,'jhead')===false) 
-$loc = "ExecComponent::realExec";
-$this->log(compact('loc','result','cmd','output','errors'),LOG_DEBUG);		
+// $loc = "ExecComponent::realExec";
+// $this->log(compact('loc','result','cmd','output','errors'),LOG_DEBUG);
+
+		if ($stdout!==null) {
+			$stdout = $output;
+		}
 		if ($result) return $errors;
-		else return $result;		
+		else return 0;		
 	}
 	
 }

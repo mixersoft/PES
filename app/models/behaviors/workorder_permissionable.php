@@ -74,7 +74,6 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
 		extract($this->settings[$Model->alias]);
 		switch ($type) {
 			case 'TasksWorkorder': 
-				debug($type);
 				$queryData = $this->getPaginatePhotosByTasksWorkorderId($uuid, $queryData);
 				break;
 			case 'Workorder': 
@@ -84,7 +83,6 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
 				throw new Exception('ERROR: workorder permissionable initialized incorrectly, possible security violation.');
 				break;
 		}
-print_r($queryData);	
 		return $queryData;
 	}	
 	

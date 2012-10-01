@@ -42,6 +42,7 @@ switch ($config['Config.os']) {
 		$config['bin'] = array(
 			'imagemagick' => 'W:/usr/bin/ImageMagick',
 			'jhead' => 'W:/usr/bin/jhead',
+			'gist' => APP.'vendors/gist/bin',	
 			'jpegtran' => 'W:/usr/bin/jhead',
 			'rsync_home' => '\usr\bin\CWRSYNC',
 			'java' => 'xxx',
@@ -112,6 +113,7 @@ switch ($config['Config.os']) {
 		$config['bin'] = array(
 			'imagemagick' => '/usr/bin/convert',
 			'jhead' => '/usr/bin/jhead',
+			'gist' => APP.'vendors/gist/bin',	
 			'jpegtran' => '/usr/bin/jhead',
 			'rsync_home' => '/usr/bin/rsync',
 			'java' => 'xxx',
@@ -175,6 +177,7 @@ switch (env('SERVER_NAME')) {
 		Configure::write('debug', 0);
 		break;	
 	case 'dev.snaphappi.com':
+	case 'snappi-cn':
 	default:
 		$config['isDev'] = 1;
 		Configure::write('debug', 2);

@@ -32,6 +32,7 @@ class WorkordersController extends AppController {
 			'contain'=>array('TasksWorkorder'),
 		),
 		'GroupAsset'=>array(
+			'PageableAlias'=>'Asset',			// see: Pageable->getPageablePaginateArray(), Configure::write('paginate.Model')
 			'preview_limit'=>6,
 			'paging_limit' =>48,
 			'photostream_limit' => 4,	// deprecate?
@@ -67,6 +68,7 @@ class WorkordersController extends AppController {
 			)
 		),
 		'UserAsset'=>array(
+			'PageableAlias'=>'Asset',			// see: Pageable->getPageablePaginateArray(), Configure::write('paginate.Model')
 			'preview_limit'=>6,
 			'paging_limit' =>48,
 			'photostream_limit' => 4,	// deprecate?
@@ -94,7 +96,9 @@ class WorkordersController extends AppController {
 		/*
 		 *	These actions are allowed for all users
 		 */
-		$myAllowedActions = array(	);
+		$myAllowedActions = array(
+			'image_group',
+		);
 		$this->Auth->allow( $myAllowedActions);
 		if (!empty($this->passedArgs[0])) {
 			$this->__saveWorkorderToSession($this->passedArgs[0]);
@@ -334,11 +338,85 @@ class WorkordersController extends AppController {
 		}
 		$this->render('/elements/dumpSQL');
 	}
+
+	
 	
 	/**
-	 * /workorder/photos grants access privileges to assigned workorder.manager_id
-	 * TODO: THERE IS NOT CHECK TO CONFIRM workorder.manager_id role=MANAGER
-	 * TODO: for now, just assume manager/editor are equivalent, don't use workorder_tasks  
+	 * same as action=photos except
+	 *		$paginateArray['extras']['show_hidden_shots']=1;
+	 *		$paginateArray['extras']['hide_SharedEdits']=1;	// TODO:??? use score, if any, for bestshot here? 
+	 * 		$paginateArray['perpage']=999;					// TODO: how do we deal with paging?
+	 * 		JSON output only
+	 * 		TODO: do NOT cache castingCall
+	 */
+	function image_group($id) {
+		$perpage = 999;
+		$required_options['extras']['show_hidden_shots']=1;
+		$required_options['extras']['hide_SharedEdits']=1;
+		// $default_options['extras']['bestshot_system_only']=0;
+	
+		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
+
+		// paginate 
+		$SOURCE_MODEL = Session::read("WMS.{$id}.Workorder.source_model"); // WorkordersController::$source_model;
+		$paginateModel = 'Asset';
+		$Model = ClassRegistry::init($paginateModel);
+		// map correct paginateArray based on $SOURCE_MODEL
+		$this->paginate[$paginateModel] = $this->paginate[$SOURCE_MODEL.$paginateModel];
+		$this->paginate[$paginateModel]['perpage'] = $perpage; 	// get all photos for image-group processing	
+		$Model->Behaviors->attach('Pageable');
+		$Model->Behaviors->attach('WorkorderPermissionable', array('type'=>$this->modelClass, 'uuid'=>$id));
+		$paginateArray = Set::merge($this->paginate[$paginateModel], $required_options);
+		// TODO: add /raw:1 to filter by UserEdit.rating only, and skip SharedEdit.score
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
+		
+		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
+		$pageData = $this->paginate($paginateModel);
+		$pageData = Set::extract($pageData, "{n}.{$paginateModel}");
+		// end paginate
+		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
+		$castingCall = $this->CastingCall->getCastingCall($pageData, $cache=false);
+		
+		// get image_group infile as JSON string
+		$this->Gist = loadComponent('Gist', $this); 
+		$image_groups = $this->Gist->getImageGroupFromCC($castingCall);
+debug($image_groups);
+		
+		
+		
+		$this->viewVars['jsonData']['castingCall'] = $castingCall;
+		$this->RequestHandler->ext = 'json';			// force JSON response
+		$done = $this->renderXHRByRequest('json', '/elements/photo/roll');
+		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
+		if (!Configure::read('debug')) return;
+		
+		
+		/*
+		 * render page for debugging
+		 * TODO: use /raw:1 to disable g.showHidden() in gallery view
+		 * 
+		 */
+		$options = array(
+			'contain'=>array('TasksWorkorder.id', 'TasksWorkorder.task_sort', 'TasksWorkorder.operator_id'),
+			'conditions'=>array('Workorder.id'=>$id)
+		);
+		$data = $this->Workorder->find('first', $options);
+		$data = array_merge($this->Auth->user(), $data);
+		$this->set('data', $data);
+		$this->viewVars['jsonData']['Workorder'][]=$data['Workorder'];
+		$this->set(array('assets'=>$data,'class'=>'Asset'));
+		$this->render('photos');
+		
+		
+		// $this->render('/elements/dumpSQL');
+	
+	}	
+	/**
+	 * /workorder/photos get photos for workorders, uses WorkorderPermissionable for ACL
+	 * @param $id String, $workorder_id
+	 * $passedArgs['raw']
+	 * 
 	 */ 
 	function photos($id = null){
 		$forceXHR = setXHRDebug($this, 0);
@@ -361,7 +439,7 @@ class WorkordersController extends AppController {
 		$paginateArray = $this->paginate[$paginateModel];
 		
 /*
- * operator options
+ * operator options:
  *   	raw = hide_SharedEdits=1;show_hidden_shots=0
  * 		= hide score, editor not influenced by existing score
  * 		= show ONLY UserEdit.rating, by AppController::userid
