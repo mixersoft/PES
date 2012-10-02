@@ -246,15 +246,20 @@ AND includes.asset_id='{$assetId}';
 	 * 			'join_shots'=>['Groupshot'|'Usershot' (default)], 
 	 *  		'show_inactive_shots'=>boolean, default false,	Usershots.active=0
 	 * 			'show_hidden_shots'=>boolean, default false, 
-	 * 			'join_bestshot'=>boolean, default true, join/shot bestShot
-	 * 			'only_bestshot_system' => for workorder processing, only join to BestShotSystem
+	 * 			'join_bestshot'=>boolean, default true, join/shot bestShotSystem, etc.
+	 * 	(NOT DONE)	'only_bestshot_system' => for workorder processing, only join to BestShotSystem
 	 * 			'only_shots'=>boolean, default false
 	 * 	)
 	 * @param $showHidden boolean, default false. use true to show Hidden shots
 	 */
 	public function joinWithShots($queryData, $show_hidden_shots=false, $show_inactive_shots=false){
+// debug($queryData['extras']);		
 		$shotType = $queryData['extras']['join_shots'];	// Groupshot or Usershot
-		$join_bestshot = !isset($queryData['extras']['join_bestshot']) || ($queryData['extras']['join_bestshot'] == true); // default true
+		$join_bestshot = !$this->Behaviors->attached('WorkorderPermissionable');
+		$join_bestshot = $join_bestshot && (
+			!isset($queryData['extras']['join_bestshot']) 
+			|| $queryData['extras']['join_bestshot'] !== false
+		); // default true
 		$only_bestshot_system = !empty($queryData['extras']['only_bestshot_system']); // default false
 		$only_shots = !empty($queryData['extras']['only_shots']); // default false
 		if ($shotType == 'Groupshot') {
@@ -322,10 +327,10 @@ AND includes.asset_id='{$assetId}';
 					'type'=>'LEFT',
 					'conditions'=>array(
 						'`Shot`.id = `AssetsUsershot`.usershot_id',
-						'`Shot`.active'=>1,
+						// '`Shot`.active'=>1,
 					),
 				);	
-			if (!empty($queryData['extras']['show_inactive_shots'])) unset($joins[1]['conditions']['`Shot`.active']);		
+			// if (!empty($queryData['extras']['show_inactive_shots'])) unset($joins[1]['conditions']['`Shot`.active']);		
 			if ($join_bestshot) {				
 				$joins[] =  array(
 						'table'=>'best_usershots',
@@ -358,29 +363,58 @@ AND includes.asset_id='{$assetId}';
 		// show_hidden_shots=0,1
 		// show_inactive_shots=0,1  
 		if ($show_hidden_shots && !$join_bestshot) {
-			// show hidden shots, but do NOT care which ones are best
-			$conditions = array();
+			// show hidden shots, but do NOT care which ones are bestshot Member/Owner/System
+			// NOTE: these conditions must be OUTSIDE LEFT JOIN
+			$conditions = array('OR'=>array(
+				array(
+					'`Shot`.id IS NULL', 	// no photo with hidden shots, or bestShot
+					'`AssetsUsershot`.`usershot_id` IS NULL'
+				), 
+				array( 
+					'`Shot`.active'=>1,
+				)),
+			);
 		} else if ($show_hidden_shots && $join_bestshot && $only_bestshot_system ) {
-			// TODO: not fully tested, check other conditions on this tree
-			// show hidden shots, and get bestShotSytem only, for workorder processing
+			// // TODO: not tested, check other conditions on this tree
+			// // show hidden shots, and get bestShotSytem only, for workorder processing
 			$conditions = array();
 			$fields[] = "COALESCE(`BestShotSystem`.`asset_id`) = `Asset`.`id` AS `best_shot`";
 		} else if ($show_hidden_shots && $join_bestshot) {
 			// show hidden shots, and get bestShots
-			$conditions = array();
+			$conditions = array('OR'=>array(
+				array(
+					'`Shot`.id IS NULL', 	// no photo with hidden shots, or bestShot
+					'`AssetsUsershot`.`usershot_id` IS NULL'
+				), 
+				array( 
+					'`Shot`.active'=>1,
+					'COALESCE(`BestShotMember`.`asset_id`, `BestShotOwner`.`asset_id`, `BestShotSystem`.`asset_id`) = `Asset`.`id`'
+				)),
+			);
 			$fields[] = "COALESCE(`BestShotMember`.`asset_id`, `BestShotOwner`.`asset_id`, `BestShotSystem`.`asset_id`) = `Asset`.`id` AS `best_shot`";
 		} else if (!$show_hidden_shots && !$only_shots) {
 			// show photos and bestShots, but HIDE hidden shots
+			// NOTE: these conditions must be OUTSIDE LEFT JOIN
 			$conditions = array('OR'=>array(
-				'`Shot`.id IS NULL', 	// no photo with hidden shots, or bestShot 
-				'COALESCE(`BestShotMember`.`asset_id`, `BestShotOwner`.`asset_id`, `BestShotSystem`.`asset_id`) = `Asset`.`id`'
-				)
+				array(
+					'`Shot`.id IS NULL', 	// no photo with hidden shots, or bestShot
+					'`AssetsUsershot`.`usershot_id` IS NULL'
+				), 
+				array( 
+					'`Shot`.active'=>1,
+					'COALESCE(`BestShotMember`.`asset_id`, `BestShotOwner`.`asset_id`, `BestShotSystem`.`asset_id`) = `Asset`.`id`'
+				)),
 			);
 		} else if (!$show_hidden_shots && $only_shots) {		
 			// show only bestShots, but HIDE hidden shots and single photos	
-			$conditions = 'COALESCE(`BestShotMember`.`asset_id`, `BestShotOwner`.`asset_id`, `BestShotSystem`.`asset_id`) = `Asset`.`id`';
+			$conditions = array( 
+				'`Shot`.active'=>1,
+				'COALESCE(`BestShotMember`.`asset_id`, `BestShotOwner`.`asset_id`, `BestShotSystem`.`asset_id`) = `Asset`.`id`'
+			);
 		}	
-			
+		/*
+		 * these conditions must be OUTSIDE the LEFT JOIN
+		 */ 
 		$queryData['joins'] = @mergeAsArray($queryData['joins'], $joins);
 		$queryData['conditions'] = @mergeAsArray($queryData['conditions'], $conditions);
 		$queryData['fields'] = @mergeAsArray($queryData['fields'], $fields);

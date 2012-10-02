@@ -152,7 +152,7 @@ class Usershot extends AppModel {
 		$Asset = $this->AssetsUsershot->Asset;
 		
 		$options = array(
-			'fields'=>array('DISTINCT `Asset`.id','`Asset`.owner_id','`Asset`.shot_id'), 
+			'fields'=>array('DISTINCT `Asset`.id','`Asset`.owner_id'), 
 			'conditions'=>array('`Asset`.id'=>$assetIds),
 			'order'=>'`SharedEdit`.score DESC, `Asset`.dateTaken ASC',		
 			'extras'=>array(
@@ -170,7 +170,7 @@ class Usershot extends AppModel {
 		$permitted_AssetIds = array_unique(Set::extract('/Asset/id', $data)); // aids sorted by SharedEdit.score DESC in bestshot order
 // debug($permitted_AssetIds);
 		$no_permissions = array_diff($assetIds, $permitted_AssetIds);
-		// check permissions on submitted Assets
+		// check permissions on submitted Assets, unless role=SCRIPT
 		if (count($no_permissions)) {
 			// throw new Exception('Error: No Permission on the following assetIds, aids='.print_r(array_diff($assetIds,$permitted_AssetIds),true)); 		
 			$message[] = 'Error: No Permission on the following assetIds';
@@ -269,6 +269,7 @@ class Usershot extends AppModel {
 			$message[] = 'Usershot->groupAsShot: OK';
 			$response['groupAsShot']['shotId'] = $this->id;
 			if (isset($bestshotAlias)) $response['groupAsShot']['bestshotId'] = $insert[$bestshotAlias]['asset_id'];
+			else $response['groupAsShot']['bestshotId'] = $permitted_AssetIds[0];
 			$resp0 = compact('success', 'message', 'response');
 			
 			// after saving NEW shot, cleanup old shots

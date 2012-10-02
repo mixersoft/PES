@@ -352,7 +352,7 @@ class WorkordersController extends AppController {
 	function image_group($id) {
 		$perpage = 999;
 		$required_options['extras']['show_hidden_shots']=1;
-		$required_options['extras']['hide_SharedEdits']=1;
+		$required_options['extras']['hide_SharedEdits']=0;
 		// $default_options['extras']['bestshot_system_only']=0;
 	
 		$this->layout = 'snappi';
@@ -377,15 +377,50 @@ class WorkordersController extends AppController {
 		// end paginate
 		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 		$castingCall = $this->CastingCall->getCastingCall($pageData, $cache=false);
-		
-		// get image_group infile as JSON string
+		/*
+		 * get image_group output for castingCall as JSON string
+		 */ 
 		$this->Gist = loadComponent('Gist', $this); 
 		$image_groups = $this->Gist->getImageGroupFromCC($castingCall);
-debug($image_groups);
 		
+		/*
+		 * import image_group output as Usershots with correct ROLE/priority
+		 * use Usershot.priority=30
+		 */ 
+		// use ROLE=SCRIPT, Usershot.priority=30
+		$ScriptUser_options = array(
+			'conditions'=>array(
+				'primary_group_id'=>Configure::read('lookup.roles.SCRIPT'),
+				'username'=>'image-group',
+			)
+		);
+		$data = $this->User->find('first', $ScriptUser_options);
+		// change user to role=SCRIPT
+		AppController::$userid = $data['User']['id'];
+		AppController::$role = 'SCRIPT'; 		// from conditions, disables assignment check in WorkordersPermissionable
+		// create Script Usershots
+		$newShots = array();
+		$Usershot = ClassRegistry::init('Usershot');
+		foreach($image_groups['Groups'] as $groupAsShot_aids) {
+			if (count($groupAsShot_aids)==1) continue;		// skip if only one uuid, group of 1
+			$result = $Usershot->groupAsShot($groupAsShot_aids, $force=true);
+			if ($result['success']) {
+				$newShots[] = array(
+					'asset_ids'=>$groupAsShot_aids, 
+					'shot'=>$result['response']['groupAsShot'],
+				);
+			} else {
+				$newShots[] = array(
+					'asset_ids'=>$groupAsShot_aids, 
+					'shot'=>$result['response']['message'],
+				);
+			}
+			
+		}
+debug($newShots);
 		
-		
-		$this->viewVars['jsonData']['castingCall'] = $castingCall;
+		$this->viewVars['jsonData']['imageGroups'] = $newShots;
+		// $this->viewVars['jsonData']['castingCall'] = $castingCall;
 		$this->RequestHandler->ext = 'json';			// force JSON response
 		$done = $this->renderXHRByRequest('json', '/elements/photo/roll');
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	

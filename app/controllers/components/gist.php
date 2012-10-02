@@ -41,6 +41,7 @@ class GistComponent extends Object
 	 * get image-group output JSON from castingCall
 	 * 	- assumes the method is called from Workorder or TasksWorkorder Controller 
 	 * @param $castingCall aa, output $this->CastingCall->getCastingCall() 
+	 * @return aa of image-groups
 	 */
 	function getImageGroupFromCC($castingCall)
 	{
@@ -60,26 +61,53 @@ class GistComponent extends Object
 		$output = true;		
 		
 		if (GistComponent::$OS=='win32') {
-			debug("WARNING: image-group doesn't work on win32 ***************");			
-			$stdin = substr($stdin, 0, 100).";";
-			$cmd = "echo {$stdin};"; // *** override ***********
-			// $cmd = "{$gist_bin}/image-group.cmd"; 
-			$errors = GistComponent::$Exec->exec($cmd, $options, $stdin, $output);
-			if ($errors) return $errors;
-			else return $output;
+			debug("WARNING: image-group doesn't work on win32, using sample output for workorder client=sardinia ***************");
+			// Sample output
+			$output = Array
+				(
+				    'Groups' => Array
+				        (
+				            '4' => Array
+				                (
+				                    '0' => '4bbb3907-b400-480f-b9b9-11a0f67883f5',
+				                    '1' => '4bbb3907-7dd0-42d5-a285-11a0f67883f5',
+				                    '2' => '4bbb3907-0088-4061-b834-11a0f67883f5',
+				                ),
+				            '12' => Array
+				                (
+				                    '0' => '4bbb3907-1d88-4f31-82e4-11a0f67883f5',
+				                    '1' => '4bbb3907-82f4-4452-90a5-11a0f67883f5',
+				                )
+				        ),
+				    'ID' => 1349150148,
+				    'Timestamp' => 1349150148,
+				    'count' => 22,
+				    'elapsed (sec)' => '2.0446100234985',
+				);
+			return $output;
+						
+			// $stdin = substr($stdin, 0, 100).";";
+			// $cmd = "echo {$stdin};"; // *** override ***********
+			// // $cmd = "{$gist_bin}/image-group.cmd"; 
+			// $errors = GistComponent::$Exec->exec($cmd, $options, $stdin, $output);
+			// if ($errors) return $errors;
+			// else return $output;
 		} else {
 			// unix, image-group only works on linux
 			$cmd = "{$gist_bin}/image-group --base_path {$stageRoot} --preserve_order --pretty_print";
-			if (0 && Configure::read('isDev')) {	// snappi-cn testing, only
-				$cat = "cat /www-dev/app/vendors/shells/gist/import/venice.json | ";
-				$stdin = null;
-				$cmd="{$cat} {$cmd}";
-				debug("** Stdin is not closing properly. testing with cat | ");
-			}
-			debug("Perpage={$castingCall['CastingCall']['Auditions']['Perpage']}");
+			$start = microtime(true);
 			$errors = GistComponent::$Exec->exec($cmd, $options, $stdin, $output);
+			$end = microtime(true);
+			$elapsed = $end-$start;
+			$this->log("GistComponent->image-group() processing, records={$castingCall['CastingCall']['Auditions']['Perpage']}, time={$elapsed} sec", LOG_DEBUG);
 			if ($errors) return $errors;
-			else return $output;
+			else {
+				$output = json_decode($output, true);
+				$output['count'] = $castingCall['CastingCall']['Auditions']['Perpage'];
+				$output['elapsed (sec)'] = $elapsed;
+				if (empty($output['Groups'])) $output['Groups'] = array();
+				return $output;
+			}
 		}
 	}
 		
@@ -103,7 +131,10 @@ debug($cmd);
 			// unix, image-group only works on linux
 			$options = GistComponent::$OPTIONS;
 			$options['title'] = 'image-group';
+			$start = time();
 			$errors = GistComponent::$Exec->exec($cmd, $options);
+			$elapsed = time()-$start;
+			$this->log("image-group processing for ", LOG_DEBUG);
 			return $errors;
 		}
 	}

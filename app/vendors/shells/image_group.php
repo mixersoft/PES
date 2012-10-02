@@ -4,24 +4,26 @@ class AppController {
 	static $ownerid = null;
 	static $role = null;
 }
-// cake image_group twid:5013d07c-80fc-45d8-b3f4-245cf67883f5 infile:output-venice-244.json
+// cake image_group twid=5013d07c-80fc-45d8-b3f4-245cf67883f5 infile=output-venice-244.json
 class ImageGroupShell extends Shell {
 	var $uses = array('User','Usershot', 'Asset');
 	var  $relpath = '/gist/import/';
 	function main() {
 		$this->out("*************** ImageGroupShell ***********");
+		$this->out("APP=".APP);
 		$this->out(print_r($this->args, true));
 		$this->hr();
 		
 		// parse args: infile: twid:
-		foreach ($this->args as $arg) {
-			list($name, $value) = explode(':', $arg);
+		foreach ($this->args as $i=>$arg) {
+			list($name, $value) = explode('=', $arg);
 			if ($name=='infile') $value = dirname(__FILE__).$this->relpath.$value;
 			$extract[$name] = $value;
 		}
+
 		$this->args = $extract;
 		$this->out(print_r($this->args, true));
-		extract($extract);
+		extract($extract);		// expecting $twid, $infile
 		$this->hr();
 		
 		// use ROLE=SCRIPT, Usershot.priority=30
@@ -35,9 +37,20 @@ class ImageGroupShell extends Shell {
 		print_r($data);
 		
 
-		// new AppController();
+		// new AppController() to set $userid and $role for script
+		App::import('Core', 'Controller'); 
+		// App::import('Controller', 'App'); 
 		AppController::$userid = $data['User']['id'];
 		AppController::$role = 'SCRIPT'; 		// from conditions
+		
+		/*
+		 * load GistComponent to get image-group output file as json
+		 * 		URI = workorders/photos/[uuid]/raw:1/perpage:999/.json?debug=0
+		 */
+		App::import('Component', 'Gist');	// move to Task??
+        $this->Controller =& new Controller(); 
+		$this->Gist = loadComponent('Gist', $this->Controller); 
+		
 		
 		// set WorkordersPermissionable 
 		$this->Asset->Behaviors->attach('WorkorderPermissionable',

@@ -127,6 +127,7 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
 				'`Workorder`.manager_id' => AppController::$userid,
 			),
 		);
+		if (AppController::$role=='SCRIPT') unset($joins[1]['conditions']['`Workorder`.manager_id']);
 		if (!empty($joins)) $paginate['joins'] = @mergeAsArray($paginate['joins'], $joins);
 		if (!empty($conditions)) $paginate['conditions'] = @mergeAsArray($paginate['conditions'], $conditions);
 		return $paginate;	
@@ -152,6 +153,7 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
 				'`TasksWorkorder`.operator_id' => AppController::$userid,
 			),
 		);
+		if (AppController::$role=='SCRIPT') unset($joins[1]['conditions']['`TasksWorkorder`.operator_id']);
 		if (!empty($joins)) $paginate['joins'] = @mergeAsArray($paginate['joins'], $joins);
 		if (!empty($conditions)) $paginate['conditions'] = @mergeAsArray($paginate['conditions'], $conditions);
 		return $paginate;	
