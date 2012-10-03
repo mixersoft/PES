@@ -91,11 +91,20 @@ print "<br> Client Class={$client_class}";
 	print "<BR />*************************************";
 	print "<BR />";	
 	
-	$e = $client->GetFolders($taskId);
-	print "<br>GetFolders()=".print_r($e,true);
+	$folders = $client->GetFolders($taskId);
+	print "<br>GetFolders()=".print_r($folders,true);
 	
-	$e = $client->GetFiles($taskId);
-	print "<br>GetFiles()=".print_r($e,true);
+	$files = $client->GetFiles($taskId, $folders[0]);
+	print "<br>GetFiles()=".print_r($files,true);
+	
+	$client->ReportFolderNotFound($taskId, $folders[0]);
+	$client->ReportUploadFailed($taskId, $folders[0], $files[0]);
+	$client->ReportFolderUploadComplete($taskId, $folders[0]);
+	$client->ReportFileCount($taskId, $folders[0], 8);
+	
+	$count = $client->GetFileCount($taskId, $folders[0]);
+	print "<br>ReportFileCount(), count={$count}";
+	
 	
 	print "<BR />";
 	print "<BR />*************************************";	

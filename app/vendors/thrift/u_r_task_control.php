@@ -29,30 +29,98 @@ load_THRIFT_SERVICE();
  * 
  * 
  */ 
+ 
+class TestData {
+	public static $folders;
+	public static $files;
+	public function TestData(){
+    	$folders[] = "C:\\temp"; 
+    	$folders[] = "C:\\temp.2";
+    	$folders[] = "C:\\temp.3"; 		
+		TestData::$folders = $folders;
+		
+		$folderpath = $folders[0];
+		$filepaths[] = "{$folderPath}\\1.JPG";
+    	$filepaths[] = "{$folderPath}\\task\\2.JPG";
+    	$filepaths[] = "{$folderPath}\\session\\3.JPG"; 		
+		TestData::$files = $filepaths;
+	}
+} 
 
 class snaphappi_api_URTaskControlImpl implements snaphappi_api_URTaskControlIf {
 		/**
-		 * @param TaskID, array[0] int, array[1] string
+		 * Return the list of folders to scan for images
+		 * 	scan=1 || watch=1
+		 * @param $taskID snaphappi_api_TaskID
 		 * @return array of Strings
 		 */
         public function GetFolders($taskID) {
 // error_log("GetFolders, taskID=".print_r($taskID, true));
-        	$folders[] = "C:\\temp"; 
-        	$folders[] = "C:\\task\\id\\is\\{$taskID->Task}";
-        	$folders[] = "C:\\session\\id\\is\\{$taskID->Session}"; 
+			new TestData();
+        	$folders = TestData::$folders; 
         	return $folders;
         }
 		/**
-		 * @param TaskID, array[0] int, array[1] string
+		 * Return the list of all files uploaded from the given folder within
+	 	 * the given task.
+		 * @param $taskID snaphappi_api_TaskID
 		 * @return array of Strings
 		 */
-        public function GetFiles($taskID) {
+        public function GetFiles($taskID , $folderPath) {
 // error_log("GetFolders, taskID=".print_r($taskID, true));
-			$filepaths[] = "C:\\temp\\1.JPG";
-        	$filepaths[] = "C:\\task\\id\\is\\{$taskID->Task}\\2.JPG";
-        	$filepaths[] = "C:\\session\\id\\is\\{$taskID->Session}\\3.JPG"; 
+			new TestData();
+			$filepaths = TestData::$files;
         	return $filepaths;
         }                
+		/**
+		 * Report that a folder could not be searched. and prepare for restart/retry
+		 * update UX, prompt for moved TopLevelFolder? 
+		 * @param $taskID snaphappi_api_TaskID
+		 * @param $folderPath String
+		 */
+        public function ReportFolderNotFound($taskID, $folderPath) {
+error_log("ReportFolderNotFound, folder={$folderPath},  taskID=".print_r($taskID, true));
+        	return;
+        }
+		/**
+		 * Report a failed upload.
+		 * @param $taskID snaphappi_api_TaskID
+		 * @param $folderPath String
+		 * @param $filePath String
+		 */
+        public function ReportUploadFailed($taskID, $folderPath, $filePath) {
+error_log("ReportUploadFailed, folder={$folderPath}, file={$filePath},  taskID=".print_r($taskID, true));
+        	return;
+        }  		
+		/**
+		 * Report that all files in a folder have been uploaded.
+		 * 	for watched=0, mark folder scan=0
+		 * @param $taskID snaphappi_api_TaskID
+		 * @param $folderPath String
+		 */
+        public function ReportFolderUploadComplete($taskID, $folderPath) {
+error_log("ReportFolderUploadComplete, folder={$folderPath},  taskID=".print_r($taskID, true));
+        	return;
+        }  		
+		/**
+		 * Report the number of files to be uploaded from a folder.
+		 * @param $taskID snaphappi_api_TaskID
+		 * @param $count int
+		 */
+        public function ReportFileCount($taskID, $folderPath, $count) {
+error_log("ReportFileCount, folder={$folderPath}, count={$count}, taskID=".print_r($taskID, true));
+        	return;
+        } 
+		/**
+		 * Return the number of files to be uploaded from a folder.
+		 * @param $taskID snaphappi_api_TaskID
+		 * @param $folderPath String 
+		 */
+        public function GetFileCount($taskID, $folderPath) {
+error_log("GetFileCount, folder={$folderPath}, taskID=".print_r($taskID, true));
+			$count = 3;
+        	return $count;
+        }  		 								  		
 }
 
 
