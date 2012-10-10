@@ -86,7 +86,7 @@ print "<br> Client Class={$client_class}";
 
   $transport->open();
   try {
-  	$taskId = new snaphappi_api_TaskID(array('Task'=>'123456', 'Session'=>'SessionFor123456'));
+  	$taskId = new snaphappi_api_TaskID(array('Task'=>'0', 'Session'=>'aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t'));
 	print "<BR />Using TaskId=".print_r($taskId,true);
 	print "<BR />*************************************";
 	print "<BR />";	
@@ -120,5 +120,5 @@ print "<br> Client Class={$client_class}";
 
 <DIV>
 	<BR /><BR />
-Once the helper app is installed, the following link should invoke it: <a href="snaphappi://0_abc_ur">snaphappi:0_aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t_ur</a>.
+Once the helper app is installed, the following link should invoke it: <a href="snaphappi://0_aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t_ur">snaphappi:0_aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t_ur</a>.
 </DIV>

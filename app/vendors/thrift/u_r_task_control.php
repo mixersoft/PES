@@ -34,15 +34,15 @@ class TestData {
 	public static $folders;
 	public static $files;
 	public function TestData(){
-    	$folders[] = "C:\\temp"; 
-    	$folders[] = "C:\\temp.2";
-    	$folders[] = "C:\\temp.3"; 		
+    	$folders[] = "C:\\TEMP"; 
+    	// $folders[] = "C:\\temp.2";
+    	// $folders[] = "C:\\temp.3"; 		
 		TestData::$folders = $folders;
 		
 		$folderpath = $folders[0];
-		$filepaths[] = "{$folderPath}\\1.JPG";
-    	$filepaths[] = "{$folderPath}\\task\\2.JPG";
-    	$filepaths[] = "{$folderPath}\\session\\3.JPG"; 		
+		$filepaths[] = "{$folderPath}\\MAY\\2013.JPG";
+    	$filepaths[] = "{$folderPath}\\MAY\\2014.JPG";
+    	// $filepaths[] = "{$folderPath}\\session\\3.JPG"; 		
 		TestData::$files = $filepaths;
 	}
 } 
