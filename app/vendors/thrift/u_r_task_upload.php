@@ -59,9 +59,12 @@ error_log("URTaskUpload->AddFolder(), path={$path}");
         	$staging_root = Configure::read('path.fileUploader.folder_basepath').base64_encode($id->Session);
 			// make relpath from path
 			$relpath = str_replace(':','', $path);
-			$fullpath = $staging_root.DS.$relpath;
+			$fullpath = cleanpath($staging_root.DS.$relpath);
 			if (!file_exists(dirname($fullpath))) {
-				mkdir(dirname($fullpath, null, true));
+				$old_umask = umask(0);
+				$ret = mkdir(dirname($fullpath), 0777, true);
+				umask($old_umask);
+error_log("UploadFile, mkdir, ret={$ret}, path=".dirname($fullpath, null, true));				
 			}
 error_log("UploadFile, path=".print_r($fullpath, true));
 			try {
