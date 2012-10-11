@@ -40,8 +40,8 @@ class snaphappi_api_URTaskUploadImpl implements snaphappi_api_URTaskUploadIf {
 		 * @return void 
 		 */
         public function AddFolder($id, $path) {
-error_log("UploadFile, taskId=".print_r($id, true));
-error_log("UploadFile, path=".print_r($path, true));
+error_log("URTaskUpload->AddFolder(), taskId=".print_r($id, true));
+error_log("URTaskUpload->AddFolder(), path={$path}");
         	return;
         }
 			
@@ -56,8 +56,21 @@ error_log("UploadFile, path=".print_r($path, true));
 		 * @return void 
 		 */
         public function UploadFile($id, $path, $data) {
-error_log("UploadFile, taskId=".print_r($id, true));
-error_log("UploadFile, path=".print_r($path, true));
+        	$staging_root = Configure::read('path.fileUploader.folder_basepath').base64_encode($id->Session);
+			// make relpath from path
+			$relpath = str_replace(':','', $path);
+			$fullpath = $staging_root.DS.$relpath;
+			if (!file_exists(dirname($fullpath))) {
+				mkdir(dirname($fullpath, null, true));
+			}
+error_log("UploadFile, path=".print_r($fullpath, true));
+			try {
+				$fp = fopen($fullpath,'w+b');
+				$bytes_written = fwrite($fp, $data);
+				$ret = fclose($fp);
+			} catch (Exception $e) {
+				error_log($e->message());
+			}
         	return;
         }
 }

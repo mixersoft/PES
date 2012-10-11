@@ -1,4 +1,32 @@
 #!/usr/bin/env php
+<?php 
+	$sessionId='aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t';
+	$taskId='0';
+?>
+	<script src="/files/TopLevelFolder/js/swfobject.js"></script>
+	<script>
+		var flashvars = { sessionID: <?php echo "'{$sessionId}'"; ?>, taskId: <?php echo "'{$taskId}'"; ?>, };
+		var params = {
+			menu: "false",
+			scale: "noScale",
+			allowFullscreen: "true",
+			allowScriptAccess: "always",
+			bgcolor: "",
+			wmode: "direct" // can cause issues with FP settings & webcam
+		};
+		var attributes = {
+			id:"fb_run_test_app"
+		};
+		swfobject.embedSWF(
+			"/files/TopLevelFolder/fb_run_test_app.swf", 
+			"altContent", "300", "30", "10.0.0", 
+			"/files/TopLevelFolder/expressInstall.swf", 
+			flashvars, params, attributes);
+	</script>
+	<style>
+		html, body { height:100%; overflow:hidden; }
+		body { margin:0; }
+	</style>
 <?php
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -107,6 +135,16 @@ print "<br> Client Class={$client_class}";
 
 
 <DIV>
-	<BR /><BR />
-Once the helper app is installed, the following link should invoke it: <a href="snaphappi://0_aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t_ur">snaphappi:0_aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t_ur</a>.
+	<BR />
+	<BR />
+	Once the helper app is installed, the following link should invoke it: <a href="snaphappi://0_aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t_ur">snaphappi:0_aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t_ur</a>.
 </DIV>
+	<DIV>
+		<BR />
+		<BR />
+		
+	</DIV>
+	<div id="altContent">
+		<h1>Get the TopLevelFolder App</h1>
+		<p><a href="http://www.adobe.com/go/getflashplayer">Get Adobe Flash player</a></p>
+	</div>
