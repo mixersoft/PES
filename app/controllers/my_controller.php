@@ -40,7 +40,7 @@ class MyController extends PersonController {
 			/*
 			 * experimental
 			 */
-			'pagemaker', 'updateExif'
+			'pagemaker', 'updateExif', 'uploader',
 		);
 		$removeAuth = array('photos', 'groups', 'trends', 'stories', 'photostreams', 'home', 
 			'all', 'most_active', 'most_recent','most_photos','most_groups','remove_photos'
@@ -504,6 +504,45 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 		}
 	}
 	
+
+	/*
+	 * native SnappiUploader (UploadHelperApp) upload
+	 */
+	function uploader () {
+		$this->layout = 'snappi-guest';
+//		$this->log($this->data, LOG_DEBUG);
+		$forceXHR = setXHRDebug($this);
+		$userid = AppController::$userid;
+		
+		/*
+		 * GET
+		 */
+//		debug(session_name()."=".session_id());
+		
+		$this->User->contain();
+		$options = array('conditions'=>array('User.id'=>$userid));
+		$data = $this->User->find('first', $options);
+		
+		/*
+		 * show express-uploads, if any
+		 *  see '/elements/group/express-upload'
+		 */ 
+		$expressUploadGroups = $this->__getExpressUploads($userid);
+		$this->set(compact('expressUploadGroups'));
+				
+		if (empty($data)) {
+			/*
+			 * handle no permission to view record
+			 */
+			$this->Session->setFlash("ERROR: You are not authorized to view this record.");
+			$this->redirectSafe();
+		} else {
+			$this->set('data', $data);			
+		}
+	}
+	
+	
+
 		
 	function remove_photos($id){
 		$options = array('conditions'=>array('Asset.owner_id'=>$id), 

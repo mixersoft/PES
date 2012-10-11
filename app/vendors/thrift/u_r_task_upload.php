@@ -46,9 +46,8 @@ error_log("URTaskUpload->AddFolder(), path={$path}");
         }
 			
 		/**
-		 * save binary data from uploaded JPG file
-		 * 	Additional params: 
-		 * 		- original or resized	 
+		 * save binary data from uploaded, *resampled* JPG file
+		 * throw Exception on error
 		 *
 		 * @param $id TaskID, array[0] int, array[1] string
 		 * @param $path String,
@@ -64,15 +63,15 @@ error_log("URTaskUpload->AddFolder(), path={$path}");
 				$old_umask = umask(0);
 				$ret = mkdir(dirname($fullpath), 0777, true);
 				umask($old_umask);
-error_log("UploadFile, mkdir, ret={$ret}, path=".dirname($fullpath, null, true));				
 			}
-error_log("UploadFile, path=".print_r($fullpath, true));
 			try {
 				$fp = fopen($fullpath,'w+b');
-				$bytes_written = fwrite($fp, $data);
-				$ret = fclose($fp);
+				if (!$fp) throw new Exception('URTaskUpload->UploadFile(): error opening file handle, fopen()');
+				if (!fwrite($fp, $data)) throw new Exception('URTaskUpload->UploadFile(): error writing JPG data to file');
+				if (!fclose($fp)) throw new Exception('URTaskUpload->UploadFile(): error fclose()');
 			} catch (Exception $e) {
 				error_log($e->message());
+				throw $e;
 			}
         	return;
         }

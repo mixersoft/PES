@@ -85,6 +85,10 @@ switch ($config['Config.os']) {
 				'folder_basepath'=>$svc_root.DS.'svc'.DS.'upload'.DS,
 				'baseurl'=>'svc'.DS.'upload'.DS,
 			);	
+		$config['path']['topLevelFolder'] = array(
+				'basepath'=>'/files/TopLevelFolder',
+				'folder_basepath'=>$svc_root.DS.'svc'.DS.'upload'.DS,
+			);	
 		$config['http_static'] = array('http://snappi', 'http://snappi1');
 		break;
 	case '*nix':
