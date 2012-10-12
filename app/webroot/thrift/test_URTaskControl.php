@@ -22,13 +22,15 @@
  /*
   * set service Globals
   */ 
+$GLOBALS['THRIFT_SERVICE']['VERSION'] = '1-0';
 $GLOBALS['THRIFT_SERVICE']['PACKAGE'] = 'Tasks';
 $GLOBALS['THRIFT_SERVICE']['NAME'] = 'URTaskControl';		// use CamelCase
 $GLOBALS['THRIFT_SERVICE']['NAMESPACE'] = 'snaphappi_api';
 
 
 if (!defined('THRIFT_LIB_BASEPATH')) define('THRIFT_LIB_BASEPATH', '/www-dev');
-$GLOBALS['THRIFT_ROOT'] = THRIFT_LIB_BASEPATH.'/app/vendors/THRIFT_ROOT';
+// manually set THRIFT_ROOT, outside cakephp
+$GLOBALS['THRIFT_ROOT'] = THRIFT_LIB_BASEPATH."/app/vendors/thrift/{$GLOBALS['THRIFT_SERVICE']['VERSION']}/THRIFT_ROOT";
 $GEN_DIR = $GLOBALS['THRIFT_ROOT'].'/packages';
 
 require_once $GLOBALS['THRIFT_ROOT'].'/Thrift.php';
@@ -54,18 +56,20 @@ print("<br>LOADING Thrift Service (compiled), file=".$thrift_service_file);
 
 error_reporting(E_ALL);
 
+$API_VERSION = $GLOBALS['THRIFT_SERVICE']['VERSION'];
+$ACTION = "/thrift/service/api:{$API_VERSION}/{$service['NAME']}/0";	// DEBUG MUST==0!!!!!
 $SERVER = $_SERVER['SERVER_NAME'];
 // $SERVER = '192.168.1.7';
 // $SERVER = 'dev.snaphappi.com';
 
-print "<br>REQUEST={$SERVER}/thrift/service/{$service['NAME']}<br><br>";
+print "<br>REQUEST={$SERVER}{$ACTION}<br><br>";
 
 try {
   if (!isset($argv) || (array_search('--http', $argv))) {
   	/*
 	 * cakephp controller=thrift, action=service
 	 */
-	$socket = new THttpClient($SERVER, 80, "/thrift/service/{$service['NAME']}");
+	$socket = new THttpClient($SERVER, 80, $ACTION);
   } else {
     $socket = new TSocket('localhost', 9090);
   }
@@ -77,7 +81,6 @@ try {
   /*
    * create client Class
    */
-  // $client = new HelloServiceClient($protocol);
   $client_class = $service['NAME']."Client";
   $client_class = empty($service['NAMESPACE']) ? $client_class : $service['NAMESPACE'].'_'.$client_class;
   $client   = new $client_class($protocol);

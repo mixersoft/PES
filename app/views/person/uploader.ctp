@@ -65,8 +65,8 @@
 		<div id='snappi-uploader-wrap' class='blue rounded-5'>
 			<h1>Snaphappi Desktop Uploader</h1>
 			<ul class="inline">
-				<li class='btn orange rounded-5' onclick=<?php echo $launch_SnappiUploader ?>>
-					Start Uploading
+				<li class='btn orange rounded-5'>
+					<a href=<?php echo $launch_SnappiUploader ?>>Start Uploading</a>
 				</li>
 			</ul>
 		</div>

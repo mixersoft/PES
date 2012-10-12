@@ -22,14 +22,20 @@ class ThriftController extends AppController {
     }
    
 	/**
-	 * load thrift service
+	 * load thrift service, with prefix routing
 	 */
 	function service($service, $debug = 0) {
 		try {
 			Configure::write('debug', $debug);
-			App::import('Vendor', "thrift/{$service}");
+			if (isset($this->passedArgs['api'])) {
+				$version = $this->passedArgs['api'];
+				$GLOBALS['THRIFT_SERVICE']['VERSION'] = $version; 
+				App::import('Vendor', "thrift/{$version}/{$service}");
+			} else {
+				App::import('Vendor', "thrift/{$service}");
+			}
 		} catch(Exception $e) {
-			$this->log("ERROR: Thrift service=app/vendors/thrift/{$service}");
+			$this->log("ERROR: Thrift service=app/vendors/thrift/{$version}/{$service}");
 		}
 		exit(0);		// return response over thrift transport
 	}

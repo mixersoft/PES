@@ -15,11 +15,11 @@
 
 
 if (empty($GLOBALS['THRIFT_SERVICE'])) throw new Exception('Error: $GLOBALS[THRIFT_SERVICE] is not set');
+if (!isset($GLOBALS['THRIFT_SERVICE']['VERSION'])) throw new Exception('Error: $GLOBALS[THRIFT_SERVICE][VERSION] is not set');
 
 function bootstrap_THRIFT_SERVER () {
 	debug("Thrift bootstrap for file=".__FILE__);
-	$GLOBALS['THRIFT_ROOT'] = ROOT.'/app/vendors/THRIFT_ROOT';
-	
+	$GLOBALS['THRIFT_ROOT'] = ROOT."/app/vendors/thrift/{$GLOBALS['THRIFT_SERVICE']['VERSION']}/THRIFT_ROOT";
 	require_once $GLOBALS['THRIFT_ROOT'] . '/Thrift.php';
 	require_once $GLOBALS['THRIFT_ROOT'] . '/protocol/TBinaryProtocol.php';
 	require_once $GLOBALS['THRIFT_ROOT'] . '/transport/TPhpStream.php';
@@ -51,7 +51,8 @@ function process_THRIFT_SERVICE_REQUEST() {
 	$handler   = new $handler_class();
 	$processor_class = $service['NAME']."Processor";
 	$processor = new $processor_class($handler);
-	 
+	debug("processor_class=$processor_class");
+		 
 	$transport = new TBufferedTransport(new TPhpStream(TPhpStream::MODE_R | TPhpStream::MODE_W));
 	 
 	$protocol = new TBinaryProtocol($transport, true, true);

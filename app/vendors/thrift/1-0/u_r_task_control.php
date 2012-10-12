@@ -2,19 +2,28 @@
 /*
  * 
  * Template for implementing Thrift Service Classes compiled from [Service].thrift
- * 
- * 
+ *	0. set snappi API version number in thrift controller. example:
+ * 		$GLOBALS['THRIFT_SERVICE']['VERSION'] = '1-0'; 
+ */
+if (!isset($GLOBALS['THRIFT_SERVICE']['VERSION'])) throw new Exception('Error: $GLOBALS[THRIFT_SERVICE][VERSION] is not set');
+ 
+/* 
  *  1. set the global for the compiled thrift service, for 0.8.0 should be found in packages/
- * 		example: $GLOBALS['THRIFT_ROOT']/packages/Hello/HelloService.php"
+ * 		example:
+// $GLOBALS['THRIFT_SERVICE']['PACKAGE'] = 'Tasks';			// THRIFT_ROOT/packages/Tasks
+// $GLOBALS['THRIFT_SERVICE']['NAME'] = 'URTaskControl'; 	// service, see .thrift file
+// $GLOBALS['THRIFT_SERVICE']['NAMESPACE'] = 'snaphappi_api';  // php namespace, see .thrift file
  */  
 $GLOBALS['THRIFT_SERVICE']['PACKAGE'] = 'Tasks';
-$GLOBALS['THRIFT_SERVICE']['NAME'] = 'URTaskControl';		// use CamelCase
-$GLOBALS['THRIFT_SERVICE']['NAMESPACE'] = 'snaphappi_api';
-error_log("Thrift Server preparing to load, Service=".print_r($GLOBALS['THRIFT_SERVICE'], true));
+$GLOBALS['THRIFT_SERVICE']['NAME'] = 'URTaskControl';		
+$GLOBALS['THRIFT_SERVICE']['NAMESPACE'] = 'snaphappi_api';	
+error_log("Thrift Server preparing to load, Service={$GLOBALS['THRIFT_SERVICE']['NAME']}");
 /*
- * 2. bootstrap Thrift from Cakephp
+ * 2. bootstrap Thrift from Cakephp, 
+ * 		sets $GLOBALS['THRIFT_ROOT']
+ * 
  */ 
-require_once ROOT.'/app/vendors/thrift/bootstrap_thrift_server.php';
+require_once ROOT."/app/vendors/thrift/{$GLOBALS['THRIFT_SERVICE']['VERSION']}/bootstrap_thrift_server.php";
 bootstrap_THRIFT_SERVER();
 load_THRIFT_SERVICE();
 // error_log("Thrift Server loaded, Service=".print_r($GLOBALS['THRIFT_SERVICE'], true));
