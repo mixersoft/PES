@@ -523,6 +523,25 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 		$options = array('conditions'=>array('User.id'=>$userid));
 		$data = $this->User->find('first', $options);
 		
+		
+		/*
+		 * for native desktop uploader. 
+		 * 		???: should this be in a different app? you need access to the Auth->user() 
+		 */ 
+		$this->User->id = AppController::$userid;
+		// set demo data
+		$state_testdata = array();
+		$state_testdata[] = array('folder_path'=>'C:\\TEMP\\May', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0); 
+		$state_testdata[] = array('folder_path'=>'C:\\TEMP\\small import test', 'is_scanned'=>0, 'is_watched'=>1, 'count'=>0);
+		$state_testdata[] = array('folder_path'=>'C:\\TEMP\\folder with special char (;\'&.=^%$#@!) test', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0);
+		
+		$deviceUuid = $this->User->id;
+		$this->User->setMeta("native-uploader.{$deviceUuid}.state", json_encode($state_testdata));
+		
+		// get native desktop uploader state for thrift API
+		$thrift_GetFolders = json_decode($this->User->getMeta("native-uploader.{$deviceUuid}.state"), true);
+		// debug($thrift_GetFolders);
+		
 		/*
 		 * show express-uploads, if any
 		 *  see '/elements/group/express-upload'

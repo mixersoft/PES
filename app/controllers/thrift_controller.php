@@ -1,7 +1,9 @@
 <?php 
 class ThriftController extends AppController {
     public $name = 'Thrift';
-	public $uses = array();
+	public $uses = array('User', 'ProviderAccount');
+	
+	public static $controller = null;
 	 
     public $helpers = array(
 		// 'Time',
@@ -16,6 +18,11 @@ class ThriftController extends AppController {
 		// add components here
 	);	
     
+	function __construct() {
+		parent::__construct();
+		ThriftController::$controller = $this;
+	}
+	
     function beforeFilter() {
     	parent::beforeFilter();
         $this->Auth->allow('*');

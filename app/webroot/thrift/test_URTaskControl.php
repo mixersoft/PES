@@ -103,10 +103,13 @@ print "<br> Client Class={$client_class}";
 	$client->ReportFolderNotFound($taskId, $folders[0]);
 	$client->ReportUploadFailed($taskId, $folders[0], $files[0]);
 	$client->ReportFolderUploadComplete($taskId, $folders[0]);
-	$client->ReportFileCount($taskId, $folders[0], 8);
 	
 	$count = $client->GetFileCount($taskId, $folders[0]);
+	print "<br>GetFileCount(), count={$count}";
+	
+	$client->ReportFileCount($taskId, $folders[0], $count);
 	print "<br>ReportFileCount(), count={$count}";
+	
 	
 	
 	print "<BR />";

@@ -39,10 +39,10 @@ error_log("Thrift Server loaded, Service=".print_r($GLOBALS['THRIFT_SERVICE'], t
 
 class snaphappi_api_URTaskUploadImpl implements snaphappi_api_URTaskUploadIf {
 		/**
-		 * Add a top level folder to scan,
+		 * Add a top level folder to scan, uploads resized
 		 * ???: shouldn't this come from the FLEX app?
+		 *  Is this called by the TopLevelFolder app, or just in the DB?
 		 * 	Additional params: 
-		 * 		- original or resized	 
 		 *
 		 * @param $id TaskID, array[0] int, array[1] string
 		 * @param $path String,
@@ -64,12 +64,12 @@ error_log("URTaskUpload->AddFolder(), path={$path}");
 		 * @return void 
 		 */
         public function UploadFile($id, $path, $data) {
-error_log("URTaskUpload->UploadFile(), Session={$id->Session}");        	
+ThriftController::log("###   UploadFile(), Session={$id->Session}, path={$path}", LOG_DEBUG);        	
         	$staging_root = Configure::read('path.fileUploader.folder_basepath').base64_encode($id->Session);
 			// make relpath from path
 			$relpath = str_replace(':','', $path);
 			$fullpath = cleanpath($staging_root.DS.$relpath);
-error_log("URTaskUpload->UploadFile(), fullpath={$fullpath}");			
+ThriftController::log("URTaskUpload->UploadFile(), fullpath={$fullpath}", LOG_DEBUG);			
 			if (!file_exists(dirname($fullpath))) {
 				$old_umask = umask(0);
 				$ret = mkdir(dirname($fullpath), 0777, true);

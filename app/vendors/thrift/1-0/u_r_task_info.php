@@ -38,19 +38,77 @@ error_log("Thrift Server loaded, Service=".print_r($GLOBALS['THRIFT_SERVICE'], t
  */ 
 
 class snaphappi_api_URTaskInfoImpl implements snaphappi_api_URTaskInfoIf {
+		/**
+		 * authenticate the User account from ProviderAccount.auth_token embedded in $taskID
+		 * 		AppController::$userid, AppController::$role will be set here
+		 * @return aa $data[ProviderAccount], $data[Owner], 
+		 */
+		public function _authUserFromTaskId($taskID) {
+			$options = array(
+				'contain' => 'Owner',
+				'conditions'=>array('auth_token'=>$taskID->Session)
+			);
+			$data = ThriftController::$controller->ProviderAccount->find('first', $options);
+			$authenticated = ThriftController::$controller->Auth->login(array('User'=>$data['Owner']));
+			// ThriftController::log(ThriftController::$controller->Auth->user(), LOG_DEBUG);
+			if ($authenticated) {
+				AppController::$userid = ThriftController::$controller->Auth->user('id');
+				$role = array_search(ThriftController::$controller->Auth->user('primary_group_id'), Configure::read('lookup.roles'), true);
+				AppController::$role = $role;					
+				return $data;
+			} else return false;
+		}
+				
+		/**
+		 * get Task state for thrift api
+		 * 		called by GetFolders, GetWatchedFolders
+		 * WARNING: the task does NOT know the deviceId, must be posted by client
+		 *		uses MetaData plugin for now, 
+		 * TODO: move to Model/DB table?
+		 * TODO: should method be moved to the Model under the native desktop uploader
+		 * 
+		 * @return ???
+		 */
+		public function _model_getTaskState($taskID) {
+			if (!AppController::$userid) $this->_authUserFromTaskId($taskID);
+			ThriftController::$controller->User->id = AppController::$userid;
+			$thrift_GetTask = json_decode(ThriftController::$controller->User->getMeta("native-uploader.task.{$taskID->Session}"), true);
+			if (empty($thrift_GetTask)) {
+				$thrift_GetTask = array(
+					'IsCancelled'=>0, 
+					'FolderUpdateCount'=>0, 
+					'FileUpdateCount'=>0, 
+					'DeviceUuid'=>null,
+				);
+			}
+// ThriftController::log($thrift_GetTask, LOG_DEBUG);			
+			return $thrift_GetTask;
+		}
+		public function _model_setTaskState($taskID, $options) {
+			if (!AppController::$userid) $this->_authUserFromTaskId($taskID);
+			$thrift_GetTask = $this->_model_getTaskState($taskID);
+			ThriftController::$controller->User->id = AppController::$userid;
+			$options = array_filter_keys($options, array('IsCancelled', 'FolderUpdateCount', 'FileUpdateCount', 'DeviceUuid'));
+			$thrift_GetTask = array_merge($thrift_GetTask, $options);
+			ThriftController::$controller->User->setMeta("native-uploader.task.{$taskID->Session}", json_encode($thrift_GetTask));
+ThriftController::log($this->_model_getTaskState(), LOG_DEBUG);			
+			return $thrift_SetFolders;
+		}			
+	
+	
         /**
-		 * @param TaskID
+		 * @param $taskID TaskID
 		 * @return URTaskState, 			//  return array[IsCancelled] = boolean (?) 
 		 * 	URTaskState->IsCancelled Boolean (optional)
 		 *  URTaskState->FolderUpdateCount Int (optional), unique id for Folder state
 		 *  URTaskState->FileUpdateCount Int (optional), unique id for File state
+		 *  TODO: URTaskState->DeviceId UUID (optional), unique id for desktop device
 		 */
-        public function GetState($TaskID) {
-			$options['IsCancelled'] = false;
-			$options['FolderUpdateCount'] = 1;
-			$options['FileUpdateCount'] = 2;
-        	$taskState = new snaphappi_api_URTaskState($options);
-error_log("GetState(sessionID), taskState=".print_r($taskState, true));        	
+        public function GetState($taskID) {
+ThriftController::log(">>>   GetState", LOG_DEBUG);           	
+        	$state = $this->_model_getTaskState($taskID);
+        	$taskState = new snaphappi_api_URTaskState($state);
+ThriftController::log("GetState(taskID), taskState=".print_r($taskState, true), LOG_DEBUG);	
         	return $taskState;
         }
                 

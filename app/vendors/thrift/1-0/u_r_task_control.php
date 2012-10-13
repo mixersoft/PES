@@ -38,19 +38,19 @@ load_THRIFT_SERVICE();
  * 
  * 
  */ 
- 
+
 class TestData {
 	public static $folders;
 	public static $files;
 	public function TestData(){
-    	$folders[] = "C:\\TEMP"; 
+    	$folders[] = "C:\\TEMP\\May"; 
     	// $folders[] = "C:\\temp.2";
     	// $folders[] = "C:\\temp.3"; 		
 		TestData::$folders = $folders;
 		
 		$folderpath = $folders[0];
-		$filepaths[] = "{$folderPath}\\MAY\\2013.JPG";
-    	$filepaths[] = "{$folderPath}\\MAY\\2014.JPG";
+		$filepaths[] = "{$folderpath}\\MAY\\2013.JPG";
+    	$filepaths[] = "{$folderpath}\\MAY\\2014.JPG";
     	// $filepaths[] = "{$folderPath}\\session\\3.JPG"; 		
 		TestData::$files = $filepaths;
 	}
@@ -58,15 +58,112 @@ class TestData {
 
 class snaphappi_api_URTaskControlImpl implements snaphappi_api_URTaskControlIf {
 		/**
+		 * authenticate the User account from ProviderAccount.auth_token embedded in $taskID
+		 * 		AppController::$userid, AppController::$role will be set here
+		 * @return aa $data[ProviderAccount], $data[Owner], 
+		 */
+		public function _authUserFromTaskId($taskID) {
+			/*
+			 * Session::read(Auth.user);
+			 * 	check Session before checking DB
+			 */ 
+			
+ThriftController::log('_authUserFromTaskId()  ProviderAccount.auth_token='.$taskID->Session, LOG_DEBUG);				
+			$options = array(
+				'contain' => 'Owner',
+				'conditions'=>array('auth_token'=>base64_encode($taskID->Session))
+			);
+			$data = ThriftController::$controller->ProviderAccount->find('first', $options);
+			$authenticated = ThriftController::$controller->Auth->login(array('User'=>$data['Owner']));
+			if ($authenticated) {
+// ThriftController::log("_authUserFromTaskId OK, data=".print_r($data,true), LOG_DEBUG);
+				// Session::write('Auth.user', ThriftController::$controller->Auth->user());				
+				AppController::$userid = ThriftController::$controller->Auth->user('id');
+				$role = array_search(ThriftController::$controller->Auth->user('primary_group_id'), Configure::read('lookup.roles'), true);
+				AppController::$role = $role;					
+				return $data;
+			} else return false;
+		}
+		
+		/**
+		 * get RAW folder state for thrift api
+		 * 		called by GetFolders, GetWatchedFolders
+		 * 
+		 *		uses MetaData plugin for now, 
+		 * TODO: move to Model/DB table?
+		 * TODO: should method be moved to the Model under the native desktop uploader
+		 * 
+		 * @return ???
+		 */
+		public function _model_getFolderState($taskID) {
+			if (!AppController::$userid) $this->_authUserFromTaskId($taskID);
+			ThriftController::$controller->User->id = AppController::$userid;
+			$deviceUuid = AppController::$userid;
+			// get native desktop uploader state for thrift API
+			$thrift_GetFolders = json_decode(ThriftController::$controller->User->getMeta("native-uploader.{$deviceUuid}.state"), true);
+// ThriftController::log("_model_getFolderState, key=native-uploader.{$deviceUuid}.state, thrift_GetFolders=", LOG_DEBUG);			
+// ThriftController::log($thrift_GetFolders, LOG_DEBUG);			
+			return $thrift_GetFolders;
+		}
+		public function _model_setFolderState($taskID, $thrift_SetFolders) {
+			if (!AppController::$userid) $this->_authUserFromTaskId($taskID);
+			ThriftController::$controller->User->id = AppController::$userid;
+			$deviceUuid = AppController::$userid;
+			ThriftController::$controller->User->setMeta("native-uploader.{$deviceUuid}.state", json_encode($thrift_SetFolders));
+ThriftController::log($this->_model_getFolderState(), LOG_DEBUG);			
+			return $thrift_SetFolders;
+		}
+		
+		/**
+		 * get Task state for thrift api
+		 * 		called by GetFolders, GetWatchedFolders
+		 * WARNING: the task does NOT know the deviceId, must be posted by client
+		 *		uses MetaData plugin for now, 
+		 * TODO: move to Model/DB table?
+		 * TODO: should method be moved to the Model under the native desktop uploader
+		 * 
+		 * @return aa 
+		 */
+		public function _model_getTaskState($taskID) {
+			if (!AppController::$userid) $this->_authUserFromTaskId($taskID);
+			ThriftController::$controller->User->id = AppController::$userid;
+			$thrift_GetTask = json_decode(ThriftController::$controller->User->getMeta("native-uploader.task.{$taskID->Session}"), true);
+// ThriftController::log($thrift_GetTask, LOG_DEBUG);			
+			return $thrift_GetTask;
+		}
+		public function _model_setTaskState($taskID, $options) {
+			if (!AppController::$userid) $this->_authUserFromTaskId($taskID);
+			$thrift_GetTask = $this->_model_getTaskState($taskID);
+			ThriftController::$controller->User->id = AppController::$userid;
+			$options = array_filter_keys($options, array('IsCancelled', 'FolderUpdateCount', 'FileUpdateCount', 'DeviceUuid'));
+			$default = array(
+				'IsCancelled'=>0, 
+				'FolderUpdateCount'=>0, 
+				'FileUpdateCount'=>0, 
+				'DeviceUuid'=>null,
+			);
+			$thrift_GetTask = array_merge($default, $thrift_GetTask, $options);
+			ThriftController::$controller->User->setMeta("native-uploader.task.{$taskID->Session}", json_encode($thrift_GetTask));
+ThriftController::log($this->_model_getFolderState(), LOG_DEBUG);			
+			return $thrift_GetTask;
+		}		
+	
+		/**
 		 * Return the list of folders to scan for images
 		 * 	scan=1 || watch=1
 		 * @param $taskID snaphappi_api_TaskID
 		 * @return array of Strings
 		 */
         public function GetFolders($taskID) {
-// error_log("GetFolders, taskID=".print_r($taskID, true));
-			new TestData();
-        	$folders = TestData::$folders; 
+ThriftController::log("***   GetFolders", LOG_DEBUG);        	
+			// get native desktop uploader state for thrift API
+			$thrift_GetFolders = $this->_model_getFolderState($taskID);
+ThriftController::log($thrift_GetFolders, LOG_DEBUG);	
+			$folders = array();
+			foreach ($thrift_GetFolders as $i=>$folder) {
+				if ($folder['is_scanned'] && !$folder['is_watched']) continue;
+				$folders[] = $folder['folder_path'];
+			}
         	return $folders;
         }
 		/**
@@ -76,6 +173,7 @@ class snaphappi_api_URTaskControlImpl implements snaphappi_api_URTaskControlIf {
 		 * @return array of Strings
 		 */
         public function GetFiles($taskID , $folderPath) {
+ThriftController::log("***   GetFiles, folderPath={$folderPath}", LOG_DEBUG);         	
 // error_log("GetFolders, taskID=".print_r($taskID, true));
 			new TestData();
 			$filepaths = TestData::$files;
@@ -88,7 +186,7 @@ class snaphappi_api_URTaskControlImpl implements snaphappi_api_URTaskControlIf {
 		 * @param $folderPath String
 		 */
         public function ReportFolderNotFound($taskID, $folderPath) {
-error_log("ReportFolderNotFound, folder={$folderPath},  taskID=".print_r($taskID, true));
+ThriftController::log("ReportFolderNotFound, folder={$folderPath},  taskID=".print_r($taskID, true), LOG_DEBUG);
         	return;
         }
 		/**
@@ -98,7 +196,7 @@ error_log("ReportFolderNotFound, folder={$folderPath},  taskID=".print_r($taskID
 		 * @param $filePath String
 		 */
         public function ReportUploadFailed($taskID, $folderPath, $filePath) {
-error_log("ReportUploadFailed, folder={$folderPath}, file={$filePath},  taskID=".print_r($taskID, true));
+ThriftController::log("ReportUploadFailed, folder={$folderPath}, file={$filePath},  taskID=".print_r($taskID, true), LOG_DEBUG);
         	return;
         }  		
 		/**
@@ -108,27 +206,64 @@ error_log("ReportUploadFailed, folder={$folderPath}, file={$filePath},  taskID="
 		 * @param $folderPath String
 		 */
         public function ReportFolderUploadComplete($taskID, $folderPath) {
-error_log("ReportFolderUploadComplete, folder={$folderPath},  taskID=".print_r($taskID, true));
+ThriftController::log("***   ReportFolderUploadComplete, folder={$folderPath},  taskID=".print_r($taskID, true), LOG_DEBUG);
+			$data = $this->_authUserFromTaskId($taskID);
+			$thrift_GetFolders = $this->_model_getFolderState($taskID);
+			$found = false; $done_uploading = true;
+			foreach ($thrift_GetFolders as $i=>$folder) {
+				$done_uploading = $done_uploading && $folder['is_scanned']; 
+				if ($folder['folder_path'] == $folderPath) {
+					$thrift_GetFolders[$i]['is_scanned'] = 1;
+					// $thrift_GetFolders[$i]['is_watched'] = 1;
+					$this->_model_setFolderState($taskID, $thrift_GetFolders);
+					$found = true;
+					if (!$done_uploading) return true;
+				}
+			}
+			if (!$found) throw new Exception("ReportFolderUploadComplete(): folder not found, path={$folderPath}");
+			if ($done_uploading) {
+				// cancel TaskId
+				$this->_model_setTaskState($taskID, array('IsCancelled'=>1));
+			}
         	return;
         }  		
 		/**
-		 * Report the number of files to be uploaded from a folder.
+		 * Sets the number of files expected to be uploaded from a folder.
+		 * 	called by native uploader after folder scan complete
 		 * @param $taskID snaphappi_api_TaskID
 		 * @param $count int
 		 */
         public function ReportFileCount($taskID, $folderPath, $count) {
-error_log("ReportFileCount, folder={$folderPath}, count={$count}, taskID=".print_r($taskID, true));
+ThriftController::log("***   ReportFileCount, folder={$folderPath}, count={$count}, taskID=".print_r($taskID, true), LOG_DEBUG);
+			$data = $this->_authUserFromTaskId($taskID);
+			$thrift_GetFolders = $this->_model_getFolderState($taskID);
+			foreach ($thrift_GetFolders as $i=>$folder) {
+				if ($folder['folder_path'] == $folderPath) {
+					$thrift_GetFolders[$i]['count'] = $count;	
+					$this->_model_setFolderState($taskID, $thrift_GetFolders);
+					return true; 
+				}
+			}
+			throw new Exception("ReportFileCount(): folder not found, path={$folderPath}");
         	return;
         } 
 		/**
-		 * Return the number of files to be uploaded from a folder.
+		 * Return the number of files expected to be uploaded from a folder.
+		 * called by UI for progress bar stats
 		 * @param $taskID snaphappi_api_TaskID
 		 * @param $folderPath String 
 		 */
         public function GetFileCount($taskID, $folderPath) {
-error_log("GetFileCount, folder={$folderPath}, taskID=".print_r($taskID, true));
-			$count = 3;
-        	return $count;
+ThriftController::log("***   GetFileCount, folder={$folderPath}, taskID=".print_r($taskID, true), LOG_DEBUG);
+			$data = $this->_authUserFromTaskId($taskID);
+			$thrift_GetFolders = $this->_model_getFolderState();
+			foreach ($thrift_GetFolders as $i=>$folder) {
+				if ($folder['folder_path'] == $folderPath) {
+					return $folder['count'];	 
+				};
+			}
+			throw new Exception("GetFileCount(): folder not found, path={$folderPath}");
+        	return;
         }  		 								  		
 }
 
