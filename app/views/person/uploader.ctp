@@ -5,9 +5,9 @@
 	$path_InstallSwf = "{$basepath}/expressInstall.swf";
 	
 	// start native background uploader
-	$sessionId = "aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t";
-	$taskId = "0";
-	$launch_SnappiUploader = "'snaphappi://{$taskId}_{$sessionId}_ur'";
+	$authToken = base64_encode("aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t");
+	$sessionId = base64_encode("Session-0");
+	$launch_SnappiUploader = "'snaphappi://{$authToken}_{$sessionId}_ur'";
 	
 	
 	$this->Layout->blockStart('HEAD');
@@ -16,7 +16,7 @@
 	<script type="text/javascript">
 		var flashvars = { 
 			sessionID: <?php echo "'{$sessionId}'"; ?>, 
-			taskId: <?php echo "'{$taskId}'"; ?>, };
+			authToken: <?php echo "'{$authToken}'"; ?>, };
 		var params = {
 			menu: "false",
 			scale: "noScale",
