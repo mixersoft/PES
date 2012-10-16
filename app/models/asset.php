@@ -255,11 +255,11 @@ AND includes.asset_id='{$assetId}';
 	public function joinWithShots($queryData, $show_hidden_shots=false, $show_inactive_shots=false){
 // debug($queryData['extras']);		
 		$shotType = $queryData['extras']['join_shots'];	// Groupshot or Usershot
-		$join_bestshot = !$this->Behaviors->attached('WorkorderPermissionable');
-		$join_bestshot = $join_bestshot && (
-			!isset($queryData['extras']['join_bestshot']) 
-			|| $queryData['extras']['join_bestshot'] !== false
-		); // default true
+		$join_bestshot = !$show_hidden_shots
+			&& (
+				!isset($queryData['extras']['join_bestshot']) 
+				|| $queryData['extras']['join_bestshot'] !== false
+			); // default true		
 		$only_bestshot_system = !empty($queryData['extras']['only_bestshot_system']); // default false
 		$only_shots = !empty($queryData['extras']['only_shots']); // default false
 		if ($shotType == 'Groupshot') {
@@ -324,7 +324,7 @@ AND includes.asset_id='{$assetId}';
 			$joins[] =  array(
 					'table'=>'usershots',
 					'alias'=>'Shot',		// use Shot instead of Usershot
-					'type'=>'LEFT',
+					'type'=> $only_shots ? 'INNER' : 'LEFT',
 					'conditions'=>array(
 						'`Shot`.id = `AssetsUsershot`.usershot_id',
 						// '`Shot`.active'=>1,
@@ -362,7 +362,9 @@ AND includes.asset_id='{$assetId}';
 		// join_bestshots=0,1
 		// show_hidden_shots=0,1
 		// show_inactive_shots=0,1  
+// debug("join_bestshot={$join_bestshot}");		
 		if ($show_hidden_shots) {
+			$join_bestshot = false;	// by definition(?)
 			// show hidden shots, but do NOT care which ones are bestshot Member/Owner/System
 			// NOTE: these conditions must be OUTSIDE LEFT JOIN
 			$conditions = array('OR'=>array(
@@ -374,9 +376,9 @@ AND includes.asset_id='{$assetId}';
 					'`Shot`.active'=>1,
 				)),
 			);
-		} else if ($show_hidden_shots && $join_bestshot && $only_bestshot_system ) {
-			// // TODO: not tested, check other conditions on this tree
-			// // show hidden shots, and get bestShotSytem only, for workorder processing
+		} else if (!$show_hidden_shots && $only_bestshot_system ) {
+			// // TODO: not tested, 
+			// // show bestshots, and but show bestShotSytem, not bestShotUser, for workorder processing
 			$conditions = array();
 			$fields[] = "COALESCE(`BestShotSystem`.`asset_id`) = `Asset`.`id` AS `best_shot`";
 		} else if (!$show_hidden_shots && !$only_shots) {
