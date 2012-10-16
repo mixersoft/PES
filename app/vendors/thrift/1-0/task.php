@@ -169,6 +169,7 @@ class snaphappi_api_TaskImpl implements snaphappi_api_TaskIf {
         public function GetState($taskID) {
 ThriftController::log(">>>   GetState", LOG_DEBUG);           	
         	$state = CakePhpHelper::_model_getTaskState($taskID);
+			if (empty($state)) $state['IsCancelled'] = true;	// terminate HelperApp if state=null
         	$taskState = new snaphappi_api_URTaskState($state);
 ThriftController::log("GetState(taskID), taskState=".print_r($taskState, true), LOG_DEBUG);	
         	return $taskState;
