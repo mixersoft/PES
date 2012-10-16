@@ -68,10 +68,10 @@ class CakePhpHelper {
 			 * 	check Session before checking DB
 			 */ 
 			
-ThriftController::log('_authUserFromTaskId()  ProviderAccount.auth_token='.base64_decode($taskID->AuthToken), LOG_DEBUG);				
+ThriftController::log('_authUserFromTaskId()  ProviderAccount.auth_token='.($taskID->AuthToken), LOG_DEBUG);				
 			$options = array(
 				'contain' => 'Owner',
-				'conditions'=>array('auth_token'=>base64_decode($taskID->AuthToken))
+				'conditions'=>array('auth_token'=>($taskID->AuthToken))
 			);
 			$data = ThriftController::$controller->ProviderAccount->find('first', $options);
 			$authenticated = ThriftController::$controller->Auth->login(array('User'=>$data['Owner']));
@@ -328,7 +328,7 @@ error_log("URTaskUpload->AddFolder(), path={$path}");
 		 */
         public function UploadFile($id, $path, $data) {
 ThriftController::log("###   UploadFile(), Session={$id->Session}, path={$path}", LOG_DEBUG);        	
-        	$staging_root = Configure::read('path.fileUploader.folder_basepath').base64_encode($id->Session);
+        	$staging_root = Configure::read('path.fileUploader.folder_basepath').($id->AuthToken);
 			// make relpath from path
 			$relpath = str_replace(':','', $path);
 			$fullpath = cleanpath($staging_root.DS.$relpath);
