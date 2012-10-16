@@ -62,8 +62,8 @@ $SERVER = $_SERVER['SERVER_NAME'];
 // $SERVER = '192.168.1.7';
 // $SERVER = 'dev.snaphappi.com';
 
-$sessionId = base64_encode('Session-0');
-$authToken = base64_encode('aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t');
+$sessionId = ('Session-0');
+$authToken = ('aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t');
 $launch_URI = "snaphappi://{$authToken}_{$sessionId}_ur";
 
 print "<br>REQUEST={$SERVER}{$ACTION}<br><br>";
@@ -93,9 +93,16 @@ print "<br> Client Class={$client_class}";
 
   $transport->open();
   try {
+  	print "<BR />*************************************";
+  	$taskId = new snaphappi_api_TaskID(array('Session'=>base64_encode("null"), 'AuthToken'=>base64_encode("null")));
+	print "<BR />Using INVALID TaskId=".print_r($taskId,true);
+	print "<BR />Expecting to shutdown helperApp";	
+	$e = $client->GetState($taskId);
+	print "<br>GetState()=".print_r($e,true);	
+	print "<BR />";	
+	
   	$taskId = new snaphappi_api_TaskID(array('Session'=>$sessionId, 'AuthToken'=>$authToken));
 	print "<BR />Using TaskId=".print_r($taskId,true);
-	print "<BR />*************************************";
 	print "<BR />";	
 	
 	$e = $client->GetState($taskId);

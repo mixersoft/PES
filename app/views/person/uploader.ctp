@@ -7,7 +7,7 @@
 	// start native background uploader
 	$authToken = base64_encode("aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t");
 	$sessionId = base64_encode("Session-0");
-	$launch_SnappiUploader = "'snaphappi://{$authToken}_{$sessionId}_ur'";
+	$launch_SnappiUploader = "window.location.href='snaphappi://{$authToken}_{$sessionId}_ur'";
 	
 	
 	$this->Layout->blockStart('HEAD');
@@ -66,7 +66,7 @@
 			<h1>Snaphappi Desktop Uploader</h1>
 			<ul class="inline">
 				<li class='btn orange rounded-5'>
-					<a href=<?php echo $launch_SnappiUploader ?>>Start Uploading</a>
+					<a onclick=<?php echo $launch_SnappiUploader ?>>Start Uploading</a>
 				</li>
 			</ul>
 		</div>
