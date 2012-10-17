@@ -7,3 +7,42 @@ nav.section-header h1 {
 	font-weight: normal;
 	cursor: pointer;
 }
+
+/* Shot Gallery for workorder shot review */
+section.gallery.shot {
+}
+
+
+/* Shot Gallery bestshot Thumbnail */
+section.gallery.shot > div > article.FigureBox.Photo.lm  {
+	float: none;
+}
+section.gallery.shot article.FigureBox.Photo.lm > figure {
+	float:left;
+	margin-right: 9px;
+	overflow: hidden;
+}
+section.gallery.shot article.FigureBox.Photo .hidden-shot {
+	bottom: 28px;
+}
+section.gallery.shot article.FigureBox.Photo.lm > figure > figcaption {
+	overflow: hidden;
+}
+
+
+/* Shot Gallery nested Shot*/
+section.gallery.shot section.filmstrip.shot {
+	
+}
+section.gallery.shot section.filmstrip.shot section.gallery-header nav.toolbar h1 {
+	display: inline-block;
+}
+section.gallery.shot section.filmstrip.shot section.gallery-header nav.toolbar ul {
+	display: inline-block;
+}
+section.gallery.shot section.filmstrip.shot section.gallery-header nav.toolbar ul li {
+	background-color: white;
+	background-image: none;
+	height: auto;
+	padding: 2px;
+}

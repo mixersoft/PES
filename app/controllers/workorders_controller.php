@@ -347,13 +347,12 @@ class WorkordersController extends AppController {
 	 *		$paginateArray['extras']['hide_SharedEdits']=1;	// TODO:??? use score, if any, for bestshot here? 
 	 * 		$paginateArray['perpage']=999;					// TODO: how do we deal with paging?
 	 * 		JSON output only
-	 * 		TODO: do NOT cache castingCall
 	 */
 	function image_group($id) {
 		$perpage = 999;
 		$required_options['extras']['show_hidden_shots']=1;
 		$required_options['extras']['hide_SharedEdits']=0;
-		// $default_options['extras']['bestshot_system_only']=0;
+		// $default_options['extras']['only_bestshot_system']=0;
 	
 		$this->layout = 'snappi';
 		$this->helpers[] = 'Time';
@@ -375,12 +374,13 @@ class WorkordersController extends AppController {
 		$pageData = $this->paginate($paginateModel);
 		$pageData = Set::extract($pageData, "{n}.{$paginateModel}");
 		// end paginate
-		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
-		$castingCall = $this->CastingCall->getCastingCall($pageData, $cache=false);
+
 		/*
 		 * get image_group output for castingCall as JSON string
 		 */ 
-		$this->Gist = loadComponent('Gist', $this); 
+		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
+		if (!isset($this->Gist)) $this->Gist = loadComponent('Gist', $this); 
+		$castingCall = $this->CastingCall->getCastingCall($pageData, $cache=false);
 		$image_groups = $this->Gist->getImageGroupFromCC($castingCall);
 		
 		/*
@@ -394,7 +394,7 @@ class WorkordersController extends AppController {
 				'username'=>'image-group',
 			)
 		);
-		$data = $this->User->find('first', $ScriptUser_options);
+		$data = ClassRegistry::init('User')->find('first', $ScriptUser_options);
 		// change user to role=SCRIPT
 		AppController::$userid = $data['User']['id'];
 		AppController::$role = 'SCRIPT'; 		// from conditions, disables assignment check in WorkordersPermissionable
@@ -453,15 +453,11 @@ debug($newShots);
 	 * $passedArgs['raw']
 	 * 
 	 */ 
-	function photos($id = null){
+	function photos($id){
 		$forceXHR = setXHRDebug($this, 0);
 		$this->layout = 'snappi';
 		$this->helpers[] = 'Time';
 		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';				
-		if (!$id) {
-			$this->Session->setFlash("ERROR: invalid Workorder id.");
-			$this->redirect(array('action' => 'all'));
-		}
 
 		// paginate 
 		$SOURCE_MODEL = Session::read("WMS.{$id}.Workorder.source_model"); // WorkordersController::$source_model;
@@ -472,7 +468,6 @@ debug($newShots);
 		$Model->Behaviors->attach('Pageable');
 		$Model->Behaviors->attach('WorkorderPermissionable', array('type'=>$this->modelClass, 'uuid'=>$id));
 		$paginateArray = $this->paginate[$paginateModel];
-		
 /*
  * operator options:
  *   	raw = hide_SharedEdits=1;show_hidden_shots=0
@@ -484,9 +479,18 @@ debug($newShots);
  */ 		
 if (!empty($this->passedArgs['raw'])) {
 	$paginateArray['extras']['show_hidden_shots']=1;
+	// $paginateArray['extras']['join_bestshot']=!$paginateArray['extras']['show_hidden_shots'];
 	$paginateArray['extras']['hide_SharedEdits']=1;
-	// $paginateArray['extras']['bestshot_system_only']=0;
-}			
+	// $paginateArray['extras']['only_bestshot_system']=0;
+}	
+if (!empty($this->passedArgs['only-shots'])) {
+		$paginateArray['extras']['only_shots']=1;
+}
+if (!empty($this->passedArgs['all-shots'])) {
+	$paginateArray['extras']['show_inactive_shots']=1;		// includes Shot.inactive=0	
+	$paginateArray['extras']['only_shots']=1;
+}		
+	
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = $this->paginate($paginateModel);
@@ -496,22 +500,6 @@ if (!empty($this->passedArgs['raw'])) {
 		$castingCall = $this->CastingCall->getCastingCall($pageData);
 		$this->viewVars['jsonData']['castingCall'] = $castingCall;
 
-		// ownername lookup
-		// if (Session::read('lookup.context.keyName')!='person')  {
-			// // add owner_names to lookup.
-			// $this->getLookups(array('Users'=> array_keys(Set::combine($pageData, '/owner_id', ''))));
-		// }
-				
-		/*
-		 * HACK: special XHR preview for testing WMS app w/Mauro
-		 */ 		
-		if (!empty($this->params['url']['preview'])
-			&& ($this->RequestHandler->isAjax() || $forceXHR)
-		) {
-				$this->render('XHR/preview', 'ajax');
-				return;
-		}		
-						
 		$done = $this->renderXHRByRequest('json', '/elements/photo/roll');
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
 		
@@ -542,6 +530,79 @@ if (!empty($this->passedArgs['raw'])) {
 		
 		// $this->render('/elements/dumpSQL');
 	}	
+	/**
+	 * /workorder/shots get all shots for workorder, for reviewing SCRIPT shots, uses WorkorderPermissionable for ACL
+	 * 		renders shots as a series of filmstrips
+	 * @param $id String, $workorder_id
+	 * $passedArgs['all-shots'] = default false, if true, show active shots
+	 * 
+	 */ 
+	public function shots($id) {
+		$forceXHR = setXHRDebug($this, 0);
+		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';				
+
+		// paginate 
+		$SOURCE_MODEL = Session::read("WMS.{$id}.Workorder.source_model"); // WorkordersController::$source_model;
+		$paginateModel = 'Asset';
+		$Model = ClassRegistry::init($paginateModel);
+		// map correct paginateArray based on $SOURCE_MODEL
+		$this->paginate[$paginateModel] = $this->paginate[$SOURCE_MODEL.$paginateModel];
+		$Model->Behaviors->attach('Pageable');
+		$Model->Behaviors->attach('WorkorderPermissionable', array('type'=>$this->modelClass, 'uuid'=>$id));
+		$paginateArray = $this->paginate[$paginateModel];
+		
+/*
+ * operator options:
+ * 		= hide score, editor not influenced by existing score
+ * 		= show ONLY UserEdit.rating, by AppController::userid
+ * 		= show hidden shots, why? for training sets, but required for workorders?
+ * 		?? = join to BestShotSystem only, for workorder processing?
+ * 		
+ */ 
+ 	$paginateArray['extras']['show_hidden_shots'] = 0;
+	$paginateArray['extras']['only_shots'] = 1;	
+	$paginateArray['extras']['only_bestshot_system'] = 1;	
+	$paginateArray['extras']['show_inactive_shots'] = !empty($this->passedArgs['all-shots']);
+		
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
+		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
+		$pageData = $this->paginate($paginateModel);
+		$pageData = Set::extract($pageData, "{n}.{$paginateModel}");
+		// end paginate
+		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
+		$castingCall = $this->CastingCall->getCastingCall($pageData);
+		$this->viewVars['jsonData']['castingCall'] = $castingCall;
+						
+		$done = $this->renderXHRByRequest('json', '/elements/photo/roll');
+		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
+		
+		/*
+		 * render page
+		 */
+		 
+		$options = array(
+			'contain'=>array('TasksWorkorder.id', 'TasksWorkorder.task_sort', 'TasksWorkorder.operator_id'),
+			'conditions'=>array('Workorder.id'=>$id)
+		);
+		$data = $this->Workorder->find('first', $options);
+		$data = array_merge($this->Auth->user(), $data);
+		if (empty($data)) {
+			/*
+			 * handle no permission to view record
+			 */
+			$this->Session->setFlash(sprintf(__('No %s found.', true), 'Photos'));
+			$this->redirectSafe();
+		} else {
+			$this->set('data', $data);
+			$this->viewVars['jsonData']['Workorder'][]=$data['Workorder'];
+			Session::write('lookup.owner_names', Set::merge(Session::read('lookup.owner_names'), Set::combine($data, '/Owner/id', '/Owner/username')));
+		}
+		$this->set(array('assets'=>$data,'class'=>'Asset'));
+		// $this->render('/elements/dumpSQL');		
+		
+	}
 
 
 	/**

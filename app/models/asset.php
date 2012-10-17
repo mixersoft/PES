@@ -252,7 +252,7 @@ AND includes.asset_id='{$assetId}';
 	 * 	)
 	 * @param $showHidden boolean, default false. use true to show Hidden shots
 	 */
-	public function joinWithShots($queryData, $show_hidden_shots=false, $show_inactive_shots=false){
+	public function joinWithShots($queryData, $show_hidden_shots=false){
 // debug($queryData['extras']);		
 		$shotType = $queryData['extras']['join_shots'];	// Groupshot or Usershot
 		$join_bestshot = !$show_hidden_shots
@@ -262,6 +262,9 @@ AND includes.asset_id='{$assetId}';
 			); // default true		
 		$only_bestshot_system = !empty($queryData['extras']['only_bestshot_system']); // default false
 		$only_shots = !empty($queryData['extras']['only_shots']); // default false
+		$show_inactive_shots = !empty($queryData['extras']['show_inactive_shots']) || !empty($queryData['extras']['shot_id']);
+		
+		
 		if ($shotType == 'Groupshot') {
 			if (!in_array('assets_groups', Set::extract('/table',$queryData['joins']))){
 				$joins[] = array(
@@ -287,7 +290,7 @@ AND includes.asset_id='{$assetId}';
 			$joins[] =  array(
 					'table'=>'groupshots',
 					'alias'=>'Shot',		// use Shot instead of Groupshot
-					'type'=>'LEFT',
+					'type'=> $only_shots ? 'INNER' : 'LEFT',
 					'conditions'=>array('`Shot`.id = `AssetsGroupshot`.groupshot_id'),
 				);	
 			if ($join_bestshot) {					
@@ -365,21 +368,34 @@ AND includes.asset_id='{$assetId}';
 // debug("join_bestshot={$join_bestshot}");		
 		if ($show_hidden_shots) {
 			$join_bestshot = false;	// by definition(?)
-			// show hidden shots, but do NOT care which ones are bestshot Member/Owner/System
-			// NOTE: these conditions must be OUTSIDE LEFT JOIN
+			if (!empty($queryData['extras']['shot_id'])) {
+				// ignore Shot.active if shot_id was given
+				$conditions[] = array('`Shot`.`id`'=> $queryData['extras']['shot_id']);	// Shot alias for Usershot or Groupshot
+			} else {
+				// show hidden shots, but do NOT care which ones are bestshot Member/Owner/System
+				// NOTE: these conditions must be OUTSIDE LEFT JOIN
+				$conditions = array('OR'=>array(
+					array(
+						'`Shot`.id IS NULL', 	// no photo with hidden shots, or bestShot
+						'`AssetsUsershot`.`usershot_id` IS NULL'
+					), 
+					array( 
+						'`Shot`.active'=>1,
+					)),
+				);
+			}
+		} else if (!$show_hidden_shots && $only_bestshot_system ) {
+			// // show bestshots, and but show bestShotSytem, not bestShotUser, for workorder processing
 			$conditions = array('OR'=>array(
 				array(
 					'`Shot`.id IS NULL', 	// no photo with hidden shots, or bestShot
 					'`AssetsUsershot`.`usershot_id` IS NULL'
 				), 
 				array( 
-					'`Shot`.active'=>1,
+					($show_inactive_shots ? 1 : '`Shot`.active' ),
+					'COALESCE(`BestShotSystem`.`asset_id`) = `Asset`.`id`'
 				)),
 			);
-		} else if (!$show_hidden_shots && $only_bestshot_system ) {
-			// // TODO: not tested, 
-			// // show bestshots, and but show bestShotSytem, not bestShotUser, for workorder processing
-			$conditions = array();
 			$fields[] = "COALESCE(`BestShotSystem`.`asset_id`) = `Asset`.`id` AS `best_shot`";
 		} else if (!$show_hidden_shots && !$only_shots) {
 			// show photos and bestShots, but HIDE hidden shots
@@ -390,17 +406,11 @@ AND includes.asset_id='{$assetId}';
 					'`AssetsUsershot`.`usershot_id` IS NULL'
 				), 
 				array( 
-					'`Shot`.active'=>1,
+					($show_inactive_shots ? 1 : '`Shot`.active' ),
 					'COALESCE(`BestShotMember`.`asset_id`, `BestShotOwner`.`asset_id`, `BestShotSystem`.`asset_id`) = `Asset`.`id`'
 				)),
 			);
-		} else if (!$show_hidden_shots && $only_shots) {		
-			// show only bestShots, but HIDE hidden shots and single photos	
-			$conditions = array( 
-				'`Shot`.active'=>1,
-				'COALESCE(`BestShotMember`.`asset_id`, `BestShotOwner`.`asset_id`, `BestShotSystem`.`asset_id`) = `Asset`.`id`'
-			);
-		}	
+		} 
 		/*
 		 * these conditions must be OUTSIDE the LEFT JOIN
 		 */ 
@@ -933,7 +943,8 @@ $this->log("insert newAsset=".print_r($newAsset, true), LOG_DEBUG);
 		$controller = Configure::read('controller.alias');
 		
 		$conditions = $joins = array();
-		$conditions = array('`Shot`.`id`'=> $shotId);	// Shot alias for Usershot or Groupshot
+		// moved to joinWithShots()  ???
+		// $conditions = array('`Shot`.`id`'=> $shotId);	// Shot alias for Usershot or Groupshot
 		
 		// no context for this method
 		$skip = $skipContext;
@@ -950,6 +961,7 @@ $this->log("insert newAsset=".print_r($newAsset, true), LOG_DEBUG);
 		if (!empty($conditions)) $paginate['conditions'] = @mergeAsArray($paginate['conditions'], $conditions);
 		$paginate['order'] = array('rating'=>'DESC', 'Asset.dateTaken'=>'ASC');
 		$paginate['extras']['join_shots']=$shotType;		// override default 'Usershot'
+		$paginate['extras']['shot_id']=$shotId;
 		$paginate['extras']['show_hidden_shots']=true;
 		// TODO: can we group/ungroup shots, just because we have read perm???
 		$paginate['extras']['group_as_shot_permission'] = $shotType;

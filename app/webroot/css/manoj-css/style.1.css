@@ -497,6 +497,7 @@ section.gallery-display-options nav.settings > ul.thumb-size > li.btn.white {
 /* thumbnails */
 .FigureBox figcaption {
 	line-height: 1.2;
+	overflow:hidden;
 }
 .FigureBox figcaption .label {
 	cursor:default;
@@ -643,13 +644,14 @@ section.gallery-display-options nav.settings > ul.thumb-size > li.btn.white {
 	background: url(/static/img/css-gui/icon-hidden-shot-null.png) no-repeat scroll ;
 	position: absolute;
 	right: 4px;
-	bottom: 5px;
+	bottom: 28px;
 	width: 32px;
 	height: 18px;
 	cursor: pointer;
 }
 .FigureBox.Photo.ll div.hidden-shot {
-	bottom: 20px;
+	right: 41px;
+	bottom: 2px;
 }
 
 .FigureBox.Photo div.hidden-shot.c2 {

@@ -278,8 +278,16 @@ class PersonController extends UsersController {
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $Model->getPaginatePhotosByUserId($id, $this->paginate[$paginateModel]);
 
-if (!empty($this->passedArgs['raw'])) {
+if (!empty($this->passedArgs['raw']) || !empty($this->passedArgs['hidden'])) {
 	$paginateArray['extras']['show_hidden_shots']=1;
+}
+if (!empty($this->passedArgs['only-shots'])) {
+		$paginateArray['extras']['only_shots']=1;
+}
+if (!empty($this->passedArgs['all-shots'])) {
+	$paginateArray['permissionable']=false;
+	$paginateArray['extras']['all_shots']=1;		// includes Shot.inactive=0	
+	$paginateArray['extras']['only_shots']=1;
 }
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
