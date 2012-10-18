@@ -60,23 +60,24 @@ class CakePhpHelper {
 		/**
 		 * authenticate the User account from ProviderAccount.auth_token embedded in $taskID
 		 * 		AppController::$userid, AppController::$role will be set here
+		 * @param $authToken, from $taskID->AuthToken
 		 * @return aa $data[ProviderAccount], $data[Owner], 
 		 */
-		public static function _authUserFromTaskId($taskID) {
+		public static function _loginFromAuthToken($authToken) {
 			/*
 			 * Session::read(Auth.user);
 			 * 	check Session before checking DB
 			 */ 
 			
-ThriftController::log('_authUserFromTaskId()  ProviderAccount.auth_token='.($taskID->AuthToken), LOG_DEBUG);				
+ThriftController::log('_loginFromAuthToken()  ProviderAccount.auth_token='.($authToken), LOG_DEBUG);				
 			$options = array(
 				'contain' => 'Owner',
-				'conditions'=>array('auth_token'=>($taskID->AuthToken))
+				'conditions'=>array('auth_token'=>$authToken)
 			);
 			$data = ThriftController::$controller->ProviderAccount->find('first', $options);
 			$authenticated = ThriftController::$controller->Auth->login(array('User'=>$data['Owner']));
 			if ($authenticated) {
-// ThriftController::log("_authUserFromTaskId OK, data=".print_r($data,true), LOG_DEBUG);
+// ThriftController::log("_loginFromAuthToken OK, data=".print_r($data,true), LOG_DEBUG);
 				// Session::write('Auth.user', ThriftController::$controller->Auth->user());				
 				AppController::$userid = ThriftController::$controller->Auth->user('id');
 				$role = array_search(ThriftController::$controller->Auth->user('primary_group_id'), Configure::read('lookup.roles'), true);
@@ -96,21 +97,22 @@ ThriftController::log('_authUserFromTaskId()  ProviderAccount.auth_token='.($tas
 		 * @return ???
 		 */
 		public static function _model_getFolderState($taskID) {
-			if (!AppController::$userid) CakePhpHelper::_authUserFromTaskId($taskID);
+			if (!AppController::$userid) CakePhpHelper::_loginFromAuthToken($taskID->AuthToken);
 			ThriftController::$controller->User->id = AppController::$userid;
 			$deviceUuid = AppController::$userid;
 			// get native desktop uploader state for thrift API
 			$thrift_GetFolders = json_decode(ThriftController::$controller->User->getMeta("native-uploader.{$deviceUuid}.state"), true);
-// ThriftController::log("_model_getFolderState, key=native-uploader.{$deviceUuid}.state, thrift_GetFolders=", LOG_DEBUG);			
+ThriftController::log("_model_getFolderState, key=native-uploader.{$deviceUuid}.state, thrift_GetFolders=", LOG_DEBUG);			
 // ThriftController::log($thrift_GetFolders, LOG_DEBUG);			
 			return $thrift_GetFolders;
 		}
 		public static function _model_setFolderState($taskID, $thrift_SetFolders) {
-			if (!AppController::$userid) CakePhpHelper::_authUserFromTaskId($taskID);
+			if (!AppController::$userid) CakePhpHelper::_loginFromAuthToken($taskID->AuthToken);
 			ThriftController::$controller->User->id = AppController::$userid;
 			$deviceUuid = AppController::$userid;
 			ThriftController::$controller->User->setMeta("native-uploader.{$deviceUuid}.state", json_encode($thrift_SetFolders));
-ThriftController::log(CakePhpHelper::_model_getFolderState(), LOG_DEBUG);			
+ThriftController::log("_model_setFolderState, key=native-uploader.{$deviceUuid}.state, GetFolders() = ", LOG_DEBUG);			
+ThriftController::log(json_encode(CakePhpHelper::_model_getFolderState()), LOG_DEBUG);			
 			return $thrift_SetFolders;
 		}
 		
@@ -128,14 +130,14 @@ ThriftController::log(CakePhpHelper::_model_getFolderState(), LOG_DEBUG);
 		 * @return aa 
 		 */
 		public static function _model_getTaskState($taskID) {
-			if (!AppController::$userid) CakePhpHelper::_authUserFromTaskId($taskID);
+			if (!AppController::$userid) CakePhpHelper::_loginFromAuthToken($taskID->AuthToken);
 			ThriftController::$controller->User->id = AppController::$userid;
 			$thrift_GetTask = json_decode(ThriftController::$controller->User->getMeta("native-uploader.task.{$taskID->Session}"), true);
-// ThriftController::log($thrift_GetTask, LOG_DEBUG);			
+// ThriftController::log("_model_getTaskState(): key=native-uploader.task.{$taskID->Session} data=".print_r($thrift_GetTask, true), LOG_DEBUG);			
 			return $thrift_GetTask;
 		}
 		public static function _model_setTaskState($taskID, $options) {
-			if (!AppController::$userid) CakePhpHelper::_authUserFromTaskId($taskID);
+			if (!AppController::$userid) CakePhpHelper::_loginFromAuthToken($taskID->AuthToken);
 			$thrift_GetTask = CakePhpHelper::_model_getTaskState($taskID);
 			ThriftController::$controller->User->id = AppController::$userid;
 			$options = array_filter_keys($options, array('IsCancelled', 'FolderUpdateCount', 'FileUpdateCount', 'DeviceUuid'));
@@ -147,7 +149,7 @@ ThriftController::log(CakePhpHelper::_model_getFolderState(), LOG_DEBUG);
 			);
 			$thrift_GetTask = array_merge($default, $thrift_GetTask, $options);
 			ThriftController::$controller->User->setMeta("native-uploader.task.{$taskID->Session}", json_encode($thrift_GetTask));
-ThriftController::log(CakePhpHelper::_model_getFolderState(), LOG_DEBUG);			
+ThriftController::log("_model_setTaskState() state=".json_encode($thrift_GetTask), LOG_DEBUG);			
 			return $thrift_GetTask;
 		}
 		public static function _model_deleteTask($taskID) {
@@ -176,8 +178,8 @@ ThriftController::log("GetState(taskID), taskState=".print_r($taskState, true), 
         }
         	
 		/**
-		 * Return the list of folders to scan for images
-		 * 	scan=1 || watch=1
+		 * Return the list of folders to scan for images, exclude watch folders
+		 * 	scan=1 || watch=0
 		 * @param $taskID snaphappi_api_TaskID
 		 * @return array of Strings
 		 */
@@ -185,14 +187,32 @@ ThriftController::log("GetState(taskID), taskState=".print_r($taskState, true), 
 ThriftController::log("***   GetFolders", LOG_DEBUG);        	
 			// get native desktop uploader state for thrift API
 			$thrift_GetFolders = CakePhpHelper::_model_getFolderState($taskID);
-ThriftController::log($thrift_GetFolders, LOG_DEBUG);	
 			$folders = array();
 			foreach ($thrift_GetFolders as $i=>$folder) {
-				if ($folder['is_scanned'] && !$folder['is_watched']) continue;
-				$folders[] = $folder['folder_path'];
+				if (!$folder['is_scanned'] && !$folder['is_watched']) $folders[] = $folder['folder_path'];
 			}
+ThriftController::log($folders, LOG_DEBUG);					
         	return $folders;
         }
+		
+		/**
+		 * Return the list of Watched folders to scan for images
+		 * 	watch=1
+		 * @param $taskID snaphappi_api_TaskID
+		 * @return array of Strings
+		 */
+        public function GetWatchedFolders($taskID) {
+ThriftController::log("***   GetWatchedFolders", LOG_DEBUG);        	
+			// get native desktop uploader state for thrift API
+			$thrift_GetFolders = CakePhpHelper::_model_getFolderState($taskID);
+			$folders = array();
+			foreach ($thrift_GetFolders as $i=>$folder) {
+				if ($folder['is_watched']) $folders[] = $folder['folder_path'];
+			}
+ThriftController::log($folders, LOG_DEBUG);			
+        	return $folders;
+        }
+				
 		/**
 		 * Return the list of all files uploaded from the given folder within
 	 	 * the given task.
@@ -234,7 +254,7 @@ ThriftController::log("ReportUploadFailed, folder={$folderPath}, file={$filePath
 		 */
         public function ReportFolderUploadComplete($taskID, $folderPath) {
 ThriftController::log("***   ReportFolderUploadComplete, folder={$folderPath},  taskID=".print_r($taskID, true), LOG_DEBUG);
-			$data = CakePhpHelper::_authUserFromTaskId($taskID);
+			$data = CakePhpHelper::_loginFromAuthToken($taskID->AuthToken);
 			$thrift_GetFolders = CakePhpHelper::_model_getFolderState($taskID);
 			$found = false; $done_uploading = true;
 			foreach ($thrift_GetFolders as $i=>$folder) {
@@ -262,7 +282,7 @@ ThriftController::log("***   ReportFolderUploadComplete, folder={$folderPath},  
 		 */
         public function ReportFileCount($taskID, $folderPath, $count) {
 ThriftController::log("***   ReportFileCount, folder={$folderPath}, count={$count}, taskID=".print_r($taskID, true), LOG_DEBUG);
-			$data = CakePhpHelper::_authUserFromTaskId($taskID);
+			$data = CakePhpHelper::_loginFromAuthToken($taskID->AuthToken);
 			$thrift_GetFolders = CakePhpHelper::_model_getFolderState($taskID);
 			foreach ($thrift_GetFolders as $i=>$folder) {
 				if ($folder['folder_path'] == $folderPath) {
@@ -292,7 +312,7 @@ ThriftController::log("***   ReportFileCount, folder={$folderPath}, count={$coun
 		 */
         public function GetFileCount($taskID, $folderPath) {
 ThriftController::log("***   GetFileCount, folder={$folderPath}, taskID=".print_r($taskID, true), LOG_DEBUG);
-			$data = CakePhpHelper::_authUserFromTaskId($taskID);
+			$data = CakePhpHelper::_loginFromAuthToken($taskID->AuthToken);
 			$thrift_GetFolders = CakePhpHelper::_model_getFolderState();
 			foreach ($thrift_GetFolders as $i=>$folder) {
 				if ($folder['folder_path'] == $folderPath) {
@@ -322,13 +342,13 @@ error_log("URTaskUpload->AddFolder(), path={$path}");
 		 * save binary data from uploaded, *resampled* JPG file
 		 * throw Exception on error
 		 *
-		 * @param $id TaskID, array[0] int, array[1] string
+		 * @param $id TaskID,
 		 * @param $path String,
 		 * @param $data binary,
 		 * @return void 
 		 */
         public function UploadFile($id, $path, $data) {
-ThriftController::log("###   UploadFile(), Session={$id->Session}, path={$path}", LOG_DEBUG);        	
+ThriftController::log("###   UploadFile(), AuthToken={$id->AuthToken}, path={$path}", LOG_DEBUG);        	
         	$staging_root = Configure::read('path.fileUploader.folder_basepath').($id->AuthToken);
 			// make relpath from path
 			$relpath = str_replace(':','', $path);

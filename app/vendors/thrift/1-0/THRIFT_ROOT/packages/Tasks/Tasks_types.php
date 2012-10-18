@@ -13,6 +13,7 @@ class snaphappi_api_TaskID {
 
   public $AuthToken = null;
   public $Session = null;
+  public $DeviceID = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -25,6 +26,10 @@ class snaphappi_api_TaskID {
           'var' => 'Session',
           'type' => TType::STRING,
           ),
+        3 => array(
+          'var' => 'DeviceID',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -33,6 +38,9 @@ class snaphappi_api_TaskID {
       }
       if (isset($vals['Session'])) {
         $this->Session = $vals['Session'];
+      }
+      if (isset($vals['DeviceID'])) {
+        $this->DeviceID = $vals['DeviceID'];
       }
     }
   }
@@ -70,6 +78,13 @@ class snaphappi_api_TaskID {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->DeviceID);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -91,6 +106,11 @@ class snaphappi_api_TaskID {
     if ($this->Session !== null) {
       $xfer += $output->writeFieldBegin('Session', TType::STRING, 2);
       $xfer += $output->writeString($this->Session);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->DeviceID !== null) {
+      $xfer += $output->writeFieldBegin('DeviceID', TType::STRING, 3);
+      $xfer += $output->writeString($this->DeviceID);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

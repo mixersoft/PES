@@ -64,7 +64,7 @@ $SERVER = $_SERVER['SERVER_NAME'];
 
 $sessionId = ('Session-0');
 $authToken = ('aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t');
-$launch_URI = "snaphappi://{$authToken}_{$sessionId}_ur";
+$launch_URI = "snaphappi://".base64_encode($authToken)."_".base64_encode($sessionId)."_ur";
 
 print "<br>REQUEST={$SERVER}{$ACTION}<br><br>";
 
@@ -101,6 +101,8 @@ print "<br> Client Class={$client_class}";
 	print "<br>GetState()=".print_r($e,true);	
 	print "<BR />";	
 	
+	
+	print "<BR />              ***";
   	$taskId = new snaphappi_api_TaskID(array('Session'=>$sessionId, 'AuthToken'=>$authToken));
 	print "<BR />Using TaskId=".print_r($taskId,true);
 	print "<BR />";	
@@ -111,6 +113,9 @@ print "<br> Client Class={$client_class}";
 	$folders = $client->GetFolders($taskId);
 	print "<br>GetFolders()=".print_r($folders,true);
 	
+	$folders = $client->GetWatchedFolders($taskId);
+	print "<br>GetWatchedFolders()=".print_r($folders,true);
+		
 	$files = $client->GetFiles($taskId, $folders[0]);
 	print "<br>GetFiles()=".print_r($files,true);
 	

@@ -10,15 +10,16 @@ include_once $GLOBALS['THRIFT_ROOT'].'/Thrift.php';
 include_once $GLOBALS['THRIFT_ROOT'].'/packages/Tasks/Tasks_types.php';
 
 interface snaphappi_api_TaskIf {
-  public function GetFolders($id);
-  public function GetFiles($id, $folder);
-  public function ReportFolderNotFound($id, $folder);
-  public function ReportUploadFailed($id, $folder, $path);
-  public function ReportFolderUploadComplete($id, $folder);
-  public function ReportFileCount($id, $folder, $count);
-  public function GetFileCount($id, $folder);
-  public function GetState($id);
   public function AddFolder($id, $path);
+  public function GetFileCount($id, $folder);
+  public function GetFiles($id, $folder);
+  public function GetFolders($id);
+  public function GetState($id);
+  public function GetWatchedFolders($id);
+  public function ReportFileCount($id, $folder, $count);
+  public function ReportFolderNotFound($id, $folder);
+  public function ReportFolderUploadComplete($id, $folder);
+  public function ReportUploadFailed($id, $folder, $path);
   public function UploadFile($id, $path, $data);
 }
 
@@ -33,188 +34,35 @@ class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
     $this->output_ = $output ? $output : $input;
   }
 
-  public function GetFolders($id)
+  public function AddFolder($id, $path)
   {
-    $this->send_GetFolders($id);
-    return $this->recv_GetFolders();
+    $this->send_AddFolder($id, $path);
+    $this->recv_AddFolder();
   }
 
-  public function send_GetFolders($id)
+  public function send_AddFolder($id, $path)
   {
-    $args = new snaphappi_api_Task_GetFolders_args();
+    $args = new snaphappi_api_Task_AddFolder_args();
     $args->id = $id;
-    $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
-    if ($bin_accel)
-    {
-      thrift_protocol_write_binary($this->output_, 'GetFolders', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
-    }
-    else
-    {
-      $this->output_->writeMessageBegin('GetFolders', TMessageType::CALL, $this->seqid_);
-      $args->write($this->output_);
-      $this->output_->writeMessageEnd();
-      $this->output_->getTransport()->flush();
-    }
-  }
-
-  public function recv_GetFolders()
-  {
-    $bin_accel = ($this->input_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_read_binary');
-    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, 'snaphappi_api_Task_GetFolders_result', $this->input_->isStrictRead());
-    else
-    {
-      $rseqid = 0;
-      $fname = null;
-      $mtype = 0;
-
-      $this->input_->readMessageBegin($fname, $mtype, $rseqid);
-      if ($mtype == TMessageType::EXCEPTION) {
-        $x = new TApplicationException();
-        $x->read($this->input_);
-        $this->input_->readMessageEnd();
-        throw $x;
-      }
-      $result = new snaphappi_api_Task_GetFolders_result();
-      $result->read($this->input_);
-      $this->input_->readMessageEnd();
-    }
-    if ($result->success !== null) {
-      return $result->success;
-    }
-    throw new Exception("GetFolders failed: unknown result");
-  }
-
-  public function GetFiles($id, $folder)
-  {
-    $this->send_GetFiles($id, $folder);
-    return $this->recv_GetFiles();
-  }
-
-  public function send_GetFiles($id, $folder)
-  {
-    $args = new snaphappi_api_Task_GetFiles_args();
-    $args->id = $id;
-    $args->folder = $folder;
-    $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
-    if ($bin_accel)
-    {
-      thrift_protocol_write_binary($this->output_, 'GetFiles', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
-    }
-    else
-    {
-      $this->output_->writeMessageBegin('GetFiles', TMessageType::CALL, $this->seqid_);
-      $args->write($this->output_);
-      $this->output_->writeMessageEnd();
-      $this->output_->getTransport()->flush();
-    }
-  }
-
-  public function recv_GetFiles()
-  {
-    $bin_accel = ($this->input_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_read_binary');
-    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, 'snaphappi_api_Task_GetFiles_result', $this->input_->isStrictRead());
-    else
-    {
-      $rseqid = 0;
-      $fname = null;
-      $mtype = 0;
-
-      $this->input_->readMessageBegin($fname, $mtype, $rseqid);
-      if ($mtype == TMessageType::EXCEPTION) {
-        $x = new TApplicationException();
-        $x->read($this->input_);
-        $this->input_->readMessageEnd();
-        throw $x;
-      }
-      $result = new snaphappi_api_Task_GetFiles_result();
-      $result->read($this->input_);
-      $this->input_->readMessageEnd();
-    }
-    if ($result->success !== null) {
-      return $result->success;
-    }
-    throw new Exception("GetFiles failed: unknown result");
-  }
-
-  public function ReportFolderNotFound($id, $folder)
-  {
-    $this->send_ReportFolderNotFound($id, $folder);
-    $this->recv_ReportFolderNotFound();
-  }
-
-  public function send_ReportFolderNotFound($id, $folder)
-  {
-    $args = new snaphappi_api_Task_ReportFolderNotFound_args();
-    $args->id = $id;
-    $args->folder = $folder;
-    $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
-    if ($bin_accel)
-    {
-      thrift_protocol_write_binary($this->output_, 'ReportFolderNotFound', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
-    }
-    else
-    {
-      $this->output_->writeMessageBegin('ReportFolderNotFound', TMessageType::CALL, $this->seqid_);
-      $args->write($this->output_);
-      $this->output_->writeMessageEnd();
-      $this->output_->getTransport()->flush();
-    }
-  }
-
-  public function recv_ReportFolderNotFound()
-  {
-    $bin_accel = ($this->input_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_read_binary');
-    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, 'snaphappi_api_Task_ReportFolderNotFound_result', $this->input_->isStrictRead());
-    else
-    {
-      $rseqid = 0;
-      $fname = null;
-      $mtype = 0;
-
-      $this->input_->readMessageBegin($fname, $mtype, $rseqid);
-      if ($mtype == TMessageType::EXCEPTION) {
-        $x = new TApplicationException();
-        $x->read($this->input_);
-        $this->input_->readMessageEnd();
-        throw $x;
-      }
-      $result = new snaphappi_api_Task_ReportFolderNotFound_result();
-      $result->read($this->input_);
-      $this->input_->readMessageEnd();
-    }
-    return;
-  }
-
-  public function ReportUploadFailed($id, $folder, $path)
-  {
-    $this->send_ReportUploadFailed($id, $folder, $path);
-    $this->recv_ReportUploadFailed();
-  }
-
-  public function send_ReportUploadFailed($id, $folder, $path)
-  {
-    $args = new snaphappi_api_Task_ReportUploadFailed_args();
-    $args->id = $id;
-    $args->folder = $folder;
     $args->path = $path;
     $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
-      thrift_protocol_write_binary($this->output_, 'ReportUploadFailed', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+      thrift_protocol_write_binary($this->output_, 'AddFolder', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
     }
     else
     {
-      $this->output_->writeMessageBegin('ReportUploadFailed', TMessageType::CALL, $this->seqid_);
+      $this->output_->writeMessageBegin('AddFolder', TMessageType::CALL, $this->seqid_);
       $args->write($this->output_);
       $this->output_->writeMessageEnd();
       $this->output_->getTransport()->flush();
     }
   }
 
-  public function recv_ReportUploadFailed()
+  public function recv_AddFolder()
   {
     $bin_accel = ($this->input_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_read_binary');
-    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, 'snaphappi_api_Task_ReportUploadFailed_result', $this->input_->isStrictRead());
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, 'snaphappi_api_Task_AddFolder_result', $this->input_->isStrictRead());
     else
     {
       $rseqid = 0;
@@ -228,106 +76,7 @@ class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
         $this->input_->readMessageEnd();
         throw $x;
       }
-      $result = new snaphappi_api_Task_ReportUploadFailed_result();
-      $result->read($this->input_);
-      $this->input_->readMessageEnd();
-    }
-    return;
-  }
-
-  public function ReportFolderUploadComplete($id, $folder)
-  {
-    $this->send_ReportFolderUploadComplete($id, $folder);
-    $this->recv_ReportFolderUploadComplete();
-  }
-
-  public function send_ReportFolderUploadComplete($id, $folder)
-  {
-    $args = new snaphappi_api_Task_ReportFolderUploadComplete_args();
-    $args->id = $id;
-    $args->folder = $folder;
-    $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
-    if ($bin_accel)
-    {
-      thrift_protocol_write_binary($this->output_, 'ReportFolderUploadComplete', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
-    }
-    else
-    {
-      $this->output_->writeMessageBegin('ReportFolderUploadComplete', TMessageType::CALL, $this->seqid_);
-      $args->write($this->output_);
-      $this->output_->writeMessageEnd();
-      $this->output_->getTransport()->flush();
-    }
-  }
-
-  public function recv_ReportFolderUploadComplete()
-  {
-    $bin_accel = ($this->input_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_read_binary');
-    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, 'snaphappi_api_Task_ReportFolderUploadComplete_result', $this->input_->isStrictRead());
-    else
-    {
-      $rseqid = 0;
-      $fname = null;
-      $mtype = 0;
-
-      $this->input_->readMessageBegin($fname, $mtype, $rseqid);
-      if ($mtype == TMessageType::EXCEPTION) {
-        $x = new TApplicationException();
-        $x->read($this->input_);
-        $this->input_->readMessageEnd();
-        throw $x;
-      }
-      $result = new snaphappi_api_Task_ReportFolderUploadComplete_result();
-      $result->read($this->input_);
-      $this->input_->readMessageEnd();
-    }
-    return;
-  }
-
-  public function ReportFileCount($id, $folder, $count)
-  {
-    $this->send_ReportFileCount($id, $folder, $count);
-    $this->recv_ReportFileCount();
-  }
-
-  public function send_ReportFileCount($id, $folder, $count)
-  {
-    $args = new snaphappi_api_Task_ReportFileCount_args();
-    $args->id = $id;
-    $args->folder = $folder;
-    $args->count = $count;
-    $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
-    if ($bin_accel)
-    {
-      thrift_protocol_write_binary($this->output_, 'ReportFileCount', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
-    }
-    else
-    {
-      $this->output_->writeMessageBegin('ReportFileCount', TMessageType::CALL, $this->seqid_);
-      $args->write($this->output_);
-      $this->output_->writeMessageEnd();
-      $this->output_->getTransport()->flush();
-    }
-  }
-
-  public function recv_ReportFileCount()
-  {
-    $bin_accel = ($this->input_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_read_binary');
-    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, 'snaphappi_api_Task_ReportFileCount_result', $this->input_->isStrictRead());
-    else
-    {
-      $rseqid = 0;
-      $fname = null;
-      $mtype = 0;
-
-      $this->input_->readMessageBegin($fname, $mtype, $rseqid);
-      if ($mtype == TMessageType::EXCEPTION) {
-        $x = new TApplicationException();
-        $x->read($this->input_);
-        $this->input_->readMessageEnd();
-        throw $x;
-      }
-      $result = new snaphappi_api_Task_ReportFileCount_result();
+      $result = new snaphappi_api_Task_AddFolder_result();
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
@@ -386,6 +135,109 @@ class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
     throw new Exception("GetFileCount failed: unknown result");
   }
 
+  public function GetFiles($id, $folder)
+  {
+    $this->send_GetFiles($id, $folder);
+    return $this->recv_GetFiles();
+  }
+
+  public function send_GetFiles($id, $folder)
+  {
+    $args = new snaphappi_api_Task_GetFiles_args();
+    $args->id = $id;
+    $args->folder = $folder;
+    $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($this->output_, 'GetFiles', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+    }
+    else
+    {
+      $this->output_->writeMessageBegin('GetFiles', TMessageType::CALL, $this->seqid_);
+      $args->write($this->output_);
+      $this->output_->writeMessageEnd();
+      $this->output_->getTransport()->flush();
+    }
+  }
+
+  public function recv_GetFiles()
+  {
+    $bin_accel = ($this->input_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_read_binary');
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, 'snaphappi_api_Task_GetFiles_result', $this->input_->isStrictRead());
+    else
+    {
+      $rseqid = 0;
+      $fname = null;
+      $mtype = 0;
+
+      $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+      if ($mtype == TMessageType::EXCEPTION) {
+        $x = new TApplicationException();
+        $x->read($this->input_);
+        $this->input_->readMessageEnd();
+        throw $x;
+      }
+      $result = new snaphappi_api_Task_GetFiles_result();
+      $result->read($this->input_);
+      $this->input_->readMessageEnd();
+    }
+    if ($result->success !== null) {
+      return $result->success;
+    }
+    throw new Exception("GetFiles failed: unknown result");
+  }
+
+  public function GetFolders($id)
+  {
+    $this->send_GetFolders($id);
+    return $this->recv_GetFolders();
+  }
+
+  public function send_GetFolders($id)
+  {
+    $args = new snaphappi_api_Task_GetFolders_args();
+    $args->id = $id;
+    $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($this->output_, 'GetFolders', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+    }
+    else
+    {
+      $this->output_->writeMessageBegin('GetFolders', TMessageType::CALL, $this->seqid_);
+      $args->write($this->output_);
+      $this->output_->writeMessageEnd();
+      $this->output_->getTransport()->flush();
+    }
+  }
+
+  public function recv_GetFolders()
+  {
+    $bin_accel = ($this->input_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_read_binary');
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, 'snaphappi_api_Task_GetFolders_result', $this->input_->isStrictRead());
+    else
+    {
+      $rseqid = 0;
+      $fname = null;
+      $mtype = 0;
+
+      $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+      if ($mtype == TMessageType::EXCEPTION) {
+        $x = new TApplicationException();
+        $x->read($this->input_);
+        $this->input_->readMessageEnd();
+        throw $x;
+      }
+      $result = new snaphappi_api_Task_GetFolders_result();
+      $result->read($this->input_);
+      $this->input_->readMessageEnd();
+    }
+    if ($result->success !== null) {
+      return $result->success;
+    }
+    throw new Exception("GetFolders failed: unknown result");
+  }
+
   public function GetState($id)
   {
     $this->send_GetState($id);
@@ -437,35 +289,34 @@ class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
     throw new Exception("GetState failed: unknown result");
   }
 
-  public function AddFolder($id, $path)
+  public function GetWatchedFolders($id)
   {
-    $this->send_AddFolder($id, $path);
-    $this->recv_AddFolder();
+    $this->send_GetWatchedFolders($id);
+    return $this->recv_GetWatchedFolders();
   }
 
-  public function send_AddFolder($id, $path)
+  public function send_GetWatchedFolders($id)
   {
-    $args = new snaphappi_api_Task_AddFolder_args();
+    $args = new snaphappi_api_Task_GetWatchedFolders_args();
     $args->id = $id;
-    $args->path = $path;
     $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
-      thrift_protocol_write_binary($this->output_, 'AddFolder', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+      thrift_protocol_write_binary($this->output_, 'GetWatchedFolders', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
     }
     else
     {
-      $this->output_->writeMessageBegin('AddFolder', TMessageType::CALL, $this->seqid_);
+      $this->output_->writeMessageBegin('GetWatchedFolders', TMessageType::CALL, $this->seqid_);
       $args->write($this->output_);
       $this->output_->writeMessageEnd();
       $this->output_->getTransport()->flush();
     }
   }
 
-  public function recv_AddFolder()
+  public function recv_GetWatchedFolders()
   {
     $bin_accel = ($this->input_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_read_binary');
-    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, 'snaphappi_api_Task_AddFolder_result', $this->input_->isStrictRead());
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, 'snaphappi_api_Task_GetWatchedFolders_result', $this->input_->isStrictRead());
     else
     {
       $rseqid = 0;
@@ -479,7 +330,208 @@ class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
         $this->input_->readMessageEnd();
         throw $x;
       }
-      $result = new snaphappi_api_Task_AddFolder_result();
+      $result = new snaphappi_api_Task_GetWatchedFolders_result();
+      $result->read($this->input_);
+      $this->input_->readMessageEnd();
+    }
+    if ($result->success !== null) {
+      return $result->success;
+    }
+    throw new Exception("GetWatchedFolders failed: unknown result");
+  }
+
+  public function ReportFileCount($id, $folder, $count)
+  {
+    $this->send_ReportFileCount($id, $folder, $count);
+    $this->recv_ReportFileCount();
+  }
+
+  public function send_ReportFileCount($id, $folder, $count)
+  {
+    $args = new snaphappi_api_Task_ReportFileCount_args();
+    $args->id = $id;
+    $args->folder = $folder;
+    $args->count = $count;
+    $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($this->output_, 'ReportFileCount', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+    }
+    else
+    {
+      $this->output_->writeMessageBegin('ReportFileCount', TMessageType::CALL, $this->seqid_);
+      $args->write($this->output_);
+      $this->output_->writeMessageEnd();
+      $this->output_->getTransport()->flush();
+    }
+  }
+
+  public function recv_ReportFileCount()
+  {
+    $bin_accel = ($this->input_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_read_binary');
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, 'snaphappi_api_Task_ReportFileCount_result', $this->input_->isStrictRead());
+    else
+    {
+      $rseqid = 0;
+      $fname = null;
+      $mtype = 0;
+
+      $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+      if ($mtype == TMessageType::EXCEPTION) {
+        $x = new TApplicationException();
+        $x->read($this->input_);
+        $this->input_->readMessageEnd();
+        throw $x;
+      }
+      $result = new snaphappi_api_Task_ReportFileCount_result();
+      $result->read($this->input_);
+      $this->input_->readMessageEnd();
+    }
+    return;
+  }
+
+  public function ReportFolderNotFound($id, $folder)
+  {
+    $this->send_ReportFolderNotFound($id, $folder);
+    $this->recv_ReportFolderNotFound();
+  }
+
+  public function send_ReportFolderNotFound($id, $folder)
+  {
+    $args = new snaphappi_api_Task_ReportFolderNotFound_args();
+    $args->id = $id;
+    $args->folder = $folder;
+    $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($this->output_, 'ReportFolderNotFound', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+    }
+    else
+    {
+      $this->output_->writeMessageBegin('ReportFolderNotFound', TMessageType::CALL, $this->seqid_);
+      $args->write($this->output_);
+      $this->output_->writeMessageEnd();
+      $this->output_->getTransport()->flush();
+    }
+  }
+
+  public function recv_ReportFolderNotFound()
+  {
+    $bin_accel = ($this->input_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_read_binary');
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, 'snaphappi_api_Task_ReportFolderNotFound_result', $this->input_->isStrictRead());
+    else
+    {
+      $rseqid = 0;
+      $fname = null;
+      $mtype = 0;
+
+      $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+      if ($mtype == TMessageType::EXCEPTION) {
+        $x = new TApplicationException();
+        $x->read($this->input_);
+        $this->input_->readMessageEnd();
+        throw $x;
+      }
+      $result = new snaphappi_api_Task_ReportFolderNotFound_result();
+      $result->read($this->input_);
+      $this->input_->readMessageEnd();
+    }
+    return;
+  }
+
+  public function ReportFolderUploadComplete($id, $folder)
+  {
+    $this->send_ReportFolderUploadComplete($id, $folder);
+    $this->recv_ReportFolderUploadComplete();
+  }
+
+  public function send_ReportFolderUploadComplete($id, $folder)
+  {
+    $args = new snaphappi_api_Task_ReportFolderUploadComplete_args();
+    $args->id = $id;
+    $args->folder = $folder;
+    $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($this->output_, 'ReportFolderUploadComplete', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+    }
+    else
+    {
+      $this->output_->writeMessageBegin('ReportFolderUploadComplete', TMessageType::CALL, $this->seqid_);
+      $args->write($this->output_);
+      $this->output_->writeMessageEnd();
+      $this->output_->getTransport()->flush();
+    }
+  }
+
+  public function recv_ReportFolderUploadComplete()
+  {
+    $bin_accel = ($this->input_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_read_binary');
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, 'snaphappi_api_Task_ReportFolderUploadComplete_result', $this->input_->isStrictRead());
+    else
+    {
+      $rseqid = 0;
+      $fname = null;
+      $mtype = 0;
+
+      $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+      if ($mtype == TMessageType::EXCEPTION) {
+        $x = new TApplicationException();
+        $x->read($this->input_);
+        $this->input_->readMessageEnd();
+        throw $x;
+      }
+      $result = new snaphappi_api_Task_ReportFolderUploadComplete_result();
+      $result->read($this->input_);
+      $this->input_->readMessageEnd();
+    }
+    return;
+  }
+
+  public function ReportUploadFailed($id, $folder, $path)
+  {
+    $this->send_ReportUploadFailed($id, $folder, $path);
+    $this->recv_ReportUploadFailed();
+  }
+
+  public function send_ReportUploadFailed($id, $folder, $path)
+  {
+    $args = new snaphappi_api_Task_ReportUploadFailed_args();
+    $args->id = $id;
+    $args->folder = $folder;
+    $args->path = $path;
+    $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($this->output_, 'ReportUploadFailed', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+    }
+    else
+    {
+      $this->output_->writeMessageBegin('ReportUploadFailed', TMessageType::CALL, $this->seqid_);
+      $args->write($this->output_);
+      $this->output_->writeMessageEnd();
+      $this->output_->getTransport()->flush();
+    }
+  }
+
+  public function recv_ReportUploadFailed()
+  {
+    $bin_accel = ($this->input_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_read_binary');
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, 'snaphappi_api_Task_ReportUploadFailed_result', $this->input_->isStrictRead());
+    else
+    {
+      $rseqid = 0;
+      $fname = null;
+      $mtype = 0;
+
+      $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+      if ($mtype == TMessageType::EXCEPTION) {
+        $x = new TApplicationException();
+        $x->read($this->input_);
+        $this->input_->readMessageEnd();
+        throw $x;
+      }
+      $result = new snaphappi_api_Task_ReportUploadFailed_result();
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
@@ -540,528 +592,10 @@ class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
 
 // HELPER FUNCTIONS AND STRUCTURES
 
-class snaphappi_api_Task_GetFolders_args {
+class snaphappi_api_Task_AddFolder_args {
   static $_TSPEC;
 
   public $id = null;
-
-  public function __construct($vals=null) {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        1 => array(
-          'var' => 'id',
-          'type' => TType::STRUCT,
-          'class' => 'snaphappi_api_TaskID',
-          ),
-        );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['id'])) {
-        $this->id = $vals['id'];
-      }
-    }
-  }
-
-  public function getName() {
-    return 'Task_GetFolders_args';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        case 1:
-          if ($ftype == TType::STRUCT) {
-            $this->id = new snaphappi_api_TaskID();
-            $xfer += $this->id->read($input);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('Task_GetFolders_args');
-    if ($this->id !== null) {
-      if (!is_object($this->id)) {
-        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-      }
-      $xfer += $output->writeFieldBegin('id', TType::STRUCT, 1);
-      $xfer += $this->id->write($output);
-      $xfer += $output->writeFieldEnd();
-    }
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class snaphappi_api_Task_GetFolders_result {
-  static $_TSPEC;
-
-  public $success = null;
-
-  public function __construct($vals=null) {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        0 => array(
-          'var' => 'success',
-          'type' => TType::LST,
-          'etype' => TType::STRING,
-          'elem' => array(
-            'type' => TType::STRING,
-            ),
-          ),
-        );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['success'])) {
-        $this->success = $vals['success'];
-      }
-    }
-  }
-
-  public function getName() {
-    return 'Task_GetFolders_result';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        case 0:
-          if ($ftype == TType::LST) {
-            $this->success = array();
-            $_size0 = 0;
-            $_etype3 = 0;
-            $xfer += $input->readListBegin($_etype3, $_size0);
-            for ($_i4 = 0; $_i4 < $_size0; ++$_i4)
-            {
-              $elem5 = null;
-              $xfer += $input->readString($elem5);
-              $this->success []= $elem5;
-            }
-            $xfer += $input->readListEnd();
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('Task_GetFolders_result');
-    if ($this->success !== null) {
-      if (!is_array($this->success)) {
-        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-      }
-      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
-      {
-        $output->writeListBegin(TType::STRING, count($this->success));
-        {
-          foreach ($this->success as $iter6)
-          {
-            $xfer += $output->writeString($iter6);
-          }
-        }
-        $output->writeListEnd();
-      }
-      $xfer += $output->writeFieldEnd();
-    }
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class snaphappi_api_Task_GetFiles_args {
-  static $_TSPEC;
-
-  public $id = null;
-  public $folder = null;
-
-  public function __construct($vals=null) {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        1 => array(
-          'var' => 'id',
-          'type' => TType::STRUCT,
-          'class' => 'snaphappi_api_TaskID',
-          ),
-        2 => array(
-          'var' => 'folder',
-          'type' => TType::STRING,
-          ),
-        );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['id'])) {
-        $this->id = $vals['id'];
-      }
-      if (isset($vals['folder'])) {
-        $this->folder = $vals['folder'];
-      }
-    }
-  }
-
-  public function getName() {
-    return 'Task_GetFiles_args';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        case 1:
-          if ($ftype == TType::STRUCT) {
-            $this->id = new snaphappi_api_TaskID();
-            $xfer += $this->id->read($input);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 2:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->folder);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('Task_GetFiles_args');
-    if ($this->id !== null) {
-      if (!is_object($this->id)) {
-        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-      }
-      $xfer += $output->writeFieldBegin('id', TType::STRUCT, 1);
-      $xfer += $this->id->write($output);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->folder !== null) {
-      $xfer += $output->writeFieldBegin('folder', TType::STRING, 2);
-      $xfer += $output->writeString($this->folder);
-      $xfer += $output->writeFieldEnd();
-    }
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class snaphappi_api_Task_GetFiles_result {
-  static $_TSPEC;
-
-  public $success = null;
-
-  public function __construct($vals=null) {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        0 => array(
-          'var' => 'success',
-          'type' => TType::LST,
-          'etype' => TType::STRING,
-          'elem' => array(
-            'type' => TType::STRING,
-            ),
-          ),
-        );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['success'])) {
-        $this->success = $vals['success'];
-      }
-    }
-  }
-
-  public function getName() {
-    return 'Task_GetFiles_result';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        case 0:
-          if ($ftype == TType::LST) {
-            $this->success = array();
-            $_size7 = 0;
-            $_etype10 = 0;
-            $xfer += $input->readListBegin($_etype10, $_size7);
-            for ($_i11 = 0; $_i11 < $_size7; ++$_i11)
-            {
-              $elem12 = null;
-              $xfer += $input->readString($elem12);
-              $this->success []= $elem12;
-            }
-            $xfer += $input->readListEnd();
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('Task_GetFiles_result');
-    if ($this->success !== null) {
-      if (!is_array($this->success)) {
-        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-      }
-      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
-      {
-        $output->writeListBegin(TType::STRING, count($this->success));
-        {
-          foreach ($this->success as $iter13)
-          {
-            $xfer += $output->writeString($iter13);
-          }
-        }
-        $output->writeListEnd();
-      }
-      $xfer += $output->writeFieldEnd();
-    }
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class snaphappi_api_Task_ReportFolderNotFound_args {
-  static $_TSPEC;
-
-  public $id = null;
-  public $folder = null;
-
-  public function __construct($vals=null) {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        1 => array(
-          'var' => 'id',
-          'type' => TType::STRUCT,
-          'class' => 'snaphappi_api_TaskID',
-          ),
-        2 => array(
-          'var' => 'folder',
-          'type' => TType::STRING,
-          ),
-        );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['id'])) {
-        $this->id = $vals['id'];
-      }
-      if (isset($vals['folder'])) {
-        $this->folder = $vals['folder'];
-      }
-    }
-  }
-
-  public function getName() {
-    return 'Task_ReportFolderNotFound_args';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        case 1:
-          if ($ftype == TType::STRUCT) {
-            $this->id = new snaphappi_api_TaskID();
-            $xfer += $this->id->read($input);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 2:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->folder);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('Task_ReportFolderNotFound_args');
-    if ($this->id !== null) {
-      if (!is_object($this->id)) {
-        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-      }
-      $xfer += $output->writeFieldBegin('id', TType::STRUCT, 1);
-      $xfer += $this->id->write($output);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->folder !== null) {
-      $xfer += $output->writeFieldBegin('folder', TType::STRING, 2);
-      $xfer += $output->writeString($this->folder);
-      $xfer += $output->writeFieldEnd();
-    }
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class snaphappi_api_Task_ReportFolderNotFound_result {
-  static $_TSPEC;
-
-
-  public function __construct() {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        );
-    }
-  }
-
-  public function getName() {
-    return 'Task_ReportFolderNotFound_result';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('Task_ReportFolderNotFound_result');
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class snaphappi_api_Task_ReportUploadFailed_args {
-  static $_TSPEC;
-
-  public $id = null;
-  public $folder = null;
   public $path = null;
 
   public function __construct($vals=null) {
@@ -1073,10 +607,6 @@ class snaphappi_api_Task_ReportUploadFailed_args {
           'class' => 'snaphappi_api_TaskID',
           ),
         2 => array(
-          'var' => 'folder',
-          'type' => TType::STRING,
-          ),
-        3 => array(
           'var' => 'path',
           'type' => TType::STRING,
           ),
@@ -1086,9 +616,6 @@ class snaphappi_api_Task_ReportUploadFailed_args {
       if (isset($vals['id'])) {
         $this->id = $vals['id'];
       }
-      if (isset($vals['folder'])) {
-        $this->folder = $vals['folder'];
-      }
       if (isset($vals['path'])) {
         $this->path = $vals['path'];
       }
@@ -1096,7 +623,7 @@ class snaphappi_api_Task_ReportUploadFailed_args {
   }
 
   public function getName() {
-    return 'Task_ReportUploadFailed_args';
+    return 'Task_AddFolder_args';
   }
 
   public function read($input)
@@ -1123,13 +650,6 @@ class snaphappi_api_Task_ReportUploadFailed_args {
           }
           break;
         case 2:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->folder);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 3:
           if ($ftype == TType::STRING) {
             $xfer += $input->readString($this->path);
           } else {
@@ -1148,7 +668,7 @@ class snaphappi_api_Task_ReportUploadFailed_args {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('Task_ReportUploadFailed_args');
+    $xfer += $output->writeStructBegin('Task_AddFolder_args');
     if ($this->id !== null) {
       if (!is_object($this->id)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
@@ -1157,13 +677,8 @@ class snaphappi_api_Task_ReportUploadFailed_args {
       $xfer += $this->id->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->folder !== null) {
-      $xfer += $output->writeFieldBegin('folder', TType::STRING, 2);
-      $xfer += $output->writeString($this->folder);
-      $xfer += $output->writeFieldEnd();
-    }
     if ($this->path !== null) {
-      $xfer += $output->writeFieldBegin('path', TType::STRING, 3);
+      $xfer += $output->writeFieldBegin('path', TType::STRING, 2);
       $xfer += $output->writeString($this->path);
       $xfer += $output->writeFieldEnd();
     }
@@ -1174,7 +689,7 @@ class snaphappi_api_Task_ReportUploadFailed_args {
 
 }
 
-class snaphappi_api_Task_ReportUploadFailed_result {
+class snaphappi_api_Task_AddFolder_result {
   static $_TSPEC;
 
 
@@ -1186,7 +701,7 @@ class snaphappi_api_Task_ReportUploadFailed_result {
   }
 
   public function getName() {
-    return 'Task_ReportUploadFailed_result';
+    return 'Task_AddFolder_result';
   }
 
   public function read($input)
@@ -1216,321 +731,7 @@ class snaphappi_api_Task_ReportUploadFailed_result {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('Task_ReportUploadFailed_result');
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class snaphappi_api_Task_ReportFolderUploadComplete_args {
-  static $_TSPEC;
-
-  public $id = null;
-  public $folder = null;
-
-  public function __construct($vals=null) {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        1 => array(
-          'var' => 'id',
-          'type' => TType::STRUCT,
-          'class' => 'snaphappi_api_TaskID',
-          ),
-        2 => array(
-          'var' => 'folder',
-          'type' => TType::STRING,
-          ),
-        );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['id'])) {
-        $this->id = $vals['id'];
-      }
-      if (isset($vals['folder'])) {
-        $this->folder = $vals['folder'];
-      }
-    }
-  }
-
-  public function getName() {
-    return 'Task_ReportFolderUploadComplete_args';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        case 1:
-          if ($ftype == TType::STRUCT) {
-            $this->id = new snaphappi_api_TaskID();
-            $xfer += $this->id->read($input);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 2:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->folder);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('Task_ReportFolderUploadComplete_args');
-    if ($this->id !== null) {
-      if (!is_object($this->id)) {
-        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-      }
-      $xfer += $output->writeFieldBegin('id', TType::STRUCT, 1);
-      $xfer += $this->id->write($output);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->folder !== null) {
-      $xfer += $output->writeFieldBegin('folder', TType::STRING, 2);
-      $xfer += $output->writeString($this->folder);
-      $xfer += $output->writeFieldEnd();
-    }
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class snaphappi_api_Task_ReportFolderUploadComplete_result {
-  static $_TSPEC;
-
-
-  public function __construct() {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        );
-    }
-  }
-
-  public function getName() {
-    return 'Task_ReportFolderUploadComplete_result';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('Task_ReportFolderUploadComplete_result');
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class snaphappi_api_Task_ReportFileCount_args {
-  static $_TSPEC;
-
-  public $id = null;
-  public $folder = null;
-  public $count = null;
-
-  public function __construct($vals=null) {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        1 => array(
-          'var' => 'id',
-          'type' => TType::STRUCT,
-          'class' => 'snaphappi_api_TaskID',
-          ),
-        2 => array(
-          'var' => 'folder',
-          'type' => TType::STRING,
-          ),
-        3 => array(
-          'var' => 'count',
-          'type' => TType::I32,
-          ),
-        );
-    }
-    if (is_array($vals)) {
-      if (isset($vals['id'])) {
-        $this->id = $vals['id'];
-      }
-      if (isset($vals['folder'])) {
-        $this->folder = $vals['folder'];
-      }
-      if (isset($vals['count'])) {
-        $this->count = $vals['count'];
-      }
-    }
-  }
-
-  public function getName() {
-    return 'Task_ReportFileCount_args';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        case 1:
-          if ($ftype == TType::STRUCT) {
-            $this->id = new snaphappi_api_TaskID();
-            $xfer += $this->id->read($input);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 2:
-          if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->folder);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        case 3:
-          if ($ftype == TType::I32) {
-            $xfer += $input->readI32($this->count);
-          } else {
-            $xfer += $input->skip($ftype);
-          }
-          break;
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('Task_ReportFileCount_args');
-    if ($this->id !== null) {
-      if (!is_object($this->id)) {
-        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-      }
-      $xfer += $output->writeFieldBegin('id', TType::STRUCT, 1);
-      $xfer += $this->id->write($output);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->folder !== null) {
-      $xfer += $output->writeFieldBegin('folder', TType::STRING, 2);
-      $xfer += $output->writeString($this->folder);
-      $xfer += $output->writeFieldEnd();
-    }
-    if ($this->count !== null) {
-      $xfer += $output->writeFieldBegin('count', TType::I32, 3);
-      $xfer += $output->writeI32($this->count);
-      $xfer += $output->writeFieldEnd();
-    }
-    $xfer += $output->writeFieldStop();
-    $xfer += $output->writeStructEnd();
-    return $xfer;
-  }
-
-}
-
-class snaphappi_api_Task_ReportFileCount_result {
-  static $_TSPEC;
-
-
-  public function __construct() {
-    if (!isset(self::$_TSPEC)) {
-      self::$_TSPEC = array(
-        );
-    }
-  }
-
-  public function getName() {
-    return 'Task_ReportFileCount_result';
-  }
-
-  public function read($input)
-  {
-    $xfer = 0;
-    $fname = null;
-    $ftype = 0;
-    $fid = 0;
-    $xfer += $input->readStructBegin($fname);
-    while (true)
-    {
-      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
-      if ($ftype == TType::STOP) {
-        break;
-      }
-      switch ($fid)
-      {
-        default:
-          $xfer += $input->skip($ftype);
-          break;
-      }
-      $xfer += $input->readFieldEnd();
-    }
-    $xfer += $input->readStructEnd();
-    return $xfer;
-  }
-
-  public function write($output) {
-    $xfer = 0;
-    $xfer += $output->writeStructBegin('Task_ReportFileCount_result');
+    $xfer += $output->writeStructBegin('Task_AddFolder_result');
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -1707,6 +908,376 @@ class snaphappi_api_Task_GetFileCount_result {
 
 }
 
+class snaphappi_api_Task_GetFiles_args {
+  static $_TSPEC;
+
+  public $id = null;
+  public $folder = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'id',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_TaskID',
+          ),
+        2 => array(
+          'var' => 'folder',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['id'])) {
+        $this->id = $vals['id'];
+      }
+      if (isset($vals['folder'])) {
+        $this->folder = $vals['folder'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'Task_GetFiles_args';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->id = new snaphappi_api_TaskID();
+            $xfer += $this->id->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->folder);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Task_GetFiles_args');
+    if ($this->id !== null) {
+      if (!is_object($this->id)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('id', TType::STRUCT, 1);
+      $xfer += $this->id->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->folder !== null) {
+      $xfer += $output->writeFieldBegin('folder', TType::STRING, 2);
+      $xfer += $output->writeString($this->folder);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class snaphappi_api_Task_GetFiles_result {
+  static $_TSPEC;
+
+  public $success = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        0 => array(
+          'var' => 'success',
+          'type' => TType::LST,
+          'etype' => TType::STRING,
+          'elem' => array(
+            'type' => TType::STRING,
+            ),
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['success'])) {
+        $this->success = $vals['success'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'Task_GetFiles_result';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size0 = 0;
+            $_etype3 = 0;
+            $xfer += $input->readListBegin($_etype3, $_size0);
+            for ($_i4 = 0; $_i4 < $_size0; ++$_i4)
+            {
+              $elem5 = null;
+              $xfer += $input->readString($elem5);
+              $this->success []= $elem5;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Task_GetFiles_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRING, count($this->success));
+        {
+          foreach ($this->success as $iter6)
+          {
+            $xfer += $output->writeString($iter6);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class snaphappi_api_Task_GetFolders_args {
+  static $_TSPEC;
+
+  public $id = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'id',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_TaskID',
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['id'])) {
+        $this->id = $vals['id'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'Task_GetFolders_args';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->id = new snaphappi_api_TaskID();
+            $xfer += $this->id->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Task_GetFolders_args');
+    if ($this->id !== null) {
+      if (!is_object($this->id)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('id', TType::STRUCT, 1);
+      $xfer += $this->id->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class snaphappi_api_Task_GetFolders_result {
+  static $_TSPEC;
+
+  public $success = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        0 => array(
+          'var' => 'success',
+          'type' => TType::LST,
+          'etype' => TType::STRING,
+          'elem' => array(
+            'type' => TType::STRING,
+            ),
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['success'])) {
+        $this->success = $vals['success'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'Task_GetFolders_result';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size7 = 0;
+            $_etype10 = 0;
+            $xfer += $input->readListBegin($_etype10, $_size7);
+            for ($_i11 = 0; $_i11 < $_size7; ++$_i11)
+            {
+              $elem12 = null;
+              $xfer += $input->readString($elem12);
+              $this->success []= $elem12;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Task_GetFolders_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRING, count($this->success));
+        {
+          foreach ($this->success as $iter13)
+          {
+            $xfer += $output->writeString($iter13);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class snaphappi_api_Task_GetState_args {
   static $_TSPEC;
 
@@ -1861,11 +1432,187 @@ class snaphappi_api_Task_GetState_result {
 
 }
 
-class snaphappi_api_Task_AddFolder_args {
+class snaphappi_api_Task_GetWatchedFolders_args {
   static $_TSPEC;
 
   public $id = null;
-  public $path = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'id',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_TaskID',
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['id'])) {
+        $this->id = $vals['id'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'Task_GetWatchedFolders_args';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->id = new snaphappi_api_TaskID();
+            $xfer += $this->id->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Task_GetWatchedFolders_args');
+    if ($this->id !== null) {
+      if (!is_object($this->id)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('id', TType::STRUCT, 1);
+      $xfer += $this->id->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class snaphappi_api_Task_GetWatchedFolders_result {
+  static $_TSPEC;
+
+  public $success = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        0 => array(
+          'var' => 'success',
+          'type' => TType::LST,
+          'etype' => TType::STRING,
+          'elem' => array(
+            'type' => TType::STRING,
+            ),
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['success'])) {
+        $this->success = $vals['success'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'Task_GetWatchedFolders_result';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 0:
+          if ($ftype == TType::LST) {
+            $this->success = array();
+            $_size14 = 0;
+            $_etype17 = 0;
+            $xfer += $input->readListBegin($_etype17, $_size14);
+            for ($_i18 = 0; $_i18 < $_size14; ++$_i18)
+            {
+              $elem19 = null;
+              $xfer += $input->readString($elem19);
+              $this->success []= $elem19;
+            }
+            $xfer += $input->readListEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Task_GetWatchedFolders_result');
+    if ($this->success !== null) {
+      if (!is_array($this->success)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('success', TType::LST, 0);
+      {
+        $output->writeListBegin(TType::STRING, count($this->success));
+        {
+          foreach ($this->success as $iter20)
+          {
+            $xfer += $output->writeString($iter20);
+          }
+        }
+        $output->writeListEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class snaphappi_api_Task_ReportFileCount_args {
+  static $_TSPEC;
+
+  public $id = null;
+  public $folder = null;
+  public $count = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -1876,8 +1623,12 @@ class snaphappi_api_Task_AddFolder_args {
           'class' => 'snaphappi_api_TaskID',
           ),
         2 => array(
-          'var' => 'path',
+          'var' => 'folder',
           'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'count',
+          'type' => TType::I32,
           ),
         );
     }
@@ -1885,14 +1636,17 @@ class snaphappi_api_Task_AddFolder_args {
       if (isset($vals['id'])) {
         $this->id = $vals['id'];
       }
-      if (isset($vals['path'])) {
-        $this->path = $vals['path'];
+      if (isset($vals['folder'])) {
+        $this->folder = $vals['folder'];
+      }
+      if (isset($vals['count'])) {
+        $this->count = $vals['count'];
       }
     }
   }
 
   public function getName() {
-    return 'Task_AddFolder_args';
+    return 'Task_ReportFileCount_args';
   }
 
   public function read($input)
@@ -1920,7 +1674,14 @@ class snaphappi_api_Task_AddFolder_args {
           break;
         case 2:
           if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->path);
+            $xfer += $input->readString($this->folder);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->count);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -1937,7 +1698,7 @@ class snaphappi_api_Task_AddFolder_args {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('Task_AddFolder_args');
+    $xfer += $output->writeStructBegin('Task_ReportFileCount_args');
     if ($this->id !== null) {
       if (!is_object($this->id)) {
         throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
@@ -1946,9 +1707,14 @@ class snaphappi_api_Task_AddFolder_args {
       $xfer += $this->id->write($output);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->path !== null) {
-      $xfer += $output->writeFieldBegin('path', TType::STRING, 2);
-      $xfer += $output->writeString($this->path);
+    if ($this->folder !== null) {
+      $xfer += $output->writeFieldBegin('folder', TType::STRING, 2);
+      $xfer += $output->writeString($this->folder);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->count !== null) {
+      $xfer += $output->writeFieldBegin('count', TType::I32, 3);
+      $xfer += $output->writeI32($this->count);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -1958,7 +1724,7 @@ class snaphappi_api_Task_AddFolder_args {
 
 }
 
-class snaphappi_api_Task_AddFolder_result {
+class snaphappi_api_Task_ReportFileCount_result {
   static $_TSPEC;
 
 
@@ -1970,7 +1736,7 @@ class snaphappi_api_Task_AddFolder_result {
   }
 
   public function getName() {
-    return 'Task_AddFolder_result';
+    return 'Task_ReportFileCount_result';
   }
 
   public function read($input)
@@ -2000,7 +1766,468 @@ class snaphappi_api_Task_AddFolder_result {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('Task_AddFolder_result');
+    $xfer += $output->writeStructBegin('Task_ReportFileCount_result');
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class snaphappi_api_Task_ReportFolderNotFound_args {
+  static $_TSPEC;
+
+  public $id = null;
+  public $folder = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'id',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_TaskID',
+          ),
+        2 => array(
+          'var' => 'folder',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['id'])) {
+        $this->id = $vals['id'];
+      }
+      if (isset($vals['folder'])) {
+        $this->folder = $vals['folder'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'Task_ReportFolderNotFound_args';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->id = new snaphappi_api_TaskID();
+            $xfer += $this->id->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->folder);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Task_ReportFolderNotFound_args');
+    if ($this->id !== null) {
+      if (!is_object($this->id)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('id', TType::STRUCT, 1);
+      $xfer += $this->id->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->folder !== null) {
+      $xfer += $output->writeFieldBegin('folder', TType::STRING, 2);
+      $xfer += $output->writeString($this->folder);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class snaphappi_api_Task_ReportFolderNotFound_result {
+  static $_TSPEC;
+
+
+  public function __construct() {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        );
+    }
+  }
+
+  public function getName() {
+    return 'Task_ReportFolderNotFound_result';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Task_ReportFolderNotFound_result');
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class snaphappi_api_Task_ReportFolderUploadComplete_args {
+  static $_TSPEC;
+
+  public $id = null;
+  public $folder = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'id',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_TaskID',
+          ),
+        2 => array(
+          'var' => 'folder',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['id'])) {
+        $this->id = $vals['id'];
+      }
+      if (isset($vals['folder'])) {
+        $this->folder = $vals['folder'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'Task_ReportFolderUploadComplete_args';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->id = new snaphappi_api_TaskID();
+            $xfer += $this->id->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->folder);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Task_ReportFolderUploadComplete_args');
+    if ($this->id !== null) {
+      if (!is_object($this->id)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('id', TType::STRUCT, 1);
+      $xfer += $this->id->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->folder !== null) {
+      $xfer += $output->writeFieldBegin('folder', TType::STRING, 2);
+      $xfer += $output->writeString($this->folder);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class snaphappi_api_Task_ReportFolderUploadComplete_result {
+  static $_TSPEC;
+
+
+  public function __construct() {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        );
+    }
+  }
+
+  public function getName() {
+    return 'Task_ReportFolderUploadComplete_result';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Task_ReportFolderUploadComplete_result');
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class snaphappi_api_Task_ReportUploadFailed_args {
+  static $_TSPEC;
+
+  public $id = null;
+  public $folder = null;
+  public $path = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'id',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_TaskID',
+          ),
+        2 => array(
+          'var' => 'folder',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'path',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['id'])) {
+        $this->id = $vals['id'];
+      }
+      if (isset($vals['folder'])) {
+        $this->folder = $vals['folder'];
+      }
+      if (isset($vals['path'])) {
+        $this->path = $vals['path'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'Task_ReportUploadFailed_args';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->id = new snaphappi_api_TaskID();
+            $xfer += $this->id->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->folder);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->path);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Task_ReportUploadFailed_args');
+    if ($this->id !== null) {
+      if (!is_object($this->id)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('id', TType::STRUCT, 1);
+      $xfer += $this->id->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->folder !== null) {
+      $xfer += $output->writeFieldBegin('folder', TType::STRING, 2);
+      $xfer += $output->writeString($this->folder);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->path !== null) {
+      $xfer += $output->writeFieldBegin('path', TType::STRING, 3);
+      $xfer += $output->writeString($this->path);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class snaphappi_api_Task_ReportUploadFailed_result {
+  static $_TSPEC;
+
+
+  public function __construct() {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        );
+    }
+  }
+
+  public function getName() {
+    return 'Task_ReportUploadFailed_result';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Task_ReportUploadFailed_result');
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -2202,110 +2429,20 @@ class TaskProcessor {
     return true;
   }
 
-  protected function process_GetFolders($seqid, $input, $output) {
-    $args = new snaphappi_api_Task_GetFolders_args();
+  protected function process_AddFolder($seqid, $input, $output) {
+    $args = new snaphappi_api_Task_AddFolder_args();
     $args->read($input);
     $input->readMessageEnd();
-    $result = new snaphappi_api_Task_GetFolders_result();
-    $result->success = $this->handler_->GetFolders($args->id);
+    $result = new snaphappi_api_Task_AddFolder_result();
+    $this->handler_->AddFolder($args->id, $args->path);
     $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
-      thrift_protocol_write_binary($output, 'GetFolders', TMessageType::REPLY, $result, $seqid, $output->isStrictWrite());
+      thrift_protocol_write_binary($output, 'AddFolder', TMessageType::REPLY, $result, $seqid, $output->isStrictWrite());
     }
     else
     {
-      $output->writeMessageBegin('GetFolders', TMessageType::REPLY, $seqid);
-      $result->write($output);
-      $output->getTransport()->flush();
-    }
-  }
-  protected function process_GetFiles($seqid, $input, $output) {
-    $args = new snaphappi_api_Task_GetFiles_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new snaphappi_api_Task_GetFiles_result();
-    $result->success = $this->handler_->GetFiles($args->id, $args->folder);
-    $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
-    if ($bin_accel)
-    {
-      thrift_protocol_write_binary($output, 'GetFiles', TMessageType::REPLY, $result, $seqid, $output->isStrictWrite());
-    }
-    else
-    {
-      $output->writeMessageBegin('GetFiles', TMessageType::REPLY, $seqid);
-      $result->write($output);
-      $output->getTransport()->flush();
-    }
-  }
-  protected function process_ReportFolderNotFound($seqid, $input, $output) {
-    $args = new snaphappi_api_Task_ReportFolderNotFound_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new snaphappi_api_Task_ReportFolderNotFound_result();
-    $this->handler_->ReportFolderNotFound($args->id, $args->folder);
-    $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
-    if ($bin_accel)
-    {
-      thrift_protocol_write_binary($output, 'ReportFolderNotFound', TMessageType::REPLY, $result, $seqid, $output->isStrictWrite());
-    }
-    else
-    {
-      $output->writeMessageBegin('ReportFolderNotFound', TMessageType::REPLY, $seqid);
-      $result->write($output);
-      $output->getTransport()->flush();
-    }
-  }
-  protected function process_ReportUploadFailed($seqid, $input, $output) {
-    $args = new snaphappi_api_Task_ReportUploadFailed_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new snaphappi_api_Task_ReportUploadFailed_result();
-    $this->handler_->ReportUploadFailed($args->id, $args->folder, $args->path);
-    $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
-    if ($bin_accel)
-    {
-      thrift_protocol_write_binary($output, 'ReportUploadFailed', TMessageType::REPLY, $result, $seqid, $output->isStrictWrite());
-    }
-    else
-    {
-      $output->writeMessageBegin('ReportUploadFailed', TMessageType::REPLY, $seqid);
-      $result->write($output);
-      $output->getTransport()->flush();
-    }
-  }
-  protected function process_ReportFolderUploadComplete($seqid, $input, $output) {
-    $args = new snaphappi_api_Task_ReportFolderUploadComplete_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new snaphappi_api_Task_ReportFolderUploadComplete_result();
-    $this->handler_->ReportFolderUploadComplete($args->id, $args->folder);
-    $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
-    if ($bin_accel)
-    {
-      thrift_protocol_write_binary($output, 'ReportFolderUploadComplete', TMessageType::REPLY, $result, $seqid, $output->isStrictWrite());
-    }
-    else
-    {
-      $output->writeMessageBegin('ReportFolderUploadComplete', TMessageType::REPLY, $seqid);
-      $result->write($output);
-      $output->getTransport()->flush();
-    }
-  }
-  protected function process_ReportFileCount($seqid, $input, $output) {
-    $args = new snaphappi_api_Task_ReportFileCount_args();
-    $args->read($input);
-    $input->readMessageEnd();
-    $result = new snaphappi_api_Task_ReportFileCount_result();
-    $this->handler_->ReportFileCount($args->id, $args->folder, $args->count);
-    $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
-    if ($bin_accel)
-    {
-      thrift_protocol_write_binary($output, 'ReportFileCount', TMessageType::REPLY, $result, $seqid, $output->isStrictWrite());
-    }
-    else
-    {
-      $output->writeMessageBegin('ReportFileCount', TMessageType::REPLY, $seqid);
+      $output->writeMessageBegin('AddFolder', TMessageType::REPLY, $seqid);
       $result->write($output);
       $output->getTransport()->flush();
     }
@@ -2328,6 +2465,42 @@ class TaskProcessor {
       $output->getTransport()->flush();
     }
   }
+  protected function process_GetFiles($seqid, $input, $output) {
+    $args = new snaphappi_api_Task_GetFiles_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    $result = new snaphappi_api_Task_GetFiles_result();
+    $result->success = $this->handler_->GetFiles($args->id, $args->folder);
+    $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($output, 'GetFiles', TMessageType::REPLY, $result, $seqid, $output->isStrictWrite());
+    }
+    else
+    {
+      $output->writeMessageBegin('GetFiles', TMessageType::REPLY, $seqid);
+      $result->write($output);
+      $output->getTransport()->flush();
+    }
+  }
+  protected function process_GetFolders($seqid, $input, $output) {
+    $args = new snaphappi_api_Task_GetFolders_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    $result = new snaphappi_api_Task_GetFolders_result();
+    $result->success = $this->handler_->GetFolders($args->id);
+    $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($output, 'GetFolders', TMessageType::REPLY, $result, $seqid, $output->isStrictWrite());
+    }
+    else
+    {
+      $output->writeMessageBegin('GetFolders', TMessageType::REPLY, $seqid);
+      $result->write($output);
+      $output->getTransport()->flush();
+    }
+  }
   protected function process_GetState($seqid, $input, $output) {
     $args = new snaphappi_api_Task_GetState_args();
     $args->read($input);
@@ -2346,20 +2519,92 @@ class TaskProcessor {
       $output->getTransport()->flush();
     }
   }
-  protected function process_AddFolder($seqid, $input, $output) {
-    $args = new snaphappi_api_Task_AddFolder_args();
+  protected function process_GetWatchedFolders($seqid, $input, $output) {
+    $args = new snaphappi_api_Task_GetWatchedFolders_args();
     $args->read($input);
     $input->readMessageEnd();
-    $result = new snaphappi_api_Task_AddFolder_result();
-    $this->handler_->AddFolder($args->id, $args->path);
+    $result = new snaphappi_api_Task_GetWatchedFolders_result();
+    $result->success = $this->handler_->GetWatchedFolders($args->id);
     $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
-      thrift_protocol_write_binary($output, 'AddFolder', TMessageType::REPLY, $result, $seqid, $output->isStrictWrite());
+      thrift_protocol_write_binary($output, 'GetWatchedFolders', TMessageType::REPLY, $result, $seqid, $output->isStrictWrite());
     }
     else
     {
-      $output->writeMessageBegin('AddFolder', TMessageType::REPLY, $seqid);
+      $output->writeMessageBegin('GetWatchedFolders', TMessageType::REPLY, $seqid);
+      $result->write($output);
+      $output->getTransport()->flush();
+    }
+  }
+  protected function process_ReportFileCount($seqid, $input, $output) {
+    $args = new snaphappi_api_Task_ReportFileCount_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    $result = new snaphappi_api_Task_ReportFileCount_result();
+    $this->handler_->ReportFileCount($args->id, $args->folder, $args->count);
+    $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($output, 'ReportFileCount', TMessageType::REPLY, $result, $seqid, $output->isStrictWrite());
+    }
+    else
+    {
+      $output->writeMessageBegin('ReportFileCount', TMessageType::REPLY, $seqid);
+      $result->write($output);
+      $output->getTransport()->flush();
+    }
+  }
+  protected function process_ReportFolderNotFound($seqid, $input, $output) {
+    $args = new snaphappi_api_Task_ReportFolderNotFound_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    $result = new snaphappi_api_Task_ReportFolderNotFound_result();
+    $this->handler_->ReportFolderNotFound($args->id, $args->folder);
+    $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($output, 'ReportFolderNotFound', TMessageType::REPLY, $result, $seqid, $output->isStrictWrite());
+    }
+    else
+    {
+      $output->writeMessageBegin('ReportFolderNotFound', TMessageType::REPLY, $seqid);
+      $result->write($output);
+      $output->getTransport()->flush();
+    }
+  }
+  protected function process_ReportFolderUploadComplete($seqid, $input, $output) {
+    $args = new snaphappi_api_Task_ReportFolderUploadComplete_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    $result = new snaphappi_api_Task_ReportFolderUploadComplete_result();
+    $this->handler_->ReportFolderUploadComplete($args->id, $args->folder);
+    $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($output, 'ReportFolderUploadComplete', TMessageType::REPLY, $result, $seqid, $output->isStrictWrite());
+    }
+    else
+    {
+      $output->writeMessageBegin('ReportFolderUploadComplete', TMessageType::REPLY, $seqid);
+      $result->write($output);
+      $output->getTransport()->flush();
+    }
+  }
+  protected function process_ReportUploadFailed($seqid, $input, $output) {
+    $args = new snaphappi_api_Task_ReportUploadFailed_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    $result = new snaphappi_api_Task_ReportUploadFailed_result();
+    $this->handler_->ReportUploadFailed($args->id, $args->folder, $args->path);
+    $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($output, 'ReportUploadFailed', TMessageType::REPLY, $result, $seqid, $output->isStrictWrite());
+    }
+    else
+    {
+      $output->writeMessageBegin('ReportUploadFailed', TMessageType::REPLY, $seqid);
       $result->write($output);
       $output->getTransport()->flush();
     }
