@@ -233,16 +233,20 @@ $previewOrientation = 	isset($exif['preview']['Orientation']) ? $exif['preview']
 	 * 	$options['ProviderName] = 'snappi'
 	 *  $options['request'] = cache_Refresh Request
 	 *  $options['cache_key'] = cache_Refresh cache_key
+	 *  also, $this->paginate[$paginateModel]['extras']:
+	 *     [show_edits] => 1
+	 *     [join_shots] => Usershot
+	 *     [show_hidden_shots] => 1
+	 *     [shot_id] => 4ff90f01-bef8-49d1-969c-0725f67883f5
+	 *     [group_as_shot_permission] => Usershot
 	 */
 	function getCastingCall($assets, $cache = true, $options=array()) {
 		$options = array_merge(array('ProviderName'=>'snappi'), $options);
-		extract($options);
 		$class='Asset';
 		if (isset($assets['Asset'])) $assets = & $assets['Asset'];
 		
 		$Request = !empty($request) ? $request : $this->controller->here;
-		$ShowHidden = Configure::read("afterFind.Asset.showHiddenShots");
-//		Configure::delete('afterFind.Asset.showHiddenShots');
+		
 		$Page = @ifed($this->controller->params['paging'][$class]['page'], 1);
 		$Pages = @ifed($this->controller->params['paging'][$class]['pageCount'], 1);
 		$Perpage = @ifed($this->controller->params['paging'][$class]['options']['limit'], @ifed($this->controller->params['paging'][$class]['defaults']['limit'], null));
@@ -250,9 +254,10 @@ $previewOrientation = 	isset($exif['preview']['Orientation']) ? $exif['preview']
 		$Baseurl = Stagehand::$stage_baseurl;
 		//debug(compact('Audition','Total','Perpage','Pages','Page','Baseurl'));
 		// check permissions for groupAsShot 
-		$pageable = Configure::read('paginate');
-		$ShotType = Configure::read("paginate.Options.{$pageable['Model']}.extras.join_shots");
-		$GroupAsShotPerm = Configure::read("paginate.Options.{$pageable['Model']}.extras.group_as_shot_permission");
+		$extras = Configure::read("paginate.Options.".Configure::read('paginate.Model').".extras");
+		$ShotType = !empty($extras['join_shots']);
+		$GroupAsShotPerm = !empty($extras['group_as_shot_permission']);
+		$ShowHidden = !empty($extras['show_hidden_shots']);
 		//
 
 		$Audition = array(); $Bestshot = array();
@@ -264,7 +269,7 @@ $previewOrientation = 	isset($exif['preview']['Orientation']) ? $exif['preview']
 		$Auditions = compact('Audition','Bestshot','Total','Perpage','Pages','Page','Baseurl', 'ShotType');
 		$Timestamp = time();
 		$ID = empty($cache_key) ? $Timestamp : $cache_key;
-		$CastingCall = compact('ID', 'Timestamp', 'ProviderName','Auditions','Substitutions','Tags','Clusters', 'Request', 'GroupAsShotPerm', 'ShowHidden');
+		$CastingCall = compact('ID', 'Timestamp', 'ProviderName','Auditions','Substitutions','Tags','Clusters', 'Request', 'GroupAsShotPerm', 'ShowHidden', 'ShowInactiveShots');
 
 		/*
 		 * add Groupings, i.e. Subsitutions, Tags, Clusters

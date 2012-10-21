@@ -263,9 +263,10 @@ AND includes.asset_id='{$assetId}';
 		$only_bestshot_system = !empty($queryData['extras']['only_bestshot_system']); // default false
 		$only_shots = !empty($queryData['extras']['only_shots']); // default false
 		$show_inactive_shots = !empty($queryData['extras']['show_inactive_shots']) || !empty($queryData['extras']['shot_id']);
-		
+		$shot_priority =  !empty($queryData['extras']['shot-priority']) ? $queryData['extras']['shot-priority'] : NULL;
 		
 		if ($shotType == 'Groupshot') {
+			$this->Shot = ClassRegistry::init('Groupshot');
 			if (!in_array('assets_groups', Set::extract('/table',$queryData['joins']))){
 				$joins[] = array(
 						'table'=>'assets_groups',
@@ -318,6 +319,7 @@ AND includes.asset_id='{$assetId}';
 			$fields = array('`Shot`.id AS `shot_id`', '`Shot`.owner_id AS `shot_owner_id`', '`Shot`.assets_groupshot_count AS `shot_count`');
 		} else {
 			// join with Usershots
+			$this->Shot = ClassRegistry::init('Usershot');
 			$joins[] =  array(
 					'table'=>'assets_usershots',
 					'alias'=>'AssetsUsershot',
@@ -360,7 +362,6 @@ AND includes.asset_id='{$assetId}';
 		}
 	
 		// show or hide hidden shots
-		Configure::write('afterFind.Asset.showHiddenShots', $show_hidden_shots);
 		// join_shots=1
 		// join_bestshots=0,1
 		// show_hidden_shots=0,1
@@ -370,6 +371,7 @@ AND includes.asset_id='{$assetId}';
 			$join_bestshot = false;	// by definition(?)
 			if (!empty($queryData['extras']['shot_id'])) {
 				// ignore Shot.active if shot_id was given
+				$show_inactive_shots = 1;
 				$conditions[] = array('`Shot`.`id`'=> $queryData['extras']['shot_id']);	// Shot alias for Usershot or Groupshot
 			} else {
 				// show hidden shots, but do NOT care which ones are bestshot Member/Owner/System
@@ -380,7 +382,7 @@ AND includes.asset_id='{$assetId}';
 						'`AssetsUsershot`.`usershot_id` IS NULL'
 					), 
 					array( 
-						'`Shot`.active'=>1,
+						($show_inactive_shots ? 1 : '`Shot`.active' ),
 					)),
 				);
 			}
@@ -411,6 +413,11 @@ AND includes.asset_id='{$assetId}';
 				)),
 			);
 		} 
+		if ($show_inactive_shots) $fields[] = '`Shot`.active';
+		if ($shot_priority) {
+			$conditions[] = array('`Shot`.priority' => $this->Shot->_get_ShotPriority($shot_priority));
+		}
+		
 		/*
 		 * these conditions must be OUTSIDE the LEFT JOIN
 		 */ 

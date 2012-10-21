@@ -508,6 +508,7 @@ if (!empty($this->passedArgs['raw'])) {
 			case 'hiddenShots':
 			case 'setprop':	// deprecate	
 				$paginateArray = $Model->getPaginatePhotosByShotId($id, $paginateArray, $shotType);
+				$this->viewVars['jsonData']['Shot']['id'] = $id;
 			break;
 		}		
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
@@ -518,6 +519,13 @@ if (!empty($this->passedArgs['raw'])) {
 		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 		$castingCall = $this->CastingCall->getCastingCall($pageData);
 		$this->viewVars['jsonData']['castingCall'] = $castingCall;
+		
+		// extract Shot properties		
+		$shot = array('id'=>$id);
+		$shot['owner_id'] = $pageData[0]['shot_owner_id'];
+		$shot['priority'] = $pageData[0]['shot_priority'];
+		$shot['count'] = $pageData[0]['shot_count'];
+		$this->viewVars['jsonData']['Shot'] = $shot;
 		
 		$done = $this->renderXHRByRequest('json', '/elements/assets/hidden_shots', null , 0);
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false

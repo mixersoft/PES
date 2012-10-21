@@ -342,6 +342,7 @@ class WorkordersController extends AppController {
 	
 	
 	/**
+	 * for testing/script/command-shell only
 	 * same as action=photos except
 	 *		$paginateArray['extras']['show_hidden_shots']=1;
 	 *		$paginateArray['extras']['hide_SharedEdits']=1;	// TODO:??? use score, if any, for bestshot here? 
@@ -353,7 +354,14 @@ class WorkordersController extends AppController {
 		$required_options['extras']['show_hidden_shots']=1;
 		$required_options['extras']['hide_SharedEdits']=0;
 		// $default_options['extras']['only_bestshot_system']=0;
-	
+		
+		// debug: see test results
+		$markup = "<A href=':url' target='_blank'>click here</A>";
+		$show_shots['see-all-shots'] = str_replace(':url',Router::url(array('action'=>'shots', 0=>$id, 'perpage'=>10,  'all-shots'=>1), true), $markup);
+		$show_shots['see-only-script-shots'] = str_replace(':url',Router::url(array('action'=>'shots', 0=>$id, 'perpage'=>10, 'only-script-shots'=>1), true), $markup);
+		debug($show_shots);
+		
+		
 		$this->layout = 'snappi';
 		$this->helpers[] = 'Time';
 
@@ -381,8 +389,12 @@ class WorkordersController extends AppController {
 		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 		if (!isset($this->Gist)) $this->Gist = loadComponent('Gist', $this); 
 		$castingCall = $this->CastingCall->getCastingCall($pageData, $cache=false);
-		$image_groups = $this->Gist->getImageGroupFromCC($castingCall);
 		
+		// bind $script_owner to image-group runtime settings 
+		$script_owner = empty($this->passedArgs['circle']) ? 'image-group' : 'image-group-circles';
+		$preserveOrder = $script_owner == 'image-group';
+	
+		$image_groups = $this->Gist->getImageGroupFromCC($castingCall, $preserveOrder);
 		/*
 		 * import image_group output as Usershots with correct ROLE/priority
 		 * use Usershot.priority=30
@@ -391,7 +403,7 @@ class WorkordersController extends AppController {
 		$ScriptUser_options = array(
 			'conditions'=>array(
 				'primary_group_id'=>Configure::read('lookup.roles.SCRIPT'),
-				'username'=>'image-group',
+				'username'=>$script_owner,
 			)
 		);
 		$data = ClassRegistry::init('User')->find('first', $ScriptUser_options);
@@ -401,8 +413,18 @@ class WorkordersController extends AppController {
 		// create Script Usershots
 		$newShots = array();
 		$Usershot = ClassRegistry::init('Usershot');
-		foreach($image_groups['Groups'] as $groupAsShot_aids) {
-			if (count($groupAsShot_aids)==1) continue;		// skip if only one uuid, group of 1
+		/**
+		 * Q: should we delete all Shots owned by image-group first?
+		 */
+		foreach($image_groups['Groups'] as $i => $groupAsShot_aids) {
+			
+			// debug
+			// if ($i > 5) break;
+			
+			if (count($groupAsShot_aids)==1) {
+				unset($image_groups['Groups'][$i]); 
+				continue;		// skip if only one uuid, group of 1
+			}
 			$result = $Usershot->groupAsShot($groupAsShot_aids, $force=true);
 			if ($result['success']) {
 				$newShots[] = array(
@@ -417,8 +439,14 @@ class WorkordersController extends AppController {
 			}
 			
 		}
-debug($newShots);
 		
+// debug GistComponent output		
+$image_groups = json_encode($image_groups);
+$this->log(	"GistComponent->getImageGroupFromCC(): filtered output", LOG_DEBUG);
+$this->log(	$image_groups, LOG_DEBUG);
+debug($image_groups);
+debug($newShots);
+
 		$this->viewVars['jsonData']['imageGroups'] = $newShots;
 		// $this->viewVars['jsonData']['castingCall'] = $castingCall;
 		$this->RequestHandler->ext = 'json';			// force JSON response
@@ -565,6 +593,11 @@ if (!empty($this->passedArgs['all-shots'])) {
 	$paginateArray['extras']['only_shots'] = 1;	
 	$paginateArray['extras']['only_bestshot_system'] = 1;	
 	$paginateArray['extras']['show_inactive_shots'] = !empty($this->passedArgs['all-shots']);
+	if (!empty($this->passedArgs['only-script-shots'])) {
+		$paginateArray['extras']['show_inactive_shots'] = 1;
+		$paginateArray['extras']['only_shots'] = 1;	
+		$paginateArray['extras']['shot-priority'] = 'SCRIPT';
+	};
 		
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);

@@ -67,8 +67,20 @@ $this->viewVars['jsonData']['STATE'] = $state;
 						shotGallery.showShotGallery(selected);
 					}, g);
 				}
+			});
+			SNAPPI.Y.on('snappi:shot-gallery-render-complete', function(g, shot){
 				if (g._cfg.type == "ShotGalleryShot") {
-					var check;
+					switch(shot.priority) {
+						case '10': break;
+						case '20': 
+						case '30':
+							if (shot.owner_id == '506a0861-0000-4bf3-8f16-6aab0afc6d44') {
+								g.header.ancestor('.filmstrip').addClass('shot-priority-31');
+							} else 
+								g.header.ancestor('.filmstrip').addClass('shot-priority-'+shot.priority);
+							break;
+						default: break;
+					}
 				}
 			});
 						

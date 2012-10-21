@@ -683,7 +683,6 @@
     	shotGallery.showShotGallery(selected, {
     		successJson: function(e, i,o,args) {
     			// same as Gallery.showShotGallery(), but add dialog.refresh()
-    			// TODO: use Gallery.showShotGallery() codepath
 					var response = o.responseJson.response;
 					// get auditions from raw json castingCall
 					var shotCC = response.castingCall;

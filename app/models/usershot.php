@@ -117,7 +117,7 @@ class Usershot extends AppModel {
 	 * higher priority can *deactivate* lower priority shots
 	 * equal priority will *replace* existing shots
 	 */
-	private function _get_ShotPriority($role=null){
+	public function _get_ShotPriority($role=null){
 		if (!$role) $role = AppController::$role;
 		$role_priority_lookup['USER'] = 10;
 		$role_priority_lookup['MANAGER'] = 20;
@@ -166,7 +166,7 @@ class Usershot extends AppModel {
 		
 		$data = $Asset->find('all', $options);	
 // debug($data);		
-		$existing_shots = Set::combine($data, '/Shot/shot_id', '/Shot/shot_priority');
+		$existing_shots = array_filter(Set::combine($data, '/Shot/shot_id', '/Shot/shot_priority'));
 		$permitted_AssetIds = array_unique(Set::extract('/Asset/id', $data)); // aids sorted by SharedEdit.score DESC in bestshot order
 // debug($permitted_AssetIds);
 		$no_permissions = array_diff($assetIds, $permitted_AssetIds);
@@ -194,7 +194,7 @@ class Usershot extends AppModel {
 		 $shot_priority = $this->_get_ShotPriority();
 		 $cleanup = array();
 		 foreach ($existing_shots as $shot_id=>$old_priority) {
-		 	if (!$shot_id) continue;
+		 	if (!$shot_id) continue;	// should be fixed by array_filter()
 		 	if ($old_priority < $shot_priority) {
 		 		if ($force) {
 		 			// force creation of Usershot at a lower priority, but set Usershot.active=0
@@ -208,15 +208,36 @@ class Usershot extends AppModel {
 			 		return compact('success', 'message', 'response');
 				} 
 		 	}
-		 	if ($old_priority == $shot_priority) $cleanup['unGroupShots'][] = $shot_id;
+		 	if ($old_priority == $shot_priority) {
+		 		if ( $shot_priority == $this->_get_ShotPriority('SCRIPT') ) {
+		 			// for SCRIPT shots, REMOVE asset from old Shot 
+		 			$cleanup['removeFromShots'] = Set::combine($data, '/Shot/shot_id', '/Asset/id');
+				} else $cleanup['unGroupShots'][] = $shot_id;
+			}
 			if ($old_priority > $shot_priority) $cleanup['deactivateShots'][] = $shot_id;
 		 } 
 		 
-		/*
-		 * if an Asset is ALREADY in a Shot: 
-		 * 		*ASSUME* that Asset is the Bestshot, and add all hiddenShots to NEW Shot
-		 */
-		if (count($existing_shots))	{
+		
+		if (count($existing_shots) && $shot_priority == $this->_get_ShotPriority('SCRIPT')) {
+			/*
+			 * NOTE: for priority=SCRIPT, we CANNOT assume the Asset is a Bestshot
+			 * 		REMOVE Asset from any existing shot with priority=SCRIPT
+			 * 		DELETE FROM AssetsShots WHERE Shot.priority=30
+			 */
+			
+			/*
+			 * ???: SCRIPT SHOTS should have $force=true
+			 */ 
+			debug("WARNING: asset Id is in another shot");	
+$existing_shots = Set::combine($data, '/Shot/shot_id', '/Asset/id');
+debug($existing_shots);
+			$existing_shots = null;		// for now, skip ungroup
+		} else if (count($existing_shots))	{
+			/*
+			 * if an Asset is ALREADY in a Shot and the Shot was created from UI: 
+			 * 		*ASSUME* that Asset is the Bestshot, and add all hiddenShots to NEW Shot
+			 * 		
+			 */			
 			$hiddenShot_options = array(
 				'fields'=>array("`AssetsUsershot`.asset_id"),
 				'conditions'=>array(
@@ -226,20 +247,20 @@ class Usershot extends AppModel {
 			$Asset->AssetsUsershot = ClassRegistry::init('AssetsUsershot');
 			$hiddenShot_data = $Asset->AssetsUsershot->find('all', $hiddenShot_options);
 			$hiddenShot_assetIds = Set::extract($hiddenShot_data, '/AssetsUsershot/asset_id');
-// debug($hiddenShot_assetIds); 		
+debug($hiddenShot_assetIds); 		
 			$permitted_AssetIds = array_unique(array_merge($permitted_AssetIds, $hiddenShot_assetIds));
 		}
 
 		// create Usershot
 		// add assetIds to AssetsUsershot
-		$insert = array();
+		$insert = $this->create();
 		$insert['Usershot']['owner_id'] = AppController::$userid; 
 		$insert['Usershot']['priority'] = $shot_priority; 
 		$insert['Usershot']['active'] = $isActive; 
 		foreach ($permitted_AssetIds as $assetId) {
 			$insert['AssetsUsershot'][]['asset_id'] = $assetId;
 		}		
-// debug($permitted_AssetIds);
+debug($permitted_AssetIds);
 		if (count($permitted_AssetIds)) {
 			// set Bestshot for NEW group
 			// set BestShotSystem by sort order, sort=='`SharedEdit`.score DESC, `Asset`.dateTaken ASC', 
@@ -263,7 +284,7 @@ class Usershot extends AppModel {
 			$ret = $this->saveAll($insert, array('validate'=>'first'));
 		} 
 		
-// debug($insert); 
+debug($insert); 
 		if (isset($ret)) {
 			$success = $ret != false;
 			$message[] = 'Usershot->groupAsShot: OK';
@@ -274,7 +295,7 @@ class Usershot extends AppModel {
 			
 			// after saving NEW shot, cleanup old shots
 			// unGroupShot if same priority, deactivate shot if lower priority (higher number)
-// debug($cleanup);
+debug($cleanup);
 			if (!empty($cleanup['unGroupShots'])) {
 				// TODO: delete old/orphaned Shots using QUEUE
 				$resp1 = $this->unGroupShot($cleanup['unGroupShots']);

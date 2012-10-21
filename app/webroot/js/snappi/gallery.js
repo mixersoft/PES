@@ -1807,7 +1807,7 @@
 			        		}
 	                    }
 	                    this.render( options);		// render shot directly
-	                    _Y.fire('snappi:shot-gallery-rendered', this, shot);
+	                    _Y.fire('snappi:shot-gallery-render-complete', this, response.Shot);
 	                    return false;
 					},
 				};
