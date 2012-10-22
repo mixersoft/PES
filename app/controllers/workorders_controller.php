@@ -355,12 +355,34 @@ class WorkordersController extends AppController {
 		$required_options['extras']['hide_SharedEdits']=0;
 		// $default_options['extras']['only_bestshot_system']=0;
 		
-		// debug: see test results
-		$markup = "<A href=':url' target='_blank'>click here</A>";
-		$show_shots['see-all-shots'] = str_replace(':url',Router::url(array('action'=>'shots', 0=>$id, 'perpage'=>10,  'all-shots'=>1), true), $markup);
-		$show_shots['see-only-script-shots'] = str_replace(':url',Router::url(array('action'=>'shots', 0=>$id, 'perpage'=>10, 'only-script-shots'=>1), true), $markup);
-		debug($show_shots);
 		
+		/*
+		 * test and debug code. $config['isDev']
+		 */ 
+		if (Configure::read('isDev')) {
+			if (!isset($this->passedArgs['reset']) || !empty($this->passedArgs['reset'])) {
+				// default is to delete old SCRIPT shots, use /reset:0 to preserve 
+				$reset_SQL = "
+	delete snappi.usershots s, snappi.assets_usershots au
+	from snappi.usershots s
+	join snappi.users u on u.id = s.owner_id
+	join snappi.assets_usershots au on au.usershot_id = s.id
+	join snappi_workorders.assets_workorders aw on aw.asset_id = au.asset_id
+	where s.priority = 30
+	  and u.username like 'image-group%'
+	  and aw.workorder_id ='{$id}';";
+	  			$this->Workorder->query($reset_SQL);
+			}
+			
+			// debug: see test results
+			$markup = "<A href=':url' target='_blank'>click here</A>";
+			$show_shots['see-all-shots'] = str_replace(':url',Router::url(array('action'=>'shots', 0=>$id, 'perpage'=>10,  'all-shots'=>1), true), $markup);
+			$show_shots['see-only-script-shots'] = str_replace(':url',Router::url(array('action'=>'shots', 0=>$id, 'perpage'=>10, 'only-script-shots'=>1), true), $markup);
+			debug($show_shots);
+		}
+		/*
+		 * end test and debug code
+		 */ 
 		
 		$this->layout = 'snappi';
 		$this->helpers[] = 'Time';
