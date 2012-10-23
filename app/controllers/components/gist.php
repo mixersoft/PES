@@ -52,6 +52,8 @@ class GistComponent extends Object
 		$stageRoot = Stagehand::$stage_basepath.DS;
 		$imageGroupRoot = APP."vendors/shells/gist/import";
 		$preserveOrder = $preserveOrder ? "--preserve_order" : "";
+		$threshold = empty($this->controller->passedArgs['threshold']) ? "0.5" : $this->controller->passedArgs['threshold'];
+		
 
 		// config proc_open
 		// $cmd = "{$gist_bin}/image-group --base_path {$stageRoot} {} --pretty_print";
@@ -64,7 +66,7 @@ class GistComponent extends Object
 		$output = true;		
 		
 		if (GistComponent::$OS=='win32') {
-			$cmd = "{$gist_bin}/image-group --base_path {$stageRoot} {$preserveOrder} --pretty_print";
+			$cmd = "{$gist_bin}/image-group --base_path {$stageRoot} --threshold {$threshold} {$preserveOrder} --pretty_print";
 			$woid = $this->controller->passedArgs[0];
 			
 			// sample output for Win testing
@@ -92,6 +94,7 @@ class GistComponent extends Object
 
 		} else {
 			// unix, image-group only works on linux
+			$threshold = 
 			$cmd = "{$gist_bin}/image-group --base_path {$stageRoot} {$preserveOrder} --pretty_print";
 			$start = microtime(true);
 			$errors = GistComponent::$Exec->exec($cmd, $options, $stdin, $output);
