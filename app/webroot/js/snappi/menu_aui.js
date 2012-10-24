@@ -766,7 +766,7 @@ console.log("delegateHost="+delegateHost._yuid);
 		} else {
 			var ratingCfg = {
 					v : audition.rating,
-					uuid : audition.id,
+					uuid : audition.id,		// TODO: audition.id or audition.Audition.id???
 					listen : false
 				};
 			var r = SNAPPI.Rating.attach(menuItem, ratingCfg);
@@ -981,9 +981,10 @@ console.log("delegateHost="+delegateHost._yuid);
 		var g = MenuItems.getGalleryFromTarget(thumbnail);
 		try {
 			// check if the user has permission to groupAsShot
-			var shotType = g.castingCall.CastingCall.GroupAsShotPerm;
+			var hasPerm = g.castingCall.CastingCall.GroupAsShotPerm,
+				shotType = g.castingCall.CastingCall.Auditions.ShotType;
 		} catch (e) {}
-		if (shotType && thumbnail.hasClass('selected')) {
+		if (hasPerm && shotType && thumbnail.hasClass('selected')) {
 			if (g.getSelected().count()>1) {
 				menuItem.removeClass('disabled');
 				return;
@@ -996,9 +997,10 @@ console.log("delegateHost="+delegateHost._yuid);
 		var thumbnail = menu.get('currentNode');	// target
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		try {
+			if (!g.castingCall.CastingCall.GroupAsShotPerm) return;
 			// from thumbnail context-menu
 			var g = MenuItems.getGalleryFromTarget(menu);
-			var shotType = g.castingCall.CastingCall.GroupAsShotPerm;
+			var shotType = g.castingCall.CastingCall.Auditions.ShotType;
 			var options = {
 				menu: menu,
 				loadingNode: menuItem,
@@ -1016,8 +1018,11 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.lightbox_group_as_shot_beforeShow = function(menuItem, menu){
 		if (!MenuItems.confirmAuth(menuItem)) return;
 		// from lightbox menuItem
+		// check if the user has permission to groupAsShot
+		var hasPerm = g.castingCall.CastingCall.GroupAsShotPerm,
+			shotType = g.castingCall.CastingCall.Auditions.ShotType;
 		var lightbox = menu.get('currentNode').ancestor('#lightbox').Lightbox;
-		if (lightbox && lightbox.getSelected()){
+		if (lightbox && lightbox.getSelected() && hasPerm && shotType){
 			menuItem.removeClass('disabled');	
 		} else menuItem.addClass('disabled');
 		
@@ -1029,7 +1034,8 @@ console.log("delegateHost="+delegateHost._yuid);
 			try {
 				var shotType = 'unknown';		// lightbox photos can be from group or user 
 				// check if the user has permission to groupAsShot
-				shotType = g.castingCall.CastingCall.GroupAsShotPerm;
+				if (!g.castingCall.CastingCall.GroupAsShotPerm) return;
+				// shotType = g.castingCall.CastingCall.Auditions.ShotType
 			} catch (e) {}				
 			// shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
 			var batch = lightbox.getSelected();
@@ -1050,10 +1056,11 @@ console.log("delegateHost="+delegateHost._yuid);
 		var thumbnail = menu.get('currentNode');	// target
 		try {
 			// check if the user has permission to groupAsShot
-			var shotType = g.castingCall.CastingCall.GroupAsShotPerm;
+			var hasPerm = g.castingCall.CastingCall.GroupAsShotPerm,
+				shotType = g.castingCall.CastingCall.Auditions.ShotType;
 		} catch (e) {}		
 		// var show = /^Users|^Groups/.test(SNAPPI.STATE.controller.name);
-		if (shotType && thumbnail.hasClass('selected')) {
+		if (hasPerm && shotType && thumbnail.hasClass('selected')) {
 			var g = MenuItems.getGalleryFromTarget(thumbnail);
 			if (g.getSelected().count()>=1) {
 				menuItem.removeClass('disabled');
@@ -1067,6 +1074,7 @@ console.log("delegateHost="+delegateHost._yuid);
 		var batch, options, thumbnail = menu.get('currentNode');	// target
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		var g = MenuItems.getGalleryFromTarget(menu);
+		if (!g.castingCall.CastingCall.GroupAsShotPerm) return;
 		var shotType = audition.Audition.Substitutions.shotType;
 		// if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
 		if (!shotType) {
@@ -1099,26 +1107,26 @@ console.log("delegateHost="+delegateHost._yuid);
 		try {
 			// check if the user has permission to groupAsShot
 			var g = MenuItems.getGalleryFromTarget(menu);
-			var shotType = g.castingCall.CastingCall.GroupAsShotPerm;
-		} catch (e) {}	
-		// var show = /^Users|^Groups/.test(SNAPPI.STATE.controller.name);
-		if (!shotType) {
-			menuItem.addClass('disabled');
-			return;
-		} 
-    	try {
-    		var shotId = audition.Audition.Substitutions.id;
-    		if (shotId) menuItem.removeClass('disabled');
-    		else menuItem.addClass('disabled');
-		}catch(e){
-			menuItem.addClass('disabled');
-		}		
+			// check if the user has permission to groupAsShot
+			var hasPerm = g.castingCall.CastingCall.GroupAsShotPerm,
+				shotType = g.castingCall.CastingCall.Auditions.ShotType;
+			// var show = /^Users|^Groups/.test(SNAPPI.STATE.controller.name);
+			if (hasPerm && shotType) {
+	    		var shotId = audition.Audition.Substitutions.id;
+	    		if (shotId) {
+	    			menuItem.removeClass('disabled');
+	    			return;
+	    		}
+	    	}
+		}catch(e){	}
+		menuItem.addClass('disabled');		
 	};
 		
 	MenuItems.ungroupShot_click = function(menuItem, menu){
 		var batch, options, thumbnail = menu.get('currentNode');	// target
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		var g = MenuItems.getGalleryFromTarget(menu);
+		if (!g.castingCall.CastingCall.GroupAsShotPerm) return;
 		var shotType = audition.Audition.Substitutions.shotType;
 		// if (!shotType) shotType = /^Groups/.test(SNAPPI.STATE.controller.name) ? 'Groupshot' : 'Usershot';
 		if (!shotType) {

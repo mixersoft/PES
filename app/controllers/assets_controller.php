@@ -519,12 +519,12 @@ if (!empty($this->passedArgs['raw'])) {
 		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 		$castingCall = $this->CastingCall->getCastingCall($pageData);
 		$this->viewVars['jsonData']['castingCall'] = $castingCall;
-		
 		// extract Shot properties		
 		$shot = array('id'=>$id);
 		$shot['owner_id'] = $pageData[0]['shot_owner_id'];
 		$shot['priority'] = $pageData[0]['shot_priority'];
 		$shot['count'] = $pageData[0]['shot_count'];
+		$shot['active'] = $pageData[0]['shot_active'];
 		$this->viewVars['jsonData']['Shot'] = $shot;
 		
 		$done = $this->renderXHRByRequest('json', '/elements/assets/hidden_shots', null , 0);
@@ -1546,7 +1546,6 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 						// ungroup the entire shot
 						$shotIds = explode(',',$this->data['Shot']['id']);
 						$shotType = $this->data['shotType'];
-						$shot_owner_id = ($shotType == 'Usershot') ? $this->data['uuid'] : null;
 						$hiddenShot_CC  = $this->__hiddenShots($shotIds, $shotType);
 						$resp1 = $this->__ungroupShot($shotIds, $shotType);
 						$success = $success && $resp1['success'];
@@ -1618,7 +1617,8 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 		switch ($shotType) {
 			case 'Usershot':
 				$Usershot = ClassRegistry::init('Usershot');
-				$resp = $Usershot->groupAsShot($assetIds);				
+				$force = $this->Asset->Behaviors->attached('WorkorderPermissionable');
+				$resp = $Usershot->groupAsShot($assetIds, $force);				
 				break;
 			case 'Groupshot':
 				// ???: can we deprecate bestshot_owner_id for Groupshot?

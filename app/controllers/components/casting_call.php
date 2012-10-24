@@ -255,8 +255,8 @@ $previewOrientation = 	isset($exif['preview']['Orientation']) ? $exif['preview']
 		//debug(compact('Audition','Total','Perpage','Pages','Page','Baseurl'));
 		// check permissions for groupAsShot 
 		$extras = Configure::read("paginate.Options.".Configure::read('paginate.Model').".extras");
-		$ShotType = !empty($extras['join_shots']);
-		$GroupAsShotPerm = !empty($extras['group_as_shot_permission']);
+		$ShotType = !empty($extras['join_shots']) ? $extras['join_shots'] : false;
+		$GroupAsShotPerm = !empty($extras['group_as_shot_permission']) ? $ShotType : false;
 		$ShowHidden = !empty($extras['show_hidden_shots']);
 		//
 

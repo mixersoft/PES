@@ -358,7 +358,7 @@ AND includes.asset_id='{$assetId}';
 						'conditions'=>array('`BestShotMember`.usershot_id = `Shot`.id','`BestShotMember`.user_id'=>AppController::$userid),
 					);
 			};
-			$fields = array('`Shot`.id AS `shot_id`', '`Shot`.owner_id AS `shot_owner_id`', '`Shot`.priority AS `shot_priority`', '`Shot`.assets_usershot_count AS `shot_count`');
+			$fields = array('`Shot`.id AS `shot_id`', '`Shot`.owner_id AS `shot_owner_id`', '`Shot`.priority AS `shot_priority`', '`Shot`.assets_usershot_count AS `shot_count`', '`Shot`.active AS `shot_active`');
 		}
 	
 		// show or hide hidden shots

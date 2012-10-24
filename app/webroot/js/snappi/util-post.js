@@ -82,7 +82,7 @@
 		// copied from Lightbox.applyPrivacyInBatch, and modified
 		var asset_ids = [];
 		batch.each(function(audition) {
-			asset_ids.push(audition.id);
+			asset_ids.push(audition.Audition.id);
 		});
 		/***********************************************************************
 		 * - cakePHP POST
@@ -222,11 +222,9 @@
 		 */
 		var shotType, auditionREFs = options.aids;
 		try {
-			shotType = photoRoll.castingCall.CastingCall.Auditions.ShotType;
+			shotType = options.shotType || photoRoll.castingCall.CastingCall.Auditions.ShotType;
 		} catch (e) {
-			// for lightbox.Gallery,
-			// WARNING: not sure this is a valid way to identify shotType. can lighbox MIX shotTypes?
-			shotType = options.shotType;
+			throw new Exception("ERROR: not sure what shot type to use here");
 		}
 		var groupCfg = {
 			id : shotCfg.shotId,

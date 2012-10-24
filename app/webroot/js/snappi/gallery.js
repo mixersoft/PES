@@ -98,6 +98,10 @@
 		        // reuses sh if available, or creates a new one from parsed castingCall
 	        	if (_cfg.sh) {	// reusing provided sh
 	        		delete _cfg.sh;
+	        	} else if ( SNAPPI.STATE.controller['action']=='shots') {
+	        		// /workorder/shots allows duplicates 
+	        		var onDuplicate = SNAPPI.Auditions.onDuplicate_CHECK_SHOT;	//allows dupes, see Auditions.parseCastingCall
+	        		this.auditionSH = SNAPPI.Auditions.parseCastingCall(this.castingCall, this.providerName, this.auditionSH, onDuplicate);
 	        	} else { 		// build auditionSH from castingCall
 	        		var onDuplicate = cfg.replace ? SNAPPI.Auditions.onDuplicate_REPLACE : SNAPPI.Auditions.onDuplicate_ORIGINAL;
 	        		this.auditionSH = SNAPPI.Auditions.parseCastingCall(this.castingCall, this.providerName, this.auditionSH, onDuplicate);
@@ -1133,8 +1137,8 @@
             	idPrefix = this._cfg.ID_PREFIX || null;
             
 			batch = batch || this.getSelected();
-			batch.each(function(audition) {
-				aids.push(audition.id);
+			batch.each(function(o) {
+				aids.push(o.Audition.id);
             });    
 			var data = {
 				'data[Asset][group]' : 1, // groupAsShot
@@ -1235,10 +1239,10 @@
     			idPrefix = this._cfg.ID_PREFIX || null;
 
 	        batch = batch || this.getSelected();
-			batch.each(function(audition) {
-				post_aids.push(audition.id);
+			batch.each(function(o) {
+				post_aids.push(o.Audition.id);
 				try {
-					shotId = audition.Audition.Substitutions.id;
+					shotId = o.Audition.Substitutions.id;
 					if (shotIds.indexOf(shotId) == -1) shotIds.push(shotId);
 				} catch (e) {}
 	        }); 
@@ -1261,7 +1265,7 @@
 			var args = {
 				sort: sort,
 				aids: post_aids,
-				success: this._ungroupShot_success,
+				success: cfg.success || this._ungroupShot_success,
 				menu: cfg.menu,					
 			};
 			var loadingNode = cfg.loadingNode;
@@ -1276,7 +1280,7 @@
 					arguments: args,
 					on: {
 						successJson:  function(e, id, o, args) {
-							args.menu.hide();
+							if (args.menu) args.menu.hide();
 							return args.success.apply(this, arguments);
 						}
 					}
@@ -1356,7 +1360,7 @@
 
 	        batch = batch || this.getSelected();
 			batch.each(function(audition) {
-				post_aids.push(audition.id);
+				post_aids.push(audition.Audition.id);
 				try {
 					shotId = shotId || audition.Audition.Substitutions.id;
 				} catch (e) {}
@@ -1529,11 +1533,11 @@
 		setBestshot: function(selected, cfg){
             var shotId, 
 				idPrefix = this._cfg.ID_PREFIX || null,
-				audition = SNAPPI.Auditions.find(selected.uuid);
+				audition = SNAPPI.Auditions.find(selected.uuid);  
 			shotId = audition.Audition.Shot.id || audition.Audition.Substitutions.id;
 
 			var data = {
-					'data[Asset][id]' : audition.id,
+					'data[Asset][id]' : audition.Audition.id,
 					'data[Shot][id]' : shotId,
 					'data[shotType]' : cfg.shotType,
 					'data[setBestshot]': 1

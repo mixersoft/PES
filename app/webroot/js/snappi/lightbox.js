@@ -458,7 +458,7 @@
 				var auditionIds = [], selectedIds = [];
 				this.Gallery.auditionSH.each(
 						function(audition) {
-							auditionIds.push(audition.id);
+							auditionIds.push(audition.Audition.id);
 						}, this
 				);
 				
@@ -646,7 +646,7 @@
 				idPrefix = this._cfg.ID_PREFIX || null;
 			var batch = this.getSelected();
            batch.each(function(audition){
-            	post_aids.push(audition.id);
+            	post_aids.push(audition.Audition.id);
             }, this);   				
 			var callback = {
 				complete : function(shot, resp) {
@@ -738,7 +738,7 @@
 				} catch (e) {
 					// SNAPPI.AssetRatingController.postRating.call(audition.bindTo[0].dom(), value, audition.id); 	// offscreen
 					var node = audition.bindTo[0];
-					SNAPPI.AssetRatingController.postRating( value, audition.id, node.Rating, null); 	// offscreen
+					SNAPPI.AssetRatingController.postRating( value, audition.Audition.id, node.Rating, null); 	// offscreen
 				}
 			};
 
@@ -756,7 +756,7 @@
 
 			var asset_ids = [];
 			batch.each(function(audition) {
-				asset_ids.push(audition.id);
+				asset_ids.push(audition.Audition.id);
 			});
 			node = node || _Y.one('#lbx-rating .ratingGroup'); // .ratingGroup 
 			SNAPPI.AssetRatingController.postRating(v, asset_ids.join(','), node.Rating, null);
@@ -785,7 +785,7 @@
 
 			var asset_ids = [];
 			batch.each(function(audition) {
-				asset_ids.push(audition.id);
+				asset_ids.push(audition.Audition.id);
 			});
 			var uri = "/photos/setprop/.json";
 			var data = {
@@ -942,7 +942,7 @@
 	
 			var asset_ids = [];
 			batch.each(function(audition) {
-				asset_ids.push(audition.id);
+				asset_ids.push(audition.Audition.id);
 			});
 						
 			var uri = options.uri || "/groups/contributePhoto/.json";
@@ -1103,7 +1103,7 @@
 	
 			var asset_ids = [];
 			batch.each(function(audition) {
-				asset_ids.push(audition.id);
+				asset_ids.push(audition.Audition.id);
 			});
 			/***********************************************************************
 			 * add assets to Group - cakePHP POST
@@ -1239,7 +1239,7 @@
 	
 			var asset_ids = [];
 			batch.each(function(audition) {
-				asset_ids.push(audition.id);
+				asset_ids.push(audition.Audition.id);
 			});
 			/***********************************************************************
 			 * - cakePHP POST

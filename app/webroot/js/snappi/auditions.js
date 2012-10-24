@@ -64,8 +64,9 @@
     Auditions.get = function(id){
     	return Auditions._auditionSH.get(id);
     };
-    Auditions.find = function(uuid){
-    	return Auditions._auditionSH._data[uuid];
+    Auditions.find = function(key){
+    	if (key.hashcode) key = key.hashcode();
+    	return Auditions._auditionSH._data[key];
     };
     Auditions.onDuplicate_ORIGINAL = function(a,b) {
 		return a; // return original, do not replace
@@ -73,6 +74,17 @@
     Auditions.onDuplicate_REPLACE = function(a,b) {
 		return b; // return original, do not replace
 	}; 
+	Auditions.add_SHOT_to_key_by_hashcode = function() {
+		return this.Audition.id+'_'+this.Audition.Shot.id;
+	}
+	Auditions.onDuplicate_CHECK_SHOT = function(a,b) {
+		try {
+			if (a.Audition.Shot.id == b.Audition.Shot.id) return a;	// ORIGINAL
+			else return b;	// not a duplicate, but remember to add ShotId to sortedhash key
+		} catch (e) {
+			throw new Exception("Error processing duplicate audition, is Shot missing?");
+		}
+	};
 	// do exif orientation math between exifOrientation, and subsequent rotate
     Auditions.orientationLookup = {
 	        1: {
@@ -111,7 +123,7 @@
      * 			calls o = onDuplicate(old, new) and adds o , Default = NO REPLACE
      */
     Auditions.parseCastingCall = function(castingCall, providerName, sh, onDuplicate){
-    	onDuplicate = onDuplicate || Auditions.onDuplicate_ORIGINAL;
+    	if (onDuplicate == undefined) onDuplicate = Auditions.onDuplicate_ORIGINAL;
     	sh = sh || new SNAPPI.SortedHash({
             'isDataElement': false		// what does this do?
         });
@@ -134,6 +146,10 @@
 	            	 * extract frequently used attrs from Audition
 	            	 */
 	            	Auditions.extractSnappiAuditionAttr(o, castingCall.schemaParser);
+	            	if (onDuplicate == Auditions.onDuplicate_CHECK_SHOT) {
+	            		o.hashcode = Auditions.add_SHOT_to_key_by_hashcode;
+	            		o.id = o.hashcode();
+	            	}
 	            	var aud_B = o;
 	            	var aud_A = _auditionSH.get(o);
 	            	if (aud_A) {
@@ -146,8 +162,7 @@
 	            			o = onDuplicate(aud_A, aud_B);
 	            			if (!o.bindTo && aud_A.bindTo) o.bindTo = aud_A.bindTo;
 	            			_auditionSH.add(o);	
-	            		}
-	            		else o = _auditionSH.addIfNew(o);	// add to master copy first
+	            		} else o = _auditionSH.addIfNew(o);	// add to master copy first TODO: include ShotId
 	            	} else {
 	            		// NEW audition o,  DOES NOT exist in master list
 	            		o = _auditionSH.addIfNew(o);
@@ -333,11 +348,11 @@
             
             // get audition from AuditionREF/key
             key = typeof AuditionREFs[j] == 'string' ? AuditionREFs[j] : AuditionREFs[j].idref;
-            audition = auditionSH.get(key);
+            audition = auditionSH.get(key);		
             if (!audition) {
+            	// TODO: for /workorders/shots we need id_Shot.id, but we need the OLD Shot and we have the NEW shot
             	audition = _auditionSH.get(key);
-            	if (audition) alert ('WARNING: existing audition not found in param auditionSH');
-            	// why???
+            	if (audition) alert ('WARNING: existing audition not found in param auditionSH, append Shot.id???');
             }
             
             // "merge" by groupType
@@ -401,9 +416,12 @@
     	} catch(e) {
     	}
     };
-    /*
+    /**
      * bind node to audition
      * NOTE: bind will update node.uuid
+     * 	node.uuid == audition.hashcode(), NOT audition.Audition.id
+     * @param node, Y.Node
+     * @param mixed, audition object, or lookup from STRING = audition.hashcode() 
      */
     Auditions.bind = function(node, audition) {
     	if (typeof audition == 'string' && audition.length>10) {	// binary16 or char36
@@ -418,9 +436,9 @@
     		Auditions.unbind(node);
     		audition.bindTo.push(node);
     	}
-    	node.uuid = audition.id;
-    	if (node.Thumbnail) node.Thumbnail.uuid = audition.id;
-    	node.dom().uuid = audition.id;
+    	node.uuid = audition.hashcode ? audition.hashcode() : audition.id;
+    	if (node.Thumbnail) node.Thumbnail.uuid = node.uuid;
+    	node.dom().uuid = node.uuid;
     	node.dom().aud = audition;	// for firebug
     	return audition;
     };    
@@ -519,7 +537,7 @@
         qsOverride: { //                perpage: '100',
 		},
 		hashcode : function(){
-            return this.id;
+            return this.Audition ? this.Audition.id : this.id;
 		},
         parse: function(rootNode){
             //            _xml2JsTidy(rootNode);
@@ -535,11 +553,12 @@
                     node = {};
                     audition = arrAuditions[p];
                     // extract additional properties from array
-                    node.hashcode = this.hashcode();
-                    node.id = audition.id;
+                    node['Audition'] = audition;
+                    node.hashcode = this.hashcode;
+                    node.id = node.hashcode();
                     node.urlbase = baseurl || audition.Photo.Img.Src.Baseurl || '';
                     node.getImgSrcBySize = this.getImgSrcBySize;
-                    node['Audition'] = audition;
+                    
                     
                     // node.src = this.getImgSrcBySize(node.rootSrc, 'tn');	// deprecate
                     // node.tags = audition.Tags && audition.Tags.value || null;
@@ -576,7 +595,7 @@
 	AuditionParser.AIR= {
 		datasource: null,
 		hashcode : function(){
-            return this.id;
+            return this.Audition.id;
 		},
         parse: function(rootNode){
             /*
@@ -593,8 +612,9 @@
                     node = {};
                     audition = arrAuditions[p];
                     // extract additional properties from array
-                    node.id = audition.id;
-                    node.hashcode = this.hashcode();
+                    node['Audition'] = audition;
+                    node.hashcode = this.hashcode;
+                    node.id = node.hashcode();
                     node.urlbase = baseurl || audition.Photo.Img.Src.Baseurl || '';
                     node.rootSrc = audition.Photo.Img.Src.rootSrc;
                     // node.src = audition.Photo.Img.Src.Src;
@@ -603,7 +623,6 @@
                     // } catch(e) {
                     	// alert('change AIR db call to output audition.Photo.Img.Src.rootSrc');
                     // }                    
-                    node['Audition'] = audition;
                     node.tags = audition.Tags && audition.Tags.value || null;
                     node.albumName = this.getAlbumName(node);
                     //                        console.log(" ************* albumName=" + node.albumName);
@@ -651,7 +670,7 @@
         qsOverride: { //                perpage: '100',
 		},
 		hashcode : function(){
-            return this.id;
+            return this.Audition ? this.Audition.id : this.id;
 		},
         parse: function(rootNode){
             //            _xml2JsTidy(rootNode);
@@ -665,8 +684,9 @@
                     node = {};
                     audition = arrAuditions[p];
                     // extract additional properties from array
-                    node.hashcode = this.hashcode();
-                    node.id = audition.id;
+                    node['Audition'] = audition;
+                    node.hashcode = this.hashcode;
+                    node.id = node.hashcode();
                     node.pid = audition.Photo.id;
                     node.imageWidth = parseInt(audition.Photo.Img.Src.W);
                     node.imageHeight = parseInt(audition.Photo.Img.Src.H);
@@ -688,7 +708,6 @@
                     node.rating = parseInt(audition.Photo.Fix.Rating || 0);
                     node.tags = audition.Tags && audition.Tags.value || null;
                     node.urlbase = baseurl || audition.Photo.Img.Src.Baseurl || '';
-                    node['Audition'] = audition;
                     node['Fix'] = audition.Photo.Fix;
                     node['LayoutHint'] = audition.LayoutHint;
                     //                        node['Tags'] = audition.Tags && audition.Tags.Tag || [];

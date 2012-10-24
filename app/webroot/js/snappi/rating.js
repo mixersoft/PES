@@ -153,6 +153,7 @@
 	 */
 	/**
 	 * @params mixed - 'div.RatingGroup'.get('parentNode')
+	 * 	NOTE: ratingGroup.getAttribute('uuid') == audition.hashcode(), NOT audition.Audition.id
 	 */
 	Rating.attach = function(mixed, cfg) {
 		var parent;
@@ -199,8 +200,8 @@
 			}	
 			_cfg.node = ratingGroup;
 			if (_cfg.uuid) {
-				ratingGroup.setAttribute('uuid', _cfg.uuid);
-				SNAPPI.Auditions.bind(parent, _cfg.uuid); 
+				ratingGroup.setAttribute('uuid', _cfg.uuid);	// asset_id
+				SNAPPI.Auditions.bind(parent, _cfg.uuid); 		// domId
 			}
 			if (_cfg.id) ratingGroup.set('id', _cfg.id);
 			var r = new SNAPPI.Rating(_cfg);
@@ -549,9 +550,9 @@ if (!_Y) {
     	var role = SNAPPI.STATE.controller.ROLE;
     	var auth = /(EDITOR|MANAGER)/.test(role);
 		if (!auth) return data;
-		if (/Workorders|TasksWorkorders/.test(SNAPPI.STATE.controller.name)) {
+		if (/Workorder|TasksWorkorder/.test(SNAPPI.STATE.controller['class'])) {
 			var woid = SNAPPI.STATE.controller.xhrFrom.uuid;
-			data['data[Workorder][type]'] = SNAPPI.STATE.controller.name; 
+			data['data[Workorder][type]'] = SNAPPI.STATE.controller['class']; 
 			data['data[Workorder][woid]'] = woid;
 		}
 		return data;
@@ -559,8 +560,10 @@ if (!_Y) {
 	AssetRatingController.postRating = function(value, ids, r, options) {
 		// r = SNAPPI.Rating, node = r.node. for cleanup of loadingMask?
 			var node = r.node;
-			ids = ids || node.getAttribute('uuid');
-			
+			if (!ids) {
+				var a = SNAPPI.Auditions.find(node.getAttribute('uuid'));
+				ids = a.Audition.id;
+			}
 			var properties = {
 				id: ids,
 				rating: value,

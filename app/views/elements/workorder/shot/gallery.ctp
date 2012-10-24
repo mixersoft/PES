@@ -71,13 +71,21 @@ $this->viewVars['jsonData']['STATE'] = $state;
 			SNAPPI.Y.on('snappi:shot-gallery-render-complete', function(g, shot){
 				if (g._cfg.type == "ShotGalleryShot") {
 					switch(shot.priority) {
-						case '10': break;
+						case '10':
+							var btn = g.header.one('nav.toolbar li.btn.ungroup').addClass('disabled');
+							break;
 						case '20': 
 						case '30':
-							if (shot.owner_id == '506a0861-0000-4bf3-8f16-6aab0afc6d44') {
+							// add CSS class to color by priority
+							if (shot.owner_id == '506a0861-0000-4bf3-8f16-6aab0afc6d44') {	
+								// for testing image-group-circle
 								g.header.ancestor('.filmstrip').addClass('shot-priority-31');
-							} else 
-								g.header.ancestor('.filmstrip').addClass('shot-priority-'+shot.priority);
+							} else g.header.ancestor('.filmstrip').addClass('shot-priority-'+shot.priority);
+							// add CSS for toolbar Activate button
+							var btn = g.header.one('nav.toolbar li.btn.activate');
+							btn.removeClass('hide');
+							if (shot.active=="0") btn.removeClass('disabled');
+							
 							break;
 						default: break;
 					}
@@ -90,6 +98,7 @@ $this->viewVars['jsonData']['STATE'] = $state;
 			    var snapGallery = new SNAPPI.Gallery({
 			    	type: SNAPPI.STATE.galleryType,
 			    	node: 'div.gallery-container > section.gallery.shot',
+			    	replace: SNAPPI.Auditions.onDuplicate_CHECK_SHOT,
 			    });
 			} catch(e){}
 			

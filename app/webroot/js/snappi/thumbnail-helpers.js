@@ -453,7 +453,7 @@
 			
 			var src, linkTo, title, score, votes, exists, tooltip, shotCount, sizeCfg;
 			SNAPPI.Auditions.bind(node, audition);
-			linkTo = '/photos/home/' + audition.id;
+			linkTo = '/photos/home/' + audition.Audition.id;
 			// add ?ccid&shotType in photoroll.listenClick()
 			title = audition.label;
 			score = audition.Audition.Photo.Fix.Score;
@@ -845,7 +845,7 @@
 			
 			var src, linkTo, title, score, votes, exists, tooltip, shotCount, sizeCfg;
 			SNAPPI.Auditions.bind(node, audition);
-			// linkTo = '/photos/home/' + audition.id;
+			// linkTo = '/photos/home/' + audition.Audition.id;
 			// add ?ccid&shotType in photoroll.listenClick()
 			title = audition.label;
 			score = audition.Audition.Photo.Fix.Score;
@@ -992,7 +992,7 @@
 			
 			var src, linkTo, title, score, votes, exists, tooltip, shotCount, sizeCfg;
 			SNAPPI.Auditions.bind(node, audition);
-			linkTo = '/photos/home/' + audition.id;
+			linkTo = '/photos/home/' + audition.Audition.id;
 			// add ?ccid&shotType in photoroll.listenClick()
 			title = audition.label;
 			score = audition.Score;

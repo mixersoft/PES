@@ -607,7 +607,7 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 					var uri = SNAPPI.lightbox._cfg.GET_CASTINGCALL_URI;
 					var assetIds = new Array();
 					batch.each(function(audition) {
-						assetIds.push(audition.id);
+						assetIds.push(audition.Audition.id);
 		            }); 
 		            var postData = {
 		            	'data[Asset][ids]': assetIds.join(","),

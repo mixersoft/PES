@@ -41,7 +41,7 @@ class WorkordersController extends AppController {
 				'show_edits'=>true,
 				'join_shots'=>'Groupshot', 
 				'show_hidden_shots'=>false,
-				'group_as_shot_permission'=>'Groupshot',
+				'group_as_shot_permission'=>false,
 			),
 			// 'extras'=>array(
 				// 'show_edits'=>true,
@@ -77,7 +77,7 @@ class WorkordersController extends AppController {
 				'show_edits'=>true,
 				'join_shots'=>'Usershot', 
 				'show_hidden_shots'=>false,
-				'group_as_shot_permission'=>'Usershot',
+				'group_as_shot_permission'=>false,
 			),
 			// 'extras'=>array(
 				// 'show_edits'=>true,
@@ -398,8 +398,9 @@ class WorkordersController extends AppController {
 		$Model->Behaviors->attach('WorkorderPermissionable', array('type'=>$this->modelClass, 'uuid'=>$id));
 		$paginateArray = Set::merge($this->paginate[$paginateModel], $required_options);
 		// TODO: add /raw:1 to filter by UserEdit.rating only, and skip SharedEdit.score
+		$paginateArray['extras']['group_as_shot_permission'] = $Model->Behaviors->attached('WorkorderPermissionable');
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
-		
+
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = $this->paginate($paginateModel);
 		$pageData = Set::extract($pageData, "{n}.{$paginateModel}");
@@ -541,6 +542,8 @@ if (!empty($this->passedArgs['all-shots'])) {
 	$paginateArray['extras']['only_shots']=1;
 }		
 	
+		$paginateArray['extras']['group_as_shot_permission'] = $Model->Behaviors->attached('WorkorderPermissionable');		
+		
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = $this->paginate($paginateModel);
@@ -621,8 +624,11 @@ if (!empty($this->passedArgs['all-shots'])) {
 		$paginateArray['extras']['shot-priority'] = 'SCRIPT';
 	};
 		
+		$paginateArray['extras']['group_as_shot_permission'] = $Model->Behaviors->attached('WorkorderPermissionable');	
+		
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
+	
 		$pageData = $this->paginate($paginateModel);
 		$pageData = Set::extract($pageData, "{n}.{$paginateModel}");
 		// end paginate

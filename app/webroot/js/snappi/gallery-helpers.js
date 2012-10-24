@@ -118,7 +118,31 @@
 	    				} else {
 	    					this.listen['Keydown_startListening'](null, 'selected');
 	    				}
-	    			break;  			
+	    			break;  	
+	    			case 'ungroup-shot':	// from ShotGalleryShot
+		    			var parent = e.target.ancestor('section.filmstrip.shot').one('.gallery.filmstrip'),
+		    				batch = new SNAPPI.SortedHash(),
+		    				g = parent.Gallery;
+		    			batch.add(g.Shot.best);
+		    			// TODO: ERROR: this.Gallery.Shot.shotType == true, should be 'Usershot'
+		    			var success = function(){
+		    				var check; // deactivate or unGroup
+		    				
+		    			};
+		    			options =  {
+							loadingNode: e.currentTarget,
+							shotType: 'Usershot',		// TODO: pass this from this.Gallery
+							success: success,
+						};
+						// TODO: make this work for workorders
+						if (/Group/.test(SNAPPI.STATE.controller['class'])) {
+							options.group_id = SNAPPI.STATE.controller.xhrFrom.uuid;
+						}
+						g.unGroupShot(batch, options);
+		    			break;	
+    				case 'activate-shot':	// from ShotGalleryShot
+    					var check;
+    					break;
 	    		}
 	        	
 	        	// check for 'after' event
@@ -364,7 +388,20 @@ var _showZoom = function(e, g) {
 		                	GalleryFactory.actions.setToolbarOption.call(this, e);
 		                }, 'ul > li', this.node);
 				}
-	        },        
+	        },    
+	        ShotGalleryToolbarOptionClick : function() {
+	        	var action = 'ShotGalleryToolbarOptionClick';
+	        	var delegate_container = this.node.ancestor('section.gallery.shot');
+	        	if (!delegate_container.listen) delegate_container.listen = {}; 
+	            if (delegate_container.listen[action] == undefined) {
+					delegate_container.listen[action] = delegate_container.delegate('click', 
+		                function(e){
+		                	// action=[ungroup-shot]
+		                	// context = Gallery.node
+		                	GalleryFactory.actions.setToolbarOption.call(this, e);
+		                }, 'section.filmstrip.shot nav.toolbar ul > li', this.node);
+				}
+	        },     
 	        DisplayOptionClick : function(node) {
         		var action = 'DisplayOptionClick';
         		UIHelper = SNAPPI.UIHelper;
@@ -1157,7 +1194,8 @@ var _showZoom = function(e, g) {
 	'					<nav class="toolbar"> ' +
 	'						<h1 class="count">0 Snaps</h1> ' +
 	'                       <ul class="inline"> ' +
-	'							<li class="btn white " action="">Ungroup Shot</li>' +
+	'							<li class="btn orange ungroup" action="ungroup-shot">Ungroup</li>' +
+	'							<li class="btn orange activate disabled hide" action="activate-shot">Activate</li>' +
 	'						</ul> ' +		
 	'					</nav> ' +
 	'				</li>		 ' +	
@@ -1184,7 +1222,7 @@ var _showZoom = function(e, g) {
 			showHiddenShot: false,
 			hideHiddenShotByCSS: false,	
 			draggable: true,	
-			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick', 'WindowOptionClick'],			
+			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick', 'WindowOptionClick', 'ShotGalleryToolbarOptionClick'],			
 		},
 		charCode : {
 	        nextPatt: /(^110$)|(^39$)|(^32$)|(^54$)/, // n,right,space,
