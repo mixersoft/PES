@@ -103,7 +103,7 @@ print "<br> Client Class={$client_class}";
 	
 	
 	print "<BR />              ***";
-  	$taskId = new snaphappi_api_TaskID(array('Session'=>$sessionId, 'AuthToken'=>$authToken));
+  	$taskId = new snaphappi_api_TaskID(array('Session'=>$sessionId, 'AuthToken'=>$authToken, 'DeviceID'=>'5ec5006d-8dee-48ef-8c04-bac06c16d36e'));
 	print "<BR />Using TaskId=".print_r($taskId,true);
 	print "<BR />";	
 	
@@ -120,7 +120,7 @@ print "<br> Client Class={$client_class}";
 	print "<br>GetFiles()=".print_r($files,true);
 	
 	$client->ReportFolderNotFound($taskId, $folders[0]);
-	$client->ReportUploadFailed($taskId, $folders[0], $files[0]);
+	if (count($files)) $client->ReportUploadFailed($taskId, $folders[0], $files[0]);
 	$client->ReportFolderUploadComplete($taskId, $folders[0]);
 	
 	$count = $client->GetFileCount($taskId, $folders[0]);
