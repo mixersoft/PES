@@ -120,18 +120,18 @@
 	    				}
 	    			break;  	
 	    			case 'ungroup-shot':	// from ShotGalleryShot
+	    				if (e.target.hasClass('disabled')) break;
 		    			var parent = e.target.ancestor('section.filmstrip.shot').one('.gallery.filmstrip'),
 		    				batch = new SNAPPI.SortedHash(),
 		    				g = parent.Gallery;
 		    			batch.add(g.Shot.best);
-		    			// TODO: ERROR: this.Gallery.Shot.shotType == true, should be 'Usershot'
 		    			var success = function(){
 		    				var check; // deactivate or unGroup
 		    				
 		    			};
 		    			options =  {
 							loadingNode: e.currentTarget,
-							shotType: 'Usershot',		// TODO: pass this from this.Gallery
+							shotType: g.castingCall.CastingCall.Auditions.ShotType,
 							success: success,
 						};
 						// TODO: make this work for workorders
@@ -141,7 +141,25 @@
 						g.unGroupShot(batch, options);
 		    			break;	
     				case 'group-shot':	// from ShotGalleryShot
-    					var check;
+    					if (e.target.hasClass('disabled')) break;
+		    			var parent = e.target.ancestor('section.filmstrip.shot').one('.gallery.filmstrip'),
+		    				g = parent.Gallery,
+		    				batch = g.getSelected();
+		    			if (batch.count()==0) batch = g.getSelected('all');
+		    			var success = function(){
+		    				var check; // deactivate or unGroup
+		    				
+		    			};
+		    			options =  {
+							loadingNode: e.currentTarget,
+							shotType: g.castingCall.CastingCall.Auditions.ShotType,
+							success: success,
+						};
+						// TODO: make this work for workorders
+						if (/Group/.test(SNAPPI.STATE.controller['class'])) {
+							options.group_id = SNAPPI.STATE.controller.xhrFrom.uuid;
+						}
+						g.groupAsShot(batch, options);
     					break;
 	    		}
 	        	

@@ -1178,7 +1178,7 @@
 					auditions: batch,
 					shotType: cfg.shotType,
 					lightbox: cfg.lightbox,
-					success: this._groupAsShot_success,
+					success: cfg.success || this._groupAsShot_success,
 					menu: cfg.menu,	
 			};
 			var loadingNode = cfg.loadingNode;
