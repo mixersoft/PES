@@ -124,10 +124,12 @@
 		    			var parent = e.target.ancestor('section.filmstrip.shot').one('.gallery.filmstrip'),
 		    				batch = new SNAPPI.SortedHash(),
 		    				g = parent.Gallery;
-		    			batch.add(g.Shot.best);
+		    			var thumb = g.node.ancestor('.gallery.shot > .container > .FigureBox.Photo');
+		    			if (!thumb) break; 
+		    			batch.add(SNAPPI.Auditions.find(thumb.Thumbnail.uuid));
 		    			var success = function(){
 		    				var check; // deactivate or unGroup
-		    				
+		    				return false;
 		    			};
 		    			options =  {
 							loadingNode: e.currentTarget,
@@ -148,7 +150,7 @@
 		    			if (batch.count()==0) batch = g.getSelected('all');
 		    			var success = function(){
 		    				var check; // deactivate or unGroup
-		    				
+		    				return false;
 		    			};
 		    			options =  {
 							loadingNode: e.currentTarget,
