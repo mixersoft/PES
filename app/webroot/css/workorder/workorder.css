@@ -31,8 +31,11 @@ section.gallery.shot article.FigureBox.Photo.lm > figure > figcaption {
 
 
 /* Shot Gallery nested Shot*/
-section.gallery.shot section.filmstrip.shot {
-	
+section.gallery.shot section.filmstrip.shot.disabled {
+	opacity: 0.4;
+}
+section.gallery.shot section.filmstrip.shot.disabled:hover {
+	opacity: 1;
 }
 section.gallery.shot section.filmstrip.shot-priority-20 {
 /*	http://www.colorzilla.com/gradient-editor/#e9bb9f+0,efc9b5+50,e9bb9f+51,efc9b5+100;Custom*/

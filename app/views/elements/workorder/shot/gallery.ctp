@@ -72,7 +72,7 @@ $this->viewVars['jsonData']['STATE'] = $state;
 				if (g._cfg.type == "ShotGalleryShot") {
 					switch(shot.priority) {
 						case '10':
-							var btn = g.header.one('nav.toolbar li.btn.ungroup').addClass('disabled');
+							g.header.one('nav.toolbar li.btn.un-group').addClass('hide disabled');
 							break;
 						case '20': 
 						case '30':
@@ -81,11 +81,14 @@ $this->viewVars['jsonData']['STATE'] = $state;
 								// for testing image-group-circle
 								g.header.ancestor('.filmstrip').addClass('shot-priority-31');
 							} else g.header.ancestor('.filmstrip').addClass('shot-priority-'+shot.priority);
-							// add CSS for toolbar Activate button
-							var btn = g.header.one('nav.toolbar li.btn.activate');
-							btn.removeClass('hide');
-							if (shot.active=="0") btn.removeClass('disabled');
-							
+							// add CSS for toolbar unGroup/Group button
+							if (parseInt(shot.active)) {
+								g.header.one('nav.toolbar li.btn.un-group').removeClass('disabled');
+							} else {
+								g.header.one('nav.toolbar li.btn.un-group').addClass('disabled');
+								g.header.one('nav.toolbar li.btn.group').removeClass('disabled').removeClass('hide');
+								g.container.ancestor('.filmstrip.shot').addClass('disabled');
+							}
 							break;
 						default: break;
 					}
