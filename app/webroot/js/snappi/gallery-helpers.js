@@ -140,7 +140,7 @@
 						}
 						g.unGroupShot(batch, options);
 		    			break;	
-    				case 'activate-shot':	// from ShotGalleryShot
+    				case 'group-shot':	// from ShotGalleryShot
     					var check;
     					break;
 	    		}
@@ -1184,7 +1184,6 @@ var _showZoom = function(e, g) {
 			MARKUP: 	
 			// '<div class="shot-gallery-shot container_16" > ' +
 	'	<section class="filmstrip shot filmstrip-bg drop"> ' +
-	' 		<div class="preview alpha-b1 omega-b1"><nav class="toolbar"></nav></div>'+		
 	'		<section class="gallery photo filmstrip hiddenshots alpha-b1 omega-b1"> ' +
 	'			<div class="filmstrip-wrap hidden"><div class="filmstrip"><div class="container"></div></div></div> ' +
 	'		</section>	 ' +
@@ -1194,8 +1193,8 @@ var _showZoom = function(e, g) {
 	'					<nav class="toolbar"> ' +
 	'						<h1 class="count">0 Snaps</h1> ' +
 	'                       <ul class="inline"> ' +
-	'							<li class="btn orange ungroup" action="ungroup-shot">Ungroup</li>' +
-	'							<li class="btn orange activate disabled hide" action="activate-shot">Activate</li>' +
+	'							<li class="btn orange un-group" action="ungroup-shot">Ungroup</li>' +
+	'							<li class="btn orange group disabled hide" action="group-shot">Group</li>' +
 	'						</ul> ' +		
 	'					</nav> ' +
 	'				</li>		 ' +	

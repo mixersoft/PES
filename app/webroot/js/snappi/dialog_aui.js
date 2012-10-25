@@ -690,7 +690,6 @@
 	                    var options = {
 	                    	uuid: args.uuid,
 	                    	castingCall: shotCC,
-	                    	replace: true,			// same as SNAPPI.Auditions.onDuplicate_ORIGINAL
 	                    }
 	                    this.render( options);		// render shot directly	
 					}

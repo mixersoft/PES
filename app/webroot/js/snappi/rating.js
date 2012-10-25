@@ -282,6 +282,7 @@ if (!_Y) {
 		var name = id + '-' + selector;
 		if (!Rating.listen[name]) {
 			Rating.listen[name] = delegateContainer.delegate('click', Rating.handleClick, selector);	
+			delegateContainer.listen['RatingClick'] = Rating.listen[name];
 		}
 		// _Y.one(delegateContainer).delegate("mouseover",
 		// Rating.handleMouseOver, selector);
@@ -296,7 +297,6 @@ if (!_Y) {
 		var detach = delegateContainer.get('id') + selector;
 		if (Rating.listen[detach]) Rating.listen[detach].detach();
 	};
-	
 	
 	
 	

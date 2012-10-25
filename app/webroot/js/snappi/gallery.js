@@ -85,6 +85,30 @@
     
 	
     Gallery.prototype = {
+    	destroy: function(){
+    		// remove all references to contained nodes
+    		this.node.get('parentNode').remove();	// remove from dom tree
+    		for (var i in this.node.listen) {
+    			this.node.listen[i].detach();
+    			delete(this.node.listen[i]);
+    		}
+    		for (var i in this.container.listen) {
+    			this.container.listen[i].detach();
+    			if (i == 'RatingClick') {	// look 2 places for RatingClick
+    				var l = this.container.listen[i];
+    				for( var j in SNAPPI.Rating.listen) {
+    					if (SNAPPI.Rating.listen[j] == l) {
+    						delete(SNAPPI.Rating.listen[j]);
+    						break;
+    					}
+    				}
+    			}
+    			delete(this.container.listen[i]);
+    		}
+    		for (var i in this.node._plugins) {
+    			this.node.unplug(i);
+    		}
+    	},
     	init: function(cfg) {
 	    	var _cfg = _Y.merge(cfg);		// copy cfg
 	    	
@@ -98,13 +122,10 @@
 		        // reuses sh if available, or creates a new one from parsed castingCall
 	        	if (_cfg.sh) {	// reusing provided sh
 	        		delete _cfg.sh;
-	        	} else if ( SNAPPI.STATE.controller['action']=='shots') {
-	        		// /workorder/shots allows duplicates 
-	        		var onDuplicate = SNAPPI.Auditions.onDuplicate_CHECK_SHOT;	//allows dupes, see Auditions.parseCastingCall
-	        		this.auditionSH = SNAPPI.Auditions.parseCastingCall(this.castingCall, this.providerName, this.auditionSH, onDuplicate);
 	        	} else { 		// build auditionSH from castingCall
-	        		var onDuplicate = cfg.replace ? SNAPPI.Auditions.onDuplicate_REPLACE : SNAPPI.Auditions.onDuplicate_ORIGINAL;
-	        		this.auditionSH = SNAPPI.Auditions.parseCastingCall(this.castingCall, this.providerName, this.auditionSH, onDuplicate);
+	        		if (typeof _cfg.replace == 'boolean') _cfg.replace = _cfg.replace ? SNAPPI.Auditions.onDuplicate_REPLACE : SNAPPI.Auditions.onDuplicate_ORIGINAL;
+	        		else if (typeof _cfg.replace != 'function') _cfg.replace = SNAPPI.Auditions.onDuplicate_REPLACE;
+	        		this.auditionSH = SNAPPI.Auditions.parseCastingCall(this.castingCall, this.providerName, this.auditionSH, _cfg.replace );
 	        	}
 	        }
 	        if (!this.auditionSH) this.auditionSH = new SNAPPI.SortedHash();
@@ -221,8 +242,9 @@
         	if (cfg.castingCall) {
         		this.castingCall = cfg.castingCall;
         		if (!this.castingCall.auditionSH) {
-        			var onDuplicate = cfg.replace ? SNAPPI.Auditions.onDuplicate_REPLACE : SNAPPI.Auditions.onDuplicate_ORIGINAL; 
-					var sh = SNAPPI.Auditions.parseCastingCall(this.castingCall, this._cfg.PROVIDER_NAME, null, onDuplicate);
+	        		if (typeof cfg.replace == 'function') this._cfg.replace = cfg.replace;
+	        		else if (cfg.replace && typeof cfg.replace == 'boolean') this._cfg.replace = cfg.replace ? SNAPPI.Auditions.onDuplicate_REPLACE : SNAPPI.Auditions.onDuplicate_ORIGINAL;
+					var sh = SNAPPI.Auditions.parseCastingCall(this.castingCall, this._cfg.PROVIDER_NAME, null, this._cfg.replace);
         		}
         		this.auditionSH = this.castingCall.auditionSH;
         		delete cfg.castingCall;
@@ -237,7 +259,6 @@
         	} else if (this.castingCall && this.castingCall.shots) {
 	        	this.shots =  this.castingCall.shots;
 	        }
-	        
         	
         	var focusUuid = null;
         	if (cfg.uuid || cfg.selected) {
@@ -265,7 +286,7 @@
             	}
             }
             
-            nlist = this.container.all('.FigureBox');
+            nlist = this.container.all('> .FigureBox');
 			// check for strange TextNodes, only allow .FigureBox childNodes
             if (nlist.size() < this.container.get('childNodes').size()) {
             	this.container.setContent(nlist);
@@ -411,7 +432,6 @@
 					var options = {
 						page: args.page,
 	                	castingCall: response.castingCall,
-	                	replace: args.replace,
 	                	uuid: args.uuid,
 	                }
 	                var lastThumb = this.render(options);
@@ -477,6 +497,9 @@
         	} else return label;
         }, 
         reuseThumbnail: function(audition, node, cfg){
+        	if (node.ShotGallery)  {
+				node.ShotGallery.destroy();
+        	}
         	node.Thumbnail.reuse.call(node.Thumbnail, audition, cfg);
         	return node;
         },
@@ -1693,7 +1716,6 @@
 					var options = {
                     	castingCall: response.castingCall,
                     	uuid: args.uuid || null,
-                    	replace: args.replace,
                     }
                     this.render(options);
                     PAGE.jsonData.castingCall = response.castingCall;
@@ -1724,7 +1746,7 @@
         		successJson: cfg.successJson,
         		uri: uri,
         	};
-        	if (cfg.replace == undefined) args.replace = true;	// replace audition with value in response, default true
+        	// if (cfg.replace == undefined) args.replace = true;	// replace audition with value in response, default true
         	if (cfg.args) args = _Y.merge(args, cfg.args);
         	
         	
@@ -1804,7 +1826,6 @@
 	                    var options = {
 	                    	uuid: args.uuid,
 	                    	castingCall: shotCC,
-	                    	replace: true,			// same as SNAPPI.Auditions.onDuplicate_ORIGINAL
 	                    	thumbCfg: {
 			        			type: this._cfg.tnType,
 			        			size: this._cfg.size,	// size set in GalleryFactory[Lightbox].build()

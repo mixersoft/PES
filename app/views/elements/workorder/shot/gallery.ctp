@@ -59,12 +59,12 @@ $this->viewVars['jsonData']['STATE'] = $state;
 					// Bestshots rendered, now load ShotGallery by XHR
 					g.auditionSH.each(function(selected){
 						var thumb_node = this.container.one('#'+selected.id);
-						var shotGallery = new SNAPPI.Gallery({
+						thumb_node.ShotGallery = new SNAPPI.Gallery({
 							type: 'ShotGalleryShot',
 							node: thumb_node,
 							render: false,
 						});
-						shotGallery.showShotGallery(selected);
+						thumb_node.ShotGallery.showShotGallery(selected);
 					}, g);
 				}
 			});
