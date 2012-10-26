@@ -181,7 +181,7 @@ console.error('DEPRECATE: SNAPPI.PM.cfg.fn_DISPLAY_SIZE() in main()');
 	/*
 	 * force static host to snappi-cn for these conditions, usually 10.1.2.207
 	 */
-	if (window.location.host.match( /10\.1\.2\./i )) Config.staticHost.FORCE_HOST = window.location.host;
+	if (window.location.host.match( /snappi-cn/i )) Config.staticHost.FORCE_HOST = window.location.host;
 	if (window.location.host.match( /aws\.snaphappi\.com/i )) Config.staticHost.FORCE_HOST = '10.1.2.203';
 	/*
 	 * end force static host
@@ -830,7 +830,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
         		},       		
         		'snappi-paginator': {
         			path: 'paginator_aui.js',
-        			requires:['aui-io', 'aui-paginator']
+        			requires:['history', 'aui-io', 'aui-paginator']
         		},              		
                 'snappi-tabs': {
                     path: 'tabs.js',
