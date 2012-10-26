@@ -386,7 +386,19 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 				if (g) g.container.ancestor('.gallery-container').removeClass('hide');
 				_Y.one('.montage-container').addClass('hide');
 			},
-		}
+		},
+		shots: {
+			'all-shots': function(e){
+				var toggle = e.target.hasClass('selected') ? null : 1;
+				var next = SNAPPI.IO.setNamedParams(window.location.href, {'all-shots':toggle});
+				window.location.href = next;
+			},
+			'only-script-shots': function(e){
+				var toggle = e.target.hasClass('selected') ? null : 1;
+				var next = SNAPPI.IO.setNamedParams(window.location.href, {'only-script-shots':toggle});
+				window.location.href = next;
+			},
+		},
 	}
 	UIHelper.groups = {
 		// groups, filter by groupType
@@ -1310,6 +1322,9 @@ console.info('Getting Story for rolecount='+roleCount);
 			    		switch(action[0]) {
 			    			case 'filter':
 			    				UIHelper.action.filter[action[1]](e);
+			    				break;
+			    			case 'shots':
+			    				UIHelper.action.shots[action[1]](e);
 			    				break;
 			    			case 'sort':
 			    				break;

@@ -127,8 +127,8 @@ $this->viewVars['jsonData']['STATE'] = $state;
 	<div class='gallery-container' >
 		<?php 
 			if ($isWide) {
-				echo $this->element('/photo/header-wide', compact('total', 'ownerCount', 'isPreview', 'state'));
-			} else echo $this->element('/photo/header', compact('total', 'ownerCount', 'isPreview', 'state'));
+				echo $this->element('/workorder/shot/header-wide', compact('total', 'ownerCount', 'isPreview', 'state'));
+			} else echo $this->element('/workorder/shot/header', compact('total', 'ownerCount', 'isPreview', 'state'));
 		?>
 		<section class="<?php if ($isWide) echo "wide "; ?>gallery shot container_16">
 			<div class='container grid_16'></div>
