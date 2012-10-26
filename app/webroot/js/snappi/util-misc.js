@@ -247,6 +247,7 @@
             getFromNamed: function(name){
                 /*
                  * get a query param value by name from the current URL
+                 * 	SEE ALSO: SNAPPI.IO.setNamedParams()
                  */
                 name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
                 var regexS = '(\/'+name+'[^:\/]*:)([^\/]*)';
@@ -255,7 +256,7 @@
                 if (results == null) 
                     return "";
                 else 
-                    return results[1];
+                    return results[2];
             },
             parseExifDateTime: function(sDateTime){
                 // valid formats = ["yyyy-MM-dd HH:mm:ss", "yyyy-MM-ddTHH:mm:ss"];

@@ -4,6 +4,42 @@
     SNAPPI.onYready.Paginator = function(Y){
 		if (_Y === null) _Y = Y;
 		SNAPPI.Paginator = Paginator;
+		try {
+			Paginator.history = new _Y.HistoryHTML5();
+			// _Y.on('popstate', function (e) {
+			_Y.on('history:change', function (e) {
+			  if (e.src === Y.HistoryHTML5.SRC_POPSTATE) {
+			  	if (!e.newVal.p) {
+			  		if (e.prevVal.p) { 
+			  			e.newVal = e.prevVal;
+			  		} else {	// previous page was not a Paginator page 
+				  		window.location.reload(false);
+				  		return;
+				  	}
+			  	} 
+			  	var p, page, perpage;
+			  	/*
+			  	 * TODO: for some reason, e.newVal=e.changed ={} when you go back to the original page
+			  	 * using e.prevVal to detect change, but getting page/perpage from URL
+			  	 * TODO: changeing perpage pushes 2 entries on window.history, why?
+			  	 */
+			    if (e.changed.page || e.newVal.page) {
+			    	p = SNAPPI.Paginator.find[e.newVal.p];
+			    	page = SNAPPI.util.getFromNamed('page') || 1;
+			    	p.setState( {page: page} );
+			    }
+			    if (e.changed.perpage || e.newVal.perpage) {		// this doesn't work
+			    	p = SNAPPI.Paginator.find[e.newVal.p];
+			    	perpage = SNAPPI.util.getFromNamed('perpage') || SNAPPI.STATE.displayPage.perpage;
+			    	p.setState( {rowsPerPage: perpage} );
+			    }
+			    Paginator._getPageFromCastingCall(p, page, "force");
+			  }
+			});
+		} catch (e) {
+			console.error("Paginator.history error, is HTML5 supported?");
+			throw new Exception("Paginator.history error, is HTML5 supported?");
+		}		
 	}	
 	
 	var Paginator = function(){	};
@@ -13,6 +49,7 @@
 	 */
 	Paginator.listen = {};
 	Paginator.find = {};	// keep track of dialog instances for reuse
+	Paginator.history = null;
 	
 
 	/**
@@ -67,13 +104,28 @@
 							var userClicked = newState.before != undefined;
 							if (userClicked) {
 								// console.warn('Page.changeRequest: page='+newState.page);
-								Paginator._getPageFromCastingCall(paginateContainer,newState.page, "force");
+								Paginator._getPageFromCastingCall(paginateContainer.Paginator, newState.page, "force");
+								var next = SNAPPI.IO.setNamedParams(window.location.href, {page:newState.page});
+								Paginator.history.add({
+										p:paginateContainer.Paginator.selector,
+										page:newState.page,
+									},{
+										url: next,
+									});
 							} 
 							this.setState(newState);
 						},
 						rowsPerPageChange: function(e){
 							if (e.newVal == e.prevVal) return;
-							SNAPPI.STATE.displayPage.perpage = parseInt(e.newVal);
+							var perpage = parseInt(e.newVal);
+							SNAPPI.STATE.displayPage.perpage = perpage;
+							var next = SNAPPI.IO.setNamedParams(window.location.href, {perpage: perpage});
+							Paginator.history.add({
+								p:paginateContainer.Paginator.selector,
+								perpage: perpage,
+							},{
+								url: next,
+							});
 							SNAPPI.STATE.displayPage.page = null;
 							SNAPPI.io.writeSession({
 								'profile.photos.perpage': SNAPPI.STATE.displayPage.perpage,
@@ -85,9 +137,9 @@
 			if (DELAY) {
 				var delayed = new _Y.DelayedTask( function() {
 					var P = new _Y.Paginator(pageCfg);
+					P.Gallery = g;
+					P.selector = NAME;
 					paginateContainer.Paginator = P;
-					paginateContainer.Gallery = g;
-					paginateContainer.dom().Paginator = P;
 					P.target = target;
 					Paginator.find[NAME] = P;
 					P.render();
@@ -95,19 +147,16 @@
 				delayed.delay(DELAY);
 				return "delayed";
 			} else {
-				var p = new _Y.Paginator(pageCfg);
-				p.target = target;
-				p.container = paginateContainer;
-				paginateContainer.Paginator = p;
-				
-				paginateContainer.Gallery = g;
-				paginateContainer.dom().Paginator = p;
-				Paginator.find[NAME] = p;
-				p.render();			
+				var P = new _Y.Paginator(pageCfg);
+					P.Gallery = g;
+					P.selector = NAME;
+					paginateContainer.Paginator = P;
+					P.target = target;
+					Paginator.find[NAME] = P;
+					P.render();		
 				return ;
 			}
 	};
-
 	/**
 	 * add aui paginator to Gallery node, 
 	 * 		NOTE: tested for Xhr paginate, not .json
@@ -303,21 +352,19 @@
 	 * 	uses g.loadCastingCall() pattern, 
 	 * 
 	 * @access private 
-	 * @param node, PaginateContainer node, defines node.Paginator, node.Gallery
-	 * @param g SNAPPI.Gallery, type = photo
+	 * @param p Y.Paginator, must define p.Gallery
 	 * @param pageNumber
 	 * @param force boolean, force page refresh
 	 * @return 
 	 */	
-	Paginator._getPageFromCastingCall = function(node, pageNumber, force){
+	Paginator._getPageFromCastingCall = function(p, pageNumber, force){
 		// context = paginateContainer node
-		pageNumber = pageNumber || node.Paginator.get('page') || SNAPPI.STATE.displayPage.page;  
+		pageNumber = pageNumber || p.get('page') || SNAPPI.STATE.displayPage.page;  
 		if (!force && pageNumber == SNAPPI.STATE.displayPage.page) return;
-		var g = node.Gallery;
 		var cfg = {};
 		cfg.page = pageNumber;
-		cfg.perpage = node.Paginator.get('rowsPerPage');
-		g.refresh(cfg, force);
+		cfg.perpage = p.get('rowsPerPage') || SNAPPI.STATE.displayPage.perpage;
+		p.Gallery.refresh(cfg, force);
 		return;
 	};
 	
@@ -332,7 +379,7 @@
 		var target = node.Paginator.target;  // paginateTarget
 		// if (pageNumber == SNAPPI.STATE.displayPage.page) return;
 		var nameData = {
-			page: pageNumber,
+			page: pageNumber || node.Paginator.get('page') ,
 			perpage: node.Paginator.get('rowsPerPage')
 		};
 		var pluginNode = target.ancestor('.gallery.photo');
@@ -341,7 +388,7 @@
 		pluginNode.loadingmask.show();
 		
 		// get new page content
-		target.UploadQueue.view_showPage(pageNumber, null, null);
+		target.UploadQueue.view_showPage(nameData.page, null, null);
 		var delay = new _Y.DelayedTask( 
 			function() {
 				pluginNode.loadingmask.hide();
