@@ -344,6 +344,9 @@
                 }
                 return d;
             },
+            isEmpty: function(o){
+            	return Object.keys(o).length === 0;
+            },
             getObjKeys: function(o){
                 if (this.getClass(o) == 'Object') {
                     var a = [];

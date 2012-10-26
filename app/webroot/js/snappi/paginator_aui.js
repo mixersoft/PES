@@ -9,31 +9,30 @@
 			// _Y.on('popstate', function (e) {
 			_Y.on('history:change', function (e) {
 			  if (e.src === Y.HistoryHTML5.SRC_POPSTATE) {
-			  	if (!e.newVal.p) {
-			  		if (e.prevVal.p) { 
-			  			e.newVal = e.prevVal;
-			  		} else {	// previous page was not a Paginator page 
-				  		window.location.reload(false);
-				  		return;
-				  	}
-			  	} 
-			  	var p, page, perpage;
+			  	var p, page, perpage, changed = e.changed;
+			  	// NOTE: for some reason, e.newVal=e.changed ={} when you go back to the original page
+			  	if (SNAPPI.util.isEmpty(changed)) {
+			  		for (var i in e.prevVal) {
+			  			if (i=='p') continue;		// skip Paginator selector
+			  			if (e.prevVal[i] != e.newVal[i]) {
+			  				changed[i] = true;
+			  			}
+			  		}
+			  	}
 			  	/*
-			  	 * TODO: for some reason, e.newVal=e.changed ={} when you go back to the original page
-			  	 * using e.prevVal to detect change, but getting page/perpage from URL
 			  	 * TODO: changeing perpage pushes 2 entries on window.history, why?
 			  	 */
-			    if (e.changed.page || e.newVal.page) {
+			    if (changed.page) {
 			    	p = SNAPPI.Paginator.find[e.newVal.p];
 			    	page = SNAPPI.util.getFromNamed('page') || 1;
 			    	p.setState( {page: page} );
 			    }
-			    if (e.changed.perpage || e.newVal.perpage) {		// this doesn't work
+			    if (changed.perpage) {		// this doesn't work
 			    	p = SNAPPI.Paginator.find[e.newVal.p];
-			    	perpage = SNAPPI.util.getFromNamed('perpage') || SNAPPI.STATE.displayPage.perpage;
+			    	perpage = e.newVal.perpage || SNAPPI.util.getFromNamed('perpage') || SNAPPI.STATE.displayPage.perpage;
 			    	p.setState( {rowsPerPage: perpage} );
 			    }
-			    Paginator._getPageFromCastingCall(p, page, "force");
+			    if (!SNAPPI.util.isEmpty(changed)) Paginator._getPageFromCastingCall(p, page, "force");
 			  }
 			});
 		} catch (e) {
@@ -137,6 +136,7 @@
 			if (DELAY) {
 				var delayed = new _Y.DelayedTask( function() {
 					var P = new _Y.Paginator(pageCfg);
+					// Paginator.history.replace({p:NAME});		// initialize
 					P.Gallery = g;
 					P.selector = NAME;
 					paginateContainer.Paginator = P;
