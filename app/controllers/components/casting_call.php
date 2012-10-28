@@ -306,6 +306,12 @@ $previewOrientation = 	isset($exif['preview']['Orientation']) ? $exif['preview']
 	 */
 	static $MAX_AGE = 600; // 10 minutes
 	static $MAX_ENTRIES = 10; // LAST 10 castingCalls 
+	static function most_recent($a, $b) {
+	    if ($a['Timestamp'] == $b['Timestamp']) {
+	        return 0;
+	    }
+	    return ($a['Timestamp'] > $b['Timestamp'] ) ? -1 : 1;
+	}
 	function cache_Clear(){
 		Session::write('castingCall', null); 
 	}
@@ -345,13 +351,13 @@ $previewOrientation = 	isset($exif['preview']['Orientation']) ? $exif['preview']
 		if ($cc) {
 			$now = time(); 
 			// Comparison function, most recent by castingCall timestamp
-			function mostRecent($a, $b) {
-			    if ($a['Timestamp'] == $b['Timestamp']) {
-			        return 0;
-			    }
-			    return ($a['Timestamp'] > $b['Timestamp'] ) ? -1 : 1;
-			}
-			uasort($cc, 'mostRecent');
+			// function mostRecent($a, $b) {
+			    // if ($a['Timestamp'] == $b['Timestamp']) {
+			        // return 0;
+			    // }
+			    // return ($a['Timestamp'] > $b['Timestamp'] ) ? -1 : 1;
+			// }
+			uasort($cc, 'CastingCallComponent::most_recent');
 			// max entries
 			$count = 0;
 			foreach ($cc as $key => $CastingCall ) {

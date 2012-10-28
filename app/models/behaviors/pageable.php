@@ -63,6 +63,8 @@ class PageableBehavior extends ModelBehavior {
  *	3) querystring params, including &preview for preview perpage limit
  * 	4) Controller->paginate array 
  *		check $controller->paginate[$Model->name]['paging_limit'] or ['preview_limit']
+ * 
+ * to Override final values, change in Configure::write("paginate.Options.{$pageableAlias}");
  *  TODO:  refactor, use 'limit' and 'preview' in settings
  *  
  *  saves total count in $controller->params['paging']['total'][$Model->name]

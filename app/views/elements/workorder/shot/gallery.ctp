@@ -55,16 +55,29 @@ $this->viewVars['jsonData']['STATE'] = $state;
 			 *  load photo gallery of bestshots, then load shot-gallery for each bestshot 
 			 */
 			SNAPPI.Y.on('snappi:gallery-render-complete', function(g){
+				// parse shot_CastingCall
+				var onDuplicate = SNAPPI.Auditions.onDuplicate_CHECK_SHOT;
+				var shot_auditionSH = new SNAPPI.SortedHash();
+				// SNAPPI.Auditions.parseCastingCall(PAGE.jsonData.shot_CastingCall, g.providerName, null, onDuplicate );
+	        	// g.ShotGalleryShots = {castingCall:PAGE.jsonData.shot_CastingCall}
+				
 				if (g._cfg.type == SNAPPI.STATE.galleryType ) {
 					// Bestshots rendered, now load ShotGallery by XHR
+					// reset shotsSH before parsing soht_CastingCall
+					SNAPPI.Auditions._shotsSH.clear();
 					g.auditionSH.each(function(selected){
 						var thumb_node = this.container.one('#'+selected.id);
 						thumb_node.ShotGallery = new SNAPPI.Gallery({
 							type: 'ShotGalleryShot',
 							node: thumb_node,
 							render: false,
+							castingCall: PAGE.jsonData.shot_CastingCall,
 						});
-						thumb_node.ShotGallery.showShotGallery(selected);
+						// find selected in ShotGallery.auditionSH, use asset_id, not UUID/DomID
+						var shotGallery_selected = SNAPPI.Auditions.find(selected.Audition.id);
+						
+						shotGallery_selected.Audition.Substitutions.stale = false;
+						thumb_node.ShotGallery.showShotGallery(shotGallery_selected);
 					}, g);
 				}
 			});

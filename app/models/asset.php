@@ -160,8 +160,7 @@ AND includes.asset_id='{$assetId}';
 			        // add belongsTo fields???
 		if (!empty($queryData['extras']['join_shots'])) {
 			// default is to NOT show hidden shots
-			$showHidden = !empty($queryData['extras']['show_hidden_shots']) ? true : false;
-			$queryData = $this->joinWithShots($queryData, $showHidden);			// uses user/groupshots table
+			$queryData = $this->joinWithShots($queryData);			// uses user/groupshots table
 		} 
 		if (!empty($queryData['extras']['show_edits']) || !empty($queryData['showEdits']) ) {
 			$queryData = $this->joinWithEdits($queryData);
@@ -252,9 +251,10 @@ AND includes.asset_id='{$assetId}';
 	 * 	)
 	 * @param $showHidden boolean, default false. use true to show Hidden shots
 	 */
-	public function joinWithShots($queryData, $show_hidden_shots=false){
-// debug($queryData['extras']);		
+	public function joinWithShots($queryData, $show_hidden_shots=null){
 		$shotType = $queryData['extras']['join_shots'];	// Groupshot or Usershot
+		$show_hidden_shots = !empty($queryData['extras']['show_hidden_shots']);
+// debug($show_hidden_shots);		
 		$join_bestshot = !$show_hidden_shots
 			&& (
 				!isset($queryData['extras']['join_bestshot']) 
@@ -366,7 +366,7 @@ AND includes.asset_id='{$assetId}';
 		// join_bestshots=0,1
 		// show_hidden_shots=0,1
 		// show_inactive_shots=0,1  
-// debug("join_bestshot={$join_bestshot}");		
+// debug("join_bestshot={$join_bestshot}, show_hidden_shots={$show_hidden_shots}");	
 		if ($show_hidden_shots) {
 			$join_bestshot = false;	// by definition(?)
 			if (!empty($queryData['extras']['shot_id'])) {
