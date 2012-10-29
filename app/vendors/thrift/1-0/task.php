@@ -69,7 +69,7 @@ class CakePhpHelper {
 			 * 	check Session before checking DB
 			 */ 
 			
-ThriftController::log('_loginFromAuthToken()  ProviderAccount.auth_token='.($authToken), LOG_DEBUG);				
+// ThriftController::log('_loginFromAuthToken()  ProviderAccount.auth_token='.($authToken), LOG_DEBUG);				
 			$options = array(
 				'contain' => 'Owner',
 				'conditions'=>array('auth_token'=>$authToken)
@@ -102,7 +102,7 @@ ThriftController::log('_loginFromAuthToken()  ProviderAccount.auth_token='.($aut
 			ThriftController::$controller->User->id = AppController::$userid;
 			// get native desktop uploader state for thrift API
 			$thrift_GetFolders = json_decode(ThriftController::$controller->User->getMeta("native-uploader.{$taskID->DeviceID}.state"), true);
-ThriftController::log("_model_getFolderState, key=native-uploader.{$taskID->DeviceID}.state, thrift_GetFolders=", LOG_DEBUG);			
+// ThriftController::log("_model_getFolderState, key=native-uploader.{$taskID->DeviceID}.state, thrift_GetFolders=", LOG_DEBUG);			
 			if (empty($thrift_GetFolders)) ThriftController::log("***** make sure you are testing with user=venice ****", LOG_DEBUG);
 // ThriftController::log($thrift_GetFolders, LOG_DEBUG);			
 			return $thrift_GetFolders;
@@ -147,7 +147,7 @@ ThriftController::log(json_encode(CakePhpHelper::_model_getFolderState($taskID))
 				'FileUpdateCount'=>0, 
 				'DeviceUuid'=>null,
 			);
-			if ($options['FileUpdateCount'] && $thrift_GetTask['FileUpdateCount']) {
+			if (isset($options['FileUpdateCount']) && $thrift_GetTask['FileUpdateCount']) {
 				$thrift_GetTask['FileUpdateCount'] += 1;
 				unset($options['FileUpdateCount']);
 			}  
@@ -181,7 +181,7 @@ ThriftController::log("_model_setTaskState() state=".json_encode($thrift_GetTask
 			$device_files[] = $filepath;
 			ThriftController::$controller->User->setMeta("native-uploader.{$taskID->DeviceID}.files", json_encode($device_files));
 ThriftController::log("_model_setFiles, key=native-uploader.{$taskID->DeviceID}.files, GetFiles() = ", LOG_DEBUG);			
-ThriftController::log(($device_files), LOG_DEBUG);			
+ThriftController::log(array( count($device_files) =>$filepath), LOG_DEBUG);			
 			return $device_files;
 		}
 	
@@ -220,7 +220,11 @@ ThriftController::log("***   GetFolders", LOG_DEBUG);
 			foreach ($thrift_GetFolders as $i=>$folder) {
 				if (!$folder['is_scanned'] && !$folder['is_watched']) $folders[] = $folder['folder_path'];
 			}
-ThriftController::log($folders, LOG_DEBUG);					
+ThriftController::log($folders, LOG_DEBUG);	
+			if (empty($folders)) {
+				// Cancel Task right away, GetWatchFolders() called from different taskID
+				CakePhpHelper::_model_setTaskState($taskID, array('IsCancelled'=>1));
+			}				
         	return $folders;
         }
 		
@@ -249,10 +253,14 @@ ThriftController::log($folders, LOG_DEBUG);
 		 * @return array of Strings
 		 */
         public function GetFiles($taskID , $folderPath) {
-ThriftController::log("***   GetFiles, deviceID={$taskID->DeviceID}", LOG_DEBUG);         
-			$device_files = CakePhpHelper::_model_getFiles($taskID);			
-ThriftController::log(($device_files), LOG_DEBUG);	
-        	return $device_files;
+ThriftController::log("***   GetFiles, deviceID={$taskID->DeviceID}, folder={$folderPath}", LOG_DEBUG);         
+			$device_files = CakePhpHelper::_model_getFiles($taskID);
+			$filtered = array();	
+			foreach ($device_files as $i=>$filepath) {
+				if (strpos($filepath, $folderPath)===0) $filtered[] = $filepath;
+			}		
+ThriftController::log(($filtered), LOG_DEBUG);	
+        	return $filtered;
         }                
 		/**
 		 * Report that a folder could not be searched. and prepare for restart/retry
@@ -286,13 +294,15 @@ ThriftController::log("***   ReportFolderUploadComplete, folder={$folderPath},  
 			$thrift_GetFolders = CakePhpHelper::_model_getFolderState($taskID);
 			$found = false; $done_uploading = true;
 			foreach ($thrift_GetFolders as $i=>$folder) {
-				$done_uploading = $done_uploading && $folder['is_scanned']; 
+				if ($folder['is_watched']) continue;
 				if ($folder['folder_path'] == $folderPath) {
 					$thrift_GetFolders[$i]['is_scanned'] = 1;
 					// $thrift_GetFolders[$i]['is_watched'] = 1;
 					CakePhpHelper::_model_setFolderState($taskID, $thrift_GetFolders);
 					$found = true;
-					if (!$done_uploading) return true;
+					if (!$done_uploading) return;	// keep scanning
+				} else {
+					$done_uploading = $done_uploading && $folder['is_scanned']; 
 				}
 			}
 			if (!$found) throw new Exception("ReportFolderUploadComplete(): folder not found, path={$folderPath}");
@@ -315,7 +325,7 @@ ThriftController::log("***   ReportFileCount, folder={$folderPath}, count={$coun
 			foreach ($thrift_GetFolders as $i=>$folder) {
 				if ($folder['folder_path'] == $folderPath) {
 					$thrift_GetFolders[$i]['count'] = $count;	
-ThriftController::log("ReportFileCount taskID=".print_r((array)$taskID, true), LOG_DEBUG);
+// ThriftController::log("ReportFileCount taskID=".print_r((array)$taskID, true), LOG_DEBUG);
 					CakePhpHelper::_model_setFolderState($taskID, $thrift_GetFolders);
 					return true; 
 				}
