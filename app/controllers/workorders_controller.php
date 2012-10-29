@@ -629,6 +629,7 @@ if (!empty($this->passedArgs['all-shots'])) {
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = $this->paginate($paginateModel);
+		$raw_shots = Set::extract($pageData, "{n}.Shot");	// for PAGE.jsonData.Shot
 		$pageData = Set::extract($pageData, "{n}.{$paginateModel}");
 		// end paginate
 		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
@@ -650,7 +651,7 @@ if (!empty($this->passedArgs['all-shots'])) {
 		
 		// this version uses paginate('Asset'), but manually places paging data under a different key, ['PageableAlias']
 		// TODO: fix ['PageableAlias'] and ['$paginateCacheKey'] overlap
-		$shot_paginateArray = array_merge($this->paginate[$SOURCE_MODEL.$paginateModel], $this->paginate[$paginateModel]['extras']); 
+		$shot_paginateArray = $this->paginate[$SOURCE_MODEL.$paginateModel]; //array_merge($this->paginate[$SOURCE_MODEL.$paginateModel], $this->paginate[$paginateModel]['extras']); 
 		$shot_paginateArray =  $Model->getPaginatePhotosByShotId($shotIds, $shot_paginateArray, $shotType);
 		$shot_paginateArray['PageableAlias'] = $paginateAlias;					// Pageable?
 		$shot_paginateArray['extras']['$paginateCacheKey'] = $paginateAlias;	// AppModel
@@ -658,17 +659,24 @@ if (!empty($this->passedArgs['all-shots'])) {
 		Configure::write("paginate.Options.{$paginateAlias}.limit", 999);			// Pageable?
 // We need to preserve the paging counts under a different key, and restore the original paging Counts for Assets		
 $paging[$paginateModel] = $this->params['paging'][$paginateModel];		
-		$shotData= $this->paginate($paginateModel);		// must paginate using Model->name because of how fields and conditions are set up
+		$shotData = $this->paginate($paginateModel);		// must paginate using Model->name because of how fields and conditions are set up
 		$shotData = Set::extract($shotData, "{n}.{$paginateModel}");
 $paging[$paginateAlias] = $this->params['paging'][$paginateModel];
 $this->params['paging'] = $paging;
 		Configure::write('paginate.Model', $paginateModel);		// original paging Counts for Asset, not Shot
 		
 		
-		
 		$this->viewVars['jsonData']['shot_CastingCall'] = $this->CastingCall->getCastingCall($shotData);
-		
-		 		
+		// extract Shot data from Assets
+		foreach ($raw_shots as $i=>$row) {
+			$shot = array('id'=>$row['shot_id']);
+			$shot['owner_id'] = $row['shot_owner_id'];
+			$shot['priority'] = $row['shot_priority'];
+			$shot['count'] = $row['shot_count'];
+			$shot['active'] = $row['shot_active'];
+			$shots[$row['shot_id']] = $shot;
+		}
+		$this->viewVars['jsonData']['shot_CastingCall']['shot_extras'] = $shots;
 		$done = $this->renderXHRByRequest('json', '/elements/photo/roll');
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
 		

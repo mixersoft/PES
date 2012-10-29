@@ -515,17 +515,19 @@ if (!empty($this->passedArgs['raw'])) {
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 		// end paginate		
-		
+// debug($this->paginate[$paginateModel]);		
 		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 		$castingCall = $this->CastingCall->getCastingCall($pageData);
 		$this->viewVars['jsonData']['castingCall'] = $castingCall;
-		// extract Shot properties		
+		// extract Shot properties
+		// uses $this->viewVars['jsonData']['shot_CastingCall']['shot_extras'] pattern, see /workorders/shots		
 		$shot = array('id'=>$id);
 		$shot['owner_id'] = $pageData[0]['shot_owner_id'];
 		$shot['priority'] = $pageData[0]['shot_priority'];
 		$shot['count'] = $pageData[0]['shot_count'];
 		$shot['active'] = $pageData[0]['shot_active'];
-		$this->viewVars['jsonData']['Shot'] = $shot;
+		$this->viewVars['jsonData']['castingCall']['shot_extras'][$id] = $shot;
+		
 		
 		$done = $this->renderXHRByRequest('json', '/elements/assets/hidden_shots', null , 0);
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false

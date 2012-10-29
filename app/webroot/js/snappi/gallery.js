@@ -1815,6 +1815,7 @@
 				// skip
         	} else if (shot.stale == false) {
         		this.render({ uuid: selected.id }, shot);		// render shot directly
+        		_Y.fire('snappi:shot-gallery-render-complete', this, shot);
         	} else {
         		var uri = '/photos/hiddenShots/'+shot.id+'/'+shot.shotType+'/.json';
         		var ioCfg = {
@@ -1832,7 +1833,7 @@
 			        		}
 	                    }
 	                    this.render( options);		// render shot directly
-	                    _Y.fire('snappi:shot-gallery-render-complete', this, response.Shot);
+	                    _Y.fire('snappi:shot-gallery-render-complete', this, shotCC.shots[shot.id]);
 	                    return false;
 					},
 				};

@@ -175,6 +175,13 @@
 	        			// 		lightbox messes things up because shotType is not determinate
 	        			// case of aud_A...SubstitutionREF == null, but aud_B...SubstitutionREF == shotId 
 	        			var s = Auditions.addAuditionToShot(o, shotId, shotType, stale);
+	        			// add shot_extras for /workorders/shots views
+	        			if (castingCall.shot_extras) {
+	        				var extras = castingCall.shot_extras[s.id];
+	        				s.owner_id = extras.owner_id;
+	        				s.priority = extras.priority;
+	        				s.active = extras.active;
+	        			}
 	        			castingCall.shots[s.id] = s;
 	        		}
 	            	sh.add(o);		// subset of auditions in master copy, SNAPPI.Auditions._auditionSH
