@@ -71,12 +71,11 @@
 				<li class='btn orange rounded-5'>
 					<a onclick=<?php echo $launch_SnappiUploader ?>>Start Uploading</a>
 				</li>
-			</ul>
-			<ul class="inline">
+				<li><input type="field" value='<?php echo "snaphappi://{$authToken}_{$sessionId}_ur" ?>'</input></li>
 				<li class='btn orange rounded-5'>
 					<a onclick=<?php echo $launch_SnappiUploader_watched ?>>Watch Folders</a>
 				</li>
-			</ul>			
+			</ul>	
 		</div>
 	</div>
 	<div class="grid_8 omega">

@@ -614,8 +614,8 @@ AND includes.asset_id='{$assetId}';
 		/****************************************************
 		 * setup data['Asset'] to create new Asset
 		 */
-
-		$file_relpath = cleanPath(substr($photoPath,strlen($baseurl)),'http');
+// TODO: $file_relpath should be from $providerAccount['baseurl'], but what if we have multiple TLF?
+		$file_relpath = cleanPath(substr($photoPath,strlen($baseurl)),'http'); 
 		$filename_no_counter = preg_replace('/(.*)(~\d+)(\.jpg)/i','${1}${3}',$asset['rel_path']);	
 // $this->log('$filename_no_counter =>'.$filename_no_counter,LOG_DEBUG);		
 		/*
@@ -715,6 +715,7 @@ $this->log( " ERROR: this->__updateAssetFields()".print_r($duplicate['Asset'], t
 			$src['root']= $shardPath;
 			$src['thumb']= $Import->getImageSrcBySize($shardPath, 'tn');
 			$src['orig']= cleanPath($providerAccount['baseurl'].DS.$asset['rel_path'], 'http');		// original relpath in the clear
+$src['orig']= $asset['rel_path'];		// TODO: for nativeUploader only
 			
 			// add UUID derived fields
 			$newAsset['id'] = $uuid;
@@ -743,16 +744,14 @@ $this->log("insert newAsset=".print_r($newAsset, true), LOG_DEBUG);
 	/*
 	 * TODO: BUG: SQL Error: 1052: Column 'id' in where clause is ambiguous
 	 * 		for counterCache on a permissionable
+	 * NOTE: tested OK for native-uploader
 	 */			
-			$this->belongsTo['Owner']['counterCache']=false;
+			//$this->belongsTo['Owner']['counterCache']=false;
 			if ($ret = $this->save($data)) {
-	// $this->log( "save asset, data=".print_r($data, true), LOG_DEBUG);				
 				$response['message'][]="photo imported successfully";
 			} else 	{
 				$response['message'][]="Error creating asset, id={$asset['id']}";
-				$this->id = $data['Asset']['id'];
-				// TODO: BUG:  $this->read() is not working properly
-				$ret = $this->read();
+				$ret = $this->read(null, $data['Asset']['id']);
 			}
 			$response['success'] = isset($response['success']) ? $response['success'] && $ret : $ret;
 			return $ret;
