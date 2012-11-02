@@ -82,7 +82,7 @@ class ProviderAccount extends AppModel {
 			if (empty($providerAccount['id'])) $providerAccount['id'] = String::uuid();
 			$providerAccount['provider_key'] = $providerAccount['id'];
 			$providerAccount['user_id'] = AppController::$userid;
-			$providerAccount['display_name'] = Session::read('Auth.User.displayname');
+			if (empty($providerAccount['display_name'])) $providerAccount['display_name'] = Session::read('Auth.User.displayname');
 			$data = array('ProviderAccount'=>$providerAccount);
 			if ($ret = $this->save($data)) {
 				$response['message'][] = "ProviderAccount created successfully. id={$providerAccount['id']}";

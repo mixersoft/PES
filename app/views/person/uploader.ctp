@@ -5,9 +5,12 @@
 	$path_InstallSwf = "{$basepath}/expressInstall.swf";
 	
 	// start native background uploader
-	$authToken = base64_encode("aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t");
-	$sessionId = base64_encode("Session-0");
+	$authToken = base64_encode($authToken);
+	$sessionId = base64_encode($sessionId);
+	// $authToken = base64_encode("aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t");
+	// $sessionId = base64_encode("Session-".String::uuid());
 	$launch_SnappiUploader = "window.location.href='snaphappi://{$authToken}_{$sessionId}_ur'";
+	$launch_SnappiUploader_watched = "window.location.href='snaphappi://{$authToken}_{$sessionId}_sw'";
 	
 	
 	$this->Layout->blockStart('HEAD');
@@ -69,6 +72,11 @@
 					<a onclick=<?php echo $launch_SnappiUploader ?>>Start Uploading</a>
 				</li>
 			</ul>
+			<ul class="inline">
+				<li class='btn orange rounded-5'>
+					<a onclick=<?php echo $launch_SnappiUploader_watched ?>>Watch Folders</a>
+				</li>
+			</ul>			
 		</div>
 	</div>
 	<div class="grid_8 omega">

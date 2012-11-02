@@ -515,39 +515,67 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 		$userid = AppController::$userid;
 		
 		/*
-		 * GET
+		 * Get correct ProviderAccount
 		 */
 //		debug(session_name()."=".session_id());
-		
-		$this->User->contain();
-		$options = array('conditions'=>array('User.id'=>$userid));
+		$provider_name = 'native-uploader';
+		$response = array();
+		$options = array(
+			'contain'=>array('ProviderAccount', 'Profile'),
+			'conditions'=>array('User.id'=>$userid)
+		);
 		$data = $this->User->find('first', $options);
-		
+		$paData = Set::extract("/ProviderAccount[provider_name={$provider_name}]", $data);
+		if (!empty($paData)) {
+			$data['ProviderAccount'] = $paData[0]['ProviderAccount'];
+			$created = strtotime($data['ProviderAccount']['created']);
+			$age = time() - $created;
+			$EXPIRES_IN_SEC = 3 * 30 * 24 * 3600;  // 3 months, TODO: get from Profile
+			if ($age > $EXPIRES_IN_SEC) {
+				$this->Session->setFlash('Warning: Your secret key for uploading Snaps has expired. Do you want to renew it?');
+				// TODO: add option for renewing auth token.
+			}
+		} else {
+			/*
+			 * create ProviderAccount with authToken, if missing
+			 */
+			$paData['provider_name'] = $provider_name;
+			$paData['auth_token'] = sha1(String::uuid().Configure::read('Security.salt'));
+			// $paData['baseurl'] =  
+			$conditions = array(
+				'user_id'=>AppController::$userid,
+				'provider_name'=>$provider_name, 
+			);
+			$data = Set::merge($data, $this->User->ProviderAccount->addIfNew($paData, $conditions,  $response));
+		}
 		
 		/*
-		 * for native desktop uploader. 
-		 * 		???: should this be in a different app? you need access to the Auth->user() 
+		 * Setup metadata for native desktop uploader. 
+		 * 
 		 */ 
 		$this->User->id = AppController::$userid;
-		// set demo data
-		$state_testdata = array();
-		$state_testdata[] = array('folder_path'=>'C:\\TEMP\\May', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0); 
-		$state_testdata[] = array('folder_path'=>'C:\\TEMP\\small import test', 'is_scanned'=>0, 'is_watched'=>1, 'count'=>0);
-		$state_testdata[] = array('folder_path'=>'C:\\TEMP\\folder with special char (;\'&.=^%$#@!) test', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0);
+		$authToken = $data['ProviderAccount']['auth_token'];
 		
-		$deviceUuid = $this->User->id;
-		$this->User->setMeta("native-uploader.{$deviceUuid}.state", json_encode($state_testdata));
+		// setup Task state, 
+		// TODO: do we want to delete existing/cancelled Task states?
+		// TODO: How do we delete keys for expired sessions? DELETE WHERE value LIKE '{"IsCancelled":1%'
+		$sessionId = "session-".String::uuid();
 		
-		// get native desktop uploader state for thrift API
-		$thrift_GetFolders = json_decode($this->User->getMeta("native-uploader.{$deviceUuid}.state"), true);
-		// debug($thrift_GetFolders);
+		// set hardcoded GetFolders() data for TESTING, normally we'd use the TopLevelFolder app
+		$folder_state = array();
+		$folder_state[] = array('folder_path'=>'C:\\TEMP\\May', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0); 
+		$folder_state[] = array('folder_path'=>'C:\\TEMP\\small import test', 'is_scanned'=>0, 'is_watched'=>1, 'count'=>0);
+		$folder_state[] = array('folder_path'=>'C:\\TEMP\\folder with special char (;\'&.=^%$#@!) test', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0);
+		$folder_state = json_encode($folder_state);
+		$deviceUuid = '5ec5006d-8dee-48ef-8c04-bac06c16d36e';
+		$this->User->setMeta("native-uploader.{$deviceUuid}.state", $folder_state);
 		
 		/*
 		 * show express-uploads, if any
 		 *  see '/elements/group/express-upload'
 		 */ 
 		$expressUploadGroups = $this->__getExpressUploads($userid);
-		$this->set(compact('expressUploadGroups'));
+		$this->set(compact('authToken', 'sessionId', 'expressUploadGroups'));
 				
 		if (empty($data)) {
 			/*

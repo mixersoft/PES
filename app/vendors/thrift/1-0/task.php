@@ -105,7 +105,7 @@ class CakePhpHelper {
 		 * @return aa
 		 */
 		public static function _model_getFolderState($taskID) {
-ThriftController::log("_model_getFolderState taskID=".print_r((array)$taskID, true), LOG_DEBUG);			
+// ThriftController::log("_model_getFolderState taskID=".print_r((array)$taskID, true), LOG_DEBUG);			
 			if (!AppController::$userid) CakePhpHelper::_loginFromAuthToken($taskID->AuthToken);
 			ThriftController::$controller->User->id = AppController::$userid;
 // ThriftController::log("_model_getFolderState AppController::userid=".AppController::$userid, LOG_DEBUG);			
@@ -130,8 +130,6 @@ ThriftController::log(json_encode(CakePhpHelper::_model_getFolderState($taskID))
 		 * WARNING: the task does NOT know the deviceId, must be posted by client
 		 *		uses MetaData plugin for now, 
 		 * 
-		 * TODO: How do we delete keys for expired sessions?
-		 *
 		 * TODO: move to Model/DB table?
 		 * TODO: should method be moved to the Model under the native desktop uploader
 		 * 
@@ -142,6 +140,13 @@ ThriftController::log(json_encode(CakePhpHelper::_model_getFolderState($taskID))
 			ThriftController::$controller->User->id = AppController::$userid;
 			$task_key = $taskID->Session ? $taskID->Session : $taskID->DeviceID;
 			$thrift_GetTask = json_decode(ThriftController::$controller->User->getMeta("native-uploader.task.{$task_key}"), true);
+			if (empty($thrift_GetTask)) $thrift_GetTask = array(
+				'IsCancelled'=>0, 
+				'FolderUpdateCount'=>0, 
+				'FileUpdateCount'=>0, 
+				// 'DuplicateFileException'=>0,
+				// 'OtherException'=>0,
+			);
 // ThriftController::log("_model_getTaskState(): key=native-uploader.task.{$task_key} data=".print_r($thrift_GetTask, true), LOG_DEBUG);			
 			return $thrift_GetTask;
 		}
@@ -153,13 +158,6 @@ ThriftController::log(json_encode(CakePhpHelper::_model_getFolderState($taskID))
 				array('IsCancelled', 'FolderUpdateCount', 'FileUpdateCount', 
 					'DuplicateFileException', 'OtherException',
 					));
-			$default = array(
-				'IsCancelled'=>0, 
-				'FolderUpdateCount'=>0, 
-				'FileUpdateCount'=>0, 
-				// 'DuplicateFileException'=>0,
-				// 'OtherException'=>0,
-			);
 			$task_key = $taskID->Session ? $taskID->Session : $taskID->DeviceID;
 			
 			if (isset($options['FileUpdateCount']) && $thrift_GetTask['FileUpdateCount']) {
@@ -178,7 +176,7 @@ ThriftController::log("**** WARNING: DuplicateFileException count={$thrift_GetTa
 					 * TODO: instead of resetting threshold counter, 
 					 * we need to issue a new Task Session
 					 */ 
-					$thrift_GetTask = array_merge($default, $thrift_GetTask, $options);
+					$thrift_GetTask = array_merge($thrift_GetTask, $options);
 					ThriftController::$controller->User->setMeta("native-uploader.task.{$task_key}", json_encode($thrift_GetTask));
 					CakePhpHelper::_shutdown_client($taskID, $message);
 					return CakePhpHelper::_model_getTaskState($taskID);
@@ -195,13 +193,13 @@ ThriftController::log("**** WARNING: DuplicateFileException count={$thrift_GetTa
 					 * TODO: instead of resetting threshold counter, 
 					 * we need to issue a new Task Session
 					 */ 
-					$thrift_GetTask = array_merge($default, $thrift_GetTask, $options);
+					$thrift_GetTask = array_merge($thrift_GetTask, $options);
 					ThriftController::$controller->User->setMeta("native-uploader.task.{$task_key}", json_encode($thrift_GetTask));
 					CakePhpHelper::_shutdown_client($taskID, $message);
 					return CakePhpHelper::_model_getTaskState($taskID);
 				}
 			} 
-			$thrift_GetTask = array_merge($default, $thrift_GetTask, $options);
+			$thrift_GetTask = array_merge($thrift_GetTask, $options);
 			ThriftController::$controller->User->setMeta("native-uploader.task.{$task_key}", json_encode($thrift_GetTask));
 ThriftController::log("_model_setTaskState() state=".json_encode($thrift_GetTask), LOG_DEBUG);			
 			return $thrift_GetTask;
