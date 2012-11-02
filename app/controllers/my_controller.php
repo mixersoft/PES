@@ -112,7 +112,12 @@ class MyController extends PersonController {
 		$done = $this->renderXHRByRequest('json', $viewElement, 0);		
 		return;
 	}
-
+	/**
+	 * @param $data, Asset.batchId, ProviderAccount.provider_name
+	 * @param $baseurl, the base folder for upload files
+	 * @param $move_to_src_root, full path to uploaded file, includes $baseurl
+	 * @param $isOriginal boolean
+	 */
 	function __importPhoto($data, $baseurl, $move_to_src_root, $isOriginal){
 		$isOriginal = ($isOriginal == 'ORIGINAL');
 		$ret = true;
@@ -521,13 +526,14 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 		$provider_name = 'native-uploader';
 		$response = array();
 		$options = array(
-			'contain'=>array('ProviderAccount', 'Profile'),
-			'conditions'=>array('User.id'=>$userid)
+			'contain'=>array('Owner'=>array('Profile')),
+			'conditions'=>array(
+				'ProviderAccount.provider_name'=>$provider_name,
+				'ProviderAccount.user_id'=>$userid,
+			)
 		);
-		$data = $this->User->find('first', $options);
-		$paData = Set::extract("/ProviderAccount[provider_name={$provider_name}]", $data);
-		if (!empty($paData)) {
-			$data['ProviderAccount'] = $paData[0]['ProviderAccount'];
+		$data = $this->User->ProviderAccount->find('first', $options);
+		if (!empty($data)) {
 			$created = strtotime($data['ProviderAccount']['created']);
 			$age = time() - $created;
 			$EXPIRES_IN_SEC = 3 * 30 * 24 * 3600;  // 3 months, TODO: get from Profile
@@ -539,6 +545,7 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			/*
 			 * create ProviderAccount with authToken, if missing
 			 */
+			$paData=array();
 			$paData['provider_name'] = $provider_name;
 			$paData['auth_token'] = sha1(String::uuid().Configure::read('Security.salt'));
 			// $paData['baseurl'] =  
@@ -546,7 +553,8 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 				'user_id'=>AppController::$userid,
 				'provider_name'=>$provider_name, 
 			);
-			$data = Set::merge($data, $this->User->ProviderAccount->addIfNew($paData, $conditions,  $response));
+			$this->User->ProviderAccount->addIfNew($paData, $conditions,  $response);
+			$data = $this->User->ProviderAccount->find('first', $options);
 		}
 		
 		/*
