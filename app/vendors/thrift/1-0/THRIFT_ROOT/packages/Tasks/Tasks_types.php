@@ -8,6 +8,23 @@
 include_once $GLOBALS['THRIFT_ROOT'].'/Thrift.php';
 
 
+$GLOBALS['snaphappi_api_E_ErrorCode'] = array(
+  'Unknown' => 1,
+  'InvalidAuth' => 2,
+  'DataConflict' => 3,
+);
+
+final class ErrorCode {
+  const Unknown = 1;
+  const InvalidAuth = 2;
+  const DataConflict = 3;
+  static public $__names = array(
+    1 => 'Unknown',
+    2 => 'InvalidAuth',
+    3 => 'DataConflict',
+  );
+}
+
 class snaphappi_api_TaskID {
   static $_TSPEC;
 
@@ -111,6 +128,98 @@ class snaphappi_api_TaskID {
     if ($this->DeviceID !== null) {
       $xfer += $output->writeFieldBegin('DeviceID', TType::STRING, 3);
       $xfer += $output->writeString($this->DeviceID);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class snaphappi_api_SystemException extends TException {
+  static $_TSPEC;
+
+  public $ErrorCode = null;
+  public $Information = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'ErrorCode',
+          'type' => TType::I32,
+          ),
+        2 => array(
+          'var' => 'Information',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['ErrorCode'])) {
+        $this->ErrorCode = $vals['ErrorCode'];
+      }
+      if (isset($vals['Information'])) {
+        $this->Information = $vals['Information'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'SystemException';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->ErrorCode);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->Information);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('SystemException');
+    if ($this->ErrorCode !== null) {
+      $xfer += $output->writeFieldBegin('ErrorCode', TType::I32, 1);
+      $xfer += $output->writeI32($this->ErrorCode);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->Information !== null) {
+      $xfer += $output->writeFieldBegin('Information', TType::STRING, 2);
+      $xfer += $output->writeString($this->Information);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

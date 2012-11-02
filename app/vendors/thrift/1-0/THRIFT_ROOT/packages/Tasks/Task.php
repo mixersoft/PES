@@ -80,6 +80,9 @@ class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
+    if ($result->systemException !== null) {
+      throw $result->systemException;
+    }
     return;
   }
 
@@ -131,6 +134,9 @@ class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
     }
     if ($result->success !== null) {
       return $result->success;
+    }
+    if ($result->systemException !== null) {
+      throw $result->systemException;
     }
     throw new Exception("GetFileCount failed: unknown result");
   }
@@ -184,6 +190,9 @@ class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
     if ($result->success !== null) {
       return $result->success;
     }
+    if ($result->systemException !== null) {
+      throw $result->systemException;
+    }
     throw new Exception("GetFiles failed: unknown result");
   }
 
@@ -234,6 +243,9 @@ class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
     }
     if ($result->success !== null) {
       return $result->success;
+    }
+    if ($result->systemException !== null) {
+      throw $result->systemException;
     }
     throw new Exception("GetFolders failed: unknown result");
   }
@@ -286,6 +298,9 @@ class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
     if ($result->success !== null) {
       return $result->success;
     }
+    if ($result->systemException !== null) {
+      throw $result->systemException;
+    }
     throw new Exception("GetState failed: unknown result");
   }
 
@@ -337,6 +352,9 @@ class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
     if ($result->success !== null) {
       return $result->success;
     }
+    if ($result->systemException !== null) {
+      throw $result->systemException;
+    }
     throw new Exception("GetWatchedFolders failed: unknown result");
   }
 
@@ -387,6 +405,9 @@ class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
+    if ($result->systemException !== null) {
+      throw $result->systemException;
+    }
     return;
   }
 
@@ -436,6 +457,9 @@ class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
+    if ($result->systemException !== null) {
+      throw $result->systemException;
+    }
     return;
   }
 
@@ -484,6 +508,9 @@ class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
       $result = new snaphappi_api_Task_ReportFolderUploadComplete_result();
       $result->read($this->input_);
       $this->input_->readMessageEnd();
+    }
+    if ($result->systemException !== null) {
+      throw $result->systemException;
     }
     return;
   }
@@ -584,6 +611,9 @@ class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
       $result = new snaphappi_api_Task_UploadFile_result();
       $result->read($this->input_);
       $this->input_->readMessageEnd();
+    }
+    if ($result->systemException !== null) {
+      throw $result->systemException;
     }
     return;
   }
@@ -692,11 +722,22 @@ class snaphappi_api_Task_AddFolder_args {
 class snaphappi_api_Task_AddFolder_result {
   static $_TSPEC;
 
+  public $systemException = null;
 
-  public function __construct() {
+  public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
+        1 => array(
+          'var' => 'systemException',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_SystemException',
+          ),
         );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['systemException'])) {
+        $this->systemException = $vals['systemException'];
+      }
     }
   }
 
@@ -719,6 +760,14 @@ class snaphappi_api_Task_AddFolder_result {
       }
       switch ($fid)
       {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->systemException = new snaphappi_api_SystemException();
+            $xfer += $this->systemException->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -732,6 +781,11 @@ class snaphappi_api_Task_AddFolder_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('Task_AddFolder_result');
+    if ($this->systemException !== null) {
+      $xfer += $output->writeFieldBegin('systemException', TType::STRUCT, 1);
+      $xfer += $this->systemException->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -840,6 +894,7 @@ class snaphappi_api_Task_GetFileCount_result {
   static $_TSPEC;
 
   public $success = null;
+  public $systemException = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -848,11 +903,19 @@ class snaphappi_api_Task_GetFileCount_result {
           'var' => 'success',
           'type' => TType::I32,
           ),
+        1 => array(
+          'var' => 'systemException',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_SystemException',
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['success'])) {
         $this->success = $vals['success'];
+      }
+      if (isset($vals['systemException'])) {
+        $this->systemException = $vals['systemException'];
       }
     }
   }
@@ -883,6 +946,14 @@ class snaphappi_api_Task_GetFileCount_result {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->systemException = new snaphappi_api_SystemException();
+            $xfer += $this->systemException->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -899,6 +970,11 @@ class snaphappi_api_Task_GetFileCount_result {
     if ($this->success !== null) {
       $xfer += $output->writeFieldBegin('success', TType::I32, 0);
       $xfer += $output->writeI32($this->success);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->systemException !== null) {
+      $xfer += $output->writeFieldBegin('systemException', TType::STRUCT, 1);
+      $xfer += $this->systemException->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -1009,6 +1085,7 @@ class snaphappi_api_Task_GetFiles_result {
   static $_TSPEC;
 
   public $success = null;
+  public $systemException = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -1021,11 +1098,19 @@ class snaphappi_api_Task_GetFiles_result {
             'type' => TType::STRING,
             ),
           ),
+        1 => array(
+          'var' => 'systemException',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_SystemException',
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['success'])) {
         $this->success = $vals['success'];
+      }
+      if (isset($vals['systemException'])) {
+        $this->systemException = $vals['systemException'];
       }
     }
   }
@@ -1066,6 +1151,14 @@ class snaphappi_api_Task_GetFiles_result {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->systemException = new snaphappi_api_SystemException();
+            $xfer += $this->systemException->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -1094,6 +1187,11 @@ class snaphappi_api_Task_GetFiles_result {
         }
         $output->writeListEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->systemException !== null) {
+      $xfer += $output->writeFieldBegin('systemException', TType::STRUCT, 1);
+      $xfer += $this->systemException->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -1184,6 +1282,7 @@ class snaphappi_api_Task_GetFolders_result {
   static $_TSPEC;
 
   public $success = null;
+  public $systemException = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -1196,11 +1295,19 @@ class snaphappi_api_Task_GetFolders_result {
             'type' => TType::STRING,
             ),
           ),
+        1 => array(
+          'var' => 'systemException',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_SystemException',
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['success'])) {
         $this->success = $vals['success'];
+      }
+      if (isset($vals['systemException'])) {
+        $this->systemException = $vals['systemException'];
       }
     }
   }
@@ -1241,6 +1348,14 @@ class snaphappi_api_Task_GetFolders_result {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->systemException = new snaphappi_api_SystemException();
+            $xfer += $this->systemException->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -1269,6 +1384,11 @@ class snaphappi_api_Task_GetFolders_result {
         }
         $output->writeListEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->systemException !== null) {
+      $xfer += $output->writeFieldBegin('systemException', TType::STRUCT, 1);
+      $xfer += $this->systemException->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -1359,6 +1479,7 @@ class snaphappi_api_Task_GetState_result {
   static $_TSPEC;
 
   public $success = null;
+  public $systemException = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -1368,11 +1489,19 @@ class snaphappi_api_Task_GetState_result {
           'type' => TType::STRUCT,
           'class' => 'snaphappi_api_URTaskState',
           ),
+        1 => array(
+          'var' => 'systemException',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_SystemException',
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['success'])) {
         $this->success = $vals['success'];
+      }
+      if (isset($vals['systemException'])) {
+        $this->systemException = $vals['systemException'];
       }
     }
   }
@@ -1404,6 +1533,14 @@ class snaphappi_api_Task_GetState_result {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->systemException = new snaphappi_api_SystemException();
+            $xfer += $this->systemException->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -1423,6 +1560,11 @@ class snaphappi_api_Task_GetState_result {
       }
       $xfer += $output->writeFieldBegin('success', TType::STRUCT, 0);
       $xfer += $this->success->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->systemException !== null) {
+      $xfer += $output->writeFieldBegin('systemException', TType::STRUCT, 1);
+      $xfer += $this->systemException->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -1513,6 +1655,7 @@ class snaphappi_api_Task_GetWatchedFolders_result {
   static $_TSPEC;
 
   public $success = null;
+  public $systemException = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -1525,11 +1668,19 @@ class snaphappi_api_Task_GetWatchedFolders_result {
             'type' => TType::STRING,
             ),
           ),
+        1 => array(
+          'var' => 'systemException',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_SystemException',
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['success'])) {
         $this->success = $vals['success'];
+      }
+      if (isset($vals['systemException'])) {
+        $this->systemException = $vals['systemException'];
       }
     }
   }
@@ -1570,6 +1721,14 @@ class snaphappi_api_Task_GetWatchedFolders_result {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->systemException = new snaphappi_api_SystemException();
+            $xfer += $this->systemException->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -1598,6 +1757,11 @@ class snaphappi_api_Task_GetWatchedFolders_result {
         }
         $output->writeListEnd();
       }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->systemException !== null) {
+      $xfer += $output->writeFieldBegin('systemException', TType::STRUCT, 1);
+      $xfer += $this->systemException->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -1727,11 +1891,22 @@ class snaphappi_api_Task_ReportFileCount_args {
 class snaphappi_api_Task_ReportFileCount_result {
   static $_TSPEC;
 
+  public $systemException = null;
 
-  public function __construct() {
+  public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
+        1 => array(
+          'var' => 'systemException',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_SystemException',
+          ),
         );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['systemException'])) {
+        $this->systemException = $vals['systemException'];
+      }
     }
   }
 
@@ -1754,6 +1929,14 @@ class snaphappi_api_Task_ReportFileCount_result {
       }
       switch ($fid)
       {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->systemException = new snaphappi_api_SystemException();
+            $xfer += $this->systemException->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -1767,6 +1950,11 @@ class snaphappi_api_Task_ReportFileCount_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('Task_ReportFileCount_result');
+    if ($this->systemException !== null) {
+      $xfer += $output->writeFieldBegin('systemException', TType::STRUCT, 1);
+      $xfer += $this->systemException->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -1874,11 +2062,22 @@ class snaphappi_api_Task_ReportFolderNotFound_args {
 class snaphappi_api_Task_ReportFolderNotFound_result {
   static $_TSPEC;
 
+  public $systemException = null;
 
-  public function __construct() {
+  public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
+        1 => array(
+          'var' => 'systemException',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_SystemException',
+          ),
         );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['systemException'])) {
+        $this->systemException = $vals['systemException'];
+      }
     }
   }
 
@@ -1901,6 +2100,14 @@ class snaphappi_api_Task_ReportFolderNotFound_result {
       }
       switch ($fid)
       {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->systemException = new snaphappi_api_SystemException();
+            $xfer += $this->systemException->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -1914,6 +2121,11 @@ class snaphappi_api_Task_ReportFolderNotFound_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('Task_ReportFolderNotFound_result');
+    if ($this->systemException !== null) {
+      $xfer += $output->writeFieldBegin('systemException', TType::STRUCT, 1);
+      $xfer += $this->systemException->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -2021,11 +2233,22 @@ class snaphappi_api_Task_ReportFolderUploadComplete_args {
 class snaphappi_api_Task_ReportFolderUploadComplete_result {
   static $_TSPEC;
 
+  public $systemException = null;
 
-  public function __construct() {
+  public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
+        1 => array(
+          'var' => 'systemException',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_SystemException',
+          ),
         );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['systemException'])) {
+        $this->systemException = $vals['systemException'];
+      }
     }
   }
 
@@ -2048,6 +2271,14 @@ class snaphappi_api_Task_ReportFolderUploadComplete_result {
       }
       switch ($fid)
       {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->systemException = new snaphappi_api_SystemException();
+            $xfer += $this->systemException->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -2061,6 +2292,11 @@ class snaphappi_api_Task_ReportFolderUploadComplete_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('Task_ReportFolderUploadComplete_result');
+    if ($this->systemException !== null) {
+      $xfer += $output->writeFieldBegin('systemException', TType::STRUCT, 1);
+      $xfer += $this->systemException->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -2355,11 +2591,22 @@ class snaphappi_api_Task_UploadFile_args {
 class snaphappi_api_Task_UploadFile_result {
   static $_TSPEC;
 
+  public $systemException = null;
 
-  public function __construct() {
+  public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
+        1 => array(
+          'var' => 'systemException',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_SystemException',
+          ),
         );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['systemException'])) {
+        $this->systemException = $vals['systemException'];
+      }
     }
   }
 
@@ -2382,6 +2629,14 @@ class snaphappi_api_Task_UploadFile_result {
       }
       switch ($fid)
       {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->systemException = new snaphappi_api_SystemException();
+            $xfer += $this->systemException->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -2395,6 +2650,11 @@ class snaphappi_api_Task_UploadFile_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('Task_UploadFile_result');
+    if ($this->systemException !== null) {
+      $xfer += $output->writeFieldBegin('systemException', TType::STRUCT, 1);
+      $xfer += $this->systemException->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -2434,7 +2694,11 @@ class TaskProcessor {
     $args->read($input);
     $input->readMessageEnd();
     $result = new snaphappi_api_Task_AddFolder_result();
-    $this->handler_->AddFolder($args->id, $args->path);
+    try {
+      $this->handler_->AddFolder($args->id, $args->path);
+    } catch (snaphappi_api_SystemException $systemException) {
+      $result->systemException = $systemException;
+    }
     $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -2452,7 +2716,11 @@ class TaskProcessor {
     $args->read($input);
     $input->readMessageEnd();
     $result = new snaphappi_api_Task_GetFileCount_result();
-    $result->success = $this->handler_->GetFileCount($args->id, $args->folder);
+    try {
+      $result->success = $this->handler_->GetFileCount($args->id, $args->folder);
+    } catch (snaphappi_api_SystemException $systemException) {
+      $result->systemException = $systemException;
+    }
     $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -2470,7 +2738,11 @@ class TaskProcessor {
     $args->read($input);
     $input->readMessageEnd();
     $result = new snaphappi_api_Task_GetFiles_result();
-    $result->success = $this->handler_->GetFiles($args->id, $args->folder);
+    try {
+      $result->success = $this->handler_->GetFiles($args->id, $args->folder);
+    } catch (snaphappi_api_SystemException $systemException) {
+      $result->systemException = $systemException;
+    }
     $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -2488,7 +2760,11 @@ class TaskProcessor {
     $args->read($input);
     $input->readMessageEnd();
     $result = new snaphappi_api_Task_GetFolders_result();
-    $result->success = $this->handler_->GetFolders($args->id);
+    try {
+      $result->success = $this->handler_->GetFolders($args->id);
+    } catch (snaphappi_api_SystemException $systemException) {
+      $result->systemException = $systemException;
+    }
     $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -2506,7 +2782,11 @@ class TaskProcessor {
     $args->read($input);
     $input->readMessageEnd();
     $result = new snaphappi_api_Task_GetState_result();
-    $result->success = $this->handler_->GetState($args->id);
+    try {
+      $result->success = $this->handler_->GetState($args->id);
+    } catch (snaphappi_api_SystemException $systemException) {
+      $result->systemException = $systemException;
+    }
     $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -2524,7 +2804,11 @@ class TaskProcessor {
     $args->read($input);
     $input->readMessageEnd();
     $result = new snaphappi_api_Task_GetWatchedFolders_result();
-    $result->success = $this->handler_->GetWatchedFolders($args->id);
+    try {
+      $result->success = $this->handler_->GetWatchedFolders($args->id);
+    } catch (snaphappi_api_SystemException $systemException) {
+      $result->systemException = $systemException;
+    }
     $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -2542,7 +2826,11 @@ class TaskProcessor {
     $args->read($input);
     $input->readMessageEnd();
     $result = new snaphappi_api_Task_ReportFileCount_result();
-    $this->handler_->ReportFileCount($args->id, $args->folder, $args->count);
+    try {
+      $this->handler_->ReportFileCount($args->id, $args->folder, $args->count);
+    } catch (snaphappi_api_SystemException $systemException) {
+      $result->systemException = $systemException;
+    }
     $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -2560,7 +2848,11 @@ class TaskProcessor {
     $args->read($input);
     $input->readMessageEnd();
     $result = new snaphappi_api_Task_ReportFolderNotFound_result();
-    $this->handler_->ReportFolderNotFound($args->id, $args->folder);
+    try {
+      $this->handler_->ReportFolderNotFound($args->id, $args->folder);
+    } catch (snaphappi_api_SystemException $systemException) {
+      $result->systemException = $systemException;
+    }
     $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -2578,7 +2870,11 @@ class TaskProcessor {
     $args->read($input);
     $input->readMessageEnd();
     $result = new snaphappi_api_Task_ReportFolderUploadComplete_result();
-    $this->handler_->ReportFolderUploadComplete($args->id, $args->folder);
+    try {
+      $this->handler_->ReportFolderUploadComplete($args->id, $args->folder);
+    } catch (snaphappi_api_SystemException $systemException) {
+      $result->systemException = $systemException;
+    }
     $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -2614,7 +2910,11 @@ class TaskProcessor {
     $args->read($input);
     $input->readMessageEnd();
     $result = new snaphappi_api_Task_UploadFile_result();
-    $this->handler_->UploadFile($args->id, $args->path, $args->data);
+    try {
+      $this->handler_->UploadFile($args->id, $args->path, $args->data);
+    } catch (snaphappi_api_SystemException $systemException) {
+      $result->systemException = $systemException;
+    }
     $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
