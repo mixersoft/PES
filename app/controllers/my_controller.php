@@ -310,6 +310,8 @@ $this->log("__upload_AIRclient(): upload success, owner_id={$userid}, file dest=
 		/*
 		 * process POST data
 		 */
+$this->log("=====   Post data  ==========", LOG_DEBUG);
+			$this->log($this->data, LOG_DEBUG);		
 		/*
 		 * import into DB
 		 */
@@ -470,6 +472,7 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			$this->__upload_javascript($userid);
 			exit(0);
 		} else if ($this->data){
+			$this->log("=====   Post data  ==========", LOG_DEBUG);
 			$this->log($this->data, LOG_DEBUG);
 			echo "1";
 			return;

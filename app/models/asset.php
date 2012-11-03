@@ -721,8 +721,11 @@ $this->log( " ERROR: this->__updateAssetFields()".print_r($duplicate['Asset'], t
 			$shardPath = $Import->shardKey($uuid, $uuid);
 			$src['root']= $shardPath;
 			$src['thumb']= $Import->getImageSrcBySize($shardPath, 'tn');
-			$src['orig']= cleanPath($providerAccount['baseurl'].DS.$asset['rel_path'], 'http');		// original relpath in the clear
-$src['orig']= $asset['rel_path'];		// TODO: for nativeUploader only
+			
+			// NOTE: AIR uploader sends $asset['basepath']
+			if (!empty($asset['basepath'])) $origPath =  $asset['basepath'].DS.$asset['rel_path'];
+			else $origPath = $asset['rel_path'];
+			$src['orig'] = $origPath;		// original path in the clear
 			
 			// add UUID derived fields
 			$newAsset['id'] = $uuid;

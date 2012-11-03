@@ -704,11 +704,12 @@ package api
 					'data[ProviderAccount][provider_name]': 'desktop',
 					'data[ProviderAccount][provider_version]': 'v1.0',
 					'data[ProviderAccount][provider_key]': escape(provider_key),
-					'data[ProviderAccount][baseurl]': escape(asset[0]['base_url']),
+					'data[ProviderAccount][baseurl]': escape(asset[0]['base_url']),		// use asset.basepath instead
 					'data[Asset][id]': escape(asset[0]['id']),
 					'data[Asset][asset_hash]': escape(asset[0]['asset_hash']),
 					'data[Asset][batchId]': escape(asset[0]['batch_id']),
 					'data[Asset][rel_path]': escape(asset[0]['rel_path']),
+					'data[Asset][basepath]': escape(asset[0]['base_url']),		// renamed(!)
 					'data[Asset][width]': escape(asset[0]['width']) ,
 					'data[Asset][height]': escape(asset[0]['height']) ,
 					'data[Asset][json_exif]': escape(json_exif),

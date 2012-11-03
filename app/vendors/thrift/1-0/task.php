@@ -295,7 +295,6 @@ ThriftController::log("BATCH_ID=$BATCH_ID", LOG_DEBUG);
 		$data['Asset']['batchId'] = $BATCH_ID;
 		$data['Asset']['rel_path'] = $origPath;		// TODO: attr improperly named, used to get filename
 		$data['ProviderAccount']['provider_name']=$PROVIDER_NAME;
-ThriftController::log($data['Asset'], LOG_DEBUG);		
 		/***************************************************************
 		 * experimental: replace mode, replace existing with original
 		 * 	pass to Asset::addIfNew()
@@ -309,7 +308,6 @@ ThriftController::log($data['Asset'], LOG_DEBUG);
 		$Import = loadComponent('Import', ThriftController::$controller);
 		if (!isset(ThriftController::$controller->ProviderAccount)) ThriftController::$controller->ProviderAccount = ClassRegistry::init('ProviderAccount');
 		if (!isset(ThriftController::$controller->Asset)) ThriftController::$controller->Asset = ClassRegistry::init('Asset');
-ThriftController::log(ThriftController::$controller->Asset->Behaviors->attached(), LOG_DEBUG);				
 		/*
 		 * create ProviderAccount, if missing
 		 */
@@ -326,9 +324,9 @@ ThriftController::log(ThriftController::$controller->Asset->Behaviors->attached(
 			$data['Asset']['perms'] = $profile['Profile']['privacy_assets'];
 		}	
 		
-ThriftController::log("CakePh.pHelper::__importPhoto, paData=".print_r($paData, true), LOG_DEBUG);			
+// ThriftController::log("CakePh.pHelper::__importPhoto, paData=".print_r($paData, true), LOG_DEBUG);			
 		$assetData = ThriftController::$controller->Asset->addIfNew($data['Asset'], $paData['ProviderAccount'], $baseurl, $fullpath, $isOriginal, $response);		
-ThriftController::log("CakePhpHelper::__importPhoto, this->Asset->addIfNew(), asset=".print_r($assetData, true), LOG_DEBUG);		
+// ThriftController::log("CakePhpHelper::__importPhoto, this->Asset->addIfNew(), asset=".print_r($assetData, true), LOG_DEBUG);		
 		/*
 		 *  move file to staging server,
 		 * 	NOTE: for DUPLICATE files, 
@@ -345,7 +343,7 @@ ThriftController::log("CakePhpHelper::__importPhoto staging files, ".print_r($st
 
 	 	$response['success'] = $ret ? 'true' : 'false';
 		$response['response'] = $assetData;
-ThriftController::log("CakePhpHelper::__importPhoto JSON response, ".print_r($response, true), LOG_DEBUG);			
+// ThriftController::log("CakePhpHelper::__importPhoto JSON response, ".print_r($response, true), LOG_DEBUG);			
 		return $response;
 	}		
 	
@@ -594,8 +592,8 @@ ThriftController::log("###   UploadFile(), AuthToken={$id->AuthToken}, path={$pa
 				 */
 				$taskState = CakePhpHelper::_model_getTaskState($id);
 				$response = CakePhpHelper::__importPhoto($upload_basepath, $fullpath, $path, $taskState['BatchId'], $isOriginal=false);	// autoRotate=false
-ThriftController::log("************* UploadFile. IMPORT to DB complete ***********************", LOG_DEBUG);			 
-ThriftController::log($response, LOG_DEBUG);			
+// ThriftController::log("************* UploadFile. IMPORT to DB complete ***********************", LOG_DEBUG);			 
+// ThriftController::log($response, LOG_DEBUG);			
 			
 				
 				/*

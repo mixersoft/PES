@@ -555,8 +555,8 @@ function getAssetHash($asset, $filepath,  $filename=null ){
 	}
 // debug($string);	
 AppController::log("php_lib::getAssetHash() UUID={$asset['id']}", LOG_DEBUG);
-AppController::log("raw asset_hash={$string}", LOG_DEBUG);
-AppController::log("asset_hash=".md5($string, false), LOG_DEBUG);
+// AppController::log("raw asset_hash={$string}", LOG_DEBUG);
+// AppController::log("asset_hash=".md5($string, false), LOG_DEBUG);
 	return md5($string, false);
 }
 
