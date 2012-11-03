@@ -984,6 +984,7 @@ debug("WARNING: This code path is not tested");
 					$jsonResp['response']['aids'][$aid] = $delete_retval;
 
 				}
+				$ret = $this->Asset->Owner->updateCounter($owner_id);	// instead of counterCache
 				$success = $retval ? 'true' : 'false';
 				$message = $retval ? "Delete Asset successful." : "Delete Asset Failed";
 				$response = array('delete_asset_ids'=>$aids);

@@ -647,7 +647,7 @@ ON DUPLICATE KEY UPDATE `user_id`=VALUES(`user_id`), `dateTaken_offset`=VALUES(`
 		ClassRegistry::init('Usershot')->copyToGroupshots($groupId, $assets);
 		// update Counts
 		
-		$resp2 = $this->updateCounter($groupId);
+		$this->updateCounter($groupId);
 		// $response['shared'] = count($VALUES_assets_groups);
 		// $response['count'] = 
 		return count($VALUES_assets_groups);	

@@ -933,38 +933,26 @@ GROUP BY ProviderAccount.id, Asset.batchId ORDER BY photos DESC;";
 	 * 		works with counterCache, 
 	 */
 	function updateCounter($uid) {
-		$time = time();
-		$sql = "/* do not cache @{$time} */ SELECT u.id, COUNT(DISTINCT a.id) AS `asset_count`, COUNT(DISTINCT gu.group_id)+COUNT(DISTINCT g.id)  AS `groups_user_count`
-FROM `users` u
-LEFT JOIN assets a ON u.id = a.owner_id
-LEFT JOIN groups_users gu ON u.id = gu.user_id
-LEFT JOIN groups g ON (u.id = g.owner_id and g.isSystem=0)
-WHERE u.id='{$uid}';";
-		$result = $this->query($sql);
-		if ($result) {
-			$data['User'] = $result[0][0];
-			$this->id = $uid;
-			$ret = $this->save($data, false, array('asset_count','groups_user_count'));
-			return $ret ? $data : false;
-		}
-		return false;
+		return $this->updateAllCounts($uid);
 	}	
 	
-	function updateAllCounts() {
+	function updateAllCounts($uid = NULL) {
+		$WHERE = $uid ? "WHERE u.id='{$uid}'" : '';
 		$SQL = "
 UPDATE users AS `User`
-LEFT JOIN (
+INNER JOIN (
 	SELECT u.id as user_id, COUNT(DISTINCT a.id) AS `asset_count`,
-	  COUNT(DISTINCT gu.group_id)  AS `groups_user_count`
+	  COUNT(DISTINCT gu.group_id)+COUNT(DISTINCT g.id)  AS `groups_user_count`
 	FROM `users` u
 	LEFT JOIN assets a ON u.id = a.owner_id
 	LEFT JOIN groups_users gu ON u.id = gu.user_id
---	LEFT JOIN groups g ON (u.id = g.owner_id and g.isSystem=0)
+	LEFT JOIN groups g ON (u.id = g.owner_id and g.isSystem=0)
+	{$WHERE}
 	GROUP BY u.id
 ) AS t ON (`User`.id = t.user_id)
 SET `User`.asset_count = t.asset_count, `User`.groups_user_count = t.groups_user_count;";
 		$result = $this->query($SQL);
-		return true;
+		return $result;
 	}
 
 	function setRandomBadgePhoto($id){

@@ -240,7 +240,6 @@ class MyController extends PersonController {
 			$response = Set::merge($response, $resp1);
 		}
 //$this->log($response, LOG_DEBUG);
-		$this->User->updateCounter($userid);
 		$this->User->setRandomBadgePhoto($userid);
 		// to pass data through iframe you will need to encode all html tags
 		// Configure::write('debug', 0);
@@ -338,7 +337,6 @@ $this->log($response['message'], LOG_DEBUG);
 			}
 			$response = Set::merge($response, $resp1);
 		 }
-		 $this->User->updateCounter($userid);
 		 $this->User->setRandomBadgePhoto($userid);
 //		$this->log($response, LOG_DEBUG);
 		/*

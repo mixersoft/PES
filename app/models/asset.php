@@ -444,6 +444,13 @@ AND includes.asset_id='{$assetId}';
 		return $results;
 	}
 		
+	public function afterSave($created) {
+		if ($created) {
+			if (!empty($this->data[$this->alias]['owner_id'])) {
+				$ret = $this->Owner->updateCounter($this->data[$this->alias]['owner_id']);	// counterCache
+			}
+		}
+	}
 	
 	/**
 	 * callback function for array_walk(), merges additional fields from query results into $results[]['Asset'] 
@@ -504,7 +511,7 @@ AND includes.asset_id='{$assetId}';
 		'Owner' => array(
 			'className' => 'User',
 			'foreignKey' => 'owner_id',
-			'counterCache' => true,
+			'counterCache' => false,						// Bug, using afterSave instead
 //			'fields'=>array('Owner.id', 'Owner.username'),  // or add via Containable
 			'type'=>'INNER',
 			'conditions' => '',
@@ -741,12 +748,6 @@ $this->log("insert newAsset=".print_r($newAsset, true), LOG_DEBUG);
 			// $data['AssetPermission']['perms'] = ???	
 			
 			$this->create();
-	/*
-	 * TODO: BUG: SQL Error: 1052: Column 'id' in where clause is ambiguous
-	 * 		for counterCache on a permissionable
-	 * NOTE: tested OK for native-uploader
-	 */			
-			//$this->belongsTo['Owner']['counterCache']=false;
 			if ($ret = $this->save($data)) {
 				$response['message'][]="photo imported successfully";
 			} else 	{
