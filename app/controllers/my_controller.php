@@ -519,9 +519,9 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 //		$this->log($this->data, LOG_DEBUG);
 		$forceXHR = setXHRDebug($this);
 		$userid = AppController::$userid;
-		
 		/*
 		 * Get correct ProviderAccount
+		 * 	NOTE: at this point, we do know know the DeviceID/provider_key
 		 */
 //		debug(session_name()."=".session_id());
 		$provider_name = 'native-uploader';
@@ -541,13 +541,21 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			if ($age > $EXPIRES_IN_SEC) {
 				$this->Session->setFlash('Warning: Your secret key for uploading Snaps has expired. Do you want to renew it?');
 				// TODO: add option for renewing auth token.
+				/*
+				 * * IMPORTANT: this scheme requires ALL pa rows for user
+				 * where provider_name=native-uplaoder have the SAME authToken
+				 */ 
 			}
 		} else {
 			/*
-			 * create ProviderAccount with authToken, if missing
+			 * if NOT found, create ProviderAccount with authToken, 
+			 * IMPORTANT: this scheme requires ALL pa rows for user/native-uplaoder 
+			 * to have the SAME authToken
 			 */
 			$paData=array();
+			$paData['user_id'] = AppController::$userid;
 			$paData['provider_name'] = $provider_name;
+			// $paData['provider_key'] = null;		-- we don't know the DeviceID yet
 			$paData['auth_token'] = sha1(String::uuid().Configure::read('Security.salt'));
 			// $paData['baseurl'] =  
 			$conditions = array(
@@ -557,6 +565,7 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			$this->User->ProviderAccount->addIfNew($paData, $conditions,  $response);
 			$data = $this->User->ProviderAccount->find('first', $options);
 		}
+		// NOTE: we only want ProviderAccount.auth_token
 		
 		/*
 		 * Setup metadata for native desktop uploader. 
@@ -591,7 +600,7 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			 * handle no permission to view record
 			 */
 			$this->Session->setFlash("ERROR: You are not authorized to view this record.");
-			$this->redirectSafe();
+			// $this->redirectSafe();
 		} else {
 			$this->set('data', $data);			
 		}

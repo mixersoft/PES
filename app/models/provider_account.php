@@ -80,13 +80,16 @@ class ProviderAccount extends AppModel {
 			// create providerAccount for provider='snappi'
 			$this->create();
 			if (empty($providerAccount['id'])) $providerAccount['id'] = String::uuid();
-			$providerAccount['provider_key'] = $providerAccount['id'];
-			$providerAccount['user_id'] = AppController::$userid;
+			if (empty($providerAccount['provider_key'])) $providerAccount['provider_key'] = $providerAccount['id'];
+			if (empty($providerAccount['user_id'])) $providerAccount['user_id'] = AppController::$userid;
 			if (empty($providerAccount['display_name'])) $providerAccount['display_name'] = Session::read('Auth.User.displayname');
 			$data = array('ProviderAccount'=>$providerAccount);
 			if ($ret = $this->save($data)) {
 				$response['message'][] = "ProviderAccount created successfully. id={$providerAccount['id']}";
-			} else 	$response['message'][]="Error creating provider account, data={$providerAccount}";
+			} else 	{
+				$response['message'][]="Error creating provider account, user_id={$providerAccount['user_id']}";
+				$response['response']['Error: ProviderAccount']=$providerAccount;
+			}
 			
 		} else {
 			$data['ProviderAccount']['baseurl'] = isset($providerAccount['baseurl']) ? $providerAccount['baseurl'] : '';
@@ -95,6 +98,47 @@ class ProviderAccount extends AppModel {
 		}
 		$response['success'] = isset($response['success']) ? $response['success'] && $ret : $ret;
 		return $data; 			
+	}
+	/**
+	 * find ProviderAccount.authToken for Thrift API
+	 * @param $authToken String
+	 * @param $providerKey String, should be the native-uploader DeviceID
+	 */
+	function findForThriftApi($authToken, $deviceId){
+		$options = array(
+				'contain' => 'Owner',
+				'conditions'=>array(
+					'ProviderAccount.auth_token'=>$authToken,
+					'OR'=>array(
+						'ProviderAccount.provider_key'=>array($deviceId,''),
+						'ProviderAccount.provider_key IS NULL',
+					),
+				),
+			);
+		$data = $this->find('all', $options);
+		$unbound_row=array();
+		foreach($data as $i=>$row) {
+			if ($row['ProviderAccount']['provider_key']==$deviceId) {
+				return $row;		// found correct PA, we're done
+			}
+			if (empty($row['ProviderAccount']['provider_key'])) $unbound_row=$row;
+		}
+		if (!empty($unbound_row)) {
+			$paData = $this->bindProviderKey($unbound_row['ProviderAccount']['id'], $deviceId);
+			$unbound_row['ProviderAccount'] = $paData['ProviderAccount'];
+			return $unbound_row;
+		}
+		return array();
+	}
+	/**
+	 * for the nativeUploader Session managerment, the authToken is issued BEFORE
+	 * the providerKey/DeviceID is known. This binds the 2 values on first login
+	 * from the Thrift API
+	 */
+	function bindProviderKey($paid, $providerKey) {
+		$this->id = $paid;
+		$ret = $this->saveField('provider_key',$providerKey);
+		return $this->read(null, $paid);
 	}
 	
 	function getByOwner($owner_id, $options) {

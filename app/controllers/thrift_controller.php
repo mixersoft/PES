@@ -63,16 +63,17 @@ class ThriftController extends AppController {
 			$this->log("ERROR: Thrift service=app/vendors/thrift/{$version}/{$service}");
 		}
 		debug("==============  Thrift Boostrap Complete =====================");
-		
+		$authToken = 'b34f54557023cce43ab7213e0eb7da2a6b9d6b27';
+		$deviceId = '5ec5006d-8dee-48ef-8c04-bac06c16d36e';
 		$data['ProviderAccount'] = Array
 	        (
 	            'id' => '5093f5b3-477c-42a8-8db7-14c8f67883f5',
 	            'user_id' => '5013ddf3-069c-41f0-b71e-20160afc480d',
 	            'provider_name' => 'native-uploader',
-	            'provider_key' => '5093f5b3-477c-42a8-8db7-14c8f67883f5',
+	            'provider_key' => $deviceId,
 	            'display_name' => 'manager',
 	            'baseurl' => null,
-	            'auth_token' => 'eb6d9fda659de215b2b3dc6a87202e85f03becd1',
+	            'auth_token' => $authToken,
 	            'created' => '2012-11-02 16:32:51',
 	            'modified' => '2012-11-02 19:15:15',
 	        );
@@ -97,14 +98,15 @@ class ThriftController extends AppController {
 		debug($data);	
 		$taskId = new snaphappi_api_TaskID(
 			array(
-			    'AuthToken' => 'eb6d9fda659de215b2b3dc6a87202e85f03becd1',
+			    'AuthToken' => $authToken,
 			    'Session' => 'session-50941b84-d1d0-4f0e-a951-14c8f67883f5',
-			    'DeviceID' => '5ec5006d-8dee-48ef-8c04-bac06c16d36e',
+			    'DeviceID' => $deviceId,
 			)
 		);
 		$path = 'C:\TEMP\May\2015.JPG';
 		
 		$Task = new snaphappi_api_TaskImpl();
+		debug("****** AuthToken set for ProviderAccount.user_id=[manager] **************");
 		$Task->debug_UploadFile($taskId, $path);
 		
 		
