@@ -104,7 +104,7 @@ class ProviderAccount extends AppModel {
 	 * @param $authToken String
 	 * @param $providerKey String, should be the native-uploader DeviceID
 	 */
-	function findForThriftApi($authToken, $deviceId){
+	function thrift_findByAuthToken($authToken, $deviceId){
 		$options = array(
 				'contain' => 'Owner',
 				'conditions'=>array(
@@ -124,18 +124,18 @@ class ProviderAccount extends AppModel {
 			if (empty($row['ProviderAccount']['provider_key'])) $unbound_row=$row;
 		}
 		if (!empty($unbound_row)) {
-			$paData = $this->bindProviderKey($unbound_row['ProviderAccount']['id'], $deviceId);
+			$paData = $this->thrift_bindProviderKey($unbound_row['ProviderAccount']['id'], $deviceId);
 			$unbound_row['ProviderAccount'] = $paData['ProviderAccount'];
 			return $unbound_row;
 		}
 		return array();
 	}
 	/**
-	 * for the nativeUploader Session managerment, the authToken is issued BEFORE
+	 * for the nativeUploader Auth managerment, the authToken is issued BEFORE
 	 * the providerKey/DeviceID is known. This binds the 2 values on first login
 	 * from the Thrift API
 	 */
-	function bindProviderKey($paid, $providerKey) {
+	function thrift_bindProviderKey($paid, $providerKey) {
 		$this->id = $paid;
 		$ret = $this->saveField('provider_key',$providerKey);
 		return $this->read(null, $paid);

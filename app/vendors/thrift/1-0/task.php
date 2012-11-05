@@ -73,7 +73,7 @@ class CakePhpHelper {
 				 * - if empty, then checks for authToken with providerKey=null, and 
 				 * -- updates record to save DeviceID as providerKey
 				 */  
-				$data = ThriftController::$controller->ProviderAccount->findForThriftApi($taskID->AuthToken, $taskID->DeviceID);
+				$data = ThriftController::$controller->ProviderAccount->thrift_findByAuthToken($taskID->AuthToken, $taskID->DeviceID);
 				if (!$data) throw new Exception("Error: authToken not found, authToken={$taskID->AuthToken}");	
 						
 				$authenticated = ThriftController::$controller->Auth->login(array('User'=>$data['Owner']));
