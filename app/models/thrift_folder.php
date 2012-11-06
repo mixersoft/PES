@@ -9,7 +9,6 @@ class ThriftFolder extends AppModel {
 			'foreignKey' => 'thrift_device_id',
 			'conditions' => '',
 			'fields' => '',
-			'order' => array('is_scanned','native_path'),
 			'counterCache' => true,
 		)
 	);	
@@ -21,6 +20,20 @@ class ThriftFolder extends AppModel {
 		}
 		return true;
 	}	
+	
+	/**
+	 * @param $paid UUID, provider_account_id for name=native-uploader
+	 */
+	public function addFolder($thriftDeviceId, $nativePath, $options=array()) {
+		$data = $this->create();
+		$data['ThriftFolder']['thrift_device_id'] = $thriftDeviceId;
+		$data['ThriftFolder']['native_path'] = $nativePath;
+		if (!empty($options['is_scanned'])) $data['ThriftFolder']['is_scanned'] = $options['is_scanned'];
+		if (!empty($options['is_watched'])) $data['ThriftFolder']['is_watched'] = $options['is_watched'];
+		$ret = $this->save($data);
+		return  $ret ? $this->read(null, $this->id) : false;
+	}	
+	
 	
 }
 ?>

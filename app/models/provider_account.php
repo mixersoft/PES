@@ -114,13 +114,9 @@ class ProviderAccount extends AppModel {
 				'contain' => 'Owner',
 				'conditions'=>array(
 					'ProviderAccount.auth_token'=>$authToken,
-					'OR'=>array(
-						'ProviderAccount.provider_key'=>array($deviceId,''),
-						'ProviderAccount.provider_key IS NULL',
-					),
 				),
 			);
-		$data = $this->find('all', $options);
+		$data = $this->find('first', $options);
 		$unbound_row=array();
 		foreach($data as $i=>$row) {
 			if ($row['ProviderAccount']['provider_key']==$deviceId) {
@@ -134,6 +130,19 @@ class ProviderAccount extends AppModel {
 			return $unbound_row;
 		}
 		return array();
+	}
+	
+	/**
+	 * create a new authToken and update the modifed field
+	 */
+	function thrift_renewAuthToken($paid, $providerName='native-uploader'){
+		$this->id = $paid;
+		$check = $this->read('provider_name', $this->id);
+		if ($check['ProviderAccount']['provider_name'] != $providerName) 
+			throw new Exception("thrift_renewAuthToken() Error: ProviderAccount.provider_name is not valid");
+		$authToken = sha1(String::uuid().Configure::read('Security.salt'));
+		$ret = $this->saveField('auth_token',$authToken);
+		return $ret;
 	}
 	/**
 	 * for the nativeUploader Auth managerment, the authToken is issued BEFORE

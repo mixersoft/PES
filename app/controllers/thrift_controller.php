@@ -1,7 +1,7 @@
 <?php 
 class ThriftController extends AppController {
     public $name = 'Thrift';
-	public $uses = array('User', 'ProviderAccount');
+	public $uses = array('User', 'ProviderAccount', 'ThriftDevice');
 	
 	public static $controller = null;
 	 

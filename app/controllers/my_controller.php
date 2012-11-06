@@ -533,19 +533,21 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 				'ProviderAccount.user_id'=>$userid,
 			)
 		);
+		// NOTE: for provider-name=native-uploader, this should be UNIQUE.
 		$data = $this->User->ProviderAccount->find('first', $options);
-		if (!empty($data)) {
-			$created = strtotime($data['ProviderAccount']['created']);
-			$age = time() - $created;
+		if (!empty($data['ProviderAccount']['auth_token'])) {
+			// found, check authToken for expiration 
+			$last_modified = strtotime($data['ProviderAccount']['modified']);
+			$age = time() - $last_modified;
 			$EXPIRES_IN_SEC = 3 * 30 * 24 * 3600;  // 3 months, TODO: get from Profile
 			if ($age > $EXPIRES_IN_SEC) {
 				$this->Session->setFlash('Warning: Your secret key for uploading Snaps has expired. Do you want to renew it?');
 				// TODO: add option for renewing auth token.
-				/*
-				 * * IMPORTANT: this scheme requires ALL pa rows for user
-				 * where provider_name=native-uplaoder have the SAME authToken
-				 */ 
 			}
+		} else if (!empty($data['ProviderAccount']['id'])) {
+			// create new auth_token
+			$ret = $this->User->ProviderAccount->thrift_renewAuthToken($data['ProviderAccount']['id']);
+			$data = $this->User->ProviderAccount->find('first', $options);
 		} else {
 			/*
 			 * if NOT found, create ProviderAccount with authToken, 
@@ -556,38 +558,53 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			$paData['user_id'] = AppController::$userid;
 			$paData['provider_name'] = $provider_name;
 			// $paData['provider_key'] = null;		-- we don't know the DeviceID yet
-			$paData['auth_token'] = sha1(String::uuid().Configure::read('Security.salt'));
+			// $paData['auth_token'] = sha1(String::uuid().Configure::read('Security.salt'));
 			// $paData['baseurl'] =  
 			$conditions = array(
 				'user_id'=>AppController::$userid,
 				'provider_name'=>$provider_name, 
 			);
-			$this->User->ProviderAccount->addIfNew($paData, $conditions,  $response);
+			$paData = $this->User->ProviderAccount->addIfNew($paData, $conditions,  $response);
+			$this->User->ProviderAccount->thrift_renewAuthToken($paData['ProviderAccount']['id']);
 			$data = $this->User->ProviderAccount->find('first', $options);
 		}
 		// NOTE: we only want ProviderAccount.auth_token
-		
 		/*
 		 * Setup metadata for native desktop uploader. 
 		 * 
 		 */ 
 		$this->User->id = AppController::$userid;
 		$authToken = $data['ProviderAccount']['auth_token'];
-		
 		// setup Task state, 
-		// TODO: do we want to delete existing/cancelled Task states?
-		// TODO: How do we delete keys for expired sessions? DELETE WHERE value LIKE '{"IsCancelled":1%'
-		$sessionId = "session-".String::uuid();
-		
+		// TODO: How do we delete keys for expired sessions? DELETE WHERE is_cancelled=1 or modified too old
+		$this->ThriftSession = ClassRegistry::init('ThriftSession');
+		$thiftSession = $this->ThriftSession->newSession();
+		$sessionId = $thiftSession['ThriftSession']['id'];		
+debug($thiftSession); 
+
+		// on first POST of TaskID, bind taskID->DeviceID with Session	
+		$deviceUuid = '5ec5006d-8dee-48ef-8c04-bac06c16d36e';
+		$session = $this->ThriftSession->checkDevice($sessionId, $deviceUuid);
+		if (!$session) $session = $this->ThriftSession->bindDeviceToSession($sessionId, $authToken, $deviceUuid);
+debug($session);	
+	
+		// on GetFolders()
 		// set hardcoded GetFolders() data for TESTING, normally we'd use the TopLevelFolder app
 		$folder_state = array();
 		$folder_state[] = array('folder_path'=>'C:\\TEMP\\May', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0); 
 		$folder_state[] = array('folder_path'=>'C:\\TEMP\\small import test', 'is_scanned'=>0, 'is_watched'=>1, 'count'=>0);
 		$folder_state[] = array('folder_path'=>'C:\\TEMP\\folder with special char (;\'&.=^%$#@!) test', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0);
-		$folder_state = json_encode($folder_state);
-		$deviceUuid = '5ec5006d-8dee-48ef-8c04-bac06c16d36e';
-		$this->User->setMeta("native-uploader.{$deviceUuid}.state", $folder_state);
+debug($folder_state);		
+		$folder_state_asJson = json_encode($folder_state);
+		$this->User->setMeta("native-uploader.{$deviceUuid}.state", $folder_state_asJson);
 		
+		
+		// load folders to ThriftFolders for testing
+		foreach($folder_state as $folder) {
+			$ret = $this->ThriftSession->ThriftDevice->ThriftFolder->addFolder($session['ThriftDevice']['id'], $folder['folder_path']);
+			debug($ret);
+		}
+exit;			
 		/*
 		 * show express-uploads, if any
 		 *  see '/elements/group/express-upload'
