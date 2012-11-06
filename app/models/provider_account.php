@@ -58,7 +58,12 @@ class ProviderAccount extends AppModel {
 			'exclusive' => '',
 			'finderQuery' => '',
 			'counterQuery' => ''
-		)
+		),
+		'ThriftDevice' => array(
+			'className' => 'ThriftDevice',
+			'foreignKey' => 'provider_account_id',
+			'dependent' => true,
+		),
 	);
 	
 	var $hasAndBelongsToMany = array(

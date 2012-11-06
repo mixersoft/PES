@@ -56,7 +56,7 @@ ALTER TABLE `assets` MODIFY COLUMN `json_exif` VARCHAR(4096) DEFAULT NULL;
 ALTER TABLE `assets` ADD INDEX `fk_shots`(`substitute`);
 
 ALTER TABLE `assets` CHANGE COLUMN `substitute` `shot_id` CHAR(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL 
-
+ALTER TABLE `snappi`.`assets` ADD COLUMN `native_path` VARCHAR(2048) AFTER `src_thumbnail`;
 --
 -- Table structure for table `assets_collections`
 --
