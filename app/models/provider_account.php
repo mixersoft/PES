@@ -107,29 +107,16 @@ class ProviderAccount extends AppModel {
 	/**
 	 * find ProviderAccount.authToken for Thrift API
 	 * @param $authToken String
-	 * @param $providerKey String, should be the native-uploader DeviceID
+	 * @return false or data[ProviderAccount]
 	 */
-	function thrift_findByAuthToken($authToken, $deviceId){
+	function thrift_findByAuthToken($authToken){
 		$options = array(
 				'contain' => 'Owner',
 				'conditions'=>array(
 					'ProviderAccount.auth_token'=>$authToken,
 				),
 			);
-		$data = $this->find('first', $options);
-		$unbound_row=array();
-		foreach($data as $i=>$row) {
-			if ($row['ProviderAccount']['provider_key']==$deviceId) {
-				return $row;		// found correct PA, we're done
-			}
-			if (empty($row['ProviderAccount']['provider_key'])) $unbound_row=$row;
-		}
-		if (!empty($unbound_row)) {
-			$paData = $this->thrift_bindProviderKey($unbound_row['ProviderAccount']['id'], $deviceId);
-			$unbound_row['ProviderAccount'] = $paData['ProviderAccount'];
-			return $unbound_row;
-		}
-		return array();
+		return $this->find('first', $options);
 	}
 	
 	/**

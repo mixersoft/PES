@@ -19,12 +19,15 @@ class ThriftSession extends AppModel {
 	 *  options[session_id]: 'sw' scheduled actions will send session_id 
 	 */
 	public function newSession($options = array()) {
-		$this->data = $this->create();
-		if (!empty($options['device_UUID'])) $this->data['ThriftSession']['thrift_device_id'] = $options['device_UUID'];
-		if (!empty($options['session_id']))  $this->data['ThriftSession']['id'] = $options['session_id'];
-		if (empty($this->data['ThriftSession']['id'])) $this->data['ThriftSession']['id'] = String::uuid();
-		$ret = $this->save();
-		return  $ret ? $this->read(null, $this->id) : false;
+		$data = $this->create();
+		if (!empty($options['device_UUID'])) $data['ThriftSession']['thrift_device_id'] = $options['device_UUID'];
+		if (!empty($options['session_id'])) {
+			$data['ThriftSession']['id'] = $options['session_id'];
+			$this->id = $data['ThriftSession']['id'];
+		} 
+		if (empty($data['ThriftSession']['id'])) $data['ThriftSession']['id'] = String::uuid();
+		$ret = $this->save($data);
+		return  $ret ? $this->read() : false;
 	}	
 	
 	/**
@@ -41,6 +44,9 @@ class ThriftSession extends AppModel {
 			'conditions'=>array('ThriftSession.id'=>$session_id),
 		);
 		$data = $this->find('first', $options);
+		if (empty($data['ThriftSession'])) {
+			throw new Exception("Error: checkDevice() cannot find session, session_id={$session_id}"); 
+		} 		
 		return !empty($data['ThriftDevice']['id']) ? $data : false;
 	}
 	/**
@@ -57,9 +63,10 @@ class ThriftSession extends AppModel {
 		if (empty($device)) {
 			$device = $this->ThriftDevice->newDeviceForAuthToken($authToken, $device_UUID);
 		} 
-		
 		$this->id = $session_id;
 		$session = $this->read(null, $this->id);
+		if (!$session) throw new Exception("Error: bindDeviceToSession() cannot find session");
+
 		if ($device['ThriftDevice']['id'] != $session['ThriftSession']['thrift_device_id']) {
 			$ret = $this->saveField('thrift_device_id', $device['ThriftDevice']['id']);
 			$session = $this->read(null, $session_id);
@@ -67,5 +74,29 @@ class ThriftSession extends AppModel {
 		return array_merge($device, $session);
 	}
 	
+	/**
+	 * @param $sessionId UUID
+	 * @param $taskState array
+	 * expecting: 
+	 * Array
+		(
+		    [IsCancelled] => 0
+		    [FolderUpdateCount] => 0
+		    [FileUpdateCount] => 1
+		    [BatchId] => 1352298912
+		    [DuplicateFileException] => 0
+		    [OtherException] => 0
+		)
+	 */
+	function saveTaskState($sessionId, $taskState) {
+		$data = array();
+		$data['ThriftSession']['id'] = $sessionId;
+		$data['ThriftSession']['is_cancelled'] = $taskState['IsCancelled'] ? 1 : 0;
+		$data['ThriftSession']['DuplicateFileException'] = $taskState['DuplicateFileException'];
+		$data['ThriftSession']['OtherException'] = $taskState['OtherException'];
+		// batchId will be updated from modified is updated
+		$updated = $this->save($data);
+		return $updated;
+	}
 }
 ?>

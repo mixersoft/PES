@@ -578,15 +578,20 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 		// setup Task state, 
 		// TODO: How do we delete keys for expired sessions? DELETE WHERE is_cancelled=1 or modified too old
 		$this->ThriftSession = ClassRegistry::init('ThriftSession');
-		$thiftSession = $this->ThriftSession->newSession();
-		$sessionId = $thiftSession['ThriftSession']['id'];		
-debug($thiftSession); 
+		
+		// use for testing fixed authToken/Session
+		$test_session = array();
+		$test_session['session_id'] = '509a7862-1db8-4f50-a91e-11d0f67883f5';
+		$test_session['device_UUID'] = '5ec5006d-8dee-48ef-8c04-bac06c16d36e';
+		
+		$session = $this->ThriftSession->newSession($test_session);
+		$sessionId = $session['ThriftSession']['id'];		
 
 		// on first POST of TaskID, bind taskID->DeviceID with Session	
 		$deviceUuid = '5ec5006d-8dee-48ef-8c04-bac06c16d36e';
 		$session = $this->ThriftSession->checkDevice($sessionId, $deviceUuid);
 		if (!$session) $session = $this->ThriftSession->bindDeviceToSession($sessionId, $authToken, $deviceUuid);
-debug($session);	
+// debug($session);	exit;
 	
 		// on GetFolders()
 		// set hardcoded GetFolders() data for TESTING, normally we'd use the TopLevelFolder app
@@ -594,17 +599,17 @@ debug($session);
 		$folder_state[] = array('folder_path'=>'C:\\TEMP\\May', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0); 
 		$folder_state[] = array('folder_path'=>'C:\\TEMP\\small import test', 'is_scanned'=>0, 'is_watched'=>1, 'count'=>0);
 		$folder_state[] = array('folder_path'=>'C:\\TEMP\\folder with special char (;\'&.=^%$#@!) test', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0);
-debug($folder_state);		
+// debug($folder_state);		
 		$folder_state_asJson = json_encode($folder_state);
 		$this->User->setMeta("native-uploader.{$deviceUuid}.state", $folder_state_asJson);
 		
 		
 		// load folders to ThriftFolders for testing
 		foreach($folder_state as $folder) {
-			$ret = $this->ThriftSession->ThriftDevice->ThriftFolder->addFolder($session['ThriftDevice']['id'], $folder['folder_path']);
+			$ret = $this->ThriftSession->ThriftDevice->ThriftFolder->addFolder(
+				$session['ThriftDevice']['id'], $folder['folder_path'], $folder);
 			debug($ret);
 		}
-exit;			
 		/*
 		 * show express-uploads, if any
 		 *  see '/elements/group/express-upload'

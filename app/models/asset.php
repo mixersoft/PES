@@ -732,6 +732,7 @@ $this->log( " ERROR: this->__updateAssetFields()".print_r($duplicate['Asset'], t
 			$newAsset['provider_key'] = $uuid;
 			$newAsset['src_thumbnail'] = $src['thumb'];
 			$newAsset['json_src'] = $src;
+			$newAsset['native_path'] = $origPath;
 			pack_json_keys($newAsset);		// from php_lib
 			
 			/*
