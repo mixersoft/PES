@@ -39,23 +39,9 @@ load_THRIFT_SERVICE();
  * 
  */ 
 
-class TestData {
-	public static $folders;
-	public static $files;
-	public function TestData(){
-    	$folders[] = "C:\\TEMP\\May"; 
-    	// $folders[] = "C:\\temp.2";
-    	// $folders[] = "C:\\temp.3"; 		
-		TestData::$folders = $folders;
-		
-		$folderpath = $folders[0];
-		$filepaths[] = "{$folderpath}\\MAY\\2013.JPG";
-    	$filepaths[] = "{$folderpath}\\MAY\\2014.JPG";
-    	// $filepaths[] = "{$folderPath}\\session\\3.JPG"; 		
-		TestData::$files = $filepaths;
-	}
-} 
-
+ /*
+  * helper Class for array_filter callback
+  */ 
 class FolderContains {
 	public static $folderPath = null;
 	public static $case_sensitive = 1;
@@ -116,10 +102,6 @@ debug($thrift_exception);
 		 * get RAW folder state for thrift api
 		 * 		called by GetFolders, GetWatchedFolders
 		 * 
-		 *		uses MetaData plugin for now, 
-		 * TODO: move to Model/DB table?
-		 * TODO: should method be moved to the Model under the native desktop uploader
-		 * 
 		 * @param $taskID, from $taskID
 		 * @param $isWatched boolean, 
 		 *		if true, return only watched folders, 
@@ -146,16 +128,6 @@ debug($thrift_exception);
 				);
 			}
 			return $folders;
-			
-			
-			// from Meta
-			ThriftController::$controller->User->id = AppController::$userid;
-// ThriftController::log("_model_getFolderState AppController::userid=".AppController::$userid, LOG_DEBUG);			
-			// get native desktop uploader state for thrift API
-			$thrift_GetFolders = json_decode(ThriftController::$controller->User->getMeta("native-uploader.{$taskID->DeviceID}.state"), true);
-// ThriftController::log("_model_getFolderState, key=native-uploader.{$taskID->DeviceID}.state, thrift_GetFolders=", LOG_DEBUG);			
-// ThriftController::log($thrift_GetFolders, LOG_DEBUG);			
-			return $thrift_GetFolders;
 		}
 
 		/**
@@ -171,24 +143,6 @@ debug($thrift_exception);
 			$ret = ThriftController::$controller->ThriftFolder->updateFolderByNativePath($thrift_device_id, $data);
 ThriftController::log("############################## thrift_SetFolders=".print_r($ret, true), LOG_DEBUG);				
 			return $ret;
-
-			$folders = array();
-			// foreach ($thrift_SetFolders as $i=>$row){
-				// $folders[] = array(
-					// 'folder_path'=> $row['ThriftFolder']['native_path'],
-					// 'is_scanned' => $row['ThriftFolder']['is_scanned'],
-            		// 'is_watched' => $row['ThriftFolder']['is_watched'],
-            		// 'count' => $row['ThriftFolder']['count'],
-				// );
-			// }
-			// $thrift_GetFolders = ThriftController::$controller->ThriftFolder->updateFolder($thrift_device_id, $thrift_SetFolders );
-			// return $thrift_GetFolders;
-			
-			ThriftController::$controller->User->id = AppController::$userid;
-			ThriftController::$controller->User->setMeta("native-uploader.{$taskID->DeviceID}.state", json_encode($thrift_SetFolders));
-ThriftController::log("_model_setFolderState, key=native-uploader.{$taskID->DeviceID}.state, GetFolders() = ", LOG_DEBUG);			
-ThriftController::log(json_encode(CakePhpHelper::_model_getFolderState($taskID)), LOG_DEBUG);			
-			return $thrift_SetFolders;
 		}
 		
 		/**
@@ -217,20 +171,6 @@ ThriftController::log(json_encode(CakePhpHelper::_model_getFolderState($taskID))
 			);
 ThriftController::log("_model_getTaskState(): data=".print_r($thrift_GetTask, true), LOG_DEBUG);			
 			return $thrift_GetTask; 
-						
-			// TODO: deprecate once sw task sends taskID->Session
-			$task_key = $taskID->Session ? $taskID->Session : $taskID->DeviceID;
-			$thrift_GetTask = json_decode(ThriftController::$controller->User->getMeta("native-uploader.task.{$task_key}"), true);
-			if (empty($thrift_GetTask)) $thrift_GetTask = array(
-				'IsCancelled'=>0, 
-				'FolderUpdateCount'=>0, 
-				'FileUpdateCount'=>0, 
-				'BatchId'=>time(),					// make sure these are listed in array_filter_keys
-				// 'DuplicateFileException'=>0,
-				// 'OtherException'=>0,
-			);
-ThriftController::log("_model_getTaskState(): key=native-uploader.task.{$task_key} data=".print_r($thrift_GetTask, true), LOG_DEBUG);			
-			return $thrift_GetTask;
 		}
 		public static function _model_setTaskState($taskID, $options) {
 			if (!ThriftController::$session) CakePhpHelper::_loginFromAuthToken($taskID);
@@ -278,59 +218,6 @@ ThriftController::log("**** WARNING: DuplicateFileException count={$thrift_GetTa
 ThriftController::log("_model_setTaskState() state=".print_r($thrift_GetTask, true), LOG_DEBUG);				
 			if ($shutdown) CakePhpHelper::_shutdown_client($taskID, $message);
 			return $thrift_GetTask;
-					
-					
-					
-					
-					
-					
-			// save to Meta		
-			ThriftController::$controller->User->id = AppController::$userid;
-			$task_key = $taskID->Session ? $taskID->Session : $taskID->DeviceID;
-			
-			if (isset($options['FileUpdateCount']) && $thrift_GetTask['FileUpdateCount']) {
-				$thrift_GetTask['FileUpdateCount'] += 1;
-				unset($options['FileUpdateCount']);
-			}
-			if (isset($options['DuplicateFileException'])) {
-				if (!isset($thrift_GetTask['DuplicateFileException'])) $thrift_GetTask['DuplicateFileException'] = 1;
-				else $thrift_GetTask['DuplicateFileException'] += 1;
-ThriftController::log("**** WARNING: DuplicateFileException count={$thrift_GetTask['DuplicateFileException']}", LOG_DEBUG);				
-				unset($options['DuplicateFileException']);
-				if ($thrift_GetTask['DuplicateFileException'] > CakePhpHelper::$DUPLICATE_FILE_EXCEPTION_THRESHOLD) {
-					$message = "DuplicateFileException exceeds threshold, count=".$thrift_GetTask['DuplicateFileException'];
-					$thrift_GetTask['DuplicateFileException'] = 0;  // reset counter before shutdown
-					/*
-					 * TODO: instead of resetting threshold counter, 
-					 * we need to issue a new Task Session
-					 */ 
-					$thrift_GetTask = array_merge($thrift_GetTask, $options);
-					ThriftController::$controller->User->setMeta("native-uploader.task.{$task_key}", json_encode($thrift_GetTask));
-					CakePhpHelper::_shutdown_client($taskID, $message);
-					return CakePhpHelper::_model_getTaskState($taskID);
-				}
-			} 
-			if (isset($options['OtherException'])) {
-				if (!isset($thrift_GetTask['OtherException'])) $thrift_GetTask['OtherException'] = 1;
-				else $thrift_GetTask['OtherException'] += 1;
-				unset($options['OtherException']);
-				if ($thrift_GetTask['OtherException'] > CakePhpHelper::$OTHER_EXCEPTION_THRESHOLD) {
-					$message = "OtherException exceeds threshold, count=".$thrift_GetTask['OtherException'];
-					$thrift_GetTask['OtherException'] = 0;  // reset counter before shutdown
-					/*					/*
-					 * TODO: instead of resetting threshold counter, 
-					 * we need to issue a new Task Session
-					 */ 
-					$thrift_GetTask = array_merge($thrift_GetTask, $options);
-					ThriftController::$controller->User->setMeta("native-uploader.task.{$task_key}", json_encode($thrift_GetTask));
-					CakePhpHelper::_shutdown_client($taskID, $message);
-					return CakePhpHelper::_model_getTaskState($taskID);
-				}
-			} 
-			$thrift_GetTask = array_merge($thrift_GetTask, $options);
-			ThriftController::$controller->User->setMeta("native-uploader.task.{$task_key}", json_encode($thrift_GetTask));
-ThriftController::log("_model_setTaskState() state=".json_encode($thrift_GetTask), LOG_DEBUG);			
-			return $thrift_GetTask;
 		}
 		public static function _model_deleteTask($taskID) {
 			if (!ThriftController::$session) CakePhpHelper::_loginFromAuthToken($taskID);
@@ -360,20 +247,10 @@ ThriftController::log("_model_getFiles() case sensitive=".FolderContains::$case_
 			// filter for files in folderPath, or use SQL LIKE clause
 ThriftController::log("_model_getFiles() AFTER FILTER=".print_r($device_files, true), LOG_DEBUG);			
 			return $device_files;
-			
-			
-			
-			ThriftController::$controller->User->id = AppController::$userid;
-			$device_files = json_decode(ThriftController::$controller->User->getMeta("native-uploader.{$taskID->DeviceID}.files"), true);
-			if (empty($device_files)) $device_files = array();
-			// $device_files = is_array($device_files) ? array_filter($device_files) : array();
-ThriftController::log("_model_getFiles, key=native-uploader.{$taskID->DeviceID}.files, GetFiles() = ", LOG_DEBUG);			
-ThriftController::log(($device_files), LOG_DEBUG);			
-			return $device_files;
 		}		
 		
-		
-		public static function _model_setFiles($taskID, $filepath) {
+		// TODO: deprecate. mark saved files in Asset table
+		public static function XXX_model_setFiles($taskID, $filepath) {
 			// $filepath = preg_replace('/^(\w)\\\(.*)/', '${1}:\\\${2}', $filepath, 1);	// addback Win32 Drive delim, i.e. C:\
 			if (empty($filepath)) return;			
 			if (!ThriftController::$session) CakePhpHelper::_loginFromAuthToken($taskID);
