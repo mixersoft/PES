@@ -13,6 +13,8 @@ class ThriftFolder extends AppModel {
 		)
 	);	
 	
+	public static $DEVICE_SEPARATOR = '~';	// Asset.native_path == deviceID~origPath in DB
+	
 	private function hashPath($path) {
 		return crc32($path);
 	} 
@@ -66,18 +68,11 @@ class ThriftFolder extends AppModel {
 		
 	}
 	/**
+	 * update ThriftFolder attributes using a nativePath as key 
 	 * @param $folderData, $data['ThriftFolder']['native_path'], must include $folderData['ThriftFolder']['native_path']
 	 */
 	public function updateFolderByNativePath($thrift_device_id, $folderData){
-		if (empty($folderData['ThriftFolder']['native_path'])) throw new Exception("Error: updateFolderByNativePath() native_path is null");
-		$options = array(
-			'conditions'=>array(
-				'ThriftFolder.thrift_device_id'=>$thrift_device_id,
-				'ThriftFolder.native_path_hash'=>$this->hashPath($folderData['ThriftFolder']['native_path']),
-				'ThriftFolder.native_path'=>$folderData['ThriftFolder']['native_path'],
-			)
-		);
-		$found = $this->find('first', $options);
+		$found = $this->findByNativePath($thrift_device_id, $folderData['ThriftFolder']['native_path']);
 		if (!empty($found)) {
 			$this->id = $found['ThriftFolder']['id'];
 			$data['ThriftFolder'] = array_filter_keys($folderData['ThriftFolder'], array('count', 'is_scanned', 'is_watched' ));
@@ -101,20 +96,26 @@ class ThriftFolder extends AppModel {
 	 * Get array of files which have already been uploaded under the given folder.
 	 * uses simple string compare of nativePath 
 	 * 
-	 * @param $providerAccount array, like $data['ProviderAccount']
+	 * NOTE: saving
+	 * 
+	 * @param ThriftDevice array, like $data['ThriftDevice']
 	 * @param $nativePath string, native path string of the containing folder
 	 * @return $data['Asset']
 	 * 
-	 * TODO: this needs $thrift_device_id!!!!!!!!!!!!!!!!!!
 	 */
 	// public function getFiles($thrift_device_id, $nativePath) {
-	public function getFiles($providerAccount, $nativePath) {
+	public function getFiles($ThriftDevice, $nativePath) {
 		// get all Assets by ProviderAccount
+		$devicePrefix = $ThriftDevice['id'].ThriftFolder::$DEVICE_SEPARATOR;
+		// escape \=>\\\\ for SQL
+		$nativePath = str_replace('\\','\\\\\\\\',$nativePath);
 		$asset_options = array(
 			'permissionable'=>false,		// owner_id=AppController::$userid
 			'conditions'=>array(
-				'Asset.provider_account_id'=>$providerAccount['id'],
+				'Asset.provider_account_id'=>$ThriftDevice['provider_account_id'],
 				'Asset.owner_id'=>AppController::$userid,
+				// filter in DB, or in PHP. see callback FolderContains::asset()
+				"Asset.native_path LIKE '{$devicePrefix}{$nativePath}%'",
 			),
 			'fields'=>'Asset.native_path',
 		);

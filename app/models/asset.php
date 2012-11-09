@@ -612,6 +612,47 @@ AND includes.asset_id='{$assetId}';
 		return $fieldlist;
 	}
 
+	/**
+	 * check DB if the same photo has already been uploaded to the user's account
+	 * NOTES: 
+	 * - normally, we would check by either 
+	 * 		1) asset_hash algorithm, or 
+	 * 		2) some concat of photo attributes, including dateTaken, Filename, and json_exif string
+	 * - also used to replace preview JPG with an newly uploaded original JPG 
+	 */
+	function _detectDuplicate($userid, $newAsset, $replaceWithOriginal=false) {
+		/*
+		 *  check if asset already exists, by asset.id OR asset_hash 
+		 */
+		$checkDupes_options = array(
+			'recursive' => -1,
+			'conditions' => array( 
+				'Asset.owner_id' => $userid,
+				'Asset.asset_hash'=>$newAsset['asset_hash'],
+			),
+			'extras'=>array(
+				'show_edits'=>false,
+				'join_shots'=>false, 
+				'show_hidden_shots'=>false		
+			),
+			'permissionable'=>false,
+		);		
+		/***************************************************************
+		 * experimental: replace mode, replace existing with original
+		 * 		from MyController::__upload_javascript()
+		 ***************************************************************/
+		if (!empty($asset['replace-preview-with-original'])) {
+			$checkDupes_options['conditions'] = array( 
+				'Asset.owner_id' => $userid,
+				'Asset.dateTaken' => $newAsset['dateTaken'],
+				'Asset.caption' => $newAsset['caption'],
+				'substr(Asset.json_exif, 1,70)' =>  substr($newAsset['json_exif'], 0, 70),
+			);
+		}; 
+		$duplicate = $this->find('first', $checkDupes_options);	
+		return $duplicate;
+	}
+
 	function addIfNew($asset, $providerAccount, $baseurl, $photoPath, $isOriginal, & $response){
 		$ret = true;
 		$timestamp = time();
@@ -669,33 +710,37 @@ AND includes.asset_id='{$assetId}';
 		/*
 		 *  check if asset already exists, by asset.id OR asset_hash 
 		 */
-		$checkDupes_options = array(
-			'recursive' => -1,
-			'conditions' => array( 'Asset.owner_id' => $userid,
-					'OR'=>array('Asset.id'=>$asset['id'], 'Asset.asset_hash'=>$asset_hash),
-			),
-			'extras'=>array(
-				'show_edits'=>false,
-				'join_shots'=>false, 
-				'show_hidden_shots'=>false		
-			),
-			'permissionable'=>false,
-		);		
-		/***************************************************************
-		 * experimental: replace mode, replace existing with original
-		 * 		from MyController::__upload_javascript()
-		 ***************************************************************/
-		if (!empty($asset['replace-preview-with-original'])) {
-			$checkDupes_options['conditions'] = array( 
-				'Asset.owner_id' => $userid,
-				'Asset.dateTaken' => $newAsset['dateTaken'],
-				'Asset.caption' => $newAsset['caption'],
-				'substr(Asset.json_exif, 1,70)' =>  substr($newAsset['json_exif'], 0, 70),
-			);
-			unset($newAsset['id']);	// this is not the original UUID 
-		}; 
-		$duplicate = $this->find('first', $checkDupes_options);
+		$duplicate = $this->_detectDuplicate($userid, $newAsset, !empty($asset['replace-preview-with-original']) );
 // $this->log( "checkDupes_options FOUND, data=".print_r($duplicate, true), LOG_DEBUG);
+		 		
+		// $checkDupes_options = array(
+			// 'recursive' => -1,
+			// 'conditions' => array( 'Asset.owner_id' => $userid,
+					// 'OR'=>array('Asset.id'=>$asset['id'], 'Asset.asset_hash'=>$asset_hash),
+			// ),
+			// 'extras'=>array(
+				// 'show_edits'=>false,
+				// 'join_shots'=>false, 
+				// 'show_hidden_shots'=>false		
+			// ),
+			// 'permissionable'=>false,
+		// );		
+		// /***************************************************************
+		 // * experimental: replace mode, replace existing with original
+		 // * 		from MyController::__upload_javascript()
+		 // ***************************************************************/
+		// if (!empty($asset['replace-preview-with-original'])) {
+			// $checkDupes_options['conditions'] = array( 
+				// 'Asset.owner_id' => $userid,
+				// 'Asset.dateTaken' => $newAsset['dateTaken'],
+				// 'Asset.caption' => $newAsset['caption'],
+				// 'substr(Asset.json_exif, 1,70)' =>  substr($newAsset['json_exif'], 0, 70),
+			// );
+			// unset($newAsset['id']);	// this is not the original UUID 
+		// }; 
+		// $duplicate = $this->find('first', $checkDupes_options);
+
+
 		if (!empty($duplicate['Asset']['id'])) {
 			// found Duplicate
 			
@@ -706,9 +751,9 @@ AND includes.asset_id='{$assetId}';
 			$ret = $this->save($duplicate, FALSE, $fieldlist);
 			if (!$ret) {
 $this->log( " ERROR: this->__updateAssetFields()".print_r($duplicate['Asset'], true), LOG_DEBUG);					
-				$response['message'][]="ERROR updating fields of duplicate Asset";
+				$response['message']['DuplicateAssetFound']="ERROR updating fields of duplicate Asset";
 			} else {
-				$response['message'][]="FOUND duplicate UUID, Photo fields updated";
+				$response['message']['DuplicateAssetFound']="FOUND duplicate Asset, Photo fields updated";
 			}
 			$response['response'][]=$newAsset;
 // $this->log('__updateAssetFields =>'.print_r($response, true),LOG_DEBUG);	
