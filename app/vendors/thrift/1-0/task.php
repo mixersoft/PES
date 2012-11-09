@@ -360,36 +360,41 @@ debug($paData);
 ThriftController::log("CakePhpHelper::__importPhoto, this->Asset->addIfNew(), response=".print_r($response, true), LOG_DEBUG);				
 // ThriftController::log("CakePhpHelper::__importPhoto, this->Asset->addIfNew(), asset=".print_r($assetData, true), LOG_DEBUG);		
 
+		$copyToStaging = true;
 		if (isset($response['message']['DuplicateAssetFound'])) {
 			// this is a duplicate file, if we are uploading original, replace JPG
 			// TODO: add support for Task_Types here
 			if ($response['message']['DuplicateAssetFound']=='FOUND duplicate Asset, Photo fields updated' 
 					&& 0 && "TASK_TYPE=UPLOAD_ORIGINAL"
 			) {
-				/*
-				 *  move original file to staging server, replace preview file,
-				 * 	NOTE: for DUPLICATE files, 
-				 * 		asset fields are updated in DB, see Asset::__updateAssetFields()
-				 * 		files are COPIED only if larger
-				 */   
-				$src = json_decode($assetData['Asset']['json_src'], true);
-				$stage=array('src'=>$fullpath, 'dest'=>$src['root']);
-		ThriftController::log("CakePhpHelper::__importPhoto staging files, ".print_r($stage, true), LOG_DEBUG);		
-			 	if ($ret3 = $Import->import2stage($stage['src'], $stage['dest'], null, $move = true)) {
-			 		$response['message'][]="file staged successfully, dest={$stage['dest']}";
-				} else $response['message'][]="Error staging file, src={$stage['src']} dest={$stage['dest']}";
-			 	$ret = $ret && $ret3;
+				// upload Original not yet implemented
 			} else if ( $response['message']['DuplicateAssetFound']
 				&& 1 && "TASK_TYPE=UPLOAD_RESIZED"
 			) {
 			 	// uploading duplicate preview, throw DuplicateFoundException 
-				$ret = false;
+				$copyToStaging = $ret = false;
 				$response['message']['DuplicateFoundException'] = 1;
 			} else {
 			 	// throw OtherException, either 1) problem updated Asset.json_exiv in DB or 2) other error
 			 	$response['message']['OtherException'] = 1;
-			 	$ret = false;
+			 	$copyToStaging = $ret = false;
 			}
+		}
+ThriftController::log("&&&&&&&&&&&&&&&&&&&&&&&&& copyToStaging={$copyToStaging}", LOG_DEBUG); 		
+		if ($copyToStaging) {
+			/*
+			 *  move original file to staging server, replace preview file,
+			 * 	NOTE: for DUPLICATE files, 
+			 * 		asset fields are updated in DB, see Asset::__updateAssetFields()
+			 * 		files are COPIED only if larger
+			 */   
+			$src = json_decode($assetData['Asset']['json_src'], true);
+			$stage=array('src'=>$fullpath, 'dest'=>$src['root']);
+	ThriftController::log("CakePhpHelper::__importPhoto staging files, ".print_r($stage, true), LOG_DEBUG);		
+		 	if ($ret3 = $Import->import2stage($stage['src'], $stage['dest'], null, $move = true)) {
+		 		$response['message'][]="file staged successfully, dest={$stage['dest']}";
+			} else $response['message'][]="Error staging file, src={$stage['src']} dest={$stage['dest']}";
+		 	$ret = $ret && $ret3;
 		}
 
 	 	$response['success'] = $ret;
@@ -612,13 +617,15 @@ debug("CakePhpHelper::__importPhoto({$upload_basepath}, {$fullpath}, {$path}, {$
 				$response = CakePhpHelper::__importPhoto($upload_basepath, $fullpath, $path, $taskState['BatchId'], $isOriginal=false);	// autoRotate=false
 debug("UploadFile. ******** IMPORT to DB COMPLETE *********************");	
 debug($response);
-// ThriftController::log("************* UploadFile. IMPORT to DB complete ***********************", LOG_DEBUG);			 
-// ThriftController::log($response, LOG_DEBUG);			
+ThriftController::log("************* UploadFile. IMPORT to DB complete ***********************", LOG_DEBUG);			 
+ThriftController::log($response, LOG_DEBUG);			
 				if ($response['success']) {
 					/*
-					 * update TaskID[FileUpdateCount]
+					 * update TaskID[FileUpdateCount] to Thrift, not to DB
 					 */
 					if ($id->Session) CakePhpHelper::_model_setTaskState($id, array('FileUpdateCount'=>1));  
+					
+					
 				} else if (!empty($response['message']['DuplicateFoundException'])) {
 					$thrift_exception['ErrorCode'] = ErrorCode::DataConflict;
 					$thrift_exception['Information'] = "Duplicate File on upload";
