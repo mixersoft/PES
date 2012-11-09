@@ -65,8 +65,8 @@ class ThriftController extends AppController {
 		}
 		debug("==============  Thrift Boostrap Complete =====================");
 		$authToken = 'b34f54557023cce43ab7213e0eb7da2a6b9d6b27';
-		$sessionId = '509a7862-1db8-4f50-a91e-11d0f67883f5';
-		$deviceId = '5ec5006d-8dee-48ef-8c04-bac06c16d36e';
+		$sessionId = '509d820e-b990-4822-bb9c-11d0f67883f5';
+		$deviceId = "2738ebe4-95a1-4d4a-aefe-761d97881535"; //'5ec5006d-8dee-48ef-8c04-bac06c16d36e';
 		$taskId = new snaphappi_api_TaskID(
 			array(
 			    'AuthToken' => $authToken,
@@ -76,31 +76,39 @@ class ThriftController extends AppController {
 		);
 		$Task = new snaphappi_api_TaskImpl();
 		/*
+		 * Test GetState
+		 */
+		$state = $Task->GetState($taskId);
+		debug("GetState() result=".print_r($state,true));
+		/*
 		 * Test GetFolders
 		 */
 		$folders = $Task->GetFolders($taskId);
 		debug("GetFolders() result=".print_r($folders,true));
-		
-		/*
-		 * Test GetFiles
-		 */
-		$files = $Task->GetFiles($taskId, $folders[0]);
-		debug("GetFiles() result=".print_r($files,true));
-		
-		
+		if (count($folders)) {
+			/*
+			 * Test GetFiles
+			 */
+			$files = $Task->GetFiles($taskId, $folders[0]);
+			debug("GetFiles() result=".print_r($files,true));
+		} else {
+			CakePhpHelper::_model_setTaskState($taskId, array('IsCancelled'=>0));
+		}	
+$this->render('/elements/sql_dump');
+return;		
 		/*
 		 * Test ReportFileCount
 		 */
 debug($folders);		
 		$changed = $Task->ReportFileCount($taskId, $folders[0], 21);
 		debug("ReportFileCount() result=".print_r($changed,true));	
-		
+			
 		/*
 		 * Test ReportFolderUploadComplete
 		 */
 		$folder = $Task->ReportFolderUploadComplete($taskId, $folders[1]);
 		debug("ReportFolderUploadComplete() result=".print_r($folder,true));		
-return;		
+	
 		/*
 		 * Test UploadFiles
 		 */

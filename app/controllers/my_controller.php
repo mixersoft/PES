@@ -580,17 +580,17 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 		$this->ThriftSession = ClassRegistry::init('ThriftSession');
 		
 		// use for testing fixed authToken/Session
-		$test_session = array();
-		$test_session['session_id'] = '509a7862-1db8-4f50-a91e-11d0f67883f5';
-		$test_session['device_UUID'] = '5ec5006d-8dee-48ef-8c04-bac06c16d36e';
+		$sessionId = '509d820e-b990-4822-bb9c-11d0f67883f5';
+		$deviceId = '2738ebe4-95a1-4d4a-aefe-761d97881535';
+		$test_session = array('session_id'=>$sessionId, 'device_UUID'=>$deviceId);
 		
-		$session = $this->ThriftSession->newSession($test_session);
+		// $session = $this->ThriftSession->newSession($test_session);
+		$session = $this->ThriftSession->newSession();
 		$sessionId = $session['ThriftSession']['id'];		
 
 		// on first POST of TaskID, bind taskID->DeviceID with Session	
-		$deviceUuid = '5ec5006d-8dee-48ef-8c04-bac06c16d36e';
-		$session = $this->ThriftSession->checkDevice($sessionId, $deviceUuid);
-		if (!$session) $session = $this->ThriftSession->bindDeviceToSession($sessionId, $authToken, $deviceUuid);
+		$session = $this->ThriftSession->checkDevice($sessionId, $deviceId);
+		if (!$session) $session = $this->ThriftSession->bindDeviceToSession($sessionId, $authToken, $deviceId);
 // debug($session);	exit;
 	
 		// on GetFolders()
@@ -600,9 +600,6 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 		$folder_state[] = array('folder_path'=>'C:\\TEMP\\small import test', 'is_scanned'=>0, 'is_watched'=>1, 'count'=>0);
 		$folder_state[] = array('folder_path'=>'C:\\TEMP\\folder with special char (;\'&.=^%$#@!) test', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0);
 // debug($folder_state);		
-		$folder_state_asJson = json_encode($folder_state);
-		$this->User->setMeta("native-uploader.{$deviceUuid}.state", $folder_state_asJson);
-		
 		
 		// load folders to ThriftFolders for testing
 		foreach($folder_state as $folder) {

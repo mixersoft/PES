@@ -11,6 +11,7 @@ include_once $GLOBALS['THRIFT_ROOT'].'/packages/Tasks/Tasks_types.php';
 
 interface snaphappi_api_TaskIf {
   public function AddFolder($id, $path);
+  public function GetDeviceID($authToken, $sessionID);
   public function GetFileCount($id, $folder);
   public function GetFiles($id, $folder);
   public function GetFolders($id);
@@ -20,7 +21,7 @@ interface snaphappi_api_TaskIf {
   public function ReportFolderNotFound($id, $folder);
   public function ReportFolderUploadComplete($id, $folder);
   public function ReportUploadFailed($id, $folder, $path);
-  public function UploadFile($id, $path, $data);
+  public function UploadFile($id, $path, $data, $info);
 }
 
 class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
@@ -84,6 +85,61 @@ class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
       throw $result->systemException;
     }
     return;
+  }
+
+  public function GetDeviceID($authToken, $sessionID)
+  {
+    $this->send_GetDeviceID($authToken, $sessionID);
+    return $this->recv_GetDeviceID();
+  }
+
+  public function send_GetDeviceID($authToken, $sessionID)
+  {
+    $args = new snaphappi_api_Task_GetDeviceID_args();
+    $args->authToken = $authToken;
+    $args->sessionID = $sessionID;
+    $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($this->output_, 'GetDeviceID', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+    }
+    else
+    {
+      $this->output_->writeMessageBegin('GetDeviceID', TMessageType::CALL, $this->seqid_);
+      $args->write($this->output_);
+      $this->output_->writeMessageEnd();
+      $this->output_->getTransport()->flush();
+    }
+  }
+
+  public function recv_GetDeviceID()
+  {
+    $bin_accel = ($this->input_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_read_binary');
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, 'snaphappi_api_Task_GetDeviceID_result', $this->input_->isStrictRead());
+    else
+    {
+      $rseqid = 0;
+      $fname = null;
+      $mtype = 0;
+
+      $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+      if ($mtype == TMessageType::EXCEPTION) {
+        $x = new TApplicationException();
+        $x->read($this->input_);
+        $this->input_->readMessageEnd();
+        throw $x;
+      }
+      $result = new snaphappi_api_Task_GetDeviceID_result();
+      $result->read($this->input_);
+      $this->input_->readMessageEnd();
+    }
+    if ($result->success !== null) {
+      return $result->success;
+    }
+    if ($result->systemException !== null) {
+      throw $result->systemException;
+    }
+    throw new Exception("GetDeviceID failed: unknown result");
   }
 
   public function GetFileCount($id, $folder)
@@ -562,21 +618,25 @@ class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
+    if ($result->systemException !== null) {
+      throw $result->systemException;
+    }
     return;
   }
 
-  public function UploadFile($id, $path, $data)
+  public function UploadFile($id, $path, $data, $info)
   {
-    $this->send_UploadFile($id, $path, $data);
+    $this->send_UploadFile($id, $path, $data, $info);
     $this->recv_UploadFile();
   }
 
-  public function send_UploadFile($id, $path, $data)
+  public function send_UploadFile($id, $path, $data, $info)
   {
     $args = new snaphappi_api_Task_UploadFile_args();
     $args->id = $id;
     $args->path = $path;
     $args->data = $data;
+    $args->info = $info;
     $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -781,6 +841,192 @@ class snaphappi_api_Task_AddFolder_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('Task_AddFolder_result');
+    if ($this->systemException !== null) {
+      $xfer += $output->writeFieldBegin('systemException', TType::STRUCT, 1);
+      $xfer += $this->systemException->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class snaphappi_api_Task_GetDeviceID_args {
+  static $_TSPEC;
+
+  public $authToken = null;
+  public $sessionID = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'authToken',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'sessionID',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['authToken'])) {
+        $this->authToken = $vals['authToken'];
+      }
+      if (isset($vals['sessionID'])) {
+        $this->sessionID = $vals['sessionID'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'Task_GetDeviceID_args';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->authToken);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->sessionID);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Task_GetDeviceID_args');
+    if ($this->authToken !== null) {
+      $xfer += $output->writeFieldBegin('authToken', TType::STRING, 1);
+      $xfer += $output->writeString($this->authToken);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->sessionID !== null) {
+      $xfer += $output->writeFieldBegin('sessionID', TType::STRING, 2);
+      $xfer += $output->writeString($this->sessionID);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class snaphappi_api_Task_GetDeviceID_result {
+  static $_TSPEC;
+
+  public $success = null;
+  public $systemException = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        0 => array(
+          'var' => 'success',
+          'type' => TType::STRING,
+          ),
+        1 => array(
+          'var' => 'systemException',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_SystemException',
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['success'])) {
+        $this->success = $vals['success'];
+      }
+      if (isset($vals['systemException'])) {
+        $this->systemException = $vals['systemException'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'Task_GetDeviceID_result';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 0:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->success);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->systemException = new snaphappi_api_SystemException();
+            $xfer += $this->systemException->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Task_GetDeviceID_result');
+    if ($this->success !== null) {
+      $xfer += $output->writeFieldBegin('success', TType::STRING, 0);
+      $xfer += $output->writeString($this->success);
+      $xfer += $output->writeFieldEnd();
+    }
     if ($this->systemException !== null) {
       $xfer += $output->writeFieldBegin('systemException', TType::STRUCT, 1);
       $xfer += $this->systemException->write($output);
@@ -2424,11 +2670,22 @@ class snaphappi_api_Task_ReportUploadFailed_args {
 class snaphappi_api_Task_ReportUploadFailed_result {
   static $_TSPEC;
 
+  public $systemException = null;
 
-  public function __construct() {
+  public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
       self::$_TSPEC = array(
+        1 => array(
+          'var' => 'systemException',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_SystemException',
+          ),
         );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['systemException'])) {
+        $this->systemException = $vals['systemException'];
+      }
     }
   }
 
@@ -2451,6 +2708,14 @@ class snaphappi_api_Task_ReportUploadFailed_result {
       }
       switch ($fid)
       {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->systemException = new snaphappi_api_SystemException();
+            $xfer += $this->systemException->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -2464,6 +2729,11 @@ class snaphappi_api_Task_ReportUploadFailed_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('Task_ReportUploadFailed_result');
+    if ($this->systemException !== null) {
+      $xfer += $output->writeFieldBegin('systemException', TType::STRUCT, 1);
+      $xfer += $this->systemException->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -2477,6 +2747,7 @@ class snaphappi_api_Task_UploadFile_args {
   public $id = null;
   public $path = null;
   public $data = null;
+  public $info = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -2494,6 +2765,11 @@ class snaphappi_api_Task_UploadFile_args {
           'var' => 'data',
           'type' => TType::STRING,
           ),
+        4 => array(
+          'var' => 'info',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_UploadInfo',
+          ),
         );
     }
     if (is_array($vals)) {
@@ -2505,6 +2781,9 @@ class snaphappi_api_Task_UploadFile_args {
       }
       if (isset($vals['data'])) {
         $this->data = $vals['data'];
+      }
+      if (isset($vals['info'])) {
+        $this->info = $vals['info'];
       }
     }
   }
@@ -2550,6 +2829,14 @@ class snaphappi_api_Task_UploadFile_args {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::STRUCT) {
+            $this->info = new snaphappi_api_UploadInfo();
+            $xfer += $this->info->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -2579,6 +2866,14 @@ class snaphappi_api_Task_UploadFile_args {
     if ($this->data !== null) {
       $xfer += $output->writeFieldBegin('data', TType::STRING, 3);
       $xfer += $output->writeString($this->data);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->info !== null) {
+      if (!is_object($this->info)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('info', TType::STRUCT, 4);
+      $xfer += $this->info->write($output);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -2707,6 +3002,28 @@ class TaskProcessor {
     else
     {
       $output->writeMessageBegin('AddFolder', TMessageType::REPLY, $seqid);
+      $result->write($output);
+      $output->getTransport()->flush();
+    }
+  }
+  protected function process_GetDeviceID($seqid, $input, $output) {
+    $args = new snaphappi_api_Task_GetDeviceID_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    $result = new snaphappi_api_Task_GetDeviceID_result();
+    try {
+      $result->success = $this->handler_->GetDeviceID($args->authToken, $args->sessionID);
+    } catch (snaphappi_api_SystemException $systemException) {
+      $result->systemException = $systemException;
+    }
+    $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($output, 'GetDeviceID', TMessageType::REPLY, $result, $seqid, $output->isStrictWrite());
+    }
+    else
+    {
+      $output->writeMessageBegin('GetDeviceID', TMessageType::REPLY, $seqid);
       $result->write($output);
       $output->getTransport()->flush();
     }
@@ -2892,7 +3209,11 @@ class TaskProcessor {
     $args->read($input);
     $input->readMessageEnd();
     $result = new snaphappi_api_Task_ReportUploadFailed_result();
-    $this->handler_->ReportUploadFailed($args->id, $args->folder, $args->path);
+    try {
+      $this->handler_->ReportUploadFailed($args->id, $args->folder, $args->path);
+    } catch (snaphappi_api_SystemException $systemException) {
+      $result->systemException = $systemException;
+    }
     $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
@@ -2911,7 +3232,7 @@ class TaskProcessor {
     $input->readMessageEnd();
     $result = new snaphappi_api_Task_UploadFile_result();
     try {
-      $this->handler_->UploadFile($args->id, $args->path, $args->data);
+      $this->handler_->UploadFile($args->id, $args->path, $args->data, $args->info);
     } catch (snaphappi_api_SystemException $systemException) {
       $result->systemException = $systemException;
     }

@@ -58,6 +58,16 @@ class CakePhpHelper {
 		public static $DUPLICATE_FILE_EXCEPTION_THRESHOLD = 4;
 		public static $OTHER_EXCEPTION_THRESHOLD = 4;
 		
+		public static function _login($userData) {
+			$authenticated = ThriftController::$controller->Auth->login(array('User'=>$userData));
+			if (!$authenticated) return false;
+			// Session::write('Auth.user', ThriftController::$controller->Auth->user());				
+			AppController::$userid = ThriftController::$controller->Auth->user('id');
+			$role = array_search($userData['primary_group_id'], Configure::read('lookup.roles'), true);
+			AppController::$role = $role;
+			return true;
+		}
+		
 		/**
 		 * authenticate the User account from ProviderAccount.auth_token embedded in $taskID
 		 * 		AppController::$userid, AppController::$role will be set here
@@ -65,21 +75,15 @@ class CakePhpHelper {
 		 * @return aa $data[ProviderAccount,Owner,ThriftSession,ThriftDevice] 
 		 */
 		public static function _loginFromAuthToken($taskID) {
-// ThriftController::log('_loginFromAuthToken()  ProviderAccount.auth_token='.($authToken), LOG_DEBUG);
+// ThriftController::log('_loginFromAuthToken()  ProviderAccount.auth_token='.($taskID->AuthToken), LOG_DEBUG);
 			try {
 				/*
-				 * - finds pa with authToken and $providerKey == DeviceID, 
-				 * - if empty, then checks for authToken with providerKey=null, and 
-				 * -- updates record to save DeviceID as providerKey
+				 * - finds pa with authToken, returns data[ProviderAccount], data[Owner]
 				 */  
-				$data = ThriftController::$controller->ProviderAccount->thrift_findByAuthToken($taskID->AuthToken, $taskID->DeviceID);
+				$data = ThriftController::$controller->ProviderAccount->thrift_findByAuthToken($taskID->AuthToken);
 				if (!$data) throw new Exception("Error: authToken not found, authToken={$taskID->AuthToken}");	
-				$authenticated = ThriftController::$controller->Auth->login(array('User'=>$data['Owner']));
+				$authenticated = CakePhpHelper::_login($data['Owner']);
 				if (!$authenticated) throw new Exception("Error: authToken invalid, authToken={$taskID->AuthToken}");
-				// Session::write('Auth.user', ThriftController::$controller->Auth->user());				
-				AppController::$userid = ThriftController::$controller->Auth->user('id');
-				$role = array_search($data['Owner']['primary_group_id'], Configure::read('lookup.roles'), true);
-				AppController::$role = $role;		
 				
 				// attach to Session, bind DeviceID if necessary
 				// TODO: deprecate once sw task sends taskID->Session
@@ -99,6 +103,22 @@ debug($thrift_exception);
 				//TODO: UI should notify the user to relaunch HelperApp with new token, or reschedule
 				throw new snaphappi_api_SystemException($thrift_exception);	
 			}
+		}
+
+		/**
+		 * @return the device ID associated with this session or empty string
+		 */ 
+		public static function _model_getDeviceId($authToken, $sessionId) {
+			$data = ThriftController::$controller->ProviderAccount->thrift_findByAuthToken($authToken);
+			if (!$data) throw new Exception("Error: authToken not found, authToken={$authToken}");	
+			$authenticated = CakePhpHelper::_login($data['Owner']);
+			if (!$authenticated) throw new Exception("Error: authToken invalid, authToken={$authToken}");
+			
+			$device = ThriftController::$controller->ThriftSession->findDevice($sessionId);
+			if (empty($device)) 
+				throw new Exception("Error: sessionId invalid, sessionId={$sessionId}");
+			else if (empty($device['ThriftDevice'])) return '';
+			else return $device['ThriftDevice']['device_UUID'];
 		}
 		
 		/**
@@ -363,13 +383,15 @@ ThriftController::log("CakePhpHelper::__importPhoto, this->Asset->addIfNew(), re
 		$copyToStaging = true;
 		if (isset($response['message']['DuplicateAssetFound'])) {
 			// this is a duplicate file, if we are uploading original, replace JPG
-			// TODO: add support for Task_Types here
 			if ($response['message']['DuplicateAssetFound']=='FOUND duplicate Asset, Photo fields updated' 
-					&& 0 && "TASK_TYPE=UPLOAD_ORIGINAL"
+					&& $isOriginal
 			) {
 				// upload Original not yet implemented
+ThriftController::log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&", LOG_DEBUG);				
+ThriftController::log("&&&&&&&&&&&&&&&&&&&&&&&&& upload Original not yet implemented &&&&&&&&&&&&&&&&&&&", LOG_DEBUG);				
+
 			} else if ( $response['message']['DuplicateAssetFound']
-				&& 1 && "TASK_TYPE=UPLOAD_RESIZED"
+				&& !$isOriginal
 			) {
 			 	// uploading duplicate preview, throw DuplicateFoundException 
 				$copyToStaging = $ret = false;
@@ -380,7 +402,6 @@ ThriftController::log("CakePhpHelper::__importPhoto, this->Asset->addIfNew(), re
 			 	$copyToStaging = $ret = false;
 			}
 		}
-ThriftController::log("&&&&&&&&&&&&&&&&&&&&&&&&& copyToStaging={$copyToStaging}", LOG_DEBUG); 		
 		if ($copyToStaging) {
 			/*
 			 *  move original file to staging server, replace preview file,
@@ -490,6 +511,7 @@ ThriftController::log("ReportFolderNotFound, folder={$folderPath},  taskID=".pri
 		 * @param $taskID snaphappi_api_TaskID
 		 * @param $folderPath String
 		 * @param $filePath String
+		 * throws SystemException
 		 */
         public function ReportUploadFailed($taskID, $folderPath, $filePath) {
 ThriftController::log("ReportUploadFailed, folder={$folderPath}, file={$filePath},  taskID=".print_r($taskID, true), LOG_DEBUG);
@@ -524,15 +546,16 @@ ThriftController::log("***   ReportFileCount, folder={$folderPath}, count={$coun
 			return $ret;
         }
 		/**
-		 * Report that a Task is being shutdown/cancelled
+		 * Returns the device ID associated with this session or empty string
+	 	 * if it is not yet known.
 		 * 	
-		 * @param $taskID snaphappi_api_TaskID
+		 * @param $authToken
+		 * @param $sessionId 
 		 */
-        // public function ReportTaskShutdown($taskID) {
-// ThriftController::log("ReportTaskShutdown,  taskID=".print_r($taskID, true), LOG_DEBUG);
-			// // TODO: delete Task session keys from DB
-        	// return;
-        // }		 
+        public function GetDeviceID($authToken, $sessionId) {
+ThriftController::log("GetDeviceID {$authToken}}, {$sessionId}} ", LOG_DEBUG);
+        	return  CakePhpHelper::_model_getDeviceId($sessionId);
+        }		 
 		/**
 		 * Return the number of files expected to be uploaded from a folder.
 		 * called by UI for progress bar stats
@@ -575,9 +598,10 @@ error_log("URTaskUpload->AddFolder(), path={$path}");
 		 * @param $id TaskID,
 		 * @param $path String,
 		 * @param $data binary,
+		 * @param $extras, snaphappi_api_UploadInfo
 		 * @return void 
 		 */
-        public function UploadFile($id, $path, $filedata) {
+        public function UploadFile($id, $path, $filedata, $extras) {
 ThriftController::log("###   UploadFile(), AuthToken={$id->AuthToken}, path={$path}", LOG_DEBUG);
 debug("###   UploadFile(), AuthToken={$id->AuthToken}, path={$path}");
 			if (!ThriftController::$session) CakePhpHelper::_loginFromAuthToken($id);
@@ -614,7 +638,8 @@ debug("UploadFile. Begin IMPORT to DB *********************");
 				$taskState = CakePhpHelper::_model_getTaskState($id);
 				$providerKey = $session['ProviderAccount']['provider_key'];   // $id->DeviceID;
 debug("CakePhpHelper::__importPhoto({$upload_basepath}, {$fullpath}, {$path}, {$providerKey}, {$taskState['BatchId']})");
-				$response = CakePhpHelper::__importPhoto($upload_basepath, $fullpath, $path, $taskState['BatchId'], $isOriginal=false);	// autoRotate=false
+				$isOriginal = $extras->UploadType === UploadType::Original;
+				$response = CakePhpHelper::__importPhoto($upload_basepath, $fullpath, $path, $taskState['BatchId'], $isOriginal);	// autoRotate=false
 debug("UploadFile. ******** IMPORT to DB COMPLETE *********************");	
 debug($response);
 ThriftController::log("************* UploadFile. IMPORT to DB complete ***********************", LOG_DEBUG);			 

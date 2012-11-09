@@ -5,12 +5,15 @@
 	$path_InstallSwf = "{$basepath}/expressInstall.swf";
 	
 	// start native background uploader
-	$authToken = base64_encode($authToken);
-	$sessionId = base64_encode($sessionId);
+	/*
+	 * WARNING: cannot leave authToken in HTML, it's a security error !!!!!
+	 */ 
+	$authToken64 = base64_encode($authToken);
+	$sessionId64 = base64_encode($sessionId);
 	// $authToken = base64_encode("aHR0cDovL3d3dy5zbmFwaGFwcGkuY29t");
 	// $sessionId = base64_encode("Session-".String::uuid());
-	$launch_SnappiUploader = "window.location.href='snaphappi://{$authToken}_{$sessionId}_ur'";
-	$launch_SnappiUploader_watched = "window.location.href='snaphappi://{$authToken}_{$sessionId}_sw'";
+	$launch_SnappiUploader = "window.location.href='snaphappi://{$authToken64}_{$sessionId64}_ur'";
+	$launch_SnappiUploader_watched = "window.location.href='snaphappi://{$authToken64}_{$sessionId64}_sw'";
 	
 	
 	$this->Layout->blockStart('HEAD');
@@ -71,11 +74,15 @@
 				<li class='btn orange rounded-5'>
 					<a onclick=<?php echo $launch_SnappiUploader ?>>Start Uploading</a>
 				</li>
-				<li><input type="field" value='<?php echo "snaphappi://{$authToken}_{$sessionId}_ur" ?>'</input></li>
+				<li><input type="field" value='<?php echo "snaphappi://{$authToken64}_{$sessionId64}_ur" ?>'</input></li>
 				<li class='btn orange rounded-5'>
 					<a onclick=<?php echo $launch_SnappiUploader_watched ?>>Watch Folders</a>
 				</li>
 			</ul>	
+		</div>
+		<div>
+			<p><?php echo "authToken={$authToken}"; ?></p>
+			<p><?php echo "sessionId={$sessionId}"; ?></p>
 		</div>
 	</div>
 	<div class="grid_8 omega">

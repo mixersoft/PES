@@ -25,6 +25,20 @@ final class ErrorCode {
   );
 }
 
+$GLOBALS['snaphappi_api_E_UploadType'] = array(
+  'Preview' => 1,
+  'Original' => 2,
+);
+
+final class UploadType {
+  const Preview = 1;
+  const Original = 2;
+  static public $__names = array(
+    1 => 'Preview',
+    2 => 'Original',
+  );
+}
+
 class snaphappi_api_TaskID {
   static $_TSPEC;
 
@@ -332,6 +346,78 @@ class snaphappi_api_URTaskState {
     if ($this->FileUpdateCount !== null) {
       $xfer += $output->writeFieldBegin('FileUpdateCount', TType::I32, 3);
       $xfer += $output->writeI32($this->FileUpdateCount);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class snaphappi_api_UploadInfo {
+  static $_TSPEC;
+
+  public $UploadType = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'UploadType',
+          'type' => TType::I32,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['UploadType'])) {
+        $this->UploadType = $vals['UploadType'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'UploadInfo';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->UploadType);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('UploadInfo');
+    if ($this->UploadType !== null) {
+      $xfer += $output->writeFieldBegin('UploadType', TType::I32, 1);
+      $xfer += $output->writeI32($this->UploadType);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

@@ -84,8 +84,8 @@ class ThriftDevice extends AppModel {
 					'`ProviderAccount`.auth_token'=>$authToken,
 					'`ProviderAccount`.provider_name'=>$providerName,
 				)
-			))
-			,
+			)),
+			'conditions'=>array('ThriftDevice.device_UUID'=>$device_UUID),
 		);
 		$device = $this->find('first', $device_options);
 		if (!empty($device['ThriftDevice']) && empty($device['ProviderAccount'])) 

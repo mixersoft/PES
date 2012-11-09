@@ -49,6 +49,21 @@ class ThriftSession extends AppModel {
 		} 		
 		return !empty($data['ThriftDevice']['id']) ? $data : false;
 	}
+	
+	/**
+	 * Get the device_UUID for the current SessionId 
+	 * @param $session_id UUID for existing session
+	 * @return mixed, if true, return array with [ThriftSession], [ThriftDevice]
+	 */
+	function findDevice($session_id) {
+		$options = array(
+			'contain'=>array('ThriftDevice'),
+			'conditions'=>array('ThriftSession.id'=>$session_id),
+		);
+		$data = $this->find('first', $options);
+		return $data;
+	}	
+	
 	/**
 	 * bind a device to a session AFTER the native-uploader is launched
 	 * if device is not found, create new Device
