@@ -42,7 +42,7 @@ class ThriftSession extends AppModel {
 			)),
 			'conditions'=>array('ThriftSession.id'=>$session_id),
 		);
-ThriftController::log("***   ThriftSession::checkDevice, options=".print_r($options,true), LOG_DEBUG);		
+// ThriftController::log("***   ThriftSession::checkDevice, options=".print_r($options,true), LOG_DEBUG);		
 		$data = $this->find('first', $options);
 		if (empty($data['ThriftSession'])) {
 			throw new Exception("Error: checkDevice() cannot find session, session_id={$session_id}"); 
