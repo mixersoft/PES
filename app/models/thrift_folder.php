@@ -107,8 +107,9 @@ class ThriftFolder extends AppModel {
 	public function getFiles($ThriftDevice, $nativePath) {
 		// get all Assets by ProviderAccount
 		$devicePrefix = $ThriftDevice['id'].ThriftFolder::$DEVICE_SEPARATOR;
-		// escape \=>\\\\ for SQL
-		$nativePath = str_replace('\\','\\\\\\\\',$nativePath);
+		// escape \=>\\ for SQL, then use mysql_real_escape_string()
+		$nativePath = str_replace('\\','\\\\',$nativePath);
+		$nativePath = mysql_real_escape_string($nativePath);
 		$asset_options = array(
 			'permissionable'=>false,		// owner_id=AppController::$userid
 			'conditions'=>array(

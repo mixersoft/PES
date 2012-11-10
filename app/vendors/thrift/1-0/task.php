@@ -86,8 +86,7 @@ class CakePhpHelper {
 				if (!$authenticated) throw new Exception("Error: authToken invalid, authToken={$taskID->AuthToken}");
 				
 				// attach to Session, bind DeviceID if necessary
-				// TODO: deprecate once sw task sends taskID->Session
-				$sessionId = $taskID->Session ? $taskID->Session : $taskID->DeviceID;
+				$sessionId = $taskID->Session;
 				$session = ThriftController::$controller->ThriftSession->checkDevice($sessionId, $taskID->DeviceID);
 				if (!$session) $session = ThriftController::$controller->ThriftSession->bindDeviceToSession($sessionId, $taskID->AuthToken, $taskID->DeviceID);
 				$data = array_merge($data, $session);
@@ -479,8 +478,12 @@ ThriftController::log($folders, LOG_DEBUG);
         public function GetWatchedFolders($taskID) {
 ThriftController::log("***   GetWatchedFolders", LOG_DEBUG);    
 // ThriftController::log("   taskID=".print_r($taskID, true), LOG_DEBUG);           	
-			// get native desktop uploader state for thrift API
+			// get native-uploader state for thrift API
+			// create a new Session for scheduled Tasks
+			$options['session_id'] = $taskID->Session;
+			$session = ThriftController::$controller->ThriftSession->newSession($options);
 			$folders = CakePhpHelper::_model_getFolderState($taskID, true);
+			$folders = Set::extract('{n}.folder_path',$folders);
 ThriftController::log($folders, LOG_DEBUG);			
         	return $folders;
         }

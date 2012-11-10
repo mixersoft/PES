@@ -15,12 +15,11 @@ class ThriftSession extends AppModel {
 	
 	/**
 	 * @param options array, 
-	 * 	options[device_UUID]: usually we will bind device_UUID on nativeUploader launch, 
-	 *  options[session_id]: 'sw' scheduled actions will send session_id 
+	 *  options[session_id]: 'sw' scheduled actions will send session_id, with unbound thrift_device_id
+	 * 		call checkDevice to bind $device_UUID
 	 */
 	public function newSession($options = array()) {
 		$data = $this->create();
-		if (!empty($options['device_UUID'])) $data['ThriftSession']['thrift_device_id'] = $options['device_UUID'];
 		if (!empty($options['session_id'])) {
 			$data['ThriftSession']['id'] = $options['session_id'];
 			$this->id = $data['ThriftSession']['id'];
@@ -43,6 +42,7 @@ class ThriftSession extends AppModel {
 			)),
 			'conditions'=>array('ThriftSession.id'=>$session_id),
 		);
+ThriftController::log("***   ThriftSession::checkDevice, options=".print_r($options,true), LOG_DEBUG);		
 		$data = $this->find('first', $options);
 		if (empty($data['ThriftSession'])) {
 			throw new Exception("Error: checkDevice() cannot find session, session_id={$session_id}"); 
