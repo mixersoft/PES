@@ -117,11 +117,10 @@ class ThriftSession extends AppModel {
 		}
 		
 		// these keys need to save to the DB
-		$data = array();
+		$data = $taskState;
 		$data['ThriftSession']['id'] = $sessionId;
-		$data['ThriftSession']['is_cancelled'] = $taskState['IsCancelled'] ? 1 : 0;
-		$data['ThriftSession']['DuplicateFileException'] = $taskState['DuplicateFileException'];
-		$data['ThriftSession']['OtherException'] = $taskState['OtherException'];
+		// keys which need translation
+		if (isset($taskState['IsCancelled'])) $data['ThriftSession']['is_cancelled'] = $taskState['IsCancelled'] ? 1 : 0;
 		// batchId will be updated from modified is updated
 		$updated = $this->save($data);
 		return $updated;

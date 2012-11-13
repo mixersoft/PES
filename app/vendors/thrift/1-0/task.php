@@ -205,29 +205,27 @@ ThriftController::log("############################## thrift_SetFolders=".print_
 			if (!ThriftController::$session) CakePhpHelper::_loginFromAuthToken($taskID);
 			$session = & ThriftController::$session;
 			$thrift_GetTask = array();
-			
+			$thrift_GetTask = array_intersect_key(CakePhpHelper::_model_getTaskState($taskID), $options);
 			// save to DB
 			if (isset($options['FileUpdateCount']) && $thrift_GetTask['FileUpdateCount']) {
 				$thrift_GetTask['FileUpdateCount'] += 1;
 				unset($options['FileUpdateCount']);
-			}
+			} 
 			if (isset($options['DuplicateFileException'])) {
-				$thrift_GetTask = $thrift_GetTask ? $thrift_GetTask : CakePhpHelper::_model_getTaskState($taskID);
 				if (!isset($thrift_GetTask['DuplicateFileException'])) $thrift_GetTask['DuplicateFileException'] = 1;
 				else $thrift_GetTask['DuplicateFileException'] += 1;
 ThriftController::log("**** WARNING: DuplicateFileException count={$thrift_GetTask['DuplicateFileException']}", LOG_DEBUG);				
 				unset($options['DuplicateFileException']);
-			}
+			} 
 			if (isset($options['OtherException'])) {
-				$thrift_GetTask = $thrift_GetTask ? $thrift_GetTask : CakePhpHelper::_model_getTaskState($taskID);
 				if (!isset($thrift_GetTask['OtherException'])) $thrift_GetTask['OtherException'] = 1;
 				else $thrift_GetTask['OtherException'] += 1;
 				unset($options['OtherException']);
-			}
+			} 
 			$thrift_GetTask = array_merge($thrift_GetTask, $options);
 			// handle Exception thrisholds, or save to DB
 			$shutdown = false;
-			if ($thrift_GetTask['DuplicateFileException'] > CakePhpHelper::$DUPLICATE_FILE_EXCEPTION_THRESHOLD) {
+			if (isset($thrift_GetTask['DuplicateFileException']) && $thrift_GetTask['DuplicateFileException'] > CakePhpHelper::$DUPLICATE_FILE_EXCEPTION_THRESHOLD) {
 				$message = "DuplicateFileException exceeds threshold, count=".$thrift_GetTask['DuplicateFileException'];
 				/*
 				 * TODO: instead of shutdown, should we just skip the folder and try the next one, 
@@ -235,7 +233,7 @@ ThriftController::log("**** WARNING: DuplicateFileException count={$thrift_GetTa
 				 */ 				
 				$shutdown = true;
 			}
-			if ($thrift_GetTask['OtherException'] > CakePhpHelper::$OTHER_EXCEPTION_THRESHOLD) {
+			if (isset($thrift_GetTask['OtherException']) && $thrift_GetTask['OtherException'] > CakePhpHelper::$OTHER_EXCEPTION_THRESHOLD) {
 				$message = "OtherException exceeds threshold, count=".$thrift_GetTask['OtherException'];
 				$shutdown = true;
 			}			
