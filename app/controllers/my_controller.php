@@ -318,6 +318,7 @@ $this->log("=====   Post data  ==========", LOG_DEBUG);
 $this->log("before __importPhoto  >>>>>>>>>>>>>>>", LOG_DEBUG);	
 // $this->log($this->data['Asset'], LOG_DEBUG);
 		// for AIR: autoRotate==true
+		$this->data['Asset']['isAIR'] = 1;
 		$response = $this->__importPhoto($this->data, $UPLOAD_FOLDER, $move_to_src_root, "PREVIEW");
 $this->log($response['message'], LOG_DEBUG);		
 		/*
@@ -581,11 +582,13 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 		
 		// use for testing fixed authToken/Session
 		$sessionId = '509d820e-b990-4822-bb9c-11d0f67883f5';
-		$deviceId = '2738ebe4-95a1-4d4a-aefe-761d97881535';
+		// see HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Snaphappi
+		$deviceId = '2738ebe4-95a1-4d4a-aefe-761d97881535';			// ThriftDevice.id=2
+		// $deviceId = '2738ebe4-xxxx-4d4a-aefe-761d97881535';		// ThriftDevice.id=3
 		$test_session = array('session_id'=>$sessionId, 'device_UUID'=>$deviceId);
 		
 		// $session = $this->ThriftSession->newSession($test_session);
-		$session = $this->ThriftSession->newSession($test_session);
+		$session = $this->ThriftSession->newSession();
 		$sessionId = $session['ThriftSession']['id'];		
 
 		// on first POST of TaskID, bind taskID->DeviceID with Session	
@@ -596,16 +599,18 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 		// on GetFolders()
 		// set hardcoded GetFolders() data for TESTING, normally we'd use the TopLevelFolder app
 		$folder_state = array();
-		$folder_state[] = array('folder_path'=>'C:\\TEMP\\May', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0); 
-		$folder_state[] = array('folder_path'=>'C:\\TEMP\\small import test', 'is_scanned'=>0, 'is_watched'=>1, 'count'=>0);
+		$folder_state[] = array('folder_path'=>'C:\\TEMP\\May', 'is_scanned'=>1, 'is_watched'=>0, 'count'=>0); 
+		$folder_state[] = array('folder_path'=>'C:\\TEMP\\small import test', 'is_scanned'=>1, 'is_watched'=>1, 'count'=>0);
 		$folder_state[] = array('folder_path'=>'C:\\TEMP\\folder with special char (;\'&.=^%$#@!) test', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0);
-// debug($folder_state);		
-		
+		$folder_state[] = array('folder_path'=>'C:\\TEMP\\big-test', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0);
+debug(Set::extract('/folder_path', $folder_state));	
 		// load folders to ThriftFolders for testing
+		$resetSQL = "delete f from thrift_folders f join thrift_devices d on d.id = f.thrift_device_id 
+				where d.device_UUID='{$deviceId}'";
+		$this->ThriftSession->query($resetSQL);
 		foreach($folder_state as $folder) {
 			$ret = $this->ThriftSession->ThriftDevice->ThriftFolder->addFolder(
 				$session['ThriftDevice']['id'], $folder['folder_path'], $folder);
-			debug($ret);
 		}
 		/*
 		 * show express-uploads, if any

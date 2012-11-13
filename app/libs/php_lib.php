@@ -515,8 +515,12 @@ function getAssetHash($asset, $filepath,  $filename=null ){
 	// get $filename_no_counter
 	if ($filename) {
 		// skip
+	} else if (isset($asset['origPath'])) {
+		$filename = $asset['origPath'];		// from thrift api	
 	} else if (isset($asset['rel_path'])) {
 		$filename = basename($asset['rel_path']);		// from desktop-uploader
+		// strip filename counter
+		$filename = preg_replace('/(.*)(~\d+)(\.jpg)/i','${1}${3}',$filename);
 	} else if (isset($asset['json_src'])) {
 		// $src['orig']= cleanPath($providerAccount['baseurl'].DS.$asset['rel_path'], 'http');
 		$src = json_decode($asset['json_src'], true);	// from db
@@ -524,8 +528,7 @@ function getAssetHash($asset, $filepath,  $filename=null ){
 	} else {
 		$filename = $asset['caption'];
 	}
-	$filename_no_counter = preg_replace('/(.*)(~\d+)(\.jpg)/i','${1}${3}',$filename);
-	$string .= $filename_no_counter;
+	$string .= $filename;
 	
 	
 	$json_exif = is_string($asset['json_exif']) ? json_decode($asset['json_exif'], true) : $asset['json_exif'];
@@ -554,9 +557,9 @@ function getAssetHash($asset, $filepath,  $filename=null ){
 		$string .= filesize($filepath);
 	}
 // debug($string);	
-AppController::log("php_lib::getAssetHash() UUID={$asset['id']}", LOG_DEBUG);
+// AppController::log("php_lib::getAssetHash() UUID={$asset['id']}", LOG_DEBUG);
 // AppController::log("raw asset_hash={$string}", LOG_DEBUG);
-// AppController::log("asset_hash=".md5($string, false), LOG_DEBUG);
+// AppController::log("php_lib::getAssetHash() asset_hash=".md5($string, false), LOG_DEBUG);
 	return md5($string, false);
 }
 

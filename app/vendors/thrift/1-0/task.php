@@ -232,6 +232,10 @@ ThriftController::log("**** WARNING: DuplicateFileException count={$thrift_GetTa
 			$shutdown = false;
 			if ($thrift_GetTask['DuplicateFileException'] > CakePhpHelper::$DUPLICATE_FILE_EXCEPTION_THRESHOLD) {
 				$message = "DuplicateFileException exceeds threshold, count=".$thrift_GetTask['DuplicateFileException'];
+				/*
+				 * TODO: instead of shutdown, should we just skip the folder and try the next one, 
+				 * if any. at least just for this session. see GetFolderState for isNotFound
+				 */ 				
 				$shutdown = true;
 			}
 			if ($thrift_GetTask['OtherException'] > CakePhpHelper::$OTHER_EXCEPTION_THRESHOLD) {
@@ -331,7 +335,9 @@ ThriftController::log("_model_setTaskState() state=".print_r($thrift_GetTask, tr
 		$data['Asset']['id'] = null;
 		$data['Asset']['batchId'] = $BATCH_ID;
 		$devicePrefix = ThriftController::$session['ThriftDevice']['id'].ThriftFolder::$DEVICE_SEPARATOR;
-		$device_origPath = $devicePrefix . $origPath;	
+		$device_origPath = $devicePrefix . $origPath;
+		$data['Asset']['isThriftAPI'] = 1;			// this is used for getAssetHash()
+		$data['Asset']['origPath'] = $origPath;		// this is used for getAssetHash()
 		$data['Asset']['rel_path'] = $device_origPath;	
 		$data['ProviderAccount']['provider_name'] = ThriftController::$session['ProviderAccount']['provider_name'];
 		$data['ProviderAccount']['provider_key'] = ThriftController::$session['ProviderAccount']['provider_key'];
@@ -612,7 +618,7 @@ error_log("URTaskUpload->AddFolder(), path={$path}");
 		 * throw Exception on error
 		 *
 		 * @param $id TaskID,
-		 * @param $path String,
+		 * @param $path String, 
 		 * @param $data binary,
 		 * @param $extras, snaphappi_api_UploadInfo
 		 * @return void 

@@ -664,8 +664,6 @@ AND includes.asset_id='{$assetId}';
 		 */
 // TODO: $file_relpath should be from $providerAccount['baseurl'], but what if we have multiple TLF?
 		$file_relpath = cleanPath(substr($photoPath,strlen($baseurl)),'http'); 
-		$filename_no_counter = preg_replace('/(.*)(~\d+)(\.jpg)/i','${1}${3}',$asset['rel_path']);	
-// $this->log('$filename_no_counter =>'.$filename_no_counter,LOG_DEBUG);		
 		/*
 		 *  WARNING:ProviderAccount.baseurl DB field is only the INITIAL baseurl. 
 		 *  $providerAccount['baseurl'] value is manually updated in MyController::__importPhoto()
@@ -684,7 +682,20 @@ AND includes.asset_id='{$assetId}';
 
 		// add provider_account_id for generating asset_hash
 		$asset['provider_account_id'] = $providerAccount['id'];
-		$asset_hash = getAssetHash($asset, $photoPath, $filename_no_counter );
+		if (isset($asset['isThriftAPI'])) {
+			$asset_hash = getAssetHash($asset, $photoPath, $asset['origPath'] );
+			$origPath = $asset['origPath'];
+		} else if (1 || isset($asset['isAIR'])) {	
+			// ???: which uploader is adding a duplicate filename counter?  is this outdated?
+			/*
+			 * TODO: confirm this fact, not sure it is still true
+			 * counter is used by AIR uploader to add counter to duplicate files in upload folder
+			 */ 
+			$filename_no_counter = preg_replace('/(.*)(~\d+)(\.jpg)/i','${1}${3}',$asset['rel_path']);	
+// $this->log('$filename_no_counter =>'.$filename_no_counter,LOG_DEBUG);	
+			$asset_hash = getAssetHash($asset, $photoPath, $filename_no_counter);
+			$origPath = $filename_no_counter;
+		}
 		$assetTemplate = array(
 			'owner_id'=>$userid,						// owner, might be redundant
 			'provider_account_id' => $providerAccount['id'],
@@ -701,9 +712,8 @@ AND includes.asset_id='{$assetId}';
 		);
 		if (isset($asset['json_iptc']['Keyword'])) $newAsset['keyword']= $asset['json_iptc']['Keyword'];
 		if (isset($asset['json_iptc']['Caption'])) $newAsset['caption']= $asset['json_iptc']['Caption'];
-		if (empty($asset['caption']))   {
-			$newAsset['caption'] = pathinfo($filename_no_counter, PATHINFO_FILENAME);
-		}
+		if (empty($asset['caption'])) $newAsset['caption'] = pathinfo($origPath, PATHINFO_FILENAME);;
+		
 		pack_json_keys($newAsset);		// from php_lib
 		$newAsset = array_merge($assetTemplate, $newAsset);
 
@@ -713,34 +723,6 @@ AND includes.asset_id='{$assetId}';
 		$duplicate = $this->_detectDuplicate($userid, $newAsset, !empty($asset['replace-preview-with-original']) );
 // $this->log( "checkDupes_options FOUND, data=".print_r($duplicate, true), LOG_DEBUG);
 		 		
-		// $checkDupes_options = array(
-			// 'recursive' => -1,
-			// 'conditions' => array( 'Asset.owner_id' => $userid,
-					// 'OR'=>array('Asset.id'=>$asset['id'], 'Asset.asset_hash'=>$asset_hash),
-			// ),
-			// 'extras'=>array(
-				// 'show_edits'=>false,
-				// 'join_shots'=>false, 
-				// 'show_hidden_shots'=>false		
-			// ),
-			// 'permissionable'=>false,
-		// );		
-		// /***************************************************************
-		 // * experimental: replace mode, replace existing with original
-		 // * 		from MyController::__upload_javascript()
-		 // ***************************************************************/
-		// if (!empty($asset['replace-preview-with-original'])) {
-			// $checkDupes_options['conditions'] = array( 
-				// 'Asset.owner_id' => $userid,
-				// 'Asset.dateTaken' => $newAsset['dateTaken'],
-				// 'Asset.caption' => $newAsset['caption'],
-				// 'substr(Asset.json_exif, 1,70)' =>  substr($newAsset['json_exif'], 0, 70),
-			// );
-			// unset($newAsset['id']);	// this is not the original UUID 
-		// }; 
-		// $duplicate = $this->find('first', $checkDupes_options);
-
-
 		if (!empty($duplicate['Asset']['id'])) {
 			// found Duplicate
 			
