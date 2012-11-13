@@ -13,6 +13,10 @@ class ThriftSession extends AppModel {
 		)
 	);	
 	
+	public static $ALLOWED_UPDATE_KEYS = array('IsCancelled', 'FolderUpdateCount', 'FileUpdateCount', 
+					'DuplicateFileException', 'OtherException',
+					'BatchId',
+					);
 	/**
 	 * @param options array, 
 	 *  options[session_id]: 'sw' scheduled actions will send session_id, with unbound thrift_device_id
@@ -104,6 +108,15 @@ class ThriftSession extends AppModel {
 		)
 	 */
 	function saveTaskState($sessionId, $taskState) {
+		$taskState = array_filter_keys($taskState, ThriftSession::$ALLOWED_UPDATE_KEYS);
+		$DB_keys = array('IsCancelled', 'DuplicateFileException', 'OtherException');
+		$update_keys = array_intersect_key($taskState, array_flip($DB_keys));
+		if (empty($update_keys)) {
+			// TODO: how do we save FileUpdateCount in session, not db?
+			return $taskState;
+		}
+		
+		// these keys need to save to the DB
 		$data = array();
 		$data['ThriftSession']['id'] = $sessionId;
 		$data['ThriftSession']['is_cancelled'] = $taskState['IsCancelled'] ? 1 : 0;

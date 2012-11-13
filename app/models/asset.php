@@ -765,7 +765,7 @@ $this->log( " ERROR: this->__updateAssetFields()".print_r($duplicate['Asset'], t
 			/*
 			 * $asset is correct
 			 *************************************************************/
-$this->log("insert newAsset=".print_r($newAsset, true), LOG_DEBUG);		
+$this->log("insert newAsset=".print_r($newAsset['native_path'], true), LOG_DEBUG);		
 			/*
 			 * insert row in assets table
 			 */

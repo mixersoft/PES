@@ -204,25 +204,22 @@ ThriftController::log("############################## thrift_SetFolders=".print_
 		public static function _model_setTaskState($taskID, $options) {
 			if (!ThriftController::$session) CakePhpHelper::_loginFromAuthToken($taskID);
 			$session = & ThriftController::$session;
-			$thrift_GetTask = CakePhpHelper::_model_getTaskState($taskID);
+			$thrift_GetTask = array();
 			
-			$options = array_filter_keys($options, 
-				array('IsCancelled', 'FolderUpdateCount', 'FileUpdateCount', 
-					'DuplicateFileException', 'OtherException',
-					'BatchId',
-					));
 			// save to DB
 			if (isset($options['FileUpdateCount']) && $thrift_GetTask['FileUpdateCount']) {
 				$thrift_GetTask['FileUpdateCount'] += 1;
 				unset($options['FileUpdateCount']);
 			}
 			if (isset($options['DuplicateFileException'])) {
+				$thrift_GetTask = $thrift_GetTask ? $thrift_GetTask : CakePhpHelper::_model_getTaskState($taskID);
 				if (!isset($thrift_GetTask['DuplicateFileException'])) $thrift_GetTask['DuplicateFileException'] = 1;
 				else $thrift_GetTask['DuplicateFileException'] += 1;
 ThriftController::log("**** WARNING: DuplicateFileException count={$thrift_GetTask['DuplicateFileException']}", LOG_DEBUG);				
 				unset($options['DuplicateFileException']);
 			}
 			if (isset($options['OtherException'])) {
+				$thrift_GetTask = $thrift_GetTask ? $thrift_GetTask : CakePhpHelper::_model_getTaskState($taskID);
 				if (!isset($thrift_GetTask['OtherException'])) $thrift_GetTask['OtherException'] = 1;
 				else $thrift_GetTask['OtherException'] += 1;
 				unset($options['OtherException']);
@@ -453,8 +450,9 @@ ThriftController::log("***   GetState", LOG_DEBUG);
 			if (empty($state)) {
 				// NOTE: InvalidAuth Exception thrown from CakePhpHelper::_loginFromAuthToken()
 				$state['IsCancelled'] = true;
+ThriftController::log($state, LOG_DEBUG); 					
 			} else {
-ThriftController::log($state, LOG_DEBUG); 				
+// ThriftController::log($state, LOG_DEBUG); 				
 			}
         	$taskState = new snaphappi_api_URTaskState($state);
         	return $taskState;
@@ -665,7 +663,7 @@ debug("CakePhpHelper::__importPhoto({$upload_basepath}, {$fullpath}, {$path}, {$
 debug("UploadFile. ******** IMPORT to DB COMPLETE *********************");	
 debug($response);
 ThriftController::log("************* UploadFile. IMPORT to DB complete ***********************", LOG_DEBUG);			 
-ThriftController::log($response, LOG_DEBUG);			
+ThriftController::log($response['message'], LOG_DEBUG);			
 				if ($response['success']) {
 					/*
 					 * update TaskID[FileUpdateCount] to Thrift, not to DB
