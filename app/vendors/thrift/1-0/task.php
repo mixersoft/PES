@@ -142,12 +142,19 @@ debug($thrift_exception);
 			);
 			$folders = array();
 			foreach ($thrift_GetFolders as $i=>$row){
-				$folders[] = array(
+				if ($row['ThriftFolder']['is_not_found']) {
+					// skip if not found was marked in this session
+					ThriftController::log("row['ThriftFolder']['is_not_found']", LOG_DEBUG);		
+					if (strtotime($row['ThriftFolder']['modified']) > strtotime($session['ThriftSession']['modified'])) continue; 
+				}
+				$folder =  array(
 					'folder_path'=> $row['ThriftFolder']['native_path'],
 					'is_scanned' => $row['ThriftFolder']['is_scanned'],
             		'is_watched' => $row['ThriftFolder']['is_watched'],
+					'is_not_found' => $row['ThriftFolder']['is_not_found'],            		
             		'count' => $row['ThriftFolder']['count'],
 				);
+				$folders[] = $folder;
 			}
 			return $folders;
 		}
@@ -506,7 +513,13 @@ ThriftController::log("***   GetFiles, deviceID={$taskID->DeviceID}, folder={$fo
 		 * @param $folderPath String
 		 */
         public function ReportFolderNotFound($taskID, $folderPath) {
-ThriftController::log("ReportFolderNotFound, folder={$folderPath},  taskID=".print_r($taskID, true), LOG_DEBUG);
+ThriftController::log("***   ReportFolderNotFound, folder={$folderPath},  taskID=".print_r($taskID, true), LOG_DEBUG);
+			$data['ThriftFolder']['native_path']=$folderPath;
+			$data['ThriftFolder']['is_not_found']=1;
+			$ret = CakePhpHelper::_model_setFolderState($taskID, $data);
+			// check GetFolders() to set TaskId->IsCancelled if none, 
+			// NOTE: notFound folders will be hidden for the current sessionId based on session modified time
+			$remaining_folders = $this->GetFolders($taskID);
         	return;
         }
 		/**
@@ -533,7 +546,7 @@ ThriftController::log("***   ReportFolderUploadComplete, folder={$folderPath}, t
 			$ret = CakePhpHelper::_model_setFolderState($taskID, $data);
 			// check GetFolders() to set TaskId->IsCancelled if empty
 			$remaining_folders = $this->GetFolders($taskID);
-			return $ret;
+			return; 
         }  		
 		/**
 		 * Sets the number of files expected to be uploaded from a folder.

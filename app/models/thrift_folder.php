@@ -14,6 +14,7 @@ class ThriftFolder extends AppModel {
 	);	
 	
 	public static $DEVICE_SEPARATOR = '~';	// Asset.native_path == deviceID~origPath in DB
+	public static $ALLOWED_UPDATE_KEYS = array('count', 'is_scanned', 'is_watched', 'is_not_found' );
 	
 	private function hashPath($path) {
 		return crc32($path);
@@ -75,7 +76,7 @@ class ThriftFolder extends AppModel {
 		$found = $this->findByNativePath($thrift_device_id, $folderData['ThriftFolder']['native_path']);
 		if (!empty($found)) {
 			$this->id = $found['ThriftFolder']['id'];
-			$data['ThriftFolder'] = array_filter_keys($folderData['ThriftFolder'], array('count', 'is_scanned', 'is_watched' ));
+			$data['ThriftFolder'] = array_filter_keys($folderData['ThriftFolder'], ThriftFolder::$ALLOWED_UPDATE_KEYS);
 			$ret = $this->save($data, array('fieldList'=>array_keys($data['ThriftFolder'])));
 			return $ret;
 		} else return false;	// native_path not found

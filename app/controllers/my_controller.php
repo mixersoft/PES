@@ -40,7 +40,7 @@ class MyController extends PersonController {
 			/*
 			 * experimental
 			 */
-			'pagemaker', 'updateExif', 'uploader',
+			'pagemaker', 'updateExif', 
 		);
 		$removeAuth = array('photos', 'groups', 'trends', 'stories', 'photostreams', 'home', 
 			'all', 'most_active', 'most_recent','most_photos','most_groups','remove_photos'
@@ -585,7 +585,7 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 		$test_session = array('session_id'=>$sessionId, 'device_UUID'=>$deviceId);
 		
 		// $session = $this->ThriftSession->newSession($test_session);
-		$session = $this->ThriftSession->newSession();
+		$session = $this->ThriftSession->newSession($test_session);
 		$sessionId = $session['ThriftSession']['id'];		
 
 		// on first POST of TaskID, bind taskID->DeviceID with Session	

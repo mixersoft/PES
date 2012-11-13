@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS `thrift_folders` (
   `count` int(11) DEFAULT 0,
   `is_scanned` tinyint(1) DEFAULT 0,
   `is_watched` tinyint(1) DEFAULT 0,
+  `is_not_found` tinyint(1) DEFAULT 0 COMMENT 'the folder may have moved',
   `created` datetime,
   `modified` datetime,
   PRIMARY KEY (`id`),
