@@ -653,9 +653,11 @@ debug(Set::extract('/folder_path', $folder_state));
 		foreach ($jsonSrc as $json) {
 			$src = json_decode($json, true);
 			$root = $basepath.DS.cleanpath($src['root']);
-			$preview = $basepath.DS.cleanpath($src['preview']);
 			@unlink($root);
-			@unlink($preview);
+			if (isset($src['preview'])) {	// deprecated
+				$preview = $basepath.DS.cleanpath($src['preview']);
+				@unlink($preview);
+			}
 			$thumb_src = $basepath.'/'.preg_replace('/\//', '/.thumbs/', $src['root'], 1);
 			$sizes = array('bp', 'tn', 'sq', 'lm', 'll', 'bm', 'bs');
 			foreach ($sizes as $size) {
@@ -678,6 +680,9 @@ debug(Set::extract('/folder_path', $folder_state));
 		$this->User->query($sql_deleteCascade);
 		$this->User->id = $id;
 		$this->User->saveField('asset_count',0);
+		
+		debug("<br /><a href='".Router::url(array('action'=>'photos'))."'>/my/photos</a><br />");
+		
 		$this->render('/elements/sql_dump');
 	}
 		
