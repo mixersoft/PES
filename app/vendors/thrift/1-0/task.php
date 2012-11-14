@@ -191,10 +191,17 @@ ThriftController::log("############################## thrift_SetFolders=".print_
 			
 			ThriftController::$controller->ThriftFolder = ThriftController::$controller->ThriftSession->ThriftDevice->ThriftFolder;
 			$thrift_device_id = $session['ThriftDevice']['id'];
-			$folder = ThriftController::$controller->ThriftFolder->addFolder(
-				$thrift_device_id, $nativePath, $options
-			);
-			return $folder;
+			if (!empty($options['delete'])) {
+				$ret = ThriftController::$controller->ThriftFolder->deleteFolder(
+					$thrift_device_id, $nativePath
+				);
+				return $ret;
+			} else {
+				$folder = ThriftController::$controller->ThriftFolder->addFolder(
+					$thrift_device_id, $nativePath, $options
+				);
+				return $folder;
+			}
 		}
 		
 		/**
@@ -674,6 +681,37 @@ ThriftController::log("***   GetFileCount, folder={$folderPath}, taskID=".print_
 			}
         	
         }
+        
+		/**
+		 * Remove a top level folder to scan
+		 * @param $taskID snaphappi_api_TaskID,
+		 * @param $path String,
+		 * @throws  snaphappi_api_SystemException(), 
+		 * 		ErrorCode::DataConflict if folder already exists for the current DeviceID
+		 * 		ErrorCode::Unknown for everything else
+		 */
+        public function RemoveFolder($taskID, $path) {
+        	try { 
+        		$data = CakePhpHelper::_model_addFolder($taskID, $path, array('delete'=>1)); 
+				return;
+			} catch (Exception $e) {
+				$msg = explode(',', $e->getMessage());
+				switch($msg[0]) {
+					case 'Error: Folder already exists':
+						$thrift_exception['ErrorCode'] = ErrorCode::DataConflict;
+						break;
+					default:
+						$thrift_exception['ErrorCode'] = ErrorCode::Unknown;
+						break;
+				}
+				$thrift_exception['Information'] = $e->getMessage();
+				throw new snaphappi_api_SystemException($thrift_exception);					
+			} catch (snaphappi_api_SystemException $e) {
+					throw $e;
+			}
+        	
+        }
+		
 			
 		/**
 		 * save binary data from uploaded, *resampled* JPG file

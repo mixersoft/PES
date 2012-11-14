@@ -101,7 +101,13 @@ class ThriftController extends AppController {
 		debug ("   Exception, msg=".$e->getMessage());
 	}
 		
-
+$nativePath = "C:\\TEMP\\added from Thrift AddFolder";
+	if (isset($_GET['reset'])) {
+		print "<BR />*************************************";
+		print "<BR />     reset folders for testing";
+		print "<BR />*************************************";
+		$ret = $Task->RemoveFolder($taskId, $nativePath);
+	}
 		/*
 		 * Test AddFolder
 		 */

@@ -11,6 +11,7 @@ include_once $GLOBALS['THRIFT_ROOT'].'/packages/Tasks/Tasks_types.php';
 
 interface snaphappi_api_TaskIf {
   public function AddFolder($id, $path);
+  public function RemoveFolder($id, $path);
   public function GetDeviceID($authToken, $sessionID);
   public function GetFileCount($id, $folder);
   public function GetFiles($id, $folder);
@@ -78,6 +79,58 @@ class snaphappi_api_TaskClient implements snaphappi_api_TaskIf {
         throw $x;
       }
       $result = new snaphappi_api_Task_AddFolder_result();
+      $result->read($this->input_);
+      $this->input_->readMessageEnd();
+    }
+    if ($result->systemException !== null) {
+      throw $result->systemException;
+    }
+    return;
+  }
+
+  public function RemoveFolder($id, $path)
+  {
+    $this->send_RemoveFolder($id, $path);
+    $this->recv_RemoveFolder();
+  }
+
+  public function send_RemoveFolder($id, $path)
+  {
+    $args = new snaphappi_api_Task_RemoveFolder_args();
+    $args->id = $id;
+    $args->path = $path;
+    $bin_accel = ($this->output_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($this->output_, 'RemoveFolder', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+    }
+    else
+    {
+      $this->output_->writeMessageBegin('RemoveFolder', TMessageType::CALL, $this->seqid_);
+      $args->write($this->output_);
+      $this->output_->writeMessageEnd();
+      $this->output_->getTransport()->flush();
+    }
+  }
+
+  public function recv_RemoveFolder()
+  {
+    $bin_accel = ($this->input_ instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_read_binary');
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, 'snaphappi_api_Task_RemoveFolder_result', $this->input_->isStrictRead());
+    else
+    {
+      $rseqid = 0;
+      $fname = null;
+      $mtype = 0;
+
+      $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+      if ($mtype == TMessageType::EXCEPTION) {
+        $x = new TApplicationException();
+        $x->read($this->input_);
+        $this->input_->readMessageEnd();
+        throw $x;
+      }
+      $result = new snaphappi_api_Task_RemoveFolder_result();
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
@@ -841,6 +894,177 @@ class snaphappi_api_Task_AddFolder_result {
   public function write($output) {
     $xfer = 0;
     $xfer += $output->writeStructBegin('Task_AddFolder_result');
+    if ($this->systemException !== null) {
+      $xfer += $output->writeFieldBegin('systemException', TType::STRUCT, 1);
+      $xfer += $this->systemException->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class snaphappi_api_Task_RemoveFolder_args {
+  static $_TSPEC;
+
+  public $id = null;
+  public $path = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'id',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_TaskID',
+          ),
+        2 => array(
+          'var' => 'path',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['id'])) {
+        $this->id = $vals['id'];
+      }
+      if (isset($vals['path'])) {
+        $this->path = $vals['path'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'Task_RemoveFolder_args';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->id = new snaphappi_api_TaskID();
+            $xfer += $this->id->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->path);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Task_RemoveFolder_args');
+    if ($this->id !== null) {
+      if (!is_object($this->id)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('id', TType::STRUCT, 1);
+      $xfer += $this->id->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->path !== null) {
+      $xfer += $output->writeFieldBegin('path', TType::STRING, 2);
+      $xfer += $output->writeString($this->path);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class snaphappi_api_Task_RemoveFolder_result {
+  static $_TSPEC;
+
+  public $systemException = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'systemException',
+          'type' => TType::STRUCT,
+          'class' => 'snaphappi_api_SystemException',
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['systemException'])) {
+        $this->systemException = $vals['systemException'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'Task_RemoveFolder_result';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRUCT) {
+            $this->systemException = new snaphappi_api_SystemException();
+            $xfer += $this->systemException->read($input);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('Task_RemoveFolder_result');
     if ($this->systemException !== null) {
       $xfer += $output->writeFieldBegin('systemException', TType::STRUCT, 1);
       $xfer += $this->systemException->write($output);
@@ -3002,6 +3226,28 @@ class TaskProcessor {
     else
     {
       $output->writeMessageBegin('AddFolder', TMessageType::REPLY, $seqid);
+      $result->write($output);
+      $output->getTransport()->flush();
+    }
+  }
+  protected function process_RemoveFolder($seqid, $input, $output) {
+    $args = new snaphappi_api_Task_RemoveFolder_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    $result = new snaphappi_api_Task_RemoveFolder_result();
+    try {
+      $this->handler_->RemoveFolder($args->id, $args->path);
+    } catch (snaphappi_api_SystemException $systemException) {
+      $result->systemException = $systemException;
+    }
+    $bin_accel = ($output instanceof TProtocol::$TBINARYPROTOCOLACCELERATED) && function_exists('thrift_protocol_write_binary');
+    if ($bin_accel)
+    {
+      thrift_protocol_write_binary($output, 'RemoveFolder', TMessageType::REPLY, $result, $seqid, $output->isStrictWrite());
+    }
+    else
+    {
+      $output->writeMessageBegin('RemoveFolder', TMessageType::REPLY, $seqid);
       $result->write($output);
       $output->getTransport()->flush();
     }

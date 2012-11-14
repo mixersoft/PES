@@ -45,7 +45,18 @@ class ThriftFolder extends AppModel {
 		}
 		return  $ret ? $this->read(null, $this->id) : false;
 	}	
-	
+	/**
+	 * @param $paid UUID, provider_account_id for name=native-uploader
+	 */
+	public function deleteFolder($thrift_device_id, $nativePath) {
+		$folder = $this->findByNativePath($thrift_device_id, $nativePath);
+		if (!empty($folder['ThriftFolder']['id'])) {
+			$this->id = $folder['ThriftFolder']['id'];
+			$this->delete();
+			return true;
+		} else return false;
+	}
+		
 	public function findByDeviceUUID($device_UUID, $is_watched = false) {
 		$contain = array('ThriftDevice'=>array(
 				'conditions'=>array('ThriftDevice.device_UUID'=>$device_UUID)

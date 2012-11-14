@@ -125,9 +125,12 @@ print "<br> Client Class={$client_class}";
 			// sleep for 1 sec and then try again
 			// timeout after 30 sec
 		}
-		print "<BR />   Thrift Exception, msg=".$e->Information;
+		print "<BR />   <span style='color:red'>Thrift Exception, msg=".$e->Information."</span>";
 	}
 	
+	
+	
+	// create new TaskId object
   	$taskId = new snaphappi_api_TaskID(array(
   		'Session'=>$sessionId, 
   		'AuthToken'=>$authToken, 
@@ -137,6 +140,16 @@ print "<br> Client Class={$client_class}";
 	print "<BR />Using TaskId=".print_r($taskId,true);
 	
 	
+	
+	
+	$nativePath = "C:\\TEMP\\added from Thrift AddFolder";
+	if (isset($_GET['reset'])) {
+		print "<BR />";	
+		print "<BR />****************************************************************";
+		print "<BR />     <span style='color:red'>removing folder path={$nativePath}</span>";
+		print "<BR />****************************************************************";
+		$ret = $client->RemoveFolder($taskId, $nativePath);
+	}	
 	
 	try {
 		/**
@@ -149,7 +162,6 @@ print "<br> Client Class={$client_class}";
 		 * 		ErrorCode::DataConflict if folder already exists for the current DeviceID
 		 * 		ErrorCode::Unknown for everything else
 		 */
-		$nativePath = "C:\\TEMP\\added from Thrift AddFolder";
 		$ret = $client->AddFolder($taskId, $nativePath);
 		print "<BR />";	
 		print "<br>AddFolder() OK, native_path={$nativePath}";
@@ -158,10 +170,10 @@ print "<br> Client Class={$client_class}";
 			// do nothing on duplicate folder
 		}
 		print "<BR />";
-		print "<BR />   Thrift Exception, msg=".$e->Information;
+		print "<BR />   <span style='color:red'>Thrift Exception, msg=".$e->Information."</span>";
 	}
 	
-	
+	// check results
 	$folders = $client->GetFolders($taskId);
 	print "<BR />";
 	print "<br>GetFolders()=".print_r($folders,true);
