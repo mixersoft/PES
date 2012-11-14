@@ -77,7 +77,7 @@ class ThriftController extends AppController {
 		$sessionId = '50a32a66-6680-4c29-a5b2-1644f67883f5';
 		// see HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Snaphappi
 		$deviceId = "2738ebe4-95a1-4d4a-aefe-761d97881535"; //'5ec5006d-8dee-48ef-8c04-bac06c16d36e';
-		// $deviceId = "2738ebe4-xxxx-4d4a-aefe-761d97881535";
+		// $deviceId = "2738ebe4-XXXX-4d4a-aefe-761d97881535";
 		
 		
 		$taskId = new snaphappi_api_TaskID(

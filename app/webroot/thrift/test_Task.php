@@ -64,7 +64,7 @@ $SERVER = $_SERVER['SERVER_NAME'];
 
 $authToken = 'b34f54557023cce43ab7213e0eb7da2a6b9d6b27';
 $sessionId = '509a7862-1db8-4f50-a91e-11d0f67883f5';
-$deviceId = '5ec5006d-8dee-48ef-8c04-bac06c16d36e';
+$deviceId = '2738ebe4-95a1-4d4a-aefe-761d97881535';
 
 $launch_URI = "snaphappi://".base64_encode($authToken)."_".base64_encode($sessionId)."_ur";
 

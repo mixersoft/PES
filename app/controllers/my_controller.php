@@ -580,19 +580,26 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 		// TODO: How do we delete keys for expired sessions? DELETE WHERE is_cancelled=1 or modified too old
 		$this->ThriftSession = ClassRegistry::init('ThriftSession');
 		
+		// see HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Snaphappi for DeviceID
 		// use for testing fixed authToken/Session
-		$sessionId = '509d820e-b990-4822-bb9c-11d0f67883f5';
-		// see HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Snaphappi
-		$deviceId = '2738ebe4-95a1-4d4a-aefe-761d97881535';			// ThriftDevice.id=2
-		// $deviceId = '2738ebe4-xxxx-4d4a-aefe-761d97881535';		// ThriftDevice.id=3
-		$test_session = array('session_id'=>$sessionId, 'device_UUID'=>$deviceId);
-		
-		// $session = $this->ThriftSession->newSession($test_session);
-		$session = $this->ThriftSession->newSession();
+		$DEVICE[1] = array(
+			'device_id'=>1,
+			'device_UUID'=>'2738ebe4-95a1-4d4a-aefe-761d97881535', 
+			'session_id'=>'50a3fb31-7514-4db3-b730-1644f67883f5'
+		);
+		$DEVICE[2] = array(
+			'device_id'=>2,
+			'device_UUID'=>'2738ebe4-XXXX-4d4a-aefe-761d97881535', 
+			'session_id'=>'509d820e-b990-4822-bb9c-11d0f67883f5'
+		);
+		if ($attach_fixed_session = 1) {	// choose Device 1 or 2, or 0 to get a new session
+			$session = $this->ThriftSession->newSession($DEVICE[$attach_fixed_session]);
+		} else $session = $this->ThriftSession->newSession();
 		$sessionId = $session['ThriftSession']['id'];		
+		$device_UUID = $DEVICE[$attach_fixed_session]['device_UUID'];
 
 		// on first POST of TaskID, bind taskID->DeviceID with Session	
-		$session = $this->ThriftSession->checkDevice($sessionId, $deviceId);
+		$session = $this->ThriftSession->checkDevice($sessionId, $device_UUID);
 		if (!$session) $session = $this->ThriftSession->bindDeviceToSession($sessionId, $authToken, $deviceId);
 // debug($session);	exit;
 	
@@ -608,7 +615,7 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 debug(Set::extract('/folder_path', $folder_state));	
 		// load folders to ThriftFolders for testing
 		$resetSQL = "delete f from thrift_folders f join thrift_devices d on d.id = f.thrift_device_id 
-				where d.device_UUID='{$deviceId}'";
+				where d.device_UUID='{$device_UUID}'";
 		$this->ThriftSession->query($resetSQL);
 		foreach($folder_state as $folder) {
 			$ret = $this->ThriftSession->ThriftDevice->ThriftFolder->addFolder(
