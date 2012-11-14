@@ -599,10 +599,12 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 		// on GetFolders()
 		// set hardcoded GetFolders() data for TESTING, normally we'd use the TopLevelFolder app
 		$folder_state = array();
-		$folder_state[] = array('folder_path'=>'C:\\TEMP\\May', 'is_scanned'=>1, 'is_watched'=>0, 'count'=>0); 
-		$folder_state[] = array('folder_path'=>'C:\\TEMP\\small import test', 'is_scanned'=>1, 'is_watched'=>1, 'count'=>0);
+		$folder_state[] = array('folder_path'=>'C:\\TEMP\\May', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0); 
+		$folder_state[] = array('folder_path'=>'C:\\TEMP\\small import test', 'is_scanned'=>0, 'is_watched'=>1, 'count'=>0);
 		$folder_state[] = array('folder_path'=>'C:\\TEMP\\folder with special char (;\'&.=^%$#@!) test', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0);
 		$folder_state[] = array('folder_path'=>'C:\\TEMP\\big-test', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0);
+		$folder_state[] = array('folder_path'=>'C:\\TEMP\\big-test\\events\\NYC', 'is_scanned'=>1, 'is_watched'=>0, 'count'=>0);
+		$folder_state[] = array('folder_path'=>'C:\\TEMP\\big-test\\events\\world thinking day', 'is_scanned'=>1, 'is_watched'=>0, 'count'=>0);
 debug(Set::extract('/folder_path', $folder_state));	
 		// load folders to ThriftFolders for testing
 		$resetSQL = "delete f from thrift_folders f join thrift_devices d on d.id = f.thrift_device_id 
@@ -631,9 +633,16 @@ debug(Set::extract('/folder_path', $folder_state));
 	}
 	
 	
-
+	function truncate($id=null){
+		Configure::write('debug', 2);
+		$this->autoRender=false;	
+		if ($id != MyController::$userid) {
+			debug('<span style="font-size:14pt;color:red;">WARNING: about to delete all Snaps for user=<b>'.$this->Auth->user('username').'</b>.</span> <br />Please append User.id');
+			debug($this->Auth->user());
+			return;
+		};
 		
-	function remove_photos($id){
+		set_time_limit(600);
 		$options = array('conditions'=>array('Asset.owner_id'=>$id), 
 			'fields'=>array('Asset.id', 'Asset.json_src', 'Asset.owner_id'),
 			'permissionable'=>false
@@ -644,7 +653,47 @@ debug(Set::extract('/folder_path', $folder_state));
 		foreach ($jsonSrc as $json) {
 			$src = json_decode($json, true);
 			$root = $basepath.DS.cleanpath($src['root']);
-			$root = $basepath.DS.cleanpath($src['preview']);
+			$preview = $basepath.DS.cleanpath($src['preview']);
+			@unlink($root);
+			@unlink($preview);
+			$thumb_src = $basepath.'/'.preg_replace('/\//', '/.thumbs/', $src['root'], 1);
+			$sizes = array('bp', 'tn', 'sq', 'lm', 'll', 'bm', 'bs');
+			foreach ($sizes as $size) {
+				$path = Stagehand::getImageSrcBySize($thumb_src, $size);
+				@unlink($path);
+			}
+		}	
+		debug("JPG files removed");
+		
+		$sql_deleteCascade = 
+  "DELETE FROM `Asset`, `Shot`, `Best`, `AssetsShot`, `AssetsGroup`, `AssetsCollection`
+	USING `assets` AS `Asset`
+  LEFT JOIN `assets_usershots` AS `AssetsShot` ON (`AssetsShot`.asset_id = `Asset`.id)
+  LEFT JOIN `usershots` AS `Shot` ON (`Shot`.id = `AssetsShot`.usershot_id )
+	LEFT JOIN `best_usershots` AS `Best` ON (`Best`.usershot_id = `Shot`.id)
+  LEFT JOIN `assets_groups` AS `AssetsGroup` ON (`AssetsGroup`.asset_id = `Asset`.id)
+  LEFT JOIN `assets_collections` AS `AssetsCollection` ON (`AssetsCollection`.asset_id = `Asset`.id)
+	WHERE `Asset`.owner_id ='{$id}'";
+	
+		$this->User->query($sql_deleteCascade);
+		$this->User->id = $id;
+		$this->User->saveField('asset_count',0);
+		$this->render('/elements/sql_dump');
+	}
+		
+	function remove_photos($id){
+		$id = MyController::$userid;
+		$options = array('conditions'=>array('Asset.owner_id'=>$id), 
+			'fields'=>array('Asset.id', 'Asset.json_src', 'Asset.owner_id'),
+			'permissionable'=>false
+		);
+		$data = $this->User->Asset->find('all', $options);
+		$jsonSrc = Set::extract($data, '/Asset/json_src');
+		$basepath = Configure::read('path.stageroot.basepath');
+		foreach ($jsonSrc as $json) {
+			$src = json_decode($json, true);
+			$root = $basepath.DS.cleanpath($src['root']);
+			$preview = $basepath.DS.cleanpath($src['preview']);
 			@unlink($root);
 			@unlink($preview);
 			$thumb_src = $basepath.'/'.preg_replace('/\//', '/.thumbs/', $src['root'], 1);
