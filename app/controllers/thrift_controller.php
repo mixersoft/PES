@@ -63,10 +63,23 @@ class ThriftController extends AppController {
 		} catch(Exception $e) {
 			$this->log("ERROR: Thrift service=app/vendors/thrift/{$version}/{$service}");
 		}
+		
+		/******************************************************
+		 * 
+		 * Skip Thrift API and call Task Class directly
+		 * 	- for debugging with cakephp debug()
+		 * 
+		 ******************************************************/ 
+		$Task = new snaphappi_api_TaskImpl();			
+		
 		debug("==============  Thrift Boostrap Complete =====================");
 		$authToken = 'b34f54557023cce43ab7213e0eb7da2a6b9d6b27';
-		$sessionId = '509d820e-b990-4822-bb9c-11d0f67883f5';
+		$sessionId = '50a32a66-6680-4c29-a5b2-1644f67883f5';
+		// see HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Snaphappi
 		$deviceId = "2738ebe4-95a1-4d4a-aefe-761d97881535"; //'5ec5006d-8dee-48ef-8c04-bac06c16d36e';
+		// $deviceId = "2738ebe4-xxxx-4d4a-aefe-761d97881535";
+		
+		
 		$taskId = new snaphappi_api_TaskID(
 			array(
 			    'AuthToken' => $authToken,
@@ -74,7 +87,38 @@ class ThriftController extends AppController {
 			    'DeviceID' => $deviceId,
 			)
 		);
-		$Task = new snaphappi_api_TaskImpl();
+
+		/*
+		 * Test GetDeviceId
+		 */
+	// call async/on timer, wait until $deviceId is available
+	try {
+		$deviceId = $Task->GetDeviceID($authToken, $sessionId);
+		debug ("<br>GetDeviceID()={$deviceId}");
+	} catch (snaphappi_api_SystemException $e) {
+		debug ("   Thrift Exception, msg=".$e->Information);
+	} catch (Exception $e) {
+		debug ("   Exception, msg=".$e->getMessage());
+	}
+		
+
+		/*
+		 * Test AddFolder
+		 */
+	try {
+		// adding folder, use flash.File->native_path	
+		$nativePath = "C:\\TEMP\\added from Thrift AddFolder";
+		// ALTER TABLE `snappi`.`thrift_folders` MODIFY COLUMN `native_path_hash` BIGINT(20) UNSIGNED NOT NULL COMMENT 'use a simple CRC32()';
+		debug("nativePath hashed=".sprintf('%u', crc32($nativePath)));
+		$ret = $Task->AddFolder($taskId, $nativePath);
+		debug ("<br>AddFolder() OK, native_path={$nativePath}");
+	} catch (snaphappi_api_SystemException $e) {
+		debug ("   Thrift Exception, msg=".$e->Information);
+	} catch (Exception $e) {
+		debug ("   Exception, msg=".$e->getMessage());
+	}
+	
+		
 		/*
 		 * Test GetState
 		 */
@@ -106,12 +150,13 @@ debug($folders);
 		/*
 		 * Test ReportFolderUploadComplete
 		 */
-		$folder = $Task->ReportFolderUploadComplete($taskId, $folders[1]);
+		$folder = $Task->ReportFolderUploadComplete($taskId, $folders[0]);
 		debug("ReportFolderUploadComplete() result=".print_r($folder,true));		
 	
 		/*
 		 * Test UploadFiles
 		 */
+		
 		$path = 'C:\TEMP\May\2015.JPG';
 		$data['ProviderAccount'] = Array
 	        (
@@ -145,7 +190,8 @@ debug($folders);
 		);
 		debug($data);	
 		debug("****** AuthToken set for ProviderAccount.user_id=[manager] **************");
-		$Task->UploadFile($taskId, $path, false);
+		$extras = new snaphappi_api_UploadInfo(array('UploadType'=>UploadType::Preview));
+		$Task->UploadFile($taskId, $path, false, $extras);
 		
 		
 	}

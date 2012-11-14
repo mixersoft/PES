@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS `thrift_folders` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'for cakephp, all joins by UNIQUE index',
   `thrift_device_id` int(11) NOT NULL,
   `native_path` varchar(2000) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
-  `native_path_hash` BIGINT NOT NULL COMMENT 'use a simple CRC32()',
+  `native_path_hash` BIGINT UNSIGNED NOT NULL COMMENT 'use a simple CRC32()',
   `count` int(11) DEFAULT 0,
   `is_scanned` tinyint(1) DEFAULT 0,
   `is_watched` tinyint(1) DEFAULT 0,

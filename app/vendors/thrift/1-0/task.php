@@ -105,6 +105,10 @@ debug($thrift_exception);
 		}
 
 		/**
+		 * Get DeviceID for provided session
+		 * NOTE: manually login by authToken
+		 * @param $authToken, string, same as TaskID->AuthToken 
+		 * @param $sessionId, string, same as TaskID->Session
 		 * @return the device ID associated with this session or empty string
 		 */ 
 		public static function _model_getDeviceId($authToken, $sessionId) {
@@ -173,6 +177,25 @@ debug($thrift_exception);
 ThriftController::log("############################## thrift_SetFolders=".print_r($ret, true), LOG_DEBUG);				
 			return $ret;
 		}
+
+		/**
+		 * add folder
+		 * @param $taskID, from $taskID
+		 * @param $nativePath String, 
+		 * @param $options array, $options['is_scanned], $options['is_watched]=1 adds as watched folder
+		 * @throws Exception "Error: Folder already exists" on duplicate key
+		 */
+		public static function _model_addFolder($taskID, $nativePath, $options=array()) {
+			if (!ThriftController::$session) CakePhpHelper::_loginFromAuthToken($taskID);
+			$session = & ThriftController::$session;
+			
+			ThriftController::$controller->ThriftFolder = ThriftController::$controller->ThriftSession->ThriftDevice->ThriftFolder;
+			$thrift_device_id = $session['ThriftDevice']['id'];
+			$folder = ThriftController::$controller->ThriftFolder->addFolder(
+				$thrift_device_id, $nativePath, $options
+			);
+			return $folder;
+		}
 		
 		/**
 		 * get Task state for thrift api
@@ -220,6 +243,7 @@ ThriftController::log("**** WARNING: DuplicateFileException count={$thrift_GetTa
 			if (isset($options['OtherException'])) {
 				if (!isset($thrift_GetTask['OtherException'])) $thrift_GetTask['OtherException'] = 1;
 				else $thrift_GetTask['OtherException'] += 1;
+ThriftController::log("**** WARNING: OtherException count={$thrift_GetTask['OtherException']}", LOG_DEBUG);				
 				unset($options['OtherException']);
 			} 
 			$thrift_GetTask = array_merge($thrift_GetTask, $options);
@@ -263,9 +287,11 @@ ThriftController::log("_model_setTaskState() state=".print_r($thrift_GetTask, tr
 				$session['ThriftDevice'], 
 				$folderPath
 			);
+// ThriftController::log("_model_getFiles() BEFORE FILTER, count=".count($device_files), LOG_DEBUG);			
 			if (!empty($folderPath)) {
 				FolderContains::$folderPath = $folderPath; 
 				FolderContains::$case_sensitive = Configure::read('Config.os')=='win' ? 0 : 1;
+				// TODO: This is WRONG. should be case sensitive based on the CLIENT OS, not server
 // ThriftController::log("_model_getFiles() case sensitive=".FolderContains::$case_sensitive." BEFORE filter=".print_r($device_files, true), LOG_DEBUG);				
 
 				$device_files = array_map('FolderContains::stripDeviceId', $device_files);
@@ -275,8 +301,10 @@ ThriftController::log("_model_setTaskState() state=".print_r($thrift_GetTask, tr
 				// $device_files = array_filter($device_files, 'FolderContains::asset');	
 			} else {
 				$device_files = array_filter($device_files);
+				$device_files = array_map('FolderContains::stripDeviceId', $device_files);
 			}
 			// filter for files in folderPath, or use SQL LIKE clause
+// ThriftController::log("_model_getFiles() AFTER FILTER, count=".count($device_files), LOG_DEBUG);				
 // ThriftController::log("_model_getFiles() AFTER FILTER=".print_r($device_files, true), LOG_DEBUG);			
 			return $device_files;
 		}		
@@ -418,7 +446,7 @@ ThriftController::log("&&&&&&&&&&&&&&&&&&&&&&&&& upload Original not yet impleme
 			 */   
 			$src = json_decode($assetData['Asset']['json_src'], true);
 			$stage=array('src'=>$fullpath, 'dest'=>$src['root']);
-	ThriftController::log("CakePhpHelper::__importPhoto staging files, ".print_r($stage, true), LOG_DEBUG);		
+	// ThriftController::log("CakePhpHelper::__importPhoto staging files, ".print_r($stage, true), LOG_DEBUG);		
 		 	if ($ret3 = $Import->import2stage($stage['src'], $stage['dest'], null, $move = true)) {
 		 		$response['message'][]="file staged successfully, dest={$stage['dest']}";
 			} else $response['message'][]="Error staging file, src={$stage['src']} dest={$stage['dest']}";
@@ -532,7 +560,7 @@ ThriftController::log("***   ReportFolderNotFound, folder={$folderPath},  taskID
 		 * throws SystemException
 		 */
         public function ReportUploadFailed($taskID, $folderPath, $filePath) {
-ThriftController::log("ReportUploadFailed, folder={$folderPath}, file={$filePath},  taskID=".print_r($taskID, true), LOG_DEBUG);
+ThriftController::log("***   ReportUploadFailed, folder={$folderPath}, file={$filePath},  taskID=".print_r($taskID, true), LOG_DEBUG);
         	return;
         }  		
 		/**
@@ -569,10 +597,35 @@ ThriftController::log("***   ReportFileCount, folder={$folderPath}, count={$coun
 		 * 	
 		 * @param $authToken
 		 * @param $sessionId 
+		 * @throws snaphappi_api_SystemException(), 
+		 * 		ErrorCode::InvalidAuth for auth or session problems
+		 * 		ErrorCode::DataConflict if DeviceID is not yet bound to Session, try again
+		 * 		ErrorCode::Unknown for everything else
 		 */
         public function GetDeviceID($authToken, $sessionId) {
-ThriftController::log("GetDeviceID {$authToken}}, {$sessionId}} ", LOG_DEBUG);
-        	return  CakePhpHelper::_model_getDeviceId($sessionId);
+ThriftController::log("GetDeviceID {$authToken}, {$sessionId} ", LOG_DEBUG);
+			try {
+	        	$deviceId = CakePhpHelper::_model_getDeviceId($authToken, $sessionId);
+				if (!$deviceId) throw new Exception('Error: deviceId is not available yet');
+				return $deviceId;
+			} catch (Exception $e) {
+				$msg = explode(',', $e->getMessage());
+				switch($msg[0]) {
+					case 'Error: authToken not found':
+					case 'Error: authToken invalid':
+					case 'Error: sessionId invalid':
+						$thrift_exception['ErrorCode'] = ErrorCode::InvalidAuth;
+						break;
+					case 'Error: deviceId is not available yet':
+						$thrift_exception['ErrorCode'] = ErrorCode::DataConflict;
+						break;						
+					default:
+						$thrift_exception['ErrorCode'] = ErrorCode::Unknown;
+						break;
+				}
+				$thrift_exception['Information'] = $e->getMessage();
+				throw new snaphappi_api_SystemException($thrift_exception);		
+			}
         }		 
 		/**
 		 * Return the number of files expected to be uploaded from a folder.
@@ -593,20 +646,33 @@ ThriftController::log("***   GetFileCount, folder={$folderPath}, taskID=".print_
         	return;
         }  		 
 		/**
-		 * Add a top level folder to scan, uploads resized
-		 * ???: shouldn't this come from the FLEX app?
-		 *  Is this called by the TopLevelFolder app, or just in the DB?
-		 * 	Additional params: 
-		 *
-		 * @param $id TaskID, array[0] int, array[1] string
+		 * Add a top level folder to scan
+		 * @param $taskID snaphappi_api_TaskID,
 		 * @param $path String,
-		 * @return void 
+		 * @throws  snaphappi_api_SystemException(), 
+		 * 		ErrorCode::DataConflict if folder already exists for the current DeviceID
+		 * 		ErrorCode::Unknown for everything else
 		 */
-        public function AddFolder($id, $path) {
-        	$data = CakePhpHelper::_loginFromAuthToken($id); 
-error_log("URTaskUpload->AddFolder(), taskId=".print_r($id, true));
-error_log("URTaskUpload->AddFolder(), path={$path}");
-        	return;
+        public function AddFolder($taskID, $path) {
+        	try { 
+        		$data = CakePhpHelper::_model_addFolder($taskID, $path); 
+				return;
+			} catch (Exception $e) {
+				$msg = explode(',', $e->getMessage());
+				switch($msg[0]) {
+					case 'Error: Folder already exists':
+						$thrift_exception['ErrorCode'] = ErrorCode::DataConflict;
+						break;
+					default:
+						$thrift_exception['ErrorCode'] = ErrorCode::Unknown;
+						break;
+				}
+				$thrift_exception['Information'] = $e->getMessage();
+				throw new snaphappi_api_SystemException($thrift_exception);					
+			} catch (snaphappi_api_SystemException $e) {
+					throw $e;
+			}
+        	
         }
 			
 		/**

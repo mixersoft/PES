@@ -17,7 +17,7 @@ class ThriftFolder extends AppModel {
 	public static $ALLOWED_UPDATE_KEYS = array('count', 'is_scanned', 'is_watched', 'is_not_found' );
 	
 	private function hashPath($path) {
-		return crc32($path);
+		return sprintf('%u', crc32($path));
 	} 
 	
 	public function beforeSave() {
@@ -37,6 +37,12 @@ class ThriftFolder extends AppModel {
 		if (!empty($options['is_scanned'])) $data['ThriftFolder']['is_scanned'] = $options['is_scanned'];
 		if (!empty($options['is_watched'])) $data['ThriftFolder']['is_watched'] = $options['is_watched'];
 		$ret = $this->save($data);
+		if (!$ret) {
+			// return DB error
+			$db =& ConnectionManager::getDataSource($this->useDbConfig);   
+			$this->dbError = explode(':', $db->lastError(), 2);  
+			if ($this->dbError[0] == '1062') throw new Exception("Error: Folder already exists, native_path={$nativePath}");
+		}
 		return  $ret ? $this->read(null, $this->id) : false;
 	}	
 	
@@ -65,9 +71,6 @@ class ThriftFolder extends AppModel {
 		return $data;
 	}
 	
-	public function updateFolder($thrift_device_id, $folderState){
-		
-	}
 	/**
 	 * update ThriftFolder attributes using a nativePath as key 
 	 * @param $folderData, $data['ThriftFolder']['native_path'], must include $folderData['ThriftFolder']['native_path']
