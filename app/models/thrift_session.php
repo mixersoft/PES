@@ -117,7 +117,7 @@ class ThriftSession extends AppModel {
 		}
 		
 		// these keys need to save to the DB
-		$data = $taskState;
+		$data['ThriftSession'] = $taskState;
 		$data['ThriftSession']['id'] = $sessionId;
 		// keys which need translation
 		if (isset($taskState['IsCancelled'])) $data['ThriftSession']['is_cancelled'] = $taskState['IsCancelled'] ? 1 : 0;
