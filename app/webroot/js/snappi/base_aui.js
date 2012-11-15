@@ -438,7 +438,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
 			'preview': ['snappi-dialog-aui', 'snappi-auditions', 'snappi-hint'],
 			'alert': ['snappi-dialog-aui'],
 			'pagemaker-plugin': ['pagemaker-base','snappi-dialog-aui'],
-			'thrift_API': ['snappi-ui-helpers','snappi-io', 'snappi-io-helpers','snappi-menu-aui']
+			'thrift_API': ['snappi-ui-helpers','snappi-io', 'snappi-io-helpers','snappi-menu-aui','snappi-thrift-ui']
 		}
 		var modules = module_group[cfg.module_group];
 		if (modules) {
@@ -921,7 +921,11 @@ console.warn("Node.ynode() may not be compatible with ie8");
                 'snappi-hint': {
                 	path: 'hint.js',
                     requires: ['aui-tooltip', 'snappi-util-misc', 'snappi-io', 'snappi-sortedhash', 'cookie']
-                }
+                },
+                'snappi-thrift-ui': {
+                    path: 'uploader-ui.js',
+                    requires: ['node', 'snappi-io'],
+                },   
             }
         };
         if (hostCfg.host == 'preview.snaphappi.com' || hostCfg.snappi_minify) {

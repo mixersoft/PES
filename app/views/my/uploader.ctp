@@ -43,8 +43,8 @@
 	 */ 
 	$authToken64 = base64_encode($taskID['AuthToken']);
 	$sessionId64 = base64_encode($taskID['Session']);
-	$launch_SnappiUploader = "window.location.href='snaphappi://{$authToken64}_{$sessionId64}_ur'";
-	$launch_SnappiUploader_watched = "window.location.href='snaphappi://{$authToken64}_{$sessionId64}_sw'";
+	$launch_SnappiUploader = "snaphappi://{$authToken64}_{$sessionId64}_ur";
+	$launch_SnappiUploader_watched = "snaphappi://{$authToken64}_{$sessionId64}_sw";
 
 ?>
 <div class="grid_16 upload">
@@ -73,11 +73,11 @@
 			<h1>Snaphappi Desktop Uploader</h1>
 			<ul class="inline">
 				<li class='btn orange rounded-5'>
-					<a onclick=<?php echo $launch_SnappiUploader ?>>Start Uploading</a>
+					<a action=<?php echo $launch_SnappiUploader ?> onclick='SNAPPI.ThriftUploader.action.handleClick(this);'>Start Uploading</a>
 				</li>
 				<li><input type="field" value='<?php echo "snaphappi://{$authToken64}_{$sessionId64}_ur" ?>'</input></li>
 				<li class='btn orange rounded-5'>
-					<a onclick=<?php echo $launch_SnappiUploader_watched ?>>Watch Folders</a>
+					<a action=<?php echo $launch_SnappiUploader_watched ?> onclick='SNAPPI.ThriftUploader.action.handleClick(this);'>Watch Folders</a>
 				</li>
 			</ul>	
 			<hr>
@@ -110,13 +110,6 @@ var initOnce = function() {
 	// init xhr paging & fetch xhr-gets
 	// NOTE: any xhr-gets will bind own PAGE.init() method
 	var Y = SNAPPI.Y;
-	Y.later(5000, SNAPPI.xhrFetch, function(){
-			var n = Y.one('#uploader-ui-xhr');
-			this.requestFragment(n);
-		}, 
-		null,
-		true
-	);
 	if (Y.one('#top-level-folder')) {
 		Y.one('#snappi-uploader-wrap').removeClass('hide');
 	}

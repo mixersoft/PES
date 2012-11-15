@@ -587,13 +587,25 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			'device_UUID'=>'2738ebe4-XXXX-4d4a-aefe-761d97881535', 
 			'session_id'=>'509d820e-b990-4822-bb9c-11d0f67883f5'
 		);
+		$DEVICE[3] = array(
+			'device_id'=>3,		// alexey
+			'device_UUID'=>'b6673a7f-c151-4eff-91f3-9c45a61d6f36', 
+			'session_id'=>'50a4fd3b-034c-48c7-9f87-1644f67883f5'
+		);
+		
 		/*
 		 * for testing only
 		 * // choose Device 1 or 2, or 0 to get a new session
 		 */ 
-		if ($attach_fixed_session = 1) {	
+		if (!empty($this->params['url']['reset'])) {
+			$attach_fixed_session = $this->params['url']['reset'];
+		} else if (!empty($this->params['url']['device'])) {
+			$attach_fixed_session = $this->params['url']['device'];
+		} else 	
+			$attach_fixed_session = 1;		// testing for this device
+		if ($attach_fixed_session) {	
 			$session = $this->ThriftSession->newSession($DEVICE[$attach_fixed_session]);
-		} else $session = $this->ThriftSession->newSession();
+		}
 		
 		$taskID = array(
 			'AuthToken'=>$data['ProviderAccount']['auth_token'],
@@ -608,7 +620,7 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 		if (!$session) $session = $this->ThriftSession->bindDeviceToSession($taskID['Session'], $taskID['AuthToken'], $taskID['DeviceID']);
 		
 		
-		if ($reset = 0) { 	// reset folders for device
+		if (isset($this->params['url']['reset'])) { 	// reset folders for device
 			// set hardcoded GetFolders() data for TESTING, normally we'd use the TopLevelFolder app
 			$folder_state = array();
 			$folder_state[] = array('folder_path'=>'C:\\TEMP\\May', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0); 

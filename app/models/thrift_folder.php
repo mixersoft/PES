@@ -75,10 +75,13 @@ class ThriftFolder extends AppModel {
 		if ($is_watched === false) {
 			$options['conditions']['ThriftFolder.is_watched'] = 0;
 			$options['conditions']['ThriftFolder.is_scanned'] = 0;
+			$options['order'] = array('ThriftFolder.count'=>'DESC', 'ThriftFolder.native_path'=>'ASC') ;
 		} else if ($is_watched) {
 			$options['conditions']['ThriftFolder.is_watched'] = 1;
+			$options['order'] = array('ThriftFolder.count'=>'DESC', 'ThriftFolder.native_path'=>'ASC') ;
 		} else if ($is_watched===null) {
 			// return all folders
+			$options['order'] = array('ThriftFolder.is_watched'=>'ASC', 'ThriftFolder.count'=>'DESC', 'ThriftFolder.native_path'=>'ASC') ;
 		}
 		$data = $this->find('all', $options);
 		Sanitize::clean($data);
