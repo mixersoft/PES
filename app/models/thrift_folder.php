@@ -1,4 +1,7 @@
 <?php
+
+App::import('Sanitize');
+
 class ThriftFolder extends AppModel {
 	public $name = 'ThriftFolder';
 	// public $useDbConfig = 'default';
@@ -58,16 +61,17 @@ class ThriftFolder extends AppModel {
 	}
 		
 	public function findByDeviceUUID($device_UUID, $is_watched = false) {
-		$contain = array('ThriftDevice'=>array(
+		$options['contain'] = array('ThriftDevice'=>array(
 				'conditions'=>array('ThriftDevice.device_UUID'=>$device_UUID)
 			));
-		return $this->findByThriftDeviceId(null, $is_watched, $contain);	
+		$options['conditions'] = array('`ThriftDevice`.device_UUID IS NOT NULL');	
+		return $this->findByThriftDeviceId(null, $is_watched, $options);	
 	}
 	
-	public function findByThriftDeviceId($thrift_device_id, $is_watched = false, $contain = null) {
-		$options = array();
-		if ($contain) $options['contain'] = $contain;
-		if ($thrift_device_id) $options['conditions']['ThriftFolder.thrift_device_id'] =  $thrift_device_id;
+	public function findByThriftDeviceId($thrift_device_id, $is_watched = false, $options = array()) {
+		if ($thrift_device_id) {
+			$options['conditions']['ThriftFolder.thrift_device_id'] =  $thrift_device_id;
+		}
 		if ($is_watched === false) {
 			$options['conditions']['ThriftFolder.is_watched'] = 0;
 			$options['conditions']['ThriftFolder.is_scanned'] = 0;
@@ -77,6 +81,7 @@ class ThriftFolder extends AppModel {
 			// return all folders
 		}
 		$data = $this->find('all', $options);
+		Sanitize::clean($data);
 // ThriftController::log("ThriftFolder::findByDeviceId OK", LOG_DEBUG);
 // ThriftController::log($options, LOG_DEBUG);
 		return $data;

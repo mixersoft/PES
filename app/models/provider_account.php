@@ -142,8 +142,17 @@ class ProviderAccount extends AppModel {
 		return $this->read(null, $paid);
 	}
 	
-	function getByOwner($owner_id, $options) {
-		
+	function getByOwner($owner_id, $options=array()) {
+		$default_options = array(
+			'contain'=>array('Owner'=>array('Profile')),
+			'conditions'=>array(
+				'ProviderAccount.user_id'=>$owner_id,
+			)
+		);
+		$options = Set::merge($default_options, $options);
+		// NOTE: for provider-name=native-uploader, this should be UNIQUE.
+		$data = $this->find('first', $options);
+		return $data;
 	}
 	
 	function getPaginateProviderAccountsByUserId ($userid , $paginate = array()) {

@@ -460,6 +460,7 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 	 */
 	function upload () {
 		$this->layout = 'snappi-guest';
+		$this->viewPath = 'my';
 //		$this->log($this->data, LOG_DEBUG);
 		$forceXHR = setXHRDebug($this);
 		$userid = AppController::$userid;
@@ -510,32 +511,28 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			$this->set('data', $data);			
 		}
 	}
-	
 
 	/*
 	 * native SnappiUploader (UploadHelperApp) upload
 	 */
 	function uploader () {
-		$this->layout = 'snappi-guest';
-//		$this->log($this->data, LOG_DEBUG);
-		$forceXHR = setXHRDebug($this);
+		$this->layout = 'snappi-thrift';
+		$this->viewPath = 'my';
 		$userid = AppController::$userid;
+		
+		
 		/*
-		 * Get correct ProviderAccount
-		 * 	NOTE: at this point, we do know know the DeviceID/provider_key
-		 */
-//		debug(session_name()."=".session_id());
+		 * get valid ProviderAccount.auth_token
+		 */	
 		$provider_name = 'native-uploader';
-		$response = array();
 		$options = array(
-			'contain'=>array('Owner'=>array('Profile')),
 			'conditions'=>array(
 				'ProviderAccount.provider_name'=>$provider_name,
-				'ProviderAccount.user_id'=>$userid,
 			)
 		);
 		// NOTE: for provider-name=native-uploader, this should be UNIQUE.
-		$data = $this->User->ProviderAccount->find('first', $options);
+		$data = $this->User->ProviderAccount->getByOwner($userid, $options);
+
 		if (!empty($data['ProviderAccount']['auth_token'])) {
 			// found, check authToken for expiration 
 			$last_modified = strtotime($data['ProviderAccount']['modified']);
@@ -548,7 +545,7 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 		} else if (!empty($data['ProviderAccount']['id'])) {
 			// create new auth_token
 			$ret = $this->User->ProviderAccount->thrift_renewAuthToken($data['ProviderAccount']['id']);
-			$data = $this->User->ProviderAccount->find('first', $options);
+			$data = $this->User->ProviderAccount->getByOwner($userid, $options);
 		} else {
 			/*
 			 * if NOT found, create ProviderAccount with authToken, 
@@ -567,15 +564,13 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			);
 			$paData = $this->User->ProviderAccount->addIfNew($paData, $conditions,  $response);
 			$this->User->ProviderAccount->thrift_renewAuthToken($paData['ProviderAccount']['id']);
-			$data = $this->User->ProviderAccount->find('first', $options);
+			$data = $this->User->ProviderAccount->getByOwner($userid, $options);
 		}
 		// NOTE: we only want ProviderAccount.auth_token
+
 		/*
-		 * Setup metadata for native desktop uploader. 
-		 * 
-		 */ 
-		$this->User->id = AppController::$userid;
-		$authToken = $data['ProviderAccount']['auth_token'];
+		 * get valid session_id
+		 */		
 		// setup Task state, 
 		// TODO: How do we delete keys for expired sessions? DELETE WHERE is_cancelled=1 or modified too old
 		$this->ThriftSession = ClassRegistry::init('ThriftSession');
@@ -592,42 +587,54 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			'device_UUID'=>'2738ebe4-XXXX-4d4a-aefe-761d97881535', 
 			'session_id'=>'509d820e-b990-4822-bb9c-11d0f67883f5'
 		);
-		if ($attach_fixed_session = 1) {	// choose Device 1 or 2, or 0 to get a new session
+		/*
+		 * for testing only
+		 * // choose Device 1 or 2, or 0 to get a new session
+		 */ 
+		if ($attach_fixed_session = 1) {	
 			$session = $this->ThriftSession->newSession($DEVICE[$attach_fixed_session]);
 		} else $session = $this->ThriftSession->newSession();
-		$sessionId = $session['ThriftSession']['id'];		
-		$device_UUID = $DEVICE[$attach_fixed_session]['device_UUID'];
-
+		
+		$taskID = array(
+			'AuthToken'=>$data['ProviderAccount']['auth_token'],
+			'Session'=>$session['ThriftSession']['id'],
+		// DeviceID is known from Task->GetDeviceID(), or user sets manually, saves to session			
+			'DeviceID'=>$DEVICE[$attach_fixed_session]['device_UUID'],	// hack: get from GetDeviceID()
+		);
+		Session::write('thrift-task', $taskID);
+		
 		// on first POST of TaskID, bind taskID->DeviceID with Session	
-		$session = $this->ThriftSession->checkDevice($sessionId, $device_UUID);
-		if (!$session) $session = $this->ThriftSession->bindDeviceToSession($sessionId, $authToken, $deviceId);
-// debug($session);	exit;
-	
-		// on GetFolders()
-		// set hardcoded GetFolders() data for TESTING, normally we'd use the TopLevelFolder app
-		$folder_state = array();
-		$folder_state[] = array('folder_path'=>'C:\\TEMP\\May', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0); 
-		$folder_state[] = array('folder_path'=>'C:\\TEMP\\small import test', 'is_scanned'=>0, 'is_watched'=>1, 'count'=>0);
-		$folder_state[] = array('folder_path'=>'C:\\TEMP\\folder with special char (;\'&.=^%$#@!) test', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0);
-		$folder_state[] = array('folder_path'=>'C:\\TEMP\\big-test', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0);
-		$folder_state[] = array('folder_path'=>'C:\\TEMP\\big-test\\events\\NYC', 'is_scanned'=>1, 'is_watched'=>0, 'count'=>0);
-		$folder_state[] = array('folder_path'=>'C:\\TEMP\\big-test\\events\\world thinking day', 'is_scanned'=>1, 'is_watched'=>0, 'count'=>0);
-debug(Set::extract('/folder_path', $folder_state));	
-		// load folders to ThriftFolders for testing
-		$resetSQL = "delete f from thrift_folders f join thrift_devices d on d.id = f.thrift_device_id 
-				where d.device_UUID='{$device_UUID}'";
-		$this->ThriftSession->query($resetSQL);
-		foreach($folder_state as $folder) {
-			$ret = $this->ThriftSession->ThriftDevice->ThriftFolder->addFolder(
-				$session['ThriftDevice']['id'], $folder['folder_path'], $folder);
+		$session = $this->ThriftSession->checkDevice($taskID['Session'], $taskID['DeviceID']);
+		if (!$session) $session = $this->ThriftSession->bindDeviceToSession($taskID['Session'], $taskID['AuthToken'], $taskID['DeviceID']);
+		
+		
+		if ($reset = 0) { 	// reset folders for device
+			// set hardcoded GetFolders() data for TESTING, normally we'd use the TopLevelFolder app
+			$folder_state = array();
+			$folder_state[] = array('folder_path'=>'C:\\TEMP\\May', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0); 
+			$folder_state[] = array('folder_path'=>'C:\\TEMP\\small import test', 'is_scanned'=>0, 'is_watched'=>1, 'count'=>0);
+			$folder_state[] = array('folder_path'=>'C:\\TEMP\\folder with special char (;\'&.=^%$#@!) test', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0);
+			$folder_state[] = array('folder_path'=>'C:\\TEMP\\big-test', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0);
+			$folder_state[] = array('folder_path'=>'C:\\TEMP\\big-test\\events\\NYC', 'is_scanned'=>1, 'is_watched'=>0, 'count'=>0);
+			$folder_state[] = array('folder_path'=>'C:\\TEMP\\big-test\\events\\world thinking day', 'is_scanned'=>1, 'is_watched'=>0, 'count'=>0);
+		debug(Set::extract('/folder_path', $folder_state));	
+			// load folders to ThriftFolders for testing
+			$resetSQL = "delete f from thrift_folders f join thrift_devices d on d.id = f.thrift_device_id 
+					where d.device_UUID='{$taskID['DeviceID']}'";
+			$this->ThriftSession->query($resetSQL);
+			foreach($folder_state as $folder) {
+				$ret = $this->ThriftSession->ThriftDevice->ThriftFolder->addFolder(
+					$session['ThriftDevice']['id'], $folder['folder_path'], $folder);
+			}
 		}
+		
+		
 		/*
 		 * show express-uploads, if any
 		 *  see '/elements/group/express-upload'
 		 */ 
 		$expressUploadGroups = $this->__getExpressUploads($userid);
-		$this->set(compact('authToken', 'sessionId', 'expressUploadGroups'));
-				
+		$this->set(compact('taskID', 'expressUploadGroups'));
 		if (empty($data)) {
 			/*
 			 * handle no permission to view record
@@ -637,6 +644,56 @@ debug(Set::extract('/folder_path', $folder_state));
 		} else {
 			$this->set('data', $data);			
 		}
+	}
+	/*
+	 * just the ui component of the uploader page, update by XHR
+	 */
+	function uploader_ui2 ($data=array()) {
+		$forceXHR = setXHRDebug($this, 0, 1);
+		$this->layout = 'snappi-guest';
+		$this->viewPath = 'my';
+		if ($this->RequestHandler->isAjax() || $forceXHR) {
+			
+			// setup Task state,
+			$this->ThriftSession = ClassRegistry::init('ThriftSession');
+			$folders = $this->ThriftSession->ThriftDevice->ThriftFolder->findByDeviceUUID($device_UUID, $is_watched = null); 
+			
+		}	
+	}
+
+	/*
+	 * native SnappiUploader (UploadHelperApp) upload
+	 */
+	function uploader_ui () {
+		$forceXHR = setXHRDebug($this, 0, 1);
+		$this->autoRender = false;
+		if (!$this->RequestHandler->isAjax() && !$forceXHR) {
+			return;
+		} 
+		
+		
+		$this->layout = 'ajax';
+		$this->viewPath = 'my';
+		$userid = AppController::$userid;
+		/*
+		 * Get correct ProviderAccount
+		 * 	NOTE: at this point, we do know know the DeviceID/provider_key
+		 */
+		// $data = $this->User->ProviderAccount->getByOwner($userid, $options);
+		
+		$userid = AppController::$userid;
+		$taskID = Session::read('thrift-task');
+		$this->ThriftSession = ClassRegistry::init('ThriftSession');
+
+		// on first POST of TaskID, bind taskID->DeviceID with Session	
+		$session = $this->ThriftSession->checkDevice($taskID['Session'], $taskID['DeviceID']);
+		if (!$session) throw new Exception("ERROR: DeviceID should alreay be bound to Session");
+		
+		// on GetFolders()
+		$folders = $this->ThriftSession->ThriftDevice->ThriftFolder->findByDeviceUUID($taskID['DeviceID'], $is_watched = null); 
+		$this->set(compact('taskID', 'folders'));
+		
+		$this->render('/elements/thrift/folder'); 		
 	}
 	
 	
