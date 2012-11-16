@@ -57,6 +57,7 @@
 								var response = json.response;
 								if (response.IsCancelled=='1') {
 									ThriftUploader.timer.cancel();
+									SNAPPI.xhrFetch.requestFragment(n);	// last refresh
 								} 
 							}
 						);
