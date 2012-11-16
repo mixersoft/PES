@@ -67,6 +67,26 @@ class ThriftFolder extends AppModel {
 		$options['conditions'] = array('`ThriftDevice`.device_UUID IS NOT NULL');	
 		return $this->findByThriftDeviceId(null, $is_watched, $options);	
 	}
+	/*
+	 * Add options to Model->find() to include the count of uploaded files for each folder
+	 *	TODO: storing Asset.native_path with embedded device_id is causing a very bad join
+	 * 			but how else can we catch nested folders in the folderlist?  
+	 */
+	private function _addUploadCount($options){
+		$options['fields'][] = 'ThriftFolder.*';
+		$options['fields'][] = 'COUNT(Asset.id) AS uploaded';
+		$options['joins'][] = array(
+			'table'=>'assets',
+			'alias'=>'Asset',
+			'type'=>'INNER',
+			'conditions'=>array(
+				"Asset.owner_id"=>AppController::$userid,
+				"Asset.native_path LIKE (concat(ThriftFolder.thrift_device_id, '~',  replace(ThriftFolder.native_path,'\\\\','\\\\\\\\'), '%') )",
+			),
+		);	
+		$options['group'] = array('`ThriftFolder`.`id`');
+		return $options;
+	}
 	
 	public function findByThriftDeviceId($thrift_device_id, $is_watched = false, $options = array()) {
 		if ($thrift_device_id) {
@@ -82,7 +102,8 @@ class ThriftFolder extends AppModel {
 		} else if ($is_watched===null) {
 			// return all folders
 			$options['order'] = array('ThriftFolder.is_watched'=>'ASC', 'ThriftFolder.count'=>'DESC', 'ThriftFolder.native_path'=>'ASC') ;
-		}
+		}		
+		$options = $this->_addUploadCount($options);
 		$data = $this->find('all', $options);
 		Sanitize::clean($data);
 // ThriftController::log("ThriftFolder::findByDeviceId OK", LOG_DEBUG);
