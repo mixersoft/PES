@@ -5,6 +5,7 @@ class ThriftController extends AppController {
 	
 	public static $controller = null;
 	public static $session = null;
+	public static $current_version = '1-0';
 	 
     public $helpers = array(
 		// 'Time',
@@ -28,41 +29,126 @@ class ThriftController extends AppController {
     	parent::beforeFilter();
         $this->Auth->allow('*');
     }
+	
+	function _bootstrap_ThriftAPI($service) {
+		try {
+			if (isset($this->passedArgs['api'])) {
+				$version = $this->passedArgs['api'];
+			} else $version = ThriftController::$current_version;
+			
+			$GLOBALS['THRIFT_SERVICE']['VERSION'] = $version; 
+			App::import('Vendor', "thrift/{$version}/{$service}");
+		} catch(Exception $e) {
+			$this->log("ERROR: Thrift service=app/vendors/thrift/{$version}/{$service}");
+		}		
+	}
+	
    
 	/**
 	 * load thrift service, with prefix routing
 	 */
 	function service($service, $debug = 0) {
-		try {
-			Configure::write('debug', $debug);
-			if (isset($this->passedArgs['api'])) {
-				$version = $this->passedArgs['api'];
-				$GLOBALS['THRIFT_SERVICE']['VERSION'] = $version; 
-				App::import('Vendor', "thrift/{$version}/{$service}");
-			} else {
-				App::import('Vendor', "thrift/{$service}");
-			}
-		} catch(Exception $e) {
-			$this->log("ERROR: Thrift service=app/vendors/thrift/{$version}/{$service}");
-		}
+		Configure::write('debug', $debug);
+		$this->_bootstrap_ThriftAPI($service);
 		exit(0);		// return response over thrift transport
+	}
+	
+	// direct access to DB from POST, skips thrift Task API
+	function set_watched_folder() {
+		$forceXHR = setXHRDebug($this, 0);
+		$success = true; 
+		$message = $response = array(); 
+		
+		if (empty(AppController::$userid)) {
+			$message[] = "Error: Please sign in";
+			$success = false;
+		}
+		
+		$task_data = Session::read('thrift-task');
+		if (empty($task_data['DeviceID'])) {
+			$message[] = "Error: invalid or missing DeviceID";
+			$success = false;
+		}
+		
+		if ($success && $this->data) {
+			$ThriftFolder = $this->ThriftSession->ThriftDevice->ThriftFolder;
+			$session = $this->ThriftSession->checkDevice($task_data['Session'], $task_data['DeviceID']);
+			
+			$options = array(
+				'conditions'=>array(
+					'ThriftFolder.thrift_device_id'=>$session['ThriftSession']['thrift_device_id'],
+					'ThriftFolder.native_path_hash'=>$this->data['ThriftFolder']['native_path_hash'],
+				)
+			);
+			$data = $ThriftFolder->find('first', $options);
+			$ThriftFolder->id = $data['ThriftFolder']['id'];
+			$ret = $ThriftFolder->saveField('is_watched', $this->data['ThriftFolder']['is_watched']); 
+			if ($ret) {
+				$success = true;
+				$message[] = "watched folder value was successfully set";
+				$response['ThriftFolder'] = $ret;
+			} else {
+				$success = false;
+				$message[] = "ERROR: there was a problem setting the watched status";
+				$response[] = $this->data;
+			}
+		} else {
+			$message[] = "ERROR: there was a problem setting the watched status";
+			$response[] = $this->data;
+		}
+		$this->viewVars['jsonData'] = compact('success', 'message','response');
+		$done = $this->renderXHRByRequest('json', null, null , 0);
+	}
+	
+	/*
+	 * hepler methods for direct access to Thrift Task API from cakephp
+	 * requires a valid TaskID saved to Session::read('thrift-task');
+	 */ 
+	function task_helper() {
+		$forceXHR = setXHRDebug($this, 0);
+		// json requests only
+		$success = true; 
+		$message = $response = array(); 
+		if (!$this->RequestHandler->isAjax() && !$forceXHR) {
+			$message[] = "Error: this API method is only availble by XHR";
+			$success = false;
+		}
+		if ($this->RequestHandler->ext !== 'json' && !$forceXHR) {
+			$message[] = "Error: this API method is only availble for JSON requests";
+			$success = false;
+		}  
+		
+		$task_data = Session::read('thrift-task');
+		if (empty($task_data['DeviceID'])) {
+			$message[] = "Error: invalid or missing DeviceID";
+			$success = false;
+		}
+		$method = $this->passedArgs['fn'];
+		if (empty($method)) {
+			$message[] = "Error: no method provided";
+			$success = false;
+		}
+		// bootstrap ThriftTask and call method
+		if ($success) {
+			$this->_bootstrap_ThriftAPI("Task");	// hardcoded to service=Task
+			$Task = new snaphappi_api_TaskImpl();
+			$TaskID = new snaphappi_api_TaskID( $task_data );					
+			switch ($method) {
+				case 'GetState':
+					$state = $Task->GetState($TaskID);
+					$response['GetState'] = (array)$state;
+					break;
+			}
+		}
+		$this->viewVars['jsonData'] = compact('success', 'message','response');
+		$done = $this->renderXHRByRequest('json', null, null , 0);
 	}
 	/*
 	 * to test UploadFile, use http://snappi-dev/thrift/test/api:1-0/Task/1 on 2015.JPG
 	 */
 	function test($service, $debug = 0) {
-		try {
-			Configure::write('debug', $debug);
-			if (isset($this->passedArgs['api'])) {
-				$version = $this->passedArgs['api'];
-				$GLOBALS['THRIFT_SERVICE']['VERSION'] = $version; 
-				App::import('Vendor', "thrift/{$version}/{$service}");
-			} else {
-				App::import('Vendor', "thrift/{$service}");
-			}
-		} catch(Exception $e) {
-			$this->log("ERROR: Thrift service=app/vendors/thrift/{$version}/{$service}");
-		}
+		Configure::write('debug', $debug);
+		$this->_bootstrap_ThriftAPI($service);
 		
 		/******************************************************
 		 * 
@@ -73,28 +159,61 @@ class ThriftController extends AppController {
 		$Task = new snaphappi_api_TaskImpl();			
 		
 		debug("==============  Thrift Boostrap Complete =====================");
-		$authToken = 'b34f54557023cce43ab7213e0eb7da2a6b9d6b27';
-		$sessionId = '50a32a66-6680-4c29-a5b2-1644f67883f5';
-		// see HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Snaphappi
-		$deviceId = "2738ebe4-95a1-4d4a-aefe-761d97881535"; //'5ec5006d-8dee-48ef-8c04-bac06c16d36e';
-		// $deviceId = "2738ebe4-XXXX-4d4a-aefe-761d97881535";
-		
+		// see HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Snaphappi for DeviceID
+		// use for testing fixed authToken/Session
+		$DEVICE[1] = array(
+			'auth_token'=>'b34f54557023cce43ab7213e0eb7da2a6b9d6b27',
+			'device_id'=>1,
+			'device_UUID'=>'2738ebe4-95a1-4d4a-aefe-761d97881535', 
+			'session_id'=>'50a3fb31-7514-4db3-b730-1644f67883f5',
+		);
+		$DEVICE[2] = array(
+			'auth_token'=>'b34f54557023cce43ab7213e0eb7da2a6b9d6b27',
+			'device_id'=>2,
+			'device_UUID'=>'2738ebe4-XXXX-4d4a-aefe-761d97881535', 
+			'session_id'=>'509d820e-b990-4822-bb9c-11d0f67883f5'
+		);
+		$DEVICE[3] = array(
+			'auth_token'=>'08e89e9bba58544fe3a0dcab8ac102d158ecd42f',
+			'device_id'=>3,		// alexey
+			'device_UUID'=>'b6673a7f-c151-4eff-91f3-9c45a61d6f36', 
+			'session_id'=>'50a4fd3b-034c-48c7-9f87-1644f67883f5'
+		);
+		/*
+		 * for testing only
+		 * // choose Device 1 or 2, or 0 to get a new session
+		 */ 
+		if (!empty($this->params['url']['device'])) {
+			$attach_fixed_session = $this->params['url']['device'];
+		} else 	
+			$attach_fixed_session = 1;		// testing for this device
+		if ($attach_fixed_session) {	
+			$session = $this->ThriftSession->newSession($DEVICE[$attach_fixed_session]);
+		}				
+		$task_data = array(
+			'AuthToken'=>$DEVICE[$attach_fixed_session]['auth_token'],
+			'Session'=>$DEVICE[$attach_fixed_session]['session_id'],
+			'DeviceID'=>$DEVICE[$attach_fixed_session]['device_UUID'],	// hack: get from GetDeviceID()
+		);
+		Session::write('thrift-task', $task_data);
 		
 		$taskId = new snaphappi_api_TaskID(
 			array(
-			    'AuthToken' => $authToken,
-			    'Session' => $sessionId,
-			    'DeviceID' => $deviceId,
+			    'AuthToken' => $task_data['AuthToken'],
+			    'Session' => $task_data['Session'],
+			    'DeviceID' => $task_data['DeviceID'],
 			)
 		);
+		
+		
 
 		/*
 		 * Test GetDeviceId
 		 */
 	// call async/on timer, wait until $deviceId is available
 	try {
-		$deviceId = $Task->GetDeviceID($authToken, $sessionId);
-		debug ("<br>GetDeviceID()={$deviceId}");
+		$deviceId = $Task->GetDeviceID($task_data['AuthToken'], $task_data['Session']);
+		debug ("<br>GetDeviceID()={$task_data['DeviceID']}");
 	} catch (snaphappi_api_SystemException $e) {
 		debug ("   Thrift Exception, msg=".$e->Information);
 	} catch (Exception $e) {

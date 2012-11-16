@@ -31,7 +31,9 @@ class ThriftFolder extends AppModel {
 	}	
 	
 	/**
-	 * @param $paid UUID, provider_account_id for name=native-uploader
+	 * @param $thriftDeviceId int
+	 * @param $nativePath String
+	 * @param $options array of field data
 	 */
 	public function addFolder($thriftDeviceId, $nativePath, $options=array()) {
 		$data = $this->create();
@@ -48,8 +50,19 @@ class ThriftFolder extends AppModel {
 		}
 		return  $ret ? $this->read(null, $this->id) : false;
 	}	
+	
 	/**
-	 * @param $paid UUID, provider_account_id for name=native-uploader
+	 * @param $thriftDeviceId int
+	 * @param $nativePath String
+	 * @param $options array of field data
+	 */
+	public function setFolder($thriftDeviceId, $options) {
+		return $this->updateFolderByNativePath($thriftDeviceId, $options);
+	}	
+	
+	/**
+	 * @param $thriftDeviceId int
+	 * @param $nativePath String
 	 */
 	public function deleteFolder($thrift_device_id, $nativePath) {
 		$folder = $this->findByNativePath($thrift_device_id, $nativePath);
@@ -78,7 +91,7 @@ class ThriftFolder extends AppModel {
 		$options['joins'][] = array(
 			'table'=>'assets',
 			'alias'=>'Asset',
-			'type'=>'INNER',
+			'type'=>'LEFT',
 			'conditions'=>array(
 				"Asset.owner_id"=>AppController::$userid,
 				"Asset.native_path LIKE (concat(ThriftFolder.thrift_device_id, '~',  replace(ThriftFolder.native_path,'\\\\','\\\\\\\\'), '%') )",

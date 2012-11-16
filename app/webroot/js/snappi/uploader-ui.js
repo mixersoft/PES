@@ -38,25 +38,28 @@
 	ThriftUploader.listen = {};		// global ref to active listeners
 	
 	ThriftUploader.nav = {
-		
 	};
 	ThriftUploader.action = {
 		timer: null,
-		handleClick: function(d) {
-			var action, n = d.ynode();
-			SNAPPI.ThriftUploader.action.refresh(true);
-			action = d.getAttribute('action');
-			window.location.href = action;
+		launchTask: function(taskType) {
+			if (taskType=='ur') SNAPPI.ThriftUploader.action.refresh(true);
+			var target = _Y.Lang.sub("snaphappi://{authToken64}_{sessionId64}_", PAGE.jsonData.nativeUploader);
+			var uri = target+taskType;
+			window.location.href = uri;
 		},
 		refresh: function(start) {
 			if (start) {
 				ThriftUploader.timer = _Y.later(5000, SNAPPI.xhrFetch, function(){
 						var n = _Y.one( ThriftUploader.container_id );
 						this.requestFragment(n);			// this == SNAPPI.xhrFetch
-						var t = ThriftUploader.util.getState();
-						if (t.is_cancelled || !t.active) {
-							ThriftUploader.timer.cancel();
-						} 
+						 ThriftUploader.util.getTaskState(
+							function(json) {
+								var response = json.response;
+								if (response.IsCancelled=='1') {
+									ThriftUploader.timer.cancel();
+								} 
+							}
+						);
 					}, 
 					null, true
 				);
@@ -67,47 +70,81 @@
 	}
 
 	ThriftUploader.util = {
-		getState: function(){
-			ThriftUploader.count = ThriftUploader.count ? ThriftUploader.count+1 : 1;
-			if (ThriftUploader.count>3) return {is_cancelled: 1}
-			else {is_cancelled: 0}
+		setFolderState: function(n) {
+			var uri = '/thrift/set_watched_folder/.json';
+			var postData = {};
+			postData[n.getAttribute('name')] = n.getAttribute('value');
+			postData["data[ThriftFolder][is_watched]"] = n.get('checked') ? '1' : '0';
+			var loadingNode = n;
+			if (loadingNode.io == undefined) {
+				var ioCfg = SNAPPI.IO.pluginIO_RespondAsJson({
+					uri: uri ,
+					parseContent:true,
+					method: 'POST',
+					qs: postData,
+					dataType: 'json',
+					context: n,
+					// arguments: args, 
+					on: {
+						successJson:  function(e, id, o, args) {
+							// launch sw task
+	                		SNAPPI.ThriftUploader.action.launchTask("sw");
+							return false;
+						}
+					}
+				});
+	            loadingNode.plug(_Y.Plugin.IO, ioCfg );
+			} else {
+				loadingNode.io.set('data', postData);
+				loadingNode.io.set('context', n);
+				loadingNode.io.set('uri', uri);
+				// loadingNode.io.set('arguments', args);
+				loadingNode.io.start();
+	        }
+		},
+		getTaskState: function(successJson){
+			var uri = '/thrift/task_helper/fn:GetState/.json';
+			var ioCfg = {
+					uri: uri ,
+					parseContent: true,
+					method: 'GET',
+					dataType: 'json',
+					context: ThriftUploader,	
+					on: {
+						success:  function(id, o, args) {
+							if (o.getResponseHeader('Content-Type')!='application/json') return false;
+							var json = _Y.JSON.parse(o.responseText);
+							if (json.success) {
+								json.response = json.response['GetState']; 
+								successJson(json);
+							}
+							return true;
+						}
+					}
+				};
+			_Y.io(uri, ioCfg);
 		}
 	}
 	ThriftUploader.listeners = {
 
         /*
-         * Click-Action listener/handlers
+         *  listener/handlers
          * 	start 'click' listener for action=
-         * 		set-display-size:[size] 
-         * 		set-display-view:[mode]
-         * adds minimize/maximize btns for item-header
          */
-        WindowOptionClick : function(node) {
-        	node = node || _Y.one('.item-header');        	
-        	if (!node) return;
-        	var action = 'WindowOptionClick';
-        	node.listen = node.listen || {};
-        	var delegate_container = node.one('.window-options');
-            if (delegate_container && node.listen[action] == undefined) {
-            	delegate_container.removeClass('hide');
-				node.listen[action] = delegate_container.delegate('click', 
+        WatchFolderClick : function() {
+        	delegate_container = _Y.one('#uploader-ui-xhr');        	
+        	if (!delegate_container) return;
+        	var action = 'WatchFolderClick';
+        	delegate_container.listen = delegate_container.listen || {};
+            if (delegate_container.listen[action] == undefined) {
+				delegate_container.listen[action] = delegate_container.delegate('click', 
 	                function(e){
-	                	// action=[set-display-size:[size] | set-display-view:[mode]]
-	                	// context = node
-	                	if (this.hasClass('item-header')) {
-	                		// show/hide properties
-	                		var properties = this.next('.properties');
-	                		var action = e.currentTarget.getAttribute('action').split(':');
-	                		switch(action[0]) {
-				    			case 'set-display-view':
-				    				if (action[1]=='minimize') properties.addClass('hide');
-				    				else properties.removeClass('hide');
-				    				break;
-			    			}	
-	                	}
-	                }, 'ul > li', node);
+	                	// context = delegate_container
+	                	// save folder state
+	                	ThriftUploader.util.setFolderState(e.currentTarget);
+	                }, 'ul.folder > li > input[type=checkbox]', delegate_container);
 				// back reference
-				ThriftUploader.listen[action] = node.listen[action];	                
+				ThriftUploader.listen[action] = delegate_container.listen[action];	                
 			}
         },
         /*

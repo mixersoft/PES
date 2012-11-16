@@ -492,7 +492,7 @@
             var v, qs = [];
             for (var i in o) {	// stringify qs params
             	v = o[i];
-            	if (v instanceof SNAPPI.SortedHash) {
+            	if (SNAPPI.SortedHash && v instanceof SNAPPI.SortedHash) {
             		v = IO.serializeSortedHash2IdString(v);
             	}
                 qs.push(i + '=' + v);

@@ -148,8 +148,10 @@ debug($thrift_exception);
 			foreach ($thrift_GetFolders as $i=>$row){
 				if ($row['ThriftFolder']['is_not_found']) {
 					// skip if not found was marked in this session
-					ThriftController::log("row['ThriftFolder']['is_not_found']", LOG_DEBUG);		
-					if (strtotime($row['ThriftFolder']['modified']) > strtotime($session['ThriftSession']['modified'])) continue; 
+					if (strtotime($row['ThriftFolder']['modified']) > strtotime($session['ThriftSession']['modified'])) {
+						continue;		// skip notFound folders after session update
+					} else 
+						ThriftController::log("row['ThriftFolder']['is_not_found'], path={$row['ThriftFolder']['native_path']}", LOG_DEBUG);
 				}
 				$folder =  array(
 					'folder_path'=> $row['ThriftFolder']['native_path'],
@@ -595,6 +597,7 @@ ThriftController::log("***   ReportFolderUploadComplete, folder={$folderPath}, t
 ThriftController::log("***   ReportFileCount, folder={$folderPath}, count={$count}, taskID=".print_r($taskID, true), LOG_DEBUG);
 			$data['ThriftFolder']['native_path']=$folderPath;
 			$data['ThriftFolder']['count']=$count;
+			$data['ThriftFolder']['is_not_found']=0;
 			$ret = CakePhpHelper::_model_setFolderState($taskID, $data);
 			return $ret;
         }
@@ -682,6 +685,35 @@ ThriftController::log("***   GetFileCount, folder={$folderPath}, taskID=".print_
         	
         }
         
+		/**
+		 * TODO: add to Thrift file 
+		 * Set top level folder to watched
+		 * @param $taskID snaphappi_api_TaskID,
+		 * @param $path String,
+		 * @param $watched Boolean, set is_watched.		 * 
+		 * @throws  snaphappi_api_SystemException(), 
+		 * 		ErrorCode::Unknown for everything else
+		 */
+        public function SetWatchedFolder($taskID, $path, $watched) {
+        	try {
+        		$data['ThriftFolder']['native_path'] = $path;
+				$data['ThriftFolder']['is_watched'] = $watched; 
+        		$data = CakePhpHelper::_model_setFolderState($taskID, $data); 
+				return;
+			} catch (Exception $e) {
+				$msg = explode(',', $e->getMessage());
+				switch($msg[0]) {
+					default:
+						$thrift_exception['ErrorCode'] = ErrorCode::Unknown;
+						break;
+				}
+				$thrift_exception['Information'] = $e->getMessage();
+				throw new snaphappi_api_SystemException($thrift_exception);					
+			} catch (snaphappi_api_SystemException $e) {
+					throw $e;
+			}
+        }        
+		
 		/**
 		 * Remove a top level folder to scan
 		 * @param $taskID snaphappi_api_TaskID,

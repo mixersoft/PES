@@ -12,6 +12,15 @@
 	
 	$this->Layout->blockStart('HEAD');
 		echo $this->Html->script($basepath.'/js/swfobject.js');
+		
+	// set native-uploader launch URIs
+	/*
+	 * WARNING: cannot leave authToken in HTML, it's a security error !!!!!
+	 */ 
+	$authToken64 = base64_encode($taskID['AuthToken']);
+	$sessionId64 = base64_encode($taskID['Session']);
+	$launch_SnappiUploader = "snaphappi://{$authToken64}_{$sessionId64}_ur";
+	$launch_SnappiUploader_watched = "snaphappi://{$authToken64}_{$sessionId64}_sw";		
 ?>
 	<script type="text/javascript">
 		var flashvars = { 
@@ -33,19 +42,14 @@
 			"top-level-folder-alt", "300", "30", "10.0.0", 
 			<?php echo  "'{$path_InstallSwf}'"; ?>,
 			flashvars, params, attributes);
+			
+		PAGE.jsonData.nativeUploader = {
+				authToken64: <?php  echo "'{$authToken64}'";  ?>,
+				sessionId64: <?php  echo "'{$sessionId64}'";  ?>,
+		}	
 	</script>
 <?php		
 	$this->Layout->blockEnd();	
-
-	// start native background uploader
-	/*
-	 * WARNING: cannot leave authToken in HTML, it's a security error !!!!!
-	 */ 
-	$authToken64 = base64_encode($taskID['AuthToken']);
-	$sessionId64 = base64_encode($taskID['Session']);
-	$launch_SnappiUploader = "snaphappi://{$authToken64}_{$sessionId64}_ur";
-	$launch_SnappiUploader_watched = "snaphappi://{$authToken64}_{$sessionId64}_sw";
-
 ?>
 <div class="grid_16 upload">
 	<h1>Upload a LOT of Photos from your Desktop</h1>
@@ -73,12 +77,9 @@
 			<h1>Snaphappi Desktop Uploader</h1>
 			<ul class="inline">
 				<li class='btn orange rounded-5'>
-					<a action=<?php echo $launch_SnappiUploader ?> onclick='SNAPPI.ThriftUploader.action.handleClick(this);'>Start Uploading</a>
+					<a action=<?php echo $launch_SnappiUploader ?> onclick='SNAPPI.ThriftUploader.action.launchTask("ur")'>Start Uploading</a>
 				</li>
-				<li><input type="field" value='<?php echo "snaphappi://{$authToken64}_{$sessionId64}_ur" ?>'</input></li>
-				<li class='btn orange rounded-5'>
-					<a action=<?php echo $launch_SnappiUploader_watched ?> onclick='SNAPPI.ThriftUploader.action.handleClick(this);'>Watch Folders</a>
-				</li>
+				<li><input type="field" size='100' value='<?php echo "snaphappi://{$authToken64}_{$sessionId64}_ur" ?>'</input></li>
 			</ul>	
 			<hr>
 <?php 

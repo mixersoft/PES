@@ -126,6 +126,8 @@
 					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
 				}
 				
+				SNAPPI.ThriftUploader.listeners.WatchFolderClick();
+				
 				if (LLcfg.fetchXhr) {
 					/*
 			         * embedded PAGE.init scripts, if any
