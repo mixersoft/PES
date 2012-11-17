@@ -176,6 +176,7 @@ class ThriftController extends AppController {
 		$DEVICE[3] = array(
 			'auth_token'=>'08e89e9bba58544fe3a0dcab8ac102d158ecd42f',
 			'device_id'=>3,		// alexey
+			'provider_account_id'=>'50a680d5-d460-4971-90fc-7f180afc6d44',
 			'device_UUID'=>'b6673a7f-c151-4eff-91f3-9c45a61d6f36', 
 			'session_id'=>'50a4fd3b-034c-48c7-9f87-1644f67883f5'
 		);
@@ -220,29 +221,28 @@ class ThriftController extends AppController {
 		debug ("   Exception, msg=".$e->getMessage());
 	}
 		
-$nativePath = "C:\\TEMP\\added from Thrift AddFolder";
 	if (isset($_GET['reset'])) {
+		$nativePath = "C:\\TEMP\\added from Thrift AddFolder";
 		print "<BR />*************************************";
 		print "<BR />     reset folders for testing";
 		print "<BR />*************************************";
 		$ret = $Task->RemoveFolder($taskId, $nativePath);
-	}
 		/*
 		 * Test AddFolder
 		 */
-	try {
-		// adding folder, use flash.File->native_path	
-		$nativePath = "C:\\TEMP\\added from Thrift AddFolder";
-		// ALTER TABLE `snappi`.`thrift_folders` MODIFY COLUMN `native_path_hash` BIGINT(20) UNSIGNED NOT NULL COMMENT 'use a simple CRC32()';
-		debug("nativePath hashed=".sprintf('%u', crc32($nativePath)));
-		$ret = $Task->AddFolder($taskId, $nativePath);
-		debug ("<br>AddFolder() OK, native_path={$nativePath}");
-	} catch (snaphappi_api_SystemException $e) {
-		debug ("   Thrift Exception, msg=".$e->Information);
-	} catch (Exception $e) {
-		debug ("   Exception, msg=".$e->getMessage());
+		try {
+			// adding folder, use flash.File->native_path	
+			$nativePath = "C:\\TEMP\\added from Thrift AddFolder";
+			// ALTER TABLE `snappi`.`thrift_folders` MODIFY COLUMN `native_path_hash` BIGINT(20) UNSIGNED NOT NULL COMMENT 'use a simple CRC32()';
+			debug("nativePath hashed=".sprintf('%u', crc32($nativePath)));
+			$ret = $Task->AddFolder($taskId, $nativePath);
+			debug ("<br>AddFolder() OK, native_path={$nativePath}");
+		} catch (snaphappi_api_SystemException $e) {
+			debug ("   Thrift Exception, msg=".$e->Information);
+		} catch (Exception $e) {
+			debug ("   Exception, msg=".$e->getMessage());
+		}
 	}
-	
 		
 		/*
 		 * Test GetState
@@ -263,6 +263,20 @@ $nativePath = "C:\\TEMP\\added from Thrift AddFolder";
 		} else {
 			CakePhpHelper::_model_setTaskState($taskId, array('IsCancelled'=>0));
 		}	
+		/*
+		 * Test GetWatchedFolders
+		 */
+		$folders = $Task->GetWatchedFolders($taskId);
+		debug("GetWatchedFolders() result=".print_r($folders,true));
+		if (count($folders)) {
+			/*
+			 * Test GetFiles
+			 */
+			$files = $Task->GetFiles($taskId, $folders[0]);
+			debug("GetFiles() folders[0]={$folders[0]}, result=".print_r($files,true));
+		} else {
+			CakePhpHelper::_model_setTaskState($taskId, array('IsCancelled'=>0));
+		}			
 $this->render('/elements/sql_dump');
 return;		
 		/*

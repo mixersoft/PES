@@ -13,10 +13,16 @@ class ThriftSession extends AppModel {
 		)
 	);	
 	
-	public static $ALLOWED_UPDATE_KEYS = array('IsCancelled', 'FolderUpdateCount', 'FileUpdateCount', 
-					'DuplicateFileException', 'OtherException',
+	public static $ALLOWED_UPDATE_KEYS = array(
+				// these are NON DB keys, save in session????
+					'FolderUpdateCount', 'FileUpdateCount', 
+				// DB keys	
+					'IsCancelled', 
+					'DuplicateFileException', 'OtherException', 
 					'BatchId',
-					);
+					// NEW keys, add related code
+					'AuthException', // send notification to renew authToken
+		);
 	/**
 	 * @param options array, 
 	 *  options[session_id]: 'sw' scheduled actions will send session_id, with unbound thrift_device_id
@@ -27,6 +33,8 @@ class ThriftSession extends AppModel {
 		if (!empty($options['session_id'])) {
 			$data['ThriftSession']['id'] = $options['session_id'];
 			$this->id = $data['ThriftSession']['id'];
+			// for testing from /my/uploader, should not affect SW attach
+			$data['ThriftSession']['is_cancelled'] = 0;
 		} 
 		if (empty($data['ThriftSession']['id'])) $data['ThriftSession']['id'] = String::uuid();
 		$ret = $this->save($data);
