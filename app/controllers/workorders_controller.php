@@ -252,69 +252,7 @@ class WorkordersController extends AppController {
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
 	}
 	
-	/**
-	 * from HTTP POST
-	 * 		$this->data[manager_id]=UUID
-	 * 		$this->data[task_id]=UUID (optional), TasksWorkorder.id
-	 *		$this->data[editor_id]=UUID (optional)
-	 * assign MANAGER TO workorder, grants access privileges to workorder assets
-	 * (optional) assign editor to tasksWorkorder if task_id provided
-	 * @param $DEVoptions string, use /[id]/me to assign to current user for testing 
-	 */ 
-	function assign($id, $DEVoptions = null) {
-		if (isset($this->data)) {
-			extract($this->data); // manager_id, editor_id, task_id
-		} else {
-			// TODO: testing only
-			// if (empty($this->data)) throw new Exception("Error: HTTP POST required", 1);
-			if ($DEVoptions == 'me') {
-				if (AppController::$role == 'MANAGER') $manager_id = AppController::$userid;
-				$editor_id = AppController::$userid;
-			}		
-		}
-		try {
-			// extract($this->data); // manager_id, editor_id, task_id
-			$this->Workorder->id = $id;
-			$ret = $this->Workorder->saveField('manager_id', $manager_id);
-			if ($ret) $message[] = "Workorder {$id}: manager set to {$manager_id}";
-			else throw new Exception("Error saving manager assignment, woid={$id}", 1);
-			
-			
-			if ($task_id && $editor_id) {
-				$this->Workorder->TasksWorkorder->id = $task_id;
-				$ret = $this->Workorder->TasksWorkorder->saveField('operator_id', $editor_id);
-				if ($ret) $message[] = "Workorder {$id}/Task {$task_id}: operator set to {$editor_id}";
-				else throw new Exception("Error saving editor assignment, twoid={$task_id}", 1);
-			}
-			
-			// format json response
-			$success = $ret;
-			$response = compact('id', 'manager_id', 'task_id', 'editor_id');
-		}catch(Exception $e) {
-			$success = false;
-			$message[] = $e->getMessage();
-		}
-		
-		// admin only
-		if (strpos(env('HTTP_REFERER'),'/workorders/all')>1) {	// Admin only
-			$this->redirect(env('HTTP_REFERER'), null, true);
-		}
-		
-		
-		$this->viewVars['jsonData'] = compact('success', 'message', 'response');
-		$done = $this->renderXHRByRequest('json', null , null, $forceXHR);
-		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
-		
-		$this->render('/elements/dumpSQL');
-	}
-	
-	/*
-	 * release editor assignment to remove access privileges
-	 * NOTE: we'll need to keep a log on assignments for auditing 
-	 */ 
-	function release($id, $editor_id){
-		
-	}
+
 	
 	/**
 	 * harvest new Assets to existing workorder
@@ -368,7 +306,7 @@ class WorkordersController extends AppController {
 	from snappi.usershots s
 	join snappi.users u on u.id = s.owner_id
 	join snappi.assets_usershots au on au.usershot_id = s.id
-	join snappi_workorders.assets_workorders aw on aw.asset_id = au.asset_id
+	join snappi_wms.assets_workorders aw on aw.asset_id = au.asset_id
 	where s.priority = 30
 	  and u.username like 'image-group%'
 	  and aw.workorder_id ='{$id}';";

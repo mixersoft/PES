@@ -109,7 +109,7 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
 		// if (in_array(AppController::$role, array('EDITOR', 'MANAGER', 'OPERATOR', 'SCRIPT')) === false) return $paginate;
 		$paginate['permissionable'] = false;
 		$joins[] = array(
-			'table'=>'snappi_workorders.assets_workorders',
+			'table'=>'snappi_wms.assets_workorders',
 			'alias'=>'AssetsWorkorder',
 			'type'=>'INNER',
 			'conditions'=>array(
@@ -119,14 +119,22 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
 			),
 		);
 		$joins[] = array(
-			'table'=>'snappi_workorders.workorders',
+			'table'=>'snappi_wms.workorders',
 			'alias'=>'Workorder',
 			'type'=>'INNER',
 			'conditions'=>array(
 				"`Workorder`.`id`" =>$woid,
-				'`Workorder`.manager_id' => AppController::$userid,
 			),
 		);
+		$joins[] = array(
+			'table'=>'snappi_wms.editors',
+			'alias'=>'Editor',
+			'type'=>'INNER',
+			'conditions'=>array(
+				'`Editor`.id = `Workorder`.manager_id',
+				"`Editor`.`user_id`" =>AppController::$userid,
+			),
+		);		
 		if (AppController::$role=='SCRIPT') unset($joins[1]['conditions']['`Workorder`.manager_id']);
 		if (!empty($joins)) $paginate['joins'] = @mergeAsArray($paginate['joins'], $joins);
 		if (!empty($conditions)) $paginate['conditions'] = @mergeAsArray($paginate['conditions'], $conditions);
@@ -135,7 +143,7 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
 	function getPaginatePhotosByTasksWorkorderId ($task_woid , $paginate = array()) {
 		// if (in_array(AppController::$role, array('EDITOR', 'MANAGER', 'OPERATOR', 'SCRIPT')) === false) return $paginate;
 		$joins[] = array(
-			'table'=>'snappi_workorders.assets_tasks',
+			'table'=>'snappi_wms.assets_tasks',
 			'alias'=>'AssetsTask',
 			'type'=>'INNER',
 			'conditions'=>array(
@@ -145,14 +153,22 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
 			),
 		);
 		$joins[] = array(
-			'table'=>'snappi_workorders.tasks_workorders',
+			'table'=>'snappi_wms.tasks_workorders',
 			'alias'=>'TasksWorkorder',
 			'type'=>'INNER',
 			'conditions'=>array(
 				"`TasksWorkorder`.`id`" =>$task_woid,
-				'`TasksWorkorder`.operator_id' => AppController::$userid,
 			),
 		);
+		$joins[] = array(
+			'table'=>'snappi_wms.editors',
+			'alias'=>'Editor',
+			'type'=>'INNER',
+			'conditions'=>array(
+				'`Editor`.id = `TasksWorkorder`.operator_id',
+				"`Editor`.`user_id`" =>AppController::$userid,
+			),
+		);				
 		if (AppController::$role=='SCRIPT') unset($joins[1]['conditions']['`TasksWorkorder`.operator_id']);
 		if (!empty($joins)) $paginate['joins'] = @mergeAsArray($paginate['joins'], $joins);
 		if (!empty($conditions)) $paginate['conditions'] = @mergeAsArray($paginate['conditions'], $conditions);

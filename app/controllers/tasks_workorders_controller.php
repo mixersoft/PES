@@ -114,58 +114,7 @@ class TasksWorkordersController extends AppController {
 		if ($data['Workorder']['source_model']=='User') AppController::$ownerid = $data['Workorder']['source_id']; 
 		if ($data['Workorder']['source_model']=='Group') AppController::$ownerid = $data['Workorder']['client_id'];
 	}
-	
-	/**
-	 * from HTTP POST
-	 * 		$this->data[manager_id]=UUID
-	 * 		$this->data[task_id]=UUID (optional), TasksWorkorder.id
-	 *		$this->data[editor_id]=UUID (optional)
-	 * assign EDITOR TO TasksWorkorder, grants access privileges to TasksWorkorder assets
-	 * @param $DEVoptions string, use /[id]/me to assign to current user for testing 
-	 */ 
-	function assign($id, $DEVoptions = null) {
-		if (isset($this->data)) {
-			extract($this->data); // manager_id, editor_id, task_id
-		} else {
-			// TODO: testing only
-			// if (empty($this->data)) throw new Exception("Error: HTTP POST required", 1);
-			if ($DEVoptions == 'me') {
-				if (AppController::$role == 'MANAGER') $manager_id = AppController::$userid;
-				$editor_id =  AppController::$userid;
-			}		
-		}
-		try {
-			// extract($this->data); // manager_id, editor_id, task_id
-			$this->TasksWorkorder->id = $id;
-			$ret = $this->TasksWorkorder->saveField('operator_id', $editor_id);
-			if ($ret) $message[] = "TasksWorkorder {$id}: operator set to {$editor_id}";
-			else throw new Exception("Error saving editor assignment, twoid={$id}", 1);
-			
-			// format json response
-			$success = $ret;
-			$response = compact('id', 'task_id', 'editor_id');
-		}catch(Exception $e) {
-			$success = false;
-			$message[] = $e->getMessage();
-		}
-		
-		// admin only
-		if (strpos(env('HTTP_REFERER'),'/workorders/all')>1) {	// Admin only
-			$this->redirect(env('HTTP_REFERER'), null, true);
-		}
-		
-		$this->viewVars['jsonData'] = compact('success', 'message', 'response');
-		$done = $this->renderXHRByRequest('json', null , null);
-		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
-		
-		$this->render('/elements/dumpSQL');
-	}
-	
-	function assignment($twoid) {
-		$assets = $this->TasksWorkorder->getAssets($twoid);
-debug($assets);		
-		$this->render('/elements/dumpSQL');
-	}
+
 	
 	/**
 	 * harvest new AssetsWorkorder to [new|existing] TaskWorkorder

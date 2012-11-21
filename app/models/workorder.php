@@ -191,10 +191,12 @@ class Workorder extends AppModel {
 
 	public function getAssets($woid) {
 		$options = array(
-			'contain' => 'AssetsWorkorder.asset_id',
+			'contain' => array('AssetsWorkorder.asset_id',
+				'Manager'
+			),
 			'conditions' => array(
 				'`Workorder`.id'=>$woid,
-				'`Workorder`.manager_id' => AppController::$userid,
+				'`Manager`.user_id' => AppController::$userid,
 			),
 		);
 		$data = $this->find('all', $options);
