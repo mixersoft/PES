@@ -260,7 +260,7 @@ debug($hiddenShot_assetIds);
 		foreach ($permitted_AssetIds as $assetId) {
 			$insert['AssetsUsershot'][]['asset_id'] = $assetId;
 		}		
-debug($permitted_AssetIds);
+// debug($permitted_AssetIds);
 		if (count($permitted_AssetIds)) {
 			// set Bestshot for NEW group
 			// set BestShotSystem by sort order, sort=='`SharedEdit`.score DESC, `Asset`.dateTaken ASC', 
@@ -284,7 +284,7 @@ debug($permitted_AssetIds);
 			$ret = $this->saveAll($insert, array('validate'=>'first'));
 		} 
 		
-debug($insert); 
+// debug($insert); 
 		if (isset($ret)) {
 			$success = $ret != false;
 			$message[] = 'Usershot->groupAsShot: OK';
@@ -295,7 +295,7 @@ debug($insert);
 			
 			// after saving NEW shot, cleanup old shots
 			// unGroupShot if same priority, deactivate shot if lower priority (higher number)
-debug($cleanup);
+// debug($cleanup);
 			if (!empty($cleanup['unGroupShots'])) {
 				// TODO: delete old/orphaned Shots using QUEUE
 				$resp1 = $this->unGroupShot($cleanup['unGroupShots']);
@@ -333,9 +333,11 @@ debug($cleanup);
 			 */ 
 			 $shot_priority = $this->_get_ShotPriority();
 			 $data = $this->find('all', array('conditions'=>array('`Usershot`.id'=>$deleteShotIds)));
+debug($data);			 
 			 foreach ($data as $row) {
 			 	$shot_id = $row['Usershot']['id'];
 			 	$old_priority = $row['Usershot']['priority'];
+debug("$old_priority < $shot_priority");				
 			 	if ($old_priority < $shot_priority) {
 			 		// current role has lower priority, no privilege to change existing Shot
 			 		// no privilege or save as "lower" privilege???
@@ -356,7 +358,7 @@ debug($cleanup);
 				}
 				
 			 } 
-									
+debug($cleanup);
 			// TODO: delete old/orphaned Shots using QUEUE
 			if (!empty($cleanup['unGroupShots'])) {
 				$sql_deleteCascadeShots = "

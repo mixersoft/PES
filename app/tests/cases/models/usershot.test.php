@@ -174,7 +174,9 @@ class UsershotTestCase extends CakeTestCase {
 			
 			
 		/*
-		 * 
+		 * GroupAsShot,  SCRIPT shot includes assets in existing (SCRIPT) shot
+		 *    is it OK if asset is in existing USER or EDITOR shot??? 
+		 * if (count($existing_shots) && $shot_priority == $this->_get_ShotPriority('SCRIPT'))  
 		 */
 			
 			

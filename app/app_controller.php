@@ -12,10 +12,10 @@ class AppController extends Controller {
 		'Auth',
 	);
 	static $http_static = null;
-	static $uuid = null;
-	static $userid = null;
-	static $ownerid = null;
-	static $role = null;
+	static $uuid = null;		// the $uuid of the current action
+	static $userid = null;		// the logged in User.id
+	static $ownerid = null;		// the owner_id, for backoffice/workorder actions
+	static $role = null;		// the ROLE of the logged in user
 	static $writeOk = false;
 	
 	function __construct() {
