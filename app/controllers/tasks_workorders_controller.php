@@ -300,7 +300,6 @@ if (!empty($this->passedArgs['raw'])) {
 			),
 		);
 		$data = $this->TasksWorkorder->Asset->find('first', $options);
-//debug($data);		
 		if (empty($data)) {
 			$this->Session->setFlash(sprintf(__('No %s found.', true), 'Photos'));
 			$this->redirectSafe();
