@@ -29,7 +29,7 @@ $config['register'] = array(
 );
 
 $config['desktop.uploader'] = array(
-	'version'=>'1.8.6'		// confirm OSX works as 1.8.7 before upgrading
+	'version'=>'1.8.8'		// confirm OSX works as 1.8.7 before upgrading
 );
 
 /*
@@ -154,7 +154,11 @@ switch ($config['Config.os']) {
 		$config['path']['storyMakerUploader'] = array(
 				'folder_basepath'=>$svc_root.DS.'svc'.DS.'upload'.DS,
 				'baseurl'=>'svc'.DS.'upload'.DS,
-			);		
+			);	
+		$config['path']['topLevelFolder'] = array(
+				'basepath'=>'/files/TopLevelFolder',
+				'folder_basepath'=>$svc_root.DS.'svc'.DS.'upload'.DS,
+			);					
 		break;		
 }
 
