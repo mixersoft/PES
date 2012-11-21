@@ -27,9 +27,13 @@ class WorkordersController extends AppController {
 			'limit'=>2,
 			'preview_limit'=>4,
 			'paging_limit' =>20,
-			'order'=>array('Workorder.work_status'=>'ASC', 'Workorder.created'=>'ASC'),
+			'order'=>array('Workorder.status'=>'ASC', 'Workorder.created'=>'ASC'),
 			'recursive'=> 1,
-			'contain'=>array('TasksWorkorder'),
+			'contain'=>array(
+				'TasksWorkorder'=>array('Operator'),
+				'Manager'=>array('User'),
+				'Source','Client',
+			),
 		),
 		'GroupAsset'=>array(
 			'PageableAlias'=>'Asset',			// see: Pageable->getPageablePaginateArray(), Configure::write('paginate.Model')
@@ -158,15 +162,13 @@ class WorkordersController extends AppController {
 		// extract hasMany relationships: TasksWorkorders from rawPageData
 		$hasManyModel = 'TasksWorkorder';
 		$data[$hasManyModel] = Set::combine( $rawPageData, "{n}.{$paginateModel}.id", "{n}.{$hasManyModel}");
-		
 		// lookups for belongsTo relationships, do NOT page, change to Behavior
 		$lookup['Group'] = Set::extract('/Workorder[source_model=Group]/source_id', $data);
 		$lookup['User']= Set::extract('/Workorder[source_model=User]/source_id', $data);
 		$lookup['Task']= array_unique(Set::extract('/TasksWorkorder/task_id', $rawPageData));
-
 		$manager_ids = Set::extract('/Workorder/manager_id', $data);
 		$operator_ids = Set::extract('/TasksWorkorder/operator_id', $rawPageData);
-		$lookup['User'] = array_unique(array_merge($lookup['User'], $manager_ids, $operator_ids));
+		$lookup['WorkorderEditor'] = array_unique(array_merge($manager_ids, $operator_ids));
 		foreach (array_keys($lookup) as $paginateModel) {
 			$Model = ClassRegistry::init($paginateModel);
 			$options = array(
@@ -180,7 +182,6 @@ class WorkordersController extends AppController {
 			// end paginate		
 			$this->viewVars['jsonData'][$paginateModel] = $data[$paginateModel];
 		}
-		
 		
 		$done = $this->renderXHRByRequest('json');
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	

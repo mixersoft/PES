@@ -12,7 +12,7 @@ if (empty($this->passedArgs['wide'])) {
 	<tr>
 			<th>&nbsp;</th>
 			<th>Workorder Source</th>
-			<th>Manager</th>
+			<th>Owner</th>
 			<th>Status</th>
 			<th>Created</th>
 			<th class="actions"><?php __('Actions');?></th>
@@ -36,12 +36,14 @@ if (empty($this->passedArgs['wide'])) {
 				$label['source'] = $data[$workorder['source_model']][$workorder['source_id']]['title']." ({$workorder['source_model']})";
 			break;
 		}
-		$label['manager_id'] = $data['User'][$workorder['manager_id']]['username'];
+		if (isset($data['WorkorderEditor'][$workorder['manager_id']])) {
+			$label['manager_id'] = $data['WorkorderEditor'][$workorder['manager_id']]['username'];
+		} else $label['manager_id'] = "--";
 	?>
 	<tr<?php echo $class;?>>
 		<td><ul class="inline">
 			<?php
-				$isAssigned =  $workorder['manager_id'] == AppController::$userid;
+				$isAssigned =  $data['WorkorderEditor'][$workorder['manager_id']]['user_id'] == AppController::$userid;
 				$next = array('action' => 'photos', $workorder['id'], 'raw'=>1) + Configure::read('passedArgs.min');
 				$options = array('target'=>'_blank');
 				if (!$isAssigned) $options['onclick'] = "return false;";
@@ -51,18 +53,10 @@ if (empty($this->passedArgs['wide'])) {
 		<ul>&nbsp;</td>	
 		<td><?php echo "{$label['source']} ({$workorder['assets_workorder_count']} Snaps)"; ?>&nbsp;</td>
 		<td><?php echo $label['manager_id']; ?>&nbsp;</td>
-		<td><?php echo $workorder['work_status']; ?>&nbsp;</td>
+		<td><?php echo $workorder['status']; ?>&nbsp;</td>
 		<td><?php echo $this->Time->timeAgoInWords($workorder['created']);  ?>&nbsp;</td>
 		<td class="actions">
 			<ul class="inline">
-				<?php
-					$label = 'assign';
-					if (!$isAssigned) {
-						$next = array('action' => 'assign', $workorder['id'], 'me');
-						$btn = $this->Html->link(__($label, true), $next);
-					} else $btn = $label;
-					echo '<li class="btn rounded-5 '.($isAssigned ? 'white disabled' : 'orange').'">'.$btn.'</li>';
-				?>&nbsp;
 				<?php
 					$label = 'harvest';
 					if ($isAssigned) {
@@ -89,15 +83,18 @@ if (empty($this->passedArgs['wide'])) {
 				/**
 				 * TasksWorkorder BelongsTo Workorder
 				 */
+// debug($data);				
 	foreach ($data['TasksWorkorder'][$workorder['id']] as $taskWorkorder):
 		$label = array();
-		$label['operator_id'] = $data['User'][$taskWorkorder['operator_id']]['username'];
+		if (isset($data['WorkorderEditor'][$taskWorkorder['operator_id']])) {
+			 $label['operator_id'] = $data['WorkorderEditor'][$taskWorkorder['operator_id']]['username'];
+		} else $label['operator_id'] = "--";
 	?>
 	<tr<?php echo $class;?>>
 		<td>&nbsp;</td>
 		<td><ul class="inline">
 			<?php
-				$isAssigned =  $taskWorkorder['operator_id'] == AppController::$userid;
+				$isAssigned =  $data['WorkorderEditor'][$taskWorkorder['operator_id']]['user_id'] == AppController::$userid;
 				$next = array('controller'=>'tasks_workorders', 'action' => 'photos', $taskWorkorder['id'], 'raw'=>1) + Configure::read('passedArgs.min');
 				$options = array('target'=>'_blank');
 				if (!$isAssigned) $options['onclick'] = "return false;";
@@ -111,14 +108,6 @@ if (empty($this->passedArgs['wide'])) {
 		<td><?php echo $taskWorkorder['status']; ?>&nbsp;</td>
 		<td class="actions">
 			<ul class="inline">
-				<?php
-					$label = 'assign';
-					if (!$isAssigned) {
-						$next = array('controller'=>'tasks_workorders','action' => 'assign', $taskWorkorder['id'], 'me');
-						$btn = $this->Html->link(__($label, true), $next);
-					} else $btn = $label;
-					echo '<li class="btn rounded-5 '.($isAssigned ? 'white disabled' : 'orange').'">'.$btn.'</li>';
-				?>&nbsp;
 				<?php
 					$label = 'harvest';
 					$enabled = $isAssigned && ($taskWorkorder['assets_task_count'] < $workorder['assets_workorder_count']);

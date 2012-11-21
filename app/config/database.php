@@ -84,7 +84,7 @@ class DATABASE_CONFIG {
 		'host' => 'localhost',
 		'login' => 'snaphappi',
 		'password' => 'snapsh0t',
-		'database' => 'snappi_workorders',
+		'database' => 'snappi_wms',
 		'encoding' => 'UTF8', 
 		'prefix' => '',
 	);		

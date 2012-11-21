@@ -18,6 +18,10 @@ class TasksWorkorder extends AppModel {
 			'fields' => '',
 			'order' => ''
 		),	
+		'Operator' => array(
+			'className' => 'WorkorderEditor', 
+			'foreignKey' => 'operator_id'
+		),
 	);
 	public $hasMany = array(
 		'AssetsTask' => array(								// TasksWorkorder habtm Assets
@@ -26,6 +30,11 @@ class TasksWorkorder extends AppModel {
 			'dependent' => true,
 			'counterCache' => true,	
 		),
+		// 'ActivityLog' => array(								
+			// 'className' => 'ActivityLog',				
+			// 'foreignKey' => 'workorder_id',
+			// 'dependent' => true,
+		// ), 		
 	);
 	
 	public $hasAndBelongsToMany = array(
