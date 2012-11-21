@@ -220,7 +220,8 @@ class ThriftController extends AppController {
 	} catch (Exception $e) {
 		debug ("   Exception, msg=".$e->getMessage());
 	}
-		
+// $this->render('/elements/sql_dump');
+// return;			
 	if (isset($_GET['reset'])) {
 		$nativePath = "C:\\TEMP\\added from Thrift AddFolder";
 		print "<BR />*************************************";
@@ -249,20 +250,34 @@ class ThriftController extends AppController {
 		 */
 		$state = $Task->GetState($taskId);
 		debug("GetState() result=".print_r($state,true));
+// $this->render('/elements/sql_dump');
+// return;			
 		/*
 		 * Test GetFolders
 		 */
 		$folders = $Task->GetFolders($taskId);
 		debug("GetFolders() result=".print_r($folders,true));
+// $this->render('/elements/sql_dump');
+// return;			
 		if (count($folders)) {
 			/*
 			 * Test GetFiles
 			 */
 			$files = $Task->GetFiles($taskId, $folders[0]);
 			debug("GetFiles() result=".print_r($files,true));
+// $this->render('/elements/sql_dump');
+// return;				
 		} else {
 			CakePhpHelper::_model_setTaskState($taskId, array('IsCancelled'=>0));
 		}	
+		/*
+		 * Test ReportFileCount
+		 */
+// debug($folders);		
+		$changed = $Task->ReportFileCount($taskId, $folders[0],777);
+		debug("ReportFileCount() result=".print_r($changed,true));	
+		
+		
 		/*
 		 * Test GetWatchedFolders
 		 */
@@ -277,21 +292,15 @@ class ThriftController extends AppController {
 		} else {
 			CakePhpHelper::_model_setTaskState($taskId, array('IsCancelled'=>0));
 		}			
-$this->render('/elements/sql_dump');
-return;		
-		/*
-		 * Test ReportFileCount
-		 */
-debug($folders);		
-		$changed = $Task->ReportFileCount($taskId, $folders[0], 21);
-		debug("ReportFileCount() result=".print_r($changed,true));	
-			
+	
+		
 		/*
 		 * Test ReportFolderUploadComplete
 		 */
 		$folder = $Task->ReportFolderUploadComplete($taskId, $folders[0]);
 		debug("ReportFolderUploadComplete() result=".print_r($folder,true));		
-	
+$this->render('/elements/sql_dump');
+return;	
 		/*
 		 * Test UploadFiles
 		 */

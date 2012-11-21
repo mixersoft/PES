@@ -49,7 +49,7 @@
 		},
 		refresh: function(start) {
 			if (start) {
-				ThriftUploader.timer = _Y.later(5000, SNAPPI.xhrFetch, function(){
+				ThriftUploader.timer = _Y.later(60000, SNAPPI.xhrFetch, function(){
 						var n = _Y.one( ThriftUploader.container_id );
 						this.requestFragment(n);			// this == SNAPPI.xhrFetch
 						 ThriftUploader.util.getTaskState(

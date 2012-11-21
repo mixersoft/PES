@@ -17,7 +17,6 @@ if (!isset($GLOBALS['THRIFT_SERVICE']['VERSION'])) throw new Exception('Error: $
 $GLOBALS['THRIFT_SERVICE']['PACKAGE'] = 'Tasks';
 $GLOBALS['THRIFT_SERVICE']['NAME'] = 'Task';		
 $GLOBALS['THRIFT_SERVICE']['NAMESPACE'] = 'snaphappi_api';	
-error_log("Thrift Server preparing to load, Service={$GLOBALS['THRIFT_SERVICE']['NAME']}");
 /*
  * 2. bootstrap Thrift from Cakephp, 
  * 		sets $GLOBALS['THRIFT_ROOT']
@@ -100,6 +99,7 @@ debug($data);
 				$thrift_exception['Information'] = $e->getMessage();
 debug($thrift_exception);				
 				//TODO: UI should notify the user to relaunch HelperApp with new token, or reschedule
+ThriftController::log("*****   SystemException from _loginFromAuthToken(): ".print_r($thrift_exception,true), LOG_DEBUG);				
 				throw new snaphappi_api_SystemException($thrift_exception);	
 			}
 		}
@@ -274,6 +274,7 @@ ThriftController::log("**** WARNING: OtherException count={$thrift_GetTask['Othe
 			$thrift_GetTask = ThriftController::$controller->ThriftSession->saveTaskState(
 				$session['ThriftSession']['id'], $thrift_GetTask
 			); 
+if (!isset($thrift_GetTask['FileUpdateCount']))			
 ThriftController::log("_model_setTaskState() state=".print_r($thrift_GetTask, true), LOG_DEBUG);				
 			if ($shutdown) CakePhpHelper::_shutdown_client($taskID, $message);
 			return $thrift_GetTask;
@@ -480,12 +481,12 @@ class snaphappi_api_TaskImpl implements snaphappi_api_TaskIf {
 		 *  TODO: URTaskState->DeviceId UUID (optional), unique id for desktop device
 		 */
         public function GetState($taskID) {
-ThriftController::log("***   GetState", LOG_DEBUG);        	
+ThriftController::log("***   GetState, deviceID={$taskID->DeviceID}", LOG_DEBUG);    
         	$state = CakePhpHelper::_model_getTaskState($taskID);
 			if (empty($state)) {
 				// NOTE: InvalidAuth Exception thrown from CakePhpHelper::_loginFromAuthToken()
 				$state['IsCancelled'] = true;
-ThriftController::log($state, LOG_DEBUG); 					
+ThriftController::log("***   GetState, state=".print_r($state,true), LOG_DEBUG);    				
 			} else {
 // ThriftController::log($state, LOG_DEBUG); 				
 			}
@@ -510,7 +511,7 @@ ThriftController::log("***   GetFolders", LOG_DEBUG);
 				CakePhpHelper::_model_setTaskState($taskID, array('IsCancelled'=>1));
 			}				
 			$folders = Set::extract('{n}.folder_path',$folders);
-ThriftController::log($folders, LOG_DEBUG);				
+// ThriftController::log($folders, LOG_DEBUG);				
 			return $folders;
         }
 		
@@ -541,7 +542,7 @@ ThriftController::log($folders, LOG_DEBUG);
 		 * @return array of Strings
 		 */
         public function GetFiles($taskID , $folderPath) {
-ThriftController::log("***   GetFiles, deviceID={$taskID->DeviceID}, folder={$folderPath}", LOG_DEBUG);         
+ThriftController::log("***   GetFiles, folder ==> {$folderPath} <==        deviceID={$taskID->DeviceID}", LOG_DEBUG);         
 			$filtered = CakePhpHelper::_model_getFiles($taskID, $folderPath);
         	return $filtered;
         }                
@@ -552,7 +553,8 @@ ThriftController::log("***   GetFiles, deviceID={$taskID->DeviceID}, folder={$fo
 		 * @param $folderPath String
 		 */
         public function ReportFolderNotFound($taskID, $folderPath) {
-ThriftController::log("***   ReportFolderNotFound, folder={$folderPath},  taskID=".print_r($taskID, true), LOG_DEBUG);
+ThriftController::log("***   ReportFolderNotFound\n >>>>>  folder = {$folderPath}     , deviceID={$taskID->DeviceID}", LOG_DEBUG);         
+
 			$data['ThriftFolder']['native_path']=$folderPath;
 			$data['ThriftFolder']['is_not_found']=1;
 			$ret = CakePhpHelper::_model_setFolderState($taskID, $data);
@@ -569,7 +571,8 @@ ThriftController::log("***   ReportFolderNotFound, folder={$folderPath},  taskID
 		 * throws SystemException
 		 */
         public function ReportUploadFailed($taskID, $folderPath, $filePath) {
-ThriftController::log("***   ReportUploadFailed, folder={$folderPath}, file={$filePath},  taskID=".print_r($taskID, true), LOG_DEBUG);
+ThriftController::log("***   ReportUploadFailed\n >>>>>>> folder = {$folderPath}     , file = {$filePath}    ", LOG_DEBUG);
+
         	return;
         }  		
 		/**
@@ -579,7 +582,8 @@ ThriftController::log("***   ReportUploadFailed, folder={$folderPath}, file={$fi
 		 * @param $folderPath String
 		 */
         public function ReportFolderUploadComplete($taskID, $folderPath) {
-ThriftController::log("***   ReportFolderUploadComplete, folder={$folderPath}, taskID=".print_r($taskID, true), LOG_DEBUG);
+ThriftController::log("***   ReportFolderUploadComplete\n >>>>>>>  folder = {$folderPath}     , deviceID={$taskID->DeviceID}", LOG_DEBUG);         
+
 			$data['ThriftFolder']['native_path']=$folderPath;
 			$data['ThriftFolder']['is_scanned']=1;
 			$ret = CakePhpHelper::_model_setFolderState($taskID, $data);
@@ -594,7 +598,7 @@ ThriftController::log("***   ReportFolderUploadComplete, folder={$folderPath}, t
 		 * @param $count int
 		 */
         public function ReportFileCount($taskID, $folderPath, $count) {
-ThriftController::log("***   ReportFileCount, folder={$folderPath}, count={$count}, taskID=".print_r($taskID, true), LOG_DEBUG);
+ThriftController::log("***   ReportFileCount\n >>>>>>>  folder = {$folderPath} ({$count})", LOG_DEBUG);
 			$data['ThriftFolder']['native_path']=$folderPath;
 			$data['ThriftFolder']['count']=$count;
 			$data['ThriftFolder']['is_not_found']=0;
@@ -613,10 +617,11 @@ ThriftController::log("***   ReportFileCount, folder={$folderPath}, count={$coun
 		 * 		ErrorCode::Unknown for everything else
 		 */
         public function GetDeviceID($authToken, $sessionId) {
-ThriftController::log("GetDeviceID {$authToken}, {$sessionId} ", LOG_DEBUG);
+ThriftController::log("GetDeviceID auth_token={$authToken}, sessionId={$sessionId} ", LOG_DEBUG);
 			try {
 	        	$deviceId = CakePhpHelper::_model_getDeviceId($authToken, $sessionId);
 				if (!$deviceId) throw new Exception('Error: deviceId is not available yet');
+ThriftController::log(">>>    deviceId={$deviceId} ", LOG_DEBUG);
 				return $deviceId;
 			} catch (Exception $e) {
 				$msg = explode(',', $e->getMessage());
@@ -634,6 +639,7 @@ ThriftController::log("GetDeviceID {$authToken}, {$sessionId} ", LOG_DEBUG);
 						break;
 				}
 				$thrift_exception['Information'] = $e->getMessage();
+ThriftController::log("*****   SystemException from GetDeviceID(): ".print_r($thrift_exception,true), LOG_DEBUG);				
 				throw new snaphappi_api_SystemException($thrift_exception);		
 			}
         }		 
@@ -678,6 +684,7 @@ ThriftController::log("***   GetFileCount, folder={$folderPath}, taskID=".print_
 						break;
 				}
 				$thrift_exception['Information'] = $e->getMessage();
+ThriftController::log("*****   SystemException from AddFolder(): ".print_r($thrift_exception,true), LOG_DEBUG);				
 				throw new snaphappi_api_SystemException($thrift_exception);					
 			} catch (snaphappi_api_SystemException $e) {
 					throw $e;
@@ -708,6 +715,7 @@ ThriftController::log("***   GetFileCount, folder={$folderPath}, taskID=".print_
 						break;
 				}
 				$thrift_exception['Information'] = $e->getMessage();
+ThriftController::log("*****   SystemException from SetWatchedFolder(): ".print_r($thrift_exception,true), LOG_DEBUG);				
 				throw new snaphappi_api_SystemException($thrift_exception);					
 			} catch (snaphappi_api_SystemException $e) {
 					throw $e;
@@ -737,6 +745,7 @@ ThriftController::log("***   GetFileCount, folder={$folderPath}, taskID=".print_
 						break;
 				}
 				$thrift_exception['Information'] = $e->getMessage();
+ThriftController::log("*****   SystemException from RemoveFolder(): ".print_r($thrift_exception,true), LOG_DEBUG);				
 				throw new snaphappi_api_SystemException($thrift_exception);					
 			} catch (snaphappi_api_SystemException $e) {
 					throw $e;
@@ -808,9 +817,9 @@ ThriftController::log($response['message'], LOG_DEBUG);
 				} else if (!empty($response['message']['DuplicateFoundException'])) {
 					$thrift_exception['ErrorCode'] = ErrorCode::DataConflict;
 					$thrift_exception['Information'] = "Duplicate File on upload";
-					ThriftController::log("###   SystemException=".print_r($thrift_exception,true), LOG_DEBUG);
 					$taskState = CakePhpHelper::_model_setTaskState($id, array('DuplicateFileException'=>1));
 					// when threshold is passed, set TaskID->IsCancelled=1
+ThriftController::log("*****   SystemException from UploadFile(): ".print_r($thrift_exception,true), LOG_DEBUG);
 					throw new snaphappi_api_SystemException($thrift_exception);					
 				} else 
 					throw new Exception("CakePhpHelper::__importPhoto(): Error importing to DB, response=".print_r($response, true));
