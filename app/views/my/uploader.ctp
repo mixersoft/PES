@@ -7,11 +7,11 @@
 <?php 
 
 	$basepath = Configure::read('path.topLevelFolder.basepath');
-	$path_RunSwf = "{$basepath}/fb_run_test_app.swf";
-	$path_InstallSwf = "{$basepath}/expressInstall.swf";
+	$path_RunSwf = "{$basepath}/badge/TLFBadge.swf";
+	$path_InstallSwf = "{$basepath}/badge/playerProductInstall.swf";
 	
 	$this->Layout->blockStart('HEAD');
-		echo $this->Html->script($basepath.'/js/swfobject.js');
+		echo $this->Html->script($basepath.'/badge/swfobject.js');
 		
 	// set native-uploader launch URIs
 	/*
@@ -22,31 +22,56 @@
 	$launch_SnappiUploader = "snaphappi://{$authToken64}_{$sessionId64}_ur";
 	$launch_SnappiUploader_watched = "snaphappi://{$authToken64}_{$sessionId64}_sw";		
 ?>
+    <style type="text/css" media="screen"> 
+    	#top-level-folder-alt {
+    		display:block;
+    		text-align:left;
+    	}
+    	#TLFBadge {
+    		margin: 20px;
+    	}
+    	
+    </style>
 	<script type="text/javascript">
-		var flashvars = { 
-			sessionID: <?php echo "'{$taskID['Session']}'"; ?>, 
-			authToken: <?php echo "'{$taskID['AuthToken']}'"; ?>, };
-		var params = {
-			menu: "false",
-			scale: "noScale",
-			allowFullscreen: "true",
-			allowScriptAccess: "always",
-			bgcolor: "",
-			wmode: "direct" // can cause issues with FP settings & webcam
-		};
-		var attributes = {
-			id:"top-level-folder"
-		};
-		swfobject.embedSWF(
-			<?php echo  "'{$path_RunSwf}'"; ?>, 
-			"top-level-folder-alt", "300", "30", "10.0.0", 
-			<?php echo  "'{$path_InstallSwf}'"; ?>,
-			flashvars, params, attributes);
-			
+      // For version detection, set to min. required Flash Player version, or 0 (or 0.0.0), for no version detection. 
+        var swfVersionStr = "10.2.0";
+        // To use express install, set to playerProductInstall.swf, otherwise the empty string. 
+        var launchSwfUrlStr = <?php echo  "'{$path_RunSwf}'"; ?>;
+        var xiSwfUrlStr = <?php echo  "'{$path_InstallSwf}'"; ?>;
+        var flashvars = {
+        	baseurl: 'http://'+window.location.hostname+'/files/TopLevelFolder',
+        	version: '1.0',            	
+        	at: <?php echo "'{$authToken64}'"; ?>,
+        	si: <?php echo "'{$sessionId64}'"; ?>,
+        };
+        var params = {};
+        params.quality = "high";
+        // params.bgcolor = "#c5e8fa";
+        params.allowscriptaccess = "sameDomain";
+        params.allowfullscreen = "false";
+        var attributes = {};
+        attributes.id = "TLFBadge";
+        attributes.name = "TLFBadge";
+        attributes.align = "middle";
+        swfobject.embedSWF(
+            launchSwfUrlStr,
+            "top-level-folder-alt", 
+            "215", "30", 
+            swfVersionStr, xiSwfUrlStr, 
+            flashvars, params, attributes
+        );
 		PAGE.jsonData.nativeUploader = {
 				authToken64: <?php  echo "'{$authToken64}'";  ?>,
 				sessionId64: <?php  echo "'{$sessionId64}'";  ?>,
 		}	
+		
+		function reloadPage(ms)
+		{
+			ms = ms ? ms : 5000;
+			setTimeout(ms, function(){
+				window.location.reload();	
+			})
+		}
 	</script>
 <?php		
 	$this->Layout->blockEnd();	
