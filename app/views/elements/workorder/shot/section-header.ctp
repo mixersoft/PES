@@ -8,6 +8,8 @@
 	$label[] = "&nbsp;<span class='wo-type'>".strtolower($description['wo-type']).':</span>';
 	$label[] = "<span class='wo-label'>{$description['wo-label']}</span>";
 	$label[] = "&nbsp;<span class='wo-count'>({$description['wo-count']})</span>";
+	
+	$link_imageGroup = Router::url(array('action'=>'image_group', $this->passedArgs[0]));
 
 	// $primary = Session::read("nav.primary");
 	$controllerAttrs = Configure::read('controller');
@@ -21,7 +23,7 @@
 <nav class="section-header container_16">
 	<h1 class="grid_7"><?php echo $badge . implode('',$label) ?></h1>
     <ul class="inline grid_5">
-		<li class="gallery rounded-5 white" action='section-view:gallery'><a>Gallery</a></li>
+		<li class="gallery rounded-5 white"><a href='<?php echo $link_imageGroup  ?>'>Find Duplicate Shots</a></li>
 	</ul>
     <aside class="grid_4">
       	<?php echo $this->element('nav/search')?>

@@ -20,11 +20,11 @@ class Workorder extends AppModel {
 			'foreignKey' => 'workorder_id',
 			'dependent' => true,
 		), 
-		// 'ActivityLog' => array(								
-			// 'className' => 'ActivityLog',				
-			// 'foreignKey' => 'workorder_id',
-			// 'dependent' => true,
-		// ), 
+		'ActivityLog' => array(								
+			'className' => 'ActivityLog',				
+			'foreignKey' => 'workorder_id',
+			'dependent' => true,
+		), 
 	);	
 	
 	public $hasAndBelongsToMany = array(

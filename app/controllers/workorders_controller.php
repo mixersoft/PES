@@ -316,6 +316,7 @@ class WorkordersController extends AppController {
 	  			$this->Workorder->query($reset_SQL);
 			}
 			
+			if ($this->RequestHandler->ext !== 'json') Configure::write('debug',0);	// DEBUG
 			// debug: see test results
 			$markup = "<A href=':url' target='_blank'>click here</A>";
 			$show_shots['see-all-shots'] = str_replace(':url',Router::url(array('action'=>'shots', 0=>$id, 'perpage'=>10,  'all-shots'=>1), true), $markup);
@@ -405,20 +406,26 @@ class WorkordersController extends AppController {
 			
 		}
 		
-// debug GistComponent output		
-$image_groups = json_encode($image_groups);
-$this->log(	"GistComponent->getImageGroupFromCC(): filtered output", LOG_DEBUG);
-$this->log(	$image_groups, LOG_DEBUG);
-debug($image_groups);
-debug($newShots);
-
-		$this->viewVars['jsonData']['imageGroups'] = $newShots;
-		// $this->viewVars['jsonData']['castingCall'] = $castingCall;
-		$this->RequestHandler->ext = 'json';			// force JSON response
-		$done = $this->renderXHRByRequest('json');
-		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
-		// $this->render('/elements/dumpSQL');
-	
+		
+		if ($this->RequestHandler->ext == 'json') {
+			// debug GistComponent output		
+			$image_groups = json_encode($image_groups);
+			$this->log(	"GistComponent->getImageGroupFromCC(): filtered output", LOG_DEBUG);
+			$this->log(	$image_groups, LOG_DEBUG);
+			debug($image_groups);
+			debug($newShots);
+			
+			$this->viewVars['jsonData']['imageGroups'] = $newShots;
+			// $this->viewVars['jsonData']['castingCall'] = $castingCall;
+			$done = $this->renderXHRByRequest('json');
+			if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
+		} else {
+			// $this->render('/elements/dumpSQL');
+			$this->Session->setFlash(count($newShots)." duplicate Shots found");
+			$next = $_SERVER['HTTP_REFERER'];
+			$this->redirect($next, null, true);		
+		}
+					
 	}	
 	/**
 	 * /workorder/photos get photos for workorders, uses WorkorderPermissionable for ACL
@@ -641,7 +648,43 @@ $this->params['paging'] = $paging;
 		
 	}
 
-
+	/**
+	 * flag a TasksWorkorder Asset for later reference and log a status message
+	 */
+	function flag () {
+		$forceXHR = setXHRDebug($this, 0,1);
+		$message = $response = array();
+		$success = false;
+		if (!empty($this->data)) {
+			if ($this->data['flag']) {
+				$data['ActivityLog']['model'] = 'Asset';
+				$data['ActivityLog']['foreign_key'] = $this->data['Asset']['id'];
+				$data['ActivityLog']['workorder_id'] = $this->data['Workorder']['id'];
+				$data['ActivityLog']['comment'] = $this->data['message']."asset_id={$this->data['Asset']['id']}";
+				$data['ActivityLog']['editor_id'] = AppController::$userid;
+				$data['ActivityLog']['flag_status'] = 1;
+				$data['ActivityLog']['parent_flag_status'] = 1;	// set parent flag to 1, if any
+				$ret = $this->Workorder->ActivityLog->save($data);
+				if ($ret) {
+					$log = $this->Workorder->ActivityLog->read(); 
+					$ret2 = $this->Workorder->ActivityLog->updateParentFlag($log['ActivityLog']['id'], $data['ActivityLog']['flag_status']);
+					if ($ret2){
+						$message[] = 'This item was successfully flagged';
+						$response[] = $log;
+						$response['flagTarget'] = Router::url(array('action'=>'snap', $this->data['Asset']['id']), true);
+						$success = true;
+					} else if ($ret2 !== null){
+						$message[] = 'Error: there was a problem updating the flag status of the parent comment';
+					};
+				} else {
+					$message[] = 'Error: there was a problem saving the flagged comment';
+				}
+			}
+			// just show POST vars for now
+			$this->viewVars['jsonData'] = compact('success', 'message', 'response');
+		}
+		$done = $this->renderXHRByRequest('json', null, null , 0);
+	}
 	/**
 	 * Training methods, 
 	 * TODO: move to training controller

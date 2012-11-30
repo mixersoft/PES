@@ -9,7 +9,7 @@ class TasksWorkorder extends AppModel {
 			'foreignKey' => 'task_id',
 			'conditions' => '',
 			'fields' => '',
-			'order' => '`TasksWorkorder`.task_sort, `TasksWorkorder`.created'
+			// 'order' => '`TasksWorkorder`.task_sort, `TasksWorkorder`.created'
 		),	
 		'Workorder' => array(								// User hasMany Usershots
 			'className' => 'Workorder',
@@ -30,11 +30,11 @@ class TasksWorkorder extends AppModel {
 			'dependent' => true,
 			'counterCache' => true,	
 		),
-		// 'ActivityLog' => array(								
-			// 'className' => 'ActivityLog',				
-			// 'foreignKey' => 'workorder_id',
-			// 'dependent' => true,
-		// ), 		
+		'ActivityLog' => array(								
+			'className' => 'ActivityLog',				
+			'foreignKey' => 'tasks_workorder_id',
+			'dependent' => true,
+		), 		
 	);
 	
 	public $hasAndBelongsToMany = array(
