@@ -257,13 +257,16 @@ class WorkordersController extends AppController {
 	/**
 	 * harvest new Assets to existing workorder
 	 */
-	function harvest($id) {
+	function harvest() {
 		if (empty($this->data)) {
-			// throw new Exception("Error: HTTP POST required", 1);
+			throw new Exception("Error: HTTP POST required", 1);
+		} else {
+			debug($this->data);
+			// return;
 		}
 		$options = array(
 			'recursive'=>-1,
-			'conditions'=>array('Workorder.id'=>$id)
+			'conditions'=>array('Workorder.id'=>$this->data['Workorder']['id'])
 		);
 		$data = $this->Workorder->find('first', $options);
 		$count = $this->Workorder->addAssets($data, 'NEW');
@@ -412,28 +415,8 @@ debug($newShots);
 		$this->viewVars['jsonData']['imageGroups'] = $newShots;
 		// $this->viewVars['jsonData']['castingCall'] = $castingCall;
 		$this->RequestHandler->ext = 'json';			// force JSON response
-		$done = $this->renderXHRByRequest('json', '/elements/photo/roll');
+		$done = $this->renderXHRByRequest('json');
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
-		if (!Configure::read('debug')) return;
-		
-		
-		/*
-		 * render page for debugging
-		 * TODO: use /raw:1 to disable g.showHidden() in gallery view
-		 * 
-		 */
-		$options = array(
-			'contain'=>array('TasksWorkorder.id', 'TasksWorkorder.task_sort', 'TasksWorkorder.operator_id'),
-			'conditions'=>array('Workorder.id'=>$id)
-		);
-		$data = $this->Workorder->find('first', $options);
-		$data = array_merge($this->Auth->user(), $data);
-		$this->set('data', $data);
-		$this->viewVars['jsonData']['Workorder'][]=$data['Workorder'];
-		$this->set(array('assets'=>$data,'class'=>'Asset'));
-		$this->render('photos');
-		
-		
 		// $this->render('/elements/dumpSQL');
 	
 	}	
