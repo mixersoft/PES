@@ -19,6 +19,7 @@
 	 */ 
 	$authToken64 = base64_encode($taskID['AuthToken']);
 	$sessionId64 = base64_encode($taskID['Session']);
+	$baseurl64 =  base64_encode("http://{$_SERVER['HTTP_HOST']}/files/TopLevelFolder");
 	$launch_SnappiUploader = "snaphappi://{$authToken64}_{$sessionId64}_ur";
 	$launch_SnappiUploader_watched = "snaphappi://{$authToken64}_{$sessionId64}_sw";		
 ?>
@@ -39,7 +40,7 @@
         var launchSwfUrlStr = <?php echo  "'{$path_RunSwf}'"; ?>;
         var xiSwfUrlStr = <?php echo  "'{$path_InstallSwf}'"; ?>;
         var flashvars = {
-        	baseurl: 'http://'+window.location.hostname+'/files/TopLevelFolder',
+        	baseurl: <?php echo  "'{$baseurl64}'"; ?>,
         	version: '1.0',            	
         	at: <?php echo "'{$authToken64}'"; ?>,
         	si: <?php echo "'{$sessionId64}'"; ?>,
