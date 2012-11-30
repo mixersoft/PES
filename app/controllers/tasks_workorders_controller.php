@@ -3,7 +3,7 @@ class TasksWorkordersController extends AppController {
 
 	public $name = 'TasksWorkorders';
 	public $layout = 'snappi';
-	
+	public $viewPath = 'workorders';			// same views as workorders
 	public $scaffold;
 	
 	public static $test = array();
@@ -21,7 +21,7 @@ class TasksWorkordersController extends AppController {
 				'show_edits'=>true,
 				'join_shots'=>'Groupshot', 
 				'show_hidden_shots'=>false,
-				'group_as_shot_permission'=>'Groupshot',
+				'group_as_shot_permission'=>false,
 			),
 			// 'extras'=>array(
 				// 'show_edits'=>true,
@@ -56,7 +56,7 @@ class TasksWorkordersController extends AppController {
 				'show_edits'=>true,
 				'join_shots'=>'Usershot', 
 				'show_hidden_shots'=>false,
-				'group_as_shot_permission'=>'Usershot',
+				'group_as_shot_permission'=>false,
 			),
 			// 'extras'=>array(
 				// 'show_edits'=>true,
@@ -155,6 +155,271 @@ class TasksWorkordersController extends AppController {
 		
 		$this->render('/elements/dumpSQL');
 	}
+	/**
+	 * create shots from SCRIPT
+	 * TODO: should this be a queued process, i.e. from gearmand, etc.
+	 * 	NOTE: use WorkorderPermissionable, not available to end users
+	 * 
+	 * 
+	 * same as action=photos except
+	 *		$paginateArray['extras']['show_hidden_shots']=1;
+	 *		$paginateArray['extras']['hide_SharedEdits']=1;	// TODO:??? use score, if any, for bestshot here? 
+	 * 		$paginateArray['perpage']=999;					// TODO: how do we deal with paging?
+	 * 		JSON output only
+	 */
+	function image_group($id) {
+		
+		/*
+		 * test and debug code. $config['isDev'], 
+		 * hostname = snappi-dev or dev.snaphappi.com
+		 */ 
+		if (0 && Configure::read('isDev')) {
+			if (!isset($this->passedArgs['reset']) || !empty($this->passedArgs['reset'])) {
+				// default is to delete old SCRIPT shots, use /reset:0 to preserve 
+				$reset_SQL = "
+	delete snappi.usershots s, snappi.assets_usershots au
+	from snappi.usershots s
+	join snappi.users u on u.id = s.owner_id
+	join snappi.assets_usershots au on au.usershot_id = s.id
+	join snappi_wms.assets_workorders aw on aw.asset_id = au.asset_id
+	where s.priority = 30
+	  and u.username like 'image-group%'
+	  and aw.workorder_id ='{$id}';";
+	  			$this->Workorder->query($reset_SQL);
+			}
+			
+			// debug: see test results
+			$markup = "<A href=':url' target='_blank'>click here</A>";
+			$show_shots['see-all-shots'] = str_replace(':url',Router::url(array('action'=>'shots', 0=>$id, 'perpage'=>10,  'all-shots'=>1), true), $markup);
+			$show_shots['see-only-script-shots'] = str_replace(':url',Router::url(array('action'=>'shots', 0=>$id, 'perpage'=>10, 'only-script-shots'=>1), true), $markup);
+			debug($show_shots);
+		}
+		/*
+		 * end test and debug code
+		 */
+		 
+		$perpage = 999;
+		$required_options['extras']['show_hidden_shots']=1;
+		$required_options['extras']['hide_SharedEdits']=0;
+		// $default_options['extras']['only_bestshot_system']=0;
+				 
+		// paginate 
+		$SOURCE_MODEL = Session::read("WMS.{$id}.Workorder.source_model"); // WorkordersController::$source_model;
+		$paginateModel = 'Asset';
+		$Model = ClassRegistry::init($paginateModel);
+		// map correct paginateArray based on $SOURCE_MODEL
+		$this->paginate[$paginateModel] = $this->paginate[$SOURCE_MODEL.$paginateModel];
+		$this->paginate[$paginateModel]['perpage'] = $perpage; 	// get all photos for image-group processing	
+		$Model->Behaviors->attach('Pageable');
+		$Model->Behaviors->attach('WorkorderPermissionable', array('type'=>$this->modelClass, 'uuid'=>$id));
+		$paginateArray = Set::merge($this->paginate[$paginateModel], $required_options);
+		// TODO: add /raw:1 to filter by UserEdit.rating only, and skip SharedEdit.score
+		$paginateArray['extras']['group_as_shot_permission'] = $Model->Behaviors->attached('WorkorderPermissionable');
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
+
+		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
+		$pageData = $this->paginate($paginateModel);
+		$pageData = Set::extract($pageData, "{n}.{$paginateModel}");
+		// end paginate
+
+		/*
+		 * get image_group output for castingCall as JSON string
+		 */ 
+		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
+		if (!isset($this->Gist)) $this->Gist = loadComponent('Gist', $this); 
+		$castingCall = $this->CastingCall->getCastingCall($pageData, $cache=false);
+		
+		// bind $script_owner to image-group runtime settings 
+		$script_owner = empty($this->passedArgs['circle']) ? 'image-group' : 'image-group-circles';
+		$preserveOrder = $script_owner == 'image-group';
+	
+		$image_groups = $this->Gist->getImageGroupFromCC($castingCall, $preserveOrder);
+		/*
+		 * import image_group output as Usershots with correct ROLE/priority
+		 * use Usershot.priority=30
+		 */ 
+		// use ROLE=SCRIPT, Usershot.priority=30
+		$ScriptUser_options = array(
+			'conditions'=>array(
+				'primary_group_id'=>Configure::read('lookup.roles.SCRIPT'),
+				'username'=>$script_owner,
+			)
+		);
+		$data = ClassRegistry::init('User')->find('first', $ScriptUser_options);
+		// change user to role=SCRIPT
+		AppController::$userid = $data['User']['id'];
+		AppController::$role = 'SCRIPT'; 		// from conditions, disables assignment check in WorkordersPermissionable
+		// create Script Usershots
+		$newShots = array();
+		$Usershot = ClassRegistry::init('Usershot');
+		/**
+		 * Q: should we delete all Shots owned by image-group first?
+		 */
+		foreach($image_groups['Groups'] as $i => $groupAsShot_aids) {
+			
+			// debug
+			// if ($i > 5) break;
+			
+			if (count($groupAsShot_aids)==1) {
+				unset($image_groups['Groups'][$i]); 
+				continue;		// skip if only one uuid, group of 1
+			}
+			$result = $Usershot->groupAsShot($groupAsShot_aids, $force=true);
+			if ($result['success']) {
+				$newShots[] = array(
+					'asset_ids'=>$groupAsShot_aids, 
+					'shot'=>$result['response']['groupAsShot'],
+				);
+			} else {
+				$newShots[] = array(
+					'asset_ids'=>$groupAsShot_aids, 
+					'shot'=>$result['response']['message'],
+				);
+			}
+			
+		}
+		
+// debug GistComponent output		
+$image_groups = json_encode($image_groups);
+$this->log(	"GistComponent->getImageGroupFromCC(): filtered output", LOG_DEBUG);
+$this->log(	$image_groups, LOG_DEBUG);
+debug($image_groups);
+debug($newShots);
+
+		$this->viewVars['jsonData']['imageGroups'] = $newShots;
+		// $this->viewVars['jsonData']['castingCall'] = $castingCall;
+		$this->RequestHandler->ext = 'json';			// force JSON response
+		$done = $this->renderXHRByRequest('json');
+		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
+		// $this->render('/elements/dumpSQL');
+	
+	}	
+
+	/**
+	 * /tasks_workorder/shots get all shots for tasks_workorder, for reviewing SCRIPT shots, uses WorkorderPermissionable for ACL
+	 * 		renders shots as a series of filmstrips
+	 * @param $id String, $workorder_id
+	 * $passedArgs['all-shots'] = default false, if true, show active shots
+	 * 
+	 */ 
+	public function shots($id) {
+		$forceXHR = setXHRDebug($this, 0);
+		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
+		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';				
+
+		// paginate 
+		$SOURCE_MODEL = Session::read("WMS.{$id}.Workorder.source_model"); 
+		$paginateModel = 'Asset';
+		$Model = ClassRegistry::init($paginateModel);
+		// map correct paginateArray based on $SOURCE_MODEL
+		$this->paginate[$paginateModel] = $this->paginate[$SOURCE_MODEL.$paginateModel];
+		$Model->Behaviors->attach('Pageable');
+		$Model->Behaviors->attach('WorkorderPermissionable', array('type'=>$this->modelClass, 'uuid'=>$id));
+		$paginateArray = $this->paginate[$paginateModel];
+		
+/*
+ * operator options:
+ * 		= hide score, editor not influenced by existing score
+ * 		= show ONLY UserEdit.rating, by AppController::userid
+ * 		= show hidden shots, why? for training sets, but required for workorders?
+ * 		?? = join to BestShotSystem only, for workorder processing?
+ * 		
+ */ 
+ 	$paginateArray['extras']['show_hidden_shots'] = 0;
+	$paginateArray['extras']['only_shots'] = 1;	
+	$paginateArray['extras']['only_bestshot_system'] = 1;	
+	$paginateArray['extras']['show_inactive_shots'] = !empty($this->passedArgs['all-shots']);
+	if (!empty($this->passedArgs['only-script-shots'])) {
+		$paginateArray['extras']['show_inactive_shots'] = 1;
+		$paginateArray['extras']['only_shots'] = 1;	
+		$paginateArray['extras']['shot-priority'] = 'SCRIPT';
+	};
+		
+		$paginateArray['extras']['group_as_shot_permission'] = $Model->Behaviors->attached('WorkorderPermissionable');	
+		
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
+		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
+		$pageData = $this->paginate($paginateModel);
+		$raw_shots = Set::extract($pageData, "{n}.Shot");	// for PAGE.jsonData.Shot
+		$pageData = Set::extract($pageData, "{n}.{$paginateModel}");
+		// end paginate
+		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
+		$castingCall = $this->CastingCall->getCastingCall($pageData);
+		$this->viewVars['jsonData']['castingCall'] = $castingCall;
+		
+		/*
+		 * add Shot data inline
+		 */ 
+		$shotIds = Set::extract("/shot_id",$pageData);
+		$shotType = $SOURCE_MODEL=='User' ? 'Usershot' : 'Groupshot';
+		$paginateAlias = 'Shot';		// store paginate data/results under this key
+		
+// TODO: cannot use habtm Alias because Fields uses Model->name=Asset for the From table	
+// 			should we fix this to make a cleaner implementation?	
+		// $habtm['hasAndBelongsToMany'][$paginateAlias]=$this->Workorder->hasAndBelongsToMany['Asset'];
+		// $this->Workorder->bindModel($habtm);
+		// $this->Workorder->{$paginateAlias}->Behaviors->attach('WorkorderPermissionable', array('type'=>$this->modelClass, 'uuid'=>$id));
+		
+		// this version uses paginate('Asset'), but manually places paging data under a different key, ['PageableAlias']
+		// TODO: fix ['PageableAlias'] and ['$paginateCacheKey'] overlap
+		$shot_paginateArray = $this->paginate[$SOURCE_MODEL.$paginateModel]; //array_merge($this->paginate[$SOURCE_MODEL.$paginateModel], $this->paginate[$paginateModel]['extras']); 
+		$shot_paginateArray =  $Model->getPaginatePhotosByShotId($shotIds, $shot_paginateArray, $shotType);
+		$shot_paginateArray['PageableAlias'] = $paginateAlias;					// Pageable?
+		$shot_paginateArray['extras']['$paginateCacheKey'] = $paginateAlias;	// AppModel
+		$this->paginate[$paginateAlias] = $Model->getPageablePaginateArray($this, $shot_paginateArray, $paginateAlias);
+		Configure::write("paginate.Options.{$paginateAlias}.limit", 999);			// Pageable?
+// We need to preserve the paging counts under a different key, and restore the original paging Counts for Assets		
+$paging[$paginateModel] = $this->params['paging'][$paginateModel];		
+		$shotData = $this->paginate($paginateModel);		// must paginate using Model->name because of how fields and conditions are set up
+		$shotData = Set::extract($shotData, "{n}.{$paginateModel}");
+$paging[$paginateAlias] = $this->params['paging'][$paginateModel];
+$this->params['paging'] = $paging;
+		Configure::write('paginate.Model', $paginateModel);		// original paging Counts for Asset, not Shot
+		
+		$this->viewVars['jsonData']['shot_CastingCall'] = $this->CastingCall->getCastingCall($shotData);
+		// extract Shot data from Assets
+		foreach ($raw_shots as $i=>$row) {
+			$shot = array('id'=>$row['shot_id']);
+			$shot['owner_id'] = $row['shot_owner_id'];
+			$shot['priority'] = $row['shot_priority'];
+			$shot['count'] = $row['shot_count'];
+			$shot['active'] = $row['shot_active'];
+			$shots[$row['shot_id']] = $shot;
+		}
+		$this->viewVars['jsonData']['shot_CastingCall']['shot_extras'] = $shots;
+		$done = $this->renderXHRByRequest('json', '/elements/photo/roll');
+		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
+
+				
+		/*
+		 * render page
+		 */
+		 
+		$options = array(
+			'contain'=>array('Workorder'),
+			'conditions'=>array('TasksWorkorder.id'=>$id)
+		);
+		$data = $this->TasksWorkorder->find('first', $options);
+		$data = array_merge($this->Auth->user(), $data);
+		if (empty($data)) {
+			/*
+			 * handle no permission to view record
+			 */
+			$this->Session->setFlash(sprintf(__('No %s found.', true), 'Photos'));
+			$this->redirectSafe();
+		} else {
+			$this->set('data', $data);
+			$this->viewVars['jsonData']['Workorder'][]=$data['Workorder'];
+			$this->viewVars['jsonData']['TasksWorkorder'][]=$data['TasksWorkorder'];
+			// Session::write('lookup.owner_names', Set::merge(Session::read('lookup.owner_names'), Set::combine($data, '/Owner/id', '/Owner/username')));
+		}
+		$this->set(array('assets'=>$data,'class'=>'Asset'));
+		// $this->render('/elements/dumpSQL');		
+		
+	}
+
+
 	
 	/**
 	 * show TasksWorkorder as photo gallery
