@@ -607,7 +607,11 @@ $this->params['paging'] = $paging;
 		 */
 		 
 		$options = array(
-			'contain'=>array('TasksWorkorder.id', 'TasksWorkorder.task_sort', 'TasksWorkorder.operator_id'),
+			'contain'=>array(
+				'TasksWorkorder'=>array('fields'=>array('TasksWorkorder.id', 'TasksWorkorder.task_sort', 'TasksWorkorder.operator_id')),
+				'Source',
+				'Client',
+			),		
 			'conditions'=>array('Workorder.id'=>$id)
 		);
 		$data = $this->Workorder->find('first', $options);
@@ -622,6 +626,15 @@ $this->params['paging'] = $paging;
 			$this->set('data', $data);
 			$this->viewVars['jsonData']['Workorder'][]=$data['Workorder'];
 			Session::write('lookup.owner_names', Set::merge(Session::read('lookup.owner_names'), Set::combine($data, '/Owner/id', '/Owner/username')));
+			
+			
+			$description = array();
+			$description['id'] = "w:{$data['Workorder']['id']}"; 
+			$description['tw-type'] = ""; 
+			$description['wo-type'] = strtolower($data['Workorder']['source_model']);
+			$description['wo-label'] = $data['Source']['label'];
+			$description['wo-count'] = $data['Workorder']['assets_workorder_count'];
+			$this->set('description', $description);
 		}
 		$this->set(array('assets'=>$data,'class'=>'Asset'));
 		// $this->render('/elements/dumpSQL');		
