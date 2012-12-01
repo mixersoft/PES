@@ -612,35 +612,36 @@ if (!empty($this->passedArgs['raw'])) {
 		$forceXHR = setXHRDebug($this, 0,1);
 		$message = $response = array();
 		$success = false;
-		if (!empty($this->data)) {
-			if ($this->data['flag']) {
-				$data['ActivityLog']['model'] = 'Asset';
-				$data['ActivityLog']['foreign_key'] = $this->data['Asset']['id'];
-				// $data['ActivityLog']['model'] = 'TasksWorkorder';
-				$data['ActivityLog']['tasks_workorder_id'] = $this->data['TasksWorkorder']['id'];
-				$data['ActivityLog']['comment'] = $this->data['message']."asset_id={$this->data['Asset']['id']}";
-				$data['ActivityLog']['editor_id'] = AppController::$userid;
-				$data['ActivityLog']['flag_status'] = 1;
-				$data['ActivityLog']['parent_flag_status'] = 1;	// set parent flag to 1, if any
-				$ret = $this->TasksWorkorder->ActivityLog->save($data);
-				if ($ret) {
-					$log = $this->TasksWorkorder->ActivityLog->read(); 
-					$ret2 = $this->TasksWorkorder->ActivityLog->updateParentFlag($log['ActivityLog']['id'], $data['ActivityLog']['flag_status']);
-					if ($ret2){
-						$message[] = 'This item was successfully flagged';
-						$response[] = $log;
-						$response['flagTarget'] = Router::url(array('action'=>'snap', $this->data['Asset']['id']), true);
-						$success = true;
-					} else if ($ret2 !== null){
-						$message[] = 'Error: there was a problem updating the flag status of the parent comment';
-					};
-				} else {
-					$message[] = 'Error: there was a problem saving the flagged comment';
-				}
-			}
-			// just show POST vars for now
-			$this->viewVars['jsonData'] = compact('success', 'message', 'response');
+		try {
+			if (empty($this->data)) throw new Exception("ERROR: HTTP POST data not found");	
+			if (empty($this->data['flag'])) throw new Exception("ERROR: HTTP POST data invalid");  
+			if (!in_array(AppController::$role, array('EDITOR', 'MANAGER'))) throw new Exception("ERROR: You must be an editor to flag a snap");
+			
+			$Editor = ClassRegistry::init('WorkorderEditor');
+			$editor = $Editor->find('first', array('conditions'=>array('`WorkorderEditor`.user_id'=>AppController::$userid)) );
+			if (!$editor) throw new Exception("Error: editor not found"); 
+			$data['ActivityLog']['editor_id'] = $editor['WorkorderEditor']['id'];
+			
+			$data['ActivityLog']['model'] = 'Asset';
+			$data['ActivityLog']['foreign_key'] = $this->data['Asset']['id'];
+			$data['ActivityLog']['tasks_workorder_id'] = $this->data['TasksWorkorder']['id'];
+			$data['ActivityLog']['comment'] = $this->data['message']."asset_id={$this->data['Asset']['id']}";
+			$data['ActivityLog']['flag_status'] = 1;
+			$data['ActivityLog']['parent_flag_status'] = 1;	// set parent flag to 1, if any
+			$ret = $this->TasksWorkorder->ActivityLog->save($data);
+			if (!$ret) throw new Exception("ERROR: there was a problem saving the flagged comment");
+			$log = $this->TasksWorkorder->ActivityLog->read(); 
+			$ret2 = $this->TasksWorkorder->ActivityLog->updateParentFlag($log['ActivityLog']['id'], $data['ActivityLog']['flag_status']);
+			if (!$ret2) throw new Exception("ERROR: there was a problem updating the flag status of the parent comment");
+			
+			$success = true;
+			$message[] = 'This item was successfully flagged';
+			$response[] = $log;
+			$response['flagTarget'] = Router::url(array('action'=>'snap', $this->data['Asset']['id']), true);
+		} catch (Exception $e) {
+			$message[] = $e->getMessage();
 		}
+		$this->viewVars['jsonData'] = compact('success', 'message', 'response');
 		$done = $this->renderXHRByRequest('json', null, null , 0);
 	}
 }
