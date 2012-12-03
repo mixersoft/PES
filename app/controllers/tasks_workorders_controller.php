@@ -460,7 +460,6 @@ $this->params['paging'] = $paging;
 			'contain'=>array('Workorder'),
 			'conditions'=>array('TasksWorkorder.id'=>$id)
 		);
-		$data = $this->TasksWorkorder->find('first', $options);
 
 		// paginate 
 		$SOURCE_MODEL = Session::read("WMS.{$id}.Workorder.source_model"); // TasksWorkordersController::$source_model;
@@ -508,6 +507,16 @@ if (!empty($this->passedArgs['raw'])) {
 		/*
 		 * render page
 		 */ 
+		$options = array(
+			'contain'=>array(
+				'Task',
+				'Workorder'=>array(
+					'Source',
+					'Client',
+				)),
+			'conditions'=>array('TasksWorkorder.id'=>$id)
+		);
+		$data = $this->TasksWorkorder->find('first', $options);		 
 		$data = array_merge($this->Auth->user(), $data);
 		if (empty($data)) {
 			/*
@@ -520,6 +529,14 @@ if (!empty($this->passedArgs['raw'])) {
 			$this->viewVars['jsonData']['Workorder'][]=$data['Workorder'];
 			$this->viewVars['jsonData']['TasksWorkorder'][]=$data['TasksWorkorder'];
 			Session::write('lookup.owner_names', Set::merge(Session::read('lookup.owner_names'), Set::combine($data, '/Owner/id', '/Owner/username')));
+			
+			$description = array();
+			$description['id'] = "t:{$data['TasksWorkorder']['id']}"; 
+			$description['tw-type'] = $data['Task']['name']; 
+			$description['wo-type'] = strtolower($data['Workorder']['source_model']);
+			$description['wo-label'] = $data['Workorder']['Source']['label'];
+			$description['wo-count'] = $data['TasksWorkorder']['assets_task_count'];
+			$this->set('description', $description);
 		}
 		$this->set(array('assets'=>$data,'class'=>'Asset'));
 		

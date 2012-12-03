@@ -68,24 +68,8 @@ $this->viewVars['jsonData']['STATE'] = $state;
 			SNAPPI.UIHelper.nav.setDisplayOptions();
 			SNAPPI.STATE.galleryType = 'Photo';
 			SNAPPI.startListeners();	// catch any PAGE.jsonData.listeners by XHR
-			/*
-			 *  load montage OR gallery 
-			 */
-			try {
-				var node = SNAPPI.Y.one('nav.section-header'); 
-				if (PAGE.jsonData.montage) {
-					// open montage view
-					node.one('li.montage').addClass('focus');
-					var perpage = PAGE.jsonData.montage.Roles.length;
-					// NOTE: montage is sorted/sliced and uses Roles.photo_id
-					SNAPPI.UIHelper.create._GET_MONTAGE({perpage:perpage, batch:null});
-				} else {
-					node.one('li.gallery').addClass('focus'); 
-console.log('initializing GalleryView');						 
-				    new SNAPPI.Gallery({type:SNAPPI.STATE.galleryType});
-				    SNAPPI.Y.one('.montage-container').addClass('hide');
-				}				
-			} catch(e){}
+			
+			new SNAPPI.Gallery({type:SNAPPI.STATE.galleryType});
 			SNAPPI.STATE.hints = SNAPPI.STATE.hints || {}; 
 		} catch (e) {}
 	};

@@ -1,6 +1,6 @@
 <?php 
 /*
- *  * WORKORDER VIEW (copied from: /elements/photos/roll)
+ *  * WORKORDER VIEW (called from: /workorders/snap/gallery.ctp)
  */ 
 	$label = array();
 	$label[] = "<span class='tw-id'>{$description['id']}</span>"; 
