@@ -37,7 +37,8 @@
 		// Thumbnail Factory
 		SNAPPI.namespace('SNAPPI.Factory');
 		SNAPPI.Factory.Thumbnail = ThumbnailFactory;
-
+		ThumbnailFactory.PhotoWorkorder = _Y.merge(ThumbnailFactory.Photo, ThumbnailFactory.PhotoWorkorder );
+		// ThumbnailFactory.PhotoWorkorder.defaultCfg.type = 'PhotoWorkorder';
 	}	
 	
 	// // find only visible elements. copied from SNAPPI.util.isDOMVisible(n);
@@ -206,6 +207,7 @@
 					exists = thumbnail.node.one('figcaption li.score');
 				break;
 				case 'Photo':
+				case 'PhotoWorkorder':
 				 	exists = thumbnail.node.one('figcaption li.score');
 				break;
 			}
@@ -252,6 +254,7 @@
 								}							
 								break;
 							case 'Photo':
+							case 'PhotoWorkorder':
 								if (shotCount > 6) {
 									exists = '<div class="hidden-shot" title="'+tooltip+'"></div>';
 									thumbnail.node.one('figure figcaption').insert(exists, 'before');						
@@ -1119,6 +1122,30 @@
 			console.log("Photo Thumbnail Actions Click;");
 		},
 	};
+	// called from /views/elements/workorder/snap/gallery.ctp
+	ThumbnailFactory.PhotoWorkorder = {
+		defaultCfg : ThumbnailFactory.Photo.defaultCfg,
+		markup: '<article class="FigureBox Photo">'+
+                '	<figure><img alt="" src="">'+
+                '    <figcaption><ul class="extras">'+
+                '    	 <li class="rating wrap-bg-sprite"></li>'+
+                '        <li class="score">0.0</li>'+
+                '        <li class="icon context-menu"><img alt="" title="actions" src="/static/img/css-gui/icon2.png"></li>'+
+                '        <li class="icon flag">&nbsp;</li>'+
+				'	</ul></figcaption></figure>'+
+				'</article>',
+		renderElementsBySize : function (size, audition, cfg){
+			ThumbnailFactory.Photo.renderElementsBySize.call(this, size, audition, cfg);
+			// render flagged
+			if (audition.Audition.Photo.Flagged !== null) {
+				var flag_node = this.node.one('li.flag');
+				flag_node.setContent('F');
+				if (parseInt(audition.Audition.Photo.Flagged)) flag_node.addClass('flagged');
+				else flag_node.addClass('cleared');
+			}
+			return this;
+		}
+	}
 	ThumbnailFactory.PhotoAirUpload = {
 		markup: '<article class="FigureBox PhotoAirUpload">'+
                 '	<figure>'+

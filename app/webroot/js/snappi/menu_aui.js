@@ -1550,18 +1550,31 @@ console.log("delegateHost="+delegateHost._yuid);
 			menuItem.hide();
 		}
 	}
+	MenuItems.wms_workorder_toggle_flag_beforeShow = function(menuItem, menu){
+		var role = SNAPPI.STATE.controller.ROLE;
+		if (/(EDITOR|MANAGER)/.test(role)) {
+			var thumbnail = menu.get('currentNode');	// target
+			var audition = SNAPPI.Auditions.find(thumbnail.uuid);
+			var isFlagged = audition.Audition.Photo.Flagged;
+			if (isFlagged && parseInt(isFlagged)) menuItem.setContent('clear Flag');
+			else menuItem.setContent('raise Flag');
+			menuItem.show();
+		} else {
+			menuItem.hide();
+		}
+	}
 	MenuItems.wms_workorder_toggle_flag_click = function(menuItem, menu){
 		var role = SNAPPI.STATE.controller.ROLE;
 		if (/(EDITOR|MANAGER)/.test(role)) {
 			// POST to 
-			var postData, ioCfg, target, controller, model, isFlagged;
+			var postData, ioCfg, target, args, controller, model, isFlagged;
 			
-			isFlagged = menuItem.get('innerHTML')[0] == '▶';  // same as '&#x25B6;'
+			isFlagged = menuItem.get('innerHTML') == 'clear Flag';  // same as '&#x25B6;'
 			
 			controller = SNAPPI.STATE.controller;
 			model = controller['class'];
 			target = menu.get('currentNode');
-				
+			args = {thumbnail: target};	
 			postData = {};
 			postData["data["+model+"][id]"] = controller.xhrFrom.uuid;
 			postData["data[Asset][id]"] = target.Thumbnail.uuid;
@@ -1571,20 +1584,28 @@ console.log("delegateHost="+delegateHost._yuid);
 				// TODO: loadingmask is in the wrong place, not visible
 				menuItem.loadingmask.show();
 				menuItem.io.set('data', postData);
+				menuItem.io.set('arguments', args);
 				menuItem.io.start();
 			} else {
 				ioCfg = {
 					uri: '/'+controller.alias+'/flag/.json',
 					method: "POST",
 					qs: postData,
+					arguments: args,
 					on: {
 						successJson: function(e, i,o,args) {
 							var resp = o.responseJson;
 							menu.hide();
 							if (resp.success) {
 								isFlagged = isFlagged ? 0 : 1;		// toggle value
-								if (isFlagged) menuItem.setContent('&#x25B6; Flag');
-								else menuItem.setContent('Flag');
+								if (isFlagged) {
+									menuItem.setContent('clear Flag');
+									args.thumbnail.one('li.flag').setContent('F').addClass('flagged');
+								} else {
+									menuItem.setContent('raise Flag');
+									args.thumbnail.one('li.flag').setContent('F').addClass('cleared');
+								}
+								
 							}
 							return false;	// do NOT replace menuItem content
 						}

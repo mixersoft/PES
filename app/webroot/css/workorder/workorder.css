@@ -84,3 +84,20 @@ section.gallery.shot section.filmstrip.shot section.gallery-header nav.toolbar u
 	height: auto;
 	padding: 2px;
 }
+
+li.icon.flag {
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 2px 4px;	
+    font-size: 9pt;
+}
+li.icon.flag.cleared { 
+	border-radius: 3px 3px 3px 3px;
+	background: none repeat scroll 0 0 green;
+}
+
+li.icon.flag.flagged { 
+	border-radius: 3px 3px 3px 3px;
+	background: none repeat scroll 0 0 #CA291A;
+}

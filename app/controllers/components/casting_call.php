@@ -173,6 +173,7 @@ if (!isset($exif['root']['imageWidth'])) {
 		$Rating = (!empty($row['rating'])) ? $row['rating'] : null;
 		$Score = number_format(round($row['score'] , 1),1);
 		$Votes = @ifed($row['votes'], null);
+		$Flagged = $row['flag_status'];
 //TODO: hack until json_exif[preview][Orientation] saved to rotate
 $previewOrientation = 	isset($exif['preview']['Orientation']) ? $exif['preview']['Orientation'] : 1;	
 		$Rotate = (!empty($row['rotate'])) ? $row['rotate'] : $previewOrientation;
@@ -189,14 +190,14 @@ $previewOrientation = 	isset($exif['preview']['Orientation']) ? $exif['preview']
 		$BatchId = (!empty($row['batchId'])) ? $row['batchId'] : '';
 		$Keyword = (!empty($row['keyword'])) ? $row['keyword'] : '';
 		$Created = (!empty($row['created'])) ? $row['created'] : '';
-
 		$Photo = compact('id','W','H','Fix','Img','isOwner','DateTaken','TS','ExifColorSpace','ExifFlash','ExifOrientation', 'Caption','origSrc','CameraId',
 			/*
 			 * extended properties
 			 */
 	//		'IsFlash','IsRGB','UploadId',
 			'OwnerId', 'ProviderAccountId',
-			'BatchId','Keyword','Created'
+			'BatchId','Keyword','Created',
+			'Flagged'
 		);
 		if (isset($row['asset_count'])) {
 			// use join with shots table, only add $SubstitutionREF when asset_count > 1

@@ -74,15 +74,28 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
 		extract($this->settings[$Model->alias]);
 		switch ($type) {
 			case 'TasksWorkorder': 
-				$queryData = $this->getPaginatePhotosByTasksWorkorderId($uuid, $queryData);
+				$queryData = $this->getPaginatePhotosByTasksWorkorderId(AppController::$uuid, $queryData);
 				break;
 			case 'Workorder': 
-				$queryData = $this->getPaginatePhotosByWorkorderId($uuid, $queryData);
+				$queryData = $this->getPaginatePhotosByWorkorderId(AppController::$uuid, $queryData);
 				break;
 			default:
 				throw new Exception('ERROR: workorder permissionable initialized incorrectly, possible security violation.');
 				break;
 		}
+		if (!empty($queryData['extras']['show_flags'])){
+			$join_column = $type=='TasksWorkorder' ? 'tasks_workorder_id' : 'workorder_id';
+			$queryData['fields'][] = "`ActivityLog`.`flag_status`";
+			$queryData['joins'][] = array(
+				'table'=>'snappi_wms.activity_logs',
+				'alias'=>'ActivityLog',
+				'type'=>'LEFT',
+				'conditions'=>array(
+					"`ActivityLog`.`{$join_column}`" =>AppController::$uuid,
+					"`ActivityLog`.`foreign_key`=`Asset`.id",
+				),
+			);			
+		}		
 		return $queryData;
 	}	
 	

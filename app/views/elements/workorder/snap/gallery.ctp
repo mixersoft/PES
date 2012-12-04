@@ -32,7 +32,7 @@ $this->viewVars['jsonData']['STATE'] = $state;
 			SNAPPI.setPageLoading(true);
 			SNAPPI.mergeSessionData();
 			var cfg ={
-				type:'Photo',
+				type:'PhotoWorkorder',
 				isPreview: true, 
 			};
 			new SNAPPI.Gallery(cfg);
@@ -69,7 +69,10 @@ $this->viewVars['jsonData']['STATE'] = $state;
 			SNAPPI.STATE.galleryType = 'Photo';
 			SNAPPI.startListeners();	// catch any PAGE.jsonData.listeners by XHR
 			
-			new SNAPPI.Gallery({type:SNAPPI.STATE.galleryType});
+			new SNAPPI.Gallery({
+				type:SNAPPI.STATE.galleryType,
+				tnType: 'PhotoWorkorder',
+			});
 			SNAPPI.STATE.hints = SNAPPI.STATE.hints || {}; 
 		} catch (e) {}
 	};

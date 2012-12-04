@@ -469,6 +469,9 @@ AND includes.asset_id='{$assetId}';
 		if (!empty($results['0'])) {
 			array_push($merged, $results['0']);
 		}
+		if (!empty($results['ActivityLog']))  {
+			array_push($merged, $results['ActivityLog']);
+		}
  		if (count($merged)) {
  			array_unshift($merged, $results['Asset']);	//merge into 'Asset'
  			$results['Asset'] = call_user_func_array('array_merge', $merged);

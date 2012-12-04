@@ -470,14 +470,17 @@ if (!empty($this->passedArgs['all-shots'])) {
 	$paginateArray['extras']['show_inactive_shots']=1;		// includes Shot.inactive=0	
 	$paginateArray['extras']['only_shots']=1;
 }		
+	$paginateArray['extras']['show_flags']=1;
 	
 		$paginateArray['extras']['group_as_shot_permission'] = $Model->Behaviors->attached('WorkorderPermissionable');		
 		
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = $this->paginate($paginateModel);
+		
 		$pageData = Set::extract($pageData, "{n}.{$paginateModel}");
 		// end paginate
+		
 		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 		$castingCall = $this->CastingCall->getCastingCall($pageData);
 		$this->viewVars['jsonData']['castingCall'] = $castingCall;
@@ -747,7 +750,7 @@ $this->params['paging'] = $paging;
 		$success = false;
 		try {
 			if (empty($this->data)) throw new Exception("ERROR: HTTP POST data not found");	
-			if (empty($this->data['flag'])) throw new Exception("ERROR: HTTP POST data invalid");  
+			if (!isset($this->data['flag'])) throw new Exception("ERROR: HTTP POST data invalid");  
 			if (!in_array(AppController::$role, array('EDITOR', 'MANAGER'))) throw new Exception("ERROR: You must be an editor to flag a snap");
 			
 			$Editor = ClassRegistry::init('WorkorderEditor');
@@ -755,18 +758,30 @@ $this->params['paging'] = $paging;
 			if (!$editor) throw new Exception("Error: editor not found"); 
 			$data['ActivityLog']['editor_id'] = $editor['WorkorderEditor']['id'];
 			
-			$data['ActivityLog']['model'] = 'Asset';
-			$data['ActivityLog']['foreign_key'] = $this->data['Asset']['id'];
-			$data['ActivityLog']['workorder_id'] = $this->data['Workorder']['id'];
+			$find_options['model'] = 'Asset';
+			$find_options['foreign_key'] = $this->data['Asset']['id'];
+			$find_options['workorder_id'] = $this->data['Workorder']['id'];
+			// save or update???
+			$options['conditions'] = $find_options;
+			$found = $this->Workorder->ActivityLog->find('first', $options);
+			if ($found) {
+				$data['ActivityLog']['flag_id'] = $found['ActivityLog']['id'];
+				if ($this->data['flag']==0) $data['ActivityLog']['parent_flag_status'] = $this->data['flag'];	// clear or set parent flag	
+			} else {  	// NEW comment
+				$data['ActivityLog'] = array_merge($data['ActivityLog'],$find_options);
+				$data['ActivityLog']['flag_status'] = $this->data['flag'];	
+			}
+			// save data
 			$data['ActivityLog']['comment'] = $this->data['message']."asset_id={$this->data['Asset']['id']}";
-			$data['ActivityLog']['flag_status'] = 1;
-			$data['ActivityLog']['parent_flag_status'] = 1;	// set parent flag to 1, if any
+			// see POST to WMS/activity_logs/add			
 			$ret = $this->Workorder->ActivityLog->save($data);
 			if (!$ret) throw new Exception("ERROR: there was a problem saving the flagged comment");
 			$log = $this->Workorder->ActivityLog->read(); 
-			$ret2 = $this->Workorder->ActivityLog->updateParentFlag($log['ActivityLog']['id'], $data['ActivityLog']['flag_status']);
-			if (!$ret2) throw new Exception("ERROR: there was a problem updating the flag status of the parent comment");
-			
+
+			if (isset($data['ActivityLog']['parent_flag_status'])) {
+				$ret2 = $this->Workorder->ActivityLog->updateParentFlag($log['ActivityLog']['id'], $data['ActivityLog']['parent_flag_status']);
+				if (!$ret2) throw new Exception("ERROR: there was a problem updating the flag status of the parent comment");
+			}
 			$success = true;
 			$message[] = 'This item was successfully flagged';
 			$response[] = $log;

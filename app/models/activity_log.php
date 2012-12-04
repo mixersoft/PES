@@ -34,7 +34,7 @@ class ActivityLog extends AppModel {
 	*/
 	public function updateCacheFields($id) {
 		$log = $this->findById($id);
-		$forSave = array('id' => $id);
+		$forSave = array();
 		switch ($log['ActivityLog']['model']) {
 			case 'Workorder':
 				$forSave['workorder_id'] = $log['ActivityLog']['foreign_key'];
@@ -46,13 +46,15 @@ class ActivityLog extends AppModel {
 			break;
 			case 'Asset':
 				// NOTE: when flagging an Asset, you MUST provide the workorder_id/tasks_workorder_id 
-				if ($log['ActivityLog']['tasks_workorder_id']) {
+				if (!empty($log['ActivityLog']['tasks_workorder_id'])) {
 					$task = $this->TasksWorkorder->findById($log['ActivityLog']['tasks_workorder_id']);
 					$forSave['workorder_id'] = $task['TasksWorkorder']['workorder_id'];
-				} else return;
+				}
 			break;
 		}
-		return $this->save($forSave, array('callbacks' => false));
+		if (empty($forSave)) return;
+		$this->id = $id;
+		return $this->save(array('ActivityLog'=>$forSave), array('callbacks' => false));
 	}
 
 
@@ -67,7 +69,8 @@ class ActivityLog extends AppModel {
 	public function updateParentFlag($childrenId, $newFlagStatus) {
 		$comment = $this->findById($childrenId);
 		if (!$comment) return null;
-		return $this->save(array('id' => $comment['ActivityLog']['flag_id'], 'flag_status' => $newFlagStatus));
+		$this->id = $comment['ActivityLog']['flag_id'];
+		return $this->saveField('flag_status', $newFlagStatus);
 	}
 
 
