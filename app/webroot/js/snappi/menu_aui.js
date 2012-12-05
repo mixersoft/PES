@@ -1563,60 +1563,113 @@ console.log("delegateHost="+delegateHost._yuid);
 			menuItem.hide();
 		}
 	}
-	MenuItems.wms_workorder_toggle_flag_click = function(menuItem, menu){
+	MenuItems.wms_workorder_toggle_flag_click = function(menuItem, menu, e){
 		var role = SNAPPI.STATE.controller.ROLE;
-		if (/(EDITOR|MANAGER)/.test(role)) {
-			// POST to 
-			var postData, ioCfg, target, args, controller, model, isFlagged;
-			
-			isFlagged = menuItem.get('innerHTML') == 'clear Flag';  // same as '&#x25B6;'
-			
-			controller = SNAPPI.STATE.controller;
-			model = controller['class'];
-			target = menu.get('currentNode');
-			args = {thumbnail: target};	
-			postData = {};
-			postData["data["+model+"][id]"] = controller.xhrFrom.uuid;
-			postData["data[Asset][id]"] = target.Thumbnail.uuid;
-			postData["data[flag]"] = isFlagged ? 0 : 1;
-			postData["data[message]"] = "Put status message here.";
-			if (menuItem.io) {
-				// TODO: loadingmask is in the wrong place, not visible
-				menuItem.loadingmask.show();
-				menuItem.io.set('data', postData);
-				menuItem.io.set('arguments', args);
-				menuItem.io.start();
-			} else {
-				ioCfg = {
-					uri: '/'+controller.alias+'/flag/.json',
-					method: "POST",
-					qs: postData,
-					arguments: args,
-					on: {
-						successJson: function(e, i,o,args) {
-							var resp = o.responseJson;
-							menu.hide();
-							if (resp.success) {
-								isFlagged = isFlagged ? 0 : 1;		// toggle value
-								if (isFlagged) {
-									menuItem.setContent('clear Flag');
-									args.thumbnail.one('li.flag').setContent('F').addClass('flagged');
-								} else {
-									menuItem.setContent('raise Flag');
-									args.thumbnail.one('li.flag').setContent('F').addClass('cleared');
+		if (!/(EDITOR|MANAGER)/.test(role)) {
+			menuItem.hide();
+			return;
+		}
+		var thumbnail = menu.get('currentNode');	// target
+		var g = MenuItems.getGalleryFromTarget(thumbnail);
+		SNAPPI.Factory.Gallery.nav.toggle_ContextMenu(g, e);
+		
+		
+		// POST to 
+		var postData, ioCfg, target, args, controller, model, audition, isFlagged;
+		
+		audition = SNAPPI.Auditions.find(thumbnail.Thumbnail.uuid);
+		isFlagged = audition.Audition.Photo.Flagged;
+		controller = SNAPPI.STATE.controller;
+		model = controller['class'];
+		target = menu.get('currentNode');
+		postData = {};
+		postData["data["+model+"][id]"] = controller.xhrFrom.uuid;
+		postData["data[Asset][id]"] = target.Thumbnail.uuid;
+		postData["data[flag]"] = isFlagged ? 1 : 0;
+		
+		args = {
+			gallery: g,
+			thumbnail: target, 
+			postData: postData,
+			isFlagged: isFlagged,
+			uri: '/'+controller.alias+'/flag/.json',
+		};	
+		
+		
+		var dialogCfg = {
+			uri: '/combo/markup/flaggedCommentMarkup',
+			selector:'div.flag.comment-form',
+			height: 200,
+			width: 600,
+		};
+		var _handleDialogSubmit = function(e, args){
+				// POST to 
+				var ioCfg,
+					postNode = e.currentTarget,
+					postData = args.postData,
+					thumbnail = args.thumbnail
+					action = e.currentTarget.getAttribute('action');
+					
+				if (action=='toggle-flag') {
+					postData['data[flag]'] = args.isFlagged ? 0 : 1;	// toggle value
+				}	
+				postData["data[message]"] = dialog.getStdModNode('body').one('textarea').get('value');	
+				args.dialog = this;
+				
+				if (postNode.io) {
+					// after we close the dialog, we create NEW buttons for next call
+					// thus, we never reuse the postNode;
+					// TODO: loadingmask is in the wrong place, not visible
+					postNode.loadingmask.show();
+					postNode.io.set('data', postData);
+					postNode.io.set('arguments', args);
+					postNode.io.start();
+				} else {
+					ioCfg = {
+						uri: args.uri,
+						method: "POST",
+						qs: postData,
+						arguments: args,
+						on: {
+							successJson: function(e, i,o,args) {
+								var resp = o.responseJson;
+								if (resp.success) {
+									if (postData['data[flag]']) {
+										args.thumbnail.one('li.flag').setContent('F').replaceClass('cleared', 'flagged');
+									} else {
+										args.thumbnail.one('li.flag').setContent('F').replaceClass('flagged', 'cleared');
+									}
+									var audition = SNAPPI.Auditions.find(args.thumbnail.Thumbnail.uuid);
+									audition.Audition.Photo.Flagged = postData['data[flag]'];
 								}
-								
+								args.dialog.close();
+								return false;	// do NOT replace menuItem content
 							}
-							return false;	// do NOT replace menuItem content
 						}
 					}
-				}
-				ioCfg = SNAPPI.IO.pluginIO_RespondAsJson(ioCfg);
-				menuItem.plug(_Y.Plugin.IO, ioCfg);
+					ioCfg = SNAPPI.IO.pluginIO_RespondAsJson(ioCfg);
+					postNode.plug(_Y.Plugin.IO, ioCfg);
+				}				
+		};
+		_Y.once('snappi:dialog-body-rendered', function(dialog, cfg, g){
+			g.node.listen['Keydown_stopListening'](); // stop gallery KeyDown listener so we can type
+			if (parseInt(args.isFlagged) == 0) {
+				// change label of button
+				var b = dialog.getStdModNode('footer').one('.actions button.toggle-flag');
+				b.setContent("Comment and raise flag").replaceClass('green','red');
 			}
-		} else {
-			menuItem.hide();
-		}
+		}, dialog, g);
+		var dialog = SNAPPI.Alert.load(dialogCfg); // don't resize yet
+		dialog.once('close', function(e, g){
+			g.node.listen['Keydown_startListening']();		// restart listener
+		}, dialog, g);
+		var detach = dialog.get('boundingBox').delegate('click', 
+			function(e, args) {
+				detach.detach();
+				_handleDialogSubmit.call(this, e, args);
+			},
+			'.actions button', dialog, args);
+		return false;
 	}
 
 	/*

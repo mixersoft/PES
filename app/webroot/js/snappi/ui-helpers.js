@@ -186,6 +186,7 @@
 				}
 	    	}	    	
 		},
+		//  TODO: see also GalleryFactory.nav.toggle_ContextMenu. which one is deprecated?
 		toggle_ContextMenu : function(e, cfg) {
 			cfg = cfg || {};
 	    	var CSS_ID = UIHelper.util.getContextMenuIdFromNode(e.currentTarget, cfg.type);
@@ -1257,6 +1258,7 @@ console.info('Getting Story for rolecount='+roleCount);
         /**
          * @params cfg object, cfg.node, cfg.type = [group, photo, person, or Group|Collection|Person], 
          * 		i.e. .FigureBox.Group
+         * TODO: see also GalleryFactory.listeners.ContextMenu
          */
         ContextMenuClick : function(cfg) {
         	var node = cfg.node || _Y.one('.gallery .container');

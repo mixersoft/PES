@@ -766,13 +766,13 @@ $this->params['paging'] = $paging;
 			$found = $this->Workorder->ActivityLog->find('first', $options);
 			if ($found) {
 				$data['ActivityLog']['flag_id'] = $found['ActivityLog']['id'];
-				if ($this->data['flag']==0) $data['ActivityLog']['parent_flag_status'] = $this->data['flag'];	// clear or set parent flag	
+				$data['ActivityLog']['parent_flag_status'] = $this->data['flag'];	// clear or set parent flag	
 			} else {  	// NEW comment
 				$data['ActivityLog'] = array_merge($data['ActivityLog'],$find_options);
 				$data['ActivityLog']['flag_status'] = $this->data['flag'];	
 			}
 			// save data
-			$data['ActivityLog']['comment'] = $this->data['message']."asset_id={$this->data['Asset']['id']}";
+			$data['ActivityLog']['comment'] = $this->data['message'];
 			// see POST to WMS/activity_logs/add			
 			$ret = $this->Workorder->ActivityLog->save($data);
 			if (!$ret) throw new Exception("ERROR: there was a problem saving the flagged comment");

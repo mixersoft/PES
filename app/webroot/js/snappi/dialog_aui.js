@@ -456,6 +456,8 @@
 						} else markup = markup.outerHTML();
 						this.setStdModContent('body', markup);
 						content = this.getStdModNode('body').one('*');
+						if (content.one('.dialog-title')) this.getStdModNode('header').prepend(content.one('.dialog-title'));
+						if (content.one('.dialog-footer')) this.setStdModContent('footer', content.one('.dialog-footer'));
 						_Y.fire('snappi:dialog-body-rendered', this, _cfg);
 						_Y.fire('snappi:dialog-alert-xhr-complete', this, _cfg);
 						return false; 

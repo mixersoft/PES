@@ -233,6 +233,7 @@
     	/**
     	 * @params g SNAPPI.Gallery
     	 * @params e event, needs e.currentTarget
+    	 * TODO: see also UIHelper.nav.toggle_ContextMenu. which one is deprecated?
     	 */
     	toggle_ContextMenu : function(g, e) {
 	        e.preventDefault();
