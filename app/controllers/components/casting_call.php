@@ -173,7 +173,7 @@ if (!isset($exif['root']['imageWidth'])) {
 		$Rating = (!empty($row['rating'])) ? $row['rating'] : null;
 		$Score = number_format(round($row['score'] , 1),1);
 		$Votes = @ifed($row['votes'], null);
-		$Flagged = $row['flag_status'];
+		$Flagged = isset($row['flag_status']) ? $row['flag_status'] : null;
 //TODO: hack until json_exif[preview][Orientation] saved to rotate
 $previewOrientation = 	isset($exif['preview']['Orientation']) ? $exif['preview']['Orientation'] : 1;	
 		$Rotate = (!empty($row['rotate'])) ? $row['rotate'] : $previewOrientation;
