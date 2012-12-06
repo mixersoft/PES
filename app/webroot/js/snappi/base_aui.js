@@ -924,7 +924,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
                 },
                 'snappi-thrift-ui': {
                     path: 'uploader-ui.js',
-                    requires: ['node', 'snappi-io'],
+                    requires: ['node', 'snappi-io'], // 'snappi-thrift-css'
                 },   
             }
         };

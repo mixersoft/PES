@@ -105,6 +105,9 @@
 				<li class='btn orange rounded-5'>
 					<a action=<?php echo $launch_SnappiUploader ?> onclick='SNAPPI.ThriftUploader.action.launchTask("ur")'>Start Uploading</a>
 				</li>
+				<li class='btn red rounded-5' onclick='SNAPPI.ThriftUploader.action.refresh(false);'>
+					Stop
+				</li>
 				<li><input type="field" size='100' value='<?php echo "snaphappi://{$authToken64}_{$sessionId64}_ur" ?>'</input></li>
 			</ul>	
 			<hr>

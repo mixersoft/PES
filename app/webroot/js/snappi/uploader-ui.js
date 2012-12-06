@@ -42,35 +42,105 @@
 	ThriftUploader.action = {
 		timer: null,
 		launchTask: function(taskType) {
-			if (taskType=='ur') SNAPPI.ThriftUploader.action.refresh(true);
+			if (taskType=='ur') {
+				SNAPPI.ThriftUploader.action.refresh('restart');
+			}
+			ThriftUploader.ui._no_ui_update = 0;
 			var target = _Y.Lang.sub("snaphappi://{authToken64}_{sessionId64}_", PAGE.jsonData.nativeUploader);
 			var uri = target+taskType;
 			window.location.href = uri;
 		},
 		refresh: function(start) {
 			if (start) {
-				ThriftUploader.timer = _Y.later(60000, SNAPPI.xhrFetch, function(){
+				if (ThriftUploader.timer === false && start!=='restart') return;
+				ThriftUploader.timer = _Y.later(1000, SNAPPI.xhrFetch, function(){
 						var n = _Y.one( ThriftUploader.container_id );
-						this.requestFragment(n);			// this == SNAPPI.xhrFetch
-						 ThriftUploader.util.getTaskState(
+						var uri = n.getAttribute('xhrsrc');
+						uri += '/.json';			// use JSON request to refresh
+						ThriftUploader.util.getFolderState(
 							function(json) {
 								var response = json.response;
-								if (response.IsCancelled=='1') {
-									ThriftUploader.timer.cancel();
-									SNAPPI.xhrFetch.requestFragment(n);	// last refresh
-								} 
+								SNAPPI.ThriftUploader.ui.renderFolderState(response.folders);
+								if (response.taskState['ThriftSession']['is_cancelled']=='0') {
+									SNAPPI.ThriftUploader.action.refresh(true);
+								}
 							}
 						);
 					}, 
-					null, true
+					null, false
 				);
 			} else {
 				ThriftUploader.timer.cancel();
+				ThriftUploader.timer = false;
 			} 
 		}
 	}
 
+	ThriftUploader.ui = {
+		_folderState: null,
+		_no_ui_update: 0,
+		renderFolderState: function(folders) {
+			var i, row, rowid, uploaded, queued, row_updated, ui_updated;
+			var parent = _Y.one('#uploader-ui-xhr');
+			var old_FolderState = ThriftUploader.ui._folderState; 
+			ui_updated = false;
+			for (i in folders) {
+				row = folders[i];
+				rowid = '#fhash-'+row['ThriftFolder']['native_path_hash'];
+				row['ThriftFolder']['uploaded'] = row['0']['uploaded']; 
+				queued = row['ThriftFolder']['is_scanned']=='0' || row['ThriftFolder']['is_watched']=='1';
+				if ( queued	) {
+					try {
+						row_updated = row['ThriftFolder']['uploaded'] != old_FolderState[i]['ThriftFolder']['uploaded'];	
+						row_updated = row_updated || row['ThriftFolder']['count'] != old_FolderState[i]['ThriftFolder']['count'];
+					} catch (e) {
+						row_updated = true;					
+					}
+					if ( row_updated ){
+						// updated uploaded file
+						label = _Y.Lang.sub("{native_path} ({uploaded}/{count})", row['ThriftFolder']);
+						parent.one(rowid+' li.label').setContent(label);
+						parent.one(rowid).addClass('active');
+						ui_updated = true;
+						continue;
+					} else {
+						if (parent.one(rowid).hasClass('no-change'))
+							parent.one(rowid).removeClass('active').removeClass('no-change');
+						else parent.one(rowid).addClass('no-change'); // no
+					}
+				}
+				parent.one(rowid).removeClass('active').removeClass('no-change');  
+			}
+			ThriftUploader.ui._folderState = _Y.merge(folders);
+			// cancel ui updates if no action for too long
+			if (!ui_updated) {
+				ThriftUploader.ui._no_ui_update++; 
+				if (ThriftUploader.ui._no_ui_update > 5) ThriftUploader.action.refresh(false);
+			} else ThriftUploader.ui._no_ui_update = 0;
+		}
+	}
 	ThriftUploader.util = {
+		xhrJsonRequest: function(uri, reponse_key, successJson) {
+			var ioCfg = {
+					uri: uri ,
+					parseContent: true,
+					method: 'GET',
+					dataType: 'json',
+					context: ThriftUploader,	
+					on: {
+						success:  function(id, o, args) {
+							if (o.getResponseHeader('Content-Type')!='application/json') return false;
+							var json = _Y.JSON.parse(o.responseText);
+							if (json.success) {
+								if (reponse_key) json.response = json.response[reponse_key]; 
+								successJson(json);
+							}
+							return true;
+						}
+					}
+				};
+			_Y.io(uri, ioCfg);
+		},
 		setFolderState: function(n) {
 			var uri = '/thrift/set_watched_folder/.json';
 			var postData = {};
@@ -105,26 +175,18 @@
 		},
 		getTaskState: function(successJson){
 			var uri = '/thrift/task_helper/fn:GetState/.json';
-			var ioCfg = {
-					uri: uri ,
-					parseContent: true,
-					method: 'GET',
-					dataType: 'json',
-					context: ThriftUploader,	
-					on: {
-						success:  function(id, o, args) {
-							if (o.getResponseHeader('Content-Type')!='application/json') return false;
-							var json = _Y.JSON.parse(o.responseText);
-							if (json.success) {
-								json.response = json.response['GetState']; 
-								successJson(json);
-							}
-							return true;
-						}
-					}
-				};
-			_Y.io(uri, ioCfg);
-		}
+			this.xhrJsonRequest(uri, 'GetState', successJson);
+		},
+		getFolders: function(successJson){
+			var uri = '/thrift/task_helper/fn:GetFolders/.json';
+			this.xhrJsonRequest(uri, 'GetFolders', successJson);
+		},
+		getFolderState: function(successJson) {
+			// helper method which calls /my/uploader_ui/.json
+			// NOT A THRIFT API method
+			var uri = '/my/uploader_ui/.json';
+			this.xhrJsonRequest(uri, null, successJson);
+		}, 
 	}
 	ThriftUploader.listeners = {
 

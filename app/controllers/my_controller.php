@@ -685,10 +685,10 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			$session = $this->ThriftSession->checkDevice($taskID['Session'], $taskID['DeviceID']);
 			if (!$session) 
 				throw new Exception("ERROR: DeviceID should alreay be bound to Session");
-			
 			// on GetFolders()
 			$folders = $this->ThriftSession->ThriftDevice->ThriftFolder->findByDeviceUUID($taskID['DeviceID'], $is_watched = null); 
-			$response = compact('taskID', 'folders');
+			$taskState['ThriftSession'] = $session['ThriftSession'];
+			$response = compact('taskID', 'folders', 'taskState');
 		} catch (Exception $ex) {
 			$message = $ex->getMessage();
 			$success = false;
@@ -703,7 +703,7 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 		// for HTML response
 		$this->layout = 'ajax';
 		$this->viewPath = 'my';
-		$this->set(compact('taskID', 'folders'));
+		$this->set($response);
 		$this->render('/elements/thrift/folder'); 		
 	}
 	

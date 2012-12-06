@@ -32,6 +32,7 @@
 	<link rel="stylesheet" type="text/css" media="all" href="<?php echo AppController::$http_static[1]; ?>/combo/js?baseurl=svc/lib/alloy-1.5.0/build&/aui-skin-classic/css/aui-skin-classic-all-min.css&/aui-loading-mask/assets/skins/sam/aui-loading-mask.css&/aui-overlay/assets/skins/sam/aui-overlay.css" />
 	<link rel="stylesheet" type="text/css" href="<?php echo AppController::$http_static[0]; ?>/min/b=static/css&amp;f=reset.css,960.css" />	
 	<link rel="stylesheet" type="text/css" media="all" href="<?php echo AppController::$http_static[1]; ?>/css/manoj-css/style.1.css" />
+	<link rel="stylesheet" type="text/css" media="all" href="<?php echo AppController::$http_static[1]; ?>/css/uploader/thrift-uploader.css" />
 	<link rel="icon" type="image/x-icon" href="/static/img/favicon.ico">
 	<?php
 		$this->Layout->output($this->viewVars['HEAD_for_layout']);
