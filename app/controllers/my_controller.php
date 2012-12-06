@@ -664,30 +664,45 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 	function uploader_ui () {
 		$forceXHR = setXHRDebug($this, 0, 1);
 		$this->autoRender = false;
-		if (!$this->RequestHandler->isAjax() && !$forceXHR) {
-			return;
-		} 
+		$success = true;
+		try {
+			if (!$this->RequestHandler->isAjax() && !$forceXHR) 
+				throw new Exception("ERROR: This action is only available by XHR");
+			
+			/*
+			 * Get correct ProviderAccount
+			 * 	NOTE: at this point, we do know know the DeviceID/provider_key
+			 */
+			// $data = $this->User->ProviderAccount->getByOwner($userid, $options);
+			
+			$userid = AppController::$userid;
+			$taskID = Session::read('thrift-task');  // set in /my/uploader parent action
+			$this->ThriftSession = ClassRegistry::init('ThriftSession');
+			if (!$taskID)
+				throw new Exception("ERROR: TaskID not found in session");
+	
+			// on first POST of TaskID, bind taskID->DeviceID with Session	
+			$session = $this->ThriftSession->checkDevice($taskID['Session'], $taskID['DeviceID']);
+			if (!$session) 
+				throw new Exception("ERROR: DeviceID should alreay be bound to Session");
+			
+			// on GetFolders()
+			$folders = $this->ThriftSession->ThriftDevice->ThriftFolder->findByDeviceUUID($taskID['DeviceID'], $is_watched = null); 
+			$response = compact('taskID', 'folders');
+		} catch (Exception $ex) {
+			$message = $ex->getMessage();
+			$success = false;
+		}
 		
+		if ($this->RequestHandler->ext=='json') {
+			$this->viewVars['jsonData'] = compact('success', 'message','response');
+			$done = $this->renderXHRByRequest('json', null, null , 0);
+			if ($done) return;
+		}
 		
+		// for HTML response
 		$this->layout = 'ajax';
 		$this->viewPath = 'my';
-		$userid = AppController::$userid;
-		/*
-		 * Get correct ProviderAccount
-		 * 	NOTE: at this point, we do know know the DeviceID/provider_key
-		 */
-		// $data = $this->User->ProviderAccount->getByOwner($userid, $options);
-		
-		$userid = AppController::$userid;
-		$taskID = Session::read('thrift-task');
-		$this->ThriftSession = ClassRegistry::init('ThriftSession');
-
-		// on first POST of TaskID, bind taskID->DeviceID with Session	
-		$session = $this->ThriftSession->checkDevice($taskID['Session'], $taskID['DeviceID']);
-		if (!$session) throw new Exception("ERROR: DeviceID should alreay be bound to Session");
-		
-		// on GetFolders()
-		$folders = $this->ThriftSession->ThriftDevice->ThriftFolder->findByDeviceUUID($taskID['DeviceID'], $is_watched = null); 
 		$this->set(compact('taskID', 'folders'));
 		$this->render('/elements/thrift/folder'); 		
 	}
