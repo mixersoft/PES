@@ -54,6 +54,7 @@ class ThriftController extends AppController {
 	}
 	
 	// direct access to DB from POST, skips thrift Task API
+	// TODO: use var uri = '/thrift/task_helper/fn:SetWatchedFolder/.json';
 	function set_watched_folder() {
 		$forceXHR = setXHRDebug($this, 0);
 		$success = true; 
@@ -111,7 +112,7 @@ class ThriftController extends AppController {
 		$message = $response = array(); 
 		if (!$this->RequestHandler->isAjax() && !$forceXHR) {
 			$message[] = "Error: this API method is only availble by XHR";
-			$success = false;
+			// $success = false;
 		}
 		if ($this->RequestHandler->ext !== 'json' && !$forceXHR) {
 			$message[] = "Error: this API method is only availble for JSON requests";
@@ -138,6 +139,15 @@ class ThriftController extends AppController {
 					$state = $Task->GetState($TaskID);
 					$response['GetState'] = (array)$state;
 					break;
+				case 'GetFolders':
+					$state = $Task->GetFolders($TaskID);
+					$response['GetState'] = (array)$folders;
+					break;
+				case 'SetTaskState':
+					$pause = isset($this->params['named']['pause']) && $this->params['named']['pause']=='true';
+					$state = $Task->SetTaskState($TaskID, $pause);
+					$response['SetTaskState'] = $state;
+					break;
 			}
 		}
 		$this->viewVars['jsonData'] = compact('success', 'message','response');
@@ -149,7 +159,6 @@ class ThriftController extends AppController {
 	function test($service, $debug = 0) {
 		Configure::write('debug', $debug);
 		$this->_bootstrap_ThriftAPI($service);
-		
 		/******************************************************
 		 * 
 		 * Skip Thrift API and call Task Class directly
@@ -274,7 +283,7 @@ class ThriftController extends AppController {
 		 * Test ReportFileCount
 		 */
 // debug($folders);		
-		$changed = $Task->ReportFileCount($taskId, $folders[0],777);
+		$changed = $Task->ReportFileCount($taskId, $folders[0],765);
 		debug("ReportFileCount() result=".print_r($changed,true));	
 		
 		

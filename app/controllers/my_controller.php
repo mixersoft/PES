@@ -619,28 +619,6 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 		$session = $this->ThriftSession->checkDevice($taskID['Session'], $taskID['DeviceID']);
 		if (!$session) $session = $this->ThriftSession->bindDeviceToSession($taskID['Session'], $taskID['AuthToken'], $taskID['DeviceID']);
 		
-		
-		if (isset($this->params['url']['reset'])) { 	// reset folders for device
-			// set hardcoded GetFolders() data for TESTING, normally we'd use the TopLevelFolder app
-			$folder_state = array();
-			$folder_state[] = array('folder_path'=>'C:\\TEMP\\May', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0); 
-			$folder_state[] = array('folder_path'=>'C:\\TEMP\\small import test', 'is_scanned'=>0, 'is_watched'=>1, 'count'=>0);
-			$folder_state[] = array('folder_path'=>'C:\\TEMP\\folder with special char (;\'&.=^%$#@!) test', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0);
-			$folder_state[] = array('folder_path'=>'C:\\TEMP\\big-test', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0);
-			$folder_state[] = array('folder_path'=>'C:\\TEMP\\big-test\\events\\NYC', 'is_scanned'=>1, 'is_watched'=>0, 'count'=>0);
-			$folder_state[] = array('folder_path'=>'C:\\TEMP\\big-test\\events\\world thinking day', 'is_scanned'=>1, 'is_watched'=>1, 'count'=>0);
-		debug(Set::extract('/folder_path', $folder_state));	
-			// load folders to ThriftFolders for testing
-			$resetSQL = "delete f from thrift_folders f join thrift_devices d on d.id = f.thrift_device_id 
-					where d.device_UUID='{$taskID['DeviceID']}'";
-			$this->ThriftSession->query($resetSQL);
-			foreach($folder_state as $folder) {
-				$ret = $this->ThriftSession->ThriftDevice->ThriftFolder->addFolder(
-					$session['ThriftDevice']['id'], $folder['folder_path'], $folder);
-			}
-		}
-		
-		
 		/*
 		 * show express-uploads, if any
 		 *  see '/elements/group/express-upload'
@@ -654,7 +632,32 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			$this->Session->setFlash("ERROR: You are not authorized to view this record.");
 			// $this->redirectSafe();
 		} else {
-			$this->set('data', $data);			
+			
+			if (isset($this->params['url']['reset'])) { 	// reset folders for device
+				// set hardcoded GetFolders() data for TESTING, normally we'd use the TopLevelFolder app
+				$folder_state = array();
+				$folder_state[] = array('folder_path'=>'C:\\TEMP\\May', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0); 
+				$folder_state[] = array('folder_path'=>'C:\\TEMP\\small import test', 'is_scanned'=>0, 'is_watched'=>1, 'count'=>0);
+				$folder_state[] = array('folder_path'=>'C:\\TEMP\\folder with special char (;\'&.=^%$#@!) test', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0);
+				$folder_state[] = array('folder_path'=>'C:\\TEMP\\big-test', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0);
+				$folder_state[] = array('folder_path'=>'C:\\TEMP\\big-test\\events\\NYC', 'is_scanned'=>1, 'is_watched'=>0, 'count'=>0);
+				$folder_state[] = array('folder_path'=>'C:\\TEMP\\big-test\\events\\world thinking day', 'is_scanned'=>1, 'is_watched'=>1, 'count'=>0);
+			debug(Set::extract('/folder_path', $folder_state));	
+				// load folders to ThriftFolders for testing
+				$resetSQL = "delete f from thrift_folders f join thrift_devices d on d.id = f.thrift_device_id 
+						where d.device_UUID='{$taskID['DeviceID']}'";
+				$this->ThriftSession->query($resetSQL);
+				foreach($folder_state as $folder) {
+					$ret = $this->ThriftSession->ThriftDevice->ThriftFolder->addFolder(
+						$session['ThriftDevice']['id'], $folder['folder_path'], $folder);
+				}
+			}			
+			
+			// on GetFolders()
+			$folders = $this->ThriftSession->ThriftDevice->ThriftFolder->findByDeviceUUID($taskID['DeviceID'], $is_watched = null); 
+			$taskState['ThriftSession'] = $session['ThriftSession'];
+			
+			$this->set(compact('data', 'taskID', 'folders', 'taskState'));
 		}
 	}
 
@@ -699,7 +702,7 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			$done = $this->renderXHRByRequest('json', null, null , 0);
 			if ($done) return;
 		}
-		
+		// TODO: deprecated, only JSON reponse allowed
 		// for HTML response
 		$this->layout = 'ajax';
 		$this->viewPath = 'my';

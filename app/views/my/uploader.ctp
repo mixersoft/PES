@@ -111,10 +111,9 @@
 				<li><input type="field" size='100' value='<?php echo "snaphappi://{$authToken64}_{$sessionId64}_ur" ?>'</input></li>
 			</ul>	
 			<hr>
-<?php 
-	$ajaxSrc = Router::url(array('action'=>'uploader_ui'));
-	echo "<div id='uploader-ui-xhr' class='xhr-get' xhrSrc='{$ajaxSrc}' delay='0'></div>";
-?>
+			<div id='uploader-ui-xhr'>
+				<?php  echo $this->element('thrift/folder'); 	?>
+			</div>
 		</div>
 		<div>
 			<p><?php echo "authToken={$taskID['AuthToken']}"; ?></p>

@@ -43,12 +43,23 @@
 		timer: null,
 		launchTask: function(taskType) {
 			if (taskType=='ur') {
-				SNAPPI.ThriftUploader.action.refresh('restart');
+				/*
+				 * NOTE: this method directly changes ThriftSession.is_cancelled in the DB
+				 * not sure what the side effects are.
+				 */
+				ThriftUploader.util.pauseUploader(false, function(json){
+					SNAPPI.ThriftUploader.action.refresh('restart');
+					// LAUNCH native-uploader
+					var target = _Y.Lang.sub("snaphappi://{authToken64}_{sessionId64}_", PAGE.jsonData.nativeUploader);
+					var uri = target+taskType;
+					window.location.href = uri;
+				});				
 			}
-			ThriftUploader.ui._no_ui_update = 0;
-			var target = _Y.Lang.sub("snaphappi://{authToken64}_{sessionId64}_", PAGE.jsonData.nativeUploader);
-			var uri = target+taskType;
-			window.location.href = uri;
+			// ERROR: this call was canceling the pause method
+			// ThriftUploader.ui._no_ui_update = 0;
+			// var target = _Y.Lang.sub("snaphappi://{authToken64}_{sessionId64}_", PAGE.jsonData.nativeUploader);
+			// var uri = target+taskType;
+			// window.location.href = uri;
 		},
 		refresh: function(start) {
 			if (start) {
@@ -61,8 +72,10 @@
 							function(json) {
 								var response = json.response;
 								SNAPPI.ThriftUploader.ui.renderFolderState(response.folders);
+								SNAPPI.ThriftUploader.action.refresh(true);
 								if (response.taskState['ThriftSession']['is_cancelled']=='0') {
-									SNAPPI.ThriftUploader.action.refresh(true);
+									// refresh() will auto cancel after NO_UI_UPDATE_LIMIT
+									// SNAPPI.ThriftUploader.action.refresh(true);
 								}
 							}
 						);
@@ -70,25 +83,37 @@
 					null, false
 				);
 			} else {
-				ThriftUploader.timer.cancel();
+				if (ThriftUploader.timer) ThriftUploader.timer.cancel(); // cancels UI refresh
 				ThriftUploader.timer = false;
+				// TODO: set ThriftSession.IsCancelled=1
+				ThriftUploader.util.pauseUploader(true, function(json){
+					var check;
+				});
 			} 
 		}
 	}
 
 	ThriftUploader.ui = {
 		_folderState: null,
-		_no_ui_update: 0,
+		NO_UI_UPDATE_LIMIT: 10,
+		_no_ui_update_count: 0,
 		renderFolderState: function(folders) {
-			var i, row, rowid, uploaded, queued, row_updated, ui_updated;
-			var parent = _Y.one('#uploader-ui-xhr');
-			var old_FolderState = ThriftUploader.ui._folderState; 
+			var i, row, folder_row_node, rowid, uploaded, queued, row_updated, ui_updated, getCount,
+				parent = _Y.one('#uploader-ui-xhr');
+			var UI = ThriftUploader.ui;
+			var old_FolderState = UI._folderState; 
 			ui_updated = false;
 			for (i in folders) {
 				row = folders[i];
 				rowid = '#fhash-'+row['ThriftFolder']['native_path_hash'];
+				folder_row_node = parent.one(rowid);
 				row['ThriftFolder']['uploaded'] = row['0']['uploaded']; 
-				queued = row['ThriftFolder']['is_scanned']=='0' || row['ThriftFolder']['is_watched']=='1';
+				getCount = /\/[0\?]\)$/.test(folder_row_node.one('.label').getContent());
+				queued = getCount 
+					|| row['ThriftFolder']['is_scanned']=='0' 
+					|| row['ThriftFolder']['is_watched']=='1'
+					|| folder_row_node.one('.progress').hasClass('active');
+					
 				if ( queued	) {
 					try {
 						row_updated = row['ThriftFolder']['uploaded'] != old_FolderState[i]['ThriftFolder']['uploaded'];	
@@ -98,25 +123,33 @@
 					}
 					if ( row_updated ){
 						// updated uploaded file
-						label = _Y.Lang.sub("{native_path} ({uploaded}/{count})", row['ThriftFolder']);
-						parent.one(rowid+' li.label').setContent(label);
-						parent.one(rowid).addClass('active');
+						UI.renderFolderRow(row, folder_row_node);
 						ui_updated = true;
 						continue;
 					} else {
-						if (parent.one(rowid).hasClass('no-change'))
-							parent.one(rowid).removeClass('active').removeClass('no-change');
-						else parent.one(rowid).addClass('no-change'); // no
+						if (folder_row_node.one('.progress').hasClass('no-change'))
+							folder_row_node.one('.progress').removeClass('active').removeClass('no-change');
+						else folder_row_node.one('.progress').addClass('no-change'); // no
 					}
 				}
-				parent.one(rowid).removeClass('active').removeClass('no-change');  
+				if (row['ThriftFolder']['is_scanned']=='1' && row['ThriftFolder']['is_watched']!='1')  folder_row_node.one('.progress').replaceClass('pending', 'done');
+				folder_row_node.removeClass('active').removeClass('no-change');  
 			}
-			ThriftUploader.ui._folderState = _Y.merge(folders);
+			UI._folderState = _Y.merge(folders);
 			// cancel ui updates if no action for too long
 			if (!ui_updated) {
-				ThriftUploader.ui._no_ui_update++; 
-				if (ThriftUploader.ui._no_ui_update > 5) ThriftUploader.action.refresh(false);
-			} else ThriftUploader.ui._no_ui_update = 0;
+				UI._no_ui_update_count++; 
+				if (UI._no_ui_update_count > UI.NO_UI_UPDATE_LIMIT) ThriftUploader.action.refresh(false);
+			} else UI._no_ui_update_count = 0;
+		},
+		renderFolderRow: function(row_data, row_node) {
+			label = _Y.Lang.sub("{native_path} ({uploaded}/{count})", row_data['ThriftFolder']);
+			row_node.one('td.label').setContent(label);
+			row_node.one('.progress').addClass('active');
+			// pending/done
+			// progress bar
+			var percent = Math.round( 100* row_data['ThriftFolder']['uploaded']/row_data['ThriftFolder']['count']);
+			row_node.one('.progress span.fill').setStyles({width:percent+'%'}).setAttribute('title', percent+'%');
 		}
 	}
 	ThriftUploader.util = {
@@ -126,14 +159,15 @@
 					parseContent: true,
 					method: 'GET',
 					dataType: 'json',
-					context: ThriftUploader,	
+					context: ThriftUploader,
+					arguments: {success: successJson},	
 					on: {
 						success:  function(id, o, args) {
 							if (o.getResponseHeader('Content-Type')!='application/json') return false;
 							var json = _Y.JSON.parse(o.responseText);
 							if (json.success) {
 								if (reponse_key) json.response = json.response[reponse_key]; 
-								successJson(json);
+								args.success(json);
 							}
 							return true;
 						}
@@ -180,6 +214,11 @@
 		getFolders: function(successJson){
 			var uri = '/thrift/task_helper/fn:GetFolders/.json';
 			this.xhrJsonRequest(uri, 'GetFolders', successJson);
+		},
+		pauseUploader: function(pause, successJson){
+			pause = pause ? 'true' : 'false';
+			var uri = '/thrift/task_helper/fn:SetTaskState/pause:'+pause+'/.json';
+			this.xhrJsonRequest(uri, 'SetTaskState', successJson);
 		},
 		getFolderState: function(successJson) {
 			// helper method which calls /my/uploader_ui/.json
