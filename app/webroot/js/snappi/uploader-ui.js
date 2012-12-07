@@ -64,10 +64,9 @@
 		refresh: function(start) {
 			if (start) {
 				if (ThriftUploader.timer === false && start!=='restart') return;
-				ThriftUploader.timer = _Y.later(1000, SNAPPI.xhrFetch, function(){
-						var n = _Y.one( ThriftUploader.container_id );
-						var uri = n.getAttribute('xhrsrc');
-						uri += '/.json';			// use JSON request to refresh
+				ThriftUploader.timer = _Y.later(ThriftUploader.ui.REFRESH_MS, 
+					ThriftUploader.ui, 
+					function(){
 						ThriftUploader.util.getFolderState(
 							function(json) {
 								var response = json.response;
@@ -95,6 +94,7 @@
 
 	ThriftUploader.ui = {
 		_folderState: null,
+		REFRESH_MS: 2500,
 		NO_UI_UPDATE_LIMIT: 10,
 		_no_ui_update_count: 0,
 		renderFolderState: function(folders) {
