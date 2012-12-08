@@ -59,18 +59,46 @@ class ImageGroupShell extends Shell {
 		$this->hr();
 
 
-		// get assoc array from infile
-		$image_groups = json_decode(file_get_contents($this->args['infile']), true);
+		// get assoc array from infile or castingCall
+		if ($this->args['infile']) {
+			$image_groups = json_decode(file_get_contents($this->args['infile']), true);	
+		} else {
+			// bind $script_owner to image-group runtime settings 
+			// get castingCall using which AppController::$userid???
+			$script_owner = empty($this->passedArgs['circle']) ? 'image-group' : 'image-group-circles';
+			$preserveOrder = $script_owner == 'image-group';
+			$image_groups = $this->Gist->getImageGroupFromCC($castingCall, $preserveOrder);	
+		}
+		
+		
+		
 		// $this->out(print_r($image_groups, true));
 		// import groups by script, using Usershot.priority=30
+		$newShots = array();
 		foreach($image_groups['Groups'] as $groupAsShot_aids) {
-			if (count($groupAsShot_aids)==1) continue;
-			// $this->out(print_r($groupAsShot_aids, true));
-			print_r($groupAsShot_aids);
-			$this->hr();
-			$result = $this->Usershot->groupAsShot($groupAsShot_aids, $force=true);
-			print_r($result);
+			
+			// debug
+			// if ($i > 5) break;
+			
+			if (count($groupAsShot_aids)==1) {
+				unset($image_groups['Groups'][$i]); 
+				continue;		// skip if only one uuid, group of 1
+			}
+			$result = $Usershot->groupAsShot($groupAsShot_aids, $force=true);
+			if ($result['success']) {
+				$newShots[] = array(
+					'asset_ids'=>$groupAsShot_aids, 
+					'shot'=>$result['response']['groupAsShot'],
+				);
+			} else {
+				$newShots[] = array(
+					'asset_ids'=>$groupAsShot_aids, 
+					'shot'=>$result['response']['message'],
+				);
+			}
 		}
+		$this->hr();
+		print_r($newShots);
 	}
 }
 ?>

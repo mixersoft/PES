@@ -109,7 +109,7 @@
 				rowid = '#fhash-'+row['ThriftFolder']['native_path_hash'];
 				folder_row_node = parent.one(rowid);
 				row['ThriftFolder']['uploaded'] = row['0']['uploaded']; 
-				getCount = /\/[0\?]\)$/.test(folder_row_node.one('.label').getContent());
+				getCount = /\?\)$/.test(folder_row_node.one('.label').getContent());
 				queued = getCount 
 					|| row['ThriftFolder']['is_scanned']=='0' 
 					|| row['ThriftFolder']['is_watched']=='1'
@@ -118,7 +118,9 @@
 				if ( queued	) {
 					try {
 						row_updated = row['ThriftFolder']['uploaded'] != old_FolderState[i]['ThriftFolder']['uploaded'];	
-						row_updated = row_updated || row['ThriftFolder']['count'] != old_FolderState[i]['ThriftFolder']['count'];
+						row_updated = row_updated 
+							|| row['ThriftFolder']['count']!==null && row['ThriftFolder']['count'] != old_FolderState[i]['ThriftFolder']['count']
+							|| row['ThriftFolder']['count']!==null && getCount;
 					} catch (e) {
 						row_updated = true;					
 					}
@@ -144,13 +146,15 @@
 			} else UI._no_ui_update_count = 0;
 		},
 		renderFolderRow: function(row_data, row_node) {
+			if (row_data['ThriftFolder']['count']===null) row_data['ThriftFolder']['count'] = '?';
 			label = _Y.Lang.sub("{native_path} ({uploaded}/{count})", row_data['ThriftFolder']);
 			row_node.one('td.label').setContent(label);
 			row_node.one('.progress').addClass('active');
 			// pending/done
 			// progress bar
 			var percent = Math.round( 100* row_data['ThriftFolder']['uploaded']/row_data['ThriftFolder']['count']);
-			row_node.one('.progress span.fill').setStyles({width:percent+'%'}).setAttribute('title', percent+'%');
+			if (isNaN(percent)) row_node.one('.progress span.fill').setStyles({width:'100%'}).setAttribute('title', 'one moment...');
+			else row_node.one('.progress span.fill').setStyles({width:percent+'%'}).setAttribute('title', percent+'%');
 		}
 	}
 	ThriftUploader.util = {
@@ -176,11 +180,7 @@
 				};
 			_Y.io(uri, ioCfg);
 		},
-		setFolderState: function(n) {
-			var uri = '/thrift/set_watched_folder/.json';
-			var postData = {};
-			postData[n.getAttribute('name')] = n.getAttribute('value');
-			postData["data[ThriftFolder][is_watched]"] = n.get('checked') ? '1' : '0';
+		setFolderState: function(n, uri, postData) {
 			var loadingNode = n;
 			if (loadingNode.io == undefined) {
 				var ioCfg = SNAPPI.IO.pluginIO_RespondAsJson({
@@ -234,18 +234,33 @@
          *  listener/handlers
          * 	start 'click' listener for action=
          */
-        WatchFolderClick : function() {
-        	delegate_container = _Y.one('#uploader-ui-xhr');        	
+        FolderRowClick : function() {
+        	delegate_container = _Y.one('table.thrift-folders');        	
         	if (!delegate_container) return;
-        	var action = 'WatchFolderClick';
+        	var action = 'FolderRowClick';
         	delegate_container.listen = delegate_container.listen || {};
             if (delegate_container.listen[action] == undefined) {
 				delegate_container.listen[action] = delegate_container.delegate('click', 
 	                function(e){
 	                	// context = delegate_container
-	                	// save folder state
-	                	ThriftUploader.util.setFolderState(e.currentTarget);
-	                }, 'ul.folder > li > input[type=checkbox]', delegate_container);
+	                	var uri, folder_id, 
+	                		postData = {}, 
+	                		n =  e.currentTarget;
+	                	folder_id = n.ancestor('tr').get('id').substr(6);	// strip off 'fhash-'	
+	                	postData['native_path_hash'] = folder_id;
+	                	switch(n.getAttribute('action')) {
+	                		case 'watch':
+	                			uri = '/thrift/set_watched_folder/.json';
+								postData["data[ThriftFolder][is_watched]"] = n.get('checked') ? '1' : '0';
+			                	ThriftUploader.util.setFolderState(e.currentTarget, uri, postData);
+	                		break;
+	                		case 'remove':
+	                			uri = '/thrift/remove_folder/.json';
+								postData["data[ThriftFolder][remove]"] = 1;
+			                	ThriftUploader.util.setFolderState(e.currentTarget, uri, postData);
+	                		break;
+	                	}
+	                }, 'input', delegate_container);
 				// back reference
 				ThriftUploader.listen[action] = delegate_container.listen[action];	                
 			}

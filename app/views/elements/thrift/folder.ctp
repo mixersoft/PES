@@ -16,8 +16,8 @@
 							else $status = ($folder['ThriftFolder']['is_scanned']) ? "done" : "pending";
 							$percent = !empty($folder['ThriftFolder']['count'])
 								? round($folder[0]['uploaded']/$folder['ThriftFolder']['count']*100)
-								: null;
-							$unknown = $percent === null;	
+								: 100;
+							$unknown = $folder['ThriftFolder']['count']===null;	
 							
 						?>
 					<tr id='<?php echo "fhash-{$folder['ThriftFolder']['native_path_hash']}"; ?>' class='row folder inline '>
@@ -36,13 +36,13 @@
 									?>
 									>
 								</span></div></td>
-							<td class='is-watched'><input name='data[ThriftFolder][native_path_hash]' value='<?php echo "{$folder['ThriftFolder']['native_path_hash']}";?>' type='checkbox'<?php if ($folder['ThriftFolder']['is_watched']) echo " checked=yes"; ?>></td>
+							<td class='is-watched'><input name='data[ThriftFolder][native_path_hash]' action='watch' value='<?php echo "{$folder['ThriftFolder']['native_path_hash']}";?>' type='checkbox'<?php if ($folder['ThriftFolder']['is_watched']) echo " checked=yes"; ?>></td>
 							<td class='label'><?php
 								 $count = $folder['ThriftFolder']['count'] ? $folder['ThriftFolder']['count'] : '?';
 								 if ($folder[0]['uploaded']) $count = "{$folder[0]['uploaded']}/{$count}";
 								 echo "{$folder['ThriftFolder']['native_path']}  ($count)"; ?></td>
 							<?php if ($folder['ThriftFolder']['is_not_found']) echo "<td class='btn orange' title='We cannot find a folder at this location. It may have been moved or deleted. Ctdck here to fix the location.'>Find Folder</td>"; ?></td>
-							<td class='remove'><input name='ThriftFolder[remove]'  type='checkbox'></td>
+							<td class='remove'><input name='data[ThriftFolder][native_path_hash]'  action='remove' value='remove' type='button' class='orange'></td>
 						</tr>
 					<?php  endforeach; ?>
 				</tbody></table>

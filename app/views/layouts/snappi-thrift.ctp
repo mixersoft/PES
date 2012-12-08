@@ -127,7 +127,7 @@
 					if (listeners[listen]!==false) SNAPPI.UIHelper.listeners[listen](listeners[listen]);
 				}
 				
-				SNAPPI.ThriftUploader.listeners.WatchFolderClick();
+				SNAPPI.ThriftUploader.listeners.FolderRowClick();
 				
 				if (LLcfg.fetchXhr) {
 					/*

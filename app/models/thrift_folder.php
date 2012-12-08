@@ -107,7 +107,8 @@ class ThriftFolder extends AppModel {
 		}
 		if ($is_watched === false) {
 			$options['conditions']['ThriftFolder.is_watched'] = 0;
-			$options['conditions']['ThriftFolder.is_scanned'] = 0;
+			$options['conditions']['OR']['ThriftFolder.is_scanned'] = 0;
+			$options['conditions']['OR'][]='ThriftFolder.count IS NULL';
 			$options['order'] = array('ThriftFolder.count'=>'DESC', 'ThriftFolder.native_path'=>'ASC') ;
 		} else if ($is_watched) {
 			$options['conditions']['ThriftFolder.is_watched'] = 1;
