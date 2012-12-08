@@ -48,6 +48,7 @@
 				 * not sure what the side effects are.
 				 */
 				ThriftUploader.util.pauseUploader(false, function(json){
+					ThriftUploader.ui._no_ui_update_count = 0;
 					SNAPPI.ThriftUploader.action.refresh('restart');
 					// LAUNCH native-uploader
 					var target = _Y.Lang.sub("snaphappi://{authToken64}_{sessionId64}_", PAGE.jsonData.nativeUploader);
