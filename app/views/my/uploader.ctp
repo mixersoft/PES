@@ -24,13 +24,7 @@
 	$launch_SnappiUploader_watched = "snaphappi://{$authToken64}_{$sessionId64}_sw";		
 ?>
     <style type="text/css" media="screen"> 
-    	#top-level-folder-alt {
-    		display:block;
-    		text-align:left;
-    	}
-    	#TLFBadge {
-    		margin: 20px;
-    	}
+    	
     	
     </style>
 	<script type="text/javascript">
@@ -56,8 +50,8 @@
         attributes.align = "middle";
         swfobject.embedSWF(
             launchSwfUrlStr,
-            "top-level-folder-alt", 
-            "215", "30", 
+            "top-level-folder-alt", 		// visible if no Adobe AIR
+            "268", "70", 
             swfVersionStr, xiSwfUrlStr, 
             flashvars, params, attributes
         );
@@ -77,48 +71,67 @@
 <?php		
 	$this->Layout->blockEnd();	
 ?>
-<div class="grid_16 upload">
-	<h1>Upload a LOT of Photos from your Desktop</h1>
-	<div class="alpha grid_8">
+<div id='checking-config' class="prefix_4 grid_8 suffix_4">
+	<div id="top-level-folder-wrap"  class='blue rounded-5'>
+		<div class="wrap">
+			<h1>Checking configuration</h1>
+			<div class="progress meter pending"><span class="fill"></span></div>
+		</div>
+	</div>
+</div>
+<div id='download-wrap' class="grid_16 hide">
+	<div class="alpha grid_8 hide">
 		<div class="wrap">
 			<?php echo $this->element('group/express-upload'); ?>	
 		</div>
 	</div>
-	<div class="grid_8 omega">
-		<aside class="related-content blue rounded-5">
-		<?php echo $this->element('downloads')?>
+	<h2>Uploading Photos</h2>
+	<div class="alpha prefix_4 grid_8 suffix_4 omega">
+		<aside class="blue rounded-5">
+			<div class="wrap">
+			<h1>Upload a LOT of Photos from your Desktop</h1>	
+			<hr>
+			<?php echo $this->element('downloads', array('uploader_type'=>'Thrift'))?>
+			</div>
 		</aside>
 	</div>
 </div>
-<div class="grid_16">
-		<div id="top-level-folder-wrap" class='blue rounded-5'>
+<div id='snappi-uploader-wrap' class="grid_16 offscreen">
+	<h1>Snaphappi Desktop Uploader</h1>
+	<div class="alpha grid_5" >
+		<div id="top-level-folder-wrap"  class='blue rounded-5'>
+			<div class="wrap">
 			<h1>Choose a Folder to Import</h1>
 			<div id="top-level-folder-alt" >
 				<h1>Get the TopLevelFolder App</h1>
 				<p><a href="http://www.adobe.com/go/getflashplayer">Get Adobe Flash player</a></p>
 			</div>
-		</div>
-		<br />
-		<div id='snappi-uploader-wrap' class='blue rounded-5'>
-			<h1>Snaphappi Desktop Uploader</h1>
-			<ul class="inline">
+			<p>or drag-drop a folder here.</p>
+		</div></div>
+	</div>
+	<div class="grid_11 omega" >
+		<div id="thrift-uploader-wrap"  class='blue rounded-5'>
+			<div class="wrap">
+			<h1>Control Panel</h1>
+			<ul class="actions inline">
 				<li class='btn orange rounded-5'>
 					<a action=<?php echo $launch_SnappiUploader ?> onclick='SNAPPI.ThriftUploader.action.launchTask("ur")'>Start Uploading</a>
 				</li>
 				<li class='btn red rounded-5' onclick='SNAPPI.ThriftUploader.action.refresh(false);'>
 					Stop
 				</li>
-				<li><input type="field" size='100' value='<?php echo "snaphappi://{$authToken64}_{$sessionId64}_ur" ?>'</input></li>
 			</ul>	
-			<hr>
 			<div id='uploader-ui-xhr'>
 				<?php  echo $this->element('thrift/folder'); 	?>
 			</div>
-		</div>
-		<div>
-			<p><?php echo "authToken={$taskID['AuthToken']}"; ?></p>
-			<p><?php echo "sessionId={$taskID['Session']}"; ?></p>
-		</div>	
+			<hr>
+		</div></div>
+		<ul style="margin:20px 40px;">
+			<li><input type="field" size='80' value='<?php echo "snaphappi://{$authToken64}_{$sessionId64}_ur" ?>'</input></li>
+			<li><?php echo "authToken={$taskID['AuthToken']}"; ?></li>
+			<li><?php echo "sessionId={$taskID['Session']}"; ?></li>	
+		</ul>
+	</div>
 </div>
 
 <script type="text/javascript">
@@ -139,10 +152,20 @@ var initOnce = function() {
 	// init xhr paging & fetch xhr-gets
 	// NOTE: any xhr-gets will bind own PAGE.init() method
 	var Y = SNAPPI.Y;
-	if (Y.one('#top-level-folder')) {
-		Y.one('#snappi-uploader-wrap').removeClass('hide');
-	}
-	
+	var timer; 
+	var	ready = function() {
+		Y.one('#checking-config').remove();
+		if (is_TopLevelFolder_installed == undefined) return;
+		if (is_TopLevelFolder_installed=='true') {
+			Y.one('#download-wrap').addClass('hide');
+			Y.one('#snappi-uploader-wrap').removeClass('offscreen');
+		} else {
+			Y.one('#download-wrap').removeClass('hide');
+			Y.one('#snappi-uploader-wrap').addClass('hide');
+		}
+		timer.cancel();		
+	};
+	timer = Y.later(1000, Y, ready, null, true);
 };
 PAGE.init.push(initOnce); 
 </script>	

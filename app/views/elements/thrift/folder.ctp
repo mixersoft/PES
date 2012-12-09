@@ -1,4 +1,3 @@
-			<div class="wrap" >
 				<table class='thrift-folders'><tbody>
 					<tr class='header'>
 						<th class="status">Status</th>
@@ -46,5 +45,4 @@
 						</tr>
 					<?php  endforeach; ?>
 				</tbody></table>
-			</div>
 			

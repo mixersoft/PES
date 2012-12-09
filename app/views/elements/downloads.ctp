@@ -1,13 +1,26 @@
 		<?php  
+			$default_uploader_type = 'AIR';
+			$available_default = Configure::read("uploader.{$default_uploader_type}");
+			
 			$userAgent =  env('HTTP_USER_AGENT');
+			if (strpos($userAgent, 'Windows') !== false) $client_platform = 'Windows'; 
+			else if (strpos($userAgent, 'Macintosh') !== false) $client_platform = 'Macintosh';
+			else $client_platform = 'Other';
+			if (isset($uploader_type)) {
+				$available = Configure::read("uploader.{$uploader_type}");	
+			} else $available = array();
+			$available = array_merge($available_default, $available );
+			
+			// customize offered download to match client_platform
 			if (isset($this->params['url']['platform']) && $this->params['url']['platform'] == 'all') {
-					$downloads['Windows'] = array('file'=>'snappi-uploader.exe', 'os'=>'Windows 7/Vista/XP');
-					$downloads['Macintosh'] = array('file'=>'snappi-uploader.dmg', 'os'=>'OSX 10.5+');
+				$offered = $available;
 			} else {
 				if (strpos($userAgent, 'Windows') !== false) {
-					$downloads['Windows'] = array('file'=>'snappi-uploader.exe', 'os'=>'Windows 7/Vista/XP');
+					$offered['Windows']  = $available['Windows'];
+					// $downloads['Windows'] = array('file'=>'snappi-uploader.exe', 'os'=>'Windows 7/Vista/XP');
 				} else if (strpos($userAgent, 'Macintosh') !== false) {
-					$downloads['Macintosh'] = array('file'=>'snappi-uploader.dmg', 'os'=>'OSX 10.5+');
+					$offered['Macintosh']  = $available['Macintosh'];
+					// $downloads['Macintosh'] = array('file'=>'snappi-uploader.dmg', 'os'=>'OSX 10.5+');
 				}
 				$all_platforms=$this->here.'?platform=all';
 			}
@@ -24,16 +37,16 @@
 		<div id="download-uploader" >
 					<div class='center' >
 						<ul class='inline'>
-				<?php foreach ($downloads as $platform =>$download) { ?>
+				<?php foreach ($offered as $platform =>$download) { ?>
 							<li class='btn orange rounded-5'>
 								<a href="/files/<?php echo $download['file'] ?>" >
 									Snaphappi Desktop Uploader for <b><?php echo $platform ?></b>
-									<span class="os"><br />(<?php echo $download['os'];  ?>)</span>
+									<span class="os"><br />(<?php echo $download['osLabel'];  ?>)</span>
 									</a>
 							</li>
 				<?php } ?>	
 						</ul>
-						<?php if (count($downloads) == 1) echo "(<a href='{$all_platforms}'>Show all platforms</a>)"; ?>
+						<?php if (count($offered) == 1) echo "(<a href='{$all_platforms}'>Show all platforms</a>)"; ?>
 					</div>
 		</div>
 		<p><b>Requirements:</b> The Snaphappi Desktop Uploader requires <a href='http://get.adobe.com/air/'>Adobe AIR 3.0</a>. 

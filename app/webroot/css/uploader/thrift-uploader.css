@@ -1,5 +1,36 @@
-#uploader-ui-xhr {
-	
+#top-level-folder-alt {
+	display:block;
+	text-align:left;
+}
+#TLFBadge {
+}
+    	
+.blue.rounded-5 .wrap {
+	margin: 10px 0;
+	padding: 0 5px;
+}
+#checking-config .meter {
+	height:12px;
+	margin: 10px 100px;
+	padding:4px;
+}
+#top-level-folder-wrap p {
+	font-size:10pt;
+	text-align:center;
+}
+#thrift-uploader-wrap .actions {
+	font-size: 12pt;
+	padding: 20px;
+}
+#snappi-uploader-wrap.offscreen {
+	margin-left:-10000px;
+	position:absolute;
+}
+#uploader-ui-xhr.active {
+	cursor: progress;
+}
+#uploader-ui-xhr .wrap{
+	padding: 0;
 }
 table.thrift-folders {
 	margin: 10px;
@@ -10,6 +41,7 @@ table.thrift-folders tr.header {
 table.thrift-folders tr {
 }
 table.thrift-folders th {
+	font-size: 10pt;
 	font-weight: bold;
 	border-bottom: 1px solid black;
 	text-align: center;

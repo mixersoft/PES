@@ -65,6 +65,7 @@
 		refresh: function(start) {
 			if (start) {
 				if (ThriftUploader.timer === false && start!=='restart') return;
+				_Y.one('#uploader-ui-xhr').addClass('active');
 				ThriftUploader.timer = _Y.later(ThriftUploader.ui.REFRESH_MS, 
 					ThriftUploader.ui, 
 					function(){
@@ -88,6 +89,7 @@
 				// TODO: set ThriftSession.IsCancelled=1
 				ThriftUploader.util.pauseUploader(true, function(json){
 					var check;
+					_Y.one('#uploader-ui-xhr').removeClass('active');
 				});
 			} 
 		}

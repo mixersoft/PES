@@ -293,8 +293,11 @@ class SnappiController extends AppController {
 	 * set in Configure::read('desktop.uploader')
 	 * 
 	 */
-	function uploader_version(){
-		$version = Configure::read('desktop.uploader.version');	
+	function uploader_version($type='AIR'){
+		$userAgent =  env('HTTP_USER_AGENT');  // [ Windows | Macintosh ]
+		if (strpos($userAgent, 'Windows') !== false) $client_platform = 'Windows'; 
+		if (strpos($userAgent, 'Macintosh') !== false) $client_platform = 'Macintosh';
+		$version = Configure::read("uploader.{$type}.{$client_platform}.version");	
 $this->log("version={$version}", LOG_DEBUG);		
 		Configure::write('debug',0);
 		$this->autoRender = false;

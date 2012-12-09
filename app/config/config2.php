@@ -27,13 +27,30 @@ $config['register'] = array(
 	'success_redirect' => '/pages/downloads',	// default redirect on Sucess
 	'auth_on_success' => 1,
 );
-
-$config['desktop.uploader'] = array(
-	'version'=>'1.8.8'		// confirm OSX works as 1.8.7 before upgrading
+/*
+ * OS dependent CLIENT config here, check $userAgent =  env('HTTP_USER_AGENT');
+ */  
+$config['uploader.AIR.Windows'] = array(
+	'file'=>'snappi-uploader.exe', 
+	'version'=>'1.8.8',		
+	'osLabel'=>'Windows 7/Vista/XP',
+	'requirements'=>'',
+);
+$config['uploader.AIR.Macintosh'] = array(
+	'file'=>'snappi-uploader.dmg', 
+	'version'=>'1.8.7',		// confirm OSX works as 1.8.8 before upgrading
+	'osLabel'=>'OSX 10.5+',
+	'requirements'=>'',
+);
+$config['uploader.Thrift.Windows'] = array(
+	'file'=>'TopLevelFolder/SnaphappiSetup.exe', 
+	'version'=>'1.0',		
+	'osLabel'=>'Windows 7/Vista/XP',
+	'requirements'=>'',
 );
 
 /*
- * OS dependent config here
+ * OS dependent SERVER config here
  */
 switch ($config['Config.os']) {
 	case 'win':
