@@ -281,7 +281,6 @@
 			this.xhrJsonRequest(uri, null, successJson);
 		}, 
 		removeFolder: function(hash, successJson){
-			hash = hash ? 1 : 0;
 			var uri = '/thrift/task_helper/fn:RemoveFolder/.json';
 			var cfg = {
 				postData: {'data[hash]': hash},

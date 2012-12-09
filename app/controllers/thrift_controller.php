@@ -97,20 +97,38 @@ class ThriftController extends AppController {
 					$response[$method] = (array)$folders;
 					break;
 				case 'PauseUpload':
-					$pause = !empty($this->data['pause']);
-					$state = $Task->SetTaskState($TaskID, $pause);
-					$response[$method] = $state;
+					try {
+						$pause = $this->data['pause'];
+						$ret = $Task->SetTaskState($TaskID, $pause);
+						$response[$method] = $ret;
+						if (!$ret) throw new Exception("Error: there was a problem sending pause message to the Uploader, pause={$this->data['pause']}");
+					} catch (Exception $ex) {
+						$success = false;
+						$message = $ex->getMessage();
+					}					
 					break;
 				case 'RemoveFolder':
 					$hash = $this->data['hash'];
-					$ret = $Task->RemoveFolder($TaskID, $hash);
-					$response[$method] = compact('hash');;
+					try {
+						$ret = $Task->RemoveFolder($TaskID, $hash);
+						$response[$method] = compact('hash');
+						if (!$ret) throw new Exception("Error: there was a problem removing this folder");
+					} catch (Exception $ex) {
+						$success = false;
+						$message = $ex->getMessage();
+					}
 					break;					
 				case 'SetWatchedFolder':
 					$hash = $this->data['hash'];
 					$watched = !empty($this->data['watch']);
-					$state = $Task->SetWatchedFolder($TaskID, $hash, $watched);
-					$response[$method] = compact('hash','watched');
+					try {
+						$ret = $Task->SetWatchedFolder($TaskID, $hash, $watched);
+						$response[$method] = compact('hash','watched');
+						if (!$ret) throw new Exception("Error: there was a problem setting the Watched status for this folder");
+					} catch (Exception $ex) {
+						$success = false;
+						$message = $ex->getMessage();
+					}
 					break;	
 			}
 		}

@@ -708,11 +708,10 @@ ThriftController::log("*****   SystemException from AddFolder(): ".print_r($thri
         	try {
 				if ($pause) {
 					$ret = CakePhpHelper::_model_setTaskState($taskID, array('IsCancelled'=>1));
-					return array('isCancelled'=> 1);
 				} else {
 					$ret = CakePhpHelper::_model_setTaskState($taskID, array('IsCancelled'=>0));
-					return array('isCancelled'=> 0);
 				}			
+				return $ret ? array('isCancelled'=> $ret['ThriftSession']['is_cancelled']) : false;
 			} catch (Exception $e) {
 				$msg = explode(',', $e->getMessage());
 				switch($msg[0]) {
@@ -742,9 +741,8 @@ ThriftController::log("*****   SystemException from SetTaskState(): ".print_r($t
         		if (is_numeric($path)) $data['ThriftFolder']['native_path_hash'] = $path;
 				else $data['ThriftFolder']['native_path'] = $path;
 				$data['ThriftFolder']['is_watched'] = $watched; 
-debug($data);				
         		$data = CakePhpHelper::_model_setFolderState($taskID, $data); 
-				return;
+				return $data;
 			} catch (Exception $e) {
 				$msg = explode(',', $e->getMessage());
 				switch($msg[0]) {
@@ -771,7 +769,7 @@ ThriftController::log("*****   SystemException from SetWatchedFolder(): ".print_
         public function RemoveFolder($taskID, $path) {
         	try { 
         		$data = CakePhpHelper::_model_addFolder($taskID, $path, array('delete'=>1)); 
-				return;
+				return $data;
 			} catch (Exception $e) {
 				$msg = explode(',', $e->getMessage());
 				switch($msg[0]) {
