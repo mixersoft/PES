@@ -106,7 +106,6 @@
 				<h1>Get the TopLevelFolder App</h1>
 				<p><a href="http://www.adobe.com/go/getflashplayer">Get Adobe Flash player</a></p>
 			</div>
-			<p>or drag-drop a folder here.</p>
 		</div></div>
 	</div>
 	<div class="grid_11 omega" >
