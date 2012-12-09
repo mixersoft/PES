@@ -133,7 +133,16 @@
 		</ul>
 	</div>
 </div>
-
+<div id='restart-markup' class='hide'>
+	<div class='restart'>
+	<span>Uh, the Uploader seems to have stopped. Please click to restart.</span>
+	<ul class="actions inline">
+		<li class='btn orange rounded-5'>
+			<a action=<?php echo $launch_SnappiUploader ?> onclick='SNAPPI.ThriftUploader.action.launchTask("ur")'>Restart</a>
+			</li>
+	</ul>
+	</div>
+</div>
 <script type="text/javascript">
 	/**
 	 * TODO: change to DialogAlert()

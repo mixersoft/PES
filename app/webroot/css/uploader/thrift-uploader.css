@@ -4,7 +4,9 @@
 }
 #TLFBadge {
 }
-    	
+#content div.messages .message .restart > *{
+	display: inline;
+}    	
 .blue.rounded-5 .wrap {
 	margin: 10px 0;
 	padding: 0 5px;

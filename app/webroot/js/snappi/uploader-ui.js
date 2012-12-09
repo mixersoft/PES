@@ -42,6 +42,7 @@
 	ThriftUploader.action = {
 		timer: null,
 		launchTask: function(taskType) {
+			_Y.one('#content > div.messages').setContent();
 			if (taskType=='ur') {
 				/*
 				 * NOTE: this method directly changes ThriftSession.is_cancelled in the DB
@@ -66,7 +67,8 @@
 			if (start) {
 				if (ThriftUploader.timer === false && start!=='restart') return;
 				_Y.one('#uploader-ui-xhr').addClass('active');
-				ThriftUploader.timer = _Y.later(ThriftUploader.ui.REFRESH_MS, 
+				var delay = 1000*Math.pow(2,ThriftUploader.ui._no_ui_update_count);
+				ThriftUploader.timer = _Y.later(delay, 
 					ThriftUploader.ui, 
 					function(){
 						ThriftUploader.util.getFolderState(
@@ -92,13 +94,24 @@
 					_Y.one('#uploader-ui-xhr').removeClass('active');
 				});
 			} 
+		},
+		flashRestart: function(){
+			var i, row, folderState = ThriftUploader.ui._folderState;
+			for (i in folderState) {
+				row = folderState[i];
+				if (row['ThriftFolder']['is_scanned']=='0' && row['ThriftFolder']['is_watched']=='0') {
+					var restart_markup = _Y.one('#restart-markup').getContent();
+					_Y.one('#content > div.messages').setContent("<div class='message'>"+restart_markup+"</div>");
+					break;
+				}
+			};
 		}
 	}
 
 	ThriftUploader.ui = {
 		_folderState: null,
-		REFRESH_MS: 2500,
-		NO_UI_UPDATE_LIMIT: 10,
+		REFRESH_MS: 2000,
+		NO_UI_UPDATE_LIMIT: 5,	// 2^5 = 32 seconds since last check
 		_no_ui_update_count: 0,
 		renderFolderState: function(folders) {
 			var i, row, folder_row_node, rowid, uploaded, queued, row_updated, ui_updated, getCount,
@@ -144,7 +157,10 @@
 			// cancel ui updates if no action for too long
 			if (!ui_updated) {
 				UI._no_ui_update_count++; 
-				if (UI._no_ui_update_count > UI.NO_UI_UPDATE_LIMIT) ThriftUploader.action.refresh(false);
+				if (UI._no_ui_update_count > UI.NO_UI_UPDATE_LIMIT) {
+					ThriftUploader.action.refresh(false);
+					ThriftUploader.action.flashRestart();
+				}
 			} else UI._no_ui_update_count = 0;
 		},
 		renderFolderRow: function(row_data, row_node) {
