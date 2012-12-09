@@ -154,8 +154,8 @@ var initOnce = function() {
 	var Y = SNAPPI.Y;
 	var timer; 
 	var	ready = function() {
-		Y.one('#checking-config').remove();
 		if (is_TopLevelFolder_installed == undefined) return;
+		Y.one('#checking-config').remove();
 		if (is_TopLevelFolder_installed=='true') {
 			Y.one('#download-wrap').addClass('hide');
 			Y.one('#snappi-uploader-wrap').removeClass('offscreen');
