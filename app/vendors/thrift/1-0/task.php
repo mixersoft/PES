@@ -175,7 +175,7 @@ ThriftController::log("*****   SystemException from _loginFromAuthToken(): ".pri
 			$session = & ThriftController::$session;
 			ThriftController::$controller->ThriftFolder = ThriftController::$controller->ThriftSession->ThriftDevice->ThriftFolder;
 			$thrift_device_id = $session['ThriftDevice']['id'];
-			$ret = ThriftController::$controller->ThriftFolder->updateFolderByNativePath($thrift_device_id, $data);
+			$ret = ThriftController::$controller->ThriftFolder->updateFolder($thrift_device_id, $data);
 // ThriftController::log("############################## thrift_SetFolders=".print_r($ret, true), LOG_DEBUG);				
 			return $ret;
 		}
@@ -184,6 +184,7 @@ ThriftController::log("*****   SystemException from _loginFromAuthToken(): ".pri
 		 * add folder
 		 * @param $taskID, from $taskID
 		 * @param $nativePath String, 
+		 * 		or for $options['delete']=1: $hash int crc32($nativePath)
 		 * @param $options array, $options['is_scanned], $options['is_watched]=1 adds as watched folder
 		 * @throws Exception "Error: Folder already exists" on duplicate key
 		 */
@@ -731,15 +732,17 @@ ThriftController::log("*****   SystemException from SetTaskState(): ".print_r($t
 		 * TODO: add to Thrift file 
 		 * Set top level folder to watched
 		 * @param $taskID snaphappi_api_TaskID,
-		 * @param $path String,
+		 * @param $path String, or $hash int crc32($path)
 		 * @param $watched Boolean, set is_watched.		 * 
 		 * @throws  snaphappi_api_SystemException(), 
 		 * 		ErrorCode::Unknown for everything else
 		 */
         public function SetWatchedFolder($taskID, $path, $watched) {
         	try {
-        		$data['ThriftFolder']['native_path'] = $path;
+        		if (is_numeric($path)) $data['ThriftFolder']['native_path_hash'] = $path;
+				else $data['ThriftFolder']['native_path'] = $path;
 				$data['ThriftFolder']['is_watched'] = $watched; 
+debug($data);				
         		$data = CakePhpHelper::_model_setFolderState($taskID, $data); 
 				return;
 			} catch (Exception $e) {
@@ -760,7 +763,7 @@ ThriftController::log("*****   SystemException from SetWatchedFolder(): ".print_
 		/**
 		 * Remove a top level folder to scan
 		 * @param $taskID snaphappi_api_TaskID,
-		 * @param $path String,
+		 * @param $path String, or $hash int crc32($path)
 		 * @throws  snaphappi_api_SystemException(), 
 		 * 		ErrorCode::DataConflict if folder already exists for the current DeviceID
 		 * 		ErrorCode::Unknown for everything else

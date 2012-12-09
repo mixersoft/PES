@@ -53,53 +53,6 @@ class ThriftController extends AppController {
 		exit(0);		// return response over thrift transport
 	}
 	
-	// direct access to DB from POST, skips thrift Task API
-	// TODO: use var uri = '/thrift/task_helper/fn:SetWatchedFolder/.json';
-	function set_watched_folder() {
-		$forceXHR = setXHRDebug($this, 0);
-		$success = true; 
-		$message = $response = array(); 
-		
-		if (empty(AppController::$userid)) {
-			$message[] = "Error: Please sign in";
-			$success = false;
-		}
-		
-		$task_data = Session::read('thrift-task');
-		if (empty($task_data['DeviceID'])) {
-			$message[] = "Error: invalid or missing DeviceID";
-			$success = false;
-		}
-		
-		if ($success && $this->data) {
-			$ThriftFolder = $this->ThriftSession->ThriftDevice->ThriftFolder;
-			$session = $this->ThriftSession->checkDevice($task_data['Session'], $task_data['DeviceID']);
-			
-			$options = array(
-				'conditions'=>array(
-					'ThriftFolder.thrift_device_id'=>$session['ThriftSession']['thrift_device_id'],
-					'ThriftFolder.native_path_hash'=>$this->data['ThriftFolder']['native_path_hash'],
-				)
-			);
-			$data = $ThriftFolder->find('first', $options);
-			$ThriftFolder->id = $data['ThriftFolder']['id'];
-			$ret = $ThriftFolder->saveField('is_watched', $this->data['ThriftFolder']['is_watched']); 
-			if ($ret) {
-				$success = true;
-				$message[] = "watched folder value was successfully set";
-				$response['ThriftFolder'] = $ret;
-			} else {
-				$success = false;
-				$message[] = "ERROR: there was a problem setting the watched status";
-				$response[] = $this->data;
-			}
-		} else {
-			$message[] = "ERROR: there was a problem setting the watched status";
-			$response[] = $this->data;
-		}
-		$this->viewVars['jsonData'] = compact('success', 'message','response');
-		$done = $this->renderXHRByRequest('json', null, null , 0);
-	}
 	
 	/*
 	 * hepler methods for direct access to Thrift Task API from cakephp
@@ -137,17 +90,28 @@ class ThriftController extends AppController {
 			switch ($method) {
 				case 'GetState':
 					$state = $Task->GetState($TaskID);
-					$response['GetState'] = (array)$state;
+					$response[$method] = (array)$state;
 					break;
 				case 'GetFolders':
-					$state = $Task->GetFolders($TaskID);
-					$response['GetState'] = (array)$folders;
+					$folders = $Task->GetFolders($TaskID);
+					$response[$method] = (array)$folders;
 					break;
-				case 'SetTaskState':
-					$pause = isset($this->params['named']['pause']) && $this->params['named']['pause']=='true';
+				case 'PauseUpload':
+					$pause = !empty($this->data['pause']);
 					$state = $Task->SetTaskState($TaskID, $pause);
-					$response['SetTaskState'] = $state;
+					$response[$method] = $state;
 					break;
+				case 'RemoveFolder':
+					$hash = $this->data['hash'];
+					$ret = $Task->RemoveFolder($TaskID, $hash);
+					$response[$method] = compact('hash');;
+					break;					
+				case 'SetWatchedFolder':
+					$hash = $this->data['hash'];
+					$watched = !empty($this->data['watch']);
+					$state = $Task->SetWatchedFolder($TaskID, $hash, $watched);
+					$response[$method] = compact('hash','watched');
+					break;	
 			}
 		}
 		$this->viewVars['jsonData'] = compact('success', 'message','response');
@@ -266,8 +230,8 @@ class ThriftController extends AppController {
 		 */
 		$folders = $Task->GetFolders($taskId);
 		debug("GetFolders() result=".print_r($folders,true));
-// $this->render('/elements/sql_dump');
-// return;			
+$this->render('/elements/sql_dump');
+return;			
 		if (count($folders)) {
 			/*
 			 * Test GetFiles

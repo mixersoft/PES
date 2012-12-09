@@ -52,8 +52,8 @@ class ThriftFolder extends AppModel {
 	}	
 	
 	/**
+	 * @deprecated
 	 * @param $thriftDeviceId int
-	 * @param $nativePath String
 	 * @param $options array of field data
 	 */
 	public function setFolder($thriftDeviceId, $options) {
@@ -62,10 +62,12 @@ class ThriftFolder extends AppModel {
 	
 	/**
 	 * @param $thriftDeviceId int
-	 * @param $nativePath String
+	 * @param $nativePath String, or $hash int
 	 */
 	public function deleteFolder($thrift_device_id, $nativePath) {
-		$folder = $this->findByNativePath($thrift_device_id, $nativePath);
+		if (is_numeric($nativePath)) 
+			$folder = $this->findByNativePathHash($thrift_device_id, $nativePath); 
+		else $folder = $this->findByNativePath($thrift_device_id, $nativePath);
 		if (!empty($folder['ThriftFolder']['id'])) {
 			$this->id = $folder['ThriftFolder']['id'];
 			$this->delete();
@@ -129,8 +131,10 @@ class ThriftFolder extends AppModel {
 	 * update ThriftFolder attributes using a nativePath as key 
 	 * @param $folderData, $data['ThriftFolder']['native_path'], must include $folderData['ThriftFolder']['native_path']
 	 */
-	public function updateFolderByNativePath($thrift_device_id, $folderData){
-		$found = $this->findByNativePath($thrift_device_id, $folderData['ThriftFolder']['native_path']);
+	public function updateFolder($thrift_device_id, $folderData){
+		if (!empty($folderData['ThriftFolder']['native_path'])) $folder_hash = $this->hashPath($nativePath);
+		else $folder_hash = $folderData['ThriftFolder']['native_path_hash'];
+		$found = $this->findByNativePathHash($thrift_device_id, $folder_hash);
 		if (!empty($found)) {
 			$this->id = $found['ThriftFolder']['id'];
 			$data['ThriftFolder'] = array_filter_keys($folderData['ThriftFolder'], ThriftFolder::$ALLOWED_UPDATE_KEYS);
@@ -141,14 +145,19 @@ class ThriftFolder extends AppModel {
 
 	public function findByNativePath($thrift_device_id, $nativePath){
 		$folder_hash = $this->hashPath($nativePath);
+		return $this->findByNativePath($thrift_device_id, $folder_hash);
+	}
+	
+	public function findByNativePathHash($thrift_device_id, $nativePathHash){
 		$options = array(
 			'conditions'=>array(
 				'ThriftFolder.thrift_device_id'=>$thrift_device_id,
-				'ThriftFolder.native_path_hash'=>$folder_hash,
+				'ThriftFolder.native_path_hash'=>$nativePathHash,
 			)
 		);
 		return $this->find('first', $options);
 	}
+	
 	
 	/**
 	 * Get array of files which have already been uploaded under the given folder.

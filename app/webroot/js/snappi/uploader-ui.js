@@ -67,15 +67,17 @@
 			if (start) {
 				if (ThriftUploader.timer === false && start!=='restart') return;
 				_Y.one('#uploader-ui-xhr').addClass('active');
-				var delay = 1000*Math.pow(2,ThriftUploader.ui._no_ui_update_count);
+				var starttime = new Date().getTime(),
+					delay = 1000*Math.pow(2,ThriftUploader.ui._no_ui_update_count) + ThriftUploader.ui._elapsed;
 				ThriftUploader.timer = _Y.later(delay, 
 					ThriftUploader.ui, 
 					function(){
 						ThriftUploader.util.getFolderState(
 							function(json) {
 								var response = json.response;
-								SNAPPI.ThriftUploader.ui.renderFolderState(response.folders);
-								SNAPPI.ThriftUploader.action.refresh(true);
+								ThriftUploader.ui._elapsed = Math.min(new Date().getTime() - starttime, 5000);
+								ThriftUploader.ui.renderFolderState(response.folders);
+								ThriftUploader.action.refresh(true);
 								if (response.taskState['ThriftSession']['is_cancelled']=='0') {
 									// refresh() will auto cancel after NO_UI_UPDATE_LIMIT
 									// SNAPPI.ThriftUploader.action.refresh(true);
@@ -105,7 +107,30 @@
 					break;
 				}
 			};
-		}
+		},
+		post_WatchFolder: function(loadingNode) {
+			var uri = '/thrift/set_watched_folder/.json', 
+				postData = {},
+				folder_id = loadingNode.ancestor('tr').get('id').substr(6);	// strip off 'fhash-'	
+			var watch = loadingNode.get('checked');
+			var success = function() {
+				// launch sw task
+        		ThriftUploader.action.launchTask("sw");
+				return false;
+			}
+        	ThriftUploader.util.setWatchedFolder(folder_id, watch, success);
+		},
+		post_RemoveFolder: function(loadingNode) {
+			var uri = '/thrift/remove_folder/.json', 
+				postData = {},
+				folder_id = loadingNode.ancestor('tr').get('id').substr(6);	// strip off 'fhash-'	
+			var row = loadingNode.ancestor('tr');
+			var success = function() {
+				row.remove();
+				return false;
+			}
+        	ThriftUploader.util.removeFolder(folder_id, success);
+		},		
 	}
 
 	ThriftUploader.ui = {
@@ -113,6 +138,7 @@
 		REFRESH_MS: 2000,
 		NO_UI_UPDATE_LIMIT: 5,	// 2^5 = 32 seconds since last check
 		_no_ui_update_count: 0,
+		_elapsed: 0,
 		renderFolderState: function(folders) {
 			var i, row, folder_row_node, rowid, uploaded, queued, row_updated, ui_updated, getCount,
 				parent = _Y.one('#uploader-ui-xhr');
@@ -176,11 +202,13 @@
 		}
 	}
 	ThriftUploader.util = {
-		xhrJsonRequest: function(uri, reponse_key, successJson) {
+		xhrJsonRequest: function(uri, cfg, successJson) {
+			cfg = cfg || {method: 'GET'};
+			var reponse_key = cfg.response_key;
 			var ioCfg = {
 					uri: uri ,
 					parseContent: true,
-					method: 'GET',
+					method: cfg.method,
 					dataType: 'json',
 					context: ThriftUploader,
 					arguments: {success: successJson},	
@@ -196,9 +224,13 @@
 						}
 					}
 				};
+			if (cfg.postData) {
+				ioCfg.data = SNAPPI.IO.object2querystring(cfg.postData);
+			}				
 			_Y.io(uri, ioCfg);
 		},
-		setFolderState: function(n, uri, postData) {
+		// @deprecated
+		setFolderState: function(n, uri, postData, success) {
 			var loadingNode = n;
 			if (loadingNode.io == undefined) {
 				var ioCfg = SNAPPI.IO.pluginIO_RespondAsJson({
@@ -208,13 +240,11 @@
 					qs: postData,
 					dataType: 'json',
 					context: n,
-					// arguments: args, 
+					arguments: {success: success}, 
 					on: {
 						successJson:  function(e, id, o, args) {
-							// launch sw task
-	                		SNAPPI.ThriftUploader.action.launchTask("sw");
-							return false;
-						}
+							return args.success();
+						},
 					}
 				});
 	            loadingNode.plug(_Y.Plugin.IO, ioCfg );
@@ -235,9 +265,14 @@
 			this.xhrJsonRequest(uri, 'GetFolders', successJson);
 		},
 		pauseUploader: function(pause, successJson){
-			pause = pause ? 'true' : 'false';
-			var uri = '/thrift/task_helper/fn:SetTaskState/pause:'+pause+'/.json';
-			this.xhrJsonRequest(uri, 'SetTaskState', successJson);
+			pause = pause ? 1 : 0;
+			var cfg = {
+				postData: {'data[pause]': pause},
+				method: 'POST',
+				response_key: 'PauseUpload',
+			}
+			var uri = '/thrift/task_helper/fn:PauseUpload/.json';
+			this.xhrJsonRequest(uri, cfg, successJson);
 		},
 		getFolderState: function(successJson) {
 			// helper method which calls /my/uploader_ui/.json
@@ -245,6 +280,29 @@
 			var uri = '/my/uploader_ui/.json';
 			this.xhrJsonRequest(uri, null, successJson);
 		}, 
+		removeFolder: function(hash, successJson){
+			hash = hash ? 1 : 0;
+			var uri = '/thrift/task_helper/fn:RemoveFolder/.json';
+			var cfg = {
+				postData: {'data[hash]': hash},
+				method: 'POST',
+				response_key: 'RemoveFolder',
+			}
+			this.xhrJsonRequest(uri, cfg, successJson);
+		},
+		setWatchedFolder: function(hash, watch, successJson){
+			watch = watch ? 1 : 0;
+			var uri = '/thrift/task_helper/fn:SetWatchedFolder/.json';
+			var cfg = {
+				postData: {
+					'data[hash]': hash,
+					'data[watch]': watch ? 1 : 0
+				},
+				method: 'POST',
+				response_key: 'SetWatchedFolder',
+			}
+			this.xhrJsonRequest(uri, cfg, successJson);
+		},
 	}
 	ThriftUploader.listeners = {
 
@@ -261,22 +319,13 @@
 				delegate_container.listen[action] = delegate_container.delegate('click', 
 	                function(e){
 	                	// context = delegate_container
-	                	var uri, folder_id, 
-	                		postData = {}, 
-	                		n =  e.currentTarget;
-	                	folder_id = n.ancestor('tr').get('id').substr(6);	// strip off 'fhash-'	
-	                	postData['native_path_hash'] = folder_id;
-	                	switch(n.getAttribute('action')) {
+	                	switch(e.currentTarget.getAttribute('action')) {
 	                		case 'watch':
-	                			uri = '/thrift/set_watched_folder/.json';
-								postData["data[ThriftFolder][is_watched]"] = n.get('checked') ? '1' : '0';
-			                	ThriftUploader.util.setFolderState(e.currentTarget, uri, postData);
-	                		break;
+	                			ThriftUploader.action.post_WatchFolder(e.currentTarget);
+	                			break;
 	                		case 'remove':
-	                			uri = '/thrift/remove_folder/.json';
-								postData["data[ThriftFolder][remove]"] = 1;
-			                	ThriftUploader.util.setFolderState(e.currentTarget, uri, postData);
-	                		break;
+	                			ThriftUploader.action.post_RemoveFolder(e.currentTarget);
+		                		break;
 	                	}
 	                }, 'input', delegate_container);
 				// back reference
