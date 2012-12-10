@@ -63,27 +63,21 @@ class ThriftController extends AppController {
 		// json requests only
 		$success = true; 
 		$message = $response = array(); 
-		if (!$this->RequestHandler->isAjax() && !$forceXHR) {
-			$message[] = "Error: this API method is only availble by XHR";
-			// $success = false;
-		}
-		if ($this->RequestHandler->ext !== 'json' && !$forceXHR) {
-			$message[] = "Error: this API method is only availble for JSON requests";
-			$success = false;
-		}  
-		
-		$task_data = Session::read('thrift-task');
-		if (empty($task_data['DeviceID'])) {
-			$message[] = "Error: invalid or missing DeviceID";
-			$success = false;
-		}
-		$method = $this->passedArgs['fn'];
-		if (empty($method)) {
-			$message[] = "Error: no method provided";
-			$success = false;
-		}
+
 		// bootstrap ThriftTask and call method
-		if ($success) {
+		try {
+			if (!$this->RequestHandler->isAjax() && !$forceXHR) 
+				throw new Exception("ERROR: This action is only available by XHR");
+			if ($this->RequestHandler->ext !== 'json' && !$forceXHR) 
+				throw new Exception("Error: this API method is only availble for JSON requests");
+				
+			$task_data = Session::read('thrift-task');
+			$method = $this->passedArgs['fn'];	
+			if (empty($task_data['DeviceID'])) {
+				throw new Exception("Error: invalid or missing DeviceID");
+			if (empty($method)) {
+				throw new Exception("Error: no method provided");
+			
 			$this->_bootstrap_ThriftAPI("Task");	// hardcoded to service=Task
 			$Task = new snaphappi_api_TaskImpl();
 			$TaskID = new snaphappi_api_TaskID( $task_data );					
@@ -131,6 +125,9 @@ class ThriftController extends AppController {
 					}
 					break;	
 			}
+		} catch (Exception $ex) {
+			$message = $ex->getMessage();
+			$success = false;
 		}
 		$this->viewVars['jsonData'] = compact('success', 'message','response');
 		$done = $this->renderXHRByRequest('json', null, null , 0);
@@ -248,8 +245,8 @@ class ThriftController extends AppController {
 		 */
 		$folders = $Task->GetFolders($taskId);
 		debug("GetFolders() result=".print_r($folders,true));
-$this->render('/elements/sql_dump');
-return;			
+// $this->render('/elements/sql_dump');
+// return;			
 		if (count($folders)) {
 			/*
 			 * Test GetFiles
@@ -268,7 +265,8 @@ return;
 		$changed = $Task->ReportFileCount($taskId, $folders[0],765);
 		debug("ReportFileCount() result=".print_r($changed,true));	
 		
-		
+$this->render('/elements/sql_dump');
+return;			
 		/*
 		 * Test GetWatchedFolders
 		 */

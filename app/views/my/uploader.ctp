@@ -71,6 +71,9 @@
 <?php		
 	$this->Layout->blockEnd();	
 ?>
+<div class="grid_16">
+	<h2>Snaphappi Desktop Uploader</h2>
+</div>
 <div id='checking-config' class="prefix_4 grid_8 suffix_4">
 	<div id="top-level-folder-wrap"  class='blue rounded-5'>
 		<div class="wrap">
@@ -97,7 +100,6 @@
 	</div>
 </div>
 <div id='snappi-uploader-wrap' class="grid_16 offscreen">
-	<h1>Snaphappi Desktop Uploader</h1>
 	<div class="alpha grid_5" >
 		<div id="top-level-folder-wrap"  class='blue rounded-5'>
 			<div class="wrap">
@@ -134,7 +136,7 @@
 </div>
 <div id='restart-markup' class='hide'>
 	<div class='restart'>
-	<span>Uh, the Uploader seems to have stopped. Please click to restart.</span>
+	<span>Umm, the Uploader seems to have stopped. Please click </span>
 	<ul class="actions inline">
 		<li class='btn orange rounded-5'>
 			<a action=<?php echo $launch_SnappiUploader ?> onclick='SNAPPI.ThriftUploader.action.launchTask("ur")'>Restart</a>
@@ -162,7 +164,10 @@ var initOnce = function() {
 	var Y = SNAPPI.Y;
 	var timer; 
 	var	ready = function() {
+		// is_TopLevelFolder_installed set by TLFBootstrapper AIR app
 		if (is_TopLevelFolder_installed == undefined) return;
+		
+		
 		Y.one('#checking-config').remove();
 		if (is_TopLevelFolder_installed=='true') {
 			Y.one('#download-wrap').addClass('hide');

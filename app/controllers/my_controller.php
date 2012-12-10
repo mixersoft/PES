@@ -668,10 +668,13 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 		$forceXHR = setXHRDebug($this, 0, 1);
 		$this->autoRender = false;
 		$success = true;
+
 		try {
 			if (!$this->RequestHandler->isAjax() && !$forceXHR) 
 				throw new Exception("ERROR: This action is only available by XHR");
-			
+			if ($this->RequestHandler->ext !== 'json' && !$forceXHR) 
+				throw new Exception("Error: this API method is only availble for JSON requests");
+				
 			/*
 			 * Get correct ProviderAccount
 			 * 	NOTE: at this point, we do know know the DeviceID/provider_key
