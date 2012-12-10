@@ -149,6 +149,19 @@
 				row = folders[i];
 				rowid = '#fhash-'+row['ThriftFolder']['native_path_hash'];
 				folder_row_node = parent.one(rowid);
+				if (!folder_row_node) {
+					// render new row
+					var p = parseInt(i)==0 ? 0 : i-1;  
+					var previous = parent.all('tr.folder').item(p);
+					var clone = previous.clone();
+					clone.set('id', 'fhash-'+row['ThriftFolder']['native_path_hash']);
+					clone.one('.is-watched input').set('value', row['ThriftFolder']['native_path_hash']);
+					clone.one('.progress').addClass('active');
+					UI.renderFolderRow(row, clone);
+					previous.insert(clone,'after');
+					ui_updated = true;
+					continue;
+				}
 				row['ThriftFolder']['uploaded'] = row['0']['uploaded']; 
 				getCount = /\?\)$/.test(folder_row_node.one('.label').getContent());
 				queued = getCount 

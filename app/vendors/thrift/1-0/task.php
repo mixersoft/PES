@@ -198,14 +198,18 @@ ThriftController::log("*****   SystemException from _loginFromAuthToken(): ".pri
 				$ret = ThriftController::$controller->ThriftFolder->deleteFolder(
 					$thrift_device_id, $nativePath
 				);
-				return $ret;
 			} else {
 // ThriftController::log("*****   _model_addFolder(): deviceId:{$thrift_device_id} path:{$nativePath}, ".print_r($taskID,true), LOG_DEBUG); 				
-				$folder = ThriftController::$controller->ThriftFolder->addFolder(
+				$ret = ThriftController::$controller->ThriftFolder->addFolder(
 					$thrift_device_id, $nativePath, $options
 				);
-				return $folder;
 			}
+			if ($ret) {
+				// bump TaskState.FolderUpdateCount to uploader app catches it
+				$options = array('FolderUpdateCount'=>1);
+				CakePhpHelper::_model_setTaskState($taskID, $options);
+			}
+			return $ret;
 		}
 		
 		/**
@@ -244,6 +248,10 @@ ThriftController::log("*****   SystemException from _loginFromAuthToken(): ".pri
 			if (isset($options['FileUpdateCount']) && $thrift_GetTask['FileUpdateCount']) {
 				$thrift_GetTask['FileUpdateCount'] += 1;
 				unset($options['FileUpdateCount']);
+			} 
+			if (isset($options['FolderUpdateCount']) && $thrift_GetTask['FolderUpdateCount']) {
+				$thrift_GetTask['FolderUpdateCount'] += 1;
+				unset($options['FolderUpdateCount']);
 			} 
 			if (isset($options['DuplicateFileException'])) {
 				if (!isset($thrift_GetTask['DuplicateFileException'])) $thrift_GetTask['DuplicateFileException'] = 1;

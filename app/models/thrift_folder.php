@@ -52,15 +52,6 @@ class ThriftFolder extends AppModel {
 	}	
 	
 	/**
-	 * @deprecated
-	 * @param $thriftDeviceId int
-	 * @param $options array of field data
-	 */
-	public function setFolder($thriftDeviceId, $options) {
-		return $this->updateFolderByNativePath($thriftDeviceId, $options);
-	}	
-	
-	/**
 	 * @param $thriftDeviceId int
 	 * @param $nativePath String, or $hash int
 	 */
@@ -132,7 +123,7 @@ class ThriftFolder extends AppModel {
 	 * @param $folderData, $data['ThriftFolder']['native_path'], must include $folderData['ThriftFolder']['native_path']
 	 */
 	public function updateFolder($thrift_device_id, $folderData){
-		if (!empty($folderData['ThriftFolder']['native_path'])) $folder_hash = $this->hashPath($nativePath);
+		if (!empty($folderData['ThriftFolder']['native_path'])) $folder_hash = $this->hashPath($folderData['ThriftFolder']['native_path']);
 		else $folder_hash = $folderData['ThriftFolder']['native_path_hash'];
 		$found = $this->findByNativePathHash($thrift_device_id, $folder_hash);
 		if (!empty($found)) {
