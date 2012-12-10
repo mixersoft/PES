@@ -73,9 +73,9 @@ class ThriftController extends AppController {
 				
 			$task_data = Session::read('thrift-task');
 			$method = $this->passedArgs['fn'];	
-			if (empty($task_data['DeviceID'])) {
+			if (empty($task_data['DeviceID'])) 
 				throw new Exception("Error: invalid or missing DeviceID");
-			if (empty($method)) {
+			if (empty($method)) 
 				throw new Exception("Error: no method provided");
 			
 			$this->_bootstrap_ThriftAPI("Task");	// hardcoded to service=Task
