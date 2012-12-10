@@ -158,27 +158,18 @@ var getExpressUploads = function(){
 		});
 		return gids.join(',');
 	}
+var bootstrapReady = function(value) {
+	try {
+		SNAPPI.ThriftUploader.action.bootstrapReady(value);
+	} catch (e) {
+		// will run on SNAPPI.onYready.ThriftUploader
+		SNAPPI.is_TopLevelFolder_installed = value;
+	}
+}
 var initOnce = function() {
 	// init xhr paging & fetch xhr-gets
 	// NOTE: any xhr-gets will bind own PAGE.init() method
 	var Y = SNAPPI.Y;
-	var timer; 
-	var	ready = function() {
-		// is_TopLevelFolder_installed set by TLFBootstrapper AIR app
-		if (is_TopLevelFolder_installed == undefined) return;
-		
-		
-		Y.one('#checking-config').remove();
-		if (is_TopLevelFolder_installed=='true') {
-			Y.one('#download-wrap').addClass('hide');
-			Y.one('#snappi-uploader-wrap').removeClass('offscreen');
-		} else {
-			Y.one('#download-wrap').removeClass('hide');
-			Y.one('#snappi-uploader-wrap').addClass('hide');
-		}
-		timer.cancel();		
-	};
-	timer = Y.later(1000, Y, ready, null, true);
 };
 PAGE.init.push(initOnce); 
 </script>	

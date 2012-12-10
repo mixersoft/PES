@@ -27,6 +27,9 @@
     SNAPPI.onYready.ThriftUploader = function(Y){
 		if (_Y === null) _Y = Y;
 		SNAPPI.ThriftUploader = ThriftUploader;
+		if (SNAPPI.is_TopLevelFolder_installed != undefined) {
+		 	ThriftUploader.action.bootstrapReady(SNAPPI.is_TopLevelFolder_installed);	
+		}
 	}	
 	var ThriftUploader = function(cfg) {	}; 
 	
@@ -97,7 +100,7 @@
 				});
 			} 
 		},
-		flashRestart: function(){
+		show_RestartMessage: function(){
 			var i, row, folderState = ThriftUploader.ui._folderState;
 			for (i in folderState) {
 				row = folderState[i];
@@ -130,13 +133,29 @@
 				return false;
 			}
         	ThriftUploader.util.removeFolder(folder_id, success);
-		},		
+		},	
+		bootstrapReady: function(is_TopLevelFolder_installed) {
+			// called by TLFBootstrapper AIR app
+			_Y.one('#checking-config').remove();
+			if (is_TopLevelFolder_installed) {
+				_Y.one('#download-wrap').addClass('hide');
+				_Y.one('#snappi-uploader-wrap').removeClass('offscreen');
+			} else {
+				_Y.one('#download-wrap').removeClass('hide');
+				_Y.one('#snappi-uploader-wrap').addClass('hide');
+			}
+			ThriftUploader.ui._is_TopLevelFolder_installed = is_TopLevelFolder_installed;
+		},	
+		show_DownloadPage: function() {
+			_Y.one('#download-wrap').removeClass('hide');
+		}
 	}
 
 	ThriftUploader.ui = {
-		_folderState: null,
 		REFRESH_MS: 2000,
 		NO_UI_UPDATE_LIMIT: 5,	// 2^5 = 32 seconds since last check
+		_folderState: null,
+		_is_TopLevelFolder_installed: null,
 		_no_ui_update_count: 0,
 		_elapsed: 0,
 		renderFolderState: function(folders) {
@@ -198,7 +217,7 @@
 				UI._no_ui_update_count++; 
 				if (UI._no_ui_update_count > UI.NO_UI_UPDATE_LIMIT) {
 					ThriftUploader.action.refresh(false);
-					ThriftUploader.action.flashRestart();
+					ThriftUploader.action.show_RestartMessage();
 				}
 			} else UI._no_ui_update_count = 0;
 		},

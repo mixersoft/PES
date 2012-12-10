@@ -70,6 +70,11 @@ table.thrift-folders td.remove {
 	width: 40px;
 }
 
+table.thrift-folders td.remove input{
+	font-weight: normal;
+	text-shadow: none;
+}
+
 table.thrift-folders tr.row.active li {
 	color: blue;
 }
