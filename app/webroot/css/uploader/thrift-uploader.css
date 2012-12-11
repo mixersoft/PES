@@ -56,11 +56,13 @@ table.thrift-folders td {
 	padding: 4px 0;
 	text-align: center;
 }
-table.thrift-folders td.status {
+table.thrift-folders th.status {
 	width: 200px;
+}
+table.thrift-folders td.status {
 	padding: 2px;
 }
-table.thrift-folders td.is-watched {
+table.thrift-folders th.is-watched {
 	width: 40px;
 }
 table.thrift-folders .label {

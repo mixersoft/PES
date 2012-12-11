@@ -516,8 +516,14 @@ ThriftController::log("***   GetFolders", LOG_DEBUG);
 			$folders = CakePhpHelper::_model_getFolderState($taskID, false);
 
 			if (empty($folders)) {
-				// Cancel Task right away, GetWatchFolders() called from different taskID
-				CakePhpHelper::_model_setTaskState($taskID, array('IsCancelled'=>1));
+				// Cancel Task right away, if all folders are is_scanned, 
+				// but let Task run if there are no added folders
+				$all_folders = CakePhpHelper::_model_getFolderState($taskID, null);
+				if (!empty($all_folders)) {
+					// GetWatchFolders() called from different taskID
+					CakePhpHelper::_model_setTaskState($taskID, array('IsCancelled'=>1));					
+					
+				}
 			}				
 			$folders = Set::extract('{n}.folder_path',$folders);
 // ThriftController::log($folders, LOG_DEBUG);				

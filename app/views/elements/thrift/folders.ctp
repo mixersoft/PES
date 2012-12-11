@@ -35,7 +35,7 @@
 									?>
 									>
 								</span></div></td>
-							<td class='is-watched'><input name='data[ThriftFolder][native_path_hash]' action='watch' value='<?php echo "{$folder['ThriftFolder']['native_path_hash']}";?>' type='checkbox'<?php if ($folder['ThriftFolder']['is_watched']) echo " checked=yes"; ?>></td>
+							<td class='is-watched'><input name='data[ThriftFolder][native_path_hash]' action='watch' type='checkbox'<?php if ($folder['ThriftFolder']['is_watched']) echo " checked=yes"; ?>></td>
 							<td class='label'><?php
 								 $count = $folder['ThriftFolder']['count'] ? $folder['ThriftFolder']['count'] : '?';
 								 if ($folder[0]['uploaded']) $count = "{$folder[0]['uploaded']}/{$count}";
@@ -59,5 +59,19 @@
 						</tr>		
 					<?php  endif; ?>					
 				</tbody></table>
-				<div id='device-label' value="<?php if (isset($device_label)) echo $device_label; ?>" class='hide'></div>
+				<div class='hide'>
+					<div id='device-label' value="<?php if (isset($device_label)) echo $device_label; ?>" class='hide'></div>	
+					<table><tbody>
+					<tr id='folder-row-markup' class='row folder inline'>
+						<td class="status"><div class="progress meter pending">
+							<span class="fill">
+							</span></div></td>
+						<td class="is-watched"><input type="checkbox" action="watch" name="data[ThriftFolder][native_path_hash]"></td>
+						<td class="label"></td>
+						<td class="remove"><input type="button" class="orange" value="remove" action="remove" name="data[ThriftFolder][native_path_hash]"></td>
+					</tr>					
+					</tbody>
+					</table>
+				</div>
+				
 			

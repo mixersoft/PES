@@ -147,6 +147,9 @@
 				_Y.one('#checking-config').remove();
 				_Y.one('#download-wrap').addClass('hide');
 				_Y.one('#snappi-uploader-wrap').removeClass('offscreen');
+				// start UI if '.empty-folders-message' found
+				var firstTime = _Y.one('.thrift-folders .empty-folders-message');
+				if (firstTime) ThriftUploader.action.refresh('restart');
 			}
 			var folders_node = _Y.one('#uploader-ui-xhr');
 			if (folders_node.hasClass('device-id-found')) {
@@ -200,14 +203,17 @@
 				folder_row_node = parent.one(rowid);
 				if (!folder_row_node) {
 					// render new row
-					var p = parseInt(i)==0 ? 0 : i-1;  
-					var previous = parent.all('tr.folder').item(p);
-					var clone = previous.clone();
+					var beforeNode, p = parseInt(i)-1;  
+					beforeNode = parent.all('tr.folder').item(p);
+					if (!beforeNode) beforeNode = parent.one('tr.header');
+					var clone = _Y.one('#folder-row-markup').clone();
 					clone.set('id', 'fhash-'+row['ThriftFolder']['native_path_hash']);
-					clone.one('.is-watched input').set('value', row['ThriftFolder']['native_path_hash']);
 					clone.one('.progress').addClass('active');
 					UI.renderFolderRow(row, clone);
-					previous.insert(clone,'after');
+					beforeNode.insert(clone,'after');
+					try {
+						_Y.one('.empty-folders-message').remove();
+					} catch(e){}
 					ui_updated = true;
 					continue;
 				}
@@ -253,6 +259,7 @@
 		},
 		renderFolderRow: function(row_data, row_node) {
 			if (row_data['ThriftFolder']['count']===null) row_data['ThriftFolder']['count'] = '?';
+			if (!row_data['ThriftFolder']['uploaded']) row_data['ThriftFolder']['uploaded'] = '0';
 			label = _Y.Lang.sub("{native_path} ({uploaded}/{count})", row_data['ThriftFolder']);
 			row_node.one('td.label').setContent(label);
 			row_node.one('.progress').addClass('active');
