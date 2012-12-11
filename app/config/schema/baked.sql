@@ -3,7 +3,7 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';
 
 DROP SCHEMA IF EXISTS `baked` ;
-CREATE SCHEMA IF NOT EXISTS `baked` DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ;
+CREATE SCHEMA IF NOT EXISTS `baked` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ;
 USE `baked` ;
 
 --
@@ -615,6 +615,12 @@ ALTER TABLE `snappi`.`usershots`
  		COMMENT 'role: USER=10, EDITOR=20, SCRIPT=30' AFTER `owner_id`,
  ADD COLUMN `active` TINYINT(1) DEFAULT 1 AFTER `priority`;
  
+ALTER TABLE `snappi`.`groupshots`
+ADD COLUMN `owner_id` CHAR(36) DEFAULT null AFTER `group_id`,
+ADD COLUMN `priority` TINYINT UNSIGNED NOT NULL DEFAULT 10
+ 		COMMENT 'role: USER=10, EDITOR=20, SCRIPT=30' AFTER `owner_id`,
+ADD COLUMN `active` TINYINT(1) DEFAULT 1 AFTER `priority`;
+
    
 --
 -- Table structure for table `helps`

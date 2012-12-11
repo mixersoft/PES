@@ -379,7 +379,8 @@ AND includes.asset_id='{$assetId}';
 				$conditions = array('OR'=>array(
 					array(
 						'`Shot`.id IS NULL', 	// no photo with hidden shots, or bestShot
-						'`AssetsUsershot`.`usershot_id` IS NULL'
+						// '`AssetsUsershot`.`usershot_id` IS NULL',
+						"`Assets{$shotType}`.`".strtolower($shotType)."_id` IS NULL",
 					), 
 					array( 
 						($show_inactive_shots ? 1 : '`Shot`.active' ),
@@ -391,7 +392,8 @@ AND includes.asset_id='{$assetId}';
 			$conditions = array('OR'=>array(
 				array(
 					'`Shot`.id IS NULL', 	// no photo with hidden shots, or bestShot
-					'`AssetsUsershot`.`usershot_id` IS NULL'
+					// '`AssetsUsershot`.`usershot_id` IS NULL',
+					"`Assets{$shotType}`.`".strtolower($shotType)."_id` IS NULL",
 				), 
 				array( 
 					($show_inactive_shots ? 1 : '`Shot`.active' ),
@@ -405,7 +407,8 @@ AND includes.asset_id='{$assetId}';
 			$conditions = array('OR'=>array(
 				array(
 					'`Shot`.id IS NULL', 	// no photo with hidden shots, or bestShot
-					'`AssetsUsershot`.`usershot_id` IS NULL'
+					// '`AssetsUsershot`.`usershot_id` IS NULL',
+					"`Assets{$shotType}`.`".strtolower($shotType)."_id` IS NULL",
 				), 
 				array( 
 					($show_inactive_shots ? 1 : '`Shot`.active' ),
