@@ -45,4 +45,5 @@
 						</tr>
 					<?php  endforeach; ?>
 				</tbody></table>
+				<div id='device-label' value="<?php if (isset($device_label)) echo $device_label; ?>" class='hide'></div>
 			

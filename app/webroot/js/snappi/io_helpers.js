@@ -226,7 +226,7 @@
 					}
 				});
 			}
-			       				
+			args.fragment.addClass('xhr-loading');
 			target.io.set('uri', uri);
 			target.io.set('arguments', args);
 			target.io.start();

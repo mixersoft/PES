@@ -23,10 +23,6 @@
 	$launch_SnappiUploader = "snaphappi://{$authToken64}_{$sessionId64}_ur";
 	$launch_SnappiUploader_watched = "snaphappi://{$authToken64}_{$sessionId64}_sw";		
 ?>
-    <style type="text/css" media="screen"> 
-    	
-    	
-    </style>
 	<script type="text/javascript">
       // For version detection, set to min. required Flash Player version, or 0 (or 0.0.0), for no version detection. 
         var swfVersionStr = "10.2.0";
@@ -83,11 +79,6 @@
 	</div>
 </div>
 <div id='download-wrap' class="grid_16 hide">
-	<div class="alpha grid_8 hide">
-		<div class="wrap">
-			<?php echo $this->element('group/express-upload'); ?>	
-		</div>
-	</div>
 	<h2>Uploading Photos</h2>
 	<div class="alpha prefix_4 grid_8 suffix_4 omega">
 		<aside class="blue rounded-5">
@@ -121,10 +112,18 @@
 				<li class='btn red rounded-5' onclick='SNAPPI.ThriftUploader.action.refresh(false);'>
 					Stop
 				</li>
+				<li class='label device-label'>Device: <?php  echo $device ? $device['label'] : 'unknown';  ?></li>
 			</ul>	
-			<div id='uploader-ui-xhr'>
-				<?php  echo $this->element('thrift/folder'); 	?>
-			</div>
+			<?php
+				if (!empty($folders)) {
+					echo "<div id='uploader-ui-xhr' class='device-id-found'>";
+					echo $this->element('thrift/folders');
+					echo "</div>";
+				}  else {
+					$ajaxSrc = Router::url(array('action'=>'uploader_folders'));
+					echo "<div id='uploader-ui-xhr' class='xhr-get-disabled' xhrSrc='{$ajaxSrc}' delay='0'></div>";
+				}
+			?>			
 			<hr>
 		</div></div>
 		<ul style="margin:20px 40px;">
@@ -145,19 +144,6 @@
 	</div>
 </div>
 <script type="text/javascript">
-	/**
-	 * TODO: change to DialogAlert()
-	 * get group_ids of groups for express upload/sharing
-	 * @return String, comma delim string of group_ids
-	 */
-var getExpressUploads = function(){
-		var Y = SNAPPI.Y;
-		var gids = [];
-		Y.all('#express-upload-options input[type=checkbox]').each(function(n,i,l){
-			if (n.get('checked')) gids.push(n.getAttribute('uuid'));
-		});
-		return gids.join(',');
-	}
 var bootstrapReady = function(value) {
 	try {
 		SNAPPI.ThriftUploader.action.bootstrapReady(value);
@@ -166,11 +152,5 @@ var bootstrapReady = function(value) {
 		SNAPPI.is_TopLevelFolder_installed = value;
 	}
 }
-var initOnce = function() {
-	// init xhr paging & fetch xhr-gets
-	// NOTE: any xhr-gets will bind own PAGE.init() method
-	var Y = SNAPPI.Y;
-};
-PAGE.init.push(initOnce); 
 </script>	
 

@@ -112,9 +112,7 @@
 			};
 		},
 		post_WatchFolder: function(loadingNode) {
-			var uri = '/thrift/set_watched_folder/.json', 
-				postData = {},
-				folder_id = loadingNode.ancestor('tr').get('id').substr(6);	// strip off 'fhash-'	
+			var	folder_id = loadingNode.ancestor('tr').get('id').substr(6);	// strip off 'fhash-'	
 			var watch = loadingNode.get('checked');
 			var success = function() {
 				// launch sw task
@@ -124,9 +122,7 @@
         	ThriftUploader.util.setWatchedFolder(folder_id, watch, success);
 		},
 		post_RemoveFolder: function(loadingNode) {
-			var uri = '/thrift/remove_folder/.json', 
-				postData = {},
-				folder_id = loadingNode.ancestor('tr').get('id').substr(6);	// strip off 'fhash-'	
+			var	folder_id = loadingNode.ancestor('tr').get('id').substr(6);	// strip off 'fhash-'	
 			var row = loadingNode.ancestor('tr');
 			var success = function() {
 				row.remove();
@@ -135,18 +131,52 @@
         	ThriftUploader.util.removeFolder(folder_id, success);
 		},	
 		bootstrapReady: function(is_TopLevelFolder_installed) {
-			// called by TLFBootstrapper AIR app
-			_Y.one('#checking-config').remove();
+			// called by TLFBootstrapper flash app, 
 			if (is_TopLevelFolder_installed) {
-				_Y.one('#download-wrap').addClass('hide');
-				_Y.one('#snappi-uploader-wrap').removeClass('offscreen');
+				ThriftUploader.action.waitForDeviceId();
 			} else {
+				_Y.one('#checking-config').remove();
 				_Y.one('#download-wrap').removeClass('hide');
 				_Y.one('#snappi-uploader-wrap').addClass('hide');
 			}
 			ThriftUploader.ui._is_TopLevelFolder_installed = is_TopLevelFolder_installed;
 		},	
+		waitForDeviceId: function(){
+			// native-uploader installed, 
+			var deviceId_found = function() {
+				_Y.one('#checking-config').remove();
+				_Y.one('#download-wrap').addClass('hide');
+				_Y.one('#snappi-uploader-wrap').removeClass('offscreen');
+			}
+			var folders_node = _Y.one('#uploader-ui-xhr');
+			if (folders_node.hasClass('device-id-found')) {
+				// DeviceID is saved in Session
+				deviceId_found();
+				return;
+			}
+			// DeviceID unknown, LAUNCH uploader to get from TaskID 
+			var target = _Y.Lang.sub("snaphappi://{authToken64}_{sessionId64}_ur", PAGE.jsonData.nativeUploader);
+			window.location.href = target;
+			
+			// try to get folders until successful, implies DeviceID is available 
+			folders_node.replaceClass('xhr-get-disabled', 'xhr-get');
+			SNAPPI.xhrFetch.fetchXhr(folders_node);
+			var cancel = _Y.later(1000, ThriftUploader, function(){
+				if (folders_node.one('table')) {
+					cancel.cancel();
+					var label = folders_node.one('#device-label').remove().getAttribute('value');
+					_Y.one('#thrift-uploader-wrap li.device-label').setContent('Device: '+label);
+					deviceId_found();	
+				} else {
+					// call SNAPPI.io.fetchXhr() until success
+					if (!folders_node.hasClass('xhr-loading')) {
+						SNAPPI.xhrFetch.fetchXhr(folders_node);
+					}
+				}
+			}, null, true);
+		},
 		show_DownloadPage: function() {
+			// override, show download page in case user needs to re-install
 			_Y.one('#download-wrap').removeClass('hide');
 		}
 	}
@@ -307,9 +337,9 @@
 			this.xhrJsonRequest(uri, cfg, successJson);
 		},
 		getFolderState: function(successJson) {
-			// helper method which calls /my/uploader_ui/.json
+			// helper method which calls /my/uploader_folders/.json
 			// NOT A THRIFT API method
-			var uri = '/my/uploader_ui/.json';
+			var uri = '/my/uploader_folders/.json';
 			this.xhrJsonRequest(uri, null, successJson);
 		}, 
 		removeFolder: function(hash, successJson){
