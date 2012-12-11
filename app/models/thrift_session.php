@@ -45,15 +45,20 @@ class ThriftSession extends AppModel {
 	 * Check if the Session and Device are correctly bound 
 	 * @param $session_id UUID for existing session
 	 * @param $device_UUID UUID, provided by thrift client, TaskID->DeviceID
+	 * @param $pa_id UUID, provider account id, 
+	 * 		optional extra validation when reading taskId from Session
 	 * @return mixed, if true, return array with [ThriftSession], [ThriftDevice]
 	 */
-	function checkDevice($session_id, $device_UUID) {
+	function checkDevice($session_id, $device_UUID, $pa_id = null) {
 		$options = array(
 			'contain'=>array('ThriftDevice'=>array(
 				'conditions'=>array('ThriftDevice.device_UUID'=>$device_UUID)
 			)),
 			'conditions'=>array('ThriftSession.id'=>$session_id),
 		);
+		if ($pa_id) {
+			$options['contain']['ThriftDevice']['conditions']['ThriftDevice.provider_account_id'] = $pa_id;
+		}
 // ThriftController::log("***   ThriftSession::checkDevice, options=".print_r($options,true), LOG_DEBUG);		
 		$data = $this->find('first', $options);
 		if (empty($data['ThriftSession'])) {

@@ -70,6 +70,7 @@ class ThriftDevice extends AppModel {
 		return  $device;
 	}	
 	
+	
 	/**
 	 * find thrift devices by TaskID->DeviceID, also check ProviderAcount.auth_token 
 	 * @param $authToken string, provider_account_id for name=native-uploader
@@ -85,7 +86,9 @@ class ThriftDevice extends AppModel {
 					'`ProviderAccount`.provider_name'=>$providerName,
 				)
 			)),
-			'conditions'=>array('ThriftDevice.device_UUID'=>$device_UUID),
+			'conditions'=>array('ThriftDevice.device_UUID'=>$device_UUID,
+				"ProviderAccount`.auth_token IS NOT NULL"
+			),
 		);
 		$device = $this->find('first', $device_options);
 		if (!empty($device['ThriftDevice']) && empty($device['ProviderAccount'])) 
