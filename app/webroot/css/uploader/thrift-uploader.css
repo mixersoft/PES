@@ -35,7 +35,9 @@
 	padding: 0;
 }
 table.thrift-folders {
-	margin: 10px;
+	background-color: white;
+    border: 1px solid #8FB9D0;
+    margin: 4px;
 }
 table.thrift-folders tr.header {
 	margin-bottom: 4px;
@@ -47,8 +49,7 @@ table.thrift-folders th {
 	font-weight: bold;
 	border-bottom: 1px solid black;
 	text-align: center;
-	padding: 0 4px;
-	margin-bottom: 4px;
+	padding: 4px;
 }
 table.thrift-folders td {
 	font-size:10pt;
@@ -90,7 +91,19 @@ table.thrift-folders td.status .progress.active  {
 	background-color: blue;
 	color: white;	
 }
-
+table.thrift-folders tr.empty-folders-message .message {
+	background-color:white;
+	margin: 10px;
+	padding: 10px;
+	text-align: left;
+}
+table.thrift-folders tr.empty-folders-message .message h1 {
+	border-bottom: 1px solid #8FB9D0;
+    font-size: 16pt;
+}
+table.thrift-folders tr.empty-folders-message .message * {
+	margin-bottom: 6px;
+}
 .progress.done > span {
 	width: 100%;
 	-moz-border-radius: 20px;

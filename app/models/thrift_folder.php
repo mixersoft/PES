@@ -65,10 +65,18 @@ class ThriftFolder extends AppModel {
 			return true;
 		} else return false;
 	}
-		
-	public function findByDeviceUUID($device_UUID, $is_watched = false) {
+	
+	/**
+	 * @param $device_UUID, from installer, // see HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Snaphappi for DeviceID
+	 * @param $pa_id, provider_account_id for current user
+	 * @param $is_watched boolean, get watched folders optional, default=false
+	 */	
+	public function findByDeviceUUID($device_UUID, $pa_id, $is_watched = false) {
 		$options['contain'] = array('ThriftDevice'=>array(
-				'conditions'=>array('ThriftDevice.device_UUID'=>$device_UUID)
+				'conditions'=>array(
+					'ThriftDevice.device_UUID'=>$device_UUID,
+					'ThriftDevice.provider_account_id'=>$pa_id,
+				)
 			));
 		$options['conditions'] = array('`ThriftDevice`.device_UUID IS NOT NULL');	
 		return $this->findByThriftDeviceId(null, $is_watched, $options);	

@@ -44,6 +44,20 @@
 							<td class='remove'><input name='data[ThriftFolder][native_path_hash]'  action='remove' value='remove' type='button' class='orange'></td>
 						</tr>
 					<?php  endforeach; ?>
+					<?php if (empty($folders) && !empty($taskID['DeviceID'])) : ?>
+						<tr class='empty-folders-message'><td colspan="4">
+								<div class='message blue rounded-5 wrap-v'>
+									<h1>Uploaded Folders</h1>
+									<p>This is where you manage the folders that will upload photos to Snaphappi.
+										Our uploader will scan the each of the folders listed above, including all subfolders,
+										 for JPG files and upload a copy to Snaphappi.  
+										</p>
+									<p>Folders marked as <em>Watch</em> will periodically repeat this scan 
+										and upload any new JPG files that are found.</p>
+									<p>You have not selected any folders to upload. Please do so now.</p>
+								</div></td>
+						</tr>		
+					<?php  endif; ?>					
 				</tbody></table>
 				<div id='device-label' value="<?php if (isset($device_label)) echo $device_label; ?>" class='hide'></div>
 			

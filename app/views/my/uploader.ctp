@@ -94,7 +94,7 @@
 	<div class="alpha grid_5" >
 		<div id="top-level-folder-wrap"  class='blue rounded-5'>
 			<div class="wrap">
-			<h1>Choose a Folder to Import</h1>
+			<h1>Select a Folder to Import</h1>
 			<div id="top-level-folder-alt" >
 				<h1>Get the TopLevelFolder App</h1>
 				<p><a href="http://www.adobe.com/go/getflashplayer">Get Adobe Flash player</a></p>

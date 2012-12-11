@@ -603,10 +603,7 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			);
 			// NOTE: for provider-name=native-uploader, this should be UNIQUE.
 			$data = $this->User->ProviderAccount->getByOwner($userid, $options);
-			
-			if (empty($data)) 
-				throw new Exception("Error: 'native-uploader' ProviderAcocunt is missing");
-			
+		
 			if (!empty($data['ProviderAccount']['auth_token'])) {
 				// found, check authToken for expiration 
 				$last_modified = strtotime($data['ProviderAccount']['modified']);
@@ -639,6 +636,9 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 				$paData = $this->User->ProviderAccount->addIfNew($paData, $conditions,  $response);
 				$this->User->ProviderAccount->thrift_renewAuthToken($paData['ProviderAccount']['id']);
 				$data = $this->User->ProviderAccount->getByOwner($userid, $options);
+				if (empty($data)) 
+					throw new Exception("Error: There was a problem creating the ProviderAccount, provider_name=native-uploader");
+	
 			}
 // ************************  force no Session	************************************		
 	// Session::delete('thrift-task');				
@@ -729,7 +729,7 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 					Session::write('thrift-task', $taskID);
 					
 					// using TaskID saved in Session, we can immediately get/render folders
-					$folders = $this->ThriftSession->ThriftDevice->ThriftFolder->findByDeviceUUID($taskID['DeviceID'], $is_watched = null); 
+					$folders = $this->ThriftSession->ThriftDevice->ThriftFolder->findByDeviceUUID($taskID['DeviceID'], $data['ProviderAccount']['id'], $is_watched = null); 
 					$device = $session['ThriftDevice'];
 				} else {
 // debug('WAiTING FOR DeviceID from ThriftAPI');					
@@ -740,6 +740,8 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 					Session::write('thrift-task.Session', $taskID['Session']);
 					$device = $folders = array();
 				}
+			} else {
+				throw new Exception("Error: taskID is still empty");
 			}
 			
 		} catch (Exception $ex) {
@@ -758,7 +760,6 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			}
 			return;
 		}
-		
 		$taskState['ThriftSession'] = $session['ThriftSession'];
 		$this->set(compact('data', 'taskID', 'device', 'taskState', 'folders'));
 	}
@@ -802,7 +803,7 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			if (!$session) 
 				throw new Exception("ERROR: DeviceID should alreay be bound to Session");
 			// on GetFolders()
-			$folders = $this->ThriftSession->ThriftDevice->ThriftFolder->findByDeviceUUID($taskID['DeviceID'], $is_watched = null); 
+			$folders = $this->ThriftSession->ThriftDevice->ThriftFolder->findByDeviceUUID($taskID['DeviceID'], $session['ThriftDevice']['provider_account_id'] ,$is_watched = null); 
 			$taskState['ThriftSession'] = $session['ThriftSession'];
 			$response = compact('taskID', 'folders', 'taskState');
 		} catch (Exception $ex) {
