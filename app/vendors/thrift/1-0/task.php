@@ -70,6 +70,7 @@ class CakePhpHelper {
 		/**
 		 * authenticate the User account from ProviderAccount.auth_token embedded in $taskID
 		 * 		AppController::$userid, AppController::$role will be set here
+		 * 	will automatically bind TaskID->DeviceID to TaskID->Session
 		 * @param $taskID, from $taskID
 		 * @return aa $data[ProviderAccount,Owner,ThriftSession,ThriftDevice] 
 		 */
@@ -216,7 +217,6 @@ ThriftController::log("*****   SystemException from _loginFromAuthToken(): ".pri
 		 * get Task state for thrift api
 		 * 		called by GetFolders, GetWatchedFolders
 		 * WARNING: the task does NOT know the deviceId, must be posted by client
-		 *		uses MetaData plugin for now, 
 		 * 
 		 * TODO: move to Model/DB table?
 		 * TODO: should method be moved to the Model under the native desktop uploader
@@ -295,7 +295,6 @@ ThriftController::log("_model_setTaskState() state=".print_r($thrift_GetTask, tr
 			if (!ThriftController::$session) CakePhpHelper::_loginFromAuthToken($taskID);
 			$session = & ThriftController::$session;
 			ThriftController::$controller->ThriftSession->delete($session['ThriftSession']['id']);
-			ThriftController::$controller->User->setMeta("native-uploader.task.{$taskID->Session}", null);
 		}	
 		
 		public static function _model_getFiles($taskID, $folderPath) {
@@ -484,11 +483,11 @@ class snaphappi_api_TaskImpl implements snaphappi_api_TaskIf {
 	
         /**
 		 * @param $taskID TaskID
-		 * @return URTaskState, 			//  return array[IsCancelled] = boolean (?) 
+		 * @return URTaskState, 			 
 		 * 	URTaskState->IsCancelled Boolean (optional)
 		 *  URTaskState->FolderUpdateCount Int (optional), unique id for Folder state
 		 *  URTaskState->FileUpdateCount Int (optional), unique id for File state
-		 *  TODO: URTaskState->DeviceId UUID (optional), unique id for desktop device
+		 *  URTaskState->DeviceId UUID (optional), unique id for desktop device
 		 */
         public function GetState($taskID) {
 // ThriftController::log("***   GetState, deviceID={$taskID->DeviceID}", LOG_DEBUG);    
