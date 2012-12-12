@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
+					   xmlns:s="library://ns.adobe.com/flex/spark"
+					   xmlns:mx="library://ns.adobe.com/flex/mx"
+					   width="439" height="333" backgroundColor="#C5E8FA"
+					   initialize="initializeApp(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import Snaphappi.Task;
+			import Snaphappi.TaskID;
+			import Snaphappi.TaskImpl;
+			import Snaphappi.TaskProcessor;
+			
+			import flash.net.URLRequest;
+			import flash.sampler.NewObjectSample;
+			import flash.utils.ByteArray;
+			
+			import flashx.textLayout.factory.StringTextLineFactory;
+			
+			import mx.events.FlexEvent;
+			import mx.messaging.channels.StreamingAMFChannel;
+			import mx.utils.Base64Decoder;
+			import mx.utils.URLUtil;
+			
+			import org.apache.thrift.protocol.TBinaryProtocol;
+			import org.apache.thrift.transport.THttpClient;
+			
+			
+			private var directory:File;
+			private var deviceId:String;
+			private var authToken:String = "";
+			private var sessionId:String = "";
+			private var hostname:String = "dev.snaphappi.com";
+			private var url_ThriftService:String = "/thrift/service/api:1-0/Task/0";
+			private var url_ThriftAPI:String;
+			private var selectedFolder:String;
+			private var foldersArray:Array;
+			private var currentFolder:int = 0;			
+
+			protected function initializeApp(event:FlexEvent):void
+			{
+				NativeApplication.nativeApplication.addEventListener(BrowserInvokeEvent.BROWSER_INVOKE, onBrowserInvoke);
+				NativeApplication.nativeApplication.addEventListener(InvokeEvent.INVOKE, onInvoke);
+				
+				addEventListener(NativeDragEvent.NATIVE_DRAG_DROP, onDragDrop);
+				addEventListener(NativeDragEvent.NATIVE_DRAG_ENTER, onDragEnter);
+			}
+			
+			private function onDragEnter(evt:NativeDragEvent):void
+			{
+				if (evt.clipboard.hasFormat(ClipboardFormats.FILE_LIST_FORMAT))
+				{
+					NativeDragManager.acceptDragDrop(this);
+				}
+			}
+			
+			private function onDragDrop(evt:NativeDragEvent):void
+			{
+				var filesArray:Array = evt.clipboard.getData(ClipboardFormats.FILE_LIST_FORMAT) as Array;
+				
+				foldersArray = new Array();
+				
+				for each(var file:File in filesArray)
+				{
+					if(file.isDirectory && file.exists)
+					{
+						directoryField.text += "Selected directory is " + file.nativePath + "\n";
+						foldersArray.push(file.nativePath);
+					} 
+				}
+				
+				getFolders();
+			}
+			
+			private function onBrowserInvoke(evt:BrowserInvokeEvent):void
+			{
+				if(evt.arguments.length == 3)
+				{
+					authToken  = evt.arguments[0];
+					sessionId = evt.arguments[1];
+					hostname = evt.arguments[2];								// for localhost testing
+				}
+				
+				var myDecoder:Base64Decoder = new Base64Decoder();
+				myDecoder.decode(authToken);
+				authToken =  myDecoder.toByteArray().toString();
+				argsField.appendText("authToken: "+authToken+"\n");
+				
+				myDecoder.decode(sessionId);
+				sessionId =  myDecoder.toByteArray().toString();
+				argsField.appendText("sessionId: "+sessionId+"\n");
+				
+				myDecoder.decode(hostname);
+				hostname =  myDecoder.toByteArray().toString();
+				hostname = URLUtil.getServerName(hostname);
+				argsField.appendText("hostname: "+hostname+"\n");
+				
+				if (!url_ThriftAPI) url_ThriftAPI = "http://" + hostname + url_ThriftService;
+				argsField.appendText("onBrowserInvoke thrift: "+url_ThriftAPI+"\n");
+				
+				getDeviceId();
+			}
+			
+			private function onInvoke(evt:InvokeEvent):void
+			{
+				if (url_ThriftAPI) return;					// from onBrowserInvoke
+				
+				hostname = "snappi-dev";					// for localhost testing
+				authToken = 'b34f54557023cce43ab7213e0eb7da2a6b9d6b27';
+				sessionId = '509d820e-b990-4822-bb9c-11d0f67883f5';
+				argsField.appendText("hostname: "+hostname+"\n");
+				argsField.appendText("authToken: "+authToken+"\n");
+				argsField.appendText("sessionId: "+sessionId+"\n");
+
+				url_ThriftAPI = "http://" + hostname + url_ThriftService;
+				argsField.appendText("onInvoke thrift: "+url_ThriftAPI+"\n");
+				
+				getDeviceId();
+			}
+			
+			private function onButtonClick(evt:MouseEvent):void
+			{
+				directory = File.documentsDirectory;
+				directory.addEventListener(Event.SELECT, onDirectorySelected);
+				directory.browseForDirectory("Select directory");
+			}
+			
+			private function onDirectorySelected(evt:Event):void
+			{
+				directory = evt.target as File;
+				directoryField.text = "Selected directory is " + directory.nativePath;
+				
+				foldersArray = new Array();
+				
+				foldersArray.push(directory.nativePath);
+				
+				getFolders();
+			}
+			
+			public function getDeviceId():void 
+			{
+				var request:URLRequest = new URLRequest(url_ThriftAPI);
+				var transport:THttpClient = new THttpClient(request);
+				var protocol:TBinaryProtocol = new TBinaryProtocol(transport);
+				
+				var impl:TaskImpl = new TaskImpl(protocol);
+				var proc:TaskProcessor = new TaskProcessor(impl);
+				
+				impl.GetDeviceID(authToken, sessionId, onGetDeviceError, onGetDeviceSuccess);
+			}
+			
+			private function onGetDeviceError(error:Error):void
+			{
+				trace(error.toString());
+			}
+			
+			private function onGetDeviceSuccess(res:String):void
+			{
+				trace(res);
+				deviceId = res;
+				selectButton.enabled = true;
+				argsField.appendText("deviceId: "+deviceId+"\n");
+			}
+			
+			public function getFolders():void 
+			{
+				var taskId:TaskID = new TaskID();
+				taskId.AuthToken = authToken;
+				taskId.Session = sessionId;
+				taskId.DeviceID = deviceId;
+				
+				var request:URLRequest = new URLRequest(url_ThriftAPI);
+				var transport:THttpClient = new THttpClient(request);
+				var protocol:TBinaryProtocol = new TBinaryProtocol(transport);
+				
+				var impl:TaskImpl = new TaskImpl(protocol);
+				var proc:TaskProcessor = new TaskProcessor(impl);
+				
+				impl.GetFolders(taskId, onGetFoldersError, onGetFoldersSuccess);
+			}
+			
+			private function onGetFoldersError(error:Error):void
+			{
+				trace(error.toString());
+			}
+			
+			private function onGetFoldersSuccess(res:String):void
+			{
+				trace(res);
+				var existFoldersArray:Array = new Array();
+				
+				existFoldersArray = String(res).split(",");
+				
+				var isExist:Boolean = false;
+				
+				
+				for each(var item:String in foldersArray)
+				{
+					isExist = false;
+					
+					for each(var existItem:String in existFoldersArray)
+					{
+						if(item == existItem)
+						{
+							isExist = true;
+						}
+					}
+					
+					if(!isExist)
+					{
+						addFolder(item);
+					} else {
+						trace("folder exist");
+					}
+				}
+			}
+			
+			private function addFolder(folderName:String):void
+			{
+				var taskId:TaskID = new TaskID();
+				taskId.AuthToken = authToken;
+				taskId.Session = sessionId;
+				taskId.DeviceID = deviceId;
+	argsField.appendText("addFolder thrift: "+url_ThriftAPI+"\n");				
+				var request:URLRequest = new URLRequest(url_ThriftAPI);
+				var transport:THttpClient = new THttpClient(request);
+				var protocol:TBinaryProtocol = new TBinaryProtocol(transport);
+				
+				var impl:TaskImpl = new TaskImpl(protocol);
+				var proc:TaskProcessor = new TaskProcessor(impl);
+				
+				impl.AddFolder(taskId, folderName, onAddFolderError, onAddFolderSuccess);
+			}
+			
+			private function onAddFolderError(error:Error):void
+			{
+				trace(error.toString());
+				argsField.appendText(error.toString() + "\n");
+			}
+			
+			private function onAddFolderSuccess():void
+			{
+				trace("Folder added");
+				argsField.appendText("Folder added.\n");
+			}
+			
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Button id="selectButton" x="102" y="34" width="243" height="30"
+			  label="Choose a Folder to Import..." chromeColor="#F79621" click="onButtonClick(event)"
+			  cornerRadius="5" enabled="false" fontSize="16" fontWeight="normal"/>
+	<s:TextArea id="directoryField" x="20" y="90"/>
+	<s:TextArea id="argsField" x="228" y="90"/>
+</s:WindowedApplication>

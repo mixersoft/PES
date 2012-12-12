@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   width="268" height="74" minWidth="215" minHeight="30" backgroundAlpha="1.0"
+			   backgroundColor="#C5E8FA" initialize="initializeApp(event)"
+			   preloaderChromeColor="#C5E8FA">
+	<fx:Script>
+		<![CDATA[
+			import flash.display.Loader;
+			import flash.display.Sprite;
+			import flash.display.StageAlign;
+			import flash.display.StageScaleMode;
+			import flash.events.Event;
+			import flash.events.MouseEvent;
+//			import flash.external;
+			import flash.net.URLRequest;
+			import flash.system.ApplicationDomain;
+			import flash.system.LoaderContext;
+			import flash.text.TextField;
+			import flash.text.TextFormat;
+			
+			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
+			import mx.utils.Base64Decoder;
+			
+			import api.JavascriptVariableProxy;
+			
+			import spark.components.Label;
+			
+			private var airSWF:Object;
+			private var airSWFLoader:Loader = new Loader();
+			private var loaderContext:LoaderContext = new LoaderContext();
+			private var jsProxy:JavascriptVariableProxy = new JavascriptVariableProxy();
+			
+			private var appID:String = "TopLevelFolder"; // Application id. This parameter is set in AIR app definition XML in tag <id>testapp</id>  
+			private var pubID:String = ""; // Your publisher id. Can be blank 
+			private var args:Array = new Array();
+			private var TLF_installer:String = "TopLevelFolder.air";
+			private var TLF_version:String = '1.0';
+			private var TLF_args:Array = new Array(); 
+			
+			private var appInstalled:Boolean = false;
+			
+			protected function initializeApp(event:FlexEvent):void
+			{
+				for each( var o : * in FlexGlobals.topLevelApplication.parameters ){
+					args.push(o);
+				}
+				
+				var flashvars:Object = FlexGlobals.topLevelApplication.parameters;
+				TLF_args = [flashvars.at, flashvars.si, flashvars.baseurl];
+				
+				var myDecoder:Base64Decoder = new Base64Decoder();
+				myDecoder.decode(flashvars.baseurl);
+				flashvars.baseurl = myDecoder.toByteArray().toString();
+				if (flashvars.baseurl) TLF_installer = flashvars.baseurl + '/' + TLF_installer;  // should be: 'http://snappi-dev/files/TopLevelFolder/TopLevelFolder.air'
+				if (flashvars.version) TLF_version = flashvars.version;	
+				
+				loaderContext.applicationDomain = ApplicationDomain.currentDomain; 
+				airSWFLoader.contentLoaderInfo.addEventListener(Event.INIT, onInit);
+				airSWFLoader.load(new URLRequest("http://airdownload.adobe.com/air/browserapi/air.swf"), loaderContext); // Don't change this URL. Its API SWF for calling and installing AIR apps
+			}
+			
+			private function onInit(e:Event):void
+			{ 
+				airSWF = e.target.content;
+				var status:String = airSWF.getStatus();
+				
+				//report ready status to Javascript UI 
+				if (status == "installed")
+				{	
+					airSWF.getApplicationVersion(appID, pubID, versionDetectCallback); 
+				} else {
+					jsProxy.bootstrapReady(false);
+				}
+			}
+			
+			
+			private function versionDetectCallback(version:String):void
+			{ 
+				if (version == null) 
+				{ 
+					appInstalled = false;
+					button.label = "Click to Install";
+				} 
+				else 
+				{ 
+					appInstalled = true;
+					button.label = "Select Folder to Upload";
+				} 
+				jsProxy.bootstrapReady(appInstalled);
+			}
+			
+			private function onButtonClick(evt:MouseEvent):void
+			{
+				trace(TLF_args);
+				if (appInstalled)
+				{
+					airSWF.launchApplication(appID, pubID, TLF_args);
+				} else 
+				{
+					trace(TLF_installer);
+					airSWF.installApplication(TLF_installer, TLF_version, TLF_args); // AIR application URL. Can be only absolute url   
+//					ExternalInterface.call("reloadPage");
+				}
+			}		
+			
+		]]>
+	</fx:Script>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	<s:Button id="button" x="30" y="20" width="208" height="30" label="Select Folder to Upload..."
+			  chromeColor="#F79621" click="onButtonClick(event)" cornerRadius="5" fontSize="16"/>
+</s:Application>
