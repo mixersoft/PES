@@ -71,7 +71,7 @@
 				if (ThriftUploader.timer === false && start!=='restart') return;
 				_Y.one('#uploader-ui-xhr').addClass('active');
 				var starttime = new Date().getTime(),
-					delay = 1000*Math.pow(2,ThriftUploader.ui._no_ui_update_count) + ThriftUploader.ui._elapsed;
+					delay = 1000*Math.pow(2,ThriftUploader.ui._no_ui_update_count); //  + ThriftUploader.ui._elapsed;
 				ThriftUploader.timer = _Y.later(delay, 
 					ThriftUploader.ui, 
 					function(){
@@ -144,6 +144,7 @@
 		waitForDeviceId: function(){
 			// native-uploader installed, 
 			var deviceId_found = function() {
+				ThriftUploader.listeners.FolderRowClick();
 				_Y.one('#checking-config').remove();
 				_Y.one('#download-wrap').addClass('hide');
 				_Y.one('#snappi-uploader-wrap').removeClass('offscreen');
@@ -205,7 +206,9 @@
 					// render new row
 					var beforeNode, p = parseInt(i)-1;  
 					beforeNode = parent.all('tr.folder').item(p);
-					if (!beforeNode) beforeNode = parent.one('tr.header');
+					if (!beforeNode) {		// first row
+						beforeNode = parent.one('tr.header');
+					}
 					var clone = _Y.one('#folder-row-markup').clone();
 					clone.set('id', 'fhash-'+row['ThriftFolder']['native_path_hash']);
 					clone.one('.progress').addClass('active');
@@ -288,6 +291,9 @@
 							if (json.success) {
 								if (reponse_key) json.response = json.response[reponse_key]; 
 								args.success(json);
+							} else {
+								// TODO: possible expired Session, 
+								// windows.location.reload();
 							}
 							return true;
 						}

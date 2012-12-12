@@ -55,14 +55,6 @@
 				authToken64: <?php  echo "'{$authToken64}'";  ?>,
 				sessionId64: <?php  echo "'{$sessionId64}'";  ?>,
 		}	
-		
-		function reloadPage(ms)
-		{
-			ms = ms ? ms : 5000;
-			setTimeout(ms, function(){
-				window.location.reload();	
-			})
-		}
 	</script>
 <?php		
 	$this->Layout->blockEnd();	
@@ -133,15 +125,27 @@
 		</ul>
 	</div>
 </div>
-<div id='restart-markup' class='hide'>
-	<div class='restart'>
-	<span>Umm, the Uploader seems to have stopped. Please click </span>
-	<ul class="actions inline">
-		<li class='btn orange rounded-5'>
-			<a action=<?php echo $launch_SnappiUploader ?> onclick='SNAPPI.ThriftUploader.action.launchTask("ur")'>Restart</a>
-			</li>
-	</ul>
+<div class='markup hide'>
+	<div id='restart-markup' >
+		<div class='restart'>
+			<span>Umm, the Uploader seems to have stopped. Please click </span>
+			<ul class="actions inline">
+				<li class='btn orange rounded-5'>
+					<a action=<?php echo $launch_SnappiUploader ?> onclick='SNAPPI.ThriftUploader.action.launchTask("ur")'>Restart</a>
+					</li>
+			</ul>
+		</div>
 	</div>
+	<table><tbody>
+		<tr id='folder-row-markup' class='row folder inline'>
+			<td class="status"><div class="progress meter pending">
+				<span class="fill">
+				</span></div></td>
+			<td class="is-watched"><input type="checkbox" action="watch" name="data[ThriftFolder][native_path_hash]"></td>
+			<td class="label"></td>
+			<td class="remove"><input type="button" class="orange" value="remove" action="remove" name="data[ThriftFolder][native_path_hash]"></td>
+		</tr>					
+	</tbody></table>
 </div>
 <script type="text/javascript">
 var bootstrapReady = function(value) {

@@ -640,11 +640,15 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 					throw new Exception("Error: There was a problem creating the ProviderAccount, provider_name=native-uploader");
 	
 			}
-// ************************  force no Session	************************************		
-	// Session::delete('thrift-task');				
+// ************************  force new TaskID/session	************************************		
+// snappi-dev/my/uploader?new-taskid=1
+if (isset($this->params['url']['new-taskid']))	{
+	Session::delete('thrift-task');				
+	debug();
+}
+// ************************  force no Session	************************************
+
 			Session::write('thrift-task.AuthToken', $data['ProviderAccount']['auth_token']);
-			
-			
 			
 			
 			/*
@@ -760,6 +764,7 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			}
 			return;
 		}
+// debug("taskID=".print_r($taskID, true));		
 		$taskState['ThriftSession'] = $session['ThriftSession'];
 		$this->set(compact('data', 'taskID', 'device', 'taskState', 'folders'));
 	}
@@ -772,10 +777,12 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 		$forceXHR = setXHRDebug($this, 0, 1);
 		$this->autoRender = false;
 		$success = true;
+		$folders = $taskID = $taskState = array();
+		$device_label = '';
 		try {
 			if (!$this->RequestHandler->isAjax() && !$forceXHR) 
 				throw new Exception("ERROR: This action is only available by XHR");
-				
+
 			/*
 			 * Get correct ProviderAccount
 			 * 	NOTE: at this point, we do know know the DeviceID/provider_key
@@ -802,25 +809,28 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			$session = $this->ThriftSession->checkDevice($taskID['Session'], $taskID['DeviceID']);
 			if (!$session) 
 				throw new Exception("ERROR: DeviceID should alreay be bound to Session");
+			if (!empty($session['ThriftDevice']['label'])) 
+				$device_label = $session['ThriftDevice']['label'];
 			// on GetFolders()
 			$folders = $this->ThriftSession->ThriftDevice->ThriftFolder->findByDeviceUUID($taskID['DeviceID'], $session['ThriftDevice']['provider_account_id'] ,$is_watched = null); 
 			$taskState['ThriftSession'] = $session['ThriftSession'];
-			$response = compact('taskID', 'folders', 'taskState');
+			$response = compact('taskID', 'folders', 'taskState', 'device_label');
 		} catch (Exception $ex) {
-			$message = $ex->getMessage();
 			$success = false;
+			$message = $ex->getMessage();
+			$response = compact('taskID', 'folders', 'taskState', 'device_label', 'message');
 		}
 		
 		if ($this->RequestHandler->ext=='json') {
 			$this->viewVars['jsonData'] = compact('success', 'message','response');
 			$done = $this->renderXHRByRequest('json', null, null , 0);
-			if ($done) return;
+			return;
+		} else {
+			// for XHR HTML response on first render after DeviceID known 
+			// $this->viewPath = 'my';
+			$this->set($response);
+			$this->render('/elements/thrift/folders', 'ajax'); 		
 		}
-		// for XHR HTML response on first render after DeviceID known 
-		// $this->viewPath = 'my';
-		$this->set($response);
-		$this->set('device_label', $session['ThriftDevice']['label']);
-		$this->render('/elements/thrift/folders', 'ajax'); 		
 	}
 	
 	

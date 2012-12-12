@@ -57,21 +57,16 @@
 									<p>You have not selected any folders to upload. Please do so now.</p>
 								</div></td>
 						</tr>		
+					<?php  elseif (1 && empty($folders) && empty($taskID['DeviceID'])) : ?>							
+						<tr class='empty-folders-message'><td colspan="4">
+							<div class='message blue rounded-5 wrap-v'>
+								<h1>Error Retrieving Folders</h1>
+								<p><?php echo $message; ?></p>
+							</div></td>
+						</tr>	
 					<?php  endif; ?>					
 				</tbody></table>
-				<div class='hide'>
-					<div id='device-label' value="<?php if (isset($device_label)) echo $device_label; ?>" class='hide'></div>	
-					<table><tbody>
-					<tr id='folder-row-markup' class='row folder inline'>
-						<td class="status"><div class="progress meter pending">
-							<span class="fill">
-							</span></div></td>
-						<td class="is-watched"><input type="checkbox" action="watch" name="data[ThriftFolder][native_path_hash]"></td>
-						<td class="label"></td>
-						<td class="remove"><input type="button" class="orange" value="remove" action="remove" name="data[ThriftFolder][native_path_hash]"></td>
-					</tr>					
-					</tbody>
-					</table>
-				</div>
+				<div id='device-label' value="<?php if (isset($device_label)) echo $device_label; ?>" class='hide'></div>
+
 				
 			
