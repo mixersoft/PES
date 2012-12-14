@@ -1,6 +1,7 @@
 */static/lib/*
 */uploads/*
 */bin-debug/*
+*/bin-release/*
 */src/db/*
 *.swf
 /runtimes*
@@ -69,3 +70,5 @@ _ReSharper*/
 
 app/vendors/thrift/gen-php
 app/vendors/THRIFT_ROOT/packages/
+
+TopLevelFolder/air/
