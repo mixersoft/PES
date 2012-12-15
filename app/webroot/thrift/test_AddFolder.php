@@ -140,7 +140,7 @@ print "<br> Client Class={$client_class}";
 	print "<BR />Using TaskId=".print_r($taskId,true);
 	
 	
-	
+	$client->GetState($taskId);	
 	
 	$nativePath = "C:\\TEMP\\added from Thrift AddFolder";
 	if (isset($_GET['reset'])) {
@@ -150,7 +150,7 @@ print "<br> Client Class={$client_class}";
 		print "<BR />****************************************************************";
 		$ret = $client->RemoveFolder($taskId, $nativePath);
 	}	
-	
+
 	try {
 		/**
 		 * AddFolder()
@@ -168,6 +168,7 @@ print "<br> Client Class={$client_class}";
 	} catch (snaphappi_api_SystemException $e) {
 		if ($e->ErrorCode == ErrorCode::DataConflict ) {
 			// do nothing on duplicate folder
+			print "<BR />   <span style='color:red'>Thrift Exception, msg=".$e->ErrorCode."</span>";
 		}
 		print "<BR />";
 		print "<BR />   <span style='color:red'>Thrift Exception, msg=".$e->Information."</span>";

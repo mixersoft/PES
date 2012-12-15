@@ -177,7 +177,7 @@ ThriftController::log("*****   SystemException from _loginFromAuthToken(): ".pri
 			ThriftController::$controller->ThriftFolder = ThriftController::$controller->ThriftSession->ThriftDevice->ThriftFolder;
 			$thrift_device_id = $session['ThriftDevice']['id'];
 			$ret = ThriftController::$controller->ThriftFolder->updateFolder($thrift_device_id, $data);
-// ThriftController::log("############################## thrift_SetFolders=".print_r($ret, true), LOG_DEBUG);				
+ThriftController::log("############################## thrift_SetFolders=".print_r($ret, true), LOG_DEBUG);				
 			return $ret;
 		}
 
@@ -200,13 +200,14 @@ ThriftController::log("*****   SystemException from _loginFromAuthToken(): ".pri
 					$thrift_device_id, $nativePath
 				);
 			} else {
-// ThriftController::log("*****   _model_addFolder(): deviceId:{$thrift_device_id} path:{$nativePath}, ".print_r($taskID,true), LOG_DEBUG); 				
+ThriftController::log("*****   _model_addFolder(): deviceId:{$thrift_device_id} session:{$taskID->Session} path:{$nativePath}", LOG_DEBUG); 				
 				$ret = ThriftController::$controller->ThriftFolder->addFolder(
 					$thrift_device_id, $nativePath, $options
 				);
 			}
 			if ($ret) {
 				// bump TaskState.FolderUpdateCount to uploader app catches it
+ThriftController::log("*************** _model_addFolder to update folder count", LOG_DEBUG);				
 				$options = array('FolderUpdateCount'=>1);
 				CakePhpHelper::_model_setTaskState($taskID, $options);
 			}
@@ -226,17 +227,10 @@ ThriftController::log("*****   SystemException from _loginFromAuthToken(): ".pri
 		public static function _model_getTaskState($taskID) {
 			if (!ThriftController::$session) CakePhpHelper::_loginFromAuthToken($taskID);
 			$session = & ThriftController::$session;
-			$data = ThriftController::$controller->ThriftSession->read(null, $session['ThriftSession']['id']);
+			$data = ThriftController::$controller->ThriftSession->getTaskState($session['ThriftSession']['id']);
 			ThriftController::$session['ThriftSession'] = $data['ThriftSession'];
-			$thrift_GetTask = array(
-				'IsCancelled'=>$session['ThriftSession']['is_cancelled'], 
-				'FolderUpdateCount'=>0, 
-				'FileUpdateCount'=>0, 
-				// TODO: check timezone for batchId
-				'BatchId'=>strtotime($session['ThriftSession']['modified']), 
-				'DuplicateFileException'=>$session['ThriftSession']['DuplicateFileException'],
-				'OtherException'=>$session['ThriftSession']['OtherException'],
-			);
+			$thrift_GetTask = array_filter_keys(ThriftController::$session['ThriftSession'],ThriftSession::$ALLOWED_UPDATE_KEYS);
+// ThriftController::log("_model_getTaskState() state=".print_r($thrift_GetTask, true), LOG_DEBUG);			
 			return $thrift_GetTask; 
 		}
 		public static function _model_setTaskState($taskID, $options) {
@@ -285,7 +279,7 @@ ThriftController::log("**** WARNING: OtherException count={$thrift_GetTask['Othe
 				$session['ThriftSession']['id'], $thrift_GetTask
 			); 
 if (!isset($thrift_GetTask['FileUpdateCount']))			
-ThriftController::log("_model_setTaskState() state=".print_r($thrift_GetTask, true), LOG_DEBUG);				
+	ThriftController::log("_model_setTaskState() state=".print_r($thrift_GetTask, true), LOG_DEBUG);				
 			if ($shutdown) CakePhpHelper::_shutdown_client($taskID, $message);
 			return $thrift_GetTask;
 		}
@@ -511,7 +505,7 @@ ThriftController::log("***   GetState, state=".print_r($state,true), LOG_DEBUG);
 		 * @return array of Strings
 		 */
         public function GetFolders($taskID) {
-ThriftController::log("***   GetFolders", LOG_DEBUG);
+ThriftController::log("***   GetFolders session={$taskID->Session}", LOG_DEBUG);
 			// get native desktop uploader state for thrift API
 			$folders = CakePhpHelper::_model_getFolderState($taskID, false);
 
@@ -519,14 +513,14 @@ ThriftController::log("***   GetFolders", LOG_DEBUG);
 				// Cancel Task right away, if all folders are is_scanned, 
 				// but let Task run if there are no added folders
 				$all_folders = CakePhpHelper::_model_getFolderState($taskID, null);
-				if (!empty($all_folders)) {
+				if (1 && !empty($all_folders)) {
 					// GetWatchFolders() called from different taskID
 					CakePhpHelper::_model_setTaskState($taskID, array('IsCancelled'=>1));					
 					
 				}
 			}				
 			$folders = Set::extract('{n}.folder_path',$folders);
-// ThriftController::log($folders, LOG_DEBUG);				
+ThriftController::log($folders, LOG_DEBUG);				
 			return $folders;
         }
 		
@@ -686,7 +680,7 @@ ThriftController::log("***   GetFileCount, folder={$folderPath}, taskID=".print_
 		 */
         public function AddFolder($taskID, $path) {
         	try {
-// ThriftController::log("*****   AddFolder(): path:{$path}, ".print_r($taskID,true), LOG_DEBUG);        		 
+ThriftController::log("*****   AddFolder(): path:{$path}, session={$taskID->Session}", LOG_DEBUG);        		 
         		$data = CakePhpHelper::_model_addFolder($taskID, $path); 
 				return;
 			} catch (Exception $e) {

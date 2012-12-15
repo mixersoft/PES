@@ -12,11 +12,8 @@ class ThriftSession extends AppModel {
 			'order' => array('ThriftDevice.label')
 		)
 	);	
-	
 	public static $ALLOWED_UPDATE_KEYS = array(
-				// these are NON DB keys, save in session????
 					'FolderUpdateCount', 'FileUpdateCount', 
-				// DB keys	
 					'IsCancelled', 
 					'DuplicateFileException', 'OtherException', 
 					'BatchId',
@@ -106,6 +103,7 @@ class ThriftSession extends AppModel {
 		return array_merge($device, $session);
 	}
 	
+	
 	/**
 	 * @param $sessionId UUID
 	 * @param $taskState array
@@ -122,8 +120,7 @@ class ThriftSession extends AppModel {
 	 */
 	function saveTaskState($sessionId, $taskState) {
 		$taskState = array_filter_keys($taskState, ThriftSession::$ALLOWED_UPDATE_KEYS);
-		$DB_keys = array('IsCancelled', 'DuplicateFileException', 'OtherException');
-		$update_keys = array_intersect_key($taskState, array_flip($DB_keys));
+		$update_keys = $taskState;
 		if (empty($update_keys)) {
 			// TODO: how do we save FileUpdateCount in session, not db?
 			return $taskState;
@@ -138,5 +135,20 @@ class ThriftSession extends AppModel {
 		$updated = $this->save($data);
 		return $updated;
 	}
+	
+	/**
+	 * @param $taskID object snaphappi_api_TaskID
+	 * NOTE: to set CakePHP session, call ThriftController::_custom_thrift_session($taskID);	
+	 */	
+	function getTaskState($sessionId) {
+		$data = ThriftController::$controller->ThriftSession->read(null, $sessionId);
+		if (empty($data)) 
+			throw new Exception("Error: Session not found, session_id={$sessionId}");
+		$data['ThriftSession']['IsCancelled'] = $data['ThriftSession']['is_cancelled']; 
+		$data['ThriftSession']['BatchId'] = $data['ThriftSession']['modified'];
+		// TODO: check timezone for batchId
+		return $data;
+	}
+	
 }
 ?>
