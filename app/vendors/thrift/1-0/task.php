@@ -75,7 +75,8 @@ class CakePhpHelper {
 		 * @return aa $data[ProviderAccount,Owner,ThriftSession,ThriftDevice] 
 		 */
 		public static function _loginFromAuthToken($taskID) {
-// ThriftController::log('_loginFromAuthToken()  ProviderAccount.auth_token='.($taskID->AuthToken), LOG_DEBUG);
+			// start ThriftSession
+			ThriftController::$controller->get_custom_thrift_session($taskID);
 			try {
 				/*
 				 * - finds pa with authToken, returns data[ProviderAccount], data[Owner]
@@ -91,7 +92,6 @@ class CakePhpHelper {
 				if (!$session) $session = ThriftController::$controller->ThriftSession->bindDeviceToSession($sessionId, $taskID->AuthToken, $taskID->DeviceID);
 				$data = array_merge($data, $session);
 				ThriftController::$session = $data;
-debug($data);				
 // ThriftController::log("_loginFromAuthToken OK, data=".print_r($data,true), LOG_DEBUG);
 				return $data;
 			} catch (Exception $e) {
@@ -115,14 +115,23 @@ ThriftController::log("*****   SystemException from _loginFromAuthToken(): ".pri
 		public static function _model_getDeviceId($authToken, $sessionId) {
 			$data = ThriftController::$controller->ProviderAccount->thrift_findByAuthToken($authToken);
 			if (!$data) throw new Exception("Error: authToken not found, authToken={$authToken}");	
-			$authenticated = CakePhpHelper::_login($data['Owner']);
-			if (!$authenticated) throw new Exception("Error: authToken invalid, authToken={$authToken}");
-			
 			$device = ThriftController::$controller->ThriftSession->findDevice($sessionId);
 			if (empty($device)) 
 				throw new Exception("Error: sessionId invalid, sessionId={$sessionId}");
 			else if (empty($device['ThriftDevice'])) return '';
-			else return $device['ThriftDevice']['device_UUID'];
+			
+			// $authenticated = CakePhpHelper::_login($data['Owner']);
+			// if (!$authenticated) throw new Exception("Error: authToken invalid, authToken={$authToken}");
+			
+			$taskID = new snaphappi_api_TaskID(
+				array(
+				    'AuthToken' => $authToken,
+				    'Session' => $sessionId,
+				    'DeviceID' => $device['ThriftDevice']['device_UUID'],
+				)
+			);
+			CakePhpHelper::_loginFromAuthToken($taskID);
+			return $device['ThriftDevice']['device_UUID'];
 		}
 		
 		/**

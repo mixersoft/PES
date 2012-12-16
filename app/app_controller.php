@@ -7,9 +7,10 @@ class AppController extends Controller {
 	public $layout = 'snappi';
 	public $components = array(
 		'Cookie',
-		'Session',
 		'RequestHandler',
-		'Auth',
+		'Session',
+		// 'Auth',
+		// 'DebugKit.Toolbar',	// add in constructor as appropriate
 	);
 	static $http_static = null;
 	static $uuid = null;		// the $uuid of the current action
@@ -19,8 +20,16 @@ class AppController extends Controller {
 	static $writeOk = false;
 	
 	function __construct() {
-		if (!strpos(env('SERVER_NAME'),'snaphappi.com'))
+		$remove_components = array();
+		if ($this->name != 'Thrift') {
+			$this->components[] = 'Auth';
+		} if ( 
+			!strpos(env('SERVER_NAME'),'snaphappi.com') 
+			&& $this->name != 'Thrift'
+		) {
 			$this->components[] = 'DebugKit.Toolbar';
+		}
+		$this->components = array_diff($this->components, $remove_components);
 		parent::__construct();
 	}
 
@@ -58,9 +67,9 @@ class AppController extends Controller {
 			$this->Comments->actionNames = array('discussion');
 			$this->Comments->viewVariable = 'data';
 		}	
-//		ClassRegistry::init('Asset')->disablePermissionable();
-//		ClassRegistry::init('Group')->disablePermissionable();	
 	}
+
+
 	
 	/*
 	 * load profile data 
@@ -551,40 +560,41 @@ class AppController extends Controller {
 				$newCrumb = array('uuid'=>AppController::$uuid, 'classLabel'=>$controllerAttr['label']);
 				Session::write("lookup.trail.{$controllerAttr['label']}", $newCrumb);
 			}
-		}
-		// cache nav location in session
-		// displayName == $controllerAttr['label'] == Me, Person, Group, Photo/Snap, Tag (section header)
-		// titleName = Me, People, Groups, Tags
-		$navPrimary = (isset($this->displayName ) && $controllerAttr['action'] != 'all') ? $this->displayName : 'Explore';
-		if ($navPrimary == "Tag") {
-			if ($context = Session::read("lookup.context")) {
-				$context = array_shift($context);
-			} else {
-				$context = array();
+
+			// cache nav location in session
+			// displayName == $controllerAttr['label'] == Me, Person, Group, Photo/Snap, Tag (section header)
+			// titleName = Me, People, Groups, Tags
+			$navPrimary = (isset($this->displayName ) && $controllerAttr['action'] != 'all') ? $this->displayName : 'Explore';
+			if ($navPrimary == "Tag") {
+				if ($context = Session::read("lookup.context")) {
+					$context = array_shift($context);
+				} else {
+					$context = array();
+				}
+				$navPrimary = isset($context['classLabel']) ? $context['classLabel'] : 'Tag';	
 			}
-			$navPrimary = isset($context['classLabel']) ? $context['classLabel'] : 'Tag';	
-		}
-		switch ($navPrimary) {
-			case 'Me':
-				// if ($controllerAttr['action'] == 'home') $focus = 'Home'; 
-				$focus = 'Home'; 
-				break;
-			case 'Group':
-			case 'Event':
-			case 'Wedding':
-				$focus = 'Circles'; break;
-			case 'Snap':
-			case 'Photo':
-			case 'Story':	
-				$focus = 'Snaps'; break;
-			case 'Person':
-				$focus = 'People'; break;
-			case 'Tag':
-			case 'Explore':
-			default: 
-				$focus = ''; break;				
-		}
-		Session::write("nav.primary", $focus);
+			switch ($navPrimary) {
+				case 'Me':
+					// if ($controllerAttr['action'] == 'home') $focus = 'Home'; 
+					$focus = 'Home'; 
+					break;
+				case 'Group':
+				case 'Event':
+				case 'Wedding':
+					$focus = 'Circles'; break;
+				case 'Snap':
+				case 'Photo':
+				case 'Story':	
+					$focus = 'Snaps'; break;
+				case 'Person':
+					$focus = 'People'; break;
+				case 'Tag':
+				case 'Explore':
+				default: 
+					$focus = ''; break;				
+			}
+			Session::write("nav.primary", $focus);
+		}		
 	}
 	
 	/*

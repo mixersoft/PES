@@ -15,20 +15,58 @@ class ThriftController extends AppController {
 
 	public $autoRender = false;			// return response over thrift transport
     public $layout = false;
-
-	public $components = array(
-		// add components here
-	);	
+	
+	public $USE_AuthToken_NOT_AUTH = array('test', 'service', 'task_helper');
     
 	function __construct() {
+		// session_id('discard');  // TODO: randomize to avoid locking issues?
+		$this->_use_custom_thrift_session();
 		parent::__construct();
 		ThriftController::$controller = $this;
 	}
 	
     function beforeFilter() {
-    	parent::beforeFilter();
-        $this->Auth->allow('*');
+		if (in_array($this->action, $this->USE_AuthToken_NOT_AUTH)) {
+			// skip AppController::beforeFilter to avoid unnecessary Auth and Session stuff
+		} else {
+			parent::beforeFilter();
+		    $this->Auth->allow('*');
+		}
     }
+	
+	function _use_custom_thrift_session(){
+		Configure::write('Session.cookie', 'THRIFT');
+		Configure::write('Session.save', 'thrift_session_handler');
+	}
+	
+	function get_custom_thrift_session($taskID){
+		// load AuthComponent
+		// loadComponent('Auth', $this);
+		App::import('Component', 'Auth');
+		$this->Auth = new AuthComponent();
+		$this->Auth->Session = ThriftController::$controller->Session;
+		$this->Auth->allow('service','task_helper','test');
+		
+		$new_session_id = "{$taskID->AuthToken}-{$taskID->DeviceID}";
+		// $new_session_id = md5($new_session_id . Configure::read('Security.salt'));
+debug(">>>>>>>>>>>>>>>>>> OLD session id=".session_id() )	;			
+$this->log(">>>>>>>>>>>>>>>>>> OLD session id=".session_id(), LOG_DEBUG);
+		if (session_id() != $new_session_id) {
+debug(">>>>>>>>>>>>>>>>>> NEW session id={$new_session_id}")	;	
+$this->log(">>>>>>>>>>>>>>>>>> NEW session id={$new_session_id}", LOG_DEBUG);
+			$session_name = 'ThriftSession';		
+			Configure::write('Session.cookie', $session_name);
+			$_COOKIE[$session_name] = $new_session_id;
+			session_destroy();
+			session_name($session_name);
+			session_id($new_session_id);
+			// session_start(); session_destroy(); // resets custom Thrift Session
+			session_start();
+$this->log(" @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  ". session_name().", ".session_id(), LOG_DEBUG);			
+debug(" @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@  ". session_name().", ".session_id());				
+$this->Session->write('time.'.time(), time());			
+		}
+	}
 	
 	function _bootstrap_ThriftAPI($service) {
 		try {
@@ -184,7 +222,6 @@ class ThriftController extends AppController {
 			'Session'=>$DEVICE[$attach_fixed_session]['session_id'],
 			'DeviceID'=>$DEVICE[$attach_fixed_session]['device_UUID'],	// hack: get from GetDeviceID()
 		);
-		Session::write('thrift-task', $task_data);
 		
 		$taskId = new snaphappi_api_TaskID(
 			array(
@@ -193,9 +230,6 @@ class ThriftController extends AppController {
 			    'DeviceID' => $task_data['DeviceID'],
 			)
 		);
-		
-		
-
 		/*
 		 * Test GetDeviceId
 		 */
@@ -238,8 +272,8 @@ class ThriftController extends AppController {
 		 */
 		$state = $Task->GetState($taskId);
 		debug("GetState() result=".print_r($state,true));
-// $this->render('/elements/sql_dump');
-// return;			
+$this->render('/elements/sql_dump');
+return;			
 		/*
 		 * Test GetFolders
 		 */
