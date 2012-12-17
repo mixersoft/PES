@@ -11,30 +11,56 @@ class ThriftSessionTestCase extends CakeTestCase {
 		'app.assets_group', 'app.assets_groupshot', 'app.groups_user', 'app.groups_provider_account', 
 		'app.profile', 'app.auth_account', 'app.thrift_folder'
 	);
-
-	function setup_AppController (){
-		App::import('Controller', 'app');
-		$ac = new AppController();
+	
+	function setup_Controller (){
+		App::import('Controller', 'Thrift');
+		$tc = new ThriftController();
 		AppController::$userid = '5013ddf3-069c-41f0-b71e-20160afc480d'; // should be manager
+	}
+	
+	function get_TaskID($id){
+		$DEVICE[1] = array(
+			'auth_token'=>'b34f54557023cce43ab7213e0eb7da2a6b9d6b27',
+			'device_id'=>1,
+			'provider_account_id'=>'50996b75-425c-4261-a0ee-14c8f67883f5',
+			'device_UUID'=>'2738ebe4-95a1-4d4a-aefe-761d97881535', 
+			'session_id'=>'50a3fb31-7514-4db3-b730-1644f67883f5',
+		);
+		$DEVICE[2] = array(
+			'auth_token'=>'b34f54557023cce43ab7213e0eb7da2a6b9d6b27',
+			'device_id'=>2,
+			'provider_account_id'=>'50996b75-425c-4261-a0ee-14c8f67883f5',
+			'device_UUID'=>'2738ebe4-XXXX-4d4a-aefe-761d97881535', 
+			'session_id'=>'509d820e-b990-4822-bb9c-11d0f67883f5'
+		);
+		$DEVICE[3] = array(
+			'auth_token'=>'08e89e9bba58544fe3a0dcab8ac102d158ecd42f',
+			'device_id'=>3,		// alexey
+			'provider_account_id'=>'50a680d5-d460-4971-90fc-7f180afc6d44',
+			'device_UUID'=>'b6673a7f-c151-4eff-91f3-9c45a61d6f36', 
+			'session_id'=>'50a4fd3b-034c-48c7-9f87-1644f67883f5'
+		);
+		return $DEVICE[$id];
 	}
 
 	function startTest() {
-		$this->setup_AppController();
+		$this->setup_Controller();
 		$this->ThriftSession =& ClassRegistry::init('ThriftSession');
 	}
 
 	function endTest() {
 		unset($this->ThriftSession);
-		unset($ac);
+		unset($tc);
 		ClassRegistry::flush();
 	}
 
 	function testNewSession() {
 		// create new session, device_id should be null/unbound
-		$result = $this->ThriftSession->newSession(); 
+		$result = $this->ThriftSession->newSession();
+		$skip = array_flip(array('is_cancelled','created','modified', 'BatchId')); 
+		$result['ThriftSession'] = array_diff_key($result['ThriftSession'], $skip);
 		unset($result['ThriftSession']['id']);
-		unset($result['ThriftSession']['created']);
-		unset($result['ThriftSession']['modified']);
+		unset($result['ThriftSession']['BatchId']);
 		$expected = Array
 			(
 			    'ThriftSession' => Array
@@ -42,58 +68,98 @@ class ThriftSessionTestCase extends CakeTestCase {
 			            'thrift_device_id' => '',
 			            'DuplicateFileException' => '0',
 			            'OtherException' => '0',
-			            'is_cancelled' => '0',
+			            'AuthException' => '0',
+			            'FolderUpdateCount' => '0',
+			            'FileUpdateCount' => '0',
+			            'IsCancelled' => '0',
 			            'active' => '1',
 			        )
 			
 			);	
-		$this->assertEqual($result, $expected);		
+		$this->assertEqual($result, $expected);	
 		
-		// attach to existing session/device_id
-		$DEVICE[1] = array(
-			'device_id'=>1,
-			'device_UUID'=>'2738ebe4-95a1-4d4a-aefe-761d97881535', 
-			'session_id'=>'50a3fb31-7514-4db3-b730-1644f67883f5'
-		);
-		$DEVICE[2] = array(
-			'device_id'=>2,
-			'device_UUID'=>'2738ebe4-XXXX-4d4a-aefe-761d97881535', 
-			'session_id'=>'509d820e-b990-4822-bb9c-11d0f67883f5'
-		);
-		$thrift_device_id = 1;
-		$result = $this->ThriftSession->newSession($DEVICE[$thrift_device_id]);
-		unset($result['ThriftSession']['modified']);
+		
+		// create new session, fixed session_id, called by SW task, GetWatchedFolder
+		$task = $this->get_TaskID(1);
+		$options['session_id'] = $task['session_id'];
+		$result = $this->ThriftSession->newSession($options);
+		$this->assertEqual($result['ThriftSession']['id'], $task['session_id']);	
+	}
+	
+	function testCheckDevice() {
+		$task = $this->get_TaskID(1);
+		$task3 = $this->get_TaskID(3);
+		// correct call
+		$result = $this->ThriftSession->checkDevice($task['session_id'], $task['device_UUID'], $task['provider_account_id']);
+		$this->assertEqual($result['ThriftSession']['id'], $task['session_id']);
+		$this->assertEqual($result['ThriftDevice']['id'], $task['device_id']);
+		// WRONG pa_id
+		$result = $this->ThriftSession->checkDevice($task['session_id'], $task['device_UUID'], 'WRONG');
+		$this->assertEqual($result, false);	
+		// WRONG device_UUID
+		$result = $this->ThriftSession->checkDevice($task['session_id'], 'WRONG');
+		$this->assertEqual($result, false);
+	}
+
+	function testFindDevice() {
+		$task = $this->get_TaskID(1);
+		$result = $this->ThriftSession->findDevice($task['session_id']);
+		$this->assertEqual($result['ThriftDevice']['id'], $task['device_id']);
+	}
+
+	function testBindDeviceToSession() {
+		$task = $this->get_TaskID(1);
+		// device already bound, do nothing
+		$result = $this->ThriftSession->bindDeviceToSession($task['session_id'], $task['auth_token'], $task['device_UUID']);
+		$this->assertEqual($result['ThriftSession']['id'], $task['session_id']);
+		$this->assertEqual($result['ThriftDevice']['id'], $task['device_id']);
+		$this->assertEqual($result['ProviderAccount']['auth_token'], $task['auth_token']);
+		
+		// new Session with no Device, bind Device to Session
+		$session = $this->ThriftSession->newSession();
+		$result = $this->ThriftSession->bindDeviceToSession($session['ThriftSession']['id'], $task['auth_token'], $task['device_UUID']);
+		$this->assertEqual($result['ThriftSession']['id'], $session['ThriftSession']['id']);
+		$this->assertEqual($result['ThriftDevice']['id'], $task['device_id']);
+		$this->assertEqual($result['ProviderAccount']['auth_token'], $task['auth_token']);
+		
+	}
+	
+	function testGetTaskState() {
+		$task = $this->get_TaskID(1);
+		$result = $this->ThriftSession->getTaskState($task['session_id']);
+		$this->assertEqual($result['ThriftSession']['id'], $task['session_id']);
+		$this->assertEqual($result['ThriftSession']['BatchId'], $result['ThriftSession']['modified']);
+	}
+	
+	function testSaveTaskState() {
+		$task = $this->get_TaskID(1);
+		$newState['bad_key'] = 'not allowed';
+		$result = $this->ThriftSession->saveTaskState($task['session_id'], $newState);
+		$this->assertEqual($result, false);
+		
+		$newState['IsCancelled'] = 1;
+		$newState['FolderUpdateCount'] = 99;
+		$result = $this->ThriftSession->saveTaskState($task['session_id'], $newState);
+		unset($result['ThriftSession']['is_cancelled']);
 		$expected = Array
 			(
 			    'ThriftSession' => Array
 			        (
-			            'id' => '50a3fb31-7514-4db3-b730-1644f67883f5',
-			            'thrift_device_id' => '1',
-			            'DuplicateFileException' => '0',
-			            'OtherException' => '0',
-			            'is_cancelled' => '0',
-			            'active' => '1',
-			            'created' => '2012-11-14 20:12:33',
+			        	'id' => '50a3fb31-7514-4db3-b730-1644f67883f5',
+			            'FolderUpdateCount' => $newState['FolderUpdateCount'],
+			            'IsCancelled' => $newState['IsCancelled'],
+			            'modified' => $result['ThriftSession']['modified'],
 			        )
 			
-			);	
-		$this->assertEqual($result, $expected);
+			);
+		$this->assertEqual($result, $expected);	
+		$saved = $this->ThriftSession->getTaskState($task['session_id']);
+		$this->assertEqual($saved['ThriftSession']['id'], $result['ThriftSession']['id']);
+		$this->assertEqual($saved['ThriftSession']['FolderUpdateCount'], $result['ThriftSession']['FolderUpdateCount']);
+		$this->assertEqual($saved['ThriftSession']['BatchId'], $result['ThriftSession']['modified']);
 	}
-
-	function testCheckDevice() {
-
-	}
-
-	function testFindDevice() {
-
-	}
-
-	function testBindDeviceToSession() {
-
-	}
-
-	function testSaveTaskState() {
-
-	}
+	
+	
+	
 
 }
