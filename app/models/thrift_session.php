@@ -16,7 +16,7 @@ class ThriftSession extends AppModel {
 					'FolderUpdateCount', 'FileUpdateCount', 
 					'IsCancelled', 
 					'DuplicateFileException', 'OtherException', 
-					'BatchId',
+					'BatchId',	// test BatchId, should have 1 hr memory
 					// NEW keys, add related code
 					'AuthException', // send notification to renew authToken
 		);
@@ -35,7 +35,20 @@ class ThriftSession extends AppModel {
 		} 
 		if (empty($data['ThriftSession']['id'])) $data['ThriftSession']['id'] = String::uuid();
 		$ret = $this->save($data);
-		return  $ret ? $this->read() : false;
+		if (!$ret) throw new Exception("Error saving ThriftSession to DB");
+		
+		$data = $this->read();
+		$session_defaults = array(
+			'FolderUpdateCount'=>0, 
+			'FileUpdateCount'=>0, 
+			'IsCancelled'=>0,
+			'DuplicateFileException'=>0, 
+			'OtherException'=>0, 
+			'AuthException'=>0,
+			'BatchId' => $data['ThriftSession']['modified'],
+		);
+		$data['ThriftSession'] = array_merge($data['ThriftSession'], $session_defaults);
+		return  $data;
 	}	
 	
 	/**
@@ -113,7 +126,7 @@ class ThriftSession extends AppModel {
 		    [IsCancelled] => 0
 		    [FolderUpdateCount] => 0
 		    [FileUpdateCount] => 1
-		    [BatchId] => 1352298912
+		    [BatchId] => 1352298912 // should be time?
 		    [DuplicateFileException] => 0
 		    [OtherException] => 0
 		)
@@ -122,8 +135,7 @@ class ThriftSession extends AppModel {
 		$taskState = array_filter_keys($taskState, ThriftSession::$ALLOWED_UPDATE_KEYS);
 		$update_keys = $taskState;
 		if (empty($update_keys)) {
-			// TODO: how do we save FileUpdateCount in session, not db?
-			return $taskState;
+			return false;
 		}
 		
 		// these keys need to save to the DB
@@ -141,7 +153,10 @@ class ThriftSession extends AppModel {
 	 * NOTE: to set CakePHP session, call ThriftController::_custom_thrift_session($taskID);	
 	 */	
 	function getTaskState($sessionId) {
-		$data = ThriftController::$controller->ThriftSession->read(null, $sessionId);
+		if (get_class($this) != 'ThriftSession') {
+			$Model = ThriftController::$controller->ThriftSession;	
+		} else $Model = $this;
+		$data = $this->read(null, $sessionId);
 		if (empty($data)) 
 			throw new Exception("Error: Session not found, session_id={$sessionId}");
 		$data['ThriftSession']['IsCancelled'] = $data['ThriftSession']['is_cancelled']; 
