@@ -15,6 +15,7 @@ class ThriftSessionTestCase extends CakeTestCase {
 	function setup_Controller (){
 		App::import('Controller', 'Thrift');
 		$tc = new ThriftController();
+		loadComponent('Session', $tc);
 		AppController::$userid = '5013ddf3-069c-41f0-b71e-20160afc480d'; // should be manager
 	}
 	
@@ -59,12 +60,11 @@ class ThriftSessionTestCase extends CakeTestCase {
 		$result = $this->ThriftSession->newSession();
 		$skip = array_flip(array('is_cancelled','created','modified', 'BatchId')); 
 		$result['ThriftSession'] = array_diff_key($result['ThriftSession'], $skip);
-		unset($result['ThriftSession']['id']);
-		unset($result['ThriftSession']['BatchId']);
 		$expected = Array
 			(
 			    'ThriftSession' => Array
 			        (
+			        	'id' => $result['ThriftSession']['id'],
 			            'thrift_device_id' => '',
 			            'DuplicateFileException' => '0',
 			            'OtherException' => '0',
@@ -77,7 +77,10 @@ class ThriftSessionTestCase extends CakeTestCase {
 			
 			);	
 		$this->assertEqual($result, $expected);	
-		
+		// read from Cakephp Session
+		$fromSession['ThriftSession'] = Session::read('ThriftSession');
+		$fromSession['ThriftSession'] = array_diff_key($fromSession['ThriftSession'], $skip);
+		$this->assertEqual($fromSession, $expected);	
 		
 		// create new session, fixed session_id, called by SW task, GetWatchedFolder
 		$task = $this->get_TaskID(1);
@@ -93,6 +96,11 @@ class ThriftSessionTestCase extends CakeTestCase {
 		$result = $this->ThriftSession->checkDevice($task['session_id'], $task['device_UUID'], $task['provider_account_id']);
 		$this->assertEqual($result['ThriftSession']['id'], $task['session_id']);
 		$this->assertEqual($result['ThriftDevice']['id'], $task['device_id']);
+		
+		// check again, but get from Cakephp Session
+		$this->assertEqual(Session::read('ThriftSession.id'), $task['session_id']);
+		$this->assertEqual(Session::read('ThriftDevice.id'), $task['device_id']);
+		
 		// WRONG pa_id
 		$result = $this->ThriftSession->checkDevice($task['session_id'], $task['device_UUID'], 'WRONG');
 		$this->assertEqual($result, false);	
@@ -108,12 +116,17 @@ class ThriftSessionTestCase extends CakeTestCase {
 	}
 
 	function testBindDeviceToSession() {
+		// Session::write('ThriftSession', null);
 		$task = $this->get_TaskID(1);
 		// device already bound, do nothing
 		$result = $this->ThriftSession->bindDeviceToSession($task['session_id'], $task['auth_token'], $task['device_UUID']);
 		$this->assertEqual($result['ThriftSession']['id'], $task['session_id']);
 		$this->assertEqual($result['ThriftDevice']['id'], $task['device_id']);
 		$this->assertEqual($result['ProviderAccount']['auth_token'], $task['auth_token']);
+		// check again, but get from Cakephp Session
+		$this->assertEqual(Session::read('ThriftSession.id'), $task['session_id']);
+		$this->assertEqual(Session::read('ThriftDevice.device_UUID'), $task['device_UUID']);
+		
 		
 		// new Session with no Device, bind Device to Session
 		$session = $this->ThriftSession->newSession();
@@ -126,6 +139,7 @@ class ThriftSessionTestCase extends CakeTestCase {
 	
 	function testGetTaskState() {
 		$task = $this->get_TaskID(1);
+		$this->ThriftSession->checkDevice($task['session_id'], $task['device_UUID'], $task['provider_account_id']);
 		$result = $this->ThriftSession->getTaskState($task['session_id']);
 		$this->assertEqual($result['ThriftSession']['id'], $task['session_id']);
 		$this->assertEqual($result['ThriftSession']['BatchId'], $result['ThriftSession']['modified']);
@@ -133,6 +147,9 @@ class ThriftSessionTestCase extends CakeTestCase {
 	
 	function testSaveTaskState() {
 		$task = $this->get_TaskID(1);
+		$this->ThriftSession->checkDevice($task['session_id'], $task['device_UUID'], $task['provider_account_id']);
+		// cake session set to $task
+		
 		$newState['bad_key'] = 'not allowed';
 		$result = $this->ThriftSession->saveTaskState($task['session_id'], $newState);
 		$this->assertEqual($result, false);
@@ -140,19 +157,10 @@ class ThriftSessionTestCase extends CakeTestCase {
 		$newState['IsCancelled'] = 1;
 		$newState['FolderUpdateCount'] = 99;
 		$result = $this->ThriftSession->saveTaskState($task['session_id'], $newState);
-		unset($result['ThriftSession']['is_cancelled']);
-		$expected = Array
-			(
-			    'ThriftSession' => Array
-			        (
-			        	'id' => '50a3fb31-7514-4db3-b730-1644f67883f5',
-			            'FolderUpdateCount' => $newState['FolderUpdateCount'],
-			            'IsCancelled' => $newState['IsCancelled'],
-			            'modified' => $result['ThriftSession']['modified'],
-			        )
-			
-			);
-		$this->assertEqual($result, $expected);	
+		$this->assertEqual($result['ThriftSession']['FolderUpdateCount'], $newState['FolderUpdateCount']);	
+		$this->assertEqual($result['ThriftSession']['IsCancelled'], $newState['IsCancelled']);
+		$this->assertEqual(Session::read('ThriftSession.FolderUpdateCount'), $newState['FolderUpdateCount']);
+		$this->assertEqual(Session::read('ThriftSession.IsCancelled'), $newState['IsCancelled']);
 		$saved = $this->ThriftSession->getTaskState($task['session_id']);
 		$this->assertEqual($saved['ThriftSession']['id'], $result['ThriftSession']['id']);
 		$this->assertEqual($saved['ThriftSession']['FolderUpdateCount'], $result['ThriftSession']['FolderUpdateCount']);
