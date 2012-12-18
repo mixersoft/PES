@@ -49,12 +49,6 @@ class ThriftSession extends AppModel {
 		
 		$data = $this->read();
 		
-		// TODO: remove these fields from db schema
-		$deprecate = array_flip(array(
-			'is_cancelled','FolderUpdateCount','FileUpdateCount'
-			,'DuplicateFileException','OtherException')); 
-		$data['ThriftSession'] = array_diff_key($data['ThriftSession'], $deprecate);
-		
 		$session_defaults = array(
 			'FolderUpdateCount'=>0, 
 			'FileUpdateCount'=>0, 
@@ -106,12 +100,6 @@ class ThriftSession extends AppModel {
 		}
 // ThriftController::log("***   ThriftSession::checkDevice, options=".print_r($options,true), LOG_DEBUG);		
 		$data = $this->find('first', $options);
-// TODO: remove these fields from db schema
-		$deprecate = array_flip(array(
-			'is_cancelled','FolderUpdateCount','FileUpdateCount'
-			,'DuplicateFileException','OtherException'
-			)); 
-		$data['ThriftSession'] = array_diff_key($data['ThriftSession'], $deprecate);
 				
 		if (empty($data['ThriftSession'])) {
 			throw new Exception("Error: checkDevice() cannot find session, session_id={$session_id}"); 
@@ -134,11 +122,6 @@ class ThriftSession extends AppModel {
 			'conditions'=>array('ThriftSession.id'=>$session_id),
 		);
 		$data = $this->find('first', $options);
-// TODO: remove these fields from db schema
-		$deprecate = array_flip(array(
-			'is_cancelled','FolderUpdateCount','FileUpdateCount'
-			,'DuplicateFileException','OtherException')); 
-		$data['ThriftSession'] = array_diff_key($data['ThriftSession'], $deprecate);		
 		return $data;
 	}	
 	
@@ -159,11 +142,6 @@ class ThriftSession extends AppModel {
 		$session['ThriftSession'] = Session::read('ThriftSession');
 		if (!$session['ThriftSession']) {
 			$session = $this->read(null, $session_id);
-// TODO: remove these fields from db schema
-			$deprecate = array_flip(array(
-				'is_cancelled','FolderUpdateCount','FileUpdateCount'
-				,'DuplicateFileException','OtherException')); 
-			$session['ThriftSession'] = array_diff_key($session['ThriftSession'], $deprecate);			
 			Session::write('ThriftSession', $session['ThriftSession']);
 		}
 		if (!$session) throw new Exception("Error: bindDeviceToSession() cannot find session");

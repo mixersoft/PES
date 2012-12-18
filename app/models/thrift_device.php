@@ -11,12 +11,12 @@ class ThriftDevice extends AppModel {
 			'fields' => '',
 		)
 	);
-// array('ThriftSession.is_cancelled', 'ThriftSession.modified DESC')
 	public $hasMany = array(
 		'ThriftSession' => array(
 			'className' => 'ThriftSession',
 			'foreignKey' => 'thrift_device_id',
 			'dependent' => true,
+			'order' => array('ThriftSession.modified DESC'),
 		),
 		'ThriftFolder' => array(
 			'className' => 'ThriftFolder',

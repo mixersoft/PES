@@ -654,7 +654,7 @@ if (isset($this->params['url']['new-taskid']))	{
 			/*
 			 * get valid session_id
 			 */		
-			// TODO: How do we delete keys for expired sessions? DELETE WHERE is_cancelled=1 or modified too old
+			// TODO: How do we delete keys for expired sessions? DELETE WHERE modified too old
 			$this->ThriftSession = ClassRegistry::init('ThriftSession');
 			if (isset($this->params['url']['device'])) {
 				// ************************  manual testing *****************************

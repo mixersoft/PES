@@ -58,7 +58,7 @@ class ThriftSessionTestCase extends CakeTestCase {
 	function testNewSession() {
 		// create new session, device_id should be null/unbound
 		$result = $this->ThriftSession->newSession();
-		$skip = array_flip(array('is_cancelled','created','modified', 'BatchId')); 
+		$skip = array_flip(array('created','modified', 'BatchId')); 
 		$result['ThriftSession'] = array_diff_key($result['ThriftSession'], $skip);
 		$expected = Array
 			(

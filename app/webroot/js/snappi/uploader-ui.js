@@ -48,8 +48,7 @@
 			_Y.one('#content > div.messages').setContent();
 			if (taskType=='ur') {
 				/*
-				 * NOTE: this method directly changes ThriftSession.is_cancelled in the DB
-				 * not sure what the side effects are.
+				 * NOTE: this method directly changes ThriftSession.IsCancelled
 				 */
 				ThriftUploader.util.pauseUploader(false, function(json){
 					ThriftUploader.ui._no_ui_update_count = 0;
@@ -81,7 +80,7 @@
 								ThriftUploader.ui._elapsed = Math.min(new Date().getTime() - starttime, 5000);
 								ThriftUploader.ui.renderFolderState(response.folders);
 								ThriftUploader.action.refresh(true);
-								if (response.taskState['ThriftSession']['is_cancelled']=='0') {
+								if (response.taskState['ThriftSession']['IsCancelled']=='0') {
 									// refresh() will auto cancel after NO_UI_UPDATE_LIMIT
 									// SNAPPI.ThriftUploader.action.refresh(true);
 								}
