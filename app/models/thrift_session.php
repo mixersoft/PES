@@ -113,7 +113,7 @@ class ThriftSession extends AppModel {
 		    [IsCancelled] => 0
 		    [FolderUpdateCount] => 0
 		    [FileUpdateCount] => 1
-		    [BatchId] => 1352298912
+		    [BatchId] => date()
 		    [DuplicateFileException] => 0
 		    [OtherException] => 0
 		)
