@@ -144,7 +144,7 @@ class ThriftFolder extends AppModel {
 
 	public function findByNativePath($thrift_device_id, $nativePath){
 		$folder_hash = $this->hashPath($nativePath);
-		return $this->findByNativePath($thrift_device_id, $folder_hash);
+		return $this->findByNativePathHash($thrift_device_id, $folder_hash);
 	}
 	
 	public function findByNativePathHash($thrift_device_id, $nativePathHash){

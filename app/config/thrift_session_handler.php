@@ -3,7 +3,7 @@
 //
 
 AppController::log('::::::::::::::   USING CUSTOM THRIFT SESSION  ::::::::', LOG_DEBUG);
-debug('::::::::::::::   USING CUSTOM THRIFT SESSION  ::::::::');
+// debug('::::::::::::::   USING CUSTOM THRIFT SESSION  ::::::::');
 //Get rid of the referrer check even when Security.level is medium 
 ini_set('session.referer_check', ''); 
 
@@ -14,6 +14,12 @@ ini_set('session.referer_check', '');
  */
  //Makes sure PHPSESSID doesn't tag along in all your urls 
 ini_set('session.use_trans_sid', 0); 
+
+
+// THRIFT SESSION DOES NOT USE COOKIES, GET session_id FROM TaskID
+ini_set("session.use_cookies",0);
+ini_set("session.use_only_cookies",0);
+	 
 // Cookie is now destroyed when browser is closed, doesn't
 // persist for days as it does by default for security
 // low and medium

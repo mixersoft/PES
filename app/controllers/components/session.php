@@ -338,6 +338,14 @@ class Session {
 		return call_user_func_array(array(self::$instance, $method), $arguments);
 	}
     
+	public static function start() {
+        return self::$instance->start();
+	}
+	
+	public static function destroy() {
+        return self::$instance->destroy();
+	}
+	    
 	public static function write($name, $value = null) {
         return self::$instance->write($name, $value);
 	}

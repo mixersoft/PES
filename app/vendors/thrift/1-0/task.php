@@ -76,7 +76,7 @@ class CakePhpHelper {
 		 */
 		public static function _loginFromAuthToken($taskID) {
 			// start ThriftSession
-			ThriftController::$controller->get_custom_thrift_session($taskID);
+			ThriftController::$controller->load_CakePhpThriftSessionFromTaskID($taskID);
 			try {
 				/*
 				 * - finds pa with authToken, returns data[ProviderAccount], data[Owner]
@@ -201,7 +201,7 @@ ThriftController::log("############################## thrift_SetFolders=".print_
 		public static function _model_addFolder($taskID, $nativePath, $options=array()) {
 			if (!ThriftController::$session) CakePhpHelper::_loginFromAuthToken($taskID);
 			$session = & ThriftController::$session;
-			
+ThriftController::log("*****   _model_addFolder(): cakephp session=".print_r($session, true), LOG_DEBUG);			
 			ThriftController::$controller->ThriftFolder = ThriftController::$controller->ThriftSession->ThriftDevice->ThriftFolder;
 			$thrift_device_id = $session['ThriftDevice']['id'];
 			if (!empty($options['delete'])) {
@@ -217,7 +217,10 @@ ThriftController::log("*****   _model_addFolder(): deviceId:{$thrift_device_id} 
 			if ($ret) {
 				// bump TaskState.FolderUpdateCount to uploader app catches it
 ThriftController::log("*************** _model_addFolder to update folder count", LOG_DEBUG);				
-				$options = array('FolderUpdateCount'=>1);
+				$options = array(
+					'FolderUpdateCount'=>1, 
+					'IsCancelled'=>0,		// set TaskState active after change
+				);
 				CakePhpHelper::_model_setTaskState($taskID, $options);
 			}
 			return $ret;
@@ -343,7 +346,7 @@ if (!isset($thrift_GetTask['FileUpdateCount']))
 			ThriftController::log("*** SYSTEM ERROR: shutdown client, message={$message}", LOG_DEBUG);
 			if (!empty($taskID->Session)) {
 				// skip if already cancelled
-				if (ThriftController::$session['ThriftSession']['is_cancelled']) return;
+				if (ThriftController::$session['ThriftSession']['IsCancelled']) return;
 				
 				ThriftController::log("*** using IsCancelled", LOG_DEBUG);
 				// UR task, use IsCancelled
@@ -727,7 +730,7 @@ ThriftController::log("*****   SystemException from AddFolder(): ".print_r($thri
 				} else {
 					$ret = CakePhpHelper::_model_setTaskState($taskID, array('IsCancelled'=>0));
 				}			
-				return $ret ? array('isCancelled'=> $ret['ThriftSession']['is_cancelled']) : false;
+				return array('IsCancelled'=> $ret['ThriftSession']['IsCancelled']);
 			} catch (Exception $e) {
 				$msg = explode(',', $e->getMessage());
 				switch($msg[0]) {
