@@ -22,9 +22,6 @@ DROP TABLE IF EXISTS `thrift_sessions`;
 CREATE TABLE IF NOT EXISTS `thrift_sessions` (
   `id`  char(36) NOT NULL,
   `thrift_device_id` char(36) COMMENT 'late bind, bind device to session from native-uploader',
-  `DuplicateFileException` tinyint DEFAULT 0 COMMENT 'count exceptions',
-  `OtherException` tinyint DEFAULT 0 COMMENT 'count exceptions',
-  `is_cancelled` tinyint(1) DEFAULT 0,
   `active` tinyint(1) DEFAULT 1 COMMENT 'set to 0 to queue for deletion',
   `created` datetime,
   `modified` datetime,
