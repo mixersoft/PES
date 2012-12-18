@@ -62,9 +62,16 @@ $SERVER = $_SERVER['SERVER_NAME'];
 // $SERVER = '192.168.1.7';
 // $SERVER = 'dev.snaphappi.com';
 
-$authToken = 'b34f54557023cce43ab7213e0eb7da2a6b9d6b27';
-$sessionId = '509a7862-1db8-4f50-a91e-11d0f67883f5';
-$deviceId = '2738ebe4-95a1-4d4a-aefe-761d97881535';
+	$DEVICE[1] = array(
+			'auth_token'=>'b34f54557023cce43ab7213e0eb7da2a6b9d6b27',
+			'device_id'=>1,
+			'device_UUID'=>'2738ebe4-95a1-4d4a-aefe-761d97881535', 
+			'session_id'=>'50a3fb31-7514-4db3-b730-1644f67883f5',
+		);
+	
+	$authToken = $DEVICE[1]['auth_token'];
+	$sessionId= $DEVICE[1]['session_id'];
+	$deviceId = $DEVICE[1]['device_UUID'];
 
 $launch_URI = "snaphappi://".base64_encode($authToken)."_".base64_encode($sessionId)."_ur";
 

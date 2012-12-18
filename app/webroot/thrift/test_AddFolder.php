@@ -94,9 +94,16 @@ print "<br> Client Class={$client_class}";
   try {
   	print "<BR />*************************************";
 	// the authToken & sessionId will be passed as runtime flashvars 
-	$authToken = 'b34f54557023cce43ab7213e0eb7da2a6b9d6b27';
-	$sessionId='50a32a66-6680-4c29-a5b2-1644f67883f5';
-	$deviceId = '2738ebe4-95a1-4d4a-aefe-761d97881535';
+	$DEVICE[1] = array(
+			'auth_token'=>'b34f54557023cce43ab7213e0eb7da2a6b9d6b27',
+			'device_id'=>1,
+			'device_UUID'=>'2738ebe4-95a1-4d4a-aefe-761d97881535', 
+			'session_id'=>'50a3fb31-7514-4db3-b730-1644f67883f5',
+		);
+	
+	$authToken = $DEVICE[1]['auth_token'];
+	$sessionId= $DEVICE[1]['session_id'];
+	$deviceId = $DEVICE[1]['device_UUID'];
 	
 	print "<BR /> ";	
 	print "<BR />   Testing AddFolder() with ".print_r(array('authToken'=>$authToken,'sessionId'=>$sessionId), true);

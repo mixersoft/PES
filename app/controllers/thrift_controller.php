@@ -15,20 +15,84 @@ class ThriftController extends AppController {
 
 	public $autoRender = false;			// return response over thrift transport
     public $layout = false;
-
-	public $components = array(
-		// add components here
-	);	
+	
+	public $USE_AuthToken_NOT_AUTH = array('test', 'service');
     
 	function __construct() {
+		// session_id('discard');  // TODO: randomize to avoid locking issues?
+		// $this->_use_custom_thrift_session();
 		parent::__construct();
 		ThriftController::$controller = $this;
 	}
 	
     function beforeFilter() {
-    	parent::beforeFilter();
-        $this->Auth->allow('*');
+		if (in_array($this->action, $this->USE_AuthToken_NOT_AUTH)) {
+			$debug = (isset($this->passedArgs[1])) ? $this->passedArgs[1] : 0;
+			Configure::write('debug', $debug);
+			// skip AppController::beforeFilter to avoid unnecessary Auth and Session stuff
+		} else if ($this->action == 'task_helper') {
+			$debug = (isset($this->passedArgs[0])) ? $this->passedArgs[0] : 0;
+			Configure::write('debug', 0);
+			// transfer TaskID from CAKEPHP SESSION TO THRIFT SESSION
+// debug(Session::read('thrift-task'));	// CAKEPHP SESSION		
+			$taskID = Session::read('thrift-task');
+			$this->load_CakePhpThriftSessionFromTaskID($taskID);
+			Session::write('thrift-task', $taskID);	
+// debug(Session::read());	// THRIFT SESSION				
+		} else {
+			parent::beforeFilter();
+		    $this->Auth->allow('*');
+		}
     }
+	
+	function _use_custom_thrift_session(){
+		Configure::write('Session.save', 'thrift_session_handler');
+	}
+	function load_CakePhpThriftSessionFromTaskID($taskID){
+		
+		if (!$taskID) debug('load_CakePhpThriftSessionFromTaskID: taskID is empty');
+		if (is_object($taskID) && get_class($taskID)=='snaphappi_api_TaskID') $taskID = (array)$taskID;
+		return $this->load_CakePhpThriftSession($taskID['AuthToken'], $taskID['DeviceID']);
+	}
+	function load_CakePhpThriftSession($authToken, $deviceId){
+		// load AuthComponent
+		// loadComponent('Auth', $this);
+		if (!isset($this->Auth)) {
+			App::import('Component', 'Auth');
+			$this->Auth = new AuthComponent();
+			$this->Auth->Session = ThriftController::$controller->Session;
+			$this->Auth->allow('service','task_helper','test');
+		}
+		$new_session_key = "{$authToken}-{$deviceId}";
+		// $new_session_key = md5($new_session_key . Configure::read('Security.salt'));
+		if (session_id() != $new_session_key) {
+// debug(">>>>>>>>>>>>>>>>>> OLD session id=".session_id() )	;			
+// $this->log(">>>>>>>>>>>>>>>>>> OLD session id=".session_id(), LOG_DEBUG);			
+// debug(">>> NEW CAKEPHP session key={$new_session_key}")	;	
+// $this->log(">>> NEW CAKEPHP session key={$new_session_key}", LOG_DEBUG);
+			$session_name = 'ThriftSession';		
+			Configure::write('Session.cookie', $session_name);
+			$_COOKIE[$session_name] = $new_session_key;
+			
+			// close or destroy?
+			if (in_array($this->action, $this->USE_AuthToken_NOT_AUTH)){
+				session_destroy();
+// debug(">>>>>>>  DESTROYED OLD session id=".session_id() )	;			
+// $this->log(">>>>  DESTROYED OLD session id=".session_id(), LOG_DEBUG);					
+			} else session_write_close();		
+			
+			ini_set("session.use_cookies",0);
+			ini_set("session.use_only_cookies",0);
+			
+			session_name($session_name);
+			session_id($new_session_key);
+			// session_start(); session_destroy(); // resets custom Thrift Session
+			session_start();
+$this->log(" @@@  ". session_name().", ".session_id(), LOG_DEBUG);			
+debug(" @@@  ". session_name().", ".session_id());				
+// $this->Session->write('time.'.time(), time());			
+		}
+	}
 	
 	function _bootstrap_ThriftAPI($service) {
 		try {
@@ -58,8 +122,9 @@ class ThriftController extends AppController {
 	 * hepler methods for direct access to Thrift Task API from cakephp
 	 * requires a valid TaskID saved to Session::read('thrift-task');
 	 */ 
-	function task_helper() {
-		$forceXHR = setXHRDebug($this, 0);
+	function task_helper($debug=0) {
+		$forceXHR = setXHRDebug($this, $debug);
+debug(Configure::read('debug'));		
 		// json requests only
 		$success = true; 
 		$message = $response = array(); 
@@ -72,9 +137,12 @@ class ThriftController extends AppController {
 				throw new Exception("Error: this API method is only availble for JSON requests");
 				
 			$task_data = Session::read('thrift-task');
+// TODO: how do I get the TaskID here, can't use session, right?  ?????????????????????			
+// POST data[authToken], data[deviceID]
+//$this->load_CakePhpThriftSession(), // security problem??
 			$method = $this->passedArgs['fn'];	
 			if (empty($task_data['DeviceID'])) 
-				throw new Exception("Error: invalid or missing DeviceID");
+				throw new Exception("Error: invalid or missing DeviceID, check Session::read(thrift-task) ");
 			if (empty($method)) 
 				throw new Exception("Error: no method provided");
 			
@@ -176,15 +244,11 @@ class ThriftController extends AppController {
 			$attach_fixed_session = $this->params['url']['device'];
 		} else 	
 			$attach_fixed_session = 1;		// testing for this device
-		if ($attach_fixed_session) {	
-			$session = $this->ThriftSession->newSession($DEVICE[$attach_fixed_session]);
-		}				
 		$task_data = array(
 			'AuthToken'=>$DEVICE[$attach_fixed_session]['auth_token'],
 			'Session'=>$DEVICE[$attach_fixed_session]['session_id'],
 			'DeviceID'=>$DEVICE[$attach_fixed_session]['device_UUID'],	// hack: get from GetDeviceID()
 		);
-		Session::write('thrift-task', $task_data);
 		
 		$taskId = new snaphappi_api_TaskID(
 			array(
@@ -193,9 +257,13 @@ class ThriftController extends AppController {
 			    'DeviceID' => $task_data['DeviceID'],
 			)
 		);
+		$this->load_CakePhpThriftSessionFromTaskID($taskId);
 		
 		
-
+		if ($attach_fixed_session) {
+			$session = $this->ThriftSession->newSession($DEVICE[$attach_fixed_session]);
+debug(Session::read());			
+		}		
 		/*
 		 * Test GetDeviceId
 		 */
@@ -209,7 +277,8 @@ class ThriftController extends AppController {
 		debug ("   Exception, msg=".$e->getMessage());
 	}
 // $this->render('/elements/sql_dump');
-// return;			
+// return;	
+		
 	if (isset($_GET['reset'])) {
 		$nativePath = "C:\\TEMP\\added from Thrift AddFolder";
 		print "<BR />*************************************";
@@ -238,6 +307,7 @@ class ThriftController extends AppController {
 		 */
 		$state = $Task->GetState($taskId);
 		debug("GetState() result=".print_r($state,true));
+debug(Session::read());		
 // $this->render('/elements/sql_dump');
 // return;			
 		/*
@@ -256,6 +326,7 @@ class ThriftController extends AppController {
 // $this->render('/elements/sql_dump');
 // return;				
 		} else {
+			debug("WARNING: NO FOLDERS FOUND, ARE YOU SIGNED IN AS 'manager' TO TEST?");
 			CakePhpHelper::_model_setTaskState($taskId, array('IsCancelled'=>0));
 		}	
 		/*

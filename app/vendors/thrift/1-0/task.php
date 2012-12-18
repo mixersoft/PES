@@ -75,7 +75,8 @@ class CakePhpHelper {
 		 * @return aa $data[ProviderAccount,Owner,ThriftSession,ThriftDevice] 
 		 */
 		public static function _loginFromAuthToken($taskID) {
-// ThriftController::log('_loginFromAuthToken()  ProviderAccount.auth_token='.($taskID->AuthToken), LOG_DEBUG);
+			// start ThriftSession
+			ThriftController::$controller->load_CakePhpThriftSessionFromTaskID($taskID);
 			try {
 				/*
 				 * - finds pa with authToken, returns data[ProviderAccount], data[Owner]
@@ -91,7 +92,6 @@ class CakePhpHelper {
 				if (!$session) $session = ThriftController::$controller->ThriftSession->bindDeviceToSession($sessionId, $taskID->AuthToken, $taskID->DeviceID);
 				$data = array_merge($data, $session);
 				ThriftController::$session = $data;
-debug($data);				
 // ThriftController::log("_loginFromAuthToken OK, data=".print_r($data,true), LOG_DEBUG);
 				return $data;
 			} catch (Exception $e) {
@@ -115,14 +115,23 @@ ThriftController::log("*****   SystemException from _loginFromAuthToken(): ".pri
 		public static function _model_getDeviceId($authToken, $sessionId) {
 			$data = ThriftController::$controller->ProviderAccount->thrift_findByAuthToken($authToken);
 			if (!$data) throw new Exception("Error: authToken not found, authToken={$authToken}");	
-			$authenticated = CakePhpHelper::_login($data['Owner']);
-			if (!$authenticated) throw new Exception("Error: authToken invalid, authToken={$authToken}");
-			
 			$device = ThriftController::$controller->ThriftSession->findDevice($sessionId);
 			if (empty($device)) 
 				throw new Exception("Error: sessionId invalid, sessionId={$sessionId}");
 			else if (empty($device['ThriftDevice'])) return '';
-			else return $device['ThriftDevice']['device_UUID'];
+			
+			// $authenticated = CakePhpHelper::_login($data['Owner']);
+			// if (!$authenticated) throw new Exception("Error: authToken invalid, authToken={$authToken}");
+			
+			$taskID = new snaphappi_api_TaskID(
+				array(
+				    'AuthToken' => $authToken,
+				    'Session' => $sessionId,
+				    'DeviceID' => $device['ThriftDevice']['device_UUID'],
+				)
+			);
+			CakePhpHelper::_loginFromAuthToken($taskID);
+			return $device['ThriftDevice']['device_UUID'];
 		}
 		
 		/**
@@ -192,7 +201,7 @@ ThriftController::log("############################## thrift_SetFolders=".print_
 		public static function _model_addFolder($taskID, $nativePath, $options=array()) {
 			if (!ThriftController::$session) CakePhpHelper::_loginFromAuthToken($taskID);
 			$session = & ThriftController::$session;
-			
+ThriftController::log("*****   _model_addFolder(): cakephp session=".print_r($session, true), LOG_DEBUG);			
 			ThriftController::$controller->ThriftFolder = ThriftController::$controller->ThriftSession->ThriftDevice->ThriftFolder;
 			$thrift_device_id = $session['ThriftDevice']['id'];
 			if (!empty($options['delete'])) {
@@ -208,7 +217,10 @@ ThriftController::log("*****   _model_addFolder(): deviceId:{$thrift_device_id} 
 			if ($ret) {
 				// bump TaskState.FolderUpdateCount to uploader app catches it
 ThriftController::log("*************** _model_addFolder to update folder count", LOG_DEBUG);				
-				$options = array('FolderUpdateCount'=>1);
+				$options = array(
+					'FolderUpdateCount'=>1, 
+					'IsCancelled'=>0,		// set TaskState active after change
+				);
 				CakePhpHelper::_model_setTaskState($taskID, $options);
 			}
 			return $ret;
@@ -334,7 +346,7 @@ if (!isset($thrift_GetTask['FileUpdateCount']))
 			ThriftController::log("*** SYSTEM ERROR: shutdown client, message={$message}", LOG_DEBUG);
 			if (!empty($taskID->Session)) {
 				// skip if already cancelled
-				if (ThriftController::$session['ThriftSession']['is_cancelled']) return;
+				if (ThriftController::$session['ThriftSession']['IsCancelled']) return;
 				
 				ThriftController::log("*** using IsCancelled", LOG_DEBUG);
 				// UR task, use IsCancelled
@@ -718,7 +730,7 @@ ThriftController::log("*****   SystemException from AddFolder(): ".print_r($thri
 				} else {
 					$ret = CakePhpHelper::_model_setTaskState($taskID, array('IsCancelled'=>0));
 				}			
-				return $ret ? array('isCancelled'=> $ret['ThriftSession']['is_cancelled']) : false;
+				return array('IsCancelled'=> $ret['ThriftSession']['IsCancelled']);
 			} catch (Exception $e) {
 				$msg = explode(',', $e->getMessage());
 				switch($msg[0]) {
