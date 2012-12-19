@@ -450,6 +450,10 @@ debug($paData);
 ThriftController::log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&", LOG_DEBUG);				
 ThriftController::log("&&&&&&&&&&&&&&&&&&&&&&&&& upload Original not yet implemented &&&&&&&&&&&&&&&&&&&", LOG_DEBUG);				
 
+			} else if ( $response['message']['DuplicateAssetFound'] == 'FOUND duplicate Asset, converting provider from desktop to native-uploader'
+				&& !$isOriginal
+			) {
+				$copyToStaging = false;
 			} else if ( $response['message']['DuplicateAssetFound']
 				&& !$isOriginal
 			) {
@@ -476,6 +480,8 @@ ThriftController::log("&&&&&&&&&&&&&&&&&&&&&&&&& upload Original not yet impleme
 		 		$response['message'][]="file staged successfully, dest={$stage['dest']}";
 			} else $response['message'][]="Error staging file, src={$stage['src']} dest={$stage['dest']}";
 		 	$ret = $ret && $ret3;
+		} else {
+			unlink($fullpath);
 		}
 
 	 	$response['success'] = $ret;

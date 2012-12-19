@@ -32,13 +32,13 @@ class ThriftController extends AppController {
 			// skip AppController::beforeFilter to avoid unnecessary Auth and Session stuff
 		} else if ($this->action == 'task_helper') {
 			$debug = (isset($this->passedArgs[0])) ? $this->passedArgs[0] : 0;
-			Configure::write('debug', 0);
+			Configure::write('debug', $debug);
 			// transfer TaskID from CAKEPHP SESSION TO THRIFT SESSION
-// debug(Session::read('thrift-task'));	// CAKEPHP SESSION		
+debug(Session::read('thrift-task'));	// CAKEPHP SESSION		
 			$taskID = Session::read('thrift-task');
 			$this->load_CakePhpThriftSessionFromTaskID($taskID);
 			Session::write('thrift-task', $taskID);	
-// debug(Session::read());	// THRIFT SESSION				
+debug(Session::read());	// THRIFT SESSION				
 		} else {
 			parent::beforeFilter();
 		    $this->Auth->allow('*');
@@ -55,6 +55,11 @@ class ThriftController extends AppController {
 		return $this->load_CakePhpThriftSession($taskID['AuthToken'], $taskID['DeviceID']);
 	}
 	function load_CakePhpThriftSession($authToken, $deviceId){
+		if (empty($deviceId)) {
+			$trace = Debugger::trace();
+			$this->log("Error: load_CakePhpThriftSession() deviceID is empty",LOG_DEBUG);
+			$this->log($trace,LOG_DEBUG);
+		}
 		// load AuthComponent
 		// loadComponent('Auth', $this);
 		if (!isset($this->Auth)) {
@@ -88,8 +93,8 @@ class ThriftController extends AppController {
 			session_id($new_session_key);
 			// session_start(); session_destroy(); // resets custom Thrift Session
 			session_start();
-$this->log(" @@@  ". session_name().", ".session_id(), LOG_DEBUG);			
-debug(" @@@  ". session_name().", ".session_id());				
+// $this->log(" @@@ using custom thrift session handler ". session_name().", ".session_id(), LOG_DEBUG);			
+// debug(" @@@  using custom thrift session handler ". session_name().", ".session_id());				
 // $this->Session->write('time.'.time(), time());			
 		}
 	}
@@ -124,7 +129,6 @@ debug(" @@@  ". session_name().", ".session_id());
 	 */ 
 	function task_helper($debug=0) {
 		$forceXHR = setXHRDebug($this, $debug);
-debug(Configure::read('debug'));		
 		// json requests only
 		$success = true; 
 		$message = $response = array(); 

@@ -58,7 +58,7 @@
 								</div></td>
 						</tr>		
 					<?php  elseif (1 && empty($folders) && empty($taskID['DeviceID'])) : ?>							
-						<tr class='empty-folders-message'><td colspan="4">
+						<tr class='empty-folders-message device-id-unknown'><td colspan="4">
 							<div class='message blue rounded-5 wrap-v'>
 								<h1>Error Retrieving Folders</h1>
 								<p><?php echo $message; ?></p>

@@ -147,6 +147,10 @@
 				_Y.one('#checking-config').remove();
 				_Y.one('#download-wrap').addClass('hide');
 				_Y.one('#snappi-uploader-wrap').removeClass('offscreen');
+				
+				var label = _Y.one('#thrift-uploader-wrap #device-label').remove().getAttribute('value');
+				_Y.one('#thrift-uploader-wrap li.device-label').setContent('Device: '+label);
+				
 				// start UI if '.empty-folders-message' found
 				var firstTime = _Y.one('.thrift-folders .empty-folders-message');
 				if (firstTime) ThriftUploader.action.refresh('restart');
@@ -164,19 +168,28 @@
 			// try to get folders until successful, implies DeviceID is available 
 			folders_node.replaceClass('xhr-get-disabled', 'xhr-get');
 			SNAPPI.xhrFetch.fetchXhr(folders_node);
+			var i=0, timeout = 30;
 			var cancel = _Y.later(1000, ThriftUploader, function(){
-				if (folders_node.one('table')) {
+				if (++i > timeout && cancel.cancel) {
 					cancel.cancel();
-					var label = folders_node.one('#device-label').remove().getAttribute('value');
-					_Y.one('#thrift-uploader-wrap li.device-label').setContent('Device: '+label);
-					deviceId_found();	
-				} else {
-					// call SNAPPI.io.fetchXhr() until success
-					if (!folders_node.hasClass('xhr-loading')) {
-						SNAPPI.xhrFetch.fetchXhr(folders_node);
-					}
+					_Y.one('#checking-config').remove();
+					_Y.one('#download-wrap').addClass('hide');
+					_Y.one('#snappi-uploader-wrap').removeClass('offscreen');
+					return;
+				} 
+				if (folders_node.one('table') ) {
+					if (!folders_node.one('.device-id-unknown')) {
+						cancel.cancel();
+						deviceId_found();
+						return;
+					}	
+				}
+				// call SNAPPI.io.fetchXhr() until success
+				if (!folders_node.hasClass('xhr-loading')) {
+					SNAPPI.xhrFetch.fetchXhr(folders_node);
 				}
 			}, null, true);
+			
 		},
 		show_DownloadPage: function() {
 			// override, show download page in case user needs to re-install

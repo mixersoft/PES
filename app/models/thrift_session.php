@@ -82,6 +82,8 @@ class ThriftSession extends AppModel {
 			&& isset($session['ThriftDevice']['device_UUID'])
 			&& $session['ThriftDevice']['device_UUID'] == $device_UUID
 		) {
+// $this->log("***   ThriftSession::checkDevice, USING SESSION VALUES deviceId={$session['ThriftDevice']['device_UUID'}", LOG_DEBUG);			
+			// check if Device_UUID was saved to db
 			if ($pa_id && $session['ThriftDevice']['provider_account_id'] == $pa_id) {
 				return $session;
 			} else if ($pa_id === null) return $session;
@@ -98,7 +100,7 @@ class ThriftSession extends AppModel {
 		if ($pa_id) {
 			$options['contain']['ThriftDevice']['conditions']['ThriftDevice.provider_account_id'] = $pa_id;
 		}
-// ThriftController::log("***   ThriftSession::checkDevice, options=".print_r($options,true), LOG_DEBUG);		
+// $this->log("***   ThriftSession::checkDevice, options=".print_r($options,true), LOG_DEBUG);		
 		$data = $this->find('first', $options);
 				
 		if (empty($data['ThriftSession'])) {
@@ -108,6 +110,8 @@ class ThriftSession extends AppModel {
 		if (empty($data['ThriftDevice']['id'])) return false;
 		Session::write('ThriftSession', $data['ThriftSession']);
 		Session::write('ThriftDevice', $data['ThriftDevice']);
+		
+// $this->log("***   ThriftSession::checkDevice, data=".print_r($data,true), LOG_DEBUG);		
 		return $data;
 	}
 	
@@ -119,7 +123,10 @@ class ThriftSession extends AppModel {
 	function findDevice($session_id) {
 		$options = array(
 			'contain'=>array('ThriftDevice'),
-			'conditions'=>array('ThriftSession.id'=>$session_id),
+			'conditions'=>array(
+				'ThriftSession.id'=>$session_id,
+				'ThriftDevice.id IS NOT NULL'
+			),
 		);
 		$data = $this->find('first', $options);
 		return $data;
@@ -136,17 +143,19 @@ class ThriftSession extends AppModel {
 	 */
 	function bindDeviceToSession($session_id, $authToken, $device_UUID, $providerName='native-uploader') {
 		$device = $this->ThriftDevice->findDeviceByDeviceId($authToken, $device_UUID);
+// $this->log("***   ThriftSession::bindDeviceToSession, device=".print_r($device,true), LOG_DEBUG);		
+// $this->log("***   ThriftSession::bindDeviceToSession, SESSION=".print_r(Session::read(),true), LOG_DEBUG);		
+		
 		if (empty($device)) {
 			$device = $this->ThriftDevice->newDeviceForAuthToken($authToken, $device_UUID);
 		} 
-		$session['ThriftSession'] = Session::read('ThriftSession');
-		if (!$session['ThriftSession']) {
-			$session = $this->read(null, $session_id);
-			Session::write('ThriftSession', $session['ThriftSession']);
-		}
+		// FORCE a read from Session
+		$session = $this->read(null, $session_id);
+		Session::write('ThriftSession', $session['ThriftSession']);
 		if (!$session) throw new Exception("Error: bindDeviceToSession() cannot find session");
 
 		if ($device['ThriftDevice']['id'] != $session['ThriftSession']['thrift_device_id']) {
+// $this->log("***   ThriftSession::bindDeviceToSession, SAVING DEVICE={$device['ThriftDevice']['id']}", LOG_DEBUG);		
 			$this->id = $session_id;
 			$ret = $this->saveField('thrift_device_id', $device['ThriftDevice']['id']);
 			if (!$ret) throw new Exception("Error saving device_id to ThriftSession in DB");

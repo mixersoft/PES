@@ -601,12 +601,19 @@ AND includes.asset_id='{$assetId}';
 	 * update selected Asset fields if imported again
 	 * @return array, list of fields to update;
 	 */ 
-	function __updateAssetFields($old, $new){
+	function _updateAssetFields($old, $new){
 		$fieldlist = array('id', 'modified');	
 		// do NOT overwrite if NEW is empty
 		if (!empty($new['json_exif'])) $fieldlist[]='json_exif';
 		if (!empty($new['json_iptc'])) $fieldlist[]='json_iptc';
 		if (!empty($new['dateTaken'])) $fieldlist[]='dateTaken';
+		// important for AIRuploader->ThriftUploader data conversion
+		if (isset($new['isThriftAPI'])) {
+			if (!empty($new['native_path'])) $fieldlist[]='native_path';
+			if (!empty($new['provider_name'])) $fieldlist[]='provider_name';
+			if (!empty($new['provider_account_id'])) $fieldlist[]='provider_account_id';
+			if (!empty($new['asset_hash'])) $fieldlist[]='asset_hash';
+		}
 		
 		// these src fields are derived from UUID, do NOT update if UUID will not change
 		// if (!empty($new['src_thumbnail'])) $fieldlist[]='src_thumbnail';
@@ -634,7 +641,14 @@ AND includes.asset_id='{$assetId}';
 			'recursive' => -1,
 			'conditions' => array( 
 				'Asset.owner_id' => $userid,
-				'Asset.asset_hash'=>$newAsset['asset_hash'],
+				'OR'=>array(
+					'Asset.asset_hash'=>$newAsset['asset_hash'],
+					array(
+						'Asset.json_exif'=>$newAsset['json_exif'],
+						'Asset.caption'=>$newAsset['caption'],
+						'Asset.provider_name'=>'desktop',
+					)
+				),
 			),
 			'extras'=>array(
 				'show_edits'=>false,
@@ -656,6 +670,7 @@ AND includes.asset_id='{$assetId}';
 			);
 		}; 
 		$duplicate = $this->find('first', $checkDupes_options);	
+if ($duplicate) $this->log("DUPLICATE FOUND, id={$duplicate['Asset']['id']}, caption={$duplicate['Asset']['caption']}",LOG_DEBUG); 
 		return $duplicate;
 	}
 
@@ -689,8 +704,8 @@ AND includes.asset_id='{$assetId}';
 		// add provider_account_id for generating asset_hash
 		$asset['provider_account_id'] = $providerAccount['id'];
 		if (isset($asset['isThriftAPI'])) {
-			$asset_hash = getAssetHash($asset, $photoPath, $asset['origPath'] );
 			$origPath = $asset['origPath'];
+			$asset['batchId'] = strtotime($asset['batchId']); // TODO: change BATCHID to TIMESTAMP IN dB SCHEMA
 		} else if (1 || isset($asset['isAIR'])) {	
 			// ???: which uploader is adding a duplicate filename counter?  is this outdated?
 			/*
@@ -698,10 +713,11 @@ AND includes.asset_id='{$assetId}';
 			 * counter is used by AIR uploader to add counter to duplicate files in upload folder
 			 */ 
 			$filename_no_counter = preg_replace('/(.*)(~\d+)(\.jpg)/i','${1}${3}',$asset['rel_path']);	
-// $this->log('$filename_no_counter =>'.$filename_no_counter,LOG_DEBUG);	
-			$asset_hash = getAssetHash($asset, $photoPath, $filename_no_counter);
 			$origPath = $filename_no_counter;
 		}
+		$asset_hash = getAssetHash($asset, $photoPath, $origPath );
+$this->log(">>>>> asset_hash=>{$asset_hash}, origPath =>{$origPath}, photoPath=>{$photoPath}",LOG_DEBUG);			
+		
 		$assetTemplate = array(
 			'owner_id'=>$userid,						// owner, might be redundant
 			'provider_account_id' => $providerAccount['id'],
@@ -720,6 +736,13 @@ AND includes.asset_id='{$assetId}';
 		if (isset($asset['json_iptc']['Caption'])) $newAsset['caption']= $asset['json_iptc']['Caption'];
 		if (empty($asset['caption'])) $newAsset['caption'] = pathinfo($origPath, PATHINFO_FILENAME);;
 		
+		if (isset($asset['isThriftAPI'])) {
+			$newAsset['native_path'] = $asset['rel_path'];
+		} else if (isset($asset['isAIR'])) {
+			$newAsset['native_path'] = $asset['basepath'].DS.$asset['rel_path'];
+		}
+		
+		
 		pack_json_keys($newAsset);		// from php_lib
 		$newAsset = array_merge($assetTemplate, $newAsset);
 
@@ -727,24 +750,29 @@ AND includes.asset_id='{$assetId}';
 		 *  check if asset already exists, by asset.id OR asset_hash 
 		 */
 		$duplicate = $this->_detectDuplicate($userid, $newAsset, !empty($asset['replace-preview-with-original']) );
+		$duplicate_provider = $duplicate['Asset']['provider_name'];
 // $this->log( "checkDupes_options FOUND, data=".print_r($duplicate, true), LOG_DEBUG);
 		 		
 		if (!empty($duplicate['Asset']['id'])) {
-			// found Duplicate
-			
-			$fieldlist = $this->__updateAssetFields($duplicate['Asset'], $newAsset);
+			// found Duplicate, just update fields
+			if (isset($asset['isThriftAPI'])) $newAsset['isThriftAPI']=1;
+			$fieldlist = $this->_updateAssetFields($duplicate['Asset'], $newAsset);
 			$newAsset = array_intersect_key($newAsset, array_flip($fieldlist)); 
 			$duplicate['Asset'] = array_merge($duplicate['Asset'], $newAsset);
 // $this->log( "checkDupes_options SAVE FIELDSLIST=".print_r($fieldlist, true), LOG_DEBUG);	
 			$ret = $this->save($duplicate, FALSE, $fieldlist);
 			if (!$ret) {
-$this->log( " ERROR: this->__updateAssetFields()".print_r($duplicate['Asset'], true), LOG_DEBUG);					
+$this->log( " ERROR: this->_updateAssetFields()".print_r($duplicate['Asset'], true), LOG_DEBUG);					
 				$response['message']['DuplicateAssetFound']="ERROR updating fields of duplicate Asset";
+			} else if(isset($asset['isThriftAPI']) && $duplicate_provider == 'desktop' ) {
+				$response['message']['DuplicateAssetFound']="FOUND duplicate Asset, converting provider from desktop to native-uploader";	
+$this->log('_updateAssetFields convert to native-uploader=>'.print_r($newAsset, true),LOG_DEBUG);					
 			} else {
 				$response['message']['DuplicateAssetFound']="FOUND duplicate Asset, Photo fields updated";
+$this->log('_updateAssetFields =>'.print_r($newAsset, true),LOG_DEBUG);	
 			}
 			$response['response'][]=$newAsset;
-// $this->log('__updateAssetFields =>'.print_r($response, true),LOG_DEBUG);	
+// $this->log('_updateAssetFields =>'.print_r($response, true),LOG_DEBUG);	
 			return array('Asset'=>$duplicate['Asset']);
 		} else {
 			// no Duplicate, save new Asset 
@@ -754,18 +782,13 @@ $this->log( " ERROR: this->__updateAssetFields()".print_r($duplicate['Asset'], t
 			$shardPath = $Import->shardKey($uuid, $uuid);
 			$src['root']= $shardPath;
 			$src['thumb']= $Import->getImageSrcBySize($shardPath, 'tn');
-			
-			// NOTE: AIR uploader sends $asset['basepath']
-			if (!empty($asset['basepath'])) $origPath =  $asset['basepath'].DS.$asset['rel_path'];
-			else $origPath = $asset['rel_path'];
-			$src['orig'] = $origPath;		// original path in the clear
+			$src['orig'] = $newAsset['native_path'];		// original path in the clear
 			
 			// add UUID derived fields
 			$newAsset['id'] = $uuid;
 			$newAsset['provider_key'] = $uuid;
 			$newAsset['src_thumbnail'] = $src['thumb'];
 			$newAsset['json_src'] = $src;
-			$newAsset['native_path'] = $origPath;
 			pack_json_keys($newAsset);		// from php_lib
 			
 			/*

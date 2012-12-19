@@ -169,6 +169,9 @@ $this->log("WARNING: missing exif[root][imageSize], (see castingCall), path={$pa
 		$data = array('exif'=>NULL, 'iptc'=>NULL);
 // debug($exif);		
 		if (isset($exif['DateTimeOriginal'])) {	// jpg exif data take priority
+			// TODO hack: AIR uploader sets $exif['InterOperabilityIndex']==null
+			// we need to match this with ThriftUploader to detect duplicates by json_exif
+			if (!isset($exif['InterOperabilityIndex'])) $exif['InterOperabilityIndex'] = null;
 			$data['exif'] = array_filter_keys($exif, ImportComponent::$EXIF_FIELDS);
 			if ($isOriginal) {
 				$autoRotate = false; $isPreview = false;
