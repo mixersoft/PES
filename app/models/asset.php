@@ -633,7 +633,7 @@ AND includes.asset_id='{$assetId}';
 	 * 		2) some concat of photo attributes, including dateTaken, Filename, and json_exif string
 	 * - also used to replace preview JPG with an newly uploaded original JPG 
 	 */
-	function _detectDuplicate($userid, $newAsset, $replaceWithOriginal=false) {
+	function _detectDuplicate($userid, $newAsset) {
 		/*
 		 *  check if asset already exists, by asset.id OR asset_hash 
 		 */
@@ -641,14 +641,7 @@ AND includes.asset_id='{$assetId}';
 			'recursive' => -1,
 			'conditions' => array( 
 				'Asset.owner_id' => $userid,
-				'OR'=>array(
-					'Asset.asset_hash'=>$newAsset['asset_hash'],
-					array(
-						'Asset.json_exif'=>$newAsset['json_exif'],
-						'Asset.caption'=>$newAsset['caption'],
-						'Asset.provider_name'=>'desktop',
-					)
-				),
+				'Asset.asset_hash'=>$newAsset['asset_hash'],
 			),
 			'extras'=>array(
 				'show_edits'=>false,
@@ -656,12 +649,34 @@ AND includes.asset_id='{$assetId}';
 				'show_hidden_shots'=>false		
 			),
 			'permissionable'=>false,
-		);		
+		);
+		/***************************************************************
+		 * experimental: thrift api uploads replace AIR/desktop uploads, sets native_path correctly
+		 ***************************************************************/
+		if (!empty($newAsset['isThriftAPI'])) {
+			$SUBSTRING = substr($newAsset['json_exif'], 0, 282); 
+			$checkDupes_options['conditions'] = array( 
+				'Asset.owner_id' => $userid,
+				'OR'=>array(
+					'Asset.asset_hash'=>$newAsset['asset_hash'],
+					array(
+						"SUBSTRING(Asset.json_exif,1,282)"=>$SUBSTRING,
+						'Asset.caption'=>$newAsset['caption'],
+						'Asset.provider_name'=>array('desktop','snappi'),
+					)
+				),
+			);
+		}; 
+		 
+// $this->log("checkDupes_options", LOG_DEBUG);			
+// $this->log($checkDupes_options, LOG_DEBUG);
+
+				
 		/***************************************************************
 		 * experimental: replace mode, replace existing with original
 		 * 		from MyController::__upload_javascript()
 		 ***************************************************************/
-		if (!empty($asset['replace-preview-with-original'])) {
+		if (!empty($newAsset['replace-preview-with-original'])) {
 			$checkDupes_options['conditions'] = array( 
 				'Asset.owner_id' => $userid,
 				'Asset.dateTaken' => $newAsset['dateTaken'],
@@ -738,9 +753,14 @@ $this->log(">>>>> asset_hash=>{$asset_hash}, origPath =>{$origPath}, photoPath=>
 		
 		if (isset($asset['isThriftAPI'])) {
 			$newAsset['native_path'] = $asset['rel_path'];
+			$newAsset['isThriftAPI'] = $asset['isThriftAPI'];
 		} else if (isset($asset['isAIR'])) {
 			$newAsset['native_path'] = $asset['basepath'].DS.$asset['rel_path'];
 		}
+		if (!empty($asset['replace-preview-with-original'])) {
+			$newAsset['replace-preview-with-original'] = 1;
+		}
+			
 		
 		
 		pack_json_keys($newAsset);		// from php_lib
@@ -749,7 +769,7 @@ $this->log(">>>>> asset_hash=>{$asset_hash}, origPath =>{$origPath}, photoPath=>
 		/*
 		 *  check if asset already exists, by asset.id OR asset_hash 
 		 */
-		$duplicate = $this->_detectDuplicate($userid, $newAsset, !empty($asset['replace-preview-with-original']) );
+		$duplicate = $this->_detectDuplicate($userid, $newAsset );
 		$duplicate_provider = $duplicate['Asset']['provider_name'];
 // $this->log( "checkDupes_options FOUND, data=".print_r($duplicate, true), LOG_DEBUG);
 		 		
