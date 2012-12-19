@@ -38,7 +38,7 @@ $config['uploader.AIR.Windows'] = array(
 );
 $config['uploader.AIR.Macintosh'] = array(
 	'file'=>'snappi-uploader.dmg', 
-	'version'=>'1.8.7',		// confirm OSX works as 1.8.8 before upgrading
+	'version'=>'1.8.8',		// confirm OSX works as 1.8.8 before upgrading
 	'osLabel'=>'OSX 10.5+',
 	'requirements'=>'',
 );
