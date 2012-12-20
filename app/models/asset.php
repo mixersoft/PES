@@ -787,7 +787,7 @@ $this->log(">>>>> asset_hash=>{$asset_hash}, origPath =>{$origPath}, photoPath=>
 			if (!$ret) {
 $this->log( " ERROR: this->_updateAssetFields()".print_r($duplicate['Asset'], true), LOG_DEBUG);					
 				$response['message']['DuplicateAssetFound']="ERROR updating fields of duplicate Asset";
-			} else if(isset($asset['isThriftAPI']) && $duplicate_provider == 'desktop' ) {
+			} else if(isset($asset['isThriftAPI']) && in_array($duplicate_provider, array('snappi','desktop'))) {
 				// hack: fix json_src[orig]
 				// TODO: refactor: this will be the same as native_path after DB schema change
 				$jsonSrc = json_decode($duplicate['Asset']['json_src'], true);
