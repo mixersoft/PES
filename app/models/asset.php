@@ -752,10 +752,12 @@ $this->log(">>>>> asset_hash=>{$asset_hash}, origPath =>{$origPath}, photoPath=>
 		if (empty($asset['caption'])) $newAsset['caption'] = pathinfo($origPath, PATHINFO_FILENAME);;
 		
 		if (isset($asset['isThriftAPI'])) {
-			$newAsset['native_path'] = $asset['rel_path'];
+			$newAsset['native_path'] = $asset['rel_path'];	// includes thrift_device_id
+			$newAsset['orig_path'] = $asset['origPath'];	// json_src['orig']
 			$newAsset['isThriftAPI'] = $asset['isThriftAPI'];
 		} else if (isset($asset['isAIR'])) {
 			$newAsset['native_path'] = $asset['basepath'].DS.$asset['rel_path'];
+			$newAsset['orig_path'] = $newAsset['native_path'];
 		}
 		if (!empty($asset['replace-preview-with-original'])) {
 			$newAsset['replace-preview-with-original'] = 1;
@@ -777,14 +779,20 @@ $this->log(">>>>> asset_hash=>{$asset_hash}, origPath =>{$origPath}, photoPath=>
 			// found Duplicate, just update fields
 			if (isset($asset['isThriftAPI'])) $newAsset['isThriftAPI']=1;
 			$fieldlist = $this->_updateAssetFields($duplicate['Asset'], $newAsset);
-			$newAsset = array_intersect_key($newAsset, array_flip($fieldlist)); 
-			$duplicate['Asset'] = array_merge($duplicate['Asset'], $newAsset);
+			// NOTE: array_filter_key not available from thriftAPI
+			$newAsset_merge_fields = array_intersect_key($newAsset, array_flip($fieldlist));
+			$duplicate['Asset'] = array_merge($duplicate['Asset'], $newAsset_merge_fields);
 // $this->log( "checkDupes_options SAVE FIELDSLIST=".print_r($fieldlist, true), LOG_DEBUG);	
 			$ret = $this->save($duplicate, FALSE, $fieldlist);
 			if (!$ret) {
 $this->log( " ERROR: this->_updateAssetFields()".print_r($duplicate['Asset'], true), LOG_DEBUG);					
 				$response['message']['DuplicateAssetFound']="ERROR updating fields of duplicate Asset";
 			} else if(isset($asset['isThriftAPI']) && $duplicate_provider == 'desktop' ) {
+				// hack: fix json_src[orig]
+				// TODO: refactor: this will be the same as native_path after DB schema change
+				$jsonSrc = json_decode($duplicate['Asset']['json_src'], true);
+				$jsonSrc['orig'] = $newAsset['orig_path'];				
+				$ret = $ret && $this->saveField('json_src', json_encode($jsonSrc));
 				$response['message']['DuplicateAssetFound']="FOUND duplicate Asset, converting provider from desktop to native-uploader";	
 $this->log('_updateAssetFields convert to native-uploader=>'.print_r($newAsset, true),LOG_DEBUG);					
 			} else {
@@ -802,7 +810,7 @@ $this->log('_updateAssetFields =>'.print_r($newAsset, true),LOG_DEBUG);
 			$shardPath = $Import->shardKey($uuid, $uuid);
 			$src['root']= $shardPath;
 			$src['thumb']= $Import->getImageSrcBySize($shardPath, 'tn');
-			$src['orig'] = $newAsset['native_path'];		// original path in the clear
+			$src['orig'] = $newAsset['orig_path'];		// original path in the clear
 			
 			// add UUID derived fields
 			$newAsset['id'] = $uuid;

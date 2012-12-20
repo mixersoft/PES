@@ -201,7 +201,7 @@ ThriftController::log("############################## thrift_SetFolders=".print_
 		public static function _model_addFolder($taskID, $nativePath, $options=array()) {
 			if (!ThriftController::$session) CakePhpHelper::_loginFromAuthToken($taskID);
 			$session = & ThriftController::$session;
-ThriftController::log("*****   _model_addFolder(): cakephp session=".print_r($session, true), LOG_DEBUG);			
+// ThriftController::log("*****   _model_addFolder(): cakephp session=".print_r($session, true), LOG_DEBUG);			
 			ThriftController::$controller->ThriftFolder = ThriftController::$controller->ThriftSession->ThriftDevice->ThriftFolder;
 			$thrift_device_id = $session['ThriftDevice']['id'];
 			if (!empty($options['delete'])) {
@@ -216,7 +216,7 @@ ThriftController::log("*****   _model_addFolder(): deviceId:{$thrift_device_id} 
 			}
 			if ($ret) {
 				// bump TaskState.FolderUpdateCount to uploader app catches it
-ThriftController::log("*************** _model_addFolder to update folder count", LOG_DEBUG);				
+// ThriftController::log("*************** _model_addFolder to update folder count", LOG_DEBUG);				
 				$options = array(
 					'FolderUpdateCount'=>1, 
 					'IsCancelled'=>0,		// set TaskState active after change
