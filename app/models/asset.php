@@ -745,7 +745,7 @@ $this->log(">>>>> asset_hash=>{$asset_hash}, origPath =>{$origPath}, photoPath=>
 			'json_exif' => $asset['json_exif'],
 			'dateTaken' => !empty($asset['json_exif']['DateTimeOriginal']) ? $asset['json_exif']['DateTimeOriginal'] : null,
 			'isFlash' => $asset['json_exif']['isFlash'],
-			'isRGB' => !empty($asset['json_exif']['isRGB']) ? $asset['json_exif']['isRGB']: null,
+			'isRGB' => !empty($asset['json_exif']['root']['isRGB']) ? $asset['json_exif']['root']['isRGB']: null,
 		);
 		if (isset($asset['json_iptc']['Keyword'])) $newAsset['keyword']= $asset['json_iptc']['Keyword'];
 		if (isset($asset['json_iptc']['Caption'])) $newAsset['caption']= $asset['json_iptc']['Caption'];
@@ -888,7 +888,7 @@ $this->log("insert newAsset=".print_r($newAsset['native_path'], true), LOG_DEBUG
 					if (!isset($meta['exif']['Orientation'])) $meta['exif']['Orientation'] = 1;
 		debug($meta['exif']);
 					// debug(json_decode($data['Asset']['json_exif'],true));
-					$json_exif = json_encode($meta['exif']);
+					$json_exif = !empty($meta['exif']) ? json_encode($meta['exif']) : null;
 		debug($json_exif);
 					/* 
 					 * update Asset with updated exif data
@@ -896,7 +896,7 @@ $this->log("insert newAsset=".print_r($newAsset['native_path'], true), LOG_DEBUG
 					$this->id = $row['Asset']['id'];
 					$updateAsset = array(
 						'json_exif' => $json_exif,
-						'json_iptc' => json_encode($meta['iptc']),
+						'json_iptc' => !empty($meta['iptc']) ? json_encode($meta['iptc']) : null,
 						'dateTaken' => !empty($meta['exif']['DateTimeOriginal']) ? $meta['exif']['DateTimeOriginal'] : null,
 						'isFlash' => $meta['exif']['isFlash'],
 					);
