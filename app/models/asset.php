@@ -613,6 +613,8 @@ AND includes.asset_id='{$assetId}';
 			if (!empty($new['provider_name'])) $fieldlist[]='provider_name';
 			if (!empty($new['provider_account_id'])) $fieldlist[]='provider_account_id';
 			if (!empty($new['asset_hash'])) $fieldlist[]='asset_hash';
+			if (isset($new['isFlash'])) $fieldlist[]='isFlash';
+			if (isset($new['isRGB'])) $fieldlist[]='isRGB';
 		}
 		
 		// these src fields are derived from UUID, do NOT update if UUID will not change
@@ -712,7 +714,8 @@ if ($duplicate) $this->log("DUPLICATE FOUND, id={$duplicate['Asset']['id']}, cap
 		// $asset['json_exif'] == json_exif from v1.8.3 snappi-uploader via POST
 		$exif_0 = (isset($asset['json_exif'])) ? $asset['json_exif'] : null;
 		$meta = $Import->getMeta($photoPath, $isOriginal, $exif_0);
-// $this->log( "Import->getMeta, IS_ORIGIGINAL={$isOriginal} EXIF=".print_r($meta['exif'], true), LOG_DEBUG);		
+// $this->log( "Import->getMeta, IS_ORIGIINAL={$isOriginal} EXIF=".print_r($meta['exif'], true), LOG_DEBUG);		
+
 		$asset['json_exif'] = $meta['exif'];
 		$asset['json_iptc'] = $meta['iptc'];
 
