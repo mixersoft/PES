@@ -333,6 +333,12 @@ debug(Session::read());
 			debug("WARNING: NO FOLDERS FOUND, ARE YOU SIGNED IN AS 'manager' TO TEST?");
 			CakePhpHelper::_model_setTaskState($taskId, array('IsCancelled'=>0));
 		}	
+		
+			$files = $Task->GetFilesToUpload($taskId);
+			debug("GetFiles() result=".print_r($files,true));
+$this->render('/elements/sql_dump');
+return;	
+		
 		/*
 		 * Test ReportFileCount
 		 */

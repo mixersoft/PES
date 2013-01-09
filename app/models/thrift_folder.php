@@ -103,11 +103,12 @@ class ThriftFolder extends AppModel {
 	}
 	
 	public function findByThriftDeviceId($thrift_device_id, $is_watched = false, $options = array()) {
+// ThriftController::log("ThriftFolder::findByDeviceId OK", LOG_DEBUG);
 		if ($thrift_device_id) {
 			$options['conditions']['ThriftFolder.thrift_device_id'] =  $thrift_device_id;
 		}
 		if ($is_watched === false) {
-			$options['conditions']['ThriftFolder.is_watched'] = 0;
+			$options['conditions']['ThriftFolder.is_watched'] = 0;  // comment/remove if we want to include isWatched
 			$options['conditions']['OR']['ThriftFolder.is_scanned'] = 0;
 			$options['conditions']['OR'][]='ThriftFolder.count IS NULL';
 			$options['order'] = array('ThriftFolder.count'=>'DESC', 'ThriftFolder.native_path'=>'ASC') ;
@@ -119,10 +120,9 @@ class ThriftFolder extends AppModel {
 			$options['order'] = array('ThriftFolder.is_watched'=>'ASC', 'ThriftFolder.count'=>'DESC', 'ThriftFolder.native_path'=>'ASC') ;
 		}		
 		$options = $this->_addUploadCount($options);
+// ThriftController::log($options, LOG_DEBUG);		
 		$data = $this->find('all', $options);
 		Sanitize::clean($data);
-// ThriftController::log("ThriftFolder::findByDeviceId OK", LOG_DEBUG);
-// ThriftController::log($options, LOG_DEBUG);
 		return $data;
 	}
 	
@@ -188,6 +188,33 @@ class ThriftFolder extends AppModel {
 		);
 		$data = ClassRegistry::init('Asset')->find('all', $asset_options);
 		return Set::extract('/Asset/native_path',$data);
+	}
+	
+	/**
+	 * Get array of files which have been queued to upload/replace with the original, 
+	 * hi resolution JPG file
+	 * 
+	 * @param ThriftDevice array, like $data['ThriftDevice']
+	 * @return $data['Asset']
+	 * 
+	 */
+	public function getOriginalFiles($ThriftDevice) {
+		// get all Assets by ProviderAccount
+		$devicePrefix = $ThriftDevice['id'].ThriftFolder::$DEVICE_SEPARATOR;
+		// escape \=>\\ for SQL, then use mysql_real_escape_string()
+		$asset_options = array(
+			'permissionable'=>false,		// owner_id=AppController::$userid
+			'conditions'=>array(
+				'Asset.provider_account_id'=>$ThriftDevice['provider_account_id'],
+				'Asset.owner_id'=>AppController::$userid,
+				// filter in DB, or in PHP. see callback FolderContains::asset()
+				'Asset.isOriginal'=>'q',  // q == queued for upload
+				"Asset.native_path LIKE '{$devicePrefix}%'",
+			),
+			'fields'=>array('Asset.native_path','Asset.id','UNIX_TIMESTAMP(Asset.dateTaken) AS DateTimeOriginal'),
+		);
+		$data = ClassRegistry::init('Asset')->find('all', $asset_options);
+		return $data;
 	}
 	
 	

@@ -57,6 +57,8 @@ ALTER TABLE `assets` ADD INDEX `fk_shots`(`substitute`);
 
 ALTER TABLE `assets` CHANGE COLUMN `substitute` `shot_id` CHAR(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci DEFAULT NULL 
 ALTER TABLE `snappi`.`assets` ADD COLUMN `native_path` VARCHAR(2048) AFTER `src_thumbnail`;
+ALTER TABLE `snappi`.`assets` ADD COLUMN isOriginal CHAR(1) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL COMMENT '[y|n|q] (q)ueued for upload'
+  AFTER `native_path`;
 --
 -- Table structure for table `assets_collections`
 --

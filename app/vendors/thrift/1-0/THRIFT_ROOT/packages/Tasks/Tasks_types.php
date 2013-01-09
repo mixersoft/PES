@@ -151,6 +151,138 @@ class snaphappi_api_TaskID {
 
 }
 
+class snaphappi_api_UploadTarget {
+  static $_TSPEC;
+
+  public $FilePath = null;
+  public $Timestamp = null;
+  public $Hash = null;
+  public $FolderPath = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'FilePath',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'Timestamp',
+          'type' => TType::I32,
+          ),
+        3 => array(
+          'var' => 'Hash',
+          'type' => TType::I32,
+          ),
+        4 => array(
+          'var' => 'FolderPath',
+          'type' => TType::STRING,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['FilePath'])) {
+        $this->FilePath = $vals['FilePath'];
+      }
+      if (isset($vals['Timestamp'])) {
+        $this->Timestamp = $vals['Timestamp'];
+      }
+      if (isset($vals['Hash'])) {
+        $this->Hash = $vals['Hash'];
+      }
+      if (isset($vals['FolderPath'])) {
+        $this->FolderPath = $vals['FolderPath'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'UploadTarget';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->FilePath);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->Timestamp);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->Hash);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->FolderPath);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('UploadTarget');
+    if ($this->FilePath !== null) {
+      $xfer += $output->writeFieldBegin('FilePath', TType::STRING, 1);
+      $xfer += $output->writeString($this->FilePath);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->Timestamp !== null) {
+      $xfer += $output->writeFieldBegin('Timestamp', TType::I32, 2);
+      $xfer += $output->writeI32($this->Timestamp);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->Hash !== null) {
+      $xfer += $output->writeFieldBegin('Hash', TType::I32, 3);
+      $xfer += $output->writeI32($this->Hash);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->FolderPath !== null) {
+      $xfer += $output->writeFieldBegin('FolderPath', TType::STRING, 4);
+      $xfer += $output->writeString($this->FolderPath);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class snaphappi_api_SystemException extends TException {
   static $_TSPEC;
 
@@ -359,6 +491,7 @@ class snaphappi_api_UploadInfo {
   static $_TSPEC;
 
   public $UploadType = null;
+  public $NewPath = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -367,11 +500,18 @@ class snaphappi_api_UploadInfo {
           'var' => 'UploadType',
           'type' => TType::I32,
           ),
+        2 => array(
+          'var' => 'NewPath',
+          'type' => TType::STRING,
+          ),
         );
     }
     if (is_array($vals)) {
       if (isset($vals['UploadType'])) {
         $this->UploadType = $vals['UploadType'];
+      }
+      if (isset($vals['NewPath'])) {
+        $this->NewPath = $vals['NewPath'];
       }
     }
   }
@@ -402,6 +542,13 @@ class snaphappi_api_UploadInfo {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->NewPath);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -418,6 +565,11 @@ class snaphappi_api_UploadInfo {
     if ($this->UploadType !== null) {
       $xfer += $output->writeFieldBegin('UploadType', TType::I32, 1);
       $xfer += $output->writeI32($this->UploadType);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->NewPath !== null) {
+      $xfer += $output->writeFieldBegin('NewPath', TType::STRING, 2);
+      $xfer += $output->writeString($this->NewPath);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
