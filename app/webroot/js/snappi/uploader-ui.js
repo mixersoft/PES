@@ -46,18 +46,27 @@
 		timer: null,
 		launchTask: function(taskType) {
 			_Y.one('#content > div.messages').setContent();
-			if (taskType=='ur') {
-				/*
-				 * NOTE: this method directly changes ThriftSession.IsCancelled
-				 */
-				ThriftUploader.util.pauseUploader(false, function(json){
-					ThriftUploader.ui._no_ui_update_count = 0;
-					SNAPPI.ThriftUploader.action.refresh('restart');
-					// LAUNCH native-uploader
-					var target = _Y.Lang.sub("snaphappi://{authToken64}_{sessionId64}_", PAGE.jsonData.nativeUploader);
+			switch(taskType) {
+				case 'ur': 
+					/*
+					 * NOTE: this method directly changes ThriftSession.IsCancelled
+					 */
+					ThriftUploader.util.pauseUploader(false, function(json){
+						ThriftUploader.ui._no_ui_update_count = 0;
+						SNAPPI.ThriftUploader.action.refresh('restart');
+						// LAUNCH native-uploader
+						var target = _Y.Lang.sub("snaphappi://{authToken64}_{sessionId64}_", PAGE.jsonData.nativeUploader);
+						var uri = target+taskType;
+						// called asynch from callback
+						window.location.href = uri;
+					});				
+					break;
+				case 'sw':
+					// call directly
+				 	var target = _Y.Lang.sub("snaphappi://{authToken64}_{sessionId64}_", PAGE.jsonData.nativeUploader);
 					var uri = target+taskType;
 					window.location.href = uri;
-				});				
+					break;
 			}
 			// ERROR: this call was canceling the pause method
 			// ThriftUploader.ui._no_ui_update = 0;

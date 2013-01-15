@@ -331,13 +331,13 @@ debug(Session::read());
 // return;				
 		} else {
 			debug("WARNING: NO FOLDERS FOUND, ARE YOU SIGNED IN AS 'manager' TO TEST?");
-			CakePhpHelper::_model_setTaskState($taskId, array('IsCancelled'=>0));
+			CakePhpHelper::_setTaskState($taskId, array('IsCancelled'=>0));
 		}	
 		
 			$files = $Task->GetFilesToUpload($taskId);
 			debug("GetFiles() result=".print_r($files,true));
-$this->render('/elements/sql_dump');
-return;	
+// $this->render('/elements/sql_dump');
+// return;	
 		
 		/*
 		 * Test ReportFileCount
@@ -346,8 +346,8 @@ return;
 		$changed = $Task->ReportFileCount($taskId, $folders[0],765);
 		debug("ReportFileCount() result=".print_r($changed,true));	
 		
-$this->render('/elements/sql_dump');
-return;			
+// $this->render('/elements/sql_dump');
+// return;			
 		/*
 		 * Test GetWatchedFolders
 		 */
@@ -360,7 +360,7 @@ return;
 			$files = $Task->GetFiles($taskId, $folders[0]);
 			debug("GetFiles() folders[0]={$folders[0]}, result=".print_r($files,true));
 		} else {
-			CakePhpHelper::_model_setTaskState($taskId, array('IsCancelled'=>0));
+			CakePhpHelper::_setTaskState($taskId, array('IsCancelled'=>0));
 		}			
 	
 		
@@ -369,10 +369,76 @@ return;
 		 */
 		$folder = $Task->ReportFolderUploadComplete($taskId, $folders[0]);
 		debug("ReportFolderUploadComplete() result=".print_r($folder,true));		
-$this->render('/elements/sql_dump');
-return;	
+// $this->render('/elements/sql_dump');
+// return;	
 		/*
-		 * Test UploadFiles
+		 * Test UploadFiles, UO ORIGINAL
+		 */
+		 
+		Stagehand::$stage_basepath = Configure::read('path.stageroot.basepath');
+		$path = 'C\TEMP\big-test\events\NYC\P1010445.JPG';
+		$data['ProviderAccount'] = Array
+	        (
+	            'id' => '50996b75-425c-4261-a0ee-14c8f67883f5',
+	            'user_id' => '5013ddf3-069c-41f0-b71e-20160afc480d',
+	            'provider_name' => 'native-uploader',
+	            'provider_key' => $deviceId,
+	            'display_name' => 'manager',
+	            'baseurl' => null,
+	            'auth_token' => $taskId->AuthToken,
+	            'created' => '2012-11-02 16:32:51',
+	            'modified' => '2012-11-02 19:15:15',
+	        );
+		$data['Asset'] = Array
+		(
+			'id' => '50eda502-b3f8-4f85-9e8e-1684f67883f5',
+			'owner_id' => '5013ddf3-069c-41f0-b71e-20160afc480d',
+		    'provider_account_id' => '509e525d-d740-4aa2-8dca-63900afc6d44',
+		    'provider_name' => 'native-uploader',
+		    'batchId' => '1358265743',
+		    'uploadId' => '1358268241',
+		    'asset_hash' => 'fffea6bece055e8834c78afaef1ba88b',
+		    'json_exif' => '{"Make":"Panasonic","Model":"DMC-TS3","Orientation":1,"ExposureTime":"10\/600","FNumber":"33\/10","ISOSpeedRatings":400,"ExifVersion":"0230","DateTimeOriginal":"2012:07:21 12:56:22","Flash":25,"ColorSpace":1,"ExifImageWidth":4000,"ExifImageLength":2672,"GPSVersion":"\u0002\u0003\u0000\u0000","GPSLatitudeRef":"N","GPSLatitude":["38\/1","54\/1","4028\/100"],"GPSLongitudeRef":"W","GPSLongitude":["77\/1","2\/1","4117\/100"],"GPSTimeStamp":["21\/1","48\/1","2\/1"],"GPSAreaInformation":"UNICODE\u0000T\u0000H\u0000O\u0000M\u0000A\u0000S\u0000 \u0000T\u0000 \u0000G\u0000A\u0000F\u0000F\u0000 \u0000H\u0000O\u0000U\u0000S\u0000E\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000","GPSDateStamp":"2012:07:15","InterOperabilityIndex":"R98","InterOperabilityVersion":"0100","ApertureFNumber":"f\/3.3","isFlash":1,"root":{"imageWidth":4000,"imageHeight":2672,"isRGB":true}}',
+		    'dateTaken' => '2012:07:21 12:56:22',
+		    'isFlash' => 1,
+		    'isRGB' => 1,
+		    'caption' => 'P1010445',
+		    'isThriftAPI' => 1,
+		    'provider_key' => '50eda502-b3f8-4f85-9e8e-1684f67883f5',
+		    'src_thumbnail' => 'stage6/tn~50eda502-b3f8-4f85-9e8e-1684f67883f5.jpg',
+		    'json_src' => '{"root":"stage6\/50eda502-b3f8-4f85-9e8e-1684f67883f5.jpg","thumb":"stage6\/tn~50eda502-b3f8-4f85-9e8e-1684f67883f5.jpg","orig":"C:\\\\TEMP\\\\big-test\\\\events\\\\NYC\\\\P1010445.JPG"}',
+		    'replace-preview-by-native-path' => str_replace('\\', '\\\\', $path),
+		);
+		
+		/*
+		 * setup upload
+		 */ 
+		$src = json_decode($data['Asset']['json_src'], true);
+		$source = Stagehand::$stage_basepath.DS.$src['root'];
+		$dest = Stagehand::$stage_basepath . "/../upload/{$data['Asset']['owner_id']}/" . $path;
+		debug("COPYING: $source  => $dest");
+		copy($source, $dest);
+		$Asset = ClassRegistry::init('Asset'); 
+		$Asset->id = '50eda502-b3f8-4f85-9e8e-1684f67883f5';
+		$Asset->Behaviors->detach('Permissionable');
+		$Asset->saveField('isOriginal', 'q'); // queued
+		/*
+		 * END setup upload
+		 */ 
+		 
+		// TODO: this script is not detecting duplicates correctly, could be escape problem on native_path 
+		 
+		debug($data);	
+		debug("****** AuthToken set for ProviderAccount.user_id=[manager] **************");
+		$extras = new snaphappi_api_UploadInfo(array('UploadType'=>UploadType::Original));
+		$Task->UploadFile($taskId, $path, true, $extras);
+		
+$this->render('/elements/sql_dump');
+return;		
+
+
+		/*
+		 * Test UploadFiles, UR
 		 */
 		
 		$path = 'C:\TEMP\May\2015.JPG';

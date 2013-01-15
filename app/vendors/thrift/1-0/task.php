@@ -418,11 +418,8 @@ if (!isset($thrift_GetTask['FileUpdateCount']))
 		 * experimental: replace mode, replace existing with original
 		 * 	pass to Asset::addIfNew()
 		 ***************************************************************/ 
-		 if (0 && $id->Type=='uo'){
-		 	$data['Asset']['replace-preview-with-original'] = true;
-		 };
-		
-		$isOriginal = ($isOriginal == 'ORIGINAL');
+		$data['Asset']['replace-preview-with-original'] = $isOriginal;
+		$data['Asset']['replace-preview-by-native-path'] = $device_origPath;
 		$ret = true;
 		$Import = loadComponent('Import', ThriftController::$controller);
 		if (!isset(ThriftController::$controller->Asset)) ThriftController::$controller->Asset = ClassRegistry::init('Asset');
@@ -449,7 +446,7 @@ ThriftController::$controller->Permissionable->initialize(ThriftController::$con
 		 // TODO: do not use addIfNew(), pa should be valid by now
 		 // TODO: add correct UNIQUE index for ProviderAccount, include provider key, 
 		$paData = ThriftController::$controller->ProviderAccount->addIfNew($data['ProviderAccount'], $conditions,  $response);
-debug($data);				
+// debug($data);				
 debug($paData);	
 		/****************************************************
 		 * setup data['Asset'] to create new Asset
@@ -459,7 +456,7 @@ debug($paData);
 			$data['Asset']['perms'] = $profile['Profile']['privacy_assets'];
 		}	
 		
-// ThriftController::log("CakePh.pHelper::__importPhoto, paData=".print_r($paData, true), LOG_DEBUG);			
+// ThriftController::log("CakePhpHelper::__importPhoto, paData=".print_r($paData, true), LOG_DEBUG);			
 		$assetData = ThriftController::$controller->Asset->addIfNew($data['Asset'], $paData['ProviderAccount'], $basepath, $fullpath, $isOriginal, $response);
 // ThriftController::log("CakePhpHelper::__importPhoto, this->Asset->addIfNew(), response=".print_r($response, true), LOG_DEBUG);				
 // ThriftController::log("CakePhpHelper::__importPhoto, this->Asset->addIfNew(), asset=".print_r($assetData, true), LOG_DEBUG);		
@@ -470,14 +467,20 @@ debug($paData);
 			if ($response['message']['DuplicateAssetFound']=='FOUND duplicate Asset, Photo fields updated' 
 					&& $isOriginal
 			) {
-				// upload Original not yet implemented
-ThriftController::log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&", LOG_DEBUG);				
-ThriftController::log("&&&&&&&&&&&&&&&&&&&&&&&&& upload Original not yet implemented &&&&&&&&&&&&&&&&&&&", LOG_DEBUG);				
-
+				// upload Original 
+				$response['message']['DuplicateAssetFound'] = "Replaced existing Asset file with Original file";
+			} else if ( $response['message']['DuplicateAssetFound'] == "ERROR updating fields of duplicate Asset"
+				&& $isOriginal
+			) {
+				// upload Original: error updating DB when uploading Original from UO task
+				$copyToStaging = false;
+				$response['message']['NoPreviewFoundException'] = 1;
+				$response['message']['OtherException'] = 1;
+				$ret = false;
 			} else if ( $response['message']['DuplicateAssetFound'] == 'FOUND duplicate Asset, converting provider from desktop to native-uploader'
 				&& !$isOriginal
 			) {
-				$copyToStaging = false;
+				$copyToStaging = false;	
 			} else if ( $response['message']['DuplicateAssetFound']
 				&& !$isOriginal
 			) {
@@ -894,8 +897,30 @@ debug("DEBUG CONFIG ERROR: to test UploadFile, file should already exist in uplo
 				if ($isOriginal) {  // UploadType::Original
 					// update Asset.isOriginal=='y' and move to json_src
 ThriftController::log("check for original at path={$fullpath}", LOG_DEBUG);					
-ThriftController::log("STILL HAVE TO MOVE FILE TO json_src", LOG_DEBUG);							
-return;						
+	debug("UploadFile ORIGINAL. Begin UPDATE to DB *********************");					
+	debug("CakePhpHelper::__importPhoto({$upload_basepath}, {$fullpath}, {$path}, {$providerKey}, {$taskState['BatchId']})");
+					$response = CakePhpHelper::__importPhoto($upload_basepath, $fullpath, $path, $taskState['BatchId'], $isOriginal);	// autoRotate=false
+	debug("UploadFile. ******** UploadFile ORIGINAL, DB update complete *********************");	
+	debug($response);
+	ThriftController::log("************* UploadFile ORIGINAL, DB update complete ***********************", LOG_DEBUG);			 
+	ThriftController::log($response['message'], LOG_DEBUG);			
+					if ($response['success']) {
+						/*
+						 * update TaskID[FileUpdateCount] to Thrift, not to DB
+						 */
+						if ($id->Session) CakePhpHelper::_setTaskState($id, array('FileUpdateCount'=>1));  
+						
+						
+					} else if (!empty($response['message']['NoPreviewFoundException'])) {
+						$thrift_exception['ErrorCode'] = ErrorCode::DataConflict;
+						$thrift_exception['Information'] = "Preview file was not found";
+						$taskState = CakePhpHelper::_setTaskState($id, array('OtherException'=>1));
+						// when threshold is passed, set TaskID->IsCancelled=1
+	ThriftController::log("*****   SystemException from UploadFile(): ".print_r($thrift_exception,true), LOG_DEBUG);
+						throw new snaphappi_api_SystemException($thrift_exception);					
+					} else 
+						throw new Exception("CakePhpHelper::__importPhoto(): Error uploading ORIGINAL to DB, response=".print_r($response, true));
+						
 					
 				} else { // UploadType::Preview	
 	debug("UploadFile. Begin IMPORT to DB *********************");					

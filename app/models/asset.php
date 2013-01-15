@@ -615,6 +615,7 @@ AND includes.asset_id='{$assetId}';
 			if (!empty($new['asset_hash'])) $fieldlist[]='asset_hash';
 			if (isset($new['isFlash'])) $fieldlist[]='isFlash';
 			if (isset($new['isRGB'])) $fieldlist[]='isRGB';
+			if (isset($new['isOriginal'])) $fieldlist[]='isOriginal';
 		}
 		
 		// these src fields are derived from UUID, do NOT update if UUID will not change
@@ -636,6 +637,37 @@ AND includes.asset_id='{$assetId}';
 	 * - also used to replace preview JPG with an newly uploaded original JPG 
 	 */
 	function _detectDuplicate($userid, $newAsset) {
+		if (!empty($newAsset['replace-preview-by-native-path'])) {
+			/*
+			 * used by ThriftAPI UO task, should throw error if preview not found
+			 */ 
+			// TODO: replace condition on native_path with UUID
+			$nativePath = $newAsset['replace-preview-by-native-path'];
+			$nativePath = mysql_real_escape_string($nativePath);
+			$asset_options = array(
+				'permissionable'=>false,		// owner_id=AppController::$userid
+				'conditions'=>array(
+					'Asset.provider_account_id'=>$newAsset['provider_account_id'],
+					'Asset.owner_id'=>AppController::$userid,
+					// filter in DB, or in PHP. see callback FolderContains::asset()
+					"Asset.native_path='{$nativePath}'",
+					'Asset.isOriginal'=>'q',	// ONLY replace queued assets
+				),
+			);
+			$duplicate = ClassRegistry::init('Asset')->find('first', $asset_options);
+if ($duplicate) $this->log("DUPLICATE FOUND, id={$duplicate['Asset']['id']}, Asset.native_path='{$nativePath}'",LOG_DEBUG); 
+else {
+	// $this->log("DUPLICATE NOT FOUND, ".print_r($asset_options, true),LOG_DEBUG);
+	// debug("DUPLICATE NOT FOUND, ".print_r($asset_options, true));
+	// exit;
+}
+			return  $duplicate;
+
+
+
+
+		} else {
+		
 		/*
 		 *  check if asset already exists, by asset.id OR asset_hash 
 		 */
@@ -689,6 +721,8 @@ AND includes.asset_id='{$assetId}';
 		$duplicate = $this->find('first', $checkDupes_options);	
 if ($duplicate) $this->log("DUPLICATE FOUND, id={$duplicate['Asset']['id']}, caption={$duplicate['Asset']['caption']}",LOG_DEBUG); 
 		return $duplicate;
+		
+		}
 	}
 
 	function addIfNew($asset, $providerAccount, $baseurl, $photoPath, $isOriginal, & $response){
@@ -700,7 +734,6 @@ if ($duplicate) $this->log("DUPLICATE FOUND, id={$duplicate['Asset']['id']}, cap
 		/****************************************************
 		 * setup data['Asset'] to create new Asset
 		 */
-// TODO: $file_relpath should be from $providerAccount['baseurl'], but what if we have multiple TLF?
 		$file_relpath = cleanPath(substr($photoPath,strlen($baseurl)),'http'); 
 		/*
 		 *  WARNING:ProviderAccount.baseurl DB field is only the INITIAL baseurl. 
@@ -734,7 +767,7 @@ if ($duplicate) $this->log("DUPLICATE FOUND, id={$duplicate['Asset']['id']}, cap
 			$origPath = $filename_no_counter;
 		}
 		$asset_hash = getAssetHash($asset, $photoPath, $origPath );
-$this->log(">>>>> asset_hash=>{$asset_hash}, origPath =>{$origPath}, photoPath=>{$photoPath}",LOG_DEBUG);			
+// $this->log(">>>>> asset_hash=>{$asset_hash}, origPath =>{$origPath}, photoPath=>{$photoPath}",LOG_DEBUG);			
 		
 		$assetTemplate = array(
 			'owner_id'=>$userid,						// owner, might be redundant
@@ -750,6 +783,8 @@ $this->log(">>>>> asset_hash=>{$asset_hash}, origPath =>{$origPath}, photoPath=>
 			'isFlash' => $asset['json_exif']['isFlash'],
 			'isRGB' => !empty($asset['json_exif']['root']['isRGB']) ? $asset['json_exif']['root']['isRGB']: null,
 		);
+		if ($isOriginal!==null) $newAsset['isOriginal'] = $isOriginal ? 'y' : 'n';
+		
 		if (isset($asset['json_iptc']['Keyword'])) $newAsset['keyword']= $asset['json_iptc']['Keyword'];
 		if (isset($asset['json_iptc']['Caption'])) $newAsset['caption']= $asset['json_iptc']['Caption'];
 		if (empty($asset['caption'])) $newAsset['caption'] = pathinfo($origPath, PATHINFO_FILENAME);;
@@ -762,9 +797,14 @@ $this->log(">>>>> asset_hash=>{$asset_hash}, origPath =>{$origPath}, photoPath=>
 			$newAsset['native_path'] = $asset['basepath'].DS.$asset['rel_path'];
 			$newAsset['orig_path'] = $newAsset['native_path'];
 		}
-		if (!empty($asset['replace-preview-with-original'])) {
+		if (!empty($asset['replace-preview-by-native-path'])) {
+			// used by thriftAPI UO task
+			$newAsset['replace-preview-by-native-path'] = $asset['replace-preview-by-native-path'];
+		} else if (!empty($asset['replace-preview-with-original'])) {
+			// used by qq javascript uploader
 			$newAsset['replace-preview-with-original'] = 1;
 		}
+		
 			
 		
 		
@@ -785,13 +825,15 @@ $this->log(">>>>> asset_hash=>{$asset_hash}, origPath =>{$origPath}, photoPath=>
 			// NOTE: array_filter_key not available from thriftAPI
 			$newAsset_merge_fields = array_intersect_key($newAsset, array_flip($fieldlist));
 			$duplicate['Asset'] = array_merge($duplicate['Asset'], $newAsset_merge_fields);
+// debug($duplicate['Asset']);			
 // $this->log( "checkDupes_options SAVE FIELDSLIST=".print_r($fieldlist, true), LOG_DEBUG);	
 			$ret = $this->save($duplicate, FALSE, $fieldlist);
+// debug($ret);			
 			if (!$ret) {
 $this->log( " ERROR: this->_updateAssetFields()".print_r($duplicate['Asset'], true), LOG_DEBUG);					
 				$response['message']['DuplicateAssetFound']="ERROR updating fields of duplicate Asset";
 			} else if(isset($asset['isThriftAPI']) && in_array($duplicate_provider, array('snappi','desktop'))) {
-				// hack: fix json_src[orig]
+				// hack: use this to fix json_src[orig] from Assets uploaded by AIR uploader
 				// TODO: refactor: this will be the same as native_path after DB schema change
 				$jsonSrc = json_decode($duplicate['Asset']['json_src'], true);
 				$jsonSrc['orig'] = $newAsset['orig_path'];				
@@ -800,7 +842,7 @@ $this->log( " ERROR: this->_updateAssetFields()".print_r($duplicate['Asset'], tr
 $this->log('_updateAssetFields convert to native-uploader=>'.print_r($newAsset, true),LOG_DEBUG);					
 			} else {
 				$response['message']['DuplicateAssetFound']="FOUND duplicate Asset, Photo fields updated";
-$this->log('_updateAssetFields =>'.print_r($newAsset, true),LOG_DEBUG);	
+// $this->log('_updateAssetFields =>'.print_r($newAsset, true),LOG_DEBUG);	
 			}
 			$response['response'][]=$newAsset;
 // $this->log('_updateAssetFields =>'.print_r($response, true),LOG_DEBUG);	
