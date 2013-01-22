@@ -126,7 +126,7 @@
 </div>		
 <div id="footer" class="container_16">
 	<div class="grid_16">
-		<span>&copy; 2008-2012 Snaphappi</span>
+		<span>&copy; 2008-2013 Snaphappi</span>
 		<a href="http://www.cakephp.org/" target="_blank"><img src="<?php echo AppController::$http_static[0]; ?>/static/img/css-gui/cake.power.gif" alt="CakePHP: the rapid development php framework" border="0"></a>		
 	</div>
 </div>

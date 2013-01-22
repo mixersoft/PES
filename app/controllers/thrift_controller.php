@@ -430,8 +430,11 @@ debug(Session::read());
 		 
 		debug($data);	
 		debug("****** AuthToken set for ProviderAccount.user_id=[manager] **************");
-		$extras = new snaphappi_api_UploadInfo(array('UploadType'=>UploadType::Original));
-		$Task->UploadFile($taskId, $path, true, $extras);
+		$UploadInfo = new snaphappi_api_UploadInfo(array(
+			'UploadType'=>UploadType::Original, 
+			'imageID'=>$data['Asset']['id'],
+		));
+		$Task->UploadFile($taskId, $path, true, $UploadInfo);
 		
 $this->render('/elements/sql_dump');
 return;		

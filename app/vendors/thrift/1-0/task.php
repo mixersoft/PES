@@ -60,6 +60,8 @@ class FolderContains {
 
 class CakePhpHelper {
 		public static $DUPLICATE_FILE_EXCEPTION_THRESHOLD = 4;
+		public static $FILENOTFOUND_EXCEPTION_THRESHOLD = 4;
+		public static $UPLOADFAILED_EXCEPTION_THRESHOLD = 4;
 		public static $OTHER_EXCEPTION_THRESHOLD = 4;
 		
 		public static function _login($userData) {
@@ -265,18 +267,18 @@ ThriftController::log("*****   _addFolder(): deviceId:{$thrift_device_id} sessio
 				$thrift_GetTask['FolderUpdateCount'] += 1;
 				unset($options['FolderUpdateCount']);
 			} 
-			if (isset($options['DuplicateFileException'])) {
-				if (!isset($thrift_GetTask['DuplicateFileException'])) $thrift_GetTask['DuplicateFileException'] = 1;
-				else $thrift_GetTask['DuplicateFileException'] += 1;
-ThriftController::log("**** WARNING: DuplicateFileException count={$thrift_GetTask['DuplicateFileException']}", LOG_DEBUG);				
-				unset($options['DuplicateFileException']);
-			} 
-			if (isset($options['OtherException'])) {
-				if (!isset($thrift_GetTask['OtherException'])) $thrift_GetTask['OtherException'] = 1;
-				else $thrift_GetTask['OtherException'] += 1;
-ThriftController::log("**** WARNING: OtherException count={$thrift_GetTask['OtherException']}", LOG_DEBUG);				
-				unset($options['OtherException']);
-			} 
+			
+			$exceptions = array('DuplicateFileException', 'FileNotFoundException', 'UploadFailedException', 'OtherException');
+			foreach ($exceptions as $exception) {
+				if (isset($options[$exception])) {
+					if (!isset($thrift_GetTask[$exception])) $thrift_GetTask[$exception] = 1;
+					else $thrift_GetTask[$exception] += 1;
+	ThriftController::log("**** WARNING: {$exception} count={$thrift_GetTask[$exception]}", LOG_DEBUG);				
+					unset($options[$exception]);
+				} 
+			}
+			
+			
 			$thrift_GetTask = array_merge($thrift_GetTask, $options);
 			// handle Exception thrisholds, or save to DB
 			$shutdown = false;
@@ -286,6 +288,14 @@ ThriftController::log("**** WARNING: OtherException count={$thrift_GetTask['Othe
 				 * TODO: instead of shutdown, should we just skip the folder and try the next one, 
 				 * if any. at least just for this session. see GetFolderState for isNotFound
 				 */ 				
+				$shutdown = true;
+			}
+			if (isset($thrift_GetTask['FileNotFoundException']) && $thrift_GetTask['FileNotFoundException'] > CakePhpHelper::$FILENOTFOUND_EXCEPTION_THRESHOLD) {
+				$message = "FileNotFoundException exceeds threshold, count=".$thrift_GetTask['FileNotFoundException'];
+				$shutdown = true;
+			}
+			if (isset($thrift_GetTask['UploadFailedException']) && $thrift_GetTask['UploadFailedException'] > CakePhpHelper::$UPLOADFAILED_EXCEPTION_THRESHOLD) {
+				$message = "UploadFailedException exceeds threshold, count=".$thrift_GetTask['UploadFailedException'];
 				$shutdown = true;
 			}
 			if (isset($thrift_GetTask['OtherException']) && $thrift_GetTask['OtherException'] > CakePhpHelper::$OTHER_EXCEPTION_THRESHOLD) {
@@ -394,17 +404,23 @@ if (!isset($thrift_GetTask['FileUpdateCount']))
 	 * Import uploaded file into DB, staging server
 	 * @param $basepath String, the path on server to the folder used for staging uploaded files
 	 * @param $fullpath String, full path on server to uploaded file, inside $basepath
-	 * @param $origPath String, the native path on the device where the uploaded file was found
+	 * @param mixed, 
+	 * 		$origPath String, the native path on the device where the uploaded file was found
+	 * 		$options Array, $options[id] = uuid, $options[origPath] = $origPath 
 	 * @param $batchId int, unixtime(), used to find files uploaded at the same time
 	 * @param $isOriginal boolean, the uploaded file is the original file from device, not resampled to preview size
 	 */
 	public static function __importPhoto( $basepath, $fullpath, $origPath, $batchId, $isOriginal=false){
 		if (empty( ThriftController::$session)) throw new Exception("ERROR: CakePhpHelper::__importPhoto - Thrift Session is not defined");
+		if (is_array($origPath)) {
+			$asset_id = $origPath['id'];
+			$origPath = $origPath['origPath'];
+		} else $asset_id = null;
 		// setup meta data
 		$BATCH_ID = $batchId; // WARNING: session not preseved between calls
 		$PROVIDER_NAME = 'native-uploader';
 		$data = array();
-		$data['Asset']['id'] = null;
+		$data['Asset']['id'] = $asset_id;				// not null for UO task
 		$data['Asset']['batchId'] = $BATCH_ID;
 		$devicePrefix = ThriftController::$session['ThriftDevice']['id'].ThriftFolder::$DEVICE_SEPARATOR;
 		$device_origPath = $devicePrefix . $origPath;
@@ -419,11 +435,13 @@ if (!isset($thrift_GetTask['FileUpdateCount']))
 		 * 	pass to Asset::addIfNew()
 		 ***************************************************************/ 
 		$data['Asset']['replace-preview-with-original'] = $isOriginal;
-		$data['Asset']['replace-preview-by-native-path'] = $device_origPath;
+		if (empty($data['Asset']['id'])) {
+			$data['Asset']['replace-preview-by-native-path'] = $device_origPath;
+		}
 		$ret = true;
 		$Import = loadComponent('Import', ThriftController::$controller);
 		if (!isset(ThriftController::$controller->Asset)) ThriftController::$controller->Asset = ClassRegistry::init('Asset');
-		
+debug($data['Asset']);		
 // establish Auth/Permissionable		
 // Load/initialize PermissionableComponent, CakePhpHelper::after _loginFromAuthToken()
 App::import('Component', 'Permissionable.Permissionable');
@@ -618,18 +636,7 @@ ThriftController::log("***   ReportFolderNotFound\n >>>>>  folder = {$folderPath
 			$remaining_folders = $this->GetFolders($taskID);
         	return;
         }
-		/**
-		 * Report a failed upload.
-		 * @param $taskID snaphappi_api_TaskID
-		 * @param $folderPath String
-		 * @param $filePath String
-		 * throws SystemException
-		 */
-        public function ReportUploadFailed($taskID, $folderPath, $filePath) {
-ThriftController::log("***   ReportUploadFailed\n >>>>>>> folder = {$folderPath}     , file = {$filePath}    ", LOG_DEBUG);
-
-        	return;
-        }  		
+		
 		/**
 		 * Report that all files in a folder have been uploaded.
 		 * 	for watched=0, mark folder scan=0
@@ -848,7 +855,7 @@ ThriftController::log("*****   SystemException from RemoveFolder(): ".print_r($t
 		 * throw Exception on error
 		 *
 		 * @param $id TaskID,
-		 * @param $path String, 
+		 * @param $path String, path on client, i.e. nativePath
 		 * @param $data binary,
 		 * @param $UploadInfo, snaphappi_api_UploadInfo
 		 * @return void 
@@ -864,28 +871,28 @@ debug("###   UploadFile(), AuthToken={$id->AuthToken}, path={$path}");
         	$upload_basepath = cleanpath(Configure::read('path.fileUploader.folder_basepath').AppController::$userid, $os );
 			// make relpath from path
 			$relpath = str_replace(':','', $path);
-			$fullpath = cleanpath($upload_basepath.DS.$relpath);
+			$uploadpath = cleanpath($upload_basepath.DS.$relpath);
 			
 			try {
 				// save filedata in upload folder_basepath, still have to move to STAGING
-				if (!file_exists(dirname($fullpath))) {
+				if (!file_exists(dirname($uploadpath))) {
 					$old_umask = umask(0);
-					$ret = mkdir(dirname($fullpath), 0777, true);
+					$ret = mkdir(dirname($uploadpath), 0777, true);
 					umask($old_umask);
 				}
 				if (Configure::read('debug')) {
-					if (!file_exists($fullpath)) {
+					if (!file_exists($uploadpath)) {
 debug("DEBUG CONFIG ERROR: to test UploadFile, file should already exist in upload folder, skipping actual file upload");					
 					} 
 				} else {
-					$fp = fopen($fullpath,'w+b');
+					$fp = fopen($uploadpath,'w+b');
 					if (!$fp) throw new Exception('URTaskUpload->UploadFile(): error opening file handle, fopen()');
 					if (!fwrite($fp, $filedata)) throw new Exception('URTaskUpload->UploadFile(): error writing JPG data to file');
 					if (!fclose($fp)) throw new Exception('URTaskUpload->UploadFile(): error fclose()');
 				}
 
 				/*
-				 * at this point, the file is on the server at path=$fullpath
+				 * at this point, the file is on the server at path=$uploadpath
 				 * now we need to add to DB and staging server
 				 */
 				
@@ -895,11 +902,14 @@ debug("DEBUG CONFIG ERROR: to test UploadFile, file should already exist in uplo
 				
 				$isOriginal = $UploadInfo->UploadType === UploadType::Original;
 				if ($isOriginal) {  // UploadType::Original
-					// update Asset.isOriginal=='y' and move to json_src
-ThriftController::log("check for original at path={$fullpath}", LOG_DEBUG);					
+					$options = array(
+						'id'=>$UploadInfo->imageID,
+						'origPath'=>$path
+					);
+ThriftController::log("check for original at path={$uploadpath}", LOG_DEBUG);					
 	debug("UploadFile ORIGINAL. Begin UPDATE to DB *********************");					
-	debug("CakePhpHelper::__importPhoto({$upload_basepath}, {$fullpath}, {$path}, {$providerKey}, {$taskState['BatchId']})");
-					$response = CakePhpHelper::__importPhoto($upload_basepath, $fullpath, $path, $taskState['BatchId'], $isOriginal);	// autoRotate=false
+	debug("CakePhpHelper::__importPhoto({$upload_basepath}, {$uploadpath}, {$path}, {$providerKey}, {$taskState['BatchId']})");
+					$response = CakePhpHelper::__importPhoto($upload_basepath, $uploadpath, $options, $taskState['BatchId'], $isOriginal);	// autoRotate=false
 	debug("UploadFile. ******** UploadFile ORIGINAL, DB update complete *********************");	
 	debug($response);
 	ThriftController::log("************* UploadFile ORIGINAL, DB update complete ***********************", LOG_DEBUG);			 
@@ -924,8 +934,8 @@ ThriftController::log("check for original at path={$fullpath}", LOG_DEBUG);
 					
 				} else { // UploadType::Preview	
 	debug("UploadFile. Begin IMPORT to DB *********************");					
-	debug("CakePhpHelper::__importPhoto({$upload_basepath}, {$fullpath}, {$path}, {$providerKey}, {$taskState['BatchId']})");
-					$response = CakePhpHelper::__importPhoto($upload_basepath, $fullpath, $path, $taskState['BatchId'], $isOriginal);	// autoRotate=false
+	debug("CakePhpHelper::__importPhoto({$upload_basepath}, {$uploadpath}, {$path}, {$providerKey}, {$taskState['BatchId']})");
+					$response = CakePhpHelper::__importPhoto($upload_basepath, $uploadpath, $path, $taskState['BatchId'], $isOriginal);	// autoRotate=false
 	debug("UploadFile. ******** IMPORT to DB COMPLETE *********************");	
 	debug($response);
 	ThriftController::log("************* UploadFile. IMPORT to DB complete ***********************", LOG_DEBUG);			 
@@ -983,8 +993,52 @@ ThriftController::log("***   GetFiles, GetFilesToUpload ==>  deviceID={$taskID->
 				$targets[] = new snaphappi_api_UploadTarget($options);
 			}
         	return $targets;
-        }   		
-		
+        }   
+		/**
+		 * Get an ImageHash from DB
+		 * @param $taskID snaphappi_api_TaskID
+		 * @param ImageID, $ImageID, type ImageID
+		 * @return int(32), type ImageHash 
+		 * @throws (1: SystemException systemException);
+		 */
+		public function GetImageHash ($taskID, $imageID) {
+			
+		}
+		/**
+		 * ReportUploadFailedByID
+		 * @param $taskID snaphappi_api_TaskID
+		 * @param ImageID, $ImageID, type ImageID
+		 * @return void
+		 * @throws (1: SystemException systemException);
+		 */
+		public function ReportUploadFailedByID ($taskID, $imageID) {
+ThriftController::log("***   ReportUploadFailedByID\n >>>>>>> imageID = {$imageID}     , file = {$filePath}    ", LOG_DEBUG);
+			$taskState = CakePhpHelper::_setTaskState($id, array('UploadFailedException'=>1));
+			return;
+		}
+		/**
+		 * Report a failed upload.
+		 * @param $taskID snaphappi_api_TaskID
+		 * @param $folderPath String
+		 * @param $filePath String
+		 * throws SystemException
+		 */
+        public function ReportUploadFailed($taskID, $folderPath, $filePath) {
+ThriftController::log("***   ReportUploadFailed\n >>>>>>> folder = {$folderPath}     , file = {$filePath}    ", LOG_DEBUG);
+			$taskState = CakePhpHelper::_setTaskState($id, array('UploadFailedException'=>1));
+        	return;
+        }  		
+		/**
+		 * ReportFileNotFoundByID
+		 * @param $taskID snaphappi_api_TaskID
+		 * @param ImageID, $ImageID, type ImageID
+		 * @return void 
+		 * @throws (1: SystemException systemException);
+		 */
+		public function ReportFileNotFoundByID ($taskID, $imageID) {
+ThriftController::log("***   ReportFileNotFoundByID\n >>>>>  id={$imageID}, deviceID={$taskID->DeviceID}", LOG_DEBUG);         
+			$taskState = CakePhpHelper::_setTaskState($id, array('FileNotFoundException'=>1));
+		}
 		/**
 		 * Report that a file could not be found. 
 		 * @param $taskID snaphappi_api_TaskID
@@ -993,13 +1047,7 @@ ThriftController::log("***   GetFiles, GetFilesToUpload ==>  deviceID={$taskID->
 		 */
         public function ReportFileNotFound($taskID, $folderPath, $path) {
 ThriftController::log("***   ReportFileNotFound\n >>>>>  folder={$folderPath} file={$path}     , deviceID={$taskID->DeviceID}", LOG_DEBUG);         
-
-			$data['ThriftFolder']['native_path']=$folderPath;
-			$data['ThriftFolder']['is_not_found']=1;
-			$ret = CakePhpHelper::_setFolderState($taskID, $data);
-			// check GetFolders() to set TaskId->IsCancelled if none, 
-			// NOTE: notFound folders will be hidden for the current sessionId based on session modified time
-			$remaining_folders = $this->GetFolders($taskID);
+			$taskState = CakePhpHelper::_setTaskState($id, array('FileNotFoundException'=>1));
         	return;
         }		
 
