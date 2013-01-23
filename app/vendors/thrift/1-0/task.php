@@ -331,8 +331,7 @@ if (!isset($thrift_GetTask['FileUpdateCount']))
 // ThriftController::log("_getFiles() BEFORE FILTER, count=".count($device_files), LOG_DEBUG);			
 			if (!empty($folderPath)) {
 				FolderContains::$folderPath = $folderPath; 
-				FolderContains::$case_sensitive = Configure::read('Config.os')=='win' ? 0 : 1;
-				// TODO: This is WRONG. should be case sensitive based on the CLIENT OS, not server
+				FolderContains::$case_sensitive = strpos($folderPath,':\\') !== false;
 // ThriftController::log("_getFiles() case sensitive=".FolderContains::$case_sensitive." BEFORE filter=".print_r($device_files, true), LOG_DEBUG);				
 
 				$device_files = array_map('FolderContains::stripDeviceId', $device_files);
@@ -361,6 +360,10 @@ if (!isset($thrift_GetTask['FileUpdateCount']))
 			$data = ThriftController::$controller->ThriftFolder->getOriginalFiles(
 				$session['ThriftDevice'] 
 			);
+			$nativePath = $data[0]['Asset']['native_path'];
+			FolderContains::$case_sensitive = strpos($nativePath,':\\') !== false;
+// ThriftController::log("_getFiles() case sensitive=".FolderContains::$case_sensitive." BEFORE filter=".print_r($device_files, true), LOG_DEBUG);				
+			
 // ThriftController::log("_getFiles() BEFORE FILTER, count=".count($device_files), LOG_DEBUG);			
 			$data = array_map('FolderContains::stripDeviceIdFromNativePath', $data);
 			// filter for files in folderPath, or use SQL LIKE clause
@@ -987,10 +990,15 @@ ThriftController::log("***   GetFiles, GetFilesToUpload ==>  deviceID={$taskID->
 			$options = array('FilePath'=>null, 'Timestamp'=>123456789, 'Hash'=>0, 'FolderPath'=>'none');
 			foreach ($data as $row ) {
 				$options['FilePath'] = $row['Asset']['native_path'];
-				$options['Timestamp'] = $row[0]['DateTimeOriginal'];
+				// TODO: add drive separator to FilePath, i.e. C:
+				$options['ExifDateTime'] = $row[0]['DateTimeOriginal'];
 				$options['DateTimeOriginal'] = $row[0]['DateTimeOriginal'];
-				$options['Id'] = $row['Asset']['id'];
+				$options['ImageID'] = $row['Asset']['id'];
 				$targets[] = new snaphappi_api_UploadTarget($options);
+			}
+			if (empty($targets)) {
+				ThriftController::log("***   GetFilesToUpload: NO NEW FILE TO UPLOAD", LOG_DEBUG);					
+				CakePhpHelper::_setTaskState($taskID, array('IsCancelled'=>1));					
 			}
         	return $targets;
         }   
