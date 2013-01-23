@@ -142,5 +142,13 @@ debug($cmd);
 		}
 	}
 	
+	/**
+	 * get GIST image hash from asset_id, 
+	 * 	???: save in Asset.asset_hash
+	 */
+	function getImageHash($asset_id) {
+		
+	}
+	
 }
 ?>

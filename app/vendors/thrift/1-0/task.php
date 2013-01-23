@@ -537,6 +537,33 @@ debug($paData);
 		return $response;
 	}		
 	
+	function _getImageHash($taskID, $asset_id) {
+		if (!ThriftController::$session) CakePhpHelper::_loginFromAuthToken($taskID);
+		$session = & ThriftController::$session;
+		if (!isset(ThriftController::$controller->Asset)) ThriftController::$controller->Asset = ClassRegistry::init('Asset');
+		$options = array('conditions'=>array(
+			'Asset.id'=>$asset_id,
+			'Asset.provider_account_id'=>$session['ThriftDevice']['provider_account_id'],
+		));
+		$data = ThriftController::$controller->Asset->find('first', $options);
+		if (!empty($data['Asset']['asset_hash'])) {
+			
+			// TODO: change to image-hash i32 value
+			$image_hash = $data['Asset']['asset_hash'];  
+			
+		} else if ($data) {
+App::import('Component', 'Gist');
+ThriftController::$controller->Gist = & new GistComponent();
+ThriftController::$controller->Gist->initialize(ThriftController::$controller);
+			$image_hash =  ThriftController::$controller->Gist->getImageHash($asset_id);
+			ThriftController::$controller->Asset->id = $asset_id;
+			ThriftController::$controller->Asset->saveField('asset_hash', $image_hash);
+			
+		} else {
+			throw new Exception("ERROR: _getImageHash() asset_id not found, id={$asset_id}");
+		}
+		return $image_hash;
+	}
 }
 
 class snaphappi_api_TaskImpl implements snaphappi_api_TaskIf {
@@ -1003,14 +1030,17 @@ ThriftController::log("***   GetFiles, GetFilesToUpload ==>  deviceID={$taskID->
         	return $targets;
         }   
 		/**
-		 * Get an ImageHash from DB
+		 * Get an ImageHash from DB, 
+		 *  check Asset.asset_hash, if null then
+		 * 	call GistComponent::getImageHash [fullpath] see
 		 * @param $taskID snaphappi_api_TaskID
 		 * @param ImageID, $ImageID, type ImageID
 		 * @return int(32), type ImageHash 
 		 * @throws (1: SystemException systemException);
 		 */
 		public function GetImageHash ($taskID, $imageID) {
-			
+ThriftController::log("***   GetImageHash\n >>>>>>> imageID = {$imageID} ", LOG_DEBUG);
+			CakePhpHelper::_getImageHash($taskID, $imageID);
 		}
 		/**
 		 * ReportUploadFailedByID
