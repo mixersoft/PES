@@ -650,6 +650,7 @@ AND includes.asset_id='{$assetId}';
 			'recursive' => -1,
 			'conditions' => array( 
 				'Asset.owner_id' => $userid,
+				'Asset.provider_account_id'=>$newAsset['provider_account_id'],
 			),
 			'extras'=>array(
 				'show_edits'=>false,
@@ -667,6 +668,7 @@ AND includes.asset_id='{$assetId}';
 			if (!empty($newAsset['id'])) {
 				// used by ThriftAPI UO task, simple case, check by uuid
 				$checkDupes_options['conditions']['Asset.id'] = $newAsset['id'];
+				$checkDupes_options['conditions']['Asset.isOriginal'] = 'q';
 				
 			} else if (!empty($newAsset['replace-preview-by-native-path'])) {
 				/*
@@ -674,12 +676,8 @@ AND includes.asset_id='{$assetId}';
 				 */ 
 				$nativePath = $newAsset['replace-preview-by-native-path'];
 				$nativePath = mysql_real_escape_string($nativePath);
-				$checkDupes_options['conditions'] = array(
-						'Asset.provider_account_id'=>$newAsset['provider_account_id'],
-						'Asset.owner_id'=>$userid,
-						// filter in DB, or in PHP. see callback FolderContains::asset()
-						"Asset.native_path='{$nativePath}'",
-				);
+				$checkDupes_options['conditions']['Asset.isOriginal'] = 'q';
+				$checkDupes_options['conditions'][] = "Asset.native_path='{$nativePath}'";
 			} else {
 				// check by substr of json_exif
 				$SUBSTRING = substr($newAsset['json_exif'], 0, 282); 
