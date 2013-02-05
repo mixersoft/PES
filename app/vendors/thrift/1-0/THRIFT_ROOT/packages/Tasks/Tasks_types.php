@@ -155,7 +155,7 @@ class snaphappi_api_UploadTarget {
   static $_TSPEC;
 
   public $FilePath = null;
-  public $ExifDateTime = null;
+  public $ExifOriginalTimestamp = null;
   public $ImageID = null;
 
   public function __construct($vals=null) {
@@ -166,7 +166,7 @@ class snaphappi_api_UploadTarget {
           'type' => TType::STRING,
           ),
         2 => array(
-          'var' => 'ExifDateTime',
+          'var' => 'ExifOriginalTimestamp',
           'type' => TType::I32,
           ),
         3 => array(
@@ -179,8 +179,8 @@ class snaphappi_api_UploadTarget {
       if (isset($vals['FilePath'])) {
         $this->FilePath = $vals['FilePath'];
       }
-      if (isset($vals['ExifDateTime'])) {
-        $this->ExifDateTime = $vals['ExifDateTime'];
+      if (isset($vals['ExifOriginalTimestamp'])) {
+        $this->ExifOriginalTimestamp = $vals['ExifOriginalTimestamp'];
       }
       if (isset($vals['ImageID'])) {
         $this->ImageID = $vals['ImageID'];
@@ -216,7 +216,7 @@ class snaphappi_api_UploadTarget {
           break;
         case 2:
           if ($ftype == TType::I32) {
-            $xfer += $input->readI32($this->ExifDateTime);
+            $xfer += $input->readI32($this->ExifOriginalTimestamp);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -246,9 +246,9 @@ class snaphappi_api_UploadTarget {
       $xfer += $output->writeString($this->FilePath);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->ExifDateTime !== null) {
-      $xfer += $output->writeFieldBegin('ExifDateTime', TType::I32, 2);
-      $xfer += $output->writeI32($this->ExifDateTime);
+    if ($this->ExifOriginalTimestamp !== null) {
+      $xfer += $output->writeFieldBegin('ExifOriginalTimestamp', TType::I32, 2);
+      $xfer += $output->writeI32($this->ExifOriginalTimestamp);
       $xfer += $output->writeFieldEnd();
     }
     if ($this->ImageID !== null) {
@@ -355,12 +355,13 @@ class snaphappi_api_SystemException extends TException {
 
 }
 
-class snaphappi_api_URTaskState {
+class snaphappi_api_TaskState {
   static $_TSPEC;
 
   public $IsCancelled = null;
   public $FolderUpdateCount = null;
   public $FileUpdateCount = null;
+  public $FilesToUploadUpdateCount = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -377,6 +378,10 @@ class snaphappi_api_URTaskState {
           'var' => 'FileUpdateCount',
           'type' => TType::I32,
           ),
+        4 => array(
+          'var' => 'FilesToUploadUpdateCount',
+          'type' => TType::I32,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -389,11 +394,14 @@ class snaphappi_api_URTaskState {
       if (isset($vals['FileUpdateCount'])) {
         $this->FileUpdateCount = $vals['FileUpdateCount'];
       }
+      if (isset($vals['FilesToUploadUpdateCount'])) {
+        $this->FilesToUploadUpdateCount = $vals['FilesToUploadUpdateCount'];
+      }
     }
   }
 
   public function getName() {
-    return 'URTaskState';
+    return 'TaskState';
   }
 
   public function read($input)
@@ -432,6 +440,13 @@ class snaphappi_api_URTaskState {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 4:
+          if ($ftype == TType::I32) {
+            $xfer += $input->readI32($this->FilesToUploadUpdateCount);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -444,7 +459,7 @@ class snaphappi_api_URTaskState {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('URTaskState');
+    $xfer += $output->writeStructBegin('TaskState');
     if ($this->IsCancelled !== null) {
       $xfer += $output->writeFieldBegin('IsCancelled', TType::BOOL, 1);
       $xfer += $output->writeBool($this->IsCancelled);
@@ -460,6 +475,11 @@ class snaphappi_api_URTaskState {
       $xfer += $output->writeI32($this->FileUpdateCount);
       $xfer += $output->writeFieldEnd();
     }
+    if ($this->FilesToUploadUpdateCount !== null) {
+      $xfer += $output->writeFieldBegin('FilesToUploadUpdateCount', TType::I32, 4);
+      $xfer += $output->writeI32($this->FilesToUploadUpdateCount);
+      $xfer += $output->writeFieldEnd();
+    }
     $xfer += $output->writeFieldStop();
     $xfer += $output->writeStructEnd();
     return $xfer;
@@ -471,7 +491,7 @@ class snaphappi_api_UploadInfo {
   static $_TSPEC;
 
   public $UploadType = null;
-  public $imageID = null;
+  public $ImageID = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -481,7 +501,7 @@ class snaphappi_api_UploadInfo {
           'type' => TType::I32,
           ),
         2 => array(
-          'var' => 'imageID',
+          'var' => 'ImageID',
           'type' => TType::STRING,
           ),
         );
@@ -490,8 +510,8 @@ class snaphappi_api_UploadInfo {
       if (isset($vals['UploadType'])) {
         $this->UploadType = $vals['UploadType'];
       }
-      if (isset($vals['imageID'])) {
-        $this->imageID = $vals['imageID'];
+      if (isset($vals['ImageID'])) {
+        $this->ImageID = $vals['ImageID'];
       }
     }
   }
@@ -524,7 +544,7 @@ class snaphappi_api_UploadInfo {
           break;
         case 2:
           if ($ftype == TType::STRING) {
-            $xfer += $input->readString($this->imageID);
+            $xfer += $input->readString($this->ImageID);
           } else {
             $xfer += $input->skip($ftype);
           }
@@ -547,9 +567,9 @@ class snaphappi_api_UploadInfo {
       $xfer += $output->writeI32($this->UploadType);
       $xfer += $output->writeFieldEnd();
     }
-    if ($this->imageID !== null) {
-      $xfer += $output->writeFieldBegin('imageID', TType::STRING, 2);
-      $xfer += $output->writeString($this->imageID);
+    if ($this->ImageID !== null) {
+      $xfer += $output->writeFieldBegin('ImageID', TType::STRING, 2);
+      $xfer += $output->writeString($this->ImageID);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

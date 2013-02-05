@@ -162,6 +162,7 @@ ThriftController::log("*****   SystemException from _loginFromAuthToken(): ".pri
 				$thrift_device_id, $isWatched
 			);
 // ThriftController::log("_getFolderState, session=".print_r($session, true), LOG_DEBUG);			
+// ThriftController::log("_getFolderState, thrift_GetFolders=".print_r($thrift_GetFolders, true), LOG_DEBUG);	
 			$folders = array();
 			foreach ($thrift_GetFolders as $i=>$row){
 				if ($row['ThriftFolder']['is_not_found']) {
@@ -570,11 +571,11 @@ class snaphappi_api_TaskImpl implements snaphappi_api_TaskIf {
 	
         /**
 		 * @param $taskID TaskID
-		 * @return URTaskState, 			 
-		 * 	URTaskState->IsCancelled Boolean (optional)
-		 *  URTaskState->FolderUpdateCount Int (optional), unique id for Folder state
-		 *  URTaskState->FileUpdateCount Int (optional), unique id for File state
-		 *  URTaskState->DeviceId UUID (optional), unique id for desktop device
+		 * @return TaskState, 			 
+		 * 	TaskState->IsCancelled Boolean (optional)
+		 *  TaskState->FolderUpdateCount Int (optional), unique id for Folder state
+		 *  TaskState->FileUpdateCount Int (optional), unique id for File state
+		 *  TaskState->DeviceId UUID (optional), unique id for desktop device
 		 */
         public function GetState($taskID) {
 // ThriftController::log("***   GetState, deviceID={$taskID->DeviceID}", LOG_DEBUG);    
@@ -586,7 +587,7 @@ ThriftController::log("***   GetState, state=".print_r($state,true), LOG_DEBUG);
 			} else {
 // ThriftController::log($state, LOG_DEBUG); 				
 			}
-        	$taskState = new snaphappi_api_URTaskState($state);
+        	$taskState = new snaphappi_api_TaskState($state);
         	return $taskState;
         }
         	
@@ -614,7 +615,7 @@ ThriftController::log("***   GetFolders: NO NEW FOLDERS TO SCAN", LOG_DEBUG);
 				}
 			}				
 			$folders = Set::extract('{n}.folder_path',$folders);
-ThriftController::log($folders, LOG_DEBUG);				
+// ThriftController::log($folders, LOG_DEBUG);				
 			return $folders;
         }
 		
@@ -933,7 +934,7 @@ debug("DEBUG CONFIG ERROR: to test UploadFile, file should already exist in uplo
 				$isOriginal = $UploadInfo->UploadType === UploadType::Original;
 				if ($isOriginal) {  // UploadType::Original
 					$options = array(
-						'id'=>$UploadInfo->imageID,
+						'id'=>$UploadInfo->ImageID,
 						'origPath'=>$path
 					);
 ThriftController::log("check for original at path={$uploadpath}", LOG_DEBUG);					
@@ -1018,7 +1019,7 @@ ThriftController::log("***   GetFiles, GetFilesToUpload ==>  deviceID={$taskID->
 			foreach ($data as $row ) {
 				$options['FilePath'] = $row['Asset']['native_path'];
 				// TODO: add drive separator to FilePath, i.e. C:
-				$options['ExifDateTime'] = $row[0]['DateTimeOriginal'];
+				$options['ExifOriginalTimestamp'] = $row[0]['DateTimeOriginal'];
 				$options['DateTimeOriginal'] = $row[0]['DateTimeOriginal'];
 				$options['ImageID'] = $row['Asset']['id'];
 				$targets[] = new snaphappi_api_UploadTarget($options);

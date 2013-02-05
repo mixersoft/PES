@@ -122,6 +122,7 @@ class ThriftFolder extends AppModel {
 		$options = $this->_addUploadCount($options);
 // ThriftController::log($options, LOG_DEBUG);		
 		$data = $this->find('all', $options);
+// ThriftController::log($options, LOG_DEBUG);			
 		Sanitize::clean($data);
 		return $data;
 	}
@@ -157,6 +158,13 @@ class ThriftFolder extends AppModel {
 		return $this->find('first', $options);
 	}
 	
+	public function rescan($device_UUID, $pa_id) {
+		$SQL = "UPDATE thrift_folders t JOIN thrift_devices d ON d.id=t.thrift_device_id
+SET t.is_scanned=0 WHERE d.device_UUID='$device_UUID' AND d.provider_account_id='$pa_id';
+		";
+		$this->query($SQL);
+		return;	
+	}
 	
 	/**
 	 * Get array of files which have already been uploaded under the given folder.

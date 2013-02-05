@@ -650,7 +650,6 @@ if (isset($this->params['url']['new-taskid']))	{
 
 			Session::write('thrift-task.AuthToken', $data['ProviderAccount']['auth_token']);
 			
-			
 			/*
 			 * get valid session_id
 			 */		
@@ -723,6 +722,7 @@ if (isset($this->params['url']['new-taskid']))	{
 				 * end TESTING
 				 */ 
 			} else if ($taskID = Session::read('thrift-task')){
+// debug($taskID);				
 				// for this action, always discard $taskID->Session and create NEW one
 				$session = $this->ThriftSession->newSession();
 				$taskID['Session'] = $session['ThriftSession']['id'];
@@ -748,6 +748,13 @@ if (isset($this->params['url']['new-taskid']))	{
 				throw new Exception("Error: taskID is still empty");
 			}
 			
+			/*
+			 * force scan of all unwatched folders 
+			 */
+			if (isset($this->params['url']['rescan'])) {
+				// debug($data['ProviderAccount']);
+				$this->ThriftSession->ThriftDevice->ThriftFolder->rescan($taskID['DeviceID'],$data['ProviderAccount']['id']);
+			}
 		} catch (Exception $ex) {
 			$error = $ex->getMessage(); 
 			switch ($error) {
@@ -772,6 +779,9 @@ if (isset($this->params['url']['new-taskid']))	{
 	/*
 	 * native SnappiUploader (UploadHelperApp) upload
 	 * only returns valid data when DeviceID available
+	 * test: 
+	 * 		http://snappi-dev/my/uploader_folders/.json?forcexhr=1
+	 * 		http://snappi-dev/thrift/test/api:1-0/Task/1?device=1&reset=1
 	 */
 	function uploader_folders () {
 		$forceXHR = setXHRDebug($this, 0, 1);

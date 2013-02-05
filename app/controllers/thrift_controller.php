@@ -205,7 +205,10 @@ debug(Session::read());	// THRIFT SESSION
 		$done = $this->renderXHRByRequest('json', null, null , 0);
 	}
 	/*
-	 * to test UploadFile, use http://snappi-dev/thrift/test/api:1-0/Task/1 on 2015.JPG
+	 * to test UploadFile, for testing:
+	 * 		http://snappi-dev/thrift/task_helper/fn:PauseUpload/.json?forcexhr=1
+	 *  	http://snappi-dev/thrift/test/api:1-0/Task/1 
+	 * 		http://snappi-dev/thrift/test/api:1-0/Task/1?device=1&reset=1
 	 */
 	function test($service, $debug = 0) {
 		Configure::write('debug', $debug);
@@ -311,7 +314,7 @@ debug(Session::read());
 		 */
 		$state = $Task->GetState($taskId);
 		debug("GetState() result=".print_r($state,true));
-debug(Session::read());		
+// debug(Session::read());		
 // $this->render('/elements/sql_dump');
 // return;			
 		/*
@@ -319,8 +322,8 @@ debug(Session::read());
 		 */
 		$folders = $Task->GetFolders($taskId);
 		debug("GetFolders() result=".print_r($folders,true));
-// $this->render('/elements/sql_dump');
-// return;			
+$this->render('/elements/sql_dump');
+return;			
 		if (count($folders)) {
 			/*
 			 * Test GetFiles

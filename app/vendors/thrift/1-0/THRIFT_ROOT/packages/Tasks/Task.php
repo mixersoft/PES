@@ -2618,7 +2618,7 @@ class snaphappi_api_Task_GetState_result {
         0 => array(
           'var' => 'success',
           'type' => TType::STRUCT,
-          'class' => 'snaphappi_api_URTaskState',
+          'class' => 'snaphappi_api_TaskState',
           ),
         1 => array(
           'var' => 'systemException',
@@ -2658,7 +2658,7 @@ class snaphappi_api_Task_GetState_result {
       {
         case 0:
           if ($ftype == TType::STRUCT) {
-            $this->success = new snaphappi_api_URTaskState();
+            $this->success = new snaphappi_api_TaskState();
             $xfer += $this->success->read($input);
           } else {
             $xfer += $input->skip($ftype);
