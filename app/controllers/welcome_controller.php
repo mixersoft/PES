@@ -26,38 +26,34 @@ class WelcomeController extends AppController {
 		} 
 
 	}
-	function remixed(){
-		$this->layout = false;
-	}
-	
+
 	function index() {
 		$this->redirect(array('action'=>'preview', 'show'));
 	}
 
+
+/*
+ * these actions are disallowed under robots.txt
+ */
+
 	function home() {
 		if ($this->params['url']['url'] == "/") {
-			$this->redirect("/welcome/home", 301, true);
+			$this->redirect("/welcome/preview", 301, true);
 		}
 	}
-
-	function test(){
+ 	function test(){
 		$this->autoRender=false;
 		pr(Configure::read('Config'));
 	}
-
 	function connect(){
 	}
-
 	function about() {
 	}
-
 	function faq() {
 	}
-
 	function blog() {
 		$this->redirect('http://www.facebook.com/pages/Snaphappi/16486082015', null, true);
 	}
-
 	function forums($encoded_url = null) {
 		if ($encoded_url) {
 			$target = base64_decode($encoded_url);
@@ -66,8 +62,11 @@ class WelcomeController extends AppController {
 			$this->redirect('http://www.facebook.com/pages/Snaphappi/16486082015#/board.php?uid=16486082015', null, true);
 		}
 	}
-
 	function tos() {
+	}
+	
+	function remixed(){
+		$this->layout = false;
 	}
 }
 

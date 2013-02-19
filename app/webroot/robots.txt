@@ -1,0 +1,9 @@
+# robotstxt.org/
+Sitemap: http://thats-me.snaphappi.com/sitemap.xml
+
+User-agent: *
+Disallow: /*/
+Allow: /
+Allow: /welcome/preview
+
+
