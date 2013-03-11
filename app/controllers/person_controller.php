@@ -99,17 +99,31 @@ class PersonController extends UsersController {
 	 * WARNING: backdoor action for oDesk project
 	 */
 	function odesk_photos (){
+		$ALLOWED_BY_USERNAME = array('newyork', 'paris', 'venice', 'bali');
 		$id = $this->passedArgs[0];
 		if (strpos($id, '12345678') === 0) {
 			$data = $this->User->read(null, $id );
-			$ret = $this->Auth->login($data);
-			$this->__cacheAuth();
-			$this->Permissionable->initialize($this);
-			$this->action='photos'; 
-			$this->photos($id);
+		} else if (in_array($id, $ALLOWED_BY_USERNAME )) {
+			$data = $this->User->find('first', array('conditions'=>array('User.username'=>$id)) );	
+			$id = $data['User']['id'];
 		} else {
 			exit;
 		}
+		$ret = $this->Auth->login($data);
+		$this->__cacheAuth();
+		$this->Permissionable->initialize($this);
+		$this->action='photos';
+		/*
+		 * allow cross-domain XHR, instead of jsonp
+		 * 	from thats-me.snaphappi.com for timeline app
+		 *  from anything from snaphappi.com 
+		 * TODO: I use jsonp somewhere else, WMS app(?) replace with this pattern
+		 */ 
+		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
+		if (preg_match('/[snaphappi\.com | thats\-me]/i', $origin)) {
+			echo header("Access-Control-Allow-Origin: {$origin}");
+		}
+		$this->photos($id);
 	}	
 
 	function beforeRender() {
