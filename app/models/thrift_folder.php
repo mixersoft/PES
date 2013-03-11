@@ -160,7 +160,7 @@ class ThriftFolder extends AppModel {
 	
 	public function rescan($device_UUID, $pa_id) {
 		$SQL = "UPDATE thrift_folders t JOIN thrift_devices d ON d.id=t.thrift_device_id
-SET t.is_scanned=0 WHERE d.device_UUID='$device_UUID' AND d.provider_account_id='$pa_id';
+SET t.is_scanned=0, t.count=NULL WHERE d.device_UUID='$device_UUID' AND d.provider_account_id='$pa_id';
 		";
 		$this->query($SQL);
 		return;	

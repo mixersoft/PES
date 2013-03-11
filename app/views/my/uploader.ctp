@@ -104,7 +104,7 @@
 				<li class='btn red rounded-5' onclick='SNAPPI.ThriftUploader.action.refresh(false);'>
 					Stop
 				</li>
-				<li class='label device-label'>Device: <?php  echo $device ? $device['label'] : 'unknown';  ?></li>
+				<li class='label device-label'>Device: <?php  echo !empty($device) ? $device['label'] : 'unknown';  ?></li>
 			</ul>	
 			<?php
 				if (!empty($folders)) {
