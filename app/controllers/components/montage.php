@@ -98,25 +98,51 @@ class MontageComponent extends Object
 	 * NOTE: montage component used by /person/photos, etc.
 	 * 	NOT used by /pagemaker/arrangement/
 	 */
-	function getArrangement($Auditions, $options=16){
+	function getArrangement($Auditions, $options){
 		if (is_array($options)) {
-			extract($options);	// $count, $allowed_ratios
+			extract($options);	// $role_count, $allowed_ratios
 		} 
-		if (!isset($count)) $count = 16;
+		if (!isset($role_count)) $role_count = 12;
+		
 		// config params for montage
 		$TIME_LIMIT_SEC = 10;
-		$MAX_WIDTH = 940; 	// .container_16 .grid_16
-		$MAX_HEIGHT = 940;
-		$ALLOWED_RATIOS = array('h'=>'544:960', 'v'=>'7:10');  // default for montage
+		
+		$MAX_WIDTH = isset($maxW) ? $maxW : 940; 	// .container_16 .grid_16
+		$MAX_HEIGHT = isset($maxH) ? $maxH :940;
+		if (isset($maxW) && isset($maxH)) {
+			if ($maxW > $maxH) 	$ALLOWED_RATIOS = array('h'=>"{$maxW}:{$maxH}", 'v'=>'1:1');  
+			else $ALLOWED_RATIOS = array('h'=>'1:1', 'v'=>"{$maxW}:{$maxH}");  
+		} else {
+			$ALLOWED_RATIOS = array('h'=>'544:960', 'v'=>'7:10');  // default for montage
+		}
+		
 		$CROP_VARIANCE_MAX = 0.20;
 		
 		set_time_limit ( $TIME_LIMIT_SEC );
 		if (isset($Auditions['CastingCall']['Auditions'])) $Auditions = $Auditions['CastingCall']['Auditions'];
 		$photos = $Auditions['Audition'];
 		$baseurl = $Auditions['Baseurl'];
-		// $count = $count <= 16 ? $count : 16;
 		$sortedPhotos = $this->__sortPhotos($this->__getPhotos($photos, $baseurl), null);
-		$layoutPhotos = count($sortedPhotos) > $count ? array_slice($sortedPhotos, 0, $count) : $sortedPhotos;
+		/*
+		 * adjust $role_count per page to keep a min count per page
+		 */
+		$total = count($sortedPhotos);
+		$TARGET_MIN_ROLES = 5;  
+		if ($total > $role_count) {
+			while( 0 < ($total % $role_count) && ($total % $role_count) < $TARGET_MIN_ROLES ) {
+				$role_count--;
+				if ($role_count == 2) {
+					$role_count = ceil($total/2);
+					break;
+				}
+			};
+			$layoutPhotos = array_slice($sortedPhotos, 0, $role_count-1);
+			$remainingPhotos =  array_slice($sortedPhotos, $role_count-1);
+		} 
+		else {
+			$layoutPhotos = $sortedPhotos;
+			$remainingPhotos = array();
+		}
 // debug($layoutPhotos); exit;		
 
 		/*
@@ -135,12 +161,18 @@ Configure::write('debug', 0);
 		}
 		$collage = new ClusterCollage($CROP_VARIANCE_MAX, $MAX_HEIGHT, $MAX_WIDTH);
 		$collage->setAllowedRatios($ALLOWED_RATIOS);  //H:W
+		
 		try {
-			$collage->setPhotos($layoutPhotos, 'topRatedCutoff');
-			$arrangement = $collage->getArrangement();
-			$this->__normalize($arrangement);
+			do {
+				$collage->setPhotos($layoutPhotos, 'topRatedCutoff');
+				$arrangement = $collage->getArrangement();
+				$this->__normalize($arrangement);
 			// if ($forceXHR) debug($arrangement);
-			return $arrangement;							
+				$layoutPhotos = array_slice($remainingPhotos, 0, $role_count-1);
+				$remainingPhotos =  array_slice($remainingPhotos, $role_count-1);
+				$pages[] = $arrangement;
+			} while (count($layoutPhotos));
+			return count($pages)==1 ? $pages[0] : $pages;							
 		} catch (Exception $e) {
 			return false;
 		}

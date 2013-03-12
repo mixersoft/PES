@@ -215,7 +215,9 @@ console.error('DEPRECATE: SNAPPI.PM.cfg.fn_DISPLAY_SIZE() in main()');
 	    	}
 	    }
 	namespace('CFG');	// make global
-	CFG = _CFG;
+	CFG = CFG || {};
+	CFG.DEBUG = _CFG.DEBUG;
+	CFG.PROD = _CFG.PROD;
 	
 	/**
 	 * @params hashkey mixed, use this value to determine staticHost index
@@ -437,6 +439,7 @@ console.warn("Node.ynode() may not be compatible with ie8");
 			'hint':['snappi-hint'],
 			'preview': ['snappi-dialog-aui', 'snappi-auditions', 'snappi-hint'],
 			'alert': ['snappi-dialog-aui'],
+			'curated-stories': ['node', 'event', 'event-custom', 'snappi-sortedhash', 'snappi-auditions', 'snappi-ui-helpers', 'pagemaker-base','snappi-dialog-aui'],
 			'pagemaker-plugin': ['pagemaker-base','snappi-dialog-aui'],
 			'thrift_API': ['snappi-ui-helpers','snappi-io', 'snappi-io-helpers','snappi-menu-aui','snappi-thrift-ui']
 		}
@@ -727,12 +730,14 @@ console.warn("Node.ynode() may not be compatible with ie8");
 	    var defaultCfg, o = {};		
 	    try {
 	        // get host from AIR bootstrap
-	        var host = SNAPPI.isAIR ? SNAPPI.AIR.host : window.location.host;
-	        if (SNAPPI.AIR.debug) {
-	        	PAGE.isDev = true;
+	        var host = PAGE.snappi_comboHost || window.location.host;
+	        if (SNAPPI.isAIR)  {
+	        	host = SNAPPI.AIR.host;
+		        if (SNAPPI.AIR.debug) {
+		        	PAGE.isDev = true;
+		        }
 	        }
 	    } catch (e) {
-	        host = window.location.host;	// hostname:port number
 	    }
         //                console.log("host=" + host);
 	    o.host = host;

@@ -322,7 +322,9 @@ if (!empty($this->passedArgs['all-shots'])) {
  			$this->Montage = loadComponent('Montage', $this);
 			$Auditions = $castingCall['CastingCall']['Auditions'];
 			$options = array();
-			$options['count'] = 9;
+			$options['count'] = isset($this->passedArgs['count']) ? $this->passedArgs['count'] :  9;
+			if (isset($this->passedArgs['w'])) $options['maxW'] = $this->passedArgs['w'];
+			if (isset($this->passedArgs['h'])) $options['maxH'] = $this->passedArgs['h'];
 			// $options['count'] = round(count($Auditions['Audition'])/2);
 			// $options['allowed_ratios'] = array('h'=>'1:'.round($options['count']/3), 'v'=>'1:'.round($options['count']/4));  // set for Hscroll
 			$this->viewVars['jsonData']['montage'] = $this->Montage->getArrangement($Auditions, $options);

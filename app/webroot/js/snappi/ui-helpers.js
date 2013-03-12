@@ -860,7 +860,7 @@ console.error("Error: Plugin should already be ready, PM.PageMakerPlugin.isLoade
 		},
 		get_Montage : function(cfg) {
 			try { // Plugin loaded+launched, run directly
-				var ready = PM.PageMakerPlugin.isLoaded && PM.PageMakerPlugin.isInitialized;
+				var ready = SNAPPI.PM.PageMakerPlugin.isLoaded && SNAPPI.PM.PageMakerPlugin.isInitialized;
 				if (!ready) throw new Error();
 				// var scrollView = PM.pageMakerPlugin.player.scrollView;
 				var create = UIHelper.create.getCreate(cfg);
@@ -942,7 +942,7 @@ console.error("Error: Plugin should already be ready, PM.PageMakerPlugin.isLoade
 			cfg.stageType = 'montage';
 			cfg.noHeader = true;
 			cfg.getStage = UIHelper.create.getStage_montage;
-			// cfg.thumbnailMarkup = '<article class="FigureBox Montage"><figure><img src="{src}" title="{title}" linkTo="{linkTo}" style="height:{height}px;width:{width}px;left:{left}px;top:{top}px;border:{borderSpacing}px solid transparent;"></figure></article>';
+			// cfg.thumbnailMarkup = '<article class="FigureBox Montage"><figure><img src="{src}" title="{title}" linkTo="{linkTo}" style="height:{height}px;width:{width}px;left:{left}px;top:{top}px;border:{borderWidth}"></figure></article>';
 			cfg.isMontage = true;	// uses Pr.getThumbPrefix to get min thumb size by crop
 			cfg.spacing = 1;		// border spacing
 			cfg.allowedRatios = {'h':'544:960', 'v':'7:10'}; 
@@ -1045,7 +1045,7 @@ console.info('Getting Story for rolecount='+roleCount);
 					if (!castingCall.auditionSH) { 
 						var auditionSH = SNAPPI.Auditions.parseCastingCall(
 								castingCall, 
-								null, 
+								'snappi', 
 								null, 
 								onDuplicate);
 						}

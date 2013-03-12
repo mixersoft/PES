@@ -199,7 +199,9 @@ console.info("PageMakerPlugin.load(): _Y.fire('snappi-pm:pagemaker-load-complete
 	    	}
 	    }
 	namespace('CFG');
-	CFG = _CFG;
+	CFG = CFG || {};
+	CFG.DEBUG = _CFG.DEBUG;
+	CFG.PROD = _CFG.PROD;
 	/**
 	 * @params hashkey mixed, use this value to determine staticHost index
 	 * @return host, string, same form as window.location.host, i.e. hostname:port
@@ -447,9 +449,14 @@ console.info("PageMakerPlugin.load(): _Y.fire('snappi-pm:pagemaker-load-complete
 	    var defaultCfg, o = {};		
 	    try {
 	        // get host from AIR bootstrap
-	        var host = SNAPPI.isAIR ? SNAPPI.AIR.host : window.location.host;
+	        var host = PAGE.snappi_comboHost || window.location.host;
+	        if (SNAPPI.isAIR)  {
+	        	host = SNAPPI.AIR.host;
+		        if (SNAPPI.AIR.debug) {
+		        	PAGE.isDev = true;
+		        }
+	        }
 	    } catch (e) {
-	        host = window.location.host;	// hostname:port number
 	    }
         //                console.log("host=" + host);
 	    o.host = host;
