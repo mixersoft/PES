@@ -427,6 +427,124 @@ class WorkordersController extends AppController {
 		}
 					
 	}	
+
+
+	/**
+	 * for testing/script/command-shell only
+	 * same as action=photos except
+	 *		$paginateArray['extras']['show_hidden_shots']=1;
+	 *		$paginateArray['extras']['hide_SharedEdits']=1;	// TODO:??? use score, if any, for bestshot here? 
+	 * 		$paginateArray['perpage']=999;					// TODO: how do we deal with paging?
+	 * 		JSON output only
+	 */
+	function event_group($id) {
+		$forceXHR = setXHRDebug($this, 0);
+		$perpage = !empty($this->passedArgs['perpage']) ? $this->passedArgs['perpage'] : 999;
+		$required_options['extras']['join_shots']=0;			
+		$required_options['extras']['show_hidden_shots']=1;
+		$required_options['extras']['hide_SharedEdits']=0;
+		// $default_options['extras']['only_bestshot_system']=0;
+		
+		
+		/*
+		 * test and debug code. $config['isDev']
+		 */ 
+		if (Configure::read('isDev')) {
+			if (!isset($this->passedArgs['reset']) || !empty($this->passedArgs['reset'])) {
+				// default is to delete old events, use /reset:0 to preserve 
+				$reset_SQL = "";
+	  			// $this->Workorder->query($reset_SQL);
+			}
+			
+			if ($this->RequestHandler->ext !== 'json') Configure::write('debug',0);	// DEBUG
+			// debug: see test results
+			// $markup = "<A href=':url' target='_blank'>click here</A>";
+			// $show_shots['see-all-shots'] = str_replace(':url',Router::url(array('action'=>'shots', 0=>$id, 'perpage'=>10,  'all-shots'=>1), true), $markup);
+			// $show_shots['see-only-script-shots'] = str_replace(':url',Router::url(array('action'=>'shots', 0=>$id, 'perpage'=>10, 'only-script-shots'=>1), true), $markup);
+			// debug($show_shots);
+		}
+		/*
+		 * end test and debug code
+		 */ 
+		
+		$this->layout = 'snappi';
+		$this->helpers[] = 'Time';
+
+		// paginate 
+		$SOURCE_MODEL = Session::read("WMS.{$id}.Workorder.source_model"); // WorkordersController::$source_model;
+		$paginateModel = 'Asset';
+		$Model = ClassRegistry::init($paginateModel);
+		// map correct paginateArray based on $SOURCE_MODEL
+		$this->paginate[$paginateModel] = $this->paginate[$SOURCE_MODEL.$paginateModel];
+		$this->paginate[$paginateModel]['perpage'] = $perpage; 	// get all photos for image-group processing	
+		$Model->Behaviors->attach('Pageable');
+		$Model->Behaviors->attach('WorkorderPermissionable', array('type'=>$this->modelClass, 'uuid'=>$id));
+		$paginateArray = Set::merge($this->paginate[$paginateModel], $required_options);
+		// TODO: add /raw:1 to filter by UserEdit.rating only, and skip SharedEdit.score
+		$paginateArray['extras']['group_as_shot_permission'] = $Model->Behaviors->attached('WorkorderPermissionable');
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
+		/*
+		 *  force extras & sort=dateTaken for event-group
+		 */ 
+		$paginateArray['order'] = array('`Asset`.dateTaken');
+		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
+		$pageData = $this->paginate($paginateModel);
+		$pageData = Set::extract($pageData, "{n}.{$paginateModel}");
+		// end paginate
+
+		/*
+		 * get event_group output for castingCall as JSON string
+		 */ 
+		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
+		if (!isset($this->Gist)) $this->Gist = loadComponent('Gist', $this); 
+		$castingCall = $this->CastingCall->getCastingCall($pageData, $cache=false);
+		
+		$timescale = empty($this->passedArgs['timescale']) ? null: $this->passedArgs['timescale'];
+		$event_groups = $this->Gist->getEventGroupFromCC($castingCall, $timescale);
+		/*
+		 * import event_group output as Usershots with correct ROLE/priority
+		 */ 
+		$script_owner = empty($this->passedArgs['circle']) ? 'image-group' : 'image-group-circles';
+		$ScriptUser_options = array(
+			'conditions'=>array(
+				'primary_group_id'=>Configure::read('lookup.roles.SCRIPT'),
+				'username'=>$script_owner,
+			)
+		);
+		$data = ClassRegistry::init('User')->find('first', $ScriptUser_options);
+		// change user to role=SCRIPT
+		AppController::$userid = $data['User']['id'];
+		AppController::$role = 'SCRIPT'; 		// from conditions, disables assignment check in WorkordersPermissionable
+		// create Script Usershots
+		$newShots = array();
+		$Usershot = ClassRegistry::init('Usershot');
+		/**
+		 * Save event groups. where(?)
+		 */
+		// foreach($event_groups as $i => $groupAsShot_aids) {
+		// }
+		
+		
+		if (1 || $this->RequestHandler->ext == 'json') {
+			// debug GistComponent output		
+			$event_groups = json_encode($event_groups);
+			$this->log(	"GistComponent->getEventGroupFromCC(): filtered output", LOG_DEBUG);
+			$this->log(	$event_groups, LOG_DEBUG);
+			// debug($event_groups);
+			$this->viewVars['jsonData']['eventGroups'] = $event_groups;
+			// $this->viewVars['jsonData']['castingCall'] = $castingCall;
+			$done = $this->renderXHRByRequest('json');
+			if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
+		} else {
+			// $this->render('/elements/dumpSQL');
+			$this->Session->setFlash(count($event_groups)." Events found");
+			$next = $_SERVER['HTTP_REFERER'];
+			$this->redirect($next, null, true);		
+		}
+					
+	}	
+
+
 	/**
 	 * /workorder/photos get photos for workorders, uses WorkorderPermissionable for ACL
 	 * @param $id String, $workorder_id
