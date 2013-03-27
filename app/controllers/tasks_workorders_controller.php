@@ -542,12 +542,11 @@ $this->params['paging'] = $paging;
 		// }
 		
 		if (1 || $this->RequestHandler->ext == 'json') {
-			// debug GistComponent output		
-			$event_groups = json_encode($event_groups);
-			$this->log(	"GistComponent->getImageGroupFromCC(): filtered output", LOG_DEBUG);
-			$this->log(	$event_groups, LOG_DEBUG);
-			// debug($event_groups);
 			$this->viewVars['jsonData']['eventGroups'] = $event_groups;
+			// debug GistComponent output		
+			$this->log(	"GistComponent->getImageGroupFromCC(): filtered output", LOG_DEBUG);
+			$this->log(	json_encode($event_groups), LOG_DEBUG);
+			// debug($event_groups);
 			// $this->viewVars['jsonData']['castingCall'] = $castingCall;
 			$done = $this->renderXHRByRequest('json');
 			if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
