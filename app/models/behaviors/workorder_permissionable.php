@@ -121,6 +121,10 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
 	function getPaginatePhotosByWorkorderId ($woid , $paginate = array()) {
 		// if (in_array(AppController::$role, array('EDITOR', 'MANAGER', 'OPERATOR', 'SCRIPT')) === false) return $paginate;
 		$paginate['permissionable'] = false;
+		if (AppController::$role=='SCRIPT') {
+			unset($joins[1]['conditions']['`Workorder`.manager_id']);
+			$editorid = Session::read('Auth.User.id');	
+		} else $editorid = AppController::$userid;		
 		$joins[] = array(
 			'table'=>'snappi_wms.assets_workorders',
 			'alias'=>'AssetsWorkorder',
@@ -145,10 +149,9 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
 			'type'=>'INNER',
 			'conditions'=>array(
 				'`Editor`.id = `Workorder`.manager_id',
-				"`Editor`.`user_id`" =>AppController::$userid,
+				"`Editor`.`user_id`" => $editorid,
 			),
 		);		
-		if (AppController::$role=='SCRIPT') unset($joins[1]['conditions']['`Workorder`.manager_id']);
 		if (!empty($joins)) $paginate['joins'] = @mergeAsArray($paginate['joins'], $joins);
 		if (!empty($conditions)) $paginate['conditions'] = @mergeAsArray($paginate['conditions'], $conditions);
 		return $paginate;	

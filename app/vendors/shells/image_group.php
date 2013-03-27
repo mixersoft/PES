@@ -40,7 +40,7 @@ class ImageGroupShell extends Shell {
 		// new AppController() to set $userid and $role for script
 		App::import('Core', 'Controller'); 
 		// App::import('Controller', 'App'); 
-		AppController::$userid = $data['User']['id'];
+		AppController::$userid = $data['User']['id'];		// acting as SCRIPT user=image-group
 		AppController::$role = 'SCRIPT'; 		// from conditions
 		
 		/*

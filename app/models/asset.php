@@ -317,7 +317,7 @@ AND includes.asset_id='{$assetId}';
 					);	
 			}
 			$fields = array('`Shot`.id AS `shot_id`', '`Shot`.owner_id AS `shot_owner_id`', '`Shot`.assets_groupshot_count AS `shot_count`');
-		} else {
+		} else if ($shotType == 'Usershot') {
 			// join with Usershots
 			$this->Shot = ClassRegistry::init('Usershot');
 			$joins[] =  array(
@@ -359,6 +359,8 @@ AND includes.asset_id='{$assetId}';
 					);
 			};
 			$fields = array('`Shot`.id AS `shot_id`', '`Shot`.owner_id AS `shot_owner_id`', '`Shot`.priority AS `shot_priority`', '`Shot`.assets_usershot_count AS `shot_count`', '`Shot`.active AS `shot_active`');
+		} else {
+			throw new Exception('Invalid ShotType');
 		}
 	
 		// show or hide hidden shots

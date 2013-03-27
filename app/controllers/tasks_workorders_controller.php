@@ -157,6 +157,7 @@ class TasksWorkordersController extends AppController {
 		
 		$this->render('/elements/dumpSQL');
 	}
+
 	/**
 	 * create shots from SCRIPT
 	 * TODO: should this be a queued process, i.e. from gearmand, etc.
@@ -170,16 +171,21 @@ class TasksWorkordersController extends AppController {
 	 * 		JSON output only
 	 */
 	function image_group($id) {
-		
+		// $forceXHR = setXHRDebug($this, 0);
 		/*
 		 * test and debug code. $config['isDev'], 
 		 * hostname = snappi-dev or dev.snaphappi.com
 		 */ 
 		if (Configure::read('isDev')) {
 			if (!isset($this->passedArgs['reset']) || !empty($this->passedArgs['reset'])) {
-				// default is to delete old SCRIPT shots, use /reset:0 to preserve 
+				// default is to delete old SCRIPT shots, use /reset:0 to preserve
+				/*
+				 *  NOTE: snappi-dev use: 		delete snappi.usershots `s`, snappi.assets_usershots `au`
+				 * 		dev.snaphappi.com use: 	delete `s`, `au`
+				 */ 
+				$multiDelete = (Configure::read('Config.os')=='win') ? 'delete snappi.usershots `s`, snappi.assets_usershots `au`' : 'delete `s`, `au`';
 				$reset_SQL = "
-	delete snappi.usershots s, snappi.assets_usershots au
+	{$multiDelete}
 	from snappi.usershots s
 	join snappi.users u on u.id = s.owner_id
 	join snappi.assets_usershots au on au.usershot_id = s.id
@@ -187,7 +193,7 @@ class TasksWorkordersController extends AppController {
 	where s.priority = 30
 	  and u.username like 'image-group%'
 	  and aw.workorder_id ='{$id}';";
-	  			$this->Workorder->query($reset_SQL);
+	  			$this->TasksWorkorder->query($reset_SQL);
 			}
 			
 			if ($this->RequestHandler->ext !== 'json') Configure::write('debug',0);	// DEBUG
@@ -201,7 +207,8 @@ class TasksWorkordersController extends AppController {
 		 * end test and debug code
 		 */
 		 
-		$perpage = 999;
+		$perpage = !empty($this->passedArgs['perpage']) ? $this->passedArgs['perpage'] : 999;
+		$required_options['extras']['join_shots'] = false;
 		$required_options['extras']['show_hidden_shots']=1;
 		$required_options['extras']['hide_SharedEdits']=0;
 		// $default_options['extras']['only_bestshot_system']=0;
@@ -219,12 +226,14 @@ class TasksWorkordersController extends AppController {
 		// TODO: add /raw:1 to filter by UserEdit.rating only, and skip SharedEdit.score
 		$paginateArray['extras']['group_as_shot_permission'] = $Model->Behaviors->attached('WorkorderPermissionable');
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
-
+		/*
+		 *  force sort=dateTaken for image-group
+		 */ 
+		$paginateArray['order'] = array('`Asset`.dateTaken');
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = $this->paginate($paginateModel);
 		$pageData = Set::extract($pageData, "{n}.{$paginateModel}");
 		// end paginate
-
 		/*
 		 * get image_group output for castingCall as JSON string
 		 */ 
@@ -276,7 +285,7 @@ class TasksWorkordersController extends AppController {
 			} else {
 				$newShots[] = array(
 					'asset_ids'=>$groupAsShot_aids, 
-					'shot'=>$result['response']['message'],
+					'shot'=>$result['message'],
 				);
 			}
 			
@@ -301,7 +310,7 @@ class TasksWorkordersController extends AppController {
 			$this->redirect($next, null, true);		
 		}
 	
-	}	
+	}
 
 	/**
 	 * /tasks_workorder/shots get all shots for tasks_workorder, for reviewing SCRIPT shots, uses WorkorderPermissionable for ACL
