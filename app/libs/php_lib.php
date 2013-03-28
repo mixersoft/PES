@@ -629,7 +629,9 @@ function setXHRDebug($controller, $forceXHR = 0, $showData = false){
 		Configure::write('debug', $debug );
 	} else if ($controller->RequestHandler->isAjax()){
 		Configure::write('debug',$forceXHR);
-	} 
+	} else {
+		Configure::write('debug',$forceXHR);
+	}
 	return $forceXHR;
 }
 
