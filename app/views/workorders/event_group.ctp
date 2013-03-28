@@ -6,7 +6,7 @@ echo $this->Html->css('workorder/workorder');
 
 $badge_src = Stagehand::getSrc($data['User']['src_thumbnail'], 'sq', 'Person');
 $ownerCount = $jsonData['castingCall']['CastingCall']['Auditions']['Total'];
-echo $this->element('/workorder/shot/gallery', compact('badge_src', 'ownerCount') );
+echo $this->element('/workorder/event/gallery', compact('badge_src', 'ownerCount') );
 ?>
 
 <?php  $this->Layout->blockStart('markup');
