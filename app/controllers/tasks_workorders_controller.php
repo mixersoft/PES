@@ -450,6 +450,48 @@ $this->params['paging'] = $paging;
 		
 	}
 
+	function _addEventsAsShots ($event_groups, $cc){
+		// var shotId = o.Audition.SubstitutionREF;
+		$i=0;
+		$Auditions = $cc['CastingCall']['Auditions']['Audition'];
+		$event_Auditions = array();
+		foreach ($event_groups['Events'] as $event ){
+			$first = $event['FirstPhotoID'];
+			$count = $event['PhotoCount'];
+			$counting = false;
+// debug("$first : $count i={$i}, next={$Auditions[$i]['id']} ");			
+			// iterate through $cc Auditions and set ShotId
+			for ($i; $i< count($Auditions); $i++ ){
+				if ($Auditions[$i]['id']==$first) {
+					$counting = $count-1;
+					$Auditions[$i]['SubstitutionREF'] = $first;
+					$Auditions[$i]['Shot']['id'] = $first;
+					$Auditions[$i]['Shot']['count'] = $count;
+					$event_Auditions[] =  $Auditions[$i];
+					continue;
+				} 
+				if ($counting>0) {
+					$counting--;
+					$Auditions[$i]['SubstitutionREF'] = $first;
+					$Auditions[$i]['Shot']['id'] = $first;
+					$Auditions[$i]['Shot']['count'] = $count;
+					continue;
+				} else if ($counting === false){
+					$event_Auditions[] =  $Auditions[$i];		// not in any event
+debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");					
+				} else {
+					// this should be the first item of the NEXT event
+					break;
+				}
+			}
+		}
+		$cc['CastingCall']['Auditions']['Audition'] = $Auditions;
+		$this->viewVars['jsonData']['shot_CastingCall'] = $cc;		// copy complete with Shots added
+		
+		$cc['CastingCall']['Auditions']['Audition'] = $event_Auditions;	// just Shots
+		return $cc;
+	}
+
 	/**
 	 * create event groups from SCRIPT
 	 * TODO: should this be a queued process, i.e. from gearmand, etc.
@@ -475,7 +517,7 @@ $this->params['paging'] = $paging;
 	  			// $this->Workorder->query($reset_SQL);
 			}
 			
-			if ($this->RequestHandler->ext !== 'json') Configure::write('debug',0);	// DEBUG
+			// if ($this->RequestHandler->ext !== 'json') Configure::write('debug',0);	// DEBUG
 			// debug: see test results
 			// $markup = "<A href=':url' target='_blank'>click here</A>";
 			// $show_shots['see-all-shots'] = str_replace(':url',Router::url(array('action'=>'shots', 0=>$id, 'perpage'=>10,  'all-shots'=>1), true), $markup);
@@ -515,12 +557,16 @@ $this->params['paging'] = $paging;
 		// end paginate
 
 		/*
-		 * get event_group output for castingCall as JSON string
+		 * import event_group output as Usershots with correct ROLE/priority
 		 */ 
 		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 		if (!isset($this->Gist)) $this->Gist = loadComponent('Gist', $this); 
 		$castingCall = $this->CastingCall->getCastingCall($pageData, $cache=false);
+// debug($castingCall);		
+		$timescale = empty($this->passedArgs['timescale']) ? null: $this->passedArgs['timescale'];
+		$event_groups = $this->Gist->getEventGroupFromCC($castingCall, $timescale);
 		
+		$castingCall = $this->_addEventsAsShots($event_groups, $castingCall);		
 		// bind $script_owner to image-group runtime settings 
 		$script_owner = empty($this->passedArgs['circle']) ? 'image-group' : 'image-group-circles';
 		$preserveOrder = $script_owner == 'image-group';
@@ -550,21 +596,43 @@ $this->params['paging'] = $paging;
 		// foreach($event_groups['Groups'] as $i => $groupAsShot_aids) {
 		// }
 		
-		if (1 || $this->RequestHandler->ext == 'json') {
-			// debug GistComponent output		
-			$event_groups = json_encode($event_groups);
-			$this->log(	"GistComponent->getImageGroupFromCC(): filtered output", LOG_DEBUG);
-			$this->log(	$event_groups, LOG_DEBUG);
-			// debug($event_groups);
+		if ($this->RequestHandler->ext == 'json') {
 			$this->viewVars['jsonData']['eventGroups'] = $event_groups;
+			$this->viewVars['jsonData']['castingCall'] = $castingCall;
+			// debug GistComponent output		
+			$this->log(	"GistComponent->getImageGroupFromCC(): filtered output", LOG_DEBUG);
+			$this->log(	json_encode($event_groups), LOG_DEBUG);
+			// debug($event_groups);
 			// $this->viewVars['jsonData']['castingCall'] = $castingCall;
 			$done = $this->renderXHRByRequest('json');
 			if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
 		} else {
-			// $this->render('/elements/dumpSQL');
-			$this->Session->setFlash(count($newShots)." Events found");
-			$next = $_SERVER['HTTP_REFERER'];
-			$this->redirect($next, null, true);		
+			$this->viewVars['jsonData']['eventGroups'] = $event_groups;
+			$this->viewVars['jsonData']['castingCall'] = $castingCall;
+			$options = array(
+				'contain'=>array(
+					'Task',
+					'Workorder'=>array(
+						'Source',
+						'Client',
+					)),
+				'conditions'=>array('TasksWorkorder.id'=>$id)
+			);
+			$data = $this->TasksWorkorder->find('first', $options);
+			$data = array_merge($this->Auth->user(), $data);
+			
+			$this->viewVars['jsonData']['Workorder'][]=$data['Workorder'];
+			$this->viewVars['jsonData']['TasksWorkorder'][]=$data['TasksWorkorder'];
+			// Session::write('lookup.owner_names', Set::merge(Session::read('lookup.owner_names'), Set::combine($data, '/Owner/id', '/Owner/username')));
+			
+			
+			$description = array();
+			$description['id'] = "t:{$data['TasksWorkorder']['id']}"; 
+			$description['tw-type'] = $data['Task']['name']; 
+			$description['wo-type'] = strtolower($data['Workorder']['source_model']);
+			$description['wo-label'] = $data['Workorder']['Source']['label'];
+			$description['wo-count'] = $data['TasksWorkorder']['assets_task_count'];
+			$this->set(compact('description', 'data'));	
 		}
 	
 	}	
