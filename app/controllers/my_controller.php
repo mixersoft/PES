@@ -674,6 +674,13 @@ if (isset($this->params['url']['new-taskid']))	{
 					'device_UUID'=>'b6673a7f-c151-4eff-91f3-9c45a61d6f36', 
 					'session_id'=>'50a4fd3b-034c-48c7-9f87-1644f67883f5'
 				);
+				$DEVICE[4] = array(		// userid=5156004b-b9d8-475b-ab4b-1e880afc6d44,
+					'device_id'=>7,		// adoria_test1, auth_token='240a222d959b3b368b8d916767fb4115928a92ec' 
+					'device_UUID'=>'5156004b-b9d8-475b-0000-1e880afc6d44', 
+					'session_id'=>'5156062e-ae3c-4962-a2d6-21550afc6d44'
+				);
+
+				
 				/*
 				 * for testing only
 				 * // choose Device 1 or 2, or 0 to get a new session
