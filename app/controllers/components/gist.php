@@ -199,21 +199,22 @@ debug($cmd);
 
 		} else {
 			// unix, image-group only works on linux
-			$threshold = 
-			$cmd = "{$gist_bin}/event-group {$timescaleSwitch} --pretty_print";
+			$cmd = "{$gist_bin}/event-group {$timescaleSwitch} --pretty_print ";
+debug("GistComponent->event-group() {$cmd}");			
 			$start = microtime(true);
 			$errors = GistComponent::$Exec->exec($cmd, $options, $stdin, $output);
 			$end = microtime(true);
 			$elapsed = $end-$start;
 debug("GistComponent->event-group() processing, records={$castingCall['CastingCall']['Auditions']['Perpage']}, time={$elapsed} sec");
 			$record_count = min(array($castingCall['CastingCall']['Auditions']['Perpage'], $castingCall['CastingCall']['Auditions']['Total']));
-$this->log("GistComponent->event-group() processing, records={$record_count}, time={$elapsed} sec", LOG_DEBUG);
+// $this->log("GistComponent->event-group() processing, records={$record_count}, time={$elapsed} sec", LOG_DEBUG);
 			if ($errors) return $errors;
 			else {
 				$output = json_decode($output, true);
 				$output['count'] = $castingCall['CastingCall']['Auditions']['Perpage'];
 				$output['elapsed (sec)'] = $elapsed;
 				if (empty($output['Groups'])) $output['Groups'] = array();
+// debug("GistComponent->event-group() output=".print_r($output,true));				
 				return $output;
 			}
 		}

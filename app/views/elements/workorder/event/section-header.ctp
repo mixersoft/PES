@@ -21,19 +21,25 @@
 		'url'=>array('action'=>'home')+$this->passedArgs)) . "&nbsp;"; 
 ?>
 <nav class="section-header container_16">
-	<h1 class="grid_7"><?php echo $badge . implode('',$label) ?></h1>
-    <ul class="inline grid_5">Timescale (days):
-		<li class="gallery rounded-5 orange">
-			<a href='<?php echo Router::url(array('timescale'=>1)+$this->passedArgs);  ?>'>1</a>
+	<h1 class="grid_6"><?php echo $badge . implode('',$label) ?></h1>
+    <ul class="inline grid_6">Timescale:
+    	<li class="gallery rounded-5 orange">
+			<a href='<?php echo Router::url(array('timescale'=>0.167)+$this->passedArgs);  ?>'>4h</a>
 		</li>
 		<li class="gallery rounded-5 orange">
-			<a href='<?php echo Router::url(array('timescale'=>7)+$this->passedArgs); ?>'>7</a>
+			<a href='<?php echo Router::url(array('timescale'=>0.25)+$this->passedArgs);  ?>'>6h</a>
 		</li>
 		<li class="gallery rounded-5 orange">
-			<a href='<?php echo Router::url(array('timescale'=>30)+$this->passedArgs);  ?>'>30</a>
+			<a href='<?php echo Router::url(array('timescale'=>1)+$this->passedArgs);  ?>'>1d</a>
 		</li>
 		<li class="gallery rounded-5 orange">
-			<a href='<?php echo Router::url(array('timescale'=>90)+$this->passedArgs);  ?>'>90</a>
+			<a href='<?php echo Router::url(array('timescale'=>7)+$this->passedArgs); ?>'>7d</a>
+		</li>
+		<li class="gallery rounded-5 orange">
+			<a href='<?php echo Router::url(array('timescale'=>30)+$this->passedArgs);  ?>'>30d</a>
+		</li>
+		<li class="gallery rounded-5 orange">
+			<a href='<?php echo Router::url(array('timescale'=>90)+$this->passedArgs);  ?>'>90d</a>
 		</li>
 	</ul>
     <aside class="grid_4">

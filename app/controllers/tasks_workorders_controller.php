@@ -565,18 +565,13 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 // debug($castingCall);		
 		$timescale = empty($this->passedArgs['timescale']) ? null: $this->passedArgs['timescale'];
 		$event_groups = $this->Gist->getEventGroupFromCC($castingCall, $timescale);
-		
 		$castingCall = $this->_addEventsAsShots($event_groups, $castingCall);		
-		// bind $script_owner to image-group runtime settings 
-		$script_owner = empty($this->passedArgs['circle']) ? 'image-group' : 'image-group-circles';
-		$preserveOrder = $script_owner == 'image-group';
 	
-		$event_groups = $this->Gist->getEventGroupFromCC($castingCall, $preserveOrder);
 		/*
 		 * import event_group output as Usershots with correct ROLE/priority
 		 * use Usershot.priority=30
 		 */ 
-		// use ROLE=SCRIPT, Usershot.priority=30
+		$script_owner = empty($this->passedArgs['circle']) ? 'image-group' : 'image-group-circles';
 		$ScriptUser_options = array(
 			'conditions'=>array(
 				'primary_group_id'=>Configure::read('lookup.roles.SCRIPT'),
