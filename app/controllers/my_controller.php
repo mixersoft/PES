@@ -707,6 +707,15 @@ if (isset($this->params['url']['new-taskid']))	{
 		// debug($taskID);		
 		
 				if (isset($this->params['url']['reset'])) { 	// reset folders for device
+					switch ($this->params['url']['reset']) {
+						case 'osx':
+					// set hardcoded GetFolders() data for TESTING, normally we'd use the TopLevelFolder app
+					$folder_state = array();
+					$folder_state[] = array('folder_path'=>'/Users/michael/Snaphappi', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0); 
+					$folder_state[] = array('folder_path'=>'/Users/michael/Snaphappi/watch', 'is_scanned'=>0, 'is_watched'=>1, 'count'=>0);
+							break;
+						case 'win':
+						default:
 					// set hardcoded GetFolders() data for TESTING, normally we'd use the TopLevelFolder app
 					$folder_state = array();
 					$folder_state[] = array('folder_path'=>'C:\\TEMP\\May', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0); 
@@ -715,6 +724,8 @@ if (isset($this->params['url']['new-taskid']))	{
 					$folder_state[] = array('folder_path'=>'C:\\TEMP\\big-test', 'is_scanned'=>0, 'is_watched'=>0, 'count'=>0);
 					$folder_state[] = array('folder_path'=>'C:\\TEMP\\big-test\\events\\NYC', 'is_scanned'=>1, 'is_watched'=>0, 'count'=>0);
 					$folder_state[] = array('folder_path'=>'C:\\TEMP\\big-test\\events\\world thinking day', 'is_scanned'=>1, 'is_watched'=>1, 'count'=>0);
+							break;
+					}
 				debug(Set::extract('/folder_path', $folder_state));	
 					// load folders to ThriftFolders for testing
 					$resetSQL = "delete f from thrift_folders f join thrift_devices d on d.id = f.thrift_device_id 
