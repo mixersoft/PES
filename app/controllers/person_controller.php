@@ -350,6 +350,7 @@ if (!empty($this->passedArgs['all-shots'])) {
 			$this->viewVars['jsonData']['User'][]=$data['User'];
 		}
 	}
+
 	function stories($id=null){
 		$this->layout = 'snappi';
 		$this->helpers[] = 'Time';
@@ -460,6 +461,12 @@ if (!empty($this->passedArgs['all-shots'])) {
 	 */ 
 	function batch_ids($id = null) {
 		$forceXHR = setXHRDebug($this, 0);
+		if (!(($forceXHR || $this->RequestHandler->isAjax()) && $this->RequestHandler->ext=='json') 
+		){
+			$this->Session->setFlash('WARNING: This action is only valid for XHR JSON requests.');
+			$this->redirect(array('action'=>'photos'), null, true);
+			return;
+		}
 		$this->layout='ajax';	
 		$this->autoRender = false;
 		if (!$id) $id = AppController::$ownerid;
@@ -480,6 +487,141 @@ if (!empty($this->passedArgs['all-shots'])) {
 		$this->viewVars['jsonData']['batchIds'] = Set::combine($data, '/Asset/batchId', '/Asset/count');
 		$done = $this->renderXHRByRequest('json', '/elements/dumpSQL', null);
 	}
+
+	/*
+	 * auditions in the SAME event_group will be place in a Shot group
+	 * as seen in PAGE.jsonData 
+	 */ 
+	function _addEventsAsShots ($event_groups, $cc){
+		// var shotId = o.Audition.SubstitutionREF;
+		$i=0;
+		$Auditions = $cc['CastingCall']['Auditions']['Audition'];
+		$event_Auditions = array();
+		foreach ($event_groups['Events'] as $event ){
+			$first = $event['FirstPhotoID'];
+			$count = $event['PhotoCount'];
+			$counting = false;
+// debug("$first : $count i={$i}, next={$Auditions[$i]['id']} ");			
+			// iterate through $cc Auditions and set ShotId
+			for ($i; $i< count($Auditions); $i++ ){
+				if ($Auditions[$i]['id']==$first) {
+					$counting = $count-1;
+					$Auditions[$i]['SubstitutionREF'] = $first;
+					$Auditions[$i]['Shot']['id'] = $first;
+					$Auditions[$i]['Shot']['count'] = $count;
+					$event_Auditions[] =  $Auditions[$i];
+					continue;
+				} 
+				if ($counting>0) {
+					$counting--;
+					$Auditions[$i]['SubstitutionREF'] = $first;
+					$Auditions[$i]['Shot']['id'] = $first;
+					$Auditions[$i]['Shot']['count'] = $count;
+					continue;
+				} else if ($counting === false){
+					$event_Auditions[] =  $Auditions[$i];		// not in any event
+debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");					
+				} else {
+					// this should be the first item of the NEXT event
+					break;
+				}
+			}
+		}
+		$cc['CastingCall']['Auditions']['Audition'] = $Auditions;
+		$this->viewVars['jsonData']['shot_CastingCall'] = $cc;		// copy complete with Shots added
+		
+		$cc['CastingCall']['Auditions']['Audition'] = $event_Auditions;	// just Shots
+		return $cc;
+	}
+
+	/**
+	 * event_group: calculate event group at indicated timescale
+	 * example
+	 * 	http://dev.snaphappi.com/my/event-group/timescale:0.167/perpage:9999
+	 * 
+	 * same as action=photos options
+	 * 		/perpage:9999					// assume everything fetched in 1 page
+	 * 		/timescale:1					// in days, float ok.
+	 * 		&forcexhr=1						// xhr only
+	 * 		&reset=1						// clear view cache
+	 * 		JSON output only
+	 */
+	function event_group($id = null){
+		$forceXHR = setXHRDebug($this, 0);
+		if (!(($forceXHR || $this->RequestHandler->isAjax()) && $this->RequestHandler->ext=='json') 
+		){
+			$this->Session->setFlash('WARNING: This action is only valid for XHR JSON requests.');
+			$this->redirect(array('action'=>'photos'), null, true);
+			return;
+		}
+		if (!$id) {
+			$this->Session->setFlash("ERROR: invalid Photo id.");
+			$this->redirect(array('action' => 'all'));
+		}
+		$this->layout = 'snappi';
+		
+		// cache 
+		App::import('Helper', 'Cache');
+		$this->Cache = & new CacheHelper();	
+		if (!empty($this->params['url']['reset'])) Cache::clearCache();
+		$this->cacheAction = '1 hour';
+		// event_group options
+		$required_options['extras']['join_shots']=0;			
+		$required_options['extras']['show_hidden_shots']=1;
+		$required_options['extras']['hide_SharedEdits']=0;
+		
+		// paginate 
+		$paginateModel = 'Asset';
+		$Model = $this->User->{$paginateModel};
+		$Model->Behaviors->attach('Pageable');
+		
+		$paginateArray = $Model->getPaginatePhotosByUserId($id, $this->paginate[$paginateModel]);
+		$paginateArray = Set::merge($this->paginate[$paginateModel], $required_options);
+		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
+		/*
+		 *  force extras & sort=dateTaken for event-group
+		 */ 
+		$paginateArray['order'] = array('`Asset`.dateTaken');
+		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
+		$pageData = $this->paginate($paginateModel);
+		$pageData = Set::extract($pageData, "{n}.{$paginateModel}");
+		// end paginate
+		
+		
+		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
+		if (!isset($this->Gist)) $this->Gist = loadComponent('Gist', $this);
+		 
+		$castingCall = $this->CastingCall->getCastingCall($pageData);
+		$timescale = empty($this->passedArgs['timescale']) ? 1 : $this->passedArgs['timescale'];
+		$event_groups = $this->Gist->getEventGroupFromCC($castingCall, $timescale);
+		// event_groups will appear as shots in PAGE.jsonData.castingCall for the given timescale
+		$castingCall = $this->_addEventsAsShots($event_groups, $castingCall);
+		$this->viewVars['jsonData']['castingCall'] = $castingCall;
+		
+		
+		/*
+		 * get montage  
+		 * TODO: get a montage for each event, first 12 photos
+		 * */
+ 		if (empty($castingCall['CastingCall']['Auditions'])) $getMontage = false;
+		if ( isset($this->passedArgs['montage']) ) $getMontage = !empty($this->passedArgs['montage']);
+		else $getMontage = ( Session::read('section-header.Photo') == 'Montage' );
+		if ($getMontage) {	
+ 			$this->Montage = loadComponent('Montage', $this);
+			$Auditions = $castingCall['CastingCall']['Auditions'];
+			$options = array();
+			$options['count'] = isset($this->passedArgs['count']) ? $this->passedArgs['count'] :  9;
+			if (isset($this->passedArgs['w'])) $options['maxW'] = $this->passedArgs['w'];
+			if (isset($this->passedArgs['h'])) $options['maxH'] = $this->passedArgs['h'];
+			// $options['count'] = round(count($Auditions['Audition'])/2);
+			// $options['allowed_ratios'] = array('h'=>'1:'.round($options['count']/3), 'v'=>'1:'.round($options['count']/4));  // set for Hscroll
+			$this->viewVars['jsonData']['montage'] = $this->Montage->getArrangement($Auditions, $options);
+		}	
+			
+		$done = $this->renderXHRByRequest('json', '/elements/photo/roll', null, 0);
+		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
+	}
+
 	
 	function groups($id = null){
 		$this->layout = 'snappi';

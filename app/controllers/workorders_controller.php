@@ -436,7 +436,10 @@ class WorkordersController extends AppController {
 		}
 					
 	}
-
+	/*
+	 * auditions in the SAME event_group will be place in a Shot group
+	 * as seen in PAGE.jsonData 
+	 */ 
 	function _addEventsAsShots ($event_groups, $cc){
 		// var shotId = o.Audition.SubstitutionREF;
 		$i=0;
@@ -482,6 +485,9 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 
 	/**
 	 * for testing/script/command-shell only
+	 * example:
+	 * 	http://dev.snaphappi.com/workorders/event_group/1/timescale:0.167/perpage:9999
+	 * 
 	 * same as action=photos except
 	 *		$paginateArray['extras']['show_hidden_shots']=1;
 	 *		$paginateArray['extras']['hide_SharedEdits']=1;	// TODO:??? use score, if any, for bestshot here? 
@@ -494,7 +500,6 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 		$required_options['extras']['join_shots']=0;			
 		$required_options['extras']['show_hidden_shots']=1;
 		$required_options['extras']['hide_SharedEdits']=0;
-		// $default_options['extras']['only_bestshot_system']=0;
 		
 		
 		/*
