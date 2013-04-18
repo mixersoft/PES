@@ -660,9 +660,14 @@ if (isset($this->params['url']['new-taskid']))	{
 				// see HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Snaphappi for DeviceID
 				// use for testing fixed authToken/Session
 				$DEVICE[1] = array(
-					'device_id'=>1,
+					'device_id'=>1,		// manager
 					'device_UUID'=>'2738ebe4-95a1-4d4a-aefe-761d97881535', 
 					'session_id'=>'50a3fb31-7514-4db3-b730-1644f67883f5'
+				);
+				$DEVICE[11] = array(	// manager, osx
+					'device_id'=>11,
+					'device_UUID'=>'5156004b-b9d8-475b-0000-1e880afc6d44', 
+					'session_id'=>'51680f0d-6238-4556-bfb7-13570afc6d44'
 				);
 				$DEVICE[2] = array(
 					'device_id'=>2,
@@ -685,7 +690,7 @@ if (isset($this->params['url']['new-taskid']))	{
 				 * for testing only
 				 * // choose Device 1 or 2, or 0 to get a new session
 				 */ 
-				if (!empty($this->params['url']['reset'])) {
+				if (!empty($this->params['url']['reset']) && is_numeric($this->params['url']['reset'])) {
 					$attach_fixed_session = $this->params['url']['reset'];
 				} else if (!empty($this->params['url']['device'])) {
 					$attach_fixed_session = $this->params['url']['device'];

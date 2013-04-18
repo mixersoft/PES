@@ -224,7 +224,7 @@ debug(Session::read());	// THRIFT SESSION
 		debug("==============  Thrift Boostrap Complete =====================");
 		// see HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Snaphappi for DeviceID
 		// use for testing fixed authToken/Session
-		$DEVICE[1] = array(
+		$DEVICE[1] = array(		// manager
 			'auth_token'=>'b34f54557023cce43ab7213e0eb7da2a6b9d6b27',
 			'device_id'=>1,
 			'device_UUID'=>'2738ebe4-95a1-4d4a-aefe-761d97881535', 
