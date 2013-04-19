@@ -785,7 +785,7 @@ if ($duplicate) $this->log("DUPLICATE FOUND, id={$duplicate['Asset']['id']}, cap
 		
 		if (isset($asset['json_iptc']['Keyword'])) $newAsset['keyword']= $asset['json_iptc']['Keyword'];
 		if (isset($asset['json_iptc']['Caption'])) $newAsset['caption']= $asset['json_iptc']['Caption'];
-		if (empty($asset['caption'])) $newAsset['caption'] = pathinfo($origPath, PATHINFO_FILENAME);;
+		if (empty($asset['caption'])) $newAsset['caption'] = basename(pathinfo($origPath, PATHINFO_FILENAME));
 		
 		if (isset($asset['isThriftAPI'])) {
 			$newAsset['native_path'] = $asset['rel_path'];	// includes thrift_device_id
