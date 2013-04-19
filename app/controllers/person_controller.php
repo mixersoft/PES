@@ -99,7 +99,7 @@ class PersonController extends UsersController {
 	 * WARNING: backdoor action for oDesk project
 	 */
 	function odesk_photos (){
-		$ALLOWED_BY_USERNAME = array('newyork', 'paris', 'venice', 'bali');
+		$ALLOWED_BY_USERNAME = array('newyork', 'paris', 'venice', 'bali', 'summer-2009');
 		$id = $this->passedArgs[0];
 		if (strpos($id, '12345678') === 0) {
 			$data = $this->User->read(null, $id );
@@ -292,7 +292,10 @@ class PersonController extends UsersController {
 		$Model->Behaviors->attach('Pageable');
 		$paginateArray = $Model->getPaginatePhotosByUserId($id, $this->paginate[$paginateModel]);
 
-if (!empty($this->passedArgs['raw']) || !empty($this->passedArgs['hidden'])) {
+if (!empty($this->passedArgs['raw']) ) {
+	$paginateArray['extras']['join_shots']=false;
+}
+if (!empty($this->passedArgs['hidden'])) {
 	$paginateArray['extras']['show_hidden_shots']=1;
 }
 if (!empty($this->passedArgs['only-shots'])) {
@@ -528,8 +531,8 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 			}
 		}
 		$cc['CastingCall']['Auditions']['Audition'] = $Auditions;
+		$cc['CastingCall']['Auditions']['ShotType'] = 'event_group';
 		$this->viewVars['jsonData']['shot_CastingCall'] = $cc;		// copy complete with Shots added
-		
 		$cc['CastingCall']['Auditions']['Audition'] = $event_Auditions;	// just Shots
 		return $cc;
 	}
@@ -558,6 +561,19 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 			$this->Session->setFlash("ERROR: invalid Photo id.");
 			$this->redirect(array('action' => 'all'));
 		}
+		
+		/*
+		 * allow cross-domain XHR, instead of jsonp
+		 * 	from thats-me.snaphappi.com for timeline app
+		 *  from anything from snaphappi.com 
+		 * TODO: I use jsonp somewhere else, WMS app(?) replace with this pattern
+		 */ 
+		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
+		if (preg_match('/[snaphappi\.com | thats\-me]/i', $origin)) {
+			echo header("Access-Control-Allow-Origin: {$origin}");
+			// echo header('Access-Control-Allow-Origin: http://thatsme.snaphappi.com');
+		}
+		
 		$this->layout = 'snappi';
 		
 		// cache 
@@ -592,10 +608,13 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 		if (!isset($this->Gist)) $this->Gist = loadComponent('Gist', $this);
 		 
 		$castingCall = $this->CastingCall->getCastingCall($pageData);
+		$castingCall['CastingCall']['Auditions']['ShotType'] = 'event_group';
+		$castingCall['CastingCall']['Auditions']['Timescale'] = $timescale;
 		$timescale = empty($this->passedArgs['timescale']) ? 1 : $this->passedArgs['timescale'];
 		$event_groups = $this->Gist->getEventGroupFromCC($castingCall, $timescale);
 		// event_groups will appear as shots in PAGE.jsonData.castingCall for the given timescale
 		$castingCall = $this->_addEventsAsShots($event_groups, $castingCall);
+		$this->viewVars['jsonData']['eventGroups'] = $event_groups;
 		$this->viewVars['jsonData']['castingCall'] = $castingCall;
 		
 		
