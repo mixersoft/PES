@@ -89,7 +89,8 @@ class PersonController extends UsersController {
 			 * experimental
 			 */
 			'stories',  // TODO: move to ACL
-			'addACLs', 'remove_photos', 'odesk_photos', 'photostreams'
+			'addACLs', 'remove_photos', 'odesk_photos', 'photostreams',
+			'event_group'
 		);
 		$this->Auth->allow($myAllowedActions);
 		// TODO: edit allowed for  'role-----0123-4567-89ab---------user'
@@ -571,17 +572,33 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
 		if (preg_match('/[snaphappi\.com | thats\-me]/i', $origin)) {
 			echo header("Access-Control-Allow-Origin: {$origin}");
-			// echo header('Access-Control-Allow-Origin: http://thatsme.snaphappi.com');
+			// echo header('Access-Control-Allow-Origin: http://thats-me.snaphappi.com');
+		}
+		
+		/*
+		 * use backdoor access, Timeline XHR has different cookie from normal login
+		 * TODO: CLOSE BACKDOOR
+		 */ 
+		$ALLOWED_BY_USERNAME = array('newyork', 'paris', 'venice', 'bali', 'summer-2009');
+		$data = $this->User->read(null, $id );
+		if (in_array($data['User']['username'], $ALLOWED_BY_USERNAME )) {
+			$ret = $this->Auth->login($data);
+			$this->__cacheAuth();
+			$this->Permissionable->initialize($this);	
 		}
 		
 		$this->layout = 'snappi';
-		
 		// cache 
 		App::import('Helper', 'Cache');
 		$this->Cache = & new CacheHelper();	
 		if (!empty($this->params['url']['reset'])) Cache::clearCache();
 		$this->cacheAction = '1 hour';
 		// event_group options
+		/*
+		 * TODO: should only see bestshots in final Timeline, no duplicates
+		 * 	- also add minimum rating
+		 * 
+		 */ 
 		$required_options['extras']['join_shots']=0;			
 		$required_options['extras']['show_hidden_shots']=1;
 		$required_options['extras']['hide_SharedEdits']=0;
@@ -592,7 +609,7 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 		$Model->Behaviors->attach('Pageable');
 		
 		$paginateArray = $Model->getPaginatePhotosByUserId($id, $this->paginate[$paginateModel]);
-		$paginateArray = Set::merge($this->paginate[$paginateModel], $required_options);
+		$paginateArray = Set::merge($paginateArray, $required_options);
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		/*
 		 *  force extras & sort=dateTaken for event-group
@@ -609,14 +626,14 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 		 
 		$castingCall = $this->CastingCall->getCastingCall($pageData);
 		$castingCall['CastingCall']['Auditions']['ShotType'] = 'event_group';
-		$castingCall['CastingCall']['Auditions']['Timescale'] = $timescale;
 		$timescale = empty($this->passedArgs['timescale']) ? 1 : $this->passedArgs['timescale'];
+		$castingCall['CastingCall']['Auditions']['Timescale'] = $timescale;
 		$event_groups = $this->Gist->getEventGroupFromCC($castingCall, $timescale);
 		// event_groups will appear as shots in PAGE.jsonData.castingCall for the given timescale
 		$castingCall = $this->_addEventsAsShots($event_groups, $castingCall);
 		$this->viewVars['jsonData']['eventGroups'] = $event_groups;
 		$this->viewVars['jsonData']['castingCall'] = $castingCall;
-		
+		$this->viewVars['jsonData']['userid'] = AppController::$userid;
 		
 		/*
 		 * get montage  
