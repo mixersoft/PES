@@ -302,8 +302,7 @@ class AppController extends Controller {
 		$forceXHR = setXHRDebug($this, $forceXHR);
 		$renderComplete = false;
 		if ($this->RequestHandler->isAjax() || $forceXHR) {
-			if ($forceXHR) header('Content-Type: text/html');		// force text/html to view in browser
-			else Configure::write('debug',0);
+			if (Configure::read('debug')) header('Content-Type: text/html');		// force text/html to view in browser
 			if ($this->RequestHandler->ext == 'json') {
 				if (empty($json) || $json == 'json') {
 					if (!$forceXHR) header('Content-type: application/json');

@@ -489,6 +489,8 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 			exit(0);
 		}
 		
+		$this->Session->setFlash('WARNING: this is the OLD Uploader. Please make sure you are on the correct page.');
+		
 		
 		/*
 		 * GET

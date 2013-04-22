@@ -539,7 +539,9 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 	}
 
 	/**
-	 * event_group: calculate event group at indicated timescale
+	 * event_group: calculate event group at indicated timescale, 
+	 * 	- for XHR request from thats-me/timeline/[id]
+	 *  - NOTE: /workorders/event_group shows events using Shot View, not Timeline
 	 * example
 	 * 	http://dev.snaphappi.com/my/event-group/timescale:0.167/perpage:9999
 	 * 
@@ -557,10 +559,6 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 			$this->Session->setFlash('WARNING: This action is only valid for XHR JSON requests.');
 			$this->redirect(array('action'=>'photos'), null, true);
 			return;
-		}
-		if (!$id) {
-			$this->Session->setFlash("ERROR: invalid Photo id.");
-			$this->redirect(array('action' => 'all'));
 		}
 		
 		/*
@@ -586,6 +584,12 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 			$this->__cacheAuth();
 			$this->Permissionable->initialize($this);	
 		}
+				
+		if (!$id || !AppController::$userid) {
+			$this->viewVars['jsonData'] = array('success'=>false, 'message'=>'User unknown. Please sign in');
+			$done = $this->renderXHRByRequest('json', '/elements/photo/roll', null, 0);
+			return; // stop for JSON/XHR requests, $this->autoRender==false	
+		}		
 		
 		$this->layout = 'snappi';
 		// cache 
