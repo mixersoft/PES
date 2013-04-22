@@ -1,4 +1,12 @@
 <?php
+
+$isLocal = (
+	in_array(env('REMOTE_ADDR'), array('127.0.0.1', '::1'))
+	or !strpos(env('HTTP_HOST'), 'snaphappi.com')
+	or class_exists('ShellDispatcher')
+);
+$config['isLocal'] = $isLocal;
+
 $config['Config.os']=osName();
 
 $config['AAA']=array(
@@ -16,7 +24,7 @@ $config['email'] = array(
 		'port'=>'465', 
         'timeout'=>'30',
         'host' => 'ssl://smtp.gmail.com',
-		'username'=>'customerservice@snaphappi.com',
+		'username'=>'social@snaphappi.com',
 		'password'=>'snapsh0t1',
 	),
 );
