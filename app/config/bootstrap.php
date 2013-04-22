@@ -67,6 +67,12 @@ if (isset($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'],'Ad
 	}
 }
 
+if (!Configure::read('isLocal')) {
+	// Session cookie now persists across all subdomains, 
+	// Allows thats-me.snaphappi.com to access dev.snaphappi.com auth session 
+	ini_set('session.cookie_domain', env('HTTP_BASE'));
+}
+
 //App::import('lib', 'cookie');  // deprecated
 App::import('lib', 'phpLib');
 Configure::load('config2');
