@@ -82,18 +82,48 @@ class Workorder extends AppModel {
 		);
 		$options = array_merge($TEST_default, $options);
 		$workorder = $this->create($options);
-		$workorder['id'] = null;			// cakephp automagic
-		$workorder['client_id'] = $clientId;
-		$workorder['source_id'] = $sourceId;
-		$workorder['source_model'] = $sourceModel;
-		// assign workorder at create for now
-		if (isset($options['manager_id'])) $workorder['manager_id'] = $options['manager_id'];
-		$data['Workorder'] = $workorder;
-		
-		$ret = $this->saveAll($data, array('validate'=>'first'));
+		$workorder['Workorder']['id'] = null;			// cakephp automagic
+		$workorder['Workorder']['client_id'] = $clientId;
+		$workorder['Workorder']['source_id'] = $sourceId;
+		$workorder['Workorder']['source_model'] = $sourceModel;
+		// assign workorder at create to AppController::$userid, ROLE = EDITOR
+		if (isset($options['manager_id']) && strlen($options['manager_id'])==36) {
+			$workorder['Workorder']['manager_id'] = $this->getManagerIdFromUUID($options['manager_id']);
+		} else { // assume manager_id is snappi_wms.Editor.id
+			$workorder['Workorder']['manager_id'] = $options['manager_id'];
+		}		
+		$ret = $this->saveAll($workorder, array('validate'=>'first'));
 		return ($ret) ? $this->read() : false;
 	}
 	
+	public function createTaskWorkorders($wo, $options = array()){
+		if ($wo['Workorder']['name'] == 'edit photos') {
+			$TEST_default = array(
+				'task_id'=>1,	// Task = edit snaps
+				'task_sort'=>0,
+			);
+			$options = array_merge($TEST_default, $options);
+			$options['workorder_id'] = $wo['Workorder']['id'];
+			$taskWorkorder = $this->TasksWorkorder->createNew($options);
+		} else {
+			throw new Exception("WARNING: not TasksWorkorders defined for Workorder.name={$wo['Workorder']['name']}", 1);
+		}
+		return ($taskWorkorder) ? $this->TasksWorkorder->read() : false;
+	}
+		
+	/**
+	 * lookup snappi_wms.Editor.id from snappi_wms.Editor.user_id and save
+	 * return int, snappi_wms.Editor.id
+	 */
+	public function getManagerIdFromUUID ($manager_id){
+		// lookup WMS Editor.id from UUID
+		if ($manager = $this->Manager->findByUserId($manager_id)) {
+			return $manager['Manager']['id'];
+		} else {
+			throw new Exception("Error: Workorder manager_id not found. Is the manager in the Edtiors table?", 1);
+		}
+		return false;
+	}
 
 	
 	// deprecate, use UpdateStatus

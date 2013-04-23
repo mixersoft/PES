@@ -220,13 +220,13 @@ class WorkordersController extends AppController {
 			if ($data) {	// existing found, just update manager_id
 				throw new DuplicateException("Warning: existing Workorder for type={source_id={$options['source_model']}}, id={$options['source_id']}", 1);
 			} else {		// create new
+				/*
+				 * TODO: we should set $options['name'] for Workorder type, 
+				 * so we know what TasksWorkorders to create. But for now, 
+				 * there is only 1 Workorder, 'edit photos' 
+				 */ 
 				$data = $this->Workorder->createNew($options['client_id'], $options['source_id'], $options['source_model'], $options);
-				$ret = $this->Workorder->addAssets($data);
-				if (is_numeric($ret)) {
-					// TODO: for now, create task, but don't use
-					$taskWorkorder = $this->Workorder->TEST_createTaskWorkorder($data['Workorder']['id']);
-					$ret = $this->Workorder->TasksWorkorder->addAssets($taskWorkorder, "NEW");
-				}
+				$taskWorkorder = $this->Workorder->createTaskWorkorders($data);
 			}
 			
 			// format json response
@@ -234,10 +234,13 @@ class WorkordersController extends AppController {
 			$message = "OK";
 			$response = $this->Workorder->read(null, $data['Workorder']['id']);
 			$response['next'] = Router::url(array('controller'=>'workorders', 'action'=>'photos', $data['Workorder']['id']), true);
-		}catch (DuplicateException $e) {
+		} catch (DuplicateException $e) {
 			//TODO: for now, just assign workorder if it already exists
 			$this->Workorder->id = $data['Workorder']['id'];
-			if (!empty($options['manager_id'])) $this->Workorder->saveField('manager_id', $options['manager_id'] );
+			if (isset($options['manager_id']) && strlen($options['manager_id'])==36) {
+				$options['manager_id'] = $this->Workorder->getManagerIdFromUUID($options['manager_id']);
+			}
+			$this->Workorder->saveField('manager_id', $options['manager_id'] );
 			$success = true;
 			$message = "OK";
 			$response = $this->Workorder->read(null, $data['Workorder']['id']);
