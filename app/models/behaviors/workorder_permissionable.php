@@ -70,14 +70,15 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
 		if (AppController::$role && in_array(AppController::$role, array('EDITOR', 'MANAGER', 'OPERATOR', 'SCRIPT')) === false) {
 			throw new Exception("Error: WorkorderPermissionable Behavior requires role privileges.", 1);
 		};
+		$uuid = $this->settings[$Model->alias]['uuid'];
 
 		extract($this->settings[$Model->alias]);
 		switch ($type) {
 			case 'TasksWorkorder': 
-				$queryData = $this->getPaginatePhotosByTasksWorkorderId(AppController::$uuid, $queryData);
+				$queryData = $this->getPaginatePhotosByTasksWorkorderId($uuid, $queryData);
 				break;
 			case 'Workorder': 
-				$queryData = $this->getPaginatePhotosByWorkorderId(AppController::$uuid, $queryData);
+				$queryData = $this->getPaginatePhotosByWorkorderId($uuid, $queryData);
 				break;
 			default:
 				throw new Exception('ERROR: workorder permissionable initialized incorrectly, possible security violation.');
@@ -91,7 +92,7 @@ class WorkorderPermissionableBehavior extends ModelBehavior {
 				'alias'=>'ActivityLog',
 				'type'=>'LEFT',
 				'conditions'=>array(
-					"`ActivityLog`.`{$join_column}`" =>AppController::$uuid,
+					"`ActivityLog`.`{$join_column}`" =>$uuid,
 					"`ActivityLog`.`foreign_key`=`Asset`.id",
 				),
 			);			
