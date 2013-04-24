@@ -997,9 +997,9 @@ console.log("delegateHost="+delegateHost._yuid);
 		var thumbnail = menu.get('currentNode');	// target
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		try {
-			if (!g.castingCall.CastingCall.GroupAsShotPerm) return;
 			// from thumbnail context-menu
 			var g = MenuItems.getGalleryFromTarget(menu);
+			if (!g.castingCall.CastingCall.GroupAsShotPerm) return;
 			var shotType = g.castingCall.CastingCall.Auditions.ShotType;
 			var options = {
 				menu: menu,
