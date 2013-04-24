@@ -796,7 +796,11 @@ if (!empty($this->passedArgs['all-shots'])) {
 		$shot_paginateArray =  $Model->getPaginatePhotosByShotId($shotIds, $shot_paginateArray, $shotType);
 		$shot_paginateArray['PageableAlias'] = $paginateAlias;					// Pageable?
 		$shot_paginateArray['extras']['$paginateCacheKey'] = $paginateAlias;	// AppModel
+		$shot_paginateArray['page']=1; // force page:1 of shots
 		$this->paginate[$paginateAlias] = $Model->getPageablePaginateArray($this, $shot_paginateArray, $paginateAlias);
+		// force page:1 of shot auditions for shot_CastingCall, even if we are on later page of CastingCall 
+		$this->paginate[$paginateAlias]['page']=1; 
+		Configure::write("paginate.Options.{$paginateAlias}.page", 1);			// Pageable?	
 		Configure::write("paginate.Options.{$paginateAlias}.limit", 999);			// Pageable?
 // We need to preserve the paging counts under a different key, and restore the original paging Counts for Assets		
 $paging[$paginateModel] = $this->params['paging'][$paginateModel];		
@@ -805,7 +809,6 @@ $paging[$paginateModel] = $this->params['paging'][$paginateModel];
 $paging[$paginateAlias] = $this->params['paging'][$paginateModel];
 $this->params['paging'] = $paging;
 		Configure::write('paginate.Model', $paginateModel);		// original paging Counts for Asset, not Shot
-		
 		
 		$this->viewVars['jsonData']['shot_CastingCall'] = $this->CastingCall->getCastingCall($shotData);
 		// extract Shot data from Assets
