@@ -171,11 +171,16 @@ AND includes.asset_id='{$assetId}';
 		 */ 
 		if (is_array($queryData['order'][0])) {
 			foreach ($queryData['order'][0] as $sort=>$dir) {
+				if ($sort==='rating') {
+					// use SCORE if rating is null
+					unset($queryData['order'][0]['rating']);
+					array_unshift($queryData['order'], array("COALESCE(`rating`,`score`)"=>$dir));
+				}
 				// if (preg_match('/(rating|batchId|owner_id)/', $sort)) $queryData['order'][] = '`Asset`.dateTaken ASC';
 				if (strpos($sort, 'dateTaken') === false) {
 					$queryData['order'][] = '`Asset`.dateTaken ASC';
 					break;
-				}
+				} 
 			}
 		}
 		return $queryData;
