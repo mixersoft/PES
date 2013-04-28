@@ -48,6 +48,7 @@
 			_Y.one('#content > div.messages').setContent();
 			switch(taskType) {
 				case 'ur': 
+				case 'uo':
 					/*
 					 * NOTE: this method directly changes ThriftSession.IsCancelled
 					 */

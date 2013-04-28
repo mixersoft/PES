@@ -99,7 +99,10 @@
 			<h1>Control Panel</h1>
 			<ul class="actions inline">
 				<li class='btn orange rounded-5'>
-					<a action=<?php echo $launch_SnappiUploader ?> onclick='SNAPPI.ThriftUploader.action.launchTask("ur")'>Start Uploading</a>
+					<a onclick='SNAPPI.ThriftUploader.action.launchTask("ur");'>Start Uploading</a>
+				</li>
+				<li class='btn orange rounded-5'>
+					<a onclick='SNAPPI.ThriftUploader.action.launchTask("uo");'>Upload Origs</a>
 				</li>
 				<li class='btn red rounded-5' onclick='SNAPPI.ThriftUploader.action.refresh(false);'>
 					Stop
