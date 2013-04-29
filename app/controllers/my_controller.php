@@ -671,7 +671,7 @@ if (isset($this->params['url']['new-taskid']))	{
 				);
 				$DEVICE[11] = array(	// manager, osx
 					'device_id'=>11,
-					'device_UUID'=>'5156004b-b9d8-475b-0000-1e880afc6d44', 
+					'device_UUID'=>'11bd3843-e1c6-45fd-b03e-96f069ab191c', 
 					'session_id'=>'51680f0d-6238-4556-bfb7-13570afc6d44'
 				);
 				$DEVICE[2] = array(

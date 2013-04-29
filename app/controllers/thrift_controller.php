@@ -230,6 +230,12 @@ debug(Session::read());	// THRIFT SESSION
 			'device_UUID'=>'2738ebe4-95a1-4d4a-aefe-761d97881535', 
 			'session_id'=>'50a3fb31-7514-4db3-b730-1644f67883f5',
 		);
+		$DEVICE[11] = array(	// manager, osx
+			'auth_token'=>'b34f54557023cce43ab7213e0eb7da2a6b9d6b27',
+			'device_id'=>11,
+			'device_UUID'=>'11bd3843-e1c6-45fd-b03e-96f069ab191c', 
+			'session_id'=>'51680f0d-6238-4556-bfb7-13570afc6d44'
+		);
 		$DEVICE[2] = array(
 			'auth_token'=>'b34f54557023cce43ab7213e0eb7da2a6b9d6b27',
 			'device_id'=>2,
@@ -258,12 +264,13 @@ debug(Session::read());	// THRIFT SESSION
 			$attach_fixed_session = $this->params['url']['device'];
 		} else 	
 			$attach_fixed_session = 1;		// testing for this device
+			
 		$task_data = array(
 			'AuthToken'=>$DEVICE[$attach_fixed_session]['auth_token'],
 			'Session'=>$DEVICE[$attach_fixed_session]['session_id'],
 			'DeviceID'=>$DEVICE[$attach_fixed_session]['device_UUID'],	// hack: get from GetDeviceID()
 		);
-		
+debug($task_data);		
 		$taskId = new snaphappi_api_TaskID(
 			array(
 			    'AuthToken' => $task_data['AuthToken'],
@@ -323,14 +330,41 @@ debug(Session::read());
 		debug("GetState() result=".print_r($state,true));
 // debug(Session::read());		
 // $this->render('/elements/sql_dump');
-// return;			
+// return;
+		
+		/*
+		 * Test GetWatchedFolders
+		 */
+		$folders = $Task->GetWatchedFolders($taskId);
+		debug("GetWatchedFolders() result=".print_r($folders,true));
+		
+			
 		/*
 		 * Test GetFolders
+		 * 	NOTE: returns empty if all folders are isScanned=1
 		 */
 		$folders = $Task->GetFolders($taskId);
 		debug("GetFolders() result=".print_r($folders,true));
-$this->render('/elements/sql_dump');
-return;			
+		// get ALL foldders
+		$folders = $Task->GetFolders($taskId, null);
+		debug("GetFolders() ALL Folders, result=".print_r($folders,true));		
+// $this->render('/elements/sql_dump');
+// return;
+
+		/*
+		 * Test GetImageHash, UO Task
+		 * http://dev.snaphappi.com/thrift/test/api:1-0/Task/1?device=11&debug=2, (OSX) user=manager
+		 */
+		try {			 
+			$ImageID = '517d2b0f-7424-4085-95c4-65330afc6d44';		// device=11
+			$ImageID = '517dce1c-2f4c-47b3-9079-19fcf67883f5';		// device=1
+			$ret = $Task->GetImageHash($taskId, $ImageID);
+			debug("GetImageHash() result=".print_r($ret,true));
+			debug("Session => ".print_r(Session::read(),true));		
+		} catch(Exception $e) {
+			debug("WARNING: GetImageHash() exception, for ImageId on OSX only");
+		}
+
 		if (count($folders)) {
 			/*
 			 * Test GetFiles
@@ -344,8 +378,8 @@ return;
 			CakePhpHelper::_setTaskState($taskId, array('IsCancelled'=>0));
 		}	
 		
-			$files = $Task->GetFilesToUpload($taskId);
-			debug("GetFiles() result=".print_r($files,true));
+		$files = $Task->GetFilesToUpload($taskId);
+		debug("GetFilesToUpload() result=".print_r($files,true));
 // $this->render('/elements/sql_dump');
 // return;	
 		
@@ -381,115 +415,66 @@ return;
 		debug("ReportFolderUploadComplete() result=".print_r($folder,true));		
 // $this->render('/elements/sql_dump');
 // return;	
-		/*
-		 * Test UploadFiles, UO ORIGINAL
-		 */
-		 
-		Stagehand::$stage_basepath = Configure::read('path.stageroot.basepath');
-		$path = 'C\TEMP\big-test\events\NYC\P1010445.JPG';
-		$data['ProviderAccount'] = Array
-	        (
-	            'id' => '50996b75-425c-4261-a0ee-14c8f67883f5',
-	            'user_id' => '5013ddf3-069c-41f0-b71e-20160afc480d',
-	            'provider_name' => 'native-uploader',
-	            'provider_key' => $deviceId,
-	            'display_name' => 'manager',
-	            'baseurl' => null,
-	            'auth_token' => $taskId->AuthToken,
-	            'created' => '2012-11-02 16:32:51',
-	            'modified' => '2012-11-02 19:15:15',
-	        );
-		$data['Asset'] = Array
-		(
-			'id' => '50eda502-b3f8-4f85-9e8e-1684f67883f5',
-			'owner_id' => '5013ddf3-069c-41f0-b71e-20160afc480d',
-		    'provider_account_id' => '509e525d-d740-4aa2-8dca-63900afc6d44',
-		    'provider_name' => 'native-uploader',
-		    'batchId' => '1358265743',
-		    'uploadId' => '1358268241',
-		    'asset_hash' => 'fffea6bece055e8834c78afaef1ba88b',
-		    'json_exif' => '{"Make":"Panasonic","Model":"DMC-TS3","Orientation":1,"ExposureTime":"10\/600","FNumber":"33\/10","ISOSpeedRatings":400,"ExifVersion":"0230","DateTimeOriginal":"2012:07:21 12:56:22","Flash":25,"ColorSpace":1,"ExifImageWidth":4000,"ExifImageLength":2672,"GPSVersion":"\u0002\u0003\u0000\u0000","GPSLatitudeRef":"N","GPSLatitude":["38\/1","54\/1","4028\/100"],"GPSLongitudeRef":"W","GPSLongitude":["77\/1","2\/1","4117\/100"],"GPSTimeStamp":["21\/1","48\/1","2\/1"],"GPSAreaInformation":"UNICODE\u0000T\u0000H\u0000O\u0000M\u0000A\u0000S\u0000 \u0000T\u0000 \u0000G\u0000A\u0000F\u0000F\u0000 \u0000H\u0000O\u0000U\u0000S\u0000E\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000","GPSDateStamp":"2012:07:15","InterOperabilityIndex":"R98","InterOperabilityVersion":"0100","ApertureFNumber":"f\/3.3","isFlash":1,"root":{"imageWidth":4000,"imageHeight":2672,"isRGB":true}}',
-		    'dateTaken' => '2012:07:21 12:56:22',
-		    'isFlash' => 1,
-		    'isRGB' => 1,
-		    'caption' => 'P1010445',
-		    'isThriftAPI' => 1,
-		    'provider_key' => '50eda502-b3f8-4f85-9e8e-1684f67883f5',
-		    'src_thumbnail' => 'stage6/tn~50eda502-b3f8-4f85-9e8e-1684f67883f5.jpg',
-		    'json_src' => '{"root":"stage6\/50eda502-b3f8-4f85-9e8e-1684f67883f5.jpg","thumb":"stage6\/tn~50eda502-b3f8-4f85-9e8e-1684f67883f5.jpg","orig":"C:\\\\TEMP\\\\big-test\\\\events\\\\NYC\\\\P1010445.JPG"}',
-		    'replace-preview-by-native-path' => str_replace('\\', '\\\\', $path),
-		);
-		
-		/*
-		 * setup upload
-		 */ 
-		$src = json_decode($data['Asset']['json_src'], true);
-		$source = Stagehand::$stage_basepath.DS.$src['root'];
-		$dest = Stagehand::$stage_basepath . "/../upload/{$data['Asset']['owner_id']}/" . $path;
-		debug("COPYING: $source  => $dest");
-		copy($source, $dest);
-		$Asset = ClassRegistry::init('Asset'); 
-		$Asset->id = '50eda502-b3f8-4f85-9e8e-1684f67883f5';
-		$Asset->Behaviors->detach('Permissionable');
-		$Asset->saveField('isOriginal', 'q'); // queued
-		/*
-		 * END setup upload
-		 */ 
-		 
-		// TODO: this script is not detecting duplicates correctly, could be escape problem on native_path 
-		 
-		debug($data);	
-		debug("****** AuthToken set for ProviderAccount.user_id=[manager] **************");
-		$UploadInfo = new snaphappi_api_UploadInfo(array(
-			'UploadType'=>UploadType::Original, 
-			'imageID'=>$data['Asset']['id'],
-		));
-		$Task->UploadFile($taskId, $path, true, $UploadInfo);
-		
-$this->render('/elements/sql_dump');
-return;		
 
 
 		/*
 		 * Test UploadFiles, UR
 		 */
+		debug("************  UR Task ******** "); 
+		$path = 'C:\\TEMP\\big-test\\events\\NYC\\P1010445.JPG';
+		$owner_id = '5013ddf3-069c-41f0-b71e-20160afc480d';		// manager
+		/*
+		 * create upload source file
+		 */ 
+		Stagehand::$stage_basepath = Configure::read('path.stageroot.basepath');
+		$source = 'C:\\TEMP\\big-test\\events\\NYC\\P1010445.JPG';
+		$dest = Stagehand::$stage_basepath . "/../upload/{$owner_id}/" . str_replace(':', '', $path);
+		debug("COPYING: $source  => $dest");
+		copy($source, $dest);
 		
-		$path = 'C:\TEMP\May\2015.JPG';
-		$data['ProviderAccount'] = Array
-	        (
-	            'id' => '50996b75-425c-4261-a0ee-14c8f67883f5',
-	            'user_id' => '5013ddf3-069c-41f0-b71e-20160afc480d',
-	            'provider_name' => 'native-uploader',
-	            'provider_key' => $deviceId,
-	            'display_name' => 'manager',
-	            'baseurl' => null,
-	            'auth_token' => $authToken,
-	            'created' => '2012-11-02 16:32:51',
-	            'modified' => '2012-11-02 19:15:15',
-	        );
-		$data['Asset'] = Array
-		(
-		    'owner_id' => '5013ddf3-069c-41f0-b71e-20160afc480d',
-		    'provider_account_id' => '5093f5b3-477c-42a8-8db7-14c8f67883f5',
-		    'provider_name' => 'native-uploader',
-		    'batchId' => '1351883673',
-		    'uploadId' => '1351883842',
-		    'asset_hash' => '1c917307a3aacd8e45e14b009d87ffd2',
-		    'json_exif' => '{"Make":"Panasonic","Model":"DMC-TS3","Orientation":1,"ExposureTime":"10\/1250","FNumber":"33\/10","ISOSpeedRatings":1000,"ExifVersion":"0230","DateTimeOriginal":"2012:03:25 14:18:19","Flash":25,"ColorSpace":1,"ExifImageWidth":4000,"ExifImageLength":3000,"InterOperabilityVersion":"0100","ApertureFNumber":"f\/3.3","isFlash":1,"root":{"imageWidth":640,"imageHeight":480,"isRGB":true}}',
-		    'dateTaken' => '2012:03:25 14:18:19',
-		    'isFlash' => '1',
-		    'isRGB' => null,
-		    'caption' => '2015',
-		    'id' => '50941c42-2f70-42f9-a837-14c8f67883f5',
-		    'provider_key' => '50941c42-2f70-42f9-a837-14c8f67883f5',
-		    'src_thumbnail' => 'stage5/tn~50941c42-2f70-42f9-a837-14c8f67883f5.jpg',
-		    'json_src' => '{"root":"stage5\/50941c42-2f70-42f9-a837-14c8f67883f5.jpg","thumb":"stage5\/tn~50941c42-2f70-42f9-a837-14c8f67883f5.jpg","orig":"C:\\TEMP\\May\\2015.JPG"}',
-		);
-		debug($data);	
-		debug("****** AuthToken set for ProviderAccount.user_id=[manager] **************");
+		
 		$extras = new snaphappi_api_UploadInfo(array('UploadType'=>UploadType::Preview));
-		$Task->UploadFile($taskId, $path, false, $extras);
+		try {
+			$Task->UploadFile($taskId, $path, false, $extras);
+		} catch(Exception $e) {
+			debug($e->getMessage());
+		}		
+		// ???: how do I get the asset_id of the UR task asset? need this for UO task
+
+		/*
+		 * Test UploadFiles, UO ORIGINAL
+		 */
+		debug("************  UO Task ******** ");
+		$ur_asset_id = '517dce1c-2f4c-47b3-9079-19fcf67883f5';
 		
+		/*
+		 * setup upload
+		 */ 
+		debug("COPYING: $source  => $dest");		// same as UR task
+		copy($source, $dest);
+		$Asset = ClassRegistry::init('Asset'); 
+		$Asset->Behaviors->disable('Permissionable');
+		$Asset->id = $ur_asset_id;
+		$exists = $Asset->read('id'); 
+		debug($exists);		
+		if ($exists) $Asset->saveField('isOriginal', 'q'); // asset found, queue for UO task
+		else {
+			debug("SET Asset.id manually for UO task!!!");
+			debug("SELECT id FROM assets a WHERE a.caption='P1010445' AND a.owner_id='5013ddf3-069c-41f0-b71e-20160afc480d';"); 
+		}
+		/*
+		 * END setup upload
+		 */ 
+		$UploadInfo = new snaphappi_api_UploadInfo(array(
+			'UploadType'=> UploadType::Original, 
+			'imageID'=>$ur_asset_id,
+		));
+		try {
+			$Task->UploadFile($taskId, $path, true, $UploadInfo);
+		} catch(Exception $e) {
+			debug($e->getMessage());
+		}		
+				
 		
 	}
 }

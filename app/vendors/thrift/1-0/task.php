@@ -99,7 +99,6 @@ class CakePhpHelper {
 				if (!$session) $session = ThriftController::$controller->ThriftSession->bindDeviceToSession($sessionId, $taskID->AuthToken, $taskID->DeviceID);
 				$data = array_merge($data, $session);
 				ThriftController::$session = $data;
-// ThriftController::log("_loginFromAuthToken OK, data=".print_r($data,true), LOG_DEBUG);
 				return $data;
 			} catch (Exception $e) {
 				ThriftController::log("==============   ".$e->getMessage(), LOG_DEBUG);
@@ -361,15 +360,17 @@ if (!isset($thrift_GetTask['FileUpdateCount']))
 			$data = ThriftController::$controller->ThriftFolder->getOriginalFiles(
 				$session['ThriftDevice'] 
 			);
-			$nativePath = $data[0]['Asset']['native_path'];
-			FolderContains::$case_sensitive = strpos($nativePath,':\\') !== false;
-// ThriftController::log("_getFiles() case sensitive=".FolderContains::$case_sensitive." BEFORE filter=".print_r($device_files, true), LOG_DEBUG);				
-			
-// ThriftController::log("_getFiles() BEFORE FILTER, count=".count($device_files), LOG_DEBUG);			
-			$data = array_map('FolderContains::stripDeviceIdFromNativePath', $data);
-			// filter for files in folderPath, or use SQL LIKE clause
-// ThriftController::log("_getFiles() AFTER FILTER, count=".count($device_files), LOG_DEBUG);				
-// ThriftController::log("_getFiles() AFTER FILTER=".print_r($device_files, true), LOG_DEBUG);			
+			if ($data){
+				$nativePath = $data[0]['Asset']['native_path'];
+				FolderContains::$case_sensitive = strpos($nativePath,':\\') !== false;
+	// ThriftController::log("_getFiles() case sensitive=".FolderContains::$case_sensitive." BEFORE filter=".print_r($device_files, true), LOG_DEBUG);				
+				
+	// ThriftController::log("_getFiles() BEFORE FILTER, count=".count($device_files), LOG_DEBUG);			
+				$data = array_map('FolderContains::stripDeviceIdFromNativePath', $data);
+				// filter for files in folderPath, or use SQL LIKE clause
+	// ThriftController::log("_getFiles() AFTER FILTER, count=".count($device_files), LOG_DEBUG);				
+	// ThriftController::log("_getFiles() AFTER FILTER=".print_r($device_files, true), LOG_DEBUG);			
+			}
 			return $data;
 		}			
 
@@ -442,17 +443,25 @@ if (!isset($thrift_GetTask['FileUpdateCount']))
 		if (empty($data['Asset']['id'])) {
 			$data['Asset']['replace-preview-by-native-path'] = $device_origPath;
 		}
+// debug($data['Asset']);		
 		$ret = true;
 		$Import = loadComponent('Import', ThriftController::$controller);
 		if (!isset(ThriftController::$controller->Asset)) ThriftController::$controller->Asset = ClassRegistry::init('Asset');
-debug($data['Asset']);		
-// establish Auth/Permissionable		
-// Load/initialize PermissionableComponent, CakePhpHelper::after _loginFromAuthToken()
-App::import('Component', 'Permissionable.Permissionable');
-ThriftController::$controller->Permissionable = & new PermissionableComponent();
-ThriftController::$controller->Permissionable->initialize(ThriftController::$controller);
-// TODO: test detaching Permissionable	instead	
-		// ThriftController::$controller->Asset->Behaviors->detach('Permissionable');
+		
+		/*
+		 * Load/initialize PermissionableComponent, AFTER PermissionableBehavior attached
+		 * IMPORTANT! Permissionable REQUIRED on Import so that the AssetPermission is also created
+		 */ 		
+		if (!ThriftController::$controller->Asset->Behaviors->enabled('Permissionable')) {
+			ThriftController::$controller->Asset->Behaviors->enable('Permissionable');
+		}
+		if (!class_exists('Permissionable') || (Permissionable::$user_id != AppController::$userid)) {
+			App::import('Component', 'Permissionable.Permissionable');
+			ThriftController::$controller->Permissionable = & new PermissionableComponent();
+			ThriftController::$controller->Permissionable->initialize(ThriftController::$controller);
+ThriftController::log(" *** ThriftController->PermissionableComponent initialized 	",LOG_DEBUG);
+		}
+		
 		/*
 		 * create ProviderAccount, if missing
 		 */
@@ -469,7 +478,7 @@ ThriftController::$controller->Permissionable->initialize(ThriftController::$con
 		 // TODO: add correct UNIQUE index for ProviderAccount, include provider key, 
 		$paData = ThriftController::$controller->ProviderAccount->addIfNew($data['ProviderAccount'], $conditions,  $response);
 // debug($data);				
-debug($paData);	
+// debug($paData);	
 		/****************************************************
 		 * setup data['Asset'] to create new Asset
 		 */
@@ -479,6 +488,9 @@ debug($paData);
 		}	
 		
 // ThriftController::log("CakePhpHelper::__importPhoto, paData=".print_r($paData, true), LOG_DEBUG);			
+
+
+
 		$assetData = ThriftController::$controller->Asset->addIfNew($data['Asset'], $paData['ProviderAccount'], $basepath, $fullpath, $isOriginal, $response);
 // ThriftController::log("CakePhpHelper::__importPhoto, this->Asset->addIfNew(), response=".print_r($response, true), LOG_DEBUG);				
 // ThriftController::log("CakePhpHelper::__importPhoto, this->Asset->addIfNew(), asset=".print_r($assetData, true), LOG_DEBUG);		
@@ -542,20 +554,33 @@ debug($paData);
 		if (!ThriftController::$session) CakePhpHelper::_loginFromAuthToken($taskID);
 		$session = & ThriftController::$session;
 		if (!isset(ThriftController::$controller->Asset)) ThriftController::$controller->Asset = ClassRegistry::init('Asset');
-		$options = array('conditions'=>array(
-			'Asset.id'=>$asset_id,
-			'Asset.provider_account_id'=>$session['ThriftDevice']['provider_account_id'],
+		$options = array(
+			'conditions'=>array(
+				'Asset.id'=>$asset_id,
+				'Asset.provider_account_id'=>$session['ThriftDevice']['provider_account_id'],
 		));
+		
+		/*
+		 * Load/initialize PermissionableComponent, AFTER PermissionableBehavior attached
+		 * IMPORTANT! Permissionable REQUIRED on Import so that the AssetPermission is also created
+		 */ 		
+		if (!ThriftController::$controller->Asset->Behaviors->enabled('Permissionable')) {
+			ThriftController::$controller->Asset->Behaviors->enable('Permissionable');
+		}
+		if (!class_exists('Permissionable') || (Permissionable::$user_id != AppController::$userid)) {
+			App::import('Component', 'Permissionable.Permissionable');
+			ThriftController::$controller->Permissionable = & new PermissionableComponent();
+			ThriftController::$controller->Permissionable->initialize(ThriftController::$controller);
+ThriftController::log(" *** ThriftController->PermissionableComponent initialized 	",LOG_DEBUG);
+		}		
+		
 		$data = ThriftController::$controller->Asset->find('first', $options);
 		if (!empty($data['Asset']['asset_hash'])) {
-			
-			// TODO: change to image-hash i32 value
 			$image_hash = $data['Asset']['asset_hash'];  
-			
 		} else if ($data) {
-App::import('Component', 'Gist');
-ThriftController::$controller->Gist = & new GistComponent();
-ThriftController::$controller->Gist->initialize(ThriftController::$controller);
+			App::import('Component', 'Gist');
+			ThriftController::$controller->Gist = & new GistComponent();
+			ThriftController::$controller->Gist->initialize(ThriftController::$controller);
 			$image_hash =  ThriftController::$controller->Gist->getImageHash($asset_id);
 			ThriftController::$controller->Asset->id = $asset_id;
 			ThriftController::$controller->Asset->saveField('asset_hash', $image_hash);
@@ -596,12 +621,16 @@ ThriftController::log("***   GetState, state=".print_r($state,true), LOG_DEBUG);
 		 * called by interactive upload task, type=UR
 		 * 	scan=1 || watch=0 || 
 		 * @param $taskID snaphappi_api_TaskID
+		 * @param $all, 
+		 * 		if true, return only watched folders, 
+		 *		if false return only unwatched folders, 
+		 * 		if null return all folders,
 		 * @return array of Strings
 		 */
-        public function GetFolders($taskID) {
+        public function GetFolders($taskID, $isWatch=false) {
 // ThriftController::log("***   GetFolders session={$taskID->Session}", LOG_DEBUG);
 			// get native desktop uploader state for thrift API
-			$folders = CakePhpHelper::_getFolderState($taskID, false);
+			$folders = CakePhpHelper::_getFolderState($taskID, $isWatch);
 
 			if (empty($folders)) {
 ThriftController::log("***   GetFolders: NO NEW FOLDERS TO SCAN", LOG_DEBUG);					
@@ -892,11 +921,11 @@ ThriftController::log("*****   SystemException from RemoveFolder(): ".print_r($t
 		 * @return void 
 		 */
         public function UploadFile($id, $path, $filedata, $UploadInfo) {
-ThriftController::log("###   UploadFile(), AuthToken={$id->AuthToken}, path={$path}", LOG_DEBUG);
-debug("###   UploadFile(), AuthToken={$id->AuthToken}, path={$path}");
+// debug("###   UploadFile(), AuthToken={$id->AuthToken}, path={$path}");
 			if (!ThriftController::$session) CakePhpHelper::_loginFromAuthToken($id);
 			$session = & ThriftController::$session;
-
+// debug(ThriftController::$controller->Asset->Behaviors->attached());
+		
 			// TODO: change to 'path.nativeUploader.folder_basepath'
 			$os = Configure::read('Config.os');
         	$upload_basepath = cleanpath(Configure::read('path.fileUploader.folder_basepath').AppController::$userid, $os );
@@ -983,6 +1012,7 @@ ThriftController::log("check for original at path={$uploadpath}", LOG_DEBUG);
 						$thrift_exception['Information'] = "Duplicate File on upload";
 						$taskState = CakePhpHelper::_setTaskState($id, array('DuplicateFileException'=>1));
 						// when threshold is passed, set TaskID->IsCancelled=1
+	// debug("UploadFile DuplicateFoundException");						
 	ThriftController::log("*****   SystemException from UploadFile(): ".print_r($thrift_exception,true), LOG_DEBUG);
 						throw new snaphappi_api_SystemException($thrift_exception);					
 					} else 
@@ -1041,7 +1071,7 @@ ThriftController::log("***   GetFiles, GetFilesToUpload ==>  deviceID={$taskID->
 		 */
 		public function GetImageHash ($taskID, $imageID) {
 ThriftController::log("***   GetImageHash\n >>>>>>> imageID = {$imageID} ", LOG_DEBUG);
-			CakePhpHelper::_getImageHash($taskID, $imageID);
+			return CakePhpHelper::_getImageHash($taskID, $imageID);
 		}
 		/**
 		 * ReportUploadFailedByID
