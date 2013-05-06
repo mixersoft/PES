@@ -52,8 +52,10 @@
 		if (Lightbox.instance) return Lightbox.instance;
 		this._cfg = null;
 		this.node = null;
-		if (this.init(cfg)) Lightbox.instance = this;	// singleton Class
-		else {
+		try {
+			this.init(cfg);
+			Lightbox.instance = this;	// singleton Class
+		} catch (ex){
 			console.warn('Lightbox.init() failed.');
 		}
 	};
@@ -208,8 +210,8 @@
             if (node.listen == undefined) node.listen = {};
             if (status) {
                 if (node.listen['Keydown'] == undefined) {
-//	                    this.listen['Keydown'] = _Y.on('keydown', this.handleKeydown, document, this);
-                    //					this.listen['Keydown'] = _Y.on('keyup', this.handleKeydown, node, '46', this);
+//	                this.listen['Keydown'] = _Y.on('keydown', this.handleKeydown, document, this);
+//					this.listen['Keydown'] = _Y.on('keyup', this.handleKeydown, node, '46', this);
                 }
             }
             else {
