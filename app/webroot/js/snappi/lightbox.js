@@ -72,7 +72,7 @@
 				// load/create lightbox asynchronously 
 				this.getMarkup(cfg);
 				return;
-			} else return false; 
+			} else throw new Exception('Lightbox init error: unknown markup'); 
 			this.node.listen = this.node.listen  || {};
 			this.node.removeClass('hide');
 			_Y.one('div.anchor-bottom').append(this.node);	// move to the right location

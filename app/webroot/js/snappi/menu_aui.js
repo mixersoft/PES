@@ -1284,10 +1284,8 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.share_with_circle_click = function(menuItem, menu, e){
 		var batch, thumbnail = menu.get('currentNode');
 		if (thumbnail.hasClass('FigureBox')) {	// from PhotoContextMenu
-			if (e.shiftKey) {
-				batch = MenuItems.getGalleryFromTarget(thumbnail).getSelected();			
-			} else {
-				batch = new SNAPPI.SortedHash();
+			batch = MenuItems.getGalleryFromTarget(thumbnail).getSelected();
+			if (batch.count()==0) {
 				batch.add(SNAPPI.Auditions.find(thumbnail.uuid));
 			}
 		}

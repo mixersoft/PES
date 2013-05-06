@@ -269,6 +269,9 @@
 					var options = {
 						batch: this.batch, 
 					}
+					/*
+					 * NOTE: if batch is empty (as passed from Dialog constructor) will use Lightbox.getSelected();
+					 */
 					SNAPPI.lightbox.applyShareInBatch(gid, selected, options);
 				}
 			}
