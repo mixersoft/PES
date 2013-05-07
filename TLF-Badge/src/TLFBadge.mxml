@@ -71,7 +71,11 @@
 				if (status == "installed")
 				{	
 					airSWF.getApplicationVersion(appID, pubID, versionDetectCallback); 
-				} else {
+				} else if (status == "available" && "test_if_chrome_browser") {
+					// TODO:  chrome bug, not returning installed
+					// http://stackoverflow.com/questions/11834663/any-solutions-to-actionscript-air-installation-detection-failing-with-chrome-21
+					airSWF.getApplicationVersion(appID, pubID, versionDetectCallback); 
+				} else {	
 					jsProxy.bootstrapReady(false);
 				}
 			}

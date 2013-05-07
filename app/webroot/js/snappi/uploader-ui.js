@@ -29,6 +29,9 @@
 		SNAPPI.ThriftUploader = ThriftUploader;
 		if (SNAPPI.is_TopLevelFolder_installed != undefined) {
 		 	ThriftUploader.action.bootstrapReady(SNAPPI.is_TopLevelFolder_installed);	
+		} else if (navigator.userAgent.toLowerCase().indexOf('chrome') > -1) {
+			// chrome bug detecting AIR installed, see TLFBadge.mxml onInit()
+			ThriftUploader.action.bootstrapReady('chrome-doesnt-know');	
 		}
 	}	
 	var ThriftUploader = function(cfg) {	}; 
@@ -142,6 +145,10 @@
 		bootstrapReady: function(is_TopLevelFolder_installed) {
 			// called by TLFBootstrapper flash app, 
 			if (is_TopLevelFolder_installed) {
+				ThriftUploader.action.waitForDeviceId();
+			} else if (navigator.userAgent.toLowerCase().indexOf('chrome') > -1) {
+				// chrome browser will not detect TopLevelFolder is installed, just wait.
+				is_TopLevelFolder_installed = 'chrome-doesnt-know';
 				ThriftUploader.action.waitForDeviceId();
 			} else {
 				_Y.one('#checking-config').remove();
