@@ -146,17 +146,34 @@ debug($cmd);
 	/**
 	 * get event-group output JSON from castingCall
 	 * @param $castingCall aa, output $this->CastingCall->getCastingCall() 
-	 * @param $timescale int, timescale in days
+	 * @param $options mixed, filtered by allowed values, use $this->passedArgs or $this->params['named'] from controller
+	 * 		// event-group v1.0
+	 * 		$options[timescale] float, timescale in days
+	 * 		// event-group v1.1 event-group-spacing, with COARSE/FINE params
+	 * 		$options[coarse_spacing], default 1
+	 * 		$options[fine_spacing], default 0.5
+	 * 		$options[day], default 6
+	 * 		$options[iterations], default 20
+	 * 		$options[pretty_print]
 	 * @return aa of event-groups
 	 */
-	function getEventGroupFromCC($castingCall, $timescale = 30)
+	function getEventGroupFromCC($castingCall, $options)
 	{
 		set_time_limit(600);
+		
+		// parse event-group options
+		$allowed = array('timescale', 'coarse_spacing', 'fine_spacing', 'day', 'iterations');
+		$options = array_intersect_key($options, array_flip($allowed));
+		$cmd_switches = '';
+		foreach ($options as $key => $value) {
+			if ($key == 'timescale') $key = 'scale';		// name lookup
+			$cmd_switches .= " --{$key} {$value}";
+		}
+		
 		// config path
 		$gist_bin = Configure::read('bin.gist');
 		$stageRoot = Stagehand::$stage_basepath.DS;
 		$eventGroupRoot = APP."vendors/shells/gist/import";
-		$timescaleSwitch = "--scale {$timescale}";
 		
 
 		// config proc_open
@@ -170,7 +187,7 @@ debug($cmd);
 		$output = true;		
 		
 		if (GistComponent::$OS=='win32') {
-			$cmd = "{$gist_bin}/event-group {$timescaleSwitch} --pretty_print";
+			$cmd = "{$gist_bin}/event-group {$cmd_switches} --pretty_print";
 			$woid = Session::read("WMS.{$this->controller->passedArgs[0]}.Workorder.id");
 			
 			// sample output for Win testing
@@ -183,7 +200,7 @@ debug($cmd);
 			$sample_data['5']['1'] = 	'{"Events":[{"FirstPhotoID":"4bbb38cc-957c-4342-aa06-11a0f67883f5","PhotoCount":17},{"FirstPhotoID":"4bbb38cc-33d4-433b-8041-11a0f67883f5","PhotoCount":71},{"FirstPhotoID":"4bbb38cc-4ff4-4575-a380-11a0f67883f5","PhotoCount":67},{"FirstPhotoID":"4bbb38cc-0c50-43d8-8875-11a0f67883f5","PhotoCount":73}],"ID":1364408299,"count":9999,"elapsed (sec)":0.25820994377136,"Groups":[]}';
 			debug($cmd);
 			debug("WARNING: event-group doesn't work on win32, sample output available only for workorder client=[sardinia, michael, bali, paris]");
-			debug("*************** using sample output woid={$woid}, {$timescaleSwitch} ***************");
+			debug("*************** using sample output woid={$woid}, {$cmd_switches} ***************");
 			$retval = isset($sample_data[$woid][$timescale]) ? json_decode($sample_data[$woid][$timescale], true) : array('Events'=>array());
 			return $retval;
 // username=saturday, --preserve_order
@@ -199,7 +216,7 @@ debug($cmd);
 
 		} else {
 			// unix, image-group only works on linux
-			$cmd = "{$gist_bin}/event-group {$timescaleSwitch} --pretty_print ";
+			$cmd = "{$gist_bin}/event-group {$cmd_switches} --pretty_print ";
 debug("GistComponent->event-group() {$cmd}");			
 			$start = microtime(true);
 			$errors = GistComponent::$Exec->exec($cmd, $options, $stdin, $output);
