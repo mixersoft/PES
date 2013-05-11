@@ -161,8 +161,10 @@ class PagemakerController extends AppController {
         return $key;
     }
 
-    /*
-	 * * TODO: move to Story model, also see /gallery/save_page
+    /**
+	 * SAVE story to filesystem, copied from GalleryController
+	 * * TODO: move to Story model??? StoryController currently saves to DB, not filesystem
+	 * also see /gallery/save_page for saving to filesystem
      * use seed to reset secretKey
      * - seed should be a user-provided value stored in DB, along with $userid, $filename
      */
@@ -173,6 +175,24 @@ class PagemakerController extends AppController {
     	$forceXHR = setXHRDebug($this, 1);
         $this->layout = null;
         $ret = 0;
+		
+		
+		/*
+		 * allow cross-domain XHR, instead of jsonp
+		 * 	from thats-me.snaphappi.com for timeline app
+		 *  from anything from snaphappi.com 
+		 * TODO: I use jsonp somewhere else, WMS app(?) replace with this pattern
+		 */ 
+		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
+		if (preg_match('/[snaphappi\.com | thats\-me]/i', $origin)) {
+			echo header("Access-Control-Allow-Origin: {$origin}");
+    		echo header('Access-Control-Allow-Methods: POST, GET');
+    		echo header('Access-Control-Max-Age: 3600');
+    		echo header('Access-Control-Allow-Headers: Content-Type');
+		}	
+		
+		
+				
         if ($this->data) {
             /*
              * POST - save/append/delete PageGallery file
@@ -192,13 +212,13 @@ class PagemakerController extends AppController {
 	    		if (empty($content)) {
 	    			$src = $this->data['src'];		// source file, stored in /svc/pages
 	    			$secretKeySrc = $this->__getSecretKey($uuid, $this->__getSeed($src));
-		            $File = Configure::read('path.wwwroot').Configure::read('path.pageGalleryPrefix').DS.$src.'_'.$secretKeySrc.'.div';
+		            $File = Configure::read('path.svcroot').Configure::read('path.pageGalleryPrefix').DS.$src.'_'.$secretKeySrc.'.div';
 		            $content = @file_get_contents($File);
 	    		}
 	            /*
 	             * append or write content to book
 	             */
-	            $File = Configure::read('path.wwwroot').Configure::read('path.pageGalleryPrefix').DS.$dest.'_'.$secretKeyDest.'.div';
+	            $File = Configure::read('path.svcroot').Configure::read('path.pageGalleryPrefix').DS.$dest.'_'.$secretKeyDest.'.div';
 	            
 	            // append page to book
 	            $mode = isset($this->data['reset']) ? 'w' : 'a';

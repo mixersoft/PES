@@ -882,9 +882,9 @@ debug(" ----------------------->   mergeCells() DONE, elapsed(ms)=". 1000*(micro
      * 
      * @param array $photos
      * @param int $parts Number of parts
-     * @param array $partsWeights Result - array of weights
+     * @param array $partsWeights Result - array of weights, pass by reference NOT ALLOWED
      */
-    protected function definePartsWeights(&$photos, $parts, &$partsWeights, $type = null) {
+    protected function definePartsWeights(&$photos, $parts, & $partsWeights, $type = null) {
         switch ($type) {
             case 'golden':
                 $divisionCoefficient = 0.618;
@@ -912,6 +912,7 @@ debug(" ----------------------->   mergeCells() DONE, elapsed(ms)=". 1000*(micro
             $partsWeights[1] = $divisionCoefficient * ($weightsTotal - $partsWeights[0]);
             $partsWeights[2] = $weightsTotal - $partsWeights[0] - $divisionCoefficient * ($weightsTotal - $partsWeights[0]);
         }
+		return $partsWeights;
     }
     
     /**
@@ -1174,7 +1175,7 @@ debug(" ----------------------->   mergeCells() DONE, elapsed(ms)=". 1000*(micro
         $rest = false;
         
          // Define parts weights:
-        $this->definePartsWeights($photos, $parts, &$partsWeights, 'golden');
+        $this->definePartsWeights($photos, $parts, $partsWeights, 'golden');
         $rand = mt_rand(0, 1);
 //                $rand = 0;
            

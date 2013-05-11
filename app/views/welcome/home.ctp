@@ -7,7 +7,7 @@
             <i>"The photos are coming too fast - I can't keep up with my life..."</i>
         </blockquote>
         <div id='welcome-copy' class='text'>
-            <a href='http://gallery.snaphappi.com/gallery/page_gallery/venice' target='_blank'><img width="320" height="213" title='click here to see a sample Page Gallery in a new window' src='/img/welcome/page-gallery-sample.jpg'></a>
+            <a href='http://gallery.snaphappi.com/gallery/story/venice' target='_blank'><img width="320" height="213" title='click here to see a sample Page Gallery in a new window' src='/img/welcome/page-gallery-sample.jpg'></a>
 			<h3>Snaphappi Gallery</h3>
             <p>
                 You've got some beautiful memories buried among 1000s of photos. Let us help you dig them out.

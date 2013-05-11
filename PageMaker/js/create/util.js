@@ -267,22 +267,34 @@
                 };
                 SNAPPI.io.post(sUrl, postData, callback, {src: sUrl});
             },
-            // DEPRECATE. save directly from stage.body
+            /*
+             * Use to save/cache public Stories to filesystem
+             * 	called by Production.postPageGallery()
+             */
             createStaticPageGallery: function(cfg){
-                var parent = (cfg && cfg.parent) ? cfg.parent : null;
+            	var content = (cfg && cfg.content) ? cfg.content : null;
+            	if (!content) {
+                	content = cfg && cfg.parent && cfg.parent.unscaled_pageGallery;
+                }
                 var tmpfile = (cfg && cfg.tmpfile) ? cfg.tmpfile : null;
-                var filename = (cfg && cfg.filename) ? cfg.filename : 'tmp';
+                var dest = (cfg && cfg.dest) ? cfg.dest : 'tmp';
+                var key = (cfg && cfg.key) ? cfg.key : null;
                 var replace = (cfg && cfg.replace) ? cfg.replace : false;
                 
-                var postData = {"data[content]": encodeURIComponent(parent.unscaled_pageGallery)};
-                if (replace) 
-                    postData['data[reset]'] = 1;
-                
-                var sUrl = "/gallery/page_gallery/" + filename;
+                var postData = {
+                	"data[content]"	: encodeURIComponent(content),
+                	"data[dest]"	: dest,
+                };
+                if (key) postData['data[key]'] = key;
+                if (replace) postData['data[reset]'] = 1;
+// cfg.server = false;                
+                var sUrl = cfg.server ? 'http://'+cfg.server : '';
+                // NOTE: use GalleryController to save to filesystem, StoryController to DB, Collection Model
+                sUrl += "/gallery/story/" + dest + '_' + key;		
                 
                 var callback = {
-                    complete: function(status, resp, arguments){
-                        var src = arguments.src;
+                    complete: function(status, resp, arg){
+                        var src = arg.src;
                         try {
                         	if (PAGE.jsonData.controller.here == '/my/pagemaker') {
                         	}
@@ -293,8 +305,12 @@
                         var check;
                     }
                 };
+                var sync = false;		// synchronous or AJAX
+                if (cfg.server !== window.location.host) {
+                	// TODO: cross domain hack
+                	SNAPPI.io.get(sUrl, callback, postData, null, {src: sUrl}, true);			
+                } else SNAPPI.io.post(sUrl, postData, callback, {src: sUrl}, sync);
                 
-                SNAPPI.io.post(sUrl, postData, callback, {src: sUrl});
                 return sUrl;
             },
             addSubdomain: function(src) {

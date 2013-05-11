@@ -42,54 +42,52 @@ class GalleryController extends AppController {
     function __getSeed($filename, $uuid=null) {
     	return '-';	
     }
+	// TODO: @deprecate, use /gallery/story
     function page_gallery($filename = '') {
     	$next = str_replace('page_gallery','story', $this->here);
     	$this->redirect($next, null, true);
     }
+	/**
+	 * NOTE: 
+	 * 	/stories/story are read from the DB, Collestions.markup
+	 * 	/gallery/story are read from filesystem at Configure::read(path.pageGalleryPrefix) 
+	 * 	POST will save,
+	 *  GET will read
+	 */
     function story($filename = null) {
+    	
+		
+
+		/*
+		 * allow cross-domain XHR, instead of jsonp
+		 * 	from thats-me.snaphappi.com for timeline app
+		 *  from anything from snaphappi.com 
+		 * TODO: I use jsonp somewhere else, WMS app(?) replace with this pattern
+		 */ 
+		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
+		if (preg_match('/[snaphappi\.com | thats\-me]/i', $origin)) {
+			echo header("Access-Control-Allow-Origin: {$origin}");
+			echo header('Access-Control-Allow-Methods: POST, GET');
+    		echo header('Access-Control-Max-Age: 3600');
+    		echo header('Access-Control-Allow-Headers: Content-Type');
+		}	
+		
+		
+				
+    	$forceXHR = setXHRDebug($this, 1);
     	$this->__redirectIfTouchDevice();
 		
         $filename = $filename ? $filename : 'guest'; // testing
         if ($this->data) {
-            /*
-			 * deprecate. using /pagemaker/save_page instead
-             * POST - save/append/delete PageGallery file
-			 * 
-             */        	
-        	if (empty($this->data['content'])) {
-        		$check = false;
-        		$ret = 0;
-        	} else {
-	            $content = $this->data['content'];
-	            /*
-	             * get secretKey for current user, auth REQUIRED
-	             */
-		        $secretKey = $this->__getSecretKey(AppController::$userid, $this->__getSeed($filename));          
-	            /*
-	             * save PageGallery content to file
-	             */
-	            $File = Configure::read('path.wwwroot').Configure::read('path.pageGalleryPrefix').DS.$filename.'_'.$secretKey.'.div';
-	            $mode = isset($this->data['reset']) ? 'w' : 'a';
-	            $Handle = fopen($File, $mode);
-	            fwrite($Handle, $content);
-	            fclose($Handle);
-	            $page_gallery = array($content);
-	            $ret = $filename;
-        	}
-            
-            /*
-             * do NOT render page gallery on post.
-             */
-            $this->autoRender = false;
-            header("HTTP/1.1 201 CREATED");
-        	// TODO: return standard JSON message format
-            echo $ret;
-            return;
+        	/**
+			 * use action=>save_page() to save
+			 */
+  			return $this->save_page();
         } else {
         	/*
         	 * GET - read PageGallery content
         	 */
-        	$title = ucwords(substr($filename,0, strlen($filename)-41));
+        	$title = ucwords(array_shift(explode('_', $filename)));
 			$title .= " :: Stories@Snaphappi"; 
             $page_gallery = array();
             $isPreview = isset($this->params['url']['preview']) ? $this->params['url']['preview'] !== '0' : false;
@@ -110,7 +108,7 @@ class GalleryController extends AppController {
             /*
              * read content from file
              */
-            $File = Configure::read('path.wwwroot').Configure::read('path.pageGalleryPrefix').DS.$filename.'.div';
+            $File = Configure::read('path.svcroot').Configure::read('path.pageGalleryPrefix').DS.$filename.'.div';
             $request = $this->params['url']['url'];
             if (file_exists($File)) {	
             	// secretKey already embedded in $filename 
@@ -120,10 +118,10 @@ class GalleryController extends AppController {
 	             * get secretKey for current user, auth REQUIRED
 	             */
 				$secretKey = $this->__getSecretKey(AppController::$userid, $this->__getSeed($filename));
-                $File = Configure::read('path.wwwroot').Configure::read('path.pageGalleryPrefix').DS.$filename.'_'.$secretKey.'.div';
+                $File = Configure::read('path.svcroot').Configure::read('path.pageGalleryPrefix').DS.$filename.'_'.$secretKey.'.div';
                 $link = "http://{$_SERVER['HTTP_HOST']}/{$request}_{$secretKey}";
             }
-            if (file_exists($File)) {	
+            if (file_exists($File)) {
 	            if (isset($this->params['url']['reset'])) {
 	                unlink($File);
 				} else if (isset($this->params['url']['remove'])) {
@@ -138,13 +136,23 @@ class GalleryController extends AppController {
 	            }
             }
         }
+		if ($this->RequestHandler->ext=='json') {
+			$success = file_exists($File);
+			$href = Router::url(str_replace('/.json','',$this->here), true);
+			$response = $success ? array('href'=>$href) : null;
+			$message = "cached story, found={$success}";
+			$this->viewVars['jsonData'] = compact('success', 'message','response');
+			$done = $this->renderXHRByRequest('json', null, null , 0);
+			return;
+		}
+
         if ( empty($page_gallery) ) {
             $page_gallery = array('<div class="error-page-gallery">Sorry, it seems there was an error somewhere. We cannot find the Story you requested.</div>');
             $link = '';
         }
         $this->set(compact('page_gallery', 'link', 'isPreview', 'title'));
         $this->set('title_for_layout', $title);
-        $done = $this->renderXHRByRequest(null, '/gallery/story', null, 0);
+        $done = $this->renderXHRByRequest('json', '/gallery/story', null, 0);
         if ($done) return;
         
         // render as http request
@@ -153,40 +161,48 @@ class GalleryController extends AppController {
     
     
     /*
-	 * move to pagemaker or story controller
+	 * ???: use /pagemaker/save_page to save to filesystem??? 
+	 * /stories/save_page to save to DB
      * SAVE/APPEND PageGallery PAGE to PageGallery BOOK. 
+	 * PagemakerController->saveToPageGallery() will POST here
+	 * 
+	 * POST params:
+	 * 	$this->data[dest], filename prefix, combined with key for unique filename on server
+	 * 	$this->data[key], data[key] if empty, will create different key for each user, or every guest request
+	 * 
      */
     function save_page() {
     	$forceXHR = setXHRDebug($this, 0);
         $this->layout = null;
         $ret = 0;
-
-        if ($this->data) {
+		if ($this->data) {
             /*
+			 * COPIED FROM /pagemaker/save_page !!!
              * POST - save/append/delete PageGallery file
              */        	
             // allow guest users to save
-            $userid = AppController::$userid  ? AppController::$userid : 'Guest';
-        	if ($userid) {	
+            $dest = $this->data['dest'];	// dest	file, book
+            if (isset($this->data['key']) && $this->data['key']!=='undefined') $secretKeyDest =  $this->data['key'];
+			if (empty($secretKeyDest)) {
+				// NOTE: to save different stories for the same dest/filename, make sure key is empty
+				$uuid = AppController::$userid  ? AppController::$userid : String::uuid();
+				$secretKeyDest = $this->__getSecretKey($uuid, $this->__getSeed($dest));
+			}
+        	if ($secretKeyDest) {	
 	            $content = $this->data['content'];		// page content
-	            $dest = $this->data['dest'];	// dest	file, book
-        		// TODO: use seed to reset secretKey. get seed from DB
-        		$secretKeyDest = $this->__getSecretKey($this->__getSeed($dest)); 
-	            
 	            /*
 	             * read content from page
 	             */
-        		if (empty($content)) {
-        			$src = $this->data['src'];		// source file, page
-        			$secretKeySrc = $this->__getSecretKey($this->__getSeed($src));
-		            $File = Configure::read('path.wwwroot').Configure::read('path.pageGalleryPrefix').DS.$src.'_'.$secretKeySrc.'.div';
+	    		if (empty($content)) {
+	    			$src = $this->data['src'];		// source file, stored in /svc/pages
+	    			$secretKeySrc = $this->__getSecretKey($uuid, $this->__getSeed($src));
+		            $File = Configure::read('path.svcroot').Configure::read('path.pageGalleryPrefix').DS.$src.'_'.$secretKeySrc.'.div';
 		            $content = @file_get_contents($File);
-        		}
+	    		}
 	            /*
 	             * append or write content to book
 	             */
-	            $File = Configure::read('path.wwwroot').Configure::read('path.pageGalleryPrefix').DS.$dest.'_'.$secretKeyDest.'.div';
-	            
+	            $File = Configure::read('path.svcroot').Configure::read('path.pageGalleryPrefix').DS.$dest.'_'.$secretKeyDest.'.div';
 	            // append page to book
 	            $mode = isset($this->data['reset']) ? 'w' : 'a';
 	            $Handle = fopen($File, $mode);
@@ -194,7 +210,9 @@ class GalleryController extends AppController {
 	            fclose($Handle);
 	            // don't unlink
 	            $ret = 1;
-	        }
+			}
+		} else {
+			$ret = false;
 		}
 		$this->autoRender = false;
 		header('Content-type: application/json');
@@ -206,8 +224,8 @@ class GalleryController extends AppController {
 			header("HTTP/1.1 201 CREATED");
 			$message = "Your Story was saved.";
 			$response = array(
-				'key'=>$secretKeySrc, 
-				'link'=>"/gallery/story/{$this->data['dest']}_{$secretKeySrc}",
+				'key'=>$secretKeyDest, 
+				'link'=>"/gallery/story/{$dest}_{$secretKeyDest}",
 			);
 		} else {
 			$message = "There was an error saving your Story. Please try again.";

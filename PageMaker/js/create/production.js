@@ -261,25 +261,42 @@
 			 */
 			// cfg.isRehearsal = false;   
             var renderedPerformance = this.getPerformance(cfg, scene);
+            renderedPerformance.unscaled_pageGallery = renderedPerformance.get('outerHTML');
             if (cfg.scrollView) {
             	Plugin.stage.body.append(renderedPerformance);
     		} else {	// stage==modal,  
     			Plugin.stage.body.setContent(renderedPerformance);
     			// POST raw/unscaled HTML to server when saving page
-    			renderedPerformance.unscaled_pageGallery = renderedPerformance.get('outerHTML');
     		}
     		if (1 || cfg.scrollView) renderedPerformance.setAttribute('ccPage', SNAPPI.STATE.displayPage.page);
+    		if (cfg.cache && cfg.cache.dest) {
+    			// cache gallery in /svc/pages
+    			// ???: should we POST from outside PageMaker in story.js?
+    			var url = this.postPageGallery(cfg, renderedPerformance);
+    			// ???: how do we redirect to url? 
+    			// need to wait until after LAST post, i.e. page 2
+    		}
 			return renderedPerformance;
         },
-        postPageGallery: function(cfg, scene){
+        /**
+         * @param cfg.cache = {filename:,  clear:0}
+         * @param node, .pageGallery,  string = renderedPerformance.unscaled_pageGallery markup
+         */
+        postPageGallery: function(cfg, node){
             /*
              * createStaticPageGallery will issue a POST to save page Gallery on Server
              */
-            var url = PM.util.createStaticPageGallery({
-            	content: Plugin.stage.body.one('div.pageGallery').unscaled_pageGallery,
-                filename: 'tmp',
-                replace: true
-            });
+            node = node || Plugin.stage.body.one('div.pageGallery');
+            var markup = node.unscaled_pageGallery,
+            	// cfg.key = atob(window.location.pathname); use this as hash
+            	//		same for ANY user
+            	// cfg.dest = filename
+            	//		different users can save to the SAME filename, no problem
+            	storyCfg = _Y.merge(cfg.cache,{
+	            	content: markup,
+	                replace: cfg.cache && cfg.cache.clear || false
+	            });
+            var url = PM.util.createStaticPageGallery(storyCfg);
             return url;
         },
         /*

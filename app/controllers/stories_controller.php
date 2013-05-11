@@ -88,6 +88,8 @@ class StoriesController extends CollectionsController {
 		 */
 		 // experimental
 		 'import_page_gallery', 'get_asset_info',
+		 // 
+		 'save_page',		// used by thats-me/stories to cache Curated Story
 		);
 		$this->Auth->allow($allowedActions);
 		AppController::$writeOk = $this->Collection->hasPermission('write', AppController::$uuid);
@@ -384,7 +386,25 @@ class StoriesController extends CollectionsController {
 		}
 	}
 	
+	/**
+	 * NOTE: 
+	 * 	/stories/story are read from the DB, Collestions.markup
+	 * 	/gallery/story are read from filesystem at Configure::read(path.pageGalleryPrefix) 
+	 */
 	function story($id = null) {
+		
+		/*
+		 * allow cross-domain XHR, instead of jsonp
+		 * 	from thats-me.snaphappi.com for timeline app
+		 *  from anything from snaphappi.com 
+		 * TODO: I use jsonp somewhere else, WMS app(?) replace with this pattern
+		 */ 
+		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
+		if (preg_match('/[snaphappi\.com | thats\-me]/i', $origin)) {
+			echo header("Access-Control-Allow-Origin: {$origin}");
+		}
+		
+				
 		$this->__redirectIfTouchDevice();
 		
 		$this->layout = 'snappi';
@@ -404,7 +424,7 @@ class StoriesController extends CollectionsController {
 			'conditions'=>array('Collection.id'=>$id),
 		);
 		$data = $this->Collection->find('first', $options);
-			if (empty($data)) {
+		if (empty($data)) {
 				/*
 			 * handle no permission to view record
 			 */
@@ -780,12 +800,29 @@ class StoriesController extends CollectionsController {
 	}
 	/********************************************************************
 	 * ajax POST methods
+	 * saves to Collections.markup DB table
+	 * NOTE: CANNOT save to DB for GUEST users until we allow GUEST sessions, see Collection->save_page()
+	 * 		thats-me/story should use /gallery/save_page to save to fs in /svc/pages 
 	 */
 	function save_page() {
     	$forceXHR = setXHRDebug($this, 1);
+		
+		/*
+		 * allow cross-domain XHR, instead of jsonp
+		 * 	from thats-me.snaphappi.com for timeline app
+		 *  from anything from snaphappi.com 
+		 * TODO: I use jsonp somewhere else, WMS app(?) replace with this pattern
+		 */ 
+		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
+		if (preg_match('/[snaphappi\.com | thats\-me]/i', $origin)) {
+			echo header("Access-Control-Allow-Origin: {$origin}");
+		}		
+		
+		
         $this->layout = 'snappi-guest';
         $ret = 0;
         if ($this->data) {
+        	// save to DB
         	$title = !empty($this->data['dest']) ? $this->data['dest'] : null;
 			$replace =  isset($this->params['url']['reset']) ? 'replace' : null;
         	$uuid = !empty($this->data['Collection']['id']) ? $this->data['Collection']['id'] : null;
