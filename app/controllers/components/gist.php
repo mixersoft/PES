@@ -162,7 +162,7 @@ debug($cmd);
 		set_time_limit(600);
 		
 		// parse event-group options
-		$allowed = array('timescale', 'coarse_spacing', 'fine_spacing', 'day', 'iterations');
+		$allowed = array('timescale', 'coarse_spacing', 'fine_spacing', 'day_quota', 'iterations');
 		$options = array_intersect_key($options, array_flip($allowed));
 		$cmd_switches = '';
 		foreach ($options as $key => $value) {
