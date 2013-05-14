@@ -1,6 +1,7 @@
 <?php
-	$isIFrame = !empty($this->params['url']['iframe']);
-	if ($isIFrame) {	// iframe
+	$isIFrame = !empty($isIFrame) || !empty($this->params['url']['iframe']);
+	$isMin = !empty($isMin) || !empty($this->params['url']['min']);; 		// $isMin == show min story, no extra stuff, called by thats-me
+	if ($isIFrame && !$isMin) {	// iframe, 
 		$href = "parent.window.location.href='{$link}';";		
 		$fullscreen = "<div class='right' id='fullscreen' onclick=\"{$href}\" title='show fullscreen' ><img src='/static/img/css-pm/full_screen.png' /></div>";
 	} else {	// fullscreen
@@ -24,7 +25,7 @@
 			<div id="pagenum"></div>
 			<div class="next" onclick=''></div>
 	</div>
-	<?php if (!$isIFrame && !$isPreview) { ?>
+	<?php if (!$isIFrame && !$isPreview && !$isMin) { ?>
 	<div class="sharethis inline right hide">
 		<span class='st_facebook_large' displayText='Facebook'></span>
 		<span class='st_twitter_large' displayText='Tweet'></span>
@@ -42,7 +43,7 @@
 	} ?> 
 </div>
 <div id="footer"> 
-	<?php if (!$isIFrame && !$isPreview) {
+	<?php if (!$isIFrame && !$isPreview && !$isMin) {
 		echo '<div id="share">Share this story: <a href="" id="share-link">http://'.env('HTTP_HOST').'/stories/story/4f82af26-66e4-407f-aa75-66f70afc480d</a></div>';
 		echo '<a target="_new" href="http://snaphappi.com"><img src="'.AppController::$http_static[0].'/static/img/css-gui/snappi-top.png"></a>';
 	} ?>

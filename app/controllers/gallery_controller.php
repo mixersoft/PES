@@ -64,14 +64,19 @@ class GalleryController extends AppController {
 		 *  from anything from snaphappi.com 
 		 * TODO: I use jsonp somewhere else, WMS app(?) replace with this pattern
 		 */ 
-		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
+		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : null;
 		if (preg_match('/[snaphappi\.com | thats\-me]/i', $origin)) {
 			echo header("Access-Control-Allow-Origin: {$origin}");
 			echo header('Access-Control-Allow-Methods: POST, GET');
     		echo header('Access-Control-Max-Age: 3600');
     		echo header('Access-Control-Allow-Headers: Content-Type');
 		}	
-		
+		if (!empty($this->params['url']['min']) && !empty($this->params['url']['iframe']) ) {
+			// render for thats-me.snaphappi.com/story
+			$this->layout = "story-thats-me";
+		} else {
+        	$this->layout = "story";
+		}
 		
 				
     	$forceXHR = setXHRDebug($this, 1);
@@ -154,9 +159,6 @@ class GalleryController extends AppController {
         $this->set('title_for_layout', $title);
         $done = $this->renderXHRByRequest('json', '/gallery/story', null, 0);
         if ($done) return;
-        
-        // render as http request
-        $this->layout = "story";
     }
     
     
