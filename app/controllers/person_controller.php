@@ -123,7 +123,7 @@ class PersonController extends UsersController {
 			 * ONLY accept from http://$origin/story/$id
 			 */
 			 $verified = "{$origin}/story/{$id}/";
-			 if (strpos($_SERVER['HTTP_REFERER'], $verified) === false) throw new Exception("unauthorized access, cross-domain violation. referer={$_SERVER['HTTP_REFERER']}");
+			 if (0 && strpos($_SERVER['HTTP_REFERER'], $verified) === false) throw new Exception("unauthorized access, cross-domain violation. referer={$_SERVER['HTTP_REFERER']}");
 			$data = $this->User->find('first', array('conditions'=>array('User.id'=>$id)) );	
 			$id = $data['User']['id'];	
 		} else {
@@ -132,6 +132,14 @@ class PersonController extends UsersController {
 		$ret = $this->Auth->login($data);
 		$this->__cacheAuth();
 		$this->Permissionable->initialize($this);
+		
+		/*
+		 * add Story filter, from: unixtimestamp, to: unixtimestamp
+		 */
+		if (!empty($this->passedArgs['from']) && !empty($this->passedArgs['to'])) {
+			// convert Asset.dateTaken from UTC to local timezone, UNIX_TIMESTAMP implicitly converts date from local timezone to UTC
+			$this->paginate['Asset']['conditions'][] = "UNIX_TIMESTAMP(CONVERT_TZ(`Asset`.dateTaken,'+00:00', 'SYSTEM')) BETWEEN {$this->passedArgs['from']} AND {$this->passedArgs['to']}";
+		} 
 		$this->action='photos';
 		$this->photos($id);
 	}	
@@ -318,6 +326,8 @@ if (!empty($this->passedArgs['all-shots'])) {
 }
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
+// debug(Configure::read("paginate.Options.{$paginateModel}")); exit;	
+// $this->log(Configure::read("paginate.Options.{$paginateModel}"), LOG_DEBUG);	
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 		// end paginate
 		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
@@ -641,7 +651,7 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 		$this->Cache = & new CacheHelper();	
 		if (!empty($this->params['url']['reset'])) Cache::clearCache();
 		$this->cacheAction = '1 hour';
-		// event_group options
+		
 		/*
 		 * TODO: should only see bestshots in final Timeline, no duplicates
 		 * 	- also add minimum rating
@@ -655,7 +665,14 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 		$paginateModel = 'Asset';
 		$Model = $this->User->{$paginateModel};
 		$Model->Behaviors->attach('Pageable');
-		
+		/*
+		 *  event_group DEFAULTS
+		 */ 
+		$DEFAULT_EVENT_GROUP_LIMIT = 999;
+		if (!isset($this->passedArgs['perpage'])) $this->paginate[$paginateModel]['perpage'] = $DEFAULT_EVENT_GROUP_LIMIT; 
+		/*
+		 * end event_group DEFAULTS
+		 */ 
 		$paginateArray = $Model->getPaginatePhotosByUserId($id, $this->paginate[$paginateModel]);
 		$paginateArray = Set::merge($paginateArray, $required_options);
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
@@ -664,6 +681,7 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 		 */ 
 		$paginateArray['order'] = array('`Asset`.dateTaken');
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
+		
 		$pageData = $this->paginate($paginateModel);
 		$pageData = Set::extract($pageData, "{n}.{$paginateModel}");
 		// end paginate

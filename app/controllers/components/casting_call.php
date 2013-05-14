@@ -164,7 +164,7 @@ if (!isset($exif['root']['imageWidth'])) {
 		} else $DateTaken = '';
 		
 //		$DateTaken = (!empty($row['dateTaken']))  ? $row['dateTaken'] : '';
-		$TS = strtotime($DateTaken);
+		$TS = strtotime($DateTaken." UTC"); // get from DB
 		$ExifColorSpace = !empty($exif['ColorSpace']) ? $exif['ColorSpace'] : null;
 		$ExifFlash = !empty($exif['Flash']) ? $exif['Flash'] & 1 : '';	// check bit 0
 		$W = !empty($exif['ExifImageWidth']) ? $exif['ExifImageWidth'] : null;
