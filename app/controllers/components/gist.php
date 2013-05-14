@@ -161,6 +161,11 @@ debug($cmd);
 	{
 		set_time_limit(600);
 		
+		// DEFAULT VALUES
+		$DEFAULT['coarse_spacing'] = 1;
+		$DEFAULT['fine_spacing'] = 0.2;
+		$options = array_merge($DEFAULT, $options);
+		
 		// parse event-group options
 		$allowed = array('timescale', 'coarse_spacing', 'fine_spacing', 'day', 'iterations');
 		$options = array_intersect_key($options, array_flip($allowed));
