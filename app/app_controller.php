@@ -29,7 +29,7 @@ class AppController extends Controller {
 		) {
 			$this->components[] = 'DebugKit.Toolbar';
 		}
-		$this->components = array_diff($this->components, $remove_components);
+		// $this->components = array_diff($this->components, $remove_components);
 		parent::__construct();
 	}
 
@@ -129,7 +129,8 @@ class AppController extends Controller {
 		// Story controller checks for touch device
 		$options = array('Android', 'iPod', 'iPhone', 'iPad','Opera Mobi','webOS', 'Windows Phone OS');			
 		$pattern = '/' . implode('|', $options) . '/i';
-		$isTouch = (bool)preg_match($pattern, env('HTTP_USER_AGENT'));
+		if (isset($this->params['url']['touch'])) $isTouch = $this->params['url']['touch']; 
+		else $isTouch = (bool)preg_match($pattern, env('HTTP_USER_AGENT'));
 		$SUBDOMAIN = array('touch'=>"touch", 'desktop'=>'preview');
 		$exclude = array('git3', 'dev', 'touch_debug');
 		$pattern = '/' . implode('|', $exclude) . '/i';

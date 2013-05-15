@@ -79,13 +79,18 @@ class GalleryController extends AppController {
 		}
 		
 				
-    	$forceXHR = setXHRDebug($this, 1);
-    	$this->__redirectIfTouchDevice();
+    	$forceXHR = setXHRDebug($this, 1);		// change GET to POST
+    	if ($this->RequestHandler->ext == 'json') {
+    		// do nothing, DO NOT REDIRECT json request
+		} else {
+    		$this->__redirectIfTouchDevice();
+		}
 		
         $filename = $filename ? $filename : 'guest'; // testing
         if ($this->data) {
         	/**
 			 * use action=>save_page() to save
+			 * setXHRDebug($this, 1); to change GET to POST
 			 */
   			return $this->save_page();
         } else {
