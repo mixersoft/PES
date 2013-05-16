@@ -446,7 +446,7 @@
 							document, this);
 					if (!this.listen['activateLightBox']) this.listen['activateLightBox'] = this.content.delegate(
 							"click", this.activateLightBox,
-							'div.pageGallery article.FigureBox img', this);					
+							'div.pageGallery article.FigureBox img, div.pageGallery >img', this);					
 				}
 				this.listen.winResize = _Y.on('resize', this.winResize,
 						window, this);
