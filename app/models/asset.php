@@ -169,6 +169,18 @@ AND includes.asset_id='{$assetId}';
 		 * add secondary sorts for Asset
 		 * TODO: use assets_groups.dateTaken_offset for groups
 		 */ 
+		// translate /sort: named params on derived fields to correct Cakephp form
+		// 		strip off auto prefix of `Asset` model 
+		$translate_order = array();
+		foreach ($queryData['order'][0] as $sort=>$dir){
+			switch ($sort){
+				case '`Asset`.rating' : $translate_order['COALESCE(`rating`,`score`)'] = $dir; break;
+				case '`Asset`.score' : $translate_order['`score`'] = $dir; break;
+				default:  $translate_order[$sort] = $dir; break;
+			}
+		} 
+		$queryData['order'][0] = $translate_order;
+	
 		if (is_array($queryData['order'][0])) {
 			foreach ($queryData['order'][0] as $sort=>$dir) {
 				if ($sort==='rating') {
