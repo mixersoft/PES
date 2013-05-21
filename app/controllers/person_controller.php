@@ -133,13 +133,6 @@ class PersonController extends UsersController {
 		$this->__cacheAuth();
 		$this->Permissionable->initialize($this);
 		
-		/*
-		 * add Story filter, from: unixtimestamp, to: unixtimestamp
-		 */
-		if (!empty($this->passedArgs['from']) && !empty($this->passedArgs['to'])) {
-			// convert Asset.dateTaken from UTC to local timezone, UNIX_TIMESTAMP implicitly converts date from local timezone to UTC
-			$this->paginate['Asset']['conditions'][] = "UNIX_TIMESTAMP(CONVERT_TZ(`Asset`.dateTaken,'+00:00', 'SYSTEM')) BETWEEN {$this->passedArgs['from']} AND {$this->passedArgs['to']}";
-		} 
 		$this->action='photos';
 		$this->photos($id);
 	}	
@@ -632,7 +625,7 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 		 * use backdoor access, Timeline XHR has different cookie from normal login
 		 * TODO: CLOSE BACKDOOR
 		 */ 
-		$ALLOWED_BY_USERNAME = array('newyork', 'paris', 'venice', 'bali', 'summer-2009');
+		$ALLOWED_BY_USERNAME = array('newyork', 'paris', 'venice', 'bali', 'summer-2009', 'michael');
 		$data = $this->User->read(null, $id );
 		if (in_array($data['User']['username'], $ALLOWED_BY_USERNAME )) {
 			$ret = $this->Auth->login($data);
@@ -676,6 +669,7 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 		$paginateArray = $Model->getPaginatePhotosByUserId($id, $this->paginate[$paginateModel]);
 		$paginateArray = Set::merge($paginateArray, $required_options);
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
+
 		/*
 		 *  force extras & sort=dateTaken for event-group
 		 */ 
@@ -685,14 +679,15 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 		$pageData = $this->paginate($paginateModel);
 		$pageData = Set::extract($pageData, "{n}.{$paginateModel}");
 		// end paginate
-		
-		
+// debug(Configure::read("paginate.Options.{$paginateModel}"));
+// debug(Set::extract($pageData, '/dateTaken'));
+// return;		
 		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 		if (!isset($this->Gist)) $this->Gist = loadComponent('Gist', $this);
 		 
 		$castingCall = $this->CastingCall->getCastingCall($pageData);
 		$castingCall['CastingCall']['Auditions']['ShotType'] = 'event_group';
-		
+	
 		//TODO: deprecate, use EventGroup
 		$timescale = empty($this->passedArgs['timescale']) ? 1 : $this->passedArgs['timescale'];
 		$castingCall['CastingCall']['Auditions']['Timescale'] = $timescale;

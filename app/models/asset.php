@@ -169,6 +169,18 @@ AND includes.asset_id='{$assetId}';
 		 * add secondary sorts for Asset
 		 * TODO: use assets_groups.dateTaken_offset for groups
 		 */ 
+		// translate /sort: named params on derived fields to correct Cakephp form
+		// 		strip off auto prefix of `Asset` model 
+		$translate_order = array();
+		foreach ($queryData['order'][0] as $sort=>$dir){
+			switch ($sort){
+				case '`Asset`.rating' : $translate_order['COALESCE(`rating`,`score`)'] = $dir; break;
+				case '`Asset`.score' : $translate_order['`score`'] = $dir; break;
+				default:  $translate_order[$sort] = $dir; break;
+			}
+		} 
+		$queryData['order'][0] = $translate_order;
+	
 		if (is_array($queryData['order'][0])) {
 			foreach ($queryData['order'][0] as $sort=>$dir) {
 				if ($sort==='rating') {
@@ -1002,6 +1014,13 @@ $this->log("insert newAsset=".print_r($newAsset['native_path'], true), LOG_DEBUG
 		 * add filters, from $this->params['named']
 		 */
 		$filterConditions = array();
+		/*
+		 * add from: unixtimestamp, to: unixtimestamp
+		 */
+		if (!empty($options['from']) && !empty($options['to'])) {
+			// convert Asset.dateTaken from UTC to local timezone, UNIX_TIMESTAMP implicitly converts date from local timezone to UTC
+			$filterConditions[] = "UNIX_TIMESTAMP(CONVERT_TZ(`$this->alias`.dateTaken,'+00:00', 'SYSTEM')) BETWEEN {$options['from']} AND {$options['to']}";
+		} 	
 		if (isset($options['rating'])) {
 			if ($options['rating']==='0'){ 
 				$filterConditions[] = "SharedEdit.score IS NULL";
