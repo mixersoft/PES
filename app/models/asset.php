@@ -1016,6 +1016,13 @@ $this->log("insert newAsset=".print_r($newAsset['native_path'], true), LOG_DEBUG
 		 * add filters, from $this->params['named']
 		 */
 		$filterConditions = array();
+		/*
+		 * add from: unixtimestamp, to: unixtimestamp
+		 */
+		if (!empty($options['from']) && !empty($options['to'])) {
+			// convert Asset.dateTaken from UTC to local timezone, UNIX_TIMESTAMP implicitly converts date from local timezone to UTC
+			$filterConditions[] = "UNIX_TIMESTAMP(CONVERT_TZ(`$this->alias`.dateTaken,'+00:00', 'SYSTEM')) BETWEEN {$options['from']} AND {$options['to']}";
+		} 	
 		if (isset($options['rating'])) {
 			if ($options['rating']==='0'){ 
 				$filterConditions[] = "SharedEdit.score IS NULL";
