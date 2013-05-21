@@ -485,7 +485,8 @@ WHERE `Shot`.id = '{$shotId}'";
 	/**
 	 * update bestShotSystem for $shotIds using top score
 	 * 	called from removeFromShot
-	 * 	NOTE: does NOT update bestShotMember or bestShotUser. this 
+	 * 	NOTE: does NOT update bestShotMember or bestShotUser. this
+	 * 		- also check email for script: "SQL: update BestShotSystem using TEMP table to mark Bestshot and TopRated"" 
 	 * @param $shotIds array of Shot.id
 	 * @return aa  array('asset_id', 'changed') 
 	 */
@@ -514,7 +515,7 @@ WHERE `Shot`.id = '{$shotId}'";
 				'usershot_id'=>$topScoreAsset['Shot']['shot_id'],
 				'asset_id' => $topScoreAsset['Asset']['id']
 			);
-debug($insert);			
+// debug($insert);			
 			$ret = $this->{$model}->save($insert);
 			if ($ret) {
 				// return asset_id of new bestShot
@@ -587,7 +588,8 @@ debug($insert);
 				'order'=>'`Shot`.id, rating DESC, `SharedEdit`.score DESC, `Asset`.dateTaken ASC',	
 				'extras'=>array(
 					'show_edits'=>true,
-					'join_shots'=>'Usershot', 
+					'join_shots'=>'Usershot',
+					'join_bestshot'=>true,  		
 					'show_hidden_shots'=>true, 
 				),
 				'permissionable'=>true,	
