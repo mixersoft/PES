@@ -260,11 +260,9 @@ AND includes.asset_id='{$assetId}';
 		$shotType = $queryData['extras']['join_shots'];	// Groupshot or Usershot
 		$show_hidden_shots = !empty($queryData['extras']['show_hidden_shots']);
 // debug($show_hidden_shots);		
-		$join_bestshot = !$show_hidden_shots
-			&& (
-				!isset($queryData['extras']['join_bestshot']) 
-				|| $queryData['extras']['join_bestshot'] !== false
-			); // default true		
+		if (isset($queryData['extras']['join_bestshot'])) $join_bestshot = $queryData['extras']['join_bestshot']; 
+		else $join_bestshot = !$show_hidden_shots;
+				
 		$only_bestshot_system = !empty($queryData['extras']['only_bestshot_system']); // default false
 		$only_shots = !empty($queryData['extras']['only_shots']); // default false
 		$show_inactive_shots = !empty($queryData['extras']['show_inactive_shots']) || !empty($queryData['extras']['shot_id']);

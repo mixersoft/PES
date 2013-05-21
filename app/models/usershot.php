@@ -499,6 +499,7 @@ WHERE `Shot`.id = '{$shotId}'";
 			'extras'=>array(
 				'show_edits'=>true,
 				'join_shots'=>'Usershot', 
+				'join_bestshot'=>true, 
 				'show_hidden_shots'=>true, 
 			),
 		);
@@ -513,6 +514,7 @@ WHERE `Shot`.id = '{$shotId}'";
 				'usershot_id'=>$topScoreAsset['Shot']['shot_id'],
 				'asset_id' => $topScoreAsset['Asset']['id']
 			);
+debug($insert);			
 			$ret = $this->{$model}->save($insert);
 			if ($ret) {
 				// return asset_id of new bestShot
