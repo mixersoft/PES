@@ -603,12 +603,12 @@ class snaphappi_api_TaskImpl implements snaphappi_api_TaskIf {
 		 *  TaskState->DeviceId UUID (optional), unique id for desktop device
 		 */
         public function GetState($taskID) {
-// ThriftController::log("***   GetState, deviceID={$taskID->DeviceID}", LOG_DEBUG);    
+// ThriftController::log("***  API  GetState, deviceID=".print_r((array)$taskID, true), LOG_DEBUG);    
         	$state = CakePhpHelper::_getTaskState($taskID);
 			if (empty($state)) {
 				// NOTE: InvalidAuth Exception thrown from CakePhpHelper::_loginFromAuthToken()
-				$state['IsCancelled'] = true;
-ThriftController::log("***   GetState, state=".print_r($state,true), LOG_DEBUG);    				
+				// $state['IsCancelled'] = true;
+// ThriftController::log("***   GetState, state=".print_r($state,true), LOG_DEBUG);    				
 			} else {
 // ThriftController::log($state, LOG_DEBUG); 				
 			}
@@ -628,7 +628,7 @@ ThriftController::log("***   GetState, state=".print_r($state,true), LOG_DEBUG);
 		 * @return array of Strings
 		 */
         public function GetFolders($taskID, $isWatch=false) {
-// ThriftController::log("***   GetFolders session={$taskID->Session}", LOG_DEBUG);
+ThriftController::log("***  API  GetFolders, taskID, isWatch={$isWatch}", LOG_DEBUG);
 			// get native desktop uploader state for thrift API
 			$folders = CakePhpHelper::_getFolderState($taskID, $isWatch);
 
@@ -656,8 +656,7 @@ ThriftController::log("***   GetFolders: NO NEW FOLDERS TO SCAN", LOG_DEBUG);
 		 * @return array of Strings
 		 */
         public function GetWatchedFolders($taskID) {
-ThriftController::log("***   GetWatchedFolders", LOG_DEBUG);    
-// ThriftController::log("   taskID=".print_r($taskID, true), LOG_DEBUG);           	
+ThriftController::log("***  API  GetWatchedFolders, taskID", LOG_DEBUG);
 			// get native-uploader state for thrift API
 			// create a new Session for scheduled Tasks
 			$options['session_id'] = $taskID->Session;
@@ -675,7 +674,7 @@ ThriftController::log($folders, LOG_DEBUG);
 		 * @return array of Strings
 		 */
         public function GetFiles($taskID , $folderPath) {
-// ThriftController::log("***   GetFiles, folder ==> {$folderPath} <==        deviceID={$taskID->DeviceID}", LOG_DEBUG);         
+ThriftController::log("***  API  GetFiles, taskID, folderPath={$folderPath}", LOG_DEBUG);
 			$filtered = CakePhpHelper::_getFiles($taskID, $folderPath);
         	return $filtered;
         }                
@@ -686,8 +685,7 @@ ThriftController::log($folders, LOG_DEBUG);
 		 * @param $folderPath String
 		 */
         public function ReportFolderNotFound($taskID, $folderPath) {
-ThriftController::log("***   ReportFolderNotFound\n >>>>>  folder = {$folderPath}     , deviceID={$taskID->DeviceID}", LOG_DEBUG);         
-
+ThriftController::log("***  API  ReportFolderNotFound, taskID, folderPath={$folderPath}", LOG_DEBUG);
 			$data['ThriftFolder']['native_path']=$folderPath;
 			$data['ThriftFolder']['is_not_found']=1;
 			$ret = CakePhpHelper::_setFolderState($taskID, $data);
@@ -704,8 +702,7 @@ ThriftController::log("***   ReportFolderNotFound\n >>>>>  folder = {$folderPath
 		 * @param $folderPath String
 		 */
         public function ReportFolderUploadComplete($taskID, $folderPath) {
-ThriftController::log("***   ReportFolderUploadComplete\n >>>>>>>  folder = {$folderPath}     , deviceID={$taskID->DeviceID}", LOG_DEBUG);         
-
+ThriftController::log("***  API  ReportFolderUploadComplete, taskID, folderPath={$folderPath}", LOG_DEBUG);
 			$data['ThriftFolder']['native_path']=$folderPath;
 			$data['ThriftFolder']['is_scanned']=1;
 			$ret = CakePhpHelper::_setFolderState($taskID, $data);
@@ -720,7 +717,7 @@ ThriftController::log("***   ReportFolderUploadComplete\n >>>>>>>  folder = {$fo
 		 * @param $count int
 		 */
         public function ReportFileCount($taskID, $folderPath, $count) {
-ThriftController::log("***   ReportFileCount\n >>>>>>>  folder = {$folderPath} ({$count})", LOG_DEBUG);
+ThriftController::log("***  API  ReportFileCount, taskID, folderPath={$folderPath}, count={$count}", LOG_DEBUG);
 			$data['ThriftFolder']['native_path']=$folderPath;
 			$data['ThriftFolder']['count']=$count;
 			$data['ThriftFolder']['is_not_found']=0;
@@ -739,11 +736,11 @@ ThriftController::log("***   ReportFileCount\n >>>>>>>  folder = {$folderPath} (
 		 * 		ErrorCode::Unknown for everything else
 		 */
         public function GetDeviceID($authToken, $sessionId) {
-ThriftController::log("GetDeviceID auth_token={$authToken}, sessionId={$sessionId} ", LOG_DEBUG);
+ThriftController::log("***  API  GetDeviceID, authToken={$authToken} , sessionId={$sessionId}", LOG_DEBUG);
 			try {
 	        	$deviceId = CakePhpHelper::_getDeviceId($authToken, $sessionId);
 				if (!$deviceId) throw new Exception('Error: deviceId is not available yet');
-ThriftController::log(">>>    deviceId={$deviceId} ", LOG_DEBUG);
+ThriftController::log(">>>    GetDeviceID() DeviceID={$deviceId} ", LOG_DEBUG);
 				return $deviceId;
 			} catch (Exception $e) {
 				$msg = explode(',', $e->getMessage());
@@ -772,7 +769,7 @@ ThriftController::log("*****   SystemException from GetDeviceID(): ".print_r($th
 		 * @param $folderPath String 
 		 */
         public function GetFileCount($taskID, $folderPath) {
-ThriftController::log("***   GetFileCount, folder={$folderPath}, taskID=".print_r($taskID, true), LOG_DEBUG);
+ThriftController::log("***  API  GetFileCount, taskID, folderPath={$folderPath}", LOG_DEBUG);        	
 			$data = CakePhpHelper::_loginFromAuthToken($taskID);
 			$thrift_GetFolders = CakePhpHelper::_getFolderState();
 			foreach ($thrift_GetFolders as $i=>$folder) {
@@ -792,8 +789,8 @@ ThriftController::log("***   GetFileCount, folder={$folderPath}, taskID=".print_
 		 * 		ErrorCode::Unknown for everything else
 		 */
         public function AddFolder($taskID, $path) {
+ThriftController::log("***  API  AddFolder, taskID, path={$path}", LOG_DEBUG);        	
         	try {
-ThriftController::log("*****   AddFolder(): path:{$path}, session={$taskID->Session}", LOG_DEBUG);        		 
         		$data = CakePhpHelper::_addFolder($taskID, $path); 
 				return;
 			} catch (Exception $e) {
@@ -825,6 +822,7 @@ ThriftController::log("*****   SystemException from AddFolder(): ".print_r($thri
 		 * 		ErrorCode::Unknown for everything else
 		 */
         public function SetTaskState($taskID, $pause=true) {
+ThriftController::log("***  API  SetTaskState, taskID, pause={$pause}", LOG_DEBUG);        	
         	try {
 				if ($pause) {
 					$ret = CakePhpHelper::_setTaskState($taskID, array('IsCancelled'=>1));
@@ -857,6 +855,7 @@ ThriftController::log("*****   SystemException from SetTaskState(): ".print_r($t
 		 * 		ErrorCode::Unknown for everything else
 		 */
         public function SetWatchedFolder($taskID, $path, $watched) {
+ThriftController::log("***  API  SetWatchedFolder, taskID, path={$path}, watched={$watched}", LOG_DEBUG);        	
         	try {
         		if (is_numeric($path)) $data['ThriftFolder']['native_path_hash'] = $path;
 				else $data['ThriftFolder']['native_path'] = $path;
@@ -887,6 +886,7 @@ ThriftController::log("*****   SystemException from SetWatchedFolder(): ".print_
 		 * 		ErrorCode::Unknown for everything else
 		 */
         public function RemoveFolder($taskID, $path) {
+ThriftController::log("***  API  RemoveFolder, taskID, path={$path}", LOG_DEBUG);        	
         	try { 
         		$data = CakePhpHelper::_addFolder($taskID, $path, array('delete'=>1)); 
 				return $data;
@@ -921,6 +921,7 @@ ThriftController::log("*****   SystemException from RemoveFolder(): ".print_r($t
 		 * @return void 
 		 */
         public function UploadFile($id, $path, $filedata, $UploadInfo) {
+ThriftController::log("***  API  UploadFile, taskID, path={$path}, UploadInfo=".print_r((array)$UploadInfo, true), LOG_DEBUG);        	
 // debug("###   UploadFile(), AuthToken={$id->AuthToken}, path={$path}");
 			if (!ThriftController::$session) CakePhpHelper::_loginFromAuthToken($id);
 			$session = & ThriftController::$session;
@@ -1025,7 +1026,6 @@ ThriftController::log("check for original at path={$uploadpath}", LOG_DEBUG);
 				$thrift_exception['ErrorCode'] = ErrorCode::Unknown;
 				$thrift_exception['Information'] = $e->getMessage();
 ThriftController::log("*****   SystemException from UploadFile(): ".print_r($thrift_exception,true), LOG_DEBUG);
-debug("*****   SystemException from UploadFile(): ".print_r($thrift_exception,true));
 				$taskState = CakePhpHelper::_setTaskState($id, array('OtherException'=>1));
 			}
         	return;
@@ -1042,7 +1042,7 @@ debug("*****   SystemException from UploadFile(): ".print_r($thrift_exception,tr
 		 * @return array of Strings
 		 */
         public function GetFilesToUpload($taskID) {
-ThriftController::log("***   GetFiles, GetFilesToUpload ==>  deviceID={$taskID->DeviceID}", LOG_DEBUG);         
+ThriftController::log("***  API  GetFilesToUpload, taskID", LOG_DEBUG);        	
 			$data = CakePhpHelper::_getOriginalFilesToUpload($taskID);
 			$targets = array();
 			$options = array('FilePath'=>null, 'Timestamp'=>123456789, 'Hash'=>0, 'FolderPath'=>'none');
@@ -1070,7 +1070,7 @@ ThriftController::log("***   GetFiles, GetFilesToUpload ==>  deviceID={$taskID->
 		 * @throws (1: SystemException systemException);
 		 */
 		public function GetImageHash ($taskID, $imageID) {
-ThriftController::log("***   GetImageHash\n >>>>>>> imageID = {$imageID} ", LOG_DEBUG);
+ThriftController::log("***  API  GetImageHash, taskID, imageID=".print_r((array)$imageID, true), LOG_DEBUG);			
 			return CakePhpHelper::_getImageHash($taskID, $imageID);
 		}
 		/**
@@ -1081,7 +1081,7 @@ ThriftController::log("***   GetImageHash\n >>>>>>> imageID = {$imageID} ", LOG_
 		 * @throws (1: SystemException systemException);
 		 */
 		public function ReportUploadFailedByID ($taskID, $imageID) {
-ThriftController::log("***   ReportUploadFailedByID\n >>>>>>> imageID = {$imageID}     , file = {$filePath}    ", LOG_DEBUG);
+ThriftController::log("***  API  ReportUploadFailedByID, taskID, imageID=".print_r((array)$imageID, true), LOG_DEBUG);			
 			$taskState = CakePhpHelper::_setTaskState($id, array('UploadFailedException'=>1));
 			return;
 		}
@@ -1093,7 +1093,7 @@ ThriftController::log("***   ReportUploadFailedByID\n >>>>>>> imageID = {$imageI
 		 * throws SystemException
 		 */
         public function ReportUploadFailed($taskID, $folderPath, $filePath) {
-ThriftController::log("***   ReportUploadFailed\n >>>>>>> folder = {$folderPath}     , file = {$filePath}    ", LOG_DEBUG);
+ThriftController::log("***  API  ReportUploadFailed, taskID, folderPath={$folderPath}, path={$path}", LOG_DEBUG);        	
 			$taskState = CakePhpHelper::_setTaskState($id, array('UploadFailedException'=>1));
         	return;
         }  		
@@ -1105,7 +1105,7 @@ ThriftController::log("***   ReportUploadFailed\n >>>>>>> folder = {$folderPath}
 		 * @throws (1: SystemException systemException);
 		 */
 		public function ReportFileNotFoundByID ($taskID, $imageID) {
-ThriftController::log("***   ReportFileNotFoundByID\n >>>>>  id={$imageID}, deviceID={$taskID->DeviceID}", LOG_DEBUG);         
+ThriftController::log("***  API  ReportFileNotFoundByID, taskID, imageID=".print_r((array)$imageID, true), LOG_DEBUG);			
 			$taskState = CakePhpHelper::_setTaskState($id, array('FileNotFoundException'=>1));
 		}
 		/**
@@ -1115,7 +1115,7 @@ ThriftController::log("***   ReportFileNotFoundByID\n >>>>>  id={$imageID}, devi
 		 * @param $path String
 		 */
         public function ReportFileNotFound($taskID, $folderPath, $path) {
-ThriftController::log("***   ReportFileNotFound\n >>>>>  folder={$folderPath} file={$path}     , deviceID={$taskID->DeviceID}", LOG_DEBUG);         
+ThriftController::log("***  API  ReportFileNotFound, taskID, folderPath={$folderPath}, path={$path}", LOG_DEBUG);        	
 			$taskState = CakePhpHelper::_setTaskState($id, array('FileNotFoundException'=>1));
         	return;
         }		
