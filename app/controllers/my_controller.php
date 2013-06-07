@@ -872,6 +872,113 @@ if (isset($this->params['url']['new-taskid']))	{
 	}
 	
 	
+	/*
+	 * Using uploader from plupload.com
+	 */
+	function plupload (){
+		$this->viewPath = 'my';
+		$userid = AppController::$userid;
+		$this->layout = 'snappi-guest';
+		if (empty($this->data)) { // GET
+			$this->User->contain();
+			$options = array('conditions'=>array('User.id'=>$userid));
+			$data = $this->User->find('first', $options);
+			$js_basepath = "/js/plupload";
+			$this->set(compact('data','js_basepath'));
+			return;
+		} else {	// POST
+			@set_time_limit(5 * 60);
+		    // set upload folder
+			if ($this->Session->check('fileUploader.uploadFolder') == null) {
+				$fileUploader_path = Configure::read('path.fileUploader');
+			    // set upload folder
+			    $UPLOAD_FOLDER = $fileUploader_path['folder_basepath'].$userid;
+				Session::write('fileUploader.uploadFolder', $UPLOAD_FOLDER);
+			} else $UPLOAD_FOLDER = $this->Session->read('fileUploader.uploadFolder');
+			
+			
+			/*
+			 * save file from POST filedata 
+			 * $dest = tmp file on server
+			 */  
+			App::import('Vendor', 'plupload/upload');
+			$uploader = new Pluploader($UPLOAD_FOLDER);
+			$dest = $uploader->handleUpload();
+			/*
+			 * END POST
+			 */
+			 
+	// debug($this->data);		
+			$PROVIDER_NAME = 'pl-uploader';
+			$RELPATH = $this->data['Relpath'] ? $this->data['Relpath'] : $this->data['name'];
+			$BATCH_ID = $this->data['BatchId'];
+			$ROOT = $this->data['Root'];
+			$IS_ORIGINAL = $this->data['IsOriginal'];
+			
+			
+			$Import = loadComponent('Import', $this);
+			$move_to_src_root = $dest;
+			
+			// setup meta data
+			
+			$Import = loadComponent('Import', $this);
+			$data = array();
+			$data['Asset']['isPlupload'] = true;
+			$data['Asset']['id'] = null;
+			$data['Asset']['asset_hash'] = null;
+			$data['Asset']['batchId'] = $BATCH_ID;
+			$data['Asset']['rel_path'] = $RELPATH;
+			$data['ProviderAccount']['provider_name']=$PROVIDER_NAME;
+			$data['ProviderAccount']['baseurl']='';	// TODO: should be fullpath to $ROOT, if we can get it
+	// $this->log($data['Asset'], LOG_DEBUG);		
+			/***************************************************************
+			 * experimental: replace mode, replace existing with original
+			 * 	pass to Asset::addIfNew()
+			 ***************************************************************/ 
+			 if (!empty($this->params['url']['replace'])){
+			 	$data['Asset']['replace-preview-with-original'] = true;
+			 };
+			
+			/*
+			 * import into DB
+			 */
+	// $this->log("MyController::__upload_javascript() BEGIN pluploader IMPORT", LOG_DEBUG);
+	// $this->log($data, LOG_DEBUG);
+			$response = $this->__importPhoto($data, $UPLOAD_FOLDER, $move_to_src_root, $IS_ORIGINAL);	// autoRotate=false
+			if ($response['success'] && isset($response['response']['Asset']['id']) && isset($_GET['groupIds'])) {
+				/*
+				 * share via express uploads, as necessary
+				 */ 
+				$groupIds = (array)explode(',',$_GET['groupIds']);
+				$resp1 = array();
+				foreach($groupIds as $gid){
+					if (empty($gid)) continue;
+					$asset_id = $response['response']['Asset']['id'];
+					$paid = $response['response']['Asset']['provider_account_id'];
+					$count = $this->User->Membership->contributePhoto($gid, $asset_id, $paid);
+					if ($count) {
+						$resp1['message'][] = "Express Upload: shared with Group id={$gid}";
+						$resp1['response']['Group'][]['id'] = $gid;
+					}
+				}
+				$response = Set::merge($response, $resp1);
+			}
+	//$this->log($response, LOG_DEBUG);
+			$this->User->setRandomBadgePhoto($userid);
+			// to pass data through iframe you will need to encode all html tags
+			// Configure::write('debug', 0);
+			
+			
+			
+			/*
+			 * prepare response
+			 */
+			echo htmlspecialchars(json_encode($response), ENT_NOQUOTES);	
+			// echo json_encode($response);
+			exit(0);
+		}	// end POST
+	}
+	
 	function truncate($id=null){
 		Configure::write('debug', 2);
 		$this->autoRender=false;	

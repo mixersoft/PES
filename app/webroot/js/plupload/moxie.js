@@ -2547,7 +2547,19 @@ define('moxie/file/Blob', [
 			destroy: function() {
 				this.detach();
 				delete blobpool[this.uid];
-			}
+			},
+			
+			/**
+			 * RelativePath from Chrome 21+ accepts folders via Drag'n'Drop,
+			 * same as this.getSource().relativePath
+			 * 		for some reason, this.getNative().webkitRelativePath==''
+			 *
+			 * @property relativePath
+			 * @type String
+			 * @see moxie.js, _readEntry()
+			 */
+			relativePath: blob.relativePath || null,
+			
 		});
 
 		
@@ -6427,9 +6439,11 @@ define("moxie/runtime/html5/file/FileDrop", [
 		}
 
 		function _readEntry(entry, cb) {
+			var _fullPath = entry.fullPath || null;
 			if (entry.isFile) {
 				entry.file(function(file) {
 					if (_isAcceptable(file)) {
+						file.relativePath = _fullPath || null;
 						_files.push(file);
 					}
 					cb();
@@ -6446,7 +6460,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 
 		function _readDirEntry(dirEntry, cb) {
 			var entries = [], dirReader = dirEntry.createReader();
-
+			
 			// keep quering recursively till no more entries
 			function getEntries(cbcb) {
 				dirReader.readEntries(function(moreEntries) {

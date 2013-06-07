@@ -1860,7 +1860,19 @@ plupload.File = (function() {
 					src.destroy();
 					delete filepool[this.id];
 				}
-			}
+			},
+			
+			/**
+			 * RelativePath from Chrome 21+ accepts folders via Drag'n'Drop,
+			 * same as this.getNative().relativePath
+			 * 		for some reason, this.getNative().webkitRelativePath==''
+			 *
+			 * @property relativePath
+			 * @type String
+			 * @see moxie.js, _readEntry()
+			 */
+			relativePath: file.getSource().relativePath || null,
+			
 		});
 
 		filepool[this.id] = file;
