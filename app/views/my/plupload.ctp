@@ -57,7 +57,7 @@ $(function() {
 		max_file_size : '1000mb',
 
 		// User can upload no more then 20 files in one go (sets multiple_queues to false)
-		max_file_count: 20,
+		max_file_count: 999,
 		
 		chunks : {
 			size: '1mb',
@@ -69,7 +69,8 @@ $(function() {
 			width : 640, 
 			height : 640, 
 			quality : 90,
-			crop: false // crop to exact dimensions
+			crop: false, 				// true=crop to exact dimensions, false=max dim
+			preserve_headers: true,		// BUT do NOT update EXIF size after resize
 		},
 
 		// Specify what files to browse for
@@ -134,12 +135,13 @@ $(function() {
 				$('form#form input[type=submit]').addClass('hide');
 			},
 			FilesAdded: function(up, files) {
+				var root;
 				for (var i in files) {
 					if (files[i].relativePath) {
 						files[i].fileName = files[i].name;
 						files[i].name = files[i].relativePath;
 						root = files[i].relativePath.split('/');
-						if (root.length > 1 ) files[i].root = root[0];				
+						if (root.length > 2 ) files[i].root = '/'+root[1];				
 						else files[i].root = '';
 					}
 					try {

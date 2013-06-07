@@ -876,6 +876,7 @@ if (isset($this->params['url']['new-taskid']))	{
 	 * Using uploader from plupload.com
 	 */
 	function plupload (){
+		$forceXHR = setXHRDebug($this, 0);
 		$this->viewPath = 'my';
 		$userid = AppController::$userid;
 		$this->layout = 'snappi-guest';

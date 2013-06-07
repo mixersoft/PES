@@ -8186,10 +8186,13 @@ define("moxie/runtime/html5/image/Image", [
 
 					if (_imgInfo) {
 						_binStr = _imgInfo.stripHeaders(_binStr);
-
-						if (_preserveHeaders) {
+						if ( _preserveHeaders) {
 							// update dimensions info in exif
-							if (_imgInfo.meta && _imgInfo.meta.exif) {
+							/*
+							 * Snappi does NOT want to update ORIGINAL EXIF dimensions
+							 */
+							var snappi_update_exif_size = false;
+							if (snappi_update_exif_size && _imgInfo.meta && _imgInfo.meta.exif) {
 								_imgInfo.setExif({
 									PixelXDimension: this.width,
 									PixelYDimension: this.height
