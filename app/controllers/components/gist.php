@@ -167,7 +167,7 @@ debug($cmd);
 		$options = array_merge($DEFAULT, $options);
 		
 		// parse event-group options
-		$allowed = array('timescale', 'coarse_spacing', 'fine_spacing', 'day_quota', 'iterations');
+		$allowed = array('timescale', 'coarse_spacing', 'fine_spacing', 'day_quota', 'iterations', 'pretty-print');
 		$options = array_intersect_key($options, array_flip($allowed));
 		$cmd_switches = '';
 		foreach ($options as $key => $value) {
@@ -221,7 +221,7 @@ debug($cmd);
 
 		} else {
 			// unix, image-group only works on linux
-			$cmd = "{$gist_bin}/event-group {$cmd_switches} --pretty_print ";
+			$cmd = "{$gist_bin}/event-group {$cmd_switches} ";
 debug("GistComponent->event-group() {$cmd}");			
 			$start = microtime(true);
 			$errors = GistComponent::$Exec->exec($cmd, $options, $stdin, $output);
