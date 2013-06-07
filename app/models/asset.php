@@ -169,6 +169,18 @@ AND includes.asset_id='{$assetId}';
 		 * add secondary sorts for Asset
 		 * TODO: use assets_groups.dateTaken_offset for groups
 		 */ 
+		// translate /sort: named params on derived fields to correct Cakephp form
+		// 		strip off auto prefix of `Asset` model 
+		$translate_order = array();
+		foreach ((array)$queryData['order'][0] as $sort=>$dir){
+			switch ($sort){
+				case '`Asset`.rating' : $translate_order['COALESCE(`rating`,`score`)'] = $dir; break;
+				case '`Asset`.score' : $translate_order['`score`'] = $dir; break;
+				default:  $translate_order[$sort] = $dir; break;
+			}
+		} 
+		$queryData['order'][0] = $translate_order;
+	
 		if (is_array($queryData['order'][0])) {
 			foreach ($queryData['order'][0] as $sort=>$dir) {
 				if ($sort==='rating') {
@@ -667,7 +679,7 @@ AND includes.asset_id='{$assetId}';
 			'permissionable'=>false,
 		);
 		
-		if (!empty($newAsset['isThriftAPI'])) {
+		if (!empty($newAsset['isThriftAPI']) || !empty($newAsset['isPlupload']) ) {
 			/***************************************************************
 			 * ThriftAPI
 			 ***************************************************************/
@@ -712,7 +724,7 @@ AND includes.asset_id='{$assetId}';
 				'substr(Asset.json_exif, 1,70)' =>  substr($newAsset['json_exif'], 0, 70),
 			);
 		}; 
-		 
+// debug($checkDupes_options['conditions']);		 
 // $this->log("checkDupes_options", LOG_DEBUG);			
 // $this->log($checkDupes_options, LOG_DEBUG);
 		$duplicate = $this->find('first', $checkDupes_options);	
@@ -760,14 +772,12 @@ if ($duplicate) $this->log("DUPLICATE FOUND, id={$duplicate['Asset']['id']}, cap
 		if (isset($asset['isThriftAPI'])) {
 			$origPath = $asset['origPath'];
 			$asset['batchId'] = strtotime($asset['batchId']); // TODO: change BATCHID to TIMESTAMP IN dB SCHEMA
-		} else if (1 || isset($asset['isAIR'])) {	
-			// ???: which uploader is adding a duplicate filename counter?  is this outdated?
-			/*
-			 * TODO: confirm this fact, not sure it is still true
-			 * counter is used by AIR uploader to add counter to duplicate files in upload folder
-			 */ 
+		} else if ($providerAccount['provider_name'] == 'snappi') {
+			// deprecate: qq uploader only	
 			$filename_no_counter = preg_replace('/(.*)(~\d+)(\.jpg)/i','${1}${3}',$asset['rel_path']);	
 			$origPath = $filename_no_counter;
+		} else {
+			$origPath = $asset['rel_path'];
 		}
 		$asset_hash = getAssetHash($asset, $photoPath, $origPath );
 // $this->log(">>>>> asset_hash=>{$asset_hash}, origPath =>{$origPath}, photoPath=>{$photoPath}",LOG_DEBUG);			
@@ -795,19 +805,25 @@ if ($duplicate) $this->log("DUPLICATE FOUND, id={$duplicate['Asset']['id']}, cap
 		if (isset($asset['isThriftAPI'])) {
 			$newAsset['native_path'] = $asset['rel_path'];	// includes thrift_device_id
 			$newAsset['orig_path'] = $asset['origPath'];	// json_src['orig']
-			$newAsset['isThriftAPI'] = $asset['isThriftAPI'];
+			$newAsset['isThriftAPI'] = $asset['isThriftAPI'];  // for $this->_detectDuplicate()
 		} else if (isset($asset['isAIR'])) {
-			$newAsset['native_path'] = $asset['basepath'].DS.$asset['rel_path'];
+			$newAsset['native_path'] = $asset['rel_path'];
 			$newAsset['orig_path'] = $newAsset['native_path'];
+		} else if (isset($asset['isPlupload'])) {
+			$newAsset['orig_path'] = $newAsset['native_path'] = $asset['rel_path'];
+			$newAsset['isPlupload'] = $asset['isPlupload'];	// for $this->_detectDuplicate()
 		}
 		if (!empty($asset['replace-preview-with-original'])) {
 			$newAsset['replace-preview-with-original'] = 1;
 			if (!empty($asset['id'])) $newAsset['id'] = $asset['id'];		// UO tasks only
 			else if (empty($asset['id']) && isset($asset['isThriftAPI'])) {
 				$newAsset['replace-preview-by-native-path'] = $asset['replace-preview-by-native-path'];	
-			} 
+			} else if (empty($asset['id']) && isset($asset['isPlupload'])) {
+				$msg = 'WARNING: replace-preview-with-original incomplete for pluploader. how do you detect original?';
+debug($msg);				
+$this->log($msg, LOG_DEBUG);
+			}
 		}
-		
 		
 		
 		pack_json_keys($newAsset);		// from php_lib
@@ -826,6 +842,7 @@ if ($duplicate) $this->log("DUPLICATE FOUND, id={$duplicate['Asset']['id']}, cap
 			// NOTE: array_filter_key not available from thriftAPI
 			$newAsset_merge_fields = array_intersect_key($newAsset, array_flip($fieldlist));
 			$duplicate['Asset'] = array_merge($duplicate['Asset'], $newAsset_merge_fields);
+			
 debug($duplicate['Asset']);			
 // $this->log( "checkDupes_options SAVE FIELDSLIST=".print_r($fieldlist, true), LOG_DEBUG);	
 			$ret = $this->save($duplicate, FALSE, $fieldlist);
@@ -1004,6 +1021,13 @@ $this->log("insert newAsset=".print_r($newAsset['native_path'], true), LOG_DEBUG
 		 * add filters, from $this->params['named']
 		 */
 		$filterConditions = array();
+		/*
+		 * add from: unixtimestamp, to: unixtimestamp
+		 */
+		if (!empty($options['from']) && !empty($options['to'])) {
+			// convert Asset.dateTaken from UTC to local timezone, UNIX_TIMESTAMP implicitly converts date from local timezone to UTC
+			$filterConditions[] = "UNIX_TIMESTAMP(CONVERT_TZ(`$this->alias`.dateTaken,'+00:00', 'SYSTEM')) BETWEEN {$options['from']} AND {$options['to']}";
+		} 	
 		if (isset($options['rating'])) {
 			if ($options['rating']==='0'){ 
 				$filterConditions[] = "SharedEdit.score IS NULL";

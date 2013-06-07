@@ -100,20 +100,6 @@ class PersonController extends UsersController {
 	 * WARNING: backdoor action for oDesk project
 	 */
 	function odesk_photos (){
-		$ALLOWED_BY_USERNAME = array('newyork', 'paris', 'venice', 'bali', 'summer-2009');
-		$id = $this->passedArgs[0];
-		if (strpos($id, '12345678') === 0) {
-			$data = $this->User->read(null, $id );
-		} else if (in_array($id, $ALLOWED_BY_USERNAME )) {
-			$data = $this->User->find('first', array('conditions'=>array('User.username'=>$id)) );	
-			$id = $data['User']['id'];
-		} else {
-			exit;
-		}
-		$ret = $this->Auth->login($data);
-		$this->__cacheAuth();
-		$this->Permissionable->initialize($this);
-		$this->action='photos';
 		/*
 		 * allow cross-domain XHR, instead of jsonp
 		 * 	from thats-me.snaphappi.com for timeline app
@@ -124,6 +110,30 @@ class PersonController extends UsersController {
 		if (preg_match('/[snaphappi\.com | thats\-me]/i', $origin)) {
 			echo header("Access-Control-Allow-Origin: {$origin}");
 		}
+		$ALLOWED_BY_USERNAME = array('newyork', 'paris', 'venice', 'bali', 'summer-2009');
+		$id = $this->passedArgs[0];
+		if (strpos($id, '12345678') === 0) {
+			$data = $this->User->read(null, $id );
+		} else if (in_array($id, $ALLOWED_BY_USERNAME )) {
+			$data = $this->User->find('first', array('conditions'=>array('User.username'=>$id)) );	
+			$id = $data['User']['id'];
+		} else if (strlen($id)==36 && preg_match('/[snaphappi\.com|thats\-me|snappi\-dev]/i', $origin)) {	// passed as UUID 
+			/**
+			 * WARNING. this is a public, unauthenticated action. 
+			 * ONLY accept from http://$origin/story/$id
+			 */
+			 $verified = "{$origin}/story/{$id}/";
+			 if (0 && strpos($_SERVER['HTTP_REFERER'], $verified) === false) throw new Exception("unauthorized access, cross-domain violation. referer={$_SERVER['HTTP_REFERER']}");
+			$data = $this->User->find('first', array('conditions'=>array('User.id'=>$id)) );	
+			$id = $data['User']['id'];	
+		} else {
+			throw new Exception("unauthorized access, user={$id}");
+		}
+		$ret = $this->Auth->login($data);
+		$this->__cacheAuth();
+		$this->Permissionable->initialize($this);
+		
+		$this->action='photos';
 		$this->photos($id);
 	}	
 
@@ -309,6 +319,8 @@ if (!empty($this->passedArgs['all-shots'])) {
 }
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
+// debug(Configure::read("paginate.Options.{$paginateModel}")); exit;	
+// $this->log(Configure::read("paginate.Options.{$paginateModel}"), LOG_DEBUG);	
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
 		// end paginate
 		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
@@ -613,7 +625,7 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 		 * use backdoor access, Timeline XHR has different cookie from normal login
 		 * TODO: CLOSE BACKDOOR
 		 */ 
-		$ALLOWED_BY_USERNAME = array('newyork', 'paris', 'venice', 'bali', 'summer-2009');
+		$ALLOWED_BY_USERNAME = array('newyork', 'paris', 'venice', 'bali', 'summer-2009', 'michael');
 		$data = $this->User->read(null, $id );
 		if (in_array($data['User']['username'], $ALLOWED_BY_USERNAME )) {
 			$ret = $this->Auth->login($data);
@@ -632,7 +644,7 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 		$this->Cache = & new CacheHelper();	
 		if (!empty($this->params['url']['reset'])) Cache::clearCache();
 		$this->cacheAction = '1 hour';
-		// event_group options
+		
 		/*
 		 * TODO: should only see bestshots in final Timeline, no duplicates
 		 * 	- also add minimum rating
@@ -646,26 +658,36 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 		$paginateModel = 'Asset';
 		$Model = $this->User->{$paginateModel};
 		$Model->Behaviors->attach('Pageable');
-		
+		/*
+		 *  event_group DEFAULTS
+		 */ 
+		$DEFAULT_EVENT_GROUP_LIMIT = 999;
+		if (!isset($this->passedArgs['perpage'])) $this->paginate[$paginateModel]['perpage'] = $DEFAULT_EVENT_GROUP_LIMIT; 
+		/*
+		 * end event_group DEFAULTS
+		 */ 
 		$paginateArray = $Model->getPaginatePhotosByUserId($id, $this->paginate[$paginateModel]);
 		$paginateArray = Set::merge($paginateArray, $required_options);
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
+
 		/*
 		 *  force extras & sort=dateTaken for event-group
 		 */ 
 		$paginateArray['order'] = array('`Asset`.dateTaken');
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
+		
 		$pageData = $this->paginate($paginateModel);
 		$pageData = Set::extract($pageData, "{n}.{$paginateModel}");
 		// end paginate
-		
-		
+// debug(Configure::read("paginate.Options.{$paginateModel}"));
+// debug(Set::extract($pageData, '/dateTaken'));
+// return;		
 		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 		if (!isset($this->Gist)) $this->Gist = loadComponent('Gist', $this);
 		 
 		$castingCall = $this->CastingCall->getCastingCall($pageData);
 		$castingCall['CastingCall']['Auditions']['ShotType'] = 'event_group';
-		
+	
 		//TODO: deprecate, use EventGroup
 		$timescale = empty($this->passedArgs['timescale']) ? 1 : $this->passedArgs['timescale'];
 		$castingCall['CastingCall']['Auditions']['Timescale'] = $timescale;

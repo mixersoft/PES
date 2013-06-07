@@ -145,6 +145,64 @@
 			src = src.substr(0, match.index + 4);
 		return src;
 	};
+	
+		/*
+     * resize changes the size prefix for an image src
+     * using Snaphappi format
+     */
+    var _parseSrcString = function(src){
+        var i = src.lastIndexOf('/');
+        var name = {
+            dirname: '',
+            size: '',
+            filename: '',
+            crop: ''
+        };
+        name.dirname = src.substring(0, i + 1);
+        var parts = src.substring(i + 1).split('~');
+        switch (parts.length) {
+            case 3:
+                name.size = parts[0];
+                name.filename = parts[1];
+                name.crop = parts[2];
+                break;
+            case 2:
+                if (parts[0].length == 2) {
+                    name.size = parts[0];
+                    name.filename = parts[1];
+                }
+                else {
+                    name.filename = parts[0];
+                    name.crop = parts[1];
+                }
+                break;
+            case 1:
+                name.filename = parts[0];
+                break;
+            default:
+                name.filename = src.substring(i + 1);
+                break;
+        }
+        return name;
+    }
+    /**
+     * switch size prefix, default bp
+     * @param src String src string
+     * @param size string, size prefix, default bp~
+     * @param append_crop boolean, default TRUE, if FALSE, strip crop spec
+     */
+    var _getImgSrcBySize = function(src, size, append_crop){
+    	if (typeof append_crop == 'undefined') append_crop = true;
+        size = size || 'bp';
+        var parts = _parseSrcString(src);
+        if (size && !parts.dirname.match(/.thumbs\/$/)) 
+            parts.dirname += '.thumbs/';
+        var src = parts.dirname + (size ? size + '~' : '') + parts.filename;
+        if (append_crop && parts.crop) src += '~' + parts.crop;
+        return src;
+    };
+
+
 	var _getNaturalDim = function(lightBoxPhoto, animation) {
 		if (lightBoxPhoto.get('naturalWidth')) {
 			W = parseInt(lightBoxPhoto.get('naturalWidth'))
@@ -517,8 +575,8 @@ this.content._isResizing = false;		// enable winResize
 				photo = this.indexedPhotos[i];
 				src = photo.img.get('src');
 				if (!src) src = photo.img.getAttribute('qsrc');
-				src = _stripCrop(src);
-				
+				// src = _stripCrop(src);
+				src = _getImgSrcBySize(src, 'bp', false);
 				tokens = {src: '', qsrc: ''};
 				tokens['title'] = photo.img.get('title');
 				if (photo.img == target) {
@@ -553,14 +611,14 @@ this.content._isResizing = false;		// enable winResize
 					if (!this.listen['lightbox']) {
 						this.listen['lightbox'] = this.container.one('#glass')
 							.delegate('click', this.handleLightboxClick,
-									'div, span', this);
+									'div', this);
 					}
 					// No Key listeners for touch
 					if (!this.listen['keypress']) this.listen['keypress'] = _Y.on('keypress', this.keyAccelerate,
 							document, this);
 					if (!this.listen['activateLightBox']) this.listen['activateLightBox'] = this.content.delegate(
 							"click", this.activateLightBox,
-							'div.pageGallery > img', this);					
+							'div.pageGallery article.FigureBox img, div.pageGallery >img', this);					
 				}
 				this.listen.winResize = _Y.on('resize', function(e){
 						if (this.content._isResizing) return;
@@ -723,6 +781,11 @@ this.content._isResizing = false;		// enable winResize
 
 		handleLightboxClick : function(e) {
 			var target = e.target;
+			if (target.hasClass('yui3-scrollview')) {
+				this.closeLightBox();
+				e.halt();
+				return;
+			}
 			var id = target.get('id');
 			switch (id) {
 			case 'nextPhoto':

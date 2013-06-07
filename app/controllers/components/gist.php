@@ -152,7 +152,7 @@ debug($cmd);
 	 * 		// event-group v1.1 event-group-spacing, with COARSE/FINE params
 	 * 		$options[coarse_spacing], default 1
 	 * 		$options[fine_spacing], default 0.5
-	 * 		$options[day], default 6
+	 * 		$options[day_quota], default 6
 	 * 		$options[iterations], default 20
 	 * 		$options[pretty_print]
 	 * @return aa of event-groups
@@ -161,8 +161,13 @@ debug($cmd);
 	{
 		set_time_limit(600);
 		
+		// DEFAULT VALUES
+		$DEFAULT['coarse_spacing'] = 1;
+		$DEFAULT['fine_spacing'] = 0.2;
+		$options = array_merge($DEFAULT, $options);
+		
 		// parse event-group options
-		$allowed = array('timescale', 'coarse_spacing', 'fine_spacing', 'day_quota', 'iterations');
+		$allowed = array('timescale', 'coarse_spacing', 'fine_spacing', 'day_quota', 'iterations', 'pretty-print');
 		$options = array_intersect_key($options, array_flip($allowed));
 		$cmd_switches = '';
 		foreach ($options as $key => $value) {
@@ -216,7 +221,7 @@ debug($cmd);
 
 		} else {
 			// unix, image-group only works on linux
-			$cmd = "{$gist_bin}/event-group {$cmd_switches} --pretty_print ";
+			$cmd = "{$gist_bin}/event-group {$cmd_switches} ";
 debug("GistComponent->event-group() {$cmd}");			
 			$start = microtime(true);
 			$errors = GistComponent::$Exec->exec($cmd, $options, $stdin, $output);
