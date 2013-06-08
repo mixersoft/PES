@@ -17,6 +17,27 @@
 <script type="text/javascript" src="/js/plupload/plupload.js"></script>
 <script type="text/javascript" src="/js/plupload/jquery.ui.plupload/jquery.ui.plupload.js"></script>
 <script type="text/javascript" src="/js/plupload/snappi.js"></script>
+<style type="text/css">
+	.plupload_droptext {
+		line-height: 120px;
+	}
+	.plupload_droptext > span {
+		color: #666;
+		font-size: 2em;
+		font-weight: normal;
+		line-height: 120px;
+	}
+	.plupload_droptext > div {
+		line-height: 1;
+	}
+	.copy-paste {
+		background-color: #EEEEEE;
+		border: 1px dotted black;
+		padding: 2px;
+    	text-align: center;
+	}
+</style>
+
 <?php 		
 	$this->Layout->blockEnd();		
 
@@ -27,14 +48,16 @@
 ?>
 
 <div class="grid_16 upload">
-	<h1>Upload Photos to Snaphappi</h1>
+	<h2>Upload Photos to Snaphappi</h2>
 	<section class="">
-		<form id="form" method="post" action="dump.php" >
+		<noscript>Javascript is required for this action</noscript>
+		<form id="form" method="post" action="dump.php"  class='hide'>
 			<div id="uploader">
 				<p>Your browser doesn't have Flash, Silverlight or HTML5 support.</p>
 			</div>
-			<br />
-			<input type="submit" value="Submit" />
+			<div class='fallback hide'>
+				<br /> 	<input type="submit" value="Submit" />
+			</div>
 		</form>
 	</section>	
 </div>

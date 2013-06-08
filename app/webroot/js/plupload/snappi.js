@@ -55,7 +55,8 @@ $(function() {
 	
 		// Specify what files to browse for
 		filters : [
-			{title : "Image files", extensions : "jpg,gif,png"},
+			{title : "Image files", extensions : "jpg"},
+			// {title : "Image files", extensions : "jpg,gif,png"},
 			// {title : "Zip files", extensions : "zip,avi"}
 		],
 
@@ -95,6 +96,16 @@ $(function() {
 		multipart: true,
 		multipart_params: {},
 		preinit: {
+			Init: function(){
+				var msg,
+					isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+				if (isChrome) msg = "<span>Thank you for using </span><img src='/static/img/providers/chrome_logo_2x.png'><div>Using Chrome, you can <u>drag folders</u> here and we'll find the JPGs.</div>";
+				else {
+					var copy_paste = '<div><input type="text" size="40" value="'+window.location.href+'" onclick="this.select();" class="copy-paste"></div>',
+					msg = "<span>Please open this page in </span><img src='/static/img/providers/chrome_logo_2x.png'>"+copy_paste;
+				}
+				$('.plupload_droptext').html(msg);
+			},
 			PostInit: function(up, params) {	
 				// TODO: up.features is not initialized
 				if (up.features.dragdrop) {
@@ -112,7 +123,7 @@ $(function() {
 						this.className = "";
 					};
 				}
-				$('form#form input[type=submit]').addClass('hide');
+				$('form#form').removeClass('hide');
 			},
 			FilesAdded: function(up, files) {
 				var root;
