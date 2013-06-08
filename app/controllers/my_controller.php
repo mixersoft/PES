@@ -980,6 +980,10 @@ if (isset($this->params['url']['new-taskid']))	{
 		}	// end POST
 	}
 	
+	
+	/**
+	 * truncate - remove all photos from DB and STAGING
+	 */ 
 	function truncate($id=null){
 		Configure::write('debug', 2);
 		$this->autoRender=false;	
@@ -1031,6 +1035,70 @@ if (isset($this->params['url']['new-taskid']))	{
 		debug("<br /><a href='".Router::url(array('action'=>'photos'))."'>/my/photos</a><br />");
 		
 		$this->render('/elements/sql_dump');
+	}
+
+	/**
+	 * purge - remove orphaned photos from STAGING
+	 */
+	function purge($id = null){
+		Configure::write('debug', 2);
+		$this->autoRender=false;	
+		if (in_array(AppController::$role, array('ADMIN', 'MANAGER')) == false) {
+			$this->Session->setFlash('WARNING: you must be a MANAGER to take this action');
+			$this->redirect('photos',null, true);
+		}
+		if ($id != MyController::$userid) {
+			debug('<span style="font-size:14pt;color:red;">WARNING: about to PURGE all ORPHANED Snaps <br />Please append User.id');
+			debug($this->Auth->user());
+			return;
+		};
+		
+		set_time_limit(600);
+		
+		$basepath = Configure::read('path.stageroot.basepath');
+		$jsonSrc = $basepath.DS."staged_aids.json";
+// debug($valid);	
+// debug($jsonSrc);	
+		// file read
+		$staged_assets = json_decode(file_get_contents($jsonSrc), true);
+		$staged_assets_ids = array_keys($staged_assets);	
+		
+		// break into chunks and check DB
+		$CHUNK_SIZE = 100; $orphans = array();
+		$chunks = array_chunk($staged_assets_ids,$CHUNK_SIZE);
+		foreach($chunks as $batch)
+		{
+			$log_output = array();
+			$options = array( 
+				'fields'=>array('Asset.id'),
+				'conditions'=>array('`Asset`.id'=>$batch),
+				'permissionable'=>false
+			);
+			$data = $this->User->Asset->find('all', $options);
+			$valid = Set::extract($data, '/Asset/id');
+			$orphans = array_diff($batch, $valid);
+// debug(array_diff($batch, $valid));
+			foreach ($orphans as $aid) {
+				$path = $staged_assets[$aid];
+				$root = cleanpath($basepath.$path);
+// debug($path);
+// debug($root);
+				@unlink($root);						// delete root
+				$pathparts = explode(DS, $root);
+				array_splice($pathparts, -1, 0, '.thumbs');
+				$thumb_src = implode(DS, $pathparts);
+// debug($thumb_src);
+				$log_output[$aid] = $path;
+// continue;
+				$sizes = array('bp', 'tn', 'sq', 'lm', 'll', 'bm', 'bs');
+				foreach ($sizes as $size) {
+					$path = Stagehand::getImageSrcBySize($thumb_src, $size);
+					@unlink($path);					// delete thumbnails
+				}
+			}
+$this->log("PURGE: purging the following orphans: ".print_r($log_output, true), LOG_DEBUG);	
+debug("PURGE: purging the following orphans: ".print_r($log_output, true));		
+		}
 	}
 		
 	function remove_photos($id){
