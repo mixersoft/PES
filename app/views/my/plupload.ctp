@@ -20,14 +20,19 @@
 <style type="text/css">
 	.plupload_droptext {
 		line-height: 120px;
+		position:relative;
 	}
-	.plupload_droptext > span {
+	.plupload_droptext .header > span {
 		color: #666;
 		font-size: 2em;
 		font-weight: normal;
 		line-height: 120px;
 	}
-	.plupload_droptext > div {
+	.plupload_droptext .header > span.strong {
+		color: darkred;
+		font-weight: bold;
+	}
+	.plupload_droptext div {
 		line-height: 1;
 	}
 	.copy-paste {
@@ -36,6 +41,46 @@
 		padding: 2px;
     	text-align: center;
 	}
+	.dragover {
+		-moz-box-shadow: inset 0 0 5px 5px #888;
+		-webkit-box-shadow: inset 0 0 5px 5px#888;
+		box-shadow: inset 0 0 5px 5px #888;
+	}
+	.confirm-not-chrome {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		z-index: 1000;
+		background-color: white;
+		height: 100%;
+	}
+	.confirm-not-chrome * {
+		background-color: white;
+	}
+	.confirm-not-chrome .header > span {
+		line-height: 60px;
+	}
+	.confirm-not-chrome .header img {
+		height: 36px;
+	}
+	.confirm-not-chrome .body {
+		text-align: left;
+	}
+	.confirm-not-chrome .plupload_button:hover {
+		background: url("images/ui-bg_glass_75_dadada_1x400.png") repeat-x scroll 50% 50% #DADADA;
+	    border: 1px solid #999999;
+	    color: #212121;
+	    font-weight: normal;
+    }
+	.confirm-not-chrome ul {
+		margin: 0 auto;
+		width: 340px;
+	}
+	.confirm-not-chrome ul li {
+		list-style: disc inside none;
+	}
+	
 </style>
 
 <?php 		
@@ -61,7 +106,52 @@
 		</form>
 	</section>	
 </div>
-<script type="text/javascript">
-
-</script>
+<div id="markup-uploader" class="hide">
+	<div class="help is-chrome">
+		<div class='header'>
+			<span>Works better with </span>
+			<img src='/static/img/providers/chrome_logo_2x.png'>
+		</div>
+		<div class='subhead'>
+			<div>It's easy with Chrome &mdash; drag <u>folders</u> here and we'll find all the JPGs.</div>
+		</div>
+	</div>
+	<div class="help not-chrome">
+		<div class='header'>
+			<span>Works better with</span>
+			<a href="http://www.google.com/chrome" target="_blank" title="Don't have Chrome? Click here to get it.">
+				<img src='/static/img/providers/chrome_logo_2x.png'>
+				</a>
+		</div>
+		<div class='subhead'>
+			<p>Only the Chrome browser allows you to drag folders into this box.</p>
+			<br />
+			<p>If you plan to upload 100s of photos, please open this page in Chrome
+				<input type="text" size="32" value="<?php echo Router::url($this->here, true); ?>" onclick="this.select();" class="copy-paste">
+			</p>
+		</div>
+	</div>
+	<div class="help confirm-not-chrome">
+		<div class='header'>
+			<span>Are you sure you don't want to use</span>
+			<a href="http://www.google.com/chrome" target="_blank" title="Don't have Chrome? Click here to get it.">
+				<img src='/static/img/providers/chrome_logo_2x.png'>
+			</a>
+			<span>?</span>
+			<label class="plupload_button ui-button ui-widget ui-state-default ui-button-text-only" 
+				role="button" aria-disabled="false" aria-pressed="true">
+				<span class="ui-button-text">I'm sure.</span>
+			</label>		
+		</div>
+		<div class='body'>
+			<ul><p>Chrome gives you these key benefits</p>
+				<li>drag folders and we'll find the JPGs</li>
+				<li>20x faster uploads with web-sized photos (640px)</li>
+				<li>duplicate detection avoids uploading the same file twice</li>
+			</ul>
+		</div>
+		<br />
+		<p>Please open this page in Chrome <input type="text" size="32" value="<?php echo Router::url($this->here, true); ?>" onclick="this.select();" class="copy-paste">
+	</div>
+</div>
 

@@ -24,6 +24,120 @@
 
 $(function() {
 	var CFG = CFG || {}; 
+	/*
+	 * helper functions
+	 */
+	var Util = new function(){}
+	Util.isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+	Util.get_DeviceID = function (ruid) {
+		/*
+		 * DeviceID priority 
+		 * 	PAGE.jsonData.DeviceID
+		 *  Cookie('DeviceID)
+		 *  guid()
+		 * 
+		 * TODO: alternate strategy, POST folders and see if we can match with existing nativePath
+		 */
+		try {
+			var deviceId = Util.DeviceID || PAGE.jsonData.DeviceID,
+				cookieDeviceID = $.cookie("DeviceID");
+			if (!deviceId) deviceId = cookieDeviceID;
+			if (!deviceId) deviceId = Util.guid();
+		} catch (ex) { 
+			deviceId = Util.guid();
+		}
+		if (deviceId !== cookieDeviceID) {
+			$.cookie.defaults = {expires : 999};
+			$.cookie("DeviceID", deviceId);
+		}
+		Util.DeviceID = deviceId;
+		return Util.DeviceID;
+	}
+	Util.guid = function(){
+		function s4() {
+		  return Math.floor((1 + Math.random()) * 0x10000)
+		             .toString(16)
+		             .substring(1);
+		};
+		 return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+	}
+	Util.resize = function(px){
+		px = px || 640;
+		if (Util.isChrome) {
+			return  {
+				width : px, 
+				height : px, 
+				quality : 90,
+				crop: false, 				// true=crop to exact dimensions, false=max dim
+				preserve_headers: true,		// BUT do NOT update EXIF size after resize
+			}
+		} else return false;
+	}
+	Util.confirmNoChrome = function(target){
+		$('.plupload_droptext').html($('#markup-uploader .confirm-not-chrome'));
+		$('.plupload_droptext label.plupload_button').one('click', function(e){
+			Util.allowNoChrome()
+		});
+        return false;
+	},
+	Util.allowNoChrome = function(e){
+		$('.plupload_droptext').html('');
+	}
+	
+	Util.activate_dragover = function(target, cfg){
+		cfg = cfg || {dragover:'dragover'};
+		$.fn.dndhover = function(options) {
+			// from http://stackoverflow.com/questions/10867506/dragleave-of-parent-element-fires-when-dragging-over-children-elements
+		    return this.each(function() {
+		
+		        var self = $(this);
+		        var collection = $();
+		
+		        self.on('dragenter', function(event) {
+		            if (collection.size() === 0) {
+		                self.trigger('dndHoverStart');
+		            }
+		            collection = collection.add(event.target);
+		        });
+		
+		        self.on('dragleave', function(event) {
+		            /*
+		             * Firefox 3.6 fires the dragleave event on the previous element
+		             * before firing dragenter on the next one so we introduce a delay
+		             */
+		            setTimeout(function() {
+		                collection = collection.not(event.target);
+		                if (collection.size() === 0) {
+		                    self.trigger('dndHoverEnd');
+		                }
+		            }, 1);
+		        });
+		    });
+		};
+				
+		target.dndhover().on({
+		    'dndHoverStart': function(event) {
+		
+		        target.addClass(cfg.dragover);
+		
+		        event.stopPropagation();
+		        event.preventDefault();
+		        return false;
+		    },
+		    'dndHoverEnd': function(event) {
+		
+		        target.removeClass(cfg.dragover);
+		
+		        event.stopPropagation();
+		        event.preventDefault();
+		        return false;
+		    }
+		});
+	}
+	// make global,
+	// TODO: this is being overwritten by AUI
+	CFG['util'] = $.extend(CFG['util'] || {}, Util);		
+	
 	$("#uploader").plupload({
 		// General settings
 		runtimes : 'html5,flash,silverlight',
@@ -43,15 +157,8 @@ $(function() {
 			send_chunk_number: false // set this to true, to send chunk and total chunk numbers instead of offset and total bytes
 		},
 
-		// Resize images on clientside if we can
-		resize: false,
-		// resize : {
-			// width : 640, 
-			// height : 640, 
-			// quality : 90,
-			// crop: false, 				// true=crop to exact dimensions, false=max dim
-			// preserve_headers: true,		// BUT do NOT update EXIF size after resize
-		// },
+		// Resize images on clientside in Chrome, or FALSE for other browsers
+		resize : Util.resize(),
 	
 		// Specify what files to browse for
 		filters : [
@@ -97,33 +204,30 @@ $(function() {
 		multipart_params: {},
 		preinit: {
 			Init: function(){
-				var msg,
-					isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
-				if (isChrome) msg = "<span>Thank you for using </span><img src='/static/img/providers/chrome_logo_2x.png'><div>Using Chrome, you can <u>drag folders</u> here and we'll find the JPGs.</div>";
-				else {
-					var copy_paste = '<div><input type="text" size="40" value="'+window.location.href+'" onclick="this.select();" class="copy-paste"></div>',
-					msg = "<span>Please open this page in </span><img src='/static/img/providers/chrome_logo_2x.png'>"+copy_paste;
-				}
+				var msg = (Util.isChrome) 
+					? $('#markup-uploader .is-chrome')
+					: $('#markup-uploader .not-chrome'); 
 				$('.plupload_droptext').html(msg);
 			},
 			PostInit: function(up, params) {	
-				// TODO: up.features is not initialized
-				if (up.features.dragdrop) {
+				if (up.features.dragdrop && up.settings.dragdrop) {
 					var target = $('#uploader_dropbox');
-					target.ondragover = function(event) {
-						event.dataTransfer.dropEffect = "copy";
-					};
-					target.ondragenter = function() {
-						this.className = "dragover";
-					};
-					target.ondragleave = function() {
-						this.className = "";
-					};
-					target.ondrop = function() {
-						this.className = "";
-					};
+					Util.activate_dragover(target);
+					target.one('drop', function(event){
+						target.trigger('dndHoverEnd');
+						if (Util.isChrome) $('.plupload_droptext').addClass('hide');
+						else if ($('#markup-uploader .confim-not-chrome').length==1) {
+							var check; // ok to drop
+						} else {
+							event.stopPropagation();
+	       					event.preventDefault();
+							Util.confirmNoChrome(target);
+							return false;
+						}
+					});
 				}
 				$('form#form').removeClass('hide');
+				Util.get_DeviceID();
 			},
 			FilesAdded: function(up, files) {
 				var root;
@@ -181,6 +285,7 @@ $(function() {
 					'data[Root]': file.root || '',
 					'data[BatchId]': CFG['session'].BatchId,
 					'data[IsOriginal]': up.settings.resize ? 0 : 1,
+					'data[DeviceID]' : Util.get_DeviceID(),
 				}
 				var check;
 			},
