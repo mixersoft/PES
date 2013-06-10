@@ -905,6 +905,12 @@ if (isset($this->params['url']['new-taskid']))	{
 			App::import('Vendor', 'plupload/upload');
 			$uploader = new Pluploader($UPLOAD_FOLDER);
 			$dest = $uploader->handleUpload();
+			// add support for plupload chunking
+			if (is_array($dest) && isset($dest['chunking'])) {
+				$response = json_encode($dest);
+				header('Content-type: application/json');
+				die ("{\"jsonrpc\" : \"2.0\", \"result\" : {$response}, \"id\" : \"id\"}");
+			}  
 			/*
 			 * END POST
 			 */
