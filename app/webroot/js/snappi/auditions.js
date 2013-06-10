@@ -579,7 +579,7 @@ console.error('ERROR: problem getting DateTaken value. using 1970-01-01 00:00:00
                     // node.tags = audition.Tags && audition.Tags.value || null;
                     // node.label = audition.Photo.Caption;
 					try {
-						var src = audition.Photo.nativePath;
+						var src = audition.Photo.NativePath;
 						node.albumName = this.getAlbumName(node, src);
 					} catch(e) {
 						node.albumName = this.getAlbumName(node);
@@ -594,16 +594,20 @@ console.error('ERROR: problem getting DateTaken value. using 1970-01-01 00:00:00
         getAlbumName: function getAlbumName(o, src){
             var parts, name;
 			src = src || o.src;
-            parts = src.replace(/\\/g, "/").split('/');
-            parts.pop(); // discard filename
-            if ((name = parts[parts.length - 1]) == '.thumbs') 
-                parts.pop();
-            if (o.urlbase) {
-                return parts.join('/');
-            }
-            else {
-                return parts[parts.length - 1];
-            }
+			try {
+	            parts = src.replace(/\\/g, "/").split('/');
+	            parts.pop(); // discard filename
+	            if ((name = parts[parts.length - 1]) == '.thumbs') 
+	                parts.pop();
+	            if (o.urlbase) {
+	                return parts.join('/');
+	            }
+	            else {
+	                return parts[parts.length - 1];
+	            }
+	         } catch (ex) {
+	         	return '';
+	         }
         },
         getImgSrcBySize: null, // set in SNAPPI.onYready.Audition SNAPPI.util.getImgSrcBySize,
 	};
@@ -665,17 +669,21 @@ console.error('ERROR: problem getting DateTaken value. using 1970-01-01 00:00:00
         },
         getAlbumName: function(node){
             var parts, name;
-//console.log(" ***** datasource.getAlbumName()  src="+node.src);		
-            parts = (node.urlbase+'/'+node.src).replace(/\\/g, "/").split('/');
-            parts.pop(); // discard filename
-            if ((name = parts[parts.length - 1]) == '.thumbs') 
-                parts.pop();
-            if (node.urlbase) {
-                return parts.join('/');
-            }
-            else {
-                return parts.pop();
-            }
+//console.log(" ***** datasource.getAlbumName()  src="+node.src);
+			try {	
+	            parts = (node.urlbase+'/'+node.src).replace(/\\/g, "/").split('/');
+	            parts.pop(); // discard filename
+	            if ((name = parts[parts.length - 1]) == '.thumbs') 
+	                parts.pop();
+	            if (node.urlbase) {
+	                return parts.join('/');
+	            }
+	            else {
+	                return parts.pop();
+	            }
+         	} catch (ex) {
+	        	return '';
+	        }
         }
 	}
 	AuditionParser.flickr = {
