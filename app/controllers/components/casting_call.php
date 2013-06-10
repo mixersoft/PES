@@ -114,8 +114,7 @@ class CastingCallComponent extends Object {
 		// $Src = $src['preview']; 	// TODO: deprecate. refactor to use $src['root'] here
 		if (isset($src['base64Src'])) $base64Src = $src['base64Src'];
 		if (isset($src['root'])) $rootSrc = $src['root'];
-		// if (isset($src['preview']))	$previewSrc= $src['preview'];
-		if (isset($src['orig']))	$origSrc= $src['orig'];
+		$nativePath = !empty($row['native_path']) ? $row['native_path'] : (isset($src['orig']) ? $src['orig'] : '');
 		
 		$exif = json_decode($row['json_exif'], true);
 		$ExifOrientation = !empty($exif['Orientation']) ? $exif['Orientation'] : 1;
@@ -190,7 +189,7 @@ $previewOrientation = 	isset($exif['preview']['Orientation']) ? $exif['preview']
 		$BatchId = (!empty($row['batchId'])) ? $row['batchId'] : '';
 		$Keyword = (!empty($row['keyword'])) ? $row['keyword'] : '';
 		$Created = (!empty($row['created'])) ? $row['created'] : '';
-		$Photo = compact('id','W','H','Fix','Img','isOwner','DateTaken','TS','ExifColorSpace','ExifFlash','ExifOrientation', 'Caption','origSrc','CameraId',
+		$Photo = compact('id','W','H','Fix','Img','isOwner','DateTaken','TS','ExifColorSpace','ExifFlash','ExifOrientation', 'Caption','nativePath','XXXorigSrc','CameraId',
 			/*
 			 * extended properties
 			 */

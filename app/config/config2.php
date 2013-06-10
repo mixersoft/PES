@@ -78,7 +78,7 @@ switch ($config['Config.os']) {
         	'meanshift'=> 'W:/usr/bin/meanshift/bin',
 		);
 		
-		$config['vendors'] = array('fileUploader'=>'valums-file-uploader-461068d'); 
+		$config['vendors'] = array('fileUploader'=>'plupload'); 
 		$wwwroot = 'W:/www-dev';
 		$svc_root = 'W:/www-svc';
 		$config['path'] = array(
@@ -151,7 +151,7 @@ switch ($config['Config.os']) {
 			'exiv2' => '/usr/bin/exiv2',
 		);
 		
-		$config['vendors'] = array('fileUploader'=>'valums-file-uploader-461068d'); 
+		$config['vendors'] = array('fileUploader'=>'plupload'); 
 
 		$config['path'] = array(
 			'APIKEYS' => '/home/michael/APIKEYS.php',

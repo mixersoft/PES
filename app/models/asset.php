@@ -689,7 +689,9 @@ AND includes.asset_id='{$assetId}';
 				$checkDupes_options['conditions']['Asset.id'] = $newAsset['id'];
 				$checkDupes_options['conditions']['Asset.isOriginal'] = 'q';
 				
-			} else if (!empty($newAsset['replace-preview-by-native-path'])) {
+			} else if (!empty($newAsset['replace-preview-by-native-path'])
+				&& !empty($newAsset['isThriftAPI']) 
+			) {
 				/*
 				 * used by ThriftAPI UO task, check by native_path
 				 */ 
@@ -749,7 +751,7 @@ if ($duplicate) $this->log("DUPLICATE FOUND, id={$duplicate['Asset']['id']}, cap
 		/****************************************************
 		 * setup data['Asset'] to create new Asset
 		 */
-		$file_relpath = cleanPath(substr($photoPath,strlen($baseurl)),'http'); 
+		// $file_relpath = cleanPath(substr($photoPath,strlen($baseurl)),'http'); 
 		/*
 		 *  WARNING:ProviderAccount.baseurl DB field is only the INITIAL baseurl. 
 		 *  $providerAccount['baseurl'] value is manually updated in MyController::__importPhoto()
@@ -766,51 +768,43 @@ if ($duplicate) $this->log("DUPLICATE FOUND, id={$duplicate['Asset']['id']}, cap
 
 		$asset['json_exif'] = $meta['exif'];
 		$asset['json_iptc'] = $meta['iptc'];
+		if (isset($asset['json_iptc']['Keyword'])) $asset['keyword']= $asset['json_iptc']['Keyword'];
+		if (isset($asset['json_iptc']['Caption'])) $asset['caption']= $asset['json_iptc']['Caption'];
+		if (empty($asset['caption'])) $asset['caption'] = basename(pathinfo($asset['nativePath'], PATHINFO_FILENAME));
+		
 
 		// add provider_account_id for generating asset_hash
+		/*
+		 * path values from POST
+		 * 	- $asset['nativePath'] = nativePath or cleanPath(sandbox root)
+		 *  - $asset['devicePrefix'] (ThriftAPI only)
+		 */
 		$asset['provider_account_id'] = $providerAccount['id'];
 		if (isset($asset['isThriftAPI'])) {
-			$origPath = $asset['origPath'];
 			$asset['batchId'] = strtotime($asset['batchId']); // TODO: change BATCHID to TIMESTAMP IN dB SCHEMA
-		} else if ($providerAccount['provider_name'] == 'snappi') {
-			// deprecate: qq uploader only	
-			$filename_no_counter = preg_replace('/(.*)(~\d+)(\.jpg)/i','${1}${3}',$asset['rel_path']);	
-			$origPath = $filename_no_counter;
-		} else {
-			$origPath = $asset['rel_path'];
+		} else if ($providerAccount['provider_name'] == 'snappi') {  
+			throw new Exception("Error: qq uploader has been deprecated, provider_name=snappi", 1);
 		}
-		$asset_hash = getAssetHash($asset, $photoPath, $origPath );
-// $this->log(">>>>> asset_hash=>{$asset_hash}, origPath =>{$origPath}, photoPath=>{$photoPath}",LOG_DEBUG);			
+		$asset['asset_hash'] = getAssetHash($asset, $photoPath, $asset['caption'] );
+// $this->log(">>>>> asset_hash=>{$asset['asset_hash']}, origPath =>{$asset['nativePath']}, photoPath=>{$photoPath}",LOG_DEBUG);			
 		
-		$assetTemplate = array(
-			'owner_id'=>$userid,						// owner, might be redundant
-			'provider_account_id' => $providerAccount['id'],
-			'provider_name'=>$providerAccount['provider_name'],
-			'batchId' => $asset['batchId'],
-			'uploadId' => $timestamp,
-		);		
-		$newAsset = array(
-			'asset_hash' =>  $asset_hash,	
-			'json_exif' => $asset['json_exif'],
-			'dateTaken' => !empty($asset['json_exif']['DateTimeOriginal']) ? $asset['json_exif']['DateTimeOriginal'] : null,
-			'isFlash' => $asset['json_exif']['isFlash'],
-			'isRGB' => !empty($asset['json_exif']['root']['isRGB']) ? $asset['json_exif']['root']['isRGB']: null,
-		);
-		if ($isOriginal!==null) $newAsset['isOriginal'] = $isOriginal ? 'y' : 'n';
-		
-		if (isset($asset['json_iptc']['Keyword'])) $newAsset['keyword']= $asset['json_iptc']['Keyword'];
-		if (isset($asset['json_iptc']['Caption'])) $newAsset['caption']= $asset['json_iptc']['Caption'];
-		if (empty($asset['caption'])) $newAsset['caption'] = basename(pathinfo($origPath, PATHINFO_FILENAME));
+		$newAsset = array_filter_keys($asset, array('asset_hash','batchId', 'json_exif', 'keyword', 'caption'));
+		$newAsset['native_path'] = $asset['nativePath'];
+		$newAsset['owner_id'] = $userid;
+		$newAsset['provider_account_id'] = $providerAccount['id'];
+		$newAsset['provider_name'] = $providerAccount['provider_name'];
+		$newAsset['uploadId'] = $timestamp;
+		$newAsset['dateTaken'] = !empty($asset['json_exif']['DateTimeOriginal']) ? $asset['json_exif']['DateTimeOriginal'] : null;
+		$newAsset['isFlash'] = $asset['json_exif']['isFlash'];
+		$newAsset['isRGB'] =  !empty($asset['json_exif']['root']['isRGB']) ? $asset['json_exif']['root']['isRGB']: null;
+		// $newAsset['isOriginal'] char(1) enum [ y | n | q ]
+		$newAsset['isOriginal'] = $isOriginal ? 'y' : 'n';
 		
 		if (isset($asset['isThriftAPI'])) {
-			$newAsset['native_path'] = $asset['rel_path'];	// includes thrift_device_id
-			$newAsset['orig_path'] = $asset['origPath'];	// json_src['orig']
+			$newAsset['native_path'] = $asset['devicePrefix'].$asset['nativePath'];	// includes thrift_device_id
 			$newAsset['isThriftAPI'] = $asset['isThriftAPI'];  // for $this->_detectDuplicate()
 		} else if (isset($asset['isAIR'])) {
-			$newAsset['native_path'] = $asset['rel_path'];
-			$newAsset['orig_path'] = $newAsset['native_path'];
 		} else if (isset($asset['isPlupload'])) {
-			$newAsset['orig_path'] = $newAsset['native_path'] = $asset['rel_path'];
 			$newAsset['isPlupload'] = $asset['isPlupload'];	// for $this->_detectDuplicate()
 		}
 		if (!empty($asset['replace-preview-with-original'])) {
@@ -824,10 +818,7 @@ debug($msg);
 $this->log($msg, LOG_DEBUG);
 			}
 		}
-		
-		
 		pack_json_keys($newAsset);		// from php_lib
-		$newAsset = array_merge($assetTemplate, $newAsset);
 
 		/*
 		 *  check if asset already exists, by asset.id OR asset_hash 
@@ -850,14 +841,6 @@ debug($duplicate['Asset']);
 			if (!$ret) {
 $this->log( " ERROR: this->_updateAssetFields()".print_r($duplicate['Asset'], true), LOG_DEBUG);					
 				$response['message']['DuplicateAssetFound']="ERROR updating fields of duplicate Asset";
-			} else if(isset($asset['isThriftAPI']) && in_array($duplicate_provider, array('snappi','desktop'))) {
-				// hack: use this to fix json_src[orig] from Assets uploaded by AIR uploader
-				// TODO: refactor: this will be the same as native_path after DB schema change
-				$jsonSrc = json_decode($duplicate['Asset']['json_src'], true);
-				$jsonSrc['orig'] = $newAsset['orig_path'];				
-				$ret = $ret && $this->saveField('json_src', json_encode($jsonSrc));
-				$response['message']['DuplicateAssetFound']="FOUND duplicate Asset, converting provider from desktop to native-uploader";	
-$this->log('_updateAssetFields convert to native-uploader=>'.print_r($newAsset, true),LOG_DEBUG);					
 			} else {
 				$response['message']['DuplicateAssetFound']="FOUND duplicate Asset, Photo fields updated";
 // $this->log('_updateAssetFields =>'.print_r($newAsset, true),LOG_DEBUG);	
@@ -872,13 +855,11 @@ $this->log('_updateAssetFields convert to native-uploader=>'.print_r($newAsset, 
 			$uuid = !empty($asset['id']) ? $asset['id'] : String::uuid();
 			$shardPath = $Import->shardKey($uuid, $uuid);
 			$src['root']= $shardPath;
-			$src['thumb']= $Import->getImageSrcBySize($shardPath, 'tn');
-			$src['orig'] = $newAsset['orig_path'];		// original path in the clear
 			
 			// add UUID derived fields
 			$newAsset['id'] = $uuid;
 			$newAsset['provider_key'] = $uuid;
-			$newAsset['src_thumbnail'] = $src['thumb'];
+			$newAsset['src_thumbnail'] = $Import->getImageSrcBySize($shardPath, 'lm');
 			$newAsset['json_src'] = $src;
 			pack_json_keys($newAsset);		// from php_lib
 			

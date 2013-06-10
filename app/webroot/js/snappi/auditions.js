@@ -246,8 +246,16 @@
             o.rating = Fix.Rating  = parseFloat(Fix.Rating || Fix.Score || 0);
 			o.votes = Fix.Votes = parseInt(Fix.Votes || 0);
 			o.orientation = Auditions.orientationSum(o.root_Orientation, o.rotate);
-			
-            o.exif_DateTimeOriginal = o.Audition.Photo.DateTaken.replace(/T/, ' ');
+			try {
+				o.exif_DateTimeOriginal = o.Audition.Photo.DateTaken.replace(/T/, ' ');	
+			} catch(ex) {
+				o.exif_DateTimeOriginal = '1970-01-01 00:00:00';
+console.error('ERROR: problem getting DateTaken value. using 1970-01-01 00:00:00');
+// 2010-08-10 19:11:39
+// {"Make":"Panasonic","Model":"DMC-TZ3","Orientation":1,"ExposureTime":"10\/300","FNumber":"33\/10","ISOSpeedRatings":100,"ExifVersion":"0221","DateTimeOriginal":"2010:08:10 19:11:39","Flash":25,"ColorSpace":1,"ExifImageWidth":3072,"ExifImageLength":2304,"InterOperabilityIndex":"R98","InterOperabilityVersion":"0100","ApertureFNumber":"f\/3.3","isFlash":1,"root":{"imageWidth":640,"imageHeight":480,"isRGB":true}}
+				
+			}
+            
             o.ts = parseInt(o.Audition.Photo.TS);
             o.tags = o.Audition.Tags && o.Audition.Tags.value || null;
             o.label = o.Audition.Photo.Caption;
@@ -571,7 +579,7 @@
                     // node.tags = audition.Tags && audition.Tags.value || null;
                     // node.label = audition.Photo.Caption;
 					try {
-						var src = audition.Photo.origSrc;
+						var src = audition.Photo.nativePath;
 						node.albumName = this.getAlbumName(node, src);
 					} catch(e) {
 						node.albumName = this.getAlbumName(node);
@@ -586,7 +594,7 @@
         getAlbumName: function getAlbumName(o, src){
             var parts, name;
 			src = src || o.src;
-            parts = src.split('/');
+            parts = src.replace(/\\/g, "/").split('/');
             parts.pop(); // discard filename
             if ((name = parts[parts.length - 1]) == '.thumbs') 
                 parts.pop();

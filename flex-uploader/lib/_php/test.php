@@ -3,7 +3,7 @@
   echo 'data["uuid"] = '. $_POST['data["uuid"]'] . '\n';
   echo 'data["asset_hash"]='  .  $_POST['data["asset_hash"]'] .  '\n';
   echo 'data["base_url"]='  .  $_POST['data["base_url"]']  .  '\n';
-  echo 'data["rel_path"]='  .  $_POST['data["rel_path"]']  . '\n';
+  echo 'data["relPath"]='  .  $_POST['data["relPath"]']  . '\n';
   echo 'data["width"]='  .  $_POST['data["width"]']  . '\n';
   echo 'data["height"]='  .  $_POST['data["height"]']  . '\n';
   echo 'data["date_taken"]='  .  $_POST['data["date_taken"]']  . '\n';
