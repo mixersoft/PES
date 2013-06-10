@@ -25,14 +25,14 @@ $config['email'] = array(
         'timeout'=>'30',
         'host' => 'ssl://smtp.gmail.com',
 		'username'=>'social@snaphappi.com',
-		'password'=>'snapsh0t1',
+		'password'=>'snapsh0t',
 	),
 );
 
 $config['register'] = array(
 	'active'=>1,	// default User.active=1
 	'email_verify' => 1,
-	'success_redirect' => '/pages/downloads',	// default redirect on Sucess
+	'success_redirect' => '/my/photos',	// default redirect on Sucess
 	'auth_on_success' => 1,
 );
 /*
