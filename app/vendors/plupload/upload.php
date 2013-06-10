@@ -106,10 +106,13 @@ class Pluploader
 		if (!$chunking || filesize("{$filePath}.part") >= $_REQUEST["total"]) {
 			// Strip the temp .part suffix off 
 			rename("{$filePath}.part", $filePath);
+			return $filePath;
+		} else {
+			return array('chunking'=>$chunking, 'received'=>filesize("{$filePath}.part"));
 		}
 		
 		// Return Success JSON-RPC response
 		// die ('{"jsonrpc" : "2.0", "result" : null, "id" : "id"}');
-		return $filePath;
+		// return $filePath;
 	}
 }

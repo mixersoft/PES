@@ -147,11 +147,12 @@ $(function() {
 		multi_selection: true, // if set to true, html4 will always fail, since it can't select multiple files
 
 		// Maximum file size
-		max_file_size : '1000mb',
+		max_file_size : '100mb',
 
 		// User can upload no more then 20 files in one go (sets multiple_queues to false)
 		max_file_count: 9999,
 		
+		// chunks : false,
 		chunks : {
 			size: '1mb',
 			send_chunk_number: false // set this to true, to send chunk and total chunk numbers instead of offset and total bytes
