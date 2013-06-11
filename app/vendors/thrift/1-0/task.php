@@ -410,16 +410,16 @@ if (!isset($thrift_GetTask['FileUpdateCount']))
 	 * @param $basepath String, the path on server to the folder used for staging uploaded files
 	 * @param $fullpath String, full path on server to uploaded file, inside $basepath
 	 * @param mixed, 
-	 * 		$origPath String, the native path on the device where the uploaded file was found
-	 * 		$options Array, $options[id] = uuid, $options[origPath] = $origPath 
+	 * 		$nativePath String, the native path on the device where the uploaded file was found
+	 * 		$options Array, $options[id] = uuid, $options[nativePath] = $nativePath 
 	 * @param $batchId int, unixtime(), used to find files uploaded at the same time
 	 * @param $isOriginal boolean, the uploaded file is the original file from device, not resampled to preview size
 	 */
-	public static function __importPhoto( $basepath, $fullpath, $origPath, $batchId, $isOriginal=false){
+	public static function __importPhoto( $basepath, $fullpath, $nativePath, $batchId, $isOriginal=false){
 		if (empty( ThriftController::$session)) throw new Exception("ERROR: CakePhpHelper::__importPhoto - Thrift Session is not defined");
-		if (is_array($origPath)) {
-			$asset_id = $origPath['id'];
-			$origPath = $origPath['origPath'];
+		if (is_array($nativePath)) {
+			$asset_id = $nativePath['id'];
+			$nativePath = $nativePath['nativePath'];
 		} else $asset_id = null;
 		// setup meta data
 		$BATCH_ID = $batchId; // WARNING: session not preseved between calls
@@ -428,10 +428,10 @@ if (!isset($thrift_GetTask['FileUpdateCount']))
 		$data['Asset']['id'] = $asset_id;				// not null for UO task
 		$data['Asset']['batchId'] = $BATCH_ID;
 		$devicePrefix = ThriftController::$session['ThriftDevice']['id'].ThriftFolder::$DEVICE_SEPARATOR;
-		$device_origPath = $devicePrefix . $origPath;
+		$device_origPath = $devicePrefix . $nativePath;
 		$data['Asset']['isThriftAPI'] = 1;			// this is used for getAssetHash()
-		$data['Asset']['origPath'] = $origPath;		// this is used for getAssetHash()
-		$data['Asset']['rel_path'] = $device_origPath;	
+		$data['Asset']['nativePath'] = $nativePath;	
+		$data['Asset']['devicePrefix'] = $devicePrefix;
 		$data['ProviderAccount']['provider_name'] = ThriftController::$session['ProviderAccount']['provider_name'];
 		$data['ProviderAccount']['provider_key'] = ThriftController::$session['ProviderAccount']['provider_key'];
 		$data['ProviderAccount']['display_name'] = ThriftController::$session['ProviderAccount']['display_name']; 
@@ -965,7 +965,7 @@ debug("DEBUG CONFIG ERROR: to test UploadFile, file should already exist in uplo
 				if ($isOriginal) {  // UploadType::Original
 					$options = array(
 						'id'=>$UploadInfo->ImageID,
-						'origPath'=>$path
+						'nativePath'=>$path
 					);
 ThriftController::log("check for original at path={$uploadpath}", LOG_DEBUG);					
 	debug("UploadFile ORIGINAL. Begin UPDATE to DB *********************");					

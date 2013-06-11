@@ -16,6 +16,73 @@
 <script type="text/javascript" src="/js/plupload/moxie.js"></script>
 <script type="text/javascript" src="/js/plupload/plupload.js"></script>
 <script type="text/javascript" src="/js/plupload/jquery.ui.plupload/jquery.ui.plupload.js"></script>
+<script type="text/javascript" src="/js/plupload/snappi.js"></script>
+<style type="text/css">
+	.plupload_droptext {
+		line-height: 120px;
+		position:relative;
+	}
+	.plupload_droptext .header > span {
+		color: #666;
+		font-size: 2em;
+		font-weight: normal;
+		line-height: 120px;
+	}
+	.plupload_droptext .header > span.strong {
+		color: darkred;
+		font-weight: bold;
+	}
+	.plupload_droptext div {
+		line-height: 1;
+	}
+	.copy-paste {
+		background-color: #EEEEEE;
+		border: 1px dotted black;
+		padding: 2px;
+    	text-align: center;
+	}
+	.dragover {
+		-moz-box-shadow: inset 0 0 5px 5px #888;
+		-webkit-box-shadow: inset 0 0 5px 5px#888;
+		box-shadow: inset 0 0 5px 5px #888;
+	}
+	.confirm-not-chrome {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		z-index: 1000;
+		background-color: white;
+		height: 100%;
+	}
+	.confirm-not-chrome * {
+		background-color: white;
+	}
+	.confirm-not-chrome .header > span {
+		line-height: 60px;
+	}
+	.confirm-not-chrome .header img {
+		height: 36px;
+	}
+	.confirm-not-chrome .body {
+		text-align: left;
+	}
+	.confirm-not-chrome .plupload_button:hover {
+		background: url("images/ui-bg_glass_75_dadada_1x400.png") repeat-x scroll 50% 50% #DADADA;
+	    border: 1px solid #999999;
+	    color: #212121;
+	    font-weight: normal;
+    }
+	.confirm-not-chrome ul {
+		margin: 0 auto;
+		width: 340px;
+	}
+	.confirm-not-chrome ul li {
+		list-style: disc inside none;
+	}
+	
+</style>
+
 <?php 		
 	$this->Layout->blockEnd();		
 
@@ -26,197 +93,65 @@
 ?>
 
 <div class="grid_16 upload">
-	<h1>Upload Photos to Snaphappi</h1>
+	<h2>Upload Photos to Snaphappi</h2>
 	<section class="">
-		<h1>jQuery UI Widget</h1>
-		<p>You can see this example with different themes on the <a href="http://plupload.com/example_jquery_ui.php">www.plupload.com</a> website.</p>
-		
-		<form id="form" method="post" action="dump.php" >
+		<noscript>Javascript is required for this action</noscript>
+		<form id="form" method="post" action="dump.php"  class='hide'>
 			<div id="uploader">
 				<p>Your browser doesn't have Flash, Silverlight or HTML5 support.</p>
 			</div>
-			<br />
-			<input type="submit" value="Submit" />
+			<div class='fallback hide'>
+				<br /> 	<input type="submit" value="Submit" />
+			</div>
 		</form>
 	</section>	
 </div>
-<script type="text/javascript">
-// Initialize the widget when the DOM is ready
-
-$(function() {
-	var CFG = CFG || {}; 
-	$("#uploader").plupload({
-		// General settings
-		runtimes : 'html5,flash,silverlight',
-		url : '../upload.php',
-
-		// Select multiple files at once
-		multi_selection: true, // if set to true, html4 will always fail, since it can't select multiple files
-
-		// Maximum file size
-		max_file_size : '1000mb',
-
-		// User can upload no more then 20 files in one go (sets multiple_queues to false)
-		max_file_count: 999,
-		
-		chunks : {
-			size: '1mb',
-			send_chunk_number: false // set this to true, to send chunk and total chunk numbers instead of offset and total bytes
-		},
-
-		// Resize images on clientside if we can
-		resize : {
-			width : 640, 
-			height : 640, 
-			quality : 90,
-			crop: false, 				// true=crop to exact dimensions, false=max dim
-			preserve_headers: true,		// BUT do NOT update EXIF size after resize
-		},
-
-		// Specify what files to browse for
-		filters : [
-			{title : "Image files", extensions : "jpg,gif,png"},
-			// {title : "Zip files", extensions : "zip,avi"}
-		],
-
-		// Rename files by clicking on their titles
-		rename: true,
-		
-		// Sort files
-		sortable: true,
-
-		// Enable ability to drag'n'drop files onto the widget (currently only HTML5 supports that)
-		dragdrop: true,
-
-		// Views to activate
-		views: {
-			list: true,
-			thumbs: true, // Show thumbs
-			active: 'list',
-			remember: false,
-		},
-
-		// Flash settings
-		flash_swf_url : '../../js/Moxie.swf',
-
-		// Silverlight settings
-		silverlight_xap_url : '../../js/Moxie.xap',
-		
-		
-		
-		/*
-		 * snaphappi customizations
-		 */
-		multiple_queues : true,
-		unique_names: true,
-		prevent_duplicates: true,
-		autostart: false,
-		max_retries: 0,
-		multipart: true,
-		multipart_params: {},
-		preinit: {
-			PostInit: function(up, params) {	
-				// TODO: up.features is not initialized
-				if (up.features.dragdrop) {
-					var target = $('#uploader_dropbox');
-					target.ondragover = function(event) {
-						event.dataTransfer.dropEffect = "copy";
-					};
-					target.ondragenter = function() {
-						this.className = "dragover";
-					};
-					target.ondragleave = function() {
-						this.className = "";
-					};
-					target.ondrop = function() {
-						this.className = "";
-					};
-				}
-				$('form#form input[type=submit]').addClass('hide');
-			},
-			FilesAdded: function(up, files) {
-				var root;
-				for (var i in files) {
-					if (files[i].relativePath) {
-						files[i].fileName = files[i].name;
-						files[i].name = files[i].relativePath;
-						root = files[i].relativePath.split('/');
-						if (root.length > 2 ) files[i].root = '/'+root[1];				
-						else files[i].root = '';
-					}
-					try {
-						// TODO: why can I see this value in firebug???
-						var fullpath = files[i].getNative()['mozFullPath'];
-						if (fullpath) files[i].fullpath = fullpath; 
-					} catch (ex) {
-					}
-				}
-				// remove duplicate files using settings.prevent_duplicates = true
-			},
-			QueueChanged: function(up){
-				// refresh the UI widget on 5 sec delay
-				// remove duplicates from UI widget view
-				var check;
-			},
-			BeforeUpload: function(up, file) {
-				var root, session, 
-					utc_now = Math.floor(new Date().getTime()/1000);
-				if (!( CFG['session'] && CFG['session'].BatchId) && typeof ($.cookie) != 'undefined') {
-					$.cookie.json = true;
-					$.cookie.defaults = {expires : 1};		// BatchId good for 1 day
-					session = $.cookie("plupload");
-					if (!session || !session.BatchId ) {
-					 	session = $.extend(session || {}, {'BatchId': utc_now});
-					} 
-					$.cookie("plupload", session);
-					CFG = $.extend(CFG, {session: session});
-				} 
-				if (CFG['session'] && CFG['session'].LastUpload) {
-					 if ( CFG['session'].LastUpload - CFG['session'].BatchId > 4*60*60 ){
-						// use cookie expiration to expire BatchId, instead
-						// session = $.extend(session || {}, {'BatchId': utc_now});
-					}
-				}
-				CFG['session'].LastUpload = utc_now;
-			},
-			UploadFile: function(up, file) {
-				// up.settings.url = '../dump.php?id=' + file.id;
-				up.settings.url = '/my/plupload?name=' + (file.fileName || file.name);
-				up.settings.multipart = true;
-				// use cakephp $this->data form for POST data
-				up.settings.multipart_params = {
-					'data[name]': (file.fileName || file.name), 
-					'data[Relpath]': (file.relativePath || ''),
-					'data[Root]': file.root || '',
-					'data[BatchId]': CFG['session'].BatchId,
-					'data[IsOriginal]': up.settings.resize ? 0 : 1,
-				}
-				var check;
-			},
-			viewchanged: function(event, args){
-				var check;
-			}
-		}, 
-	});
-	// var uploader = $('#uploader').plupload('getUploader');
-	// uploader.trigger('Init');
-
-	// Handle the case when form was submitted before uploading has finished
-	$('#form').submit(function(e) {
-		// Files in queue upload them first
-		if ($('#uploader').plupload('getFiles').length > 0) {
-
-			// When all files are uploaded submit form
-			$('#uploader').on('complete', function() {
-				$('#form')[0].submit();
-			});
-
-			$('#uploader').plupload('start');
-		} else {
-			alert("You must have at least one file in the queue.");
-		}
-		return false; // Keep the form from submitting
-	});
-});
-</script>
+<div id="markup-uploader" class="hide">
+	<div class="help is-chrome">
+		<div class='header'>
+			<span>Works better with </span>
+			<img src='/static/img/providers/chrome_logo_2x.png'>
+		</div>
+		<div class='subhead'>
+			<div>It's easy with Chrome &mdash; drag <u>folders</u> here and we'll find all the JPGs.</div>
+		</div>
+	</div>
+	<div class="help not-chrome">
+		<div class='header'>
+			<span>Works better with</span>
+			<a href="http://www.google.com/chrome" target="_blank" title="Don't have Chrome? Click here to get it.">
+				<img src='/static/img/providers/chrome_logo_2x.png'>
+				</a>
+		</div>
+		<div class='subhead'>
+			<p>Only the Chrome browser allows you to drag folders into this box.</p>
+			<br />
+			<p>If you plan to upload 100s of photos, please open this page in Chrome
+				<input type="text" size="32" value="<?php echo Router::url($this->here, true); ?>" onclick="this.select();" class="copy-paste">
+			</p>
+		</div>
+	</div>
+	<div class="help confirm-not-chrome">
+		<div class='header'>
+			<span>Are you sure you don't want to use</span>
+			<a href="http://www.google.com/chrome" target="_blank" title="Don't have Chrome? Click here to get it.">
+				<img src='/static/img/providers/chrome_logo_2x.png'>
+			</a>
+			<span>?</span>
+			<label class="plupload_button ui-button ui-widget ui-state-default ui-button-text-only" 
+				role="button" aria-disabled="false" aria-pressed="true">
+				<span class="ui-button-text">I'm sure.</span>
+			</label>		
+		</div>
+		<div class='body'>
+			<ul><p>Chrome gives you these key benefits</p>
+				<li>drag folders and we'll find the JPGs</li>
+				<li>20x faster uploads with web-sized photos (640px)</li>
+				<li>duplicate detection avoids uploading the same file twice</li>
+			</ul>
+		</div>
+		<br />
+		<p>Please open this page in Chrome <input type="text" size="32" value="<?php echo Router::url($this->here, true); ?>" onclick="this.select();" class="copy-paste">
+	</div>
+</div>
 

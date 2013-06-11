@@ -16,7 +16,7 @@ class ThriftFolder extends AppModel {
 		)
 	);	
 	
-	public static $DEVICE_SEPARATOR = '~';	// Asset.native_path == deviceID~origPath in DB
+	public static $DEVICE_SEPARATOR = '~';	// Asset.native_path == deviceID~nativePath in DB
 	public static $ALLOWED_UPDATE_KEYS = array('count', 'is_scanned', 'is_watched', 'is_not_found' );
 	
 	private function hashPath($path) {

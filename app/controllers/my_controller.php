@@ -165,96 +165,11 @@ class MyController extends PersonController {
 // $this->log("MyController::__importPhoto JSON response, ".print_r($response, true), LOG_DEBUG);			
 		return $response;
 	}
-	/**
-	 * upload and import files in DB using the valums javascript uploader
-	 * @param $userid
-	 * @return unknown_type
-	 */
-	function __upload_javascript($userid){
-		// this request is a valums fileUploader POST, so route request to the vendor server file
-		$fileUploader_path = Configure::read('path.fileUploader');
-	    // set upload folder
-	    $UPLOAD_FOLDER = $fileUploader_path['folder_basepath'].$userid.DS;
-		if ($this->Session->check('fileUploader.uploadFolder') == null) {
-			Session::write('fileUploader.uploadFolder', $UPLOAD_FOLDER);
-		}
-		// by importing the vendor file, 
-		// we will run the php script file and process the request
-		App::import('Vendor', 'fileUploader', array('file'=>$fileUploader_path['vendorpath'].DS.'server'.DS.'php.php'));
-		
-		// list of valid extensions, ex. array("jpeg", "xml", "bmp")
-		$allowedExtensions = array("jpeg", "jpg");
-		// max file size in bytes
-		$sizeLimit = 8 * 1024 * 1024;
-		
-		$uploader = new qqFileUploader($allowedExtensions, $sizeLimit);
-		$dest = $uploader->handleUpload($UPLOAD_FOLDER, false);
-		$move_to_src_root = $dest;
-		
-		/*
-		 * autorotate NO
-		 * 	- DO NOT AUTOROTATE Originals from JS loader
-		 * 	- NOTE: AIR will autorotate before uploading bp~
-		 */
-		// $Jhead = loadComponent('Jhead', $this);
-		// $Jhead->autoRotate($move_to_src_root);	// 
-		
-		// setup meta data
-		$BATCH_ID = $_GET['batchId'];
-		$PROVIDER_NAME = 'snappi';
-		$Import = loadComponent('Import', $this);
-		$data = array();
-		$data['Asset']['id'] = null;
-		$data['Asset']['asset_hash'] = null;
-		$data['Asset']['batchId'] = $BATCH_ID;
-		$data['Asset']['rel_path'] = basename($move_to_src_root);
-		$data['ProviderAccount']['provider_name']=$PROVIDER_NAME;
-// $this->log($data['Asset'], LOG_DEBUG);		
-		/***************************************************************
-		 * experimental: replace mode, replace existing with original
-		 * 	pass to Asset::addIfNew()
-		 ***************************************************************/ 
-		 if (!empty($this->params['url']['replace'])){
-		 	$data['Asset']['replace-preview-with-original'] = true;
-		 };
-		
-		/*
-		 * import into DB
-		 */
-// $this->log("MyController::__upload_javascript() BEGIN VALUMS/JAVASCRIPT IMPORT", LOG_DEBUG);
-// $this->log($data, LOG_DEBUG);
-		$response = $this->__importPhoto($data, $UPLOAD_FOLDER, $move_to_src_root, 'ORIGINAL');	// autoRotate=false
-		if ($response['success'] && isset($response['response']['Asset']['id'])) {
-			/*
-			 * share via express uploads, as necessary
-			 */ 
-			$groupIds = (array)explode(',',$_GET['groupIds']);
-			$resp1 = array();
-			foreach($groupIds as $gid){
-				if (empty($gid)) continue;
-				$asset_id = $response['response']['Asset']['id'];
-				$paid = $response['response']['Asset']['provider_account_id'];
-				$count = $this->User->Membership->contributePhoto($gid, $asset_id, $paid);
-				if ($count) {
-					$resp1['message'][] = "Express Upload: shared with Group id={$gid}";
-					$resp1['response']['Group'][]['id'] = $gid;
-				}
-			}
-			$response = Set::merge($response, $resp1);
-		}
-//$this->log($response, LOG_DEBUG);
-		$this->User->setRandomBadgePhoto($userid);
-		// to pass data through iframe you will need to encode all html tags
-		// Configure::write('debug', 0);
-		echo htmlspecialchars(json_encode($response), ENT_NOQUOTES);	
-		// echo json_encode($response);
-		exit(0);
-	}
 	
 	/*
 	 * use this to test POST:
-	 * http://git:88/my/upload?data[User][id]=4d635c36-0190-4185-b509-1078f67883f5&data[isAIR]=1&data[ProviderAccount][id]=4AE74931-6224-43FE-8731-33FFB1108768&data[ProviderAccount][provider_name]=desktop&data[ProviderAccount][provider_version]=v1.0&data[ProviderAccount][provider_key]=4AE74931-6224-43FE-8731-33FFB1108768&data[ProviderAccount][baseurl]=C:\USERS\michael\Pictures\importTest&data[Asset][id]=2E3081BB-03B4-40F3-8266-ADA50EC326DA&data[Asset][asset_hash]=a963dd86f79d9d24a4779d3b97d4018f&data[Asset][batchId]=1300443389&data[Asset][rel_path]=DC\P1030998.JPG&data[Asset][width]=4000&data[Asset][height]=2672&data[Asset][json_exif]={%22FocalLength%22%3A30%2C%22XResolution%22%3A180%2C%22ResolutionUnit%22%3A1%2C%22Software%22%3A%22Picasa%203.0%22%2C%22InterOperabilityIndex%22%3A%22%22%2C%22DateTime%22%3A%222010%3A07%3A28%2004%3A10%3A12%22%2C%22SensingMethod%22%3A2%2C%22ComponentsConfiguration%22%3A%22\u0001\u0002\u0003%22%2C%22ColorSpace%22%3A1%2C%22ExposureProgram%22%3A4%2C%22CompressedBitsPerPixel%22%3A4%2C%22InterOperabilityVersion%22%3A%22%22%2C%22FileSource%22%3A%22%22%2C%22ExposureBiasValue%22%3A0%2C%22FlashPixVersion%22%3A0%2C%22InteroperabilityOffset%22%3A8374%2C%22MaxApertureValue%22%3A4.8203125%2C%22YResolution%22%3A180%2C%22DateTimeOriginal%22%3A%222010%3A07%3A27%2016%3A10%3A12%22%2C%22YCbCrPositioning%22%3A2%2C%22Make%22%3A%22Panasonic%22%2C%22Orientation%22%3A1%2C%22ExifImageWidth%22%3A4000%2C%22Model%22%3A%22DMC-G1%22%2C%22ExifImageLength%22%3A2672%2C%22ExposureTime%22%3A0.01%2C%22Flash%22%3A16%2C%22DateTimeDigitized%22%3A%222010%3A07%3A28%2004%3A10%3A12%22%2C%22MeteringMode%22%3A5%2C%22FNumber%22%3A8%2C%22ISOSpeedRatings%22%3A100%2C%22Compression%22%3A6%2C%22LightSource%22%3A0%2C%22ExifVersion%22%3A%220221%22}&forcexhr=1&debug=2
-	 * http://git:88/my/upload?data[User][id]=4df70124-7000-4245-ab67-0290f67883f5&data[isAIR]=1&data[ProviderAccount][id]=4df70124-7000-4245-ab67-0290f67883f5&data[ProviderAccount][provider_name]=desktop&data[ProviderAccount][provider_version]=v1.0&data[ProviderAccount][provider_key]=4df70124-7000-4245-ab67-0290f67883f5&data[ProviderAccount][baseurl]=C:\Users\michael\Pictures\Peter%26Allie\Daniel&data[Asset][id]=EEFC82EE-0A53-4EE4-9BF6-463C17E7E6AA&data[Asset][asset_hash]=128c69eec29bda555bfb0155c46fa7aa&data[Asset][batchId]=1308034500&data[Asset][rel_path]=IMG_3505.JPG&data[Asset][width]=3648&data[Asset][height]=2736&data[Asset][json_exif]=[]&forcexhr=1&debug=2
+	 * http://git:88/my/upload?data[User][id]=4d635c36-0190-4185-b509-1078f67883f5&data[isAIR]=1&data[ProviderAccount][id]=4AE74931-6224-43FE-8731-33FFB1108768&data[ProviderAccount][provider_name]=desktop&data[ProviderAccount][provider_version]=v1.0&data[ProviderAccount][provider_key]=4AE74931-6224-43FE-8731-33FFB1108768&data[ProviderAccount][baseurl]=C:\USERS\michael\Pictures\importTest&data[Asset][id]=2E3081BB-03B4-40F3-8266-ADA50EC326DA&data[Asset][asset_hash]=a963dd86f79d9d24a4779d3b97d4018f&data[Asset][batchId]=1300443389&data[Asset][relPath]=DC\P1030998.JPG&data[Asset][width]=4000&data[Asset][height]=2672&data[Asset][json_exif]={%22FocalLength%22%3A30%2C%22XResolution%22%3A180%2C%22ResolutionUnit%22%3A1%2C%22Software%22%3A%22Picasa%203.0%22%2C%22InterOperabilityIndex%22%3A%22%22%2C%22DateTime%22%3A%222010%3A07%3A28%2004%3A10%3A12%22%2C%22SensingMethod%22%3A2%2C%22ComponentsConfiguration%22%3A%22\u0001\u0002\u0003%22%2C%22ColorSpace%22%3A1%2C%22ExposureProgram%22%3A4%2C%22CompressedBitsPerPixel%22%3A4%2C%22InterOperabilityVersion%22%3A%22%22%2C%22FileSource%22%3A%22%22%2C%22ExposureBiasValue%22%3A0%2C%22FlashPixVersion%22%3A0%2C%22InteroperabilityOffset%22%3A8374%2C%22MaxApertureValue%22%3A4.8203125%2C%22YResolution%22%3A180%2C%22DateTimeOriginal%22%3A%222010%3A07%3A27%2016%3A10%3A12%22%2C%22YCbCrPositioning%22%3A2%2C%22Make%22%3A%22Panasonic%22%2C%22Orientation%22%3A1%2C%22ExifImageWidth%22%3A4000%2C%22Model%22%3A%22DMC-G1%22%2C%22ExifImageLength%22%3A2672%2C%22ExposureTime%22%3A0.01%2C%22Flash%22%3A16%2C%22DateTimeDigitized%22%3A%222010%3A07%3A28%2004%3A10%3A12%22%2C%22MeteringMode%22%3A5%2C%22FNumber%22%3A8%2C%22ISOSpeedRatings%22%3A100%2C%22Compression%22%3A6%2C%22LightSource%22%3A0%2C%22ExifVersion%22%3A%220221%22}&forcexhr=1&debug=2
+	 * http://git:88/my/upload?data[User][id]=4df70124-7000-4245-ab67-0290f67883f5&data[isAIR]=1&data[ProviderAccount][id]=4df70124-7000-4245-ab67-0290f67883f5&data[ProviderAccount][provider_name]=desktop&data[ProviderAccount][provider_version]=v1.0&data[ProviderAccount][provider_key]=4df70124-7000-4245-ab67-0290f67883f5&data[ProviderAccount][baseurl]=C:\Users\michael\Pictures\Peter%26Allie\Daniel&data[Asset][id]=EEFC82EE-0A53-4EE4-9BF6-463C17E7E6AA&data[Asset][asset_hash]=128c69eec29bda555bfb0155c46fa7aa&data[Asset][batchId]=1308034500&data[Asset][relPath]=IMG_3505.JPG&data[Asset][width]=3648&data[Asset][height]=2736&data[Asset][json_exif]=[]&forcexhr=1&debug=2
 	 */
 	function __upload_AIRclient(){
 		$forceXHR = setXHRDebug($this);
@@ -462,59 +377,8 @@ $this->log("force_UNSECURE_LOGIN for username={$data['User']['username']}", LOG_
 	 * PHP or javascript/valums upload
 	 */
 	function upload () {
-		$this->layout = 'snappi-guest';
-		$this->viewPath = 'my';
-//		$this->log($this->data, LOG_DEBUG);
-		$forceXHR = setXHRDebug($this);
-		$userid = AppController::$userid;
-		
-		if (!empty($this->params['url']['qqfile'])) {
-			Configure::write('debug', $forceXHR);
-			/*
-			 * handle javascript POST
-			 */
-			$this->autoRender = false;
-			$this->__upload_javascript($userid);
-			exit(0);
-		} else if ($this->data){
-			$this->log("=====   Post data  ==========", LOG_DEBUG);
-			$this->log($this->data, LOG_DEBUG);
-			echo "1";
-			return;
-			/*
-			 *  bad cakephp POST from somewhere else
-			 */			
-			header("HTTP/1.1 500 Internal Server Error");
-			echo "Bad POST";
-			exit(0);
-		}
-		
-		$this->Session->setFlash('WARNING: this is the OLD Uploader. Please make sure you are on the correct page.');
-		
-		
-		/*
-		 * GET
-		 */
-//		debug(session_name()."=".session_id());
-		
-		
-		$this->User->contain();
-		$options = array('conditions'=>array('User.id'=>$userid));
-		$data = $this->User->find('first', $options);
-		
-		// set for '/elements/group/express-upload'
-		$expressUploadGroups = $this->__getExpressUploads($userid);
-		$this->set(compact('expressUploadGroups'));
-				
-		if (empty($data)) {
-			/*
-			 * handle no permission to view record
-			 */
-			$this->Session->setFlash("ERROR: You are not authorized to view this record.");
-			$this->redirectSafe();
-		} else {
-			$this->set('data', $data);			
-		}
+		$this->action = 'plupload';
+		return $this->plupload();
 	}
 
 	/*
@@ -890,8 +754,8 @@ if (isset($this->params['url']['new-taskid']))	{
 		} else {	// POST
 			@set_time_limit(5 * 60);
 		    // set upload folder
+		    $fileUploader_path = Configure::read('path.fileUploader');
 			if ($this->Session->check('fileUploader.uploadFolder') == null) {
-				$fileUploader_path = Configure::read('path.fileUploader');
 			    // set upload folder
 			    $UPLOAD_FOLDER = $fileUploader_path['folder_basepath'].$userid;
 				Session::write('fileUploader.uploadFolder', $UPLOAD_FOLDER);
@@ -902,9 +766,15 @@ if (isset($this->params['url']['new-taskid']))	{
 			 * save file from POST filedata 
 			 * $dest = tmp file on server
 			 */  
-			App::import('Vendor', 'plupload/upload');
+			App::import('Vendor', "{$fileUploader_path['vendorpath']}/upload");
 			$uploader = new Pluploader($UPLOAD_FOLDER);
 			$dest = $uploader->handleUpload();
+			// add support for plupload chunking
+			if (is_array($dest) && isset($dest['chunking'])) {
+				$response = json_encode($dest);
+				header('Content-type: application/json');
+				die ("{\"jsonrpc\" : \"2.0\", \"result\" : {$response}, \"id\" : \"id\"}");
+			}  
 			/*
 			 * END POST
 			 */
@@ -928,7 +798,7 @@ if (isset($this->params['url']['new-taskid']))	{
 			$data['Asset']['id'] = null;
 			$data['Asset']['asset_hash'] = null;
 			$data['Asset']['batchId'] = $BATCH_ID;
-			$data['Asset']['rel_path'] = $RELPATH;
+			$data['Asset']['nativePath'] = $RELPATH;
 			$data['ProviderAccount']['provider_name']=$PROVIDER_NAME;
 			$data['ProviderAccount']['baseurl']='';	// TODO: should be fullpath to $ROOT, if we can get it
 	// $this->log($data['Asset'], LOG_DEBUG);		
@@ -980,6 +850,10 @@ if (isset($this->params['url']['new-taskid']))	{
 		}	// end POST
 	}
 	
+	
+	/**
+	 * truncate - remove all photos from DB and STAGING
+	 */ 
 	function truncate($id=null){
 		Configure::write('debug', 2);
 		$this->autoRender=false;	
@@ -1031,6 +905,70 @@ if (isset($this->params['url']['new-taskid']))	{
 		debug("<br /><a href='".Router::url(array('action'=>'photos'))."'>/my/photos</a><br />");
 		
 		$this->render('/elements/sql_dump');
+	}
+
+	/**
+	 * purge - remove orphaned photos from STAGING
+	 */
+	function purge($id = null){
+		Configure::write('debug', 2);
+		$this->autoRender=false;	
+		if (in_array(AppController::$role, array('ADMIN', 'MANAGER')) == false) {
+			$this->Session->setFlash('WARNING: you must be a MANAGER to take this action');
+			$this->redirect('photos',null, true);
+		}
+		if ($id != MyController::$userid) {
+			debug('<span style="font-size:14pt;color:red;">WARNING: about to PURGE all ORPHANED Snaps <br />Please append User.id');
+			debug($this->Auth->user());
+			return;
+		};
+		
+		set_time_limit(600);
+		
+		$basepath = Configure::read('path.stageroot.basepath');
+		$jsonSrc = $basepath.DS."staged_aids.json";
+// debug($valid);	
+// debug($jsonSrc);	
+		// file read
+		$staged_assets = json_decode(file_get_contents($jsonSrc), true);
+		$staged_assets_ids = array_keys($staged_assets);	
+		
+		// break into chunks and check DB
+		$CHUNK_SIZE = 100; $orphans = array();
+		$chunks = array_chunk($staged_assets_ids,$CHUNK_SIZE);
+		foreach($chunks as $batch)
+		{
+			$log_output = array();
+			$options = array( 
+				'fields'=>array('Asset.id'),
+				'conditions'=>array('`Asset`.id'=>$batch),
+				'permissionable'=>false
+			);
+			$data = $this->User->Asset->find('all', $options);
+			$valid = Set::extract($data, '/Asset/id');
+			$orphans = array_diff($batch, $valid);
+// debug(array_diff($batch, $valid));
+			foreach ($orphans as $aid) {
+				$path = $staged_assets[$aid];
+				$root = cleanpath($basepath.$path);
+// debug($path);
+// debug($root);
+				@unlink($root);						// delete root
+				$pathparts = explode(DS, $root);
+				array_splice($pathparts, -1, 0, '.thumbs');
+				$thumb_src = implode(DS, $pathparts);
+// debug($thumb_src);
+				$log_output[$aid] = $path;
+// continue;
+				$sizes = array('bp', 'tn', 'sq', 'lm', 'll', 'bm', 'bs');
+				foreach ($sizes as $size) {
+					$path = Stagehand::getImageSrcBySize($thumb_src, $size);
+					@unlink($path);					// delete thumbnails
+				}
+			}
+$this->log("PURGE: purging the following orphans: ".print_r($log_output, true), LOG_DEBUG);	
+debug("PURGE: purging the following orphans: ".print_r($log_output, true));		
+		}
 	}
 		
 	function remove_photos($id){

@@ -513,18 +513,10 @@ function getAssetHash($asset, $filepath,  $filename=null ){
 	$string = $asset['provider_account_id'];
 	
 	// get $filename_no_counter
-	if ($filename) {
+	if (!empty($filename)) {
 		// skip
-	} else if (isset($asset['origPath'])) {
-		$filename = $asset['origPath'];		// from thrift api	
-	} else if (isset($asset['rel_path'])) {
-		$filename = basename($asset['rel_path']);		// from desktop-uploader
-		// strip filename counter
-		$filename = preg_replace('/(.*)(~\d+)(\.jpg)/i','${1}${3}',$filename);
-	} else if (isset($asset['json_src'])) {
-		// $src['orig']= cleanPath($providerAccount['baseurl'].DS.$asset['rel_path'], 'http');
-		$src = json_decode($asset['json_src'], true);	// from db
-		$filename = basename($src['orig']);
+	} else if (isset($asset['nativePath'])) {
+		$filename = cleanPath($asset['nativePath'], 'http');		// from POST, before SAVE. does NOT include DeviceID
 	} else {
 		$filename = $asset['caption'];
 	}

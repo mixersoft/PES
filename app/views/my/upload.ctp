@@ -15,26 +15,6 @@
 	 */ 
 	$replace = isset($this->params['url']['replace']);  	
 ?>
-<style type="text/css">
-#valums-file-uploader {
-	border: 1px solid #8FB9D0;
-	padding: 4px;
-}
-h1 {
-	font-size: 20pt;
-}
-.qq-upload-drop-area, .qq-upload-button {
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;	
-	width: 100%;
-}
-.qq-upload-drop-area {
-	min-height: 50px;
-	background-color: #FFFFC3;
-    border: 1px solid #8FB9D0;
-    box-shadow: 0 0 7px #FFFFFF inset;
-}
-</style>
 
 <div class="grid_16 upload">
 	<h1>Upload Photos to Snaphappi</h1>
@@ -73,39 +53,6 @@ var initOnce = function() {
 	// USE default look and feel. 
 	// if you want to customize uploader, use new qq.FileUploaderBasic();
 	var timestamp = Math.round(new Date().getTime() / 1000);
-	var uploader = new qq.FileUploader({
-	    // pass the dom node (ex. $(selector)[0] for jQuery users)
-	    element: document.getElementById('valums-file-uploader'),
-	    // path to server-side upload script
-	    action: '/my/upload',
-	    allowedExtensions:['jpg', 'jpeg'],
-//	    sizeLimit: // 10Mb is the default in vender file,
-	    debug: false,
-	    onSubmit:function(id, fileName) {
-	    	var gids = getExpressUploads();
-			uploader.setParams({
-				'batchId': timestamp,
-				'groupIds': gids,
-<?php  echo $replace ? "'replace': 1," : '' ;  /* replace mode	*/	?>			
-			});  
-			var check;  
-		},
-		onComplete:function(){
-			var LLcfg = {
-					module_group: 'alert',
-					ready: function(Y){
-						var cfg = {
-							selector: '#markup .alert-upload-complete',
-							uri: '/help/markup/dialogs',
-						};
-						if (Y.one('.alert-upload-complete')) return;
-						else SNAPPI.Alert.load(cfg);
-					},
-				}
-			SNAPPI.LazyLoad.extras(LLcfg);
-		},
-		end: null
-	}); 
 	/**
 	 * TODO: change to DialogAlert()
 	 * get group_ids of groups for express upload/sharing
