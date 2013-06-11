@@ -23,12 +23,34 @@
 // Initialize the widget when the DOM is ready
 
 $(function() {
-	var CFG = CFG || {}; 
+	CFG = CFG || {}; 
 	/*
 	 * helper functions
 	 */
 	var Util = new function(){}
 	Util.isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+	Util.noChromeConfirmed = false;
+	Util.get_BatchID = function (utc_now) {
+		utc_now = utc_now || Math.floor(new Date().getTime()/1000);
+		var root, session;
+		if (!( CFG['session'] && CFG['session'].BatchId) && typeof ($.cookie) != 'undefined') {
+			// save batchId to cookie: plupload
+			$.cookie.json = true;
+			$.cookie.defaults = {expires : 1};		// BatchId good for 1 day
+			session = $.cookie("plupload");
+			if (!session || !session.BatchId ) {
+			 	session = $.extend(session || {}, {'BatchId': utc_now});
+			} 
+			$.cookie("plupload", session);
+			CFG = $.extend(CFG, {session: session});
+		} 
+		if (CFG['session'] && CFG['session'].LastUpload) {
+			 if ( CFG['session'].LastUpload - CFG['session'].BatchId > 4*60*60 ){
+				// ???: use cookie expiration to expire BatchId, instead of time-delta refresh
+				// session = $.extend(session || {}, {'BatchId': utc_now});
+			}
+		}
+	}
 	Util.get_DeviceID = function (ruid) {
 		/*
 		 * DeviceID priority 
@@ -73,7 +95,7 @@ $(function() {
 			}
 		} else return false;
 	}
-	Util.confirmNoChrome = function(target){
+	Util.confirmNoChrome = function(){
 		$('.plupload_droptext').html($('#markup-uploader .confirm-not-chrome'));
 		$('.plupload_droptext label.plupload_button').one('click', function(e){
 			Util.allowNoChrome()
@@ -82,6 +104,8 @@ $(function() {
 	},
 	Util.allowNoChrome = function(e){
 		$('.plupload_droptext').html('');
+		$("a.plupload_start").button('enable');
+		Util.noChromeConfirmed = true;
 	}
 	
 	Util.activate_dragover = function(target, cfg){
@@ -134,27 +158,32 @@ $(function() {
 		    }
 		});
 	}
+	Util.notify = function(msg, status) {
+		if (!msg) return;
+		status = status || 'info';
+		$('#uploader').plupload('notify', status, msg);
+	}
 	// make global,
-	// TODO: this is being overwritten by AUI
-	CFG['util'] = $.extend(CFG['util'] || {}, Util);		
+	CFG['plupload'] = $.extend(CFG['plupload'] || {}, Util);		
+	
 	
 	$("#uploader").plupload({
 		// General settings
 		runtimes : 'html5,flash,silverlight',
-		url : '../upload.php',
+		url : null,
 
 		// Select multiple files at once
 		multi_selection: true, // if set to true, html4 will always fail, since it can't select multiple files
 
 		// Maximum file size
-		max_file_size : '100mb',
+		max_file_size : '12mb',
 
 		// User can upload no more then 20 files in one go (sets multiple_queues to false)
 		max_file_count: 9999,
 		
 		// chunks : false,
 		chunks : {
-			size: '1mb',
+			size: '2mb',
 			send_chunk_number: false // set this to true, to send chunk and total chunk numbers instead of offset and total bytes
 		},
 
@@ -176,6 +205,12 @@ $(function() {
 
 		// Enable ability to drag'n'drop files onto the widget (currently only HTML5 supports that)
 		dragdrop: true,
+		
+		buttons: {
+			browse: !Util.isChrome,
+			start: true,
+			stop: true	
+		},
 
 		// Views to activate
 		views: {
@@ -204,11 +239,67 @@ $(function() {
 		multipart: true,
 		multipart_params: {},
 		preinit: {
-			Init: function(){
+			Init: function(up, runtime){
 				var msg = (Util.isChrome) 
 					? $('#markup-uploader .is-chrome')
 					: $('#markup-uploader .not-chrome'); 
 				$('.plupload_droptext').html(msg);
+				if (!Util.isChrome) $("a.plupload_start").button('disable');
+				
+				/*
+				 * bind BEFORE internal event handlers to override
+				 */
+				up.bind('StateChanged', function(up){
+					// Start/Stop
+					console.log('event=StateChanged OVERRIDE');
+				});
+				up.bind('FilesAdded', function(up, files) {
+					console.log('event=FilesAdded OVERRIDE');
+					// note: not sure we need this if we override QueueChanged
+					if (!Util.isChrome) {
+						if ($('.plupload_droptext .not-chrome').length==1) { 
+							Util.confirmNoChrome();
+						}
+						if (!Util.noChromeConfirmed) {
+							$("a.plupload_start").button('disable');
+							// remove files from uploader (not queue) 
+							for (var i in up.files) {
+								up.removeFile(up.files[i]);
+							}
+							up.refresh();
+console.info('prevent 	event=FilesAdded ');							
+							return false;
+						}
+					}
+				});
+				up.bind('selected', function(up, files){
+					// file selected
+					console.log('event=selected: file selected OVERRIDE');
+					if (!Util.isChrome && !Util.noChromeConfirmed) {
+console.info('prevent event=selected: file selected ');						
+						return false; // do not add to Queue
+					}
+				});
+				up.bind('QueueChanged', function(up){
+					// add/remove file to Queue
+					// note: uploader.filesAdded triggers QueueChanged BEFORE FilesAdded
+					console.log('event=QueueChanged OVERRIDE');
+					if (!Util.isChrome) {
+						if ($('.plupload_droptext .not-chrome').length==1) { 
+							Util.confirmNoChrome();
+						}
+						if (!Util.noChromeConfirmed) {
+							$("a.plupload_start").button('disable');
+							// remove files from uploader (not queue) 
+							for (var i in up.files) {
+								up.removeFile(up.files[i]);
+							}
+							up.refresh();
+console.info('prevent 	event=QueueChanged ');
+							return false; // do not add to Queue
+						}
+					}
+				});
 			},
 			PostInit: function(up, params) {	
 				if (up.features.dragdrop && up.settings.dragdrop) {
@@ -216,21 +307,15 @@ $(function() {
 					Util.activate_dragover(target);
 					target.one('drop', function(event){
 						target.trigger('dndHoverEnd');
-						if (Util.isChrome) $('.plupload_droptext').addClass('hide');
-						else if ($('#markup-uploader .confim-not-chrome').length==1) {
-							var check; // ok to drop
-						} else {
-							event.stopPropagation();
-	       					event.preventDefault();
-							Util.confirmNoChrome(target);
-							return false;
-						}
+						up.trigger('selected');
 					});
 				}
 				$('form#form').removeClass('hide');
 				Util.get_DeviceID();
 			},
+
 			FilesAdded: function(up, files) {
+				// add folders (count) view
 				var root;
 				for (var i in files) {
 					if (files[i].relativePath) {
@@ -240,39 +325,21 @@ $(function() {
 						if (root.length > 2 ) files[i].root = '/'+root[1];				
 						else files[i].root = '';
 					}
-					try {
-						// TODO: why can I see this value in firebug???
-						var fullpath = files[i].getNative()['mozFullPath'];
-						if (fullpath) files[i].fullpath = fullpath; 
-					} catch (ex) {
-					}
 				}
 				// remove duplicate files using settings.prevent_duplicates = true
 			},
 			QueueChanged: function(up){
 				// refresh the UI widget on 5 sec delay
 				// remove duplicates from UI widget view
-				var check;
+				console.log('event=QueueChanged');
+			},
+			StateChanged: function(up){
+				// Start/Stop
+				console.log('event=StateChanged');
 			},
 			BeforeUpload: function(up, file) {
-				var root, session, 
-					utc_now = Math.floor(new Date().getTime()/1000);
-				if (!( CFG['session'] && CFG['session'].BatchId) && typeof ($.cookie) != 'undefined') {
-					$.cookie.json = true;
-					$.cookie.defaults = {expires : 1};		// BatchId good for 1 day
-					session = $.cookie("plupload");
-					if (!session || !session.BatchId ) {
-					 	session = $.extend(session || {}, {'BatchId': utc_now});
-					} 
-					$.cookie("plupload", session);
-					CFG = $.extend(CFG, {session: session});
-				} 
-				if (CFG['session'] && CFG['session'].LastUpload) {
-					 if ( CFG['session'].LastUpload - CFG['session'].BatchId > 4*60*60 ){
-						// use cookie expiration to expire BatchId, instead
-						// session = $.extend(session || {}, {'BatchId': utc_now});
-					}
-				}
+				var utc_now = Math.floor(new Date().getTime()/1000);
+				Util.get_BatchID(utc_now);	
 				CFG['session'].LastUpload = utc_now;
 			},
 			UploadFile: function(up, file) {
@@ -290,13 +357,41 @@ $(function() {
 				}
 				var check;
 			},
+			complete: function(up, files) {
+				console.log('event=complete');
+			},
 			viewchanged: function(event, args){
-				var check;
+				console.log('event=viewchanged');
 			}
-		}, 
+		},
+		// ui events
+		selected: function(up, files) {
+			// file selected
+			console.log('event=selected: file selected');
+			if (Util.isChrome) $('.plupload_droptext').addClass('hide');
+			else if ($('.plupload_droptext .not-chrome').length==1) {
+				Util.confirmNoChrome();
+				// addFiles BEHIND .confirm-not-chrome
+			}
+		},
+		start: function(event, up) {
+			// upload queue started
+			console.log('event=start');
+			if ($('.plupload_droptext .confirm-not-chrome').length==1) {
+				Util.notify('Snaphappi works better when you upload entire folder(s) of JPGs using the Chrome browser. Please confirm that you do NOT want to use Chrome.')
+				event.stopPropagation();
+	       		event.preventDefault();
+			} 
+		},  
+		complete: function(e, up) {
+			// upload queue processing complete
+			console.log('event=complete, upload queue processing complete');
+		},
+		viewchanged: function(e, up) {
+			console.log('event= view changed');
+		},
 	});
-	// var uploader = $('#uploader').plupload('getUploader');
-	// uploader.trigger('Init');
+	var uploader = $('#uploader').plupload('getUploader');
 
 	// Handle the case when form was submitted before uploading has finished
 	$('#form').submit(function(e) {

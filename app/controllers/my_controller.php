@@ -36,11 +36,11 @@ class MyController extends PersonController {
 			 * main
 			 */
 			// add to ACLs
-			'upload', 'desktop_upload', 'express_uploads', 'lightbox', 'settings',
+			'express_uploads', 'lightbox', 'settings',
 			/*
 			 * experimental
 			 */
-			'pagemaker', 'updateExif', 
+			'pagemaker', 'updateExif', 'desktop_upload',  
 		);
 		$removeAuth = array('photos', 'groups', 'trends', 'stories', 'photostreams', 'home', 
 			'all', 'most_active', 'most_recent','most_photos','most_groups','remove_photos'

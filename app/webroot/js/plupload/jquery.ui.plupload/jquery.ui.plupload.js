@@ -278,10 +278,10 @@ $.widget("ui.plupload", {
 		browse_button_active: 'ui-state-active',
 		
 		// widget specific
-		dragdrop : navigator.userAgent.toLowerCase().indexOf('chrome') > -1, 
+		dragdrop : true, 
 		multiple_queues: true, // re-use widget by default
 		buttons: {
-			browse: false,
+			browse: true,
 			start: true,
 			stop: true	
 		},

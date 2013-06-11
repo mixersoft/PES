@@ -133,14 +133,14 @@
 	</div>
 	<div class="help confirm-not-chrome">
 		<div class='header'>
-			<span>Are you sure you don't want to use</span>
+			<span class='strong'>Are you sure you don't want to use</span>
 			<a href="http://www.google.com/chrome" target="_blank" title="Don't have Chrome? Click here to get it.">
 				<img src='/static/img/providers/chrome_logo_2x.png'>
 			</a>
 			<span>?</span>
 			<label class="plupload_button ui-button ui-widget ui-state-default ui-button-text-only" 
 				role="button" aria-disabled="false" aria-pressed="true">
-				<span class="ui-button-text">I'm sure.</span>
+				<span class="ui-button-text strong">I'm sure</span>
 			</label>		
 		</div>
 		<div class='body'>
