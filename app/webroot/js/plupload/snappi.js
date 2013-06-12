@@ -29,7 +29,7 @@ $(function() {
 	 */
 	var Util = new function(){}
 	Util.isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
-	Util.noChromeConfirmed = false;
+	Util.userOverrideOK = false;
 	Util.get_BatchID = function (utc_now) {
 		utc_now = utc_now || Math.floor(new Date().getTime()/1000);
 		var root, session;
@@ -96,18 +96,35 @@ $(function() {
 		} else return false;
 	}
 	Util.confirmNoChrome = function(){
-		$('.plupload_droptext').html($('#markup-uploader .confirm-not-chrome'));
-		$('.plupload_droptext label.plupload_button').one('click', function(e){
-			Util.allowNoChrome()
-		});
+		if (Util.userOverrideOK) return true;
+		if ($('.plupload_droptext .confirm-not-chrome').length) {
+			Util.notify("Please click the I'm Sure button to continue.");
+		}
+		$('.plupload_droptext').html($('#markup-uploader .confirm-not-chrome').clone())
+			.height($('.plupload_dropbox').height())
+			.removeClass('hide');
         return false;
 	},
-	Util.allowNoChrome = function(e){
-		$('.plupload_droptext').html('');
-		$("a.plupload_start").button('enable');
-		Util.noChromeConfirmed = true;
+	Util.confirmPreferFilesInChrome = function(){
+		if (Util.userOverrideOK) return true;
+		if ($('.plupload_droptext .confirm-prefer-browse').length) {
+			Util.notify("Please click the I'm Sure button to continue.");
+		}
+		$('.plupload_droptext').html($('#markup-uploader .confirm-prefer-browse').clone())
+			.height($('.plupload_dropbox').height())
+			.removeClass('hide');
+        return false;
+	},
+	Util.allowUserOverride = function(e){
+		Util.userOverrideOK = true;
+		$('.plupload_message').remove();
+		
+		var up = $('#uploader').plupload('getUploader'); 
+		up.disableBrowse(!Util.userOverrideOK);	
+		if (up.files.length) $('.plupload_droptext').addClass('hide');
+		var msg = Util.isChrome ? 'drag folders or JPG files here' : 'drag JPG files here';
+		$('.plupload_droptext').html(msg);
 	}
-	
 	Util.activate_dragover = function(target, cfg){
 		cfg = cfg || {dragover:'dragover'};
 		$.fn.dndhover = function(options) {
@@ -207,7 +224,7 @@ $(function() {
 		dragdrop: true,
 		
 		buttons: {
-			browse: !Util.isChrome,
+			browse: true,
 			start: true,
 			stop: true	
 		},
@@ -247,6 +264,25 @@ $(function() {
 				if (!Util.isChrome) $("a.plupload_start").button('disable');
 				
 				/*
+				 * override add files button
+				 */
+				$("a.plupload_add").bind('click', function(event){
+					if (!Util.userOverrideOK) {
+						if (Util.isChrome)	Util.confirmPreferFilesInChrome();
+						else Util.confirmNoChrome();
+						$("a.plupload_start").button('disable');
+		       			$('#uploader').plupload('getUploader').disableBrowse(true);
+		       			return false;
+		       		}
+				});
+				/*
+				 * I'm Sure button listener
+				 */
+				$('.plupload_droptext').one('click', 'label.plupload_button', function(e){
+					Util.allowUserOverride();
+				});
+				
+				/*
 				 * bind BEFORE internal event handlers to override
 				 */
 				up.bind('StateChanged', function(up){
@@ -256,11 +292,8 @@ $(function() {
 				up.bind('FilesAdded', function(up, files) {
 					console.log('event=FilesAdded OVERRIDE');
 					// note: not sure we need this if we override QueueChanged
-					if (!Util.isChrome) {
-						if ($('.plupload_droptext .not-chrome').length==1) { 
+					if (!Util.isChrome && !Util.userOverrideOK) { 
 							Util.confirmNoChrome();
-						}
-						if (!Util.noChromeConfirmed) {
 							$("a.plupload_start").button('disable');
 							// remove files from uploader (not queue) 
 							for (var i in up.files) {
@@ -269,13 +302,12 @@ $(function() {
 							up.refresh();
 console.info('prevent 	event=FilesAdded ');							
 							return false;
-						}
 					}
 				});
 				up.bind('selected', function(up, files){
 					// file selected
 					console.log('event=selected: file selected OVERRIDE');
-					if (!Util.isChrome && !Util.noChromeConfirmed) {
+					if (!Util.isChrome && !Util.userOverrideOK) {
 console.info('prevent event=selected: file selected ');						
 						return false; // do not add to Queue
 					}
@@ -288,7 +320,7 @@ console.info('prevent event=selected: file selected ');
 						if ($('.plupload_droptext .not-chrome').length==1) { 
 							Util.confirmNoChrome();
 						}
-						if (!Util.noChromeConfirmed) {
+						if (!Util.userOverrideOK) {
 							$("a.plupload_start").button('disable');
 							// remove files from uploader (not queue) 
 							for (var i in up.files) {
@@ -316,7 +348,10 @@ console.info('prevent 	event=QueueChanged ');
 
 			FilesAdded: function(up, files) {
 				// add folders (count) view
+				// NOTE: this handler is called directly by jqueryui.addSelectedFiles(), 
+				// cannot override in all cases, so we remove added Files in QueueChanged if needed 
 				var root;
+				if (Util.userOverrideOK &&  files.length) $('.plupload_droptext').html('');
 				for (var i in files) {
 					if (files[i].relativePath) {
 						files[i].fileName = files[i].name;
@@ -365,12 +400,33 @@ console.info('prevent 	event=QueueChanged ');
 			}
 		},
 		// ui events
-		selected: function(up, files) {
+		selected: function(e, args ) {
 			// file selected
 			console.log('event=selected: file selected');
-			if (Util.isChrome) $('.plupload_droptext').addClass('hide');
-			else if ($('.plupload_droptext .not-chrome').length==1) {
-				Util.confirmNoChrome();
+			var up = args.up,
+				files = args.files;
+			if (Util.isChrome) {
+				if (Util.userOverrideOK) {
+					$('.plupload_droptext').addClass('hide');
+				} else {
+					// if from drop event or browse, 
+					var onlyFolders = true;
+					for (var i in files) {
+						if (!files[i].root) {
+							onlyFolders = false;
+							break;
+						}
+					}					
+					if (onlyFolders) {
+						$('.plupload_droptext').addClass('hide');
+					} else {
+						// if from browse event or drop event with files
+						Util.confirmPreferFilesInChrome();
+					}
+				}
+			} else if (!Util.userOverrideOK) {
+				// Util.confirmNoChrome();
+console.error('removed .not-chrome selected action');				
 				// addFiles BEHIND .confirm-not-chrome
 			}
 		},

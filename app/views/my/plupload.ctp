@@ -46,7 +46,7 @@
 		-webkit-box-shadow: inset 0 0 5px 5px#888;
 		box-shadow: inset 0 0 5px 5px #888;
 	}
-	.confirm-not-chrome {
+	.plupload-help {
 		position: absolute;
 		top: 0;
 		left: 0;
@@ -54,31 +54,41 @@
 		z-index: 1000;
 		background-color: white;
 		height: 100%;
+		padding-top: 1em;
+		background-color: #FFF;
 	}
-	.confirm-not-chrome * {
+	.plupload-help * {
 		background-color: white;
 	}
-	.confirm-not-chrome .header > span {
+	.plupload-help .header > span {
 		line-height: 60px;
 	}
-	.confirm-not-chrome .header img {
-		height: 36px;
-	}
-	.confirm-not-chrome .body {
+	
+	.plupload-help .body {
 		text-align: left;
 	}
-	.confirm-not-chrome .plupload_button:hover {
+	.plupload-help .plupload_button:hover {
 		background: url("images/ui-bg_glass_75_dadada_1x400.png") repeat-x scroll 50% 50% #DADADA;
 	    border: 1px solid #999999;
 	    color: #212121;
 	    font-weight: normal;
     }
-	.confirm-not-chrome ul {
+    
+    .plupload-help.confirm-not-chrome .header img, .plupload-help.confirm-prefer-browse .header img {
+		height: 36px;
+	}
+    
+	.plupload-help ul {
 		margin: 0 auto;
+	}
+	.plupload-help ul li {
+		list-style: disc inside none;
+	}
+	.plupload-help.confirm-not-chrome ul {
 		width: 340px;
 	}
-	.confirm-not-chrome ul li {
-		list-style: disc inside none;
+	.plupload-help.confirm-prefer-browse ul {
+		width: 420px;
 	}
 	
 </style>
@@ -107,7 +117,7 @@
 	</section>	
 </div>
 <div id="markup-uploader" class="hide">
-	<div class="help is-chrome">
+	<div class="plupload-help is-chrome">
 		<div class='header'>
 			<span>Works better with </span>
 			<img src='/static/img/providers/chrome_logo_2x.png'>
@@ -116,7 +126,7 @@
 			<div>It's easy with Chrome &mdash; drag <u>folders</u> here and we'll find all the JPGs.</div>
 		</div>
 	</div>
-	<div class="help not-chrome">
+	<div class="plupload-help not-chrome">
 		<div class='header'>
 			<span>Works better with</span>
 			<a href="http://www.google.com/chrome" target="_blank" title="Don't have Chrome? Click here to get it.">
@@ -131,7 +141,7 @@
 			</p>
 		</div>
 	</div>
-	<div class="help confirm-not-chrome">
+	<div class="plupload-help confirm-not-chrome">
 		<div class='header'>
 			<span class='strong'>Are you sure you don't want to use</span>
 			<a href="http://www.google.com/chrome" target="_blank" title="Don't have Chrome? Click here to get it.">
@@ -144,7 +154,7 @@
 			</label>		
 		</div>
 		<div class='body'>
-			<ul><p>Chrome gives you these key benefits</p>
+			<ul><p>Chrome gives you these key benefits:</p>
 				<li>drag folders and we'll find the JPGs</li>
 				<li>20x faster uploads with web-sized photos (640px)</li>
 				<li>duplicate detection avoids uploading the same file twice</li>
@@ -152,6 +162,21 @@
 		</div>
 		<br />
 		<p>Please open this page in Chrome <input type="text" size="32" value="<?php echo Router::url($this->here, true); ?>" onclick="this.select();" class="copy-paste">
+	</div>
+	<div class="plupload-help confirm-prefer-browse">
+		<div class='header'>
+			<span class='strong'>Are you sure you don't want to drag folders?</span>
+			<label class="plupload_button ui-button ui-widget ui-state-default ui-button-text-only" 
+				role="button" aria-disabled="false" aria-pressed="true">
+				<span class="ui-button-text strong">I'm sure</span>
+			</label>		
+		</div>
+		<div class='body'>
+			<ul><p>Snaphappi works better when you drop entire folders of JPGs here. We:</p>
+				<li>automatically scan your folders for JPGs, and</li>
+				<li>find duplicates better when you include folder names.</li>
+			</ul>
+		</div>
 	</div>
 </div>
 
