@@ -4,19 +4,20 @@
 <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" />
 <link rel="stylesheet" href="/js/plupload/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
 
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+<script  type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
 
 <!-- production -->
-<!-- <script type="text/javascript" src="/js/plupload/plupload.full.min.js"></script>
-<script type="text/javascript" src="/js/plupload/jquery.ui.plupload/jquery.ui.plupload.js"></script> -->
-
-<!--  debug --> 
-<script type="text/javascript" src="http://thats-me.snaphappi.com/js/vendor/jquery.cookie.js"></script>
+<script type="text/javascript" src="/min/b=js/plupload&amp;f=jquery.cookie.js,moxie.js,plupload.js,jquery.ui.plupload/jquery.ui.plupload.js,snappi.js"></script>
+<!--  debug -->
+<!-- 
+<script type="text/javascript" src="/js/plupload/jquery.cookie.js"></script>
 <script type="text/javascript" src="/js/plupload/moxie.js"></script>
 <script type="text/javascript" src="/js/plupload/plupload.js"></script>
 <script type="text/javascript" src="/js/plupload/jquery.ui.plupload/jquery.ui.plupload.js"></script>
 <script type="text/javascript" src="/js/plupload/snappi.js"></script>
+-->
+
 <style type="text/css">
 	.plupload_droptext {
 		line-height: 120px;

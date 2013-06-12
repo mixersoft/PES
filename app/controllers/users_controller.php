@@ -278,9 +278,6 @@ class UsersPluginController extends AppController {
 			$this->redirect('/');
 		}
 		$msg['success'] = __d('users', 'Your account has been created. You should receive an e-mail shortly to verify your email address.', true);
-		if (1 || !Session::check('Auth.redirect')){
-			$msg['success'] .= "<br /><br />Why not get a jump on things by downloading the Snaphappi Desktop Uploader?";	
-		}
 		if (!empty($this->data)) {
 			$register_cfg = Configure::read('register');
 			$this->data['User']['active'] = $register_cfg['active'];

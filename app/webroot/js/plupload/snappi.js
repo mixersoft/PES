@@ -405,24 +405,23 @@ console.info('prevent 	event=QueueChanged ');
 			console.log('event=selected: file selected');
 			var up = args.up,
 				files = args.files;
-			if (Util.isChrome) {
-				if (Util.userOverrideOK) {
+			if (Util.userOverrideOK) {
+				$('.plupload_droptext').addClass('hide');
+			} 	
+			if (Util.isChrome && !Util.userOverrideOK) {
+				// if from drop event or browse, 
+				var onlyFolders = true;
+				for (var i in files) {
+					if (!files[i].root) {
+						onlyFolders = false;
+						break;
+					}
+				}					
+				if (onlyFolders) {
 					$('.plupload_droptext').addClass('hide');
 				} else {
-					// if from drop event or browse, 
-					var onlyFolders = true;
-					for (var i in files) {
-						if (!files[i].root) {
-							onlyFolders = false;
-							break;
-						}
-					}					
-					if (onlyFolders) {
-						$('.plupload_droptext').addClass('hide');
-					} else {
-						// if from browse event or drop event with files
-						Util.confirmPreferFilesInChrome();
-					}
+					// if from browse event or drop event with files
+					Util.confirmPreferFilesInChrome();
 				}
 			} else if (!Util.userOverrideOK) {
 				// Util.confirmNoChrome();
