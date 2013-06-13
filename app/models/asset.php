@@ -175,7 +175,7 @@ AND includes.asset_id='{$assetId}';
 		foreach ((array)$queryData['order'][0] as $sort=>$dir){
 			if (is_numeric($sort) && !empty($dir)) {
 				$sort = explode(' ', $dir);
-				$dir = count($sort)==1 ? 'ASC' : $dir; 
+				$dir = count($sort)==1 ? 'ASC' : $sort[1]; 
 				$sort = array_shift($sort);
 			}
 			if (empty($sort)) continue;
