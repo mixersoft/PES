@@ -173,28 +173,34 @@ AND includes.asset_id='{$assetId}';
 		// 		strip off auto prefix of `Asset` model 
 		$translate_order = array();
 		foreach ((array)$queryData['order'][0] as $sort=>$dir){
+			if (is_numeric($sort) && !empty($dir)) {
+				$sort = explode(' ', $dir);
+				$dir = count($sort)==1 ? 'ASC' : $dir; 
+				$sort = array_shift($sort);
+			}
+			if (empty($sort)) continue;
 			switch ($sort){
-				case '`Asset`.rating' : $translate_order['COALESCE(`rating`,`score`)'] = $dir; break;
-				case '`Asset`.score' : $translate_order['`score`'] = $dir; break;
-				default:  $translate_order[$sort] = $dir; break;
+				case '`Asset`.rating' : 
+				case 'rating' : 
+					$translate_order['COALESCE(`rating`,`score`)'] = $dir; 
+					$translate_order['`score`'] = $dir; 
+					break;
+				case '`Asset`.score' : 
+				case 'score' :	
+					$translate_order['`score`'] = $dir; 
+					break;
+				case '`Asset`.owner_id' : 	
+					// TODO: sort by User.username
+					$translate_order[$sort] = $dir; 
+				default:  
+					$translate_order[$sort] = $dir; 
+					break;
 			}
 		} 
-		$queryData['order'][0] = $translate_order;
-	
-		if (is_array($queryData['order'][0])) {
-			foreach ($queryData['order'][0] as $sort=>$dir) {
-				if ($sort==='rating') {
-					// use SCORE if rating is null
-					unset($queryData['order'][0]['rating']);
-					array_unshift($queryData['order'], array("COALESCE(`rating`,`score`)"=>$dir));
-				}
-				// if (preg_match('/(rating|batchId|owner_id)/', $sort)) $queryData['order'][] = '`Asset`.dateTaken ASC';
-				if (strpos($sort, 'dateTaken') === false) {
-					$queryData['order'][] = '`Asset`.dateTaken ASC';
-					break;
-				} 
-			}
+		if (!empty($translate_order) && preg_match('/(dateTaken|modified|created)/', json_encode($translate_order))===0) {
+			$translate_order['`Asset`.dateTaken'] = 'ASC';
 		}
+		$queryData['order'][0] = $translate_order;
 		return $queryData;
 	}
 	

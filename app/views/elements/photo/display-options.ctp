@@ -6,23 +6,12 @@
 	 * Generate Paginator->sort() urls when sortin on field in associated models
 	 */
 	$this->Paginator->options['url']['plugin']='';
-	// setup order by rating
-	$orderBy= '0.rating'; $default = 'desc';
-	$rating_markup = $this->Paginator->sort('Top Rated', $orderBy);	// this will ALWAYS BE direction:asc
-	// default = 'desc';
-	$isActive = isset($passed['sort']) && $passed['sort'] == $orderBy;
-	if ($isActive) {
-		$rating_markup = (@ifed($passed['direction'],null) == 'desc') ? $rating_markup : str_replace('asc', 'desc', $rating_markup);  
-		$rating_markup = isset($passed['direction']) && $passed['direction'] == '$desc' ? $rating_markup : str_replace('asc', 'desc', $rating_markup);
-	} else {
-		$rating_markup = ($default=='desc') ? str_replace('asc', 'desc', $rating_markup) : $rating_markup;
-	}
 	
 	// Sort select TAG
 	$paginate_desc['url']['direction'] = 'desc';
 	$orderBy_options = array();
 	$orderBy_options['dateTaken'] = array('A_markup'=>$this->Paginator->sort('Date Taken', 'dateTaken'));
-	$orderBy_options['0.rating'] = array('A_markup'=>$rating_markup);
+	$orderBy_options['rating'] = array('A_markup'=>$this->Paginator->sort('Top Rated', 'rating', $paginate_desc));
 	$orderBy_options['batchId'] = array('A_markup'=>$this->Paginator->sort('Date Uploaded', 'batchId', $paginate_desc));
 	$orderBy_options['owner_id'] = array('A_markup'=>$this->Paginator->sort('Owner', 'owner_id'));
 	// $orderBy_options['provider_account_id'] = array('A_markup'=>$this->Paginator->sort('Provider', 'provider_account_id'));
