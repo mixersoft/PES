@@ -127,7 +127,7 @@
     	sh = sh || new SNAPPI.SortedHash({
             'isDataElement': false		// what does this do?
         });
-    	castingCall.providerName = providerName || castingCall.CastingCall.ProviderName;
+    	castingCall.providerName = providerName || castingCall.CastingCall.ProviderName || 'snappi';
     	castingCall.shots = {};
     	castingCall.auditionSH = sh;
         switch (castingCall.providerName) {
