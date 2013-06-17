@@ -10,7 +10,7 @@ $config['isLocal'] = $isLocal;
 $config['Config.os']=osName();
 
 $config['AAA']=array(
-	'allow_guest_login'=>false,
+	'allow_guest_login'=>true,
 	'allow_magic_login'=>false,
 	);
 

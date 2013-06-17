@@ -627,6 +627,9 @@ class UsersController extends UsersPluginController {
 	}
 
 	function __createGuestSession($uuid=null) {
+		$found = $this->User->findById($uuid);
+		if ($found) return $found;
+		
 		$this->__reset($saveRedirect = true);
 		// clear Auth Error before retry
 		$this->Session->setFlash(null, null, null, 'auth');
@@ -664,8 +667,7 @@ class UsersController extends UsersPluginController {
 		/*
 		 * end save cookie
 		 */
-				
-		return $hashedPwds;
+		return $ret;
 	}
 
 	function __createDefaultProfile($id){
@@ -729,44 +731,99 @@ class UsersController extends UsersPluginController {
 	}
 	function signin() {
 		$done = $this->login();
-		if (!$done) $this->render('login');
+		if (!$done) {
+			$this->render('login');
+		}
 	}
 	function login() {
 		$this->layout = $layout = 'snappi-guest';
-		$forceXHR = setXHRDebug($this, 0);		// xhr login is for AIR desktop uploader
-		if($forceXHR) $this->data['User']['password'] = $this->Auth->password($this->data['User']['password']);
+		$forceXHR = setXHRDebug($this, 0, 0);		// xhr login is for AIR desktop uploader
+		if($forceXHR && !empty($this->data['User']['password'])){
+			// salt password
+			$this->data['User']['password'] = $this->Auth->password($this->data['User']['password']);
+		}
+		
+		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
+		if (preg_match('/[thats\-me]/i', $origin)) {
+			echo header("Access-Control-Allow-Origin: {$origin}");
+    		echo header('Access-Control-Allow-Methods: POST, GET');
+    		echo header('Access-Control-Max-Age: 3600');
+    		echo header('Access-Control-Allow-Headers: Content-Type');
+		}
+		
 		$allow_guest_login = Configure::read('AAA.allow_guest_login');
+		if ($allow_guest_login) {
+			/*
+			 * get or create Cookie on server for guest_pass
+			 */
+			App::import('Component', 'Cookie');
+			$Cookie = new CookieComponent($this);
+			$cookie_guest_pass = $Cookie->read('guest_pass');
+			if (empty($cookie_guest_pass)) {
+				$cookie_guest_pass = String::uuid();
+// debug('issuing new cookie guest_pass='. $cookie_guest_pass);				
+			}
+			// create/write Cookie in XHR POST request (1 step)
+			if (isset($this->data['User']['guest_pass']) && $this->RequestHandler->isAjax() || $forceXHR) {
+// debug('Auth.guest_pass='. $cookie_guest_pass);				
+				$this->Session->write('Auth.guest_pass', $cookie_guest_pass);
+				// extend cookie another 2 weeks
+				$Cookie->write('guest_pass', $cookie_guest_pass, false, '2 week');	
+			}
+		}
+		if (!isset($this->data)) {
+		/*
+		 * GET method
+		 */	
+		 	if ($allow_guest_login && isset($this->params['url']['optional'])) {
+		 		$this->Session->write('Auth.guest_pass', $cookie_guest_pass);
+				$Cookie->write('guest_pass', $cookie_guest_pass, false, '2 week');
+				$this->set('cookie_guest_pass', $cookie_guest_pass); // used in views/users/login.ctp
+		 	}
+			$rpxTokenUrl = htmlentities(Configure::read('ApiKey.rpxnow.signin'));
+			$this->set(compact('isAuth', 'permissions', 'rpxTokenUrl'));
+	
+			// NOTE: for snappi-dev: use ?optional to allow guest sign in, 
+	
+			if (Configure::read('AAA.allow_magic_login')) {
+				$userlist = $this->User->find('list', array('fields'=>'User.username', 'conditions'=>array("id!=username")));
+				$this->set('userlist', $userlist);
+			}
+			
+			// XHR GET returns status of current auth user
+			if ($this->RequestHandler->isAjax() || $forceXHR) {
+// $this->log("[HTTP_COOKIE]=".$_SERVER['HTTP_COOKIE'], LOG_DEBUG);	
+				$auth = $this->Auth->user();
+				$response['success'] = !empty($auth);
+				$response['message'] = !empty($auth) ? "Current authenticated user, username={$auth['username']}" : 'authentication failed';
+				$response['response'] = $auth;
+				$response['Cookie'] = $Cookie->read();
+				$this->viewVars['jsonData'] = $response;
+// $this->log($this->viewVars['jsonData']['response'], LOG_DEBUG);
+// $this->log("result for current authenticated user", LOG_DEBUG);
+				$done = $this->renderXHRByRequest('json', null, null, $forceXHR);
+				if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false			
+			}	
+			
+		} else {
 		/*
 		 * POST method
 		 * local user registration not yet implemented
 		 */
-		if (isset($this->data['User']['username'])) {
-if ($this->RequestHandler->isAjax() || $forceXHR) {
-	$this->log("   >>> ATTEMPTED XHR Sign-in for user={$this->data['User']['username']}", LOG_DEBUG);
-	// $this->log($_COOKIE, LOG_DEBUG);	
-	// $this->log("[HTTP_COOKIE]=".$_SERVER['HTTP_COOKIE'], LOG_DEBUG);	
-	// $this->log("[HTTP_USER_AGENT]=".env('HTTP_USER_AGENT'), LOG_DEBUG);		
-	// debug($_COOKIE);
-}
-
 			$login_ok = false;
 			$response = array();
-			if (empty($this->data['User']['username'])) {
+			// no username => check/set guest_pass
+			if ($allow_guest_login  && empty($this->data['User']['username'])) {
 				$guest_pass = isset($this->data['User']['guest_pass']) ? $this->data['User']['guest_pass'] : false ;
-				if (!$guest_pass && $allow_guest_login) {
-					// ONLY for AIR testing. 
-					// use magic value as guest pass for AIR uploader
-					$magic_uuid = isset($this->data['User']['magic']) ? $this->data['User']['magic'] : null;
-					$guest_pass = $magic_uuid;
-$this->log("set guest_pass for AIR uploader login, guest_pass={$guest_pass}", LOG_DEBUG);					
-					$this->Session->write('Auth.guest_pass', $guest_pass);
-				}
 			}
 
 			/*
 			 * prepare postData for login
 			 * Note: magic logins for DEV overwrite $guest_pass logins
 			 */
+			 
+			 
+			 // magic logins for DEV only
 			if (empty($this->data['User']['username']) || !empty($this->data['User']['magic'])) {
 $this->log("check magic/cookie signin for user=", LOG_DEBUG);
 //$this->log($this->data['User'], LOG_DEBUG);				
@@ -779,23 +836,6 @@ $this->log("check magic/cookie signin for user=", LOG_DEBUG);
 					$this->data = $this->User->read(null, $this->data['User']['magic'] );
 					$this->log("magic signin for user={$this->data['User']['username']}", LOG_DEBUG);
 					// continue below
-				} else if (empty($this->data['User']['username']) && $allow_guest_login) {
-					/*
-					 * for RETURNING Guest logins, read Cookie
-					 */
-					App::import('Component', 'Cookie');
-					$Cookie = new CookieComponent($this);
-					$guestid = $Cookie->read('guest_pass');
-$this->log("using Cookie guestpass signin for {$guestid}", LOG_DEBUG);						
-					/*
-					 * end read cookie
-					 */	
-					$this->data = $this->User->read(null, $guestid );
-					
-					// extend cookie another 2 weeks
-					$Cookie->write('guest_pass', $guestid, false, '2 week');
-					$this->log("returning Guest signin for guestid={$this->data['User']['id']}", LOG_DEBUG);
-					// continue below					
 				}
 			}
 			// $this->data['User']['username'] will be set if id is valid
@@ -820,6 +860,9 @@ $this->log("using Cookie guestpass signin for {$guestid}", LOG_DEBUG);
 					}
 				} else {
 					// spoofed guest pass???
+debug('guest pass does NOT match Session value. spoofed?');	
+					$this->__reset();
+					$Cookie->destroy('guest_pass');
 				}
 			} else {
 				/*
@@ -871,36 +914,8 @@ $this->log("using Cookie guestpass signin for {$guestid}", LOG_DEBUG);
 			if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
 			if ($login_ok) $this->__continueToRedirect();
 			// else try login again
-		} else {	// status of current auth user
-			if ($this->RequestHandler->isAjax() || $forceXHR) {
-// $this->log("[HTTP_COOKIE]=".$_SERVER['HTTP_COOKIE'], LOG_DEBUG);	
-				$response = array('success'=>true, 'message'=>'Current authenticated user');
-				$response['response'] = $this->Auth->user();
-				$response['Cookie'] = $_COOKIE;
-				$this->viewVars['jsonData'] = $response;
-// $this->log($this->viewVars['jsonData']['response'], LOG_DEBUG);
-// $this->log("result for current authenticated user", LOG_DEBUG);
-				$done = $this->renderXHRByRequest('json', null, null, $forceXHR);
-				if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false			
-			}			
-		}
-
-		/*
-		 * GET method
-		 */
-		$rpxTokenUrl = htmlentities(Configure::read('ApiKey.rpxnow.signin'));
-		$this->set(compact('isAuth', 'permissions', 'rpxTokenUrl'));
-
-		// allow guest sign in
-		if ($allow_guest_login && isset($this->params['url']['optional'])) {
-			$guest_pass = String::uuid();
-			$this->Session->write('Auth.guest_pass', $guest_pass);
-			$this->set('guest_pass', $guest_pass);
-		}
-
-
-		$userlist = $this->User->find('list', array('fields'=>'User.username', 'conditions'=>array("id!=username")));
-		$this->set('userlist', $userlist);
+			
+		}		// END POST
 		$done = $this->renderXHRByRequest(null, '/elements/users/signin', 0);		
 		return $done;
 	}
@@ -1043,7 +1058,6 @@ $this->log("using Cookie guestpass signin for {$guestid}", LOG_DEBUG);
 		
 		$this->data = $data;
 		$this->set('data', $data);
-debug($data);		
 		$xhrFrom = Configure::read('controller.xhrFrom');
 		if ($xhrFrom) {
 			$viewElement = '/elements/users/'.$xhrFrom['view'];

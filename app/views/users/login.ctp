@@ -27,13 +27,13 @@
 	</div>
 	
 	<div class="grid_7 suffix_1 clearfix">
-	<?php if (!@ empty($guest_pass)) { ?>
+	<?php if (!@ empty($cookie_guest_pass)) { ?>
 		<h2>Continue as a Guest</h2>
 		<div>
 			<p>Any activity will be saved in your session for up to 2 weeks. Upgrade to a full account any time before then.</p>
 			<br></br>
 			<?php echo $this->Form->submit('Continue as Guest', $orange);?>
-			<input type='hidden' id='UserGuestPass' name='data[User][guest_pass]' value='<?php echo $guest_pass ?>'> 
+			<input type='hidden' id='UserGuestPass' name='data[User][guest_pass]' value='<?php echo $cookie_guest_pass ?>'> 
 		</div>
 	<?php } ?>
 	<?php echo $this->Form->end();?>
