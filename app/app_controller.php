@@ -327,7 +327,7 @@ class AppController extends Controller {
 				$renderComplete = true;
 				
 			}
-			if ($forceXHR) 	{
+			if ($forceXHR && Configure::read('debug')) 	{
 				$this->render(null, null,'/elements/dumpSQL');
 			}			
 		} else if ($this->RequestHandler->ext !=='html') {

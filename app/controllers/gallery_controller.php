@@ -65,7 +65,7 @@ class GalleryController extends AppController {
 		 * TODO: I use jsonp somewhere else, WMS app(?) replace with this pattern
 		 */ 
 		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : null;
-		if (preg_match('/[snaphappi\.com | thats\-me]/i', $origin)) {
+		if (preg_match('/(snaphappi.com|thats\-me)/i', $origin)) {
 			echo header("Access-Control-Allow-Origin: {$origin}");
 			echo header('Access-Control-Allow-Methods: POST, GET');
     		echo header('Access-Control-Max-Age: 3600');

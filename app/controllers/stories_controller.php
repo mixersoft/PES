@@ -400,7 +400,7 @@ class StoriesController extends CollectionsController {
 		 * TODO: I use jsonp somewhere else, WMS app(?) replace with this pattern
 		 */ 
 		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
-		if (preg_match('/[snaphappi\.com | thats\-me]/i', $origin)) {
+		if (preg_match('/(snaphappi.com|thats\-me)/i', $origin)) {
 			echo header("Access-Control-Allow-Origin: {$origin}");
 		}
 		
@@ -814,7 +814,7 @@ class StoriesController extends CollectionsController {
 		 * TODO: I use jsonp somewhere else, WMS app(?) replace with this pattern
 		 */ 
 		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
-		if (preg_match('/[snaphappi\.com | thats\-me]/i', $origin)) {
+		if (preg_match('/(snaphappi.com|thats\-me)/i', $origin)) {
 			echo header("Access-Control-Allow-Origin: {$origin}");
 		}		
 		
