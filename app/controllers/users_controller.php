@@ -477,7 +477,7 @@ class UsersController extends UsersPluginController {
 			/*
 			 * main
 			 */
-			'signout', 'signin',
+			'signout', 'signin', 
 			'logout', 'login', 
 			/*
 			 * from Users.Users plugin
@@ -627,8 +627,12 @@ class UsersController extends UsersPluginController {
 	}
 
 	function __createGuestSession($uuid=null) {
+		
 		$found = $this->User->findById($uuid);
-		if ($found) return $found;
+		if ($found) {
+			$this->log("creating RETURNING Guest session for guest id={$uuid}", LOG_DEBUG);
+			return $found;
+		}
 		
 		$this->__reset($saveRedirect = true);
 		// clear Auth Error before retry
@@ -655,6 +659,7 @@ class UsersController extends UsersPluginController {
 		} else {
 			// insert default profile row on new user
 			$this->__createDefaultProfile($this->User->id);
+			$this->log("creating NEW Guest session for guest id={$uuid}", LOG_DEBUG);
 		}
 		$hashedPwds['User']['id'] = $this->User->id;
 		
@@ -722,33 +727,44 @@ class UsersController extends UsersPluginController {
 	}
 	function register() {
 		// $this->layout = 'snappi-aui-960';
-		$this->layout = $layout = 'snappi-guest';
 		$forceXHR = setXHRDebug($this, 0);		// xhr login is for AIR desktop uploader
 		parent::register();
-		$done = $this->renderXHRByRequest('json', 'xhr/register', null, $forceXHR);
-		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
+		$done = $this->renderXHRByRequest('json', null, null, $forceXHR);
+		if (!$done) {
+			if (isset($this->params['url']['min'])) {
+				$this->Session->write('Auth.redirect', '/my/upload');
+				$this->render('register_thatsme', 'thatsme-iframe');
+			} else {
+				$this->render('register', 'snappi-guest');
+			}
+		}		
 		
 	}
 	function signin() {
 		$done = $this->login();
 		if (!$done) {
-			$this->render('login');
+			if (isset($this->params['url']['min'])) {
+				$this->Session->write('Auth.redirect', '/my/upload');
+				$this->render('signin-thatsme', 'thatsme-iframe');
+			} else {
+				$this->render('login', 'snappi-guest');
+			}
 		}
 	}
+	function register_min() {
+		// bare CSS for iframe
+		$this->layout = 'thatsme-iframe';
+		parent::register();
+		$done = $this->renderXHRByRequest('json', null, null, $forceXHR);
+		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
+	}
+	
 	function login() {
-		$this->layout = $layout = 'snappi-guest';
+		$this->layout = 'snappi-guest';
 		$forceXHR = setXHRDebug($this, 0, 0);		// xhr login is for AIR desktop uploader
 		if($forceXHR && !empty($this->data['User']['password'])){
 			// salt password
 			$this->data['User']['password'] = $this->Auth->password($this->data['User']['password']);
-		}
-		
-		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
-		if (preg_match('/[thats\-me]/i', $origin)) {
-			echo header("Access-Control-Allow-Origin: {$origin}");
-    		echo header('Access-Control-Allow-Methods: POST, GET');
-    		echo header('Access-Control-Max-Age: 3600');
-    		echo header('Access-Control-Allow-Headers: Content-Type');
 		}
 		
 		$allow_guest_login = Configure::read('AAA.allow_guest_login');
@@ -764,17 +780,21 @@ class UsersController extends UsersPluginController {
 // debug('issuing new cookie guest_pass='. $cookie_guest_pass);				
 			}
 			// create/write Cookie in XHR POST request (1 step)
-			if (isset($this->data['User']['guest_pass']) && $this->RequestHandler->isAjax() || $forceXHR) {
+			if (isset($this->data['User']['guest_pass']) && ($this->RequestHandler->isAjax() || $forceXHR)) {
 // debug('Auth.guest_pass='. $cookie_guest_pass);				
 				$this->Session->write('Auth.guest_pass', $cookie_guest_pass);
 				// extend cookie another 2 weeks
 				$Cookie->write('guest_pass', $cookie_guest_pass, false, '2 week');	
 			}
+			$this->set('guestpass', $cookie_guest_pass);
 		}
-		if (!isset($this->data)) {
-		/*
-		 * GET method
-		 */	
+		$method = isset($this->data) ? 'POST' : 'GET';
+		$done = false;
+		switch ($method) {
+		case 'GET':
+			/*
+			 * GET method
+			 */	
 		 	if ($allow_guest_login && isset($this->params['url']['optional'])) {
 		 		$this->Session->write('Auth.guest_pass', $cookie_guest_pass);
 				$Cookie->write('guest_pass', $cookie_guest_pass, false, '2 week');
@@ -784,32 +804,33 @@ class UsersController extends UsersPluginController {
 			$this->set(compact('isAuth', 'permissions', 'rpxTokenUrl'));
 	
 			// NOTE: for snappi-dev: use ?optional to allow guest sign in, 
-	
 			if (Configure::read('AAA.allow_magic_login')) {
 				$userlist = $this->User->find('list', array('fields'=>'User.username', 'conditions'=>array("id!=username")));
 				$this->set('userlist', $userlist);
 			}
-			
 			// XHR GET returns status of current auth user
 			if ($this->RequestHandler->isAjax() || $forceXHR) {
-// $this->log("[HTTP_COOKIE]=".$_SERVER['HTTP_COOKIE'], LOG_DEBUG);	
 				$auth = $this->Auth->user();
 				$response['success'] = !empty($auth);
 				$response['message'] = !empty($auth) ? "Current authenticated user, username={$auth['username']}" : 'authentication failed';
 				$response['response'] = $auth;
-				$response['Cookie'] = $Cookie->read();
+				// $response['Cookie'] = $Cookie->read();
 				$this->viewVars['jsonData'] = $response;
-// $this->log($this->viewVars['jsonData']['response'], LOG_DEBUG);
-// $this->log("result for current authenticated user", LOG_DEBUG);
 				$done = $this->renderXHRByRequest('json', null, null, $forceXHR);
-				if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false			
-			}	
+			} else {
+				// not done
+				debug("login GET ");				
+			}
+			return $done;
+				
+		case 'POST':
 			
-		} else {
-		/*
-		 * POST method
-		 * local user registration not yet implemented
-		 */
+debug($this->data);			
+			$this->log($this->data, LOG_DEBUG);
+			/*
+			 * POST method
+			 * local user registration not yet implemented
+			 */
 			$login_ok = false;
 			$response = array();
 			// no username => check/set guest_pass
@@ -824,15 +845,13 @@ class UsersController extends UsersPluginController {
 			 
 			 
 			 // magic logins for DEV only
-			if (empty($this->data['User']['username']) || !empty($this->data['User']['magic'])) {
+			if (empty($this->data['User']['username']) && !empty($this->data['User']['magic'])) {
 $this->log("check magic/cookie signin for user=", LOG_DEBUG);
-//$this->log($this->data['User'], LOG_DEBUG);				
 				$this->User->recursive=0;
 				/*
 				 * for magic logins
 				 */
-				if (!empty($this->data['User']['magic']) && strlen($this->data['User']['magic'])==36){
-//$this->log("using magic login for {$this->data['User']['magic']} ", LOG_DEBUG);
+				if (strlen($this->data['User']['magic'])==36){
 					$this->data = $this->User->read(null, $this->data['User']['magic'] );
 					$this->log("magic signin for user={$this->data['User']['username']}", LOG_DEBUG);
 					// continue below
@@ -847,7 +866,6 @@ $this->log("check magic/cookie signin for user=", LOG_DEBUG);
 				// use magic login value, if available, if not, read from Session
 				if ($guest_pass == $this->Session->read('Auth.guest_pass')) {
 					$this->Session->delete('Auth.guest_pass');
-					$this->log("creating NEW Guest signin for guest id={$guest_pass}", LOG_DEBUG);					
 					// create Guest Session, as necessary, and continue
 					$this->data = $this->__createGuestSession($guest_pass);
 					$login_ok = $this->__loginUser($this->data);
@@ -893,31 +911,24 @@ debug('guest pass does NOT match Session value. spoofed?');
 				}
 			}
 			/*
-			 * set jsonData for XHR login
+			 * set jsonData for XHR login, used by AIR
+			 * deprecate
 			 */
 			if ($this->RequestHandler->isAjax() || $forceXHR) {
 				$response['success'] = $login_ok ? 'true' : 'false';
 				$response['response']['User']  = $this->data['User'];
 				$this->viewVars['jsonData'] = $response; 
 				$this->viewVars['jsonData']['Session.Config'] = $_SESSION['Config'];
-// loadComponent('Cookie', $this);
-// $this->Cookie->write('test2', 'SetNewCookie', false, '2 week');				
-				$this->viewVars['jsonData']['Cookie'] = $_COOKIE;
-// debug($_COOKIE);
-// $this->log($this->viewVars['jsonData'], LOG_DEBUG);				
+				// $this->viewVars['jsonData']['Cookie'] = $_COOKIE;
+				$done = $this->renderXHRByRequest('json', '/elements/users/signin', null, $forceXHR);				
+			} else {
+				/*
+				 * respond to POST, HTTP only
+				 */ 
+				if ($login_ok) $this->__continueToRedirect();
 			}
-			
-			/*
-			 * respond to POST, either HTTP or XHR
-			 */
-			$done = $this->renderXHRByRequest('json', 'xhr_login_view', null, $forceXHR);
-			if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
-			if ($login_ok) $this->__continueToRedirect();
-			// else try login again
-			
+			return $done;
 		}		// END POST
-		$done = $this->renderXHRByRequest(null, '/elements/users/signin', 0);		
-		return $done;
 	}
 	function signout() {
 		$this->logout();
@@ -934,12 +945,12 @@ debug('guest pass does NOT match Session value. spoofed?');
 	}
 	
 	function reset_password($token = null, $user = null) {
-		$this->layout = $layout = 'snappi-plain';
+		$this->layout = 'snappi-plain';
 		parent::reset_password($token, $user);
 	}
 	
 	function change_password() {
-		$this->layout = $layout = 'snappi';
+		$this->layout = 'snappi';
 		parent::change_password();
 	}
 

@@ -23,7 +23,7 @@
 // Initialize the widget when the DOM is ready
 
 $(function() {
-	CFG = CFG || {}; 
+	CFG = (typeof CFG == 'undefined')? {} : CFG; 
 	/*
 	 * helper functions
 	 */
@@ -447,6 +447,22 @@ console.error('removed .not-chrome selected action');
 		},
 	});
 	var uploader = $('#uploader').plupload('getUploader');
+	
+	var isIFrame = !!window.parent; 
+	if (isIFrame) {
+		// resize to fit iframe height
+		$('#uploader_container').height($(window).height()-7);
+		$('#uploader_container').bind('resize', function(e){
+			var msg = JSON.stringify({key:'resize', value:{h:$(this).height()}});
+			window.parent.postMessage(msg, '*');
+		})
+		$(window).bind('message', function(e){
+			var data = e.originalEvent.data,
+				origin = e.originalEvent.origin;
+			var o = JSON.parse(data);
+			// if (o.key == 'resize') $('#uploader_container').width(o.value.w);  	
+		});
+	}
 
 	// Handle the case when form was submitted before uploading has finished
 	$('#form').submit(function(e) {

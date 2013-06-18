@@ -741,6 +741,15 @@ if (isset($this->params['url']['new-taskid']))	{
 	 */
 	function plupload (){
 		$forceXHR = setXHRDebug($this, 0);
+
+		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
+		if (preg_match('/(thats\-me)/i', $origin)) {
+			echo header("Access-Control-Allow-Origin: {$origin}");
+    		echo header('Access-Control-Allow-Methods: POST, GET');
+    		echo header('Access-Control-Max-Age: 3600');
+    		echo header('Access-Control-Allow-Headers: Content-Type');
+		}
+
 		$this->viewPath = 'my';
 		$userid = AppController::$userid;
 		$this->layout = 'snappi-guest';
@@ -750,6 +759,11 @@ if (isset($this->params['url']['new-taskid']))	{
 			$data = $this->User->find('first', $options);
 			$js_basepath = "/js/plupload";
 			$this->set(compact('data','js_basepath'));
+			if ( isset($this->params['url']['min'])) {
+				$this->render('plupload-thatsme', 'thatsme-iframe');
+			} else {
+				$this->render('plupload', 'snappi-guest');
+			}
 			return;
 		} else {	// POST
 			@set_time_limit(5 * 60);
