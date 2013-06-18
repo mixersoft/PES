@@ -107,7 +107,7 @@ class PersonController extends UsersController {
 		 * TODO: I use jsonp somewhere else, WMS app(?) replace with this pattern
 		 */ 
 		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
-		if (preg_match('/[snaphappi\.com | thats\-me]/i', $origin)) {
+		if (preg_match('/(snaphappi.com|thats\-me)/i', $origin)) {
 			echo header("Access-Control-Allow-Origin: {$origin}");
 		}
 		$ALLOWED_BY_USERNAME = array('newyork', 'paris', 'venice', 'bali', 'summer-2009');
@@ -580,7 +580,7 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 			 * TODO: I use jsonp somewhere else, WMS app(?) replace with this pattern
 			 */ 
 			$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
-			if (preg_match('/[snaphappi\.com | thats\-me]/i', $origin)) {
+			if (preg_match('/(snaphappi.com|thats\-me)/i', $origin)) {
 				echo header("Access-Control-Allow-Origin: {$origin}");
 				// echo header('Access-Control-Allow-Origin: http://thats-me.snaphappi.com');
 			}			
@@ -606,7 +606,7 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 		 * TODO: I use jsonp somewhere else, WMS app(?) replace with this pattern
 		 */ 
 		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
-		if (preg_match('/[snaphappi\.com | thats\-me]/i', $origin)) {
+		if (preg_match('/(snaphappi.com|thats\-me)/i', $origin)) {
 			echo header("Access-Control-Allow-Origin: {$origin}");
 			// echo header('Access-Control-Allow-Origin: http://thats-me.snaphappi.com');
 		}
