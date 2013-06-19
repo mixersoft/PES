@@ -27,8 +27,10 @@
 			}
 			Util.setWaiting = function(e){
 				Util.waiting = Util.waiting || [];
-				Util.waiting.push($(e.currentTarget));
-				Util.waiting.push($(e.explicitOriginalTarget));
+				var form = $(e.currentTarget);
+				Util.waiting.push(form);
+				var action = form.attr('data-action');
+				Util.waiting.push(form.find('button[type="submit"][data-action="'+action+'"]'));
 				var value = (e) ? 'wait' : 'default'; 
 				for (var i in Util.waiting) {
 					Util.waiting[i].css('cursor', value);
@@ -37,7 +39,7 @@
 			Util.submit = function(e) {
 				Util.setWaiting(e);
 				var form = $(e.currentTarget),
-					submit = $(e.explicitOriginalTarget),
+					// submit = $(e.explicitOriginalTarget),	// ff only
 					src = "/users/signin/.json",
 					postData = {},
 					guestpass = form.find('#UserGuestPass').val();
@@ -52,7 +54,7 @@
 					forcexhr: 1,
 					debug: 2,
 				}
-				if (submit.attr('data-action') =='guest'){
+				if (form.attr('data-action') =='guest'){
 					postData.signin['data[User][guest_pass]'] = guestpass;
 				}
 				/*
@@ -99,7 +101,7 @@
 					},
 				}
 				var postcfg;
-				if (submit.attr('data-action') =='guest') {
+				if (form.attr('data-action') =='guest') {
 					postcfg = guestpass ? step.two : step.one;
 				} else postcfg = step.two;
 				$.ajax(
@@ -111,6 +113,15 @@
 				return false; // Keep the form from submitting
 			};
 			CFG['aaa'] = $.extend(CFG['aaa'] || {}, Util);
+			
+			// form init
+			$('form#UserSigninForm button[type="submit"]').bind('click', function(e){
+				$('form#UserSigninForm').attr('data-action', $(e.currentTarget).attr('data-action'));
+				var check;
+			});
+			$('form#UserSigninForm').bind('submit', function(e){
+				return CFG['aaa'].submit(event);
+			});
 	});	
 	</script>
 <?php 		
@@ -119,9 +130,7 @@
 <form class="form-horizontal offset3 span8" 
 	accept-charset="utf-8" 
 	id="UserSigninForm"
-	method="post" 
-	action="/users/signin" 
-	onsubmit="return CFG['aaa'].submit(event);">
+	>
 	<div style="display:none;">
 		<input type="hidden" value="POST" name="_method">
 	</div>
