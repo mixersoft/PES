@@ -453,15 +453,9 @@ console.error('removed .not-chrome selected action');
 		// resize to fit iframe height
 		$('#uploader_container').height($(window).height()-7);
 		$('#uploader_container').bind('resize', function(e){
-			var msg = JSON.stringify({key:'resize', value:{h:$(this).height()}});
+			var msg = {key:'resize', value:{h:$(this).height()}};
 			window.parent.postMessage(msg, '*');
 		})
-		$(window).bind('message', function(e){
-			var data = e.originalEvent.data,
-				origin = e.originalEvent.origin;
-			var o = JSON.parse(data);
-			// if (o.key == 'resize') $('#uploader_container').width(o.value.w);  	
-		});
 	}
 
 	// Handle the case when form was submitted before uploading has finished

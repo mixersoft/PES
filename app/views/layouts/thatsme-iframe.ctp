@@ -11,7 +11,8 @@ echo header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
 	echo '<link href="http://'.$hostname.'/min/b%3Dcss%26f%3Dbootstrap.css%2Cresponsive.css%2Cfonts.css%2Cbeachfront-2.css%2Cbeachfront.css%2Cresponsive-tablet.css%2Cresponsive-mobile.css%2Cfont-awesome.css" type="text/css" rel="stylesheet">';
 	echo '<link href="http://'.$hostname.'/css/beachfront-less.css" type="text/css" rel="stylesheet">';	
 	$this->Layout->output($this->viewVars['HEAD_for_layout']);
-?>			
+?>	
+	<script type="text/javascript">document.domain='snaphappi.com';</script>		
 	</head>
 	<body>
 <?php	  

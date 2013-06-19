@@ -50,7 +50,7 @@
 					'data[User][username]': form.find('#UserUsername').val(), 
 					'data[User][password]':form.find('#UserPassword').val(),
 					forcexhr: 1,
-					debug: 2,
+					debug: 0,
 				}
 				if (submit.attr('data-action') =='guest'){
 					postData.signin['data[User][guest_pass]'] = guestpass;

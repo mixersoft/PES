@@ -477,7 +477,7 @@ class UsersController extends UsersPluginController {
 			/*
 			 * main
 			 */
-			'signout', 'signin', 
+			'signout', 'signin', 'checkauth',
 			'logout', 'login', 
 			/*
 			 * from Users.Users plugin
@@ -740,6 +740,20 @@ class UsersController extends UsersPluginController {
 		}		
 		
 	}
+	/*
+	 * special method to check current user auth from iframe
+	 * sets document.domain = 'snaphappi.com' for same origin policy
+	 */
+	function checkauth() {
+		$auth = $this->Auth->user();
+		unset($auth['User']['password']);
+		$this->set('auth',$auth);
+		$this->layout='plain';
+	}
+	/**
+	 * NOTE: to verify current user, use /users/signin/.json?&forcexhr=1&debug=2
+	 * 	- /thats-me/users must use /users/checkauth + same origin policy in iframe to connect to session
+	 */
 	function signin() {
 		$done = $this->login();
 		if (!$done) {
