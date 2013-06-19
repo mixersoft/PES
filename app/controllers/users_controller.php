@@ -812,7 +812,7 @@ class UsersController extends UsersPluginController {
 			if ($this->RequestHandler->isAjax() || $forceXHR) {
 				$auth = $this->Auth->user();
 				$response['success'] = !empty($auth);
-				$response['message'] = !empty($auth) ? "Current authenticated user, username={$auth['username']}" : 'authentication failed';
+				$response['message'] = !empty($auth) ? "Current authenticated user, username={$auth['User']['username']}" : 'authentication failed';
 				$response['response'] = $auth;
 				// $response['Cookie'] = $Cookie->read();
 				$this->viewVars['jsonData'] = $response;

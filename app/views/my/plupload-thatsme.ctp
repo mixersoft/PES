@@ -1,6 +1,6 @@
 <?php 
 	$this->Layout->blockStart('HEAD');
-	?>
+?>
 <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" />
 <link rel="stylesheet" href="/js/plupload/jquery.ui.plupload/css/jquery.ui.plupload.css" type="text/css" />
 

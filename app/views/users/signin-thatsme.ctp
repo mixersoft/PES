@@ -13,10 +13,115 @@
 			text-decoration: underline;
 		}
 	</style>
+	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+	<script type="text/javascript" src="/js/plupload/jquery.cookie.js"></script>
+	<script type="text/javascript">
+		$(function() {
+			CFG = (typeof CFG == 'undefined')? {} : CFG; 
+			/*
+			 * helper functions
+			 */
+			var Util = new function(){}
+			Util.postMessage = function(json){
+				window.parent.postMessage(json, '*');
+			}
+			Util.setWaiting = function(e){
+				Util.waiting = Util.waiting || [];
+				Util.waiting.push($(e.currentTarget));
+				Util.waiting.push($(e.explicitOriginalTarget));
+				var value = (e) ? 'wait' : 'default'; 
+				for (var i in Util.waiting) {
+					Util.waiting[i].css('cursor', value);
+				}
+			};
+			Util.submit = function(e) {
+				Util.setWaiting(e);
+				var form = $(e.currentTarget),
+					submit = $(e.explicitOriginalTarget),
+					src = "/users/signin/.json",
+					postData = {},
+					guestpass = form.find('#UserGuestPass').val();
+				postData.cookie = {
+					optional: 1,
+					forcexhr: 1,
+					debug: 0,
+				};
+				postData.signin = {
+					'data[User][username]': form.find('#UserUsername').val(), 
+					'data[User][password]':form.find('#UserPassword').val(),
+					forcexhr: 1,
+					debug: 2,
+				}
+				if (submit.attr('data-action') =='guest'){
+					postData.signin['data[User][guest_pass]'] = guestpass;
+				}
+				/*
+				 * POST should include begin/end timestamps to filter photostream
+				 */
+				var step = {};
+				step.one = {
+					url: src,
+					type: 'GET',
+					data: postData.cookie,
+					dataType: 'json',
+					success: function(json, status, o){
+						try {
+							var uuid = json.response.User.id;
+							if (uuid) Util.postMessage(json);
+							// Util.setWaiting(false);
+							else throw new Exception('current auth successful, but invalid uuid')
+						} catch (ex) {
+							try {
+								// new guest_pass issued, try to sign in
+								guestpass = json.Cookie.guest_pass;
+								step.two.data['data[User][guest_pass]'] = guestpass;
+								$.ajax(
+									step.two
+								).fail(function(json, status, o){
+									console.error("signin failed");
+									CFG['aaa'].setWaiting(false);
+								});
+							} catch (ex) {		}	
+						}
+					},
+				}
+				step.two = {
+					url: src,
+					type: 'POST',
+					data: postData.signin,
+					dataType: 'json',
+					success: function(json, status, o){
+						try {
+							var uuid = json.response.User.id;
+							Util.postMessage(json);
+							CFG['aaa'].setWaiting(false);
+						} catch (ex) {		}
+					},
+				}
+				var postcfg;
+				if (submit.attr('data-action') =='guest') {
+					postcfg = guestpass ? step.two : step.one;
+				} else postcfg = step.two;
+				$.ajax(
+					postcfg
+				).fail(function(json, status, o){
+					console.error("setCookie failed");
+					CFG['aaa'].setWaiting(false);
+				});
+				return false; // Keep the form from submitting
+			};
+			CFG['aaa'] = $.extend(CFG['aaa'] || {}, Util);
+	});	
+	</script>
 <?php 		
 	$this->Layout->blockEnd();		
 ?>
-<form id='signin' class="form-horizontal offset3 span8" accept-charset="utf-8" method="post" id="UserSigninForm" action="/users/signin">
+<form class="form-horizontal offset3 span8" 
+	accept-charset="utf-8" 
+	id="UserSigninForm"
+	method="post" 
+	action="/users/signin" 
+	onsubmit="return CFG['aaa'].submit(event);">
 	<div style="display:none;">
 		<input type="hidden" value="POST" name="_method">
 	</div>
@@ -25,7 +130,7 @@
 			<button type="submit" class="btn btn-awesome" data-action="guest">
 				Sign in as Guest
 			</button>
-			<input type="hidden" value="<?php echo $guestpass; ?>" name="data[User][guest_pass]" id="UserGuestPass">
+			<input id="UserGuestPass" type="hidden" value="<?php echo $guestpass; ?>" name="data[User][guest_pass]" >
 		</div>
 		
 	</div>
