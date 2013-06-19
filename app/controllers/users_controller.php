@@ -813,6 +813,7 @@ class UsersController extends UsersPluginController {
 				$auth = $this->Auth->user();
 				$response['success'] = !empty($auth);
 				$response['message'] = !empty($auth) ? "Current authenticated user, username={$auth['User']['username']}" : 'authentication failed';
+				unset($auth['User']['password']);
 				$response['response'] = $auth;
 				// $response['Cookie'] = $Cookie->read();
 				$this->viewVars['jsonData'] = $response;
@@ -915,10 +916,11 @@ debug('guest pass does NOT match Session value. spoofed?');
 			 * deprecate
 			 */
 			if ($this->RequestHandler->isAjax() || $forceXHR) {
+				unset($this->data['User']['password']);				// don't publish pwd hash
 				$response['success'] = $login_ok ? 'true' : 'false';
 				$response['response']['User']  = $this->data['User'];
 				$this->viewVars['jsonData'] = $response; 
-				$this->viewVars['jsonData']['Session.Config'] = $_SESSION['Config'];
+				// $this->viewVars['jsonData']['Session.Config'] = $_SESSION['Config'];
 				// $this->viewVars['jsonData']['Cookie'] = $_COOKIE;
 				$done = $this->renderXHRByRequest('json', '/elements/users/signin', null, $forceXHR);				
 			} else {
