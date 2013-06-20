@@ -727,8 +727,67 @@ class UsersController extends UsersPluginController {
 	}
 	function register() {
 		// $this->layout = 'snappi-aui-960';
-		$forceXHR = setXHRDebug($this, 0);		// xhr login is for AIR desktop uploader
-		parent::register();
+		$forceXHR = setXHRDebug($this, 0, 1);		// xhr login is for AIR desktop uploader
+		$isJson =  ($this->RequestHandler->ext == 'json');
+		$success = false; $message = $response = array();
+		/**
+		 * parent::register();
+		 */
+		if ($this->Auth->user() && isset($this->params['url']['min'])) {
+			$success = true;
+			$message = __d('users', 'You are already registered and logged in!', true);
+			$user = $this->Auth->user();
+			unset($user['User']['password']);
+			$response = $user;
+			$isJson = true;
+		} else if ($this->Auth->user() && !$isJson) {
+			$this->Session->setFlash(__d('users', 'You are already registered and logged in!', true));
+			$this->redirect('/');
+		}
+		if (!empty($this->data)) {
+			$msg['success'] = __d('users', 'Your account has been created. You should receive an e-mail shortly to verify your email address.', true);
+			$register_cfg = Configure::read('register');
+			$this->data['User']['active'] = $register_cfg['active'];
+			$user = $this->User->register($this->data, $register_cfg['email_verify']);
+			if ($user !== false) {
+				$this->set('user', $user);
+				$this->_sendVerificationEmail($user[$this->modelClass]['email'], $user);
+				if ($register_cfg['auth_on_success'] && $register_cfg['active']) {
+					$this->data['User']['password'] = $this->Auth->password($this->data['User']['password']); 
+					$login_ok = $this->__loginUser($this->data);
+				}
+				if ($this->Auth->user() && $isJson) {
+					$success = true;
+					$message = $msg['success'];
+					$user = $this->Auth->user();
+					unset($user['User']['password']);
+					$response = $user;
+				} else {
+					$this->Session->setFlash($msg['success']);
+					$this->__continueToRedirect($register_cfg['success_redirect']);
+				}
+			} else {
+				unset($this->data[$this->modelClass]['password']);
+				unset($this->data[$this->modelClass]['temppassword']);
+				$msg = 'Your account could not be created for the reasons shown below. Please, try again';
+				$errors = $this->User->invalidFields(); // contains validationErrors array
+				if (!empty($errors)) {
+					$msg = 'Your account could not be created for the following reasons:<ul>';					
+				} else $msg = 'Your account could not be created. Please, try again.';
+				
+				if ($isJson) {
+					$success = false;
+					$message = $msg;
+					$response = compact('errors');
+				} else {
+					$this->Session->setFlash(__d('users', $msg, true), 'default', array('class' => 'message warning'));
+				}
+			}
+		}
+
+		$this->_setLanguages();
+		
+		if ($isJson) $this->viewVars['jsonData'] = compact('success', 'message', 'response');
 		$done = $this->renderXHRByRequest('json', null, null, $forceXHR);
 		if (!$done) {
 			if (isset($this->params['url']['min'])) {
@@ -738,8 +797,8 @@ class UsersController extends UsersPluginController {
 				$this->render('register', 'snappi-guest');
 			}
 		}		
-		
 	}
+	
 	/*
 	 * special method to check current user auth from iframe
 	 * sets document.domain = 'snaphappi.com' for same origin policy
@@ -765,13 +824,6 @@ class UsersController extends UsersPluginController {
 			}
 		}
 	}
-	function register_min() {
-		// bare CSS for iframe
-		$this->layout = 'thatsme-iframe';
-		parent::register();
-		$done = $this->renderXHRByRequest('json', null, null, $forceXHR);
-		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
-	}
 	
 	function login() {
 		$this->layout = 'snappi-guest';
@@ -794,7 +846,8 @@ class UsersController extends UsersPluginController {
 // debug('issuing new cookie guest_pass='. $cookie_guest_pass);				
 			}
 			// create/write Cookie in XHR POST request (1 step)
-			if (isset($this->data['User']['guest_pass']) && ($this->RequestHandler->isAjax() || $forceXHR)) {
+			if (isset($this->data['User']['guest_pass']) 
+				&& ($this->RequestHandler->isAjax() || $forceXHR)) {
 // debug('Auth.guest_pass='. $cookie_guest_pass);				
 				$this->Session->write('Auth.guest_pass', $cookie_guest_pass);
 				// extend cookie another 2 weeks

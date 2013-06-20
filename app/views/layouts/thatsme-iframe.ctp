@@ -4,6 +4,7 @@ echo header('Cache-control: no-cache');
 echo header("Expires: Mon, 26 Jul 1997 05:00:00 GMT"); 
 
 $hostname = Configure::read('isLocal') ? 'thats-me' : 'thats-me.snaphappi.com';
+$iframeHost = Configure::read('isLocal') ? 'snappi-dev' : 'dev.snaphappi.com';
 	
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -59,8 +60,8 @@ $hostname = Configure::read('isLocal') ? 'thats-me' : 'thats-me.snaphappi.com';
 	echo '<link href="http://'.$hostname.'/min/b=css&f=bootstrap.css,responsive.css,beachfront-2.css,beachfront.css,responsive-tablet.css,responsive-mobile.css,font-awesome.css" type="text/css" rel="stylesheet">';
 	echo '<link href="http://'.$hostname.'/css/beachfront-less.css" type="text/css" rel="stylesheet">';	
 	$this->Layout->output($this->viewVars['HEAD_for_layout']);
+	if ($hostname == 'thats-me.snaphappi.com') echo	'<script type="text/javascript">document.domain="snaphappi.com"</script>';
 ?>	
-	<script type="text/javascript">document.domain='snaphappi.com';</script>		
 	</head>
 	<body>
 <?php	  
