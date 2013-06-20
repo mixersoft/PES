@@ -828,6 +828,9 @@ class UsersController extends UsersPluginController {
 	function login() {
 		$this->layout = 'snappi-guest';
 		$forceXHR = setXHRDebug($this, 0, 0);		// xhr login is for AIR desktop uploader
+		$isJson =  ($this->RequestHandler->ext == 'json');
+		$success = false; $message = $response = array();
+		
 		if($forceXHR && !empty($this->data['User']['password'])){
 			// salt password
 			$this->data['User']['password'] = $this->Auth->password($this->data['User']['password']);
@@ -894,7 +897,7 @@ class UsersController extends UsersPluginController {
 		case 'POST':
 			
 debug($this->data);			
-			$this->log($this->data, LOG_DEBUG);
+$this->log($this->data, LOG_DEBUG);
 			/*
 			 * POST method
 			 * local user registration not yet implemented
@@ -941,14 +944,16 @@ $this->log("check magic/cookie signin for user=", LOG_DEBUG);
 						// login failed
 						$this->Session->delete('Auth.guest_pass');
 						$this->data['User']['password']='';
-						$response['message'] = "Sorry, your guest pass was invalid. Please register as a User.";
-						$this->Session->setFlash($response['message']);
+						$message =  "Sorry, your guest pass was invalid. Please register as a User.";
+					} else {
+						$success = true;
+						$message = "You are signed in as Guest. Please don't delete your browser cookie.";
 					}
 				} else {
 					// spoofed guest pass???
-debug('guest pass does NOT match Session value. spoofed?');	
 					$this->__reset();
 					$Cookie->destroy('guest_pass');
+					$message =  "There was a problem with your guest pass, it does not match our records.";
 				}
 			} else {
 				/*
@@ -965,28 +970,29 @@ debug('guest pass does NOT match Session value. spoofed?');
 // $this->log($this->data['User'], LOG_DEBUG);				
 				if ($login_ok == false) {
 					// login failed
+					$this->data['User']['password']='';
 					// check for email authorized token
 					if ($this->User->checkIfPendingValidation($this->data)) {
-						$response['message'] = "This account has not yet been activated. Please check your email to activate.";
+						$message = "This account has not yet been activated. Please check your email to activate.";
 					} else {
-						$response['message'] = "The username and password did not match. Please try again.";
+						$message = "The username and password did not match. Please try again.";
 					}
-					$this->Session->setFlash($response['message']);
-					$this->data['User']['password']='';
 					// try again below
 				} else {
+					$success = true;
 					$this->log("   >>> Successful sign-in for user={$this->data['User']['username']}", LOG_DEBUG);
 				}
 			}
+			
 			/*
 			 * set jsonData for XHR login, used by AIR
 			 * deprecate
 			 */
-			if ($this->RequestHandler->isAjax() || $forceXHR) {
-				unset($this->data['User']['password']);				// don't publish pwd hash
-				$response['success'] = $login_ok ? 'true' : 'false';
-				$response['response']['User']  = $this->data['User'];
-				$this->viewVars['jsonData'] = $response; 
+			if ($isJson || $this->RequestHandler->isAjax() || $forceXHR) {
+				$user = $this->Auth->user();
+				unset($user['User']['password']);
+				$response = $user;
+				$this->viewVars['jsonData'] = compact('success', 'message', 'response');
 				// $this->viewVars['jsonData']['Session.Config'] = $_SESSION['Config'];
 				// $this->viewVars['jsonData']['Cookie'] = $_COOKIE;
 				$done = $this->renderXHRByRequest('json', '/elements/users/signin', null, $forceXHR);				
@@ -994,6 +1000,7 @@ debug('guest pass does NOT match Session value. spoofed?');
 				/*
 				 * respond to POST, HTTP only
 				 */ 
+				$this->Session->setFlash($message);	
 				if ($login_ok) $this->__continueToRedirect();
 			}
 			return $done;

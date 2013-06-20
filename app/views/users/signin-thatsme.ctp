@@ -45,6 +45,20 @@
 					Util.waiting = [];
 				}
 			};
+			Util.signinSuccess = function(form, json) {
+				var jsonMsg = {key:'flash',value:json.message};
+				CFG['aaa'].postMessage(jsonMsg); 
+				
+				jsonMsg = {key:'auth',value:json.response};
+				CFG['aaa'].postMessage(jsonMsg);
+			}
+			Util.signinFailure = function(form, json) {
+				var jsonMsg = {key:'flash',value:json.message};
+				CFG['aaa'].postMessage(jsonMsg);
+				$('form #UserPassword').val(''); 
+				if (form.attr('data-action')=='guest') $('form #UserUsername').val('');
+				form.attr('data-action', '');
+			}
 			Util.submit = function(e) {
 				var form = $(e.currentTarget),
 					// submit = $(e.explicitOriginalTarget),	// ff only
@@ -78,10 +92,11 @@
 					dataType: 'json',
 					success: function(json, status, o){
 						try {
-							var uuid = json.response.User.id;
-							if (uuid) Util.postMessage(json);
-							// Util.setWaiting(false);
-							else throw new Exception('current auth successful, but invalid uuid')
+							if (json.success) {
+								Util.signinSuccess(form, json);
+							} else {
+								Util.signinFailure(form, json);
+							}
 						} catch (ex) {
 							try {
 								// new guest_pass issued, try to sign in
@@ -104,8 +119,11 @@
 					dataType: 'json',
 					success: function(json, status, o){
 						try {
-							var uuid = json.response.User.id;
-							Util.postMessage(json);
+							if (json.success) {
+								Util.signinSuccess(form, json);
+							} else {
+								Util.signinFailure(form, json);
+							}
 							CFG['aaa'].setWaiting(false);
 						} catch (ex) {		}
 					},
