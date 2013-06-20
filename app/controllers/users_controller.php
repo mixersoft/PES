@@ -976,10 +976,13 @@ $this->log("check magic/cookie signin for user=", LOG_DEBUG);
 						$message = "This account has not yet been activated. Please check your email to activate.";
 					} else {
 						$message = "The username and password did not match. Please try again.";
+						$errors['password'] = "The username and password did not match.";
 					}
-					// try again below
+					$success = false;
+					$response = compact ('errors');
 				} else {
 					$success = true;
+					$message = "Welcome back!";
 					$this->log("   >>> Successful sign-in for user={$this->data['User']['username']}", LOG_DEBUG);
 				}
 			}
@@ -989,9 +992,11 @@ $this->log("check magic/cookie signin for user=", LOG_DEBUG);
 			 * deprecate
 			 */
 			if ($isJson || $this->RequestHandler->isAjax() || $forceXHR) {
-				$user = $this->Auth->user();
-				unset($user['User']['password']);
-				$response = $user;
+				if ($success) {
+					$user = $this->Auth->user();
+					unset($user['User']['password']);
+					$response = $user;
+				}
 				$this->viewVars['jsonData'] = compact('success', 'message', 'response');
 				// $this->viewVars['jsonData']['Session.Config'] = $_SESSION['Config'];
 				// $this->viewVars['jsonData']['Cookie'] = $_COOKIE;

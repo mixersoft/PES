@@ -45,6 +45,25 @@
 					Util.waiting = [];
 				}
 			};
+			Util.formErrors = function(form, json) {
+				var msg, id;
+				// reset errors
+				form.find('.control-group').removeClass('error');
+				form.find('.controls .help-inline').html('');	
+				for (var field in json.errors){
+					msg = json.errors[field];
+					switch(field){
+						case 'username': id = '#UserUsername'; break;
+						case 'password': id = '#UserPassword'; break;
+						default: id=null; break;
+					}
+					$(id).closest('.control-group').addClass('error')
+						.find('.help-inline').html(msg);
+				}
+				$('input[type="password"]').html('');
+				var json = {key:'resize', value:{h:form.height()}};
+				CFG['aaa'].postMessage(json)
+			}
 			Util.signinSuccess = function(form, json) {
 				var jsonMsg = {key:'flash',value:json.message};
 				CFG['aaa'].postMessage(jsonMsg); 
@@ -58,6 +77,9 @@
 				$('form #UserPassword').val(''); 
 				if (form.attr('data-action')=='guest') $('form #UserUsername').val('');
 				form.attr('data-action', '');
+				if (json.response && json.response.errors) {
+					Util.formErrors(form, json.response);
+				}
 			}
 			Util.submit = function(e) {
 				var form = $(e.currentTarget),
@@ -165,12 +187,14 @@
 		<label class="control-label" for="UserUsername">Username</label>
 		<div class="controls">
 			<input type="text" id="UserUsername" maxlength="166" name="data[User][username]" placeholder="Username">
+			<span class="help-inline"></span>
 		</div>
 	</div>
 	<div class="control-group">
 		<label class="control-label" for="UserPassword">Password</label>
 		<div class="controls">
 			<input type="password" id="UserPassword" name="data[User][password]" placeholder="Password">
+			<span class="help-inline"></span>
 		</div>
 	</div>
 	<div class="control-group">

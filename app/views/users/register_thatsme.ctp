@@ -56,8 +56,7 @@
 				CFG['aaa'].postMessage(jsonMsg);
 			}
 			Util.formErrors = function(form, json) {
-				var markup = '<span class="help-inline"></span>', 
-					msg, id;
+				var msg, id;
 				// reset errors
 				form.find('.control-group').removeClass('error');
 				form.find('.controls .help-inline').html('');	
