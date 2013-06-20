@@ -6,7 +6,7 @@
 		switch ($controllerAttrs['class']) {
 			case 'Group': $label = $data['Group']['title']; break;
 			case 'User': 
-				$label = AppController::$role == 'GUEST' ? 'Guest' : $data['User']['username']; break;
+				$label = $data['User']['primary_group_id'] == 'role-----0123-4567-89ab--------guest' ? 'Guest' : $data['User']['username']; break;
 			case 'Photo': $label = $data['Asset']['caption']; break; 
 			case 'Collection': $label = $data['Collection']['title']; break; 
 			case 'Tag': $label = $data['Tag']['name']; break; 
