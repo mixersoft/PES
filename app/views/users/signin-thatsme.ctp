@@ -165,6 +165,15 @@
 			CFG['aaa'] = $.extend(CFG['aaa'] || {}, Util);
 			
 			// form init
+			$('form#UserSigninForm a').bind('click', function(e){
+				var json, target = $(this).attr('data-target');
+				if (target) {
+					json = {key:'href', value:target}; 
+					Util.postMessage(json);
+				}
+				e.preventDefault();
+			})
+			
 			$('form#UserSigninForm button[type="submit"]').bind('click', function(e){
 				Util.setWaiting($(this));
 				// copy button action to form
@@ -234,7 +243,7 @@
 	</div>
 	<div class="control-group">
 		<div class="controls">
-			<p id='register-copy'>Click here to <a href="/users/register">Sign up now.</a></p>
+			<label>Click here to <a href="#" data-target="/users/register">Sign up now.</a></label>
 		</div>
 	</div>
 </form>

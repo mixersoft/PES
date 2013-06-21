@@ -127,9 +127,13 @@
 			};
 			CFG['aaa'] = $.extend(CFG['aaa'] || {}, Util);
 			// form init
-			$('form#UserRegisterForm a[data-action]').bind('click', function(e){
-				var json = {key:'href', value:$(this).attr('data-action')};
-				Util.postMessage(json);
+			$('form#UserRegisterForm a').bind('click', function(e){
+				var json, target = $(this).attr('data-target');
+				if (target) {
+					json = {key:'href', value:target}; 
+					Util.postMessage(json);
+				}
+				e.preventDefault();
 			});
 			$('#submit').bind('click', function(e){
 				Util.setWaiting($(this));
@@ -179,7 +183,7 @@
 			<div class="controls">
 				<label class="checkbox" for="UserTos">
 				<input type="checkbox" id="UserTos" value="1" name="data[User][tos]">
-				I have read and agreed to the <a data-action='tos' href="">Terms of Service</a>
+				I have read and agreed to the <a data-target='tos' href="#" _target="_blank">Terms of Service</a>
 				<span class="help-inline"></span>
 			</label>
 		</div>
@@ -198,7 +202,7 @@
 		<div class="control-group">
 			<div class="controls">
 				<h4>Already a member?</h4>
-				<p>Click here to <a data-action='signin' href="#">Sign-in now</a></p>
+				<label>Click here to <a data-target='/users/signin' href="#">Sign-in now</a></label>
 			</div>
 		</div>
 	</div>
