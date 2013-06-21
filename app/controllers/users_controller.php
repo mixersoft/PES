@@ -802,12 +802,15 @@ class UsersController extends UsersPluginController {
 	/*
 	 * special method to check current user auth from iframe
 	 * sets document.domain = 'snaphappi.com' for same origin policy
+	 * 	- uses iframe-json view file to output json in body tag with document.domain set
 	 */
 	function checkauth() {
 		$auth = $this->Auth->user();
 		unset($auth['User']['password']);
-		$this->set('auth',$auth);
-		$this->layout='plain';
+		$this->set('json',$auth);
+	 	$this->viewPath = 'elements';
+		$this->render('iframe-json', 'plain');
+		return;
 	}
 	/**
 	 * NOTE: to verify current user, use /users/signin/.json?&forcexhr=1&debug=2

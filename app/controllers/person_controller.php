@@ -345,7 +345,20 @@ if (!empty($this->passedArgs['all-shots'])) {
 			// $options['allowed_ratios'] = array('h'=>'1:'.round($options['count']/3), 'v'=>'1:'.round($options['count']/4));  // set for Hscroll
 			$this->viewVars['jsonData']['montage'] = $this->Montage->getArrangement($Auditions, $options);
 		}	
-			
+		/*
+		 * for access to json from thats-me
+		 * 	- enforces same domain policy for iframe access
+		 */
+		 if (isset($this->params['url']['min'])) {
+		 	$this->set('json',$this->viewVars['jsonData']);
+			// uses same viewfile as checkauth
+			$this->viewPath = 'elements';
+		 	$this->render('iframe-json', 'plain');
+			return;
+		 }
+		 /*
+		  * 
+		  */ 
 		$done = $this->renderXHRByRequest('json', '/elements/photo/roll', null, 0);
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
 		$options = array(
