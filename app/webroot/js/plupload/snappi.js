@@ -209,7 +209,7 @@ $(function() {
 	
 		// Specify what files to browse for
 		filters : [
-			{title : "Image files", extensions : "jpg"},
+			{title : "Image files", extensions : "jpg,jpeg"},
 			// {title : "Image files", extensions : "jpg,gif,png"},
 			// {title : "Zip files", extensions : "zip,avi"}
 		],
@@ -448,14 +448,32 @@ console.error('removed .not-chrome selected action');
 	});
 	var uploader = $('#uploader').plupload('getUploader');
 	
-	var isIFrame = !!window.parent; 
+	var isIFrame = !(window.parent==window); 
 	if (isIFrame) {
 		// resize to fit iframe height
 		$('#uploader_container').height($(window).height()-7);
 		$('#uploader_container').bind('resize', function(e){
+			if ($(this).attr('skip')) {
+				$(this).attr('skip', '');
+				return; 
+			}
 			var msg = {key:'resize', value:{h:$(this).height()}};
 			window.parent.postMessage(msg, '*');
 		})
+		/*
+		 * listen for messages from window.parent
+		 */
+		$(window).bind('message', function(e){
+			var MARGIN_H = 7,
+				json = e.originalEvent.data,
+				origin = e.originalEvent.origin;
+			// resize only
+			if (json.key == 'resize') {
+				$target = $('#uploader_container'); 
+				$target.attr('skip','1').height( json.value.h - MARGIN_H);
+			}
+		});
+		// listen for outside iframe resize
 	}
 
 	// Handle the case when form was submitted before uploading has finished
