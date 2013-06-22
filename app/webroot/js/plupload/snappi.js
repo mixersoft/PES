@@ -451,12 +451,11 @@ console.error('removed .not-chrome selected action');
 	var isIFrame = !(window.parent==window); 
 	if (isIFrame) {
 		// resize to fit iframe height
-		$('#uploader_container').height($(window).height()-7);
+		var MARGIN_H = 7,
+			iFrameH = $(window).height();
+		$('#uploader_container').height(iFrameH-MARGIN_H);
 		$('#uploader_container').bind('resize', function(e){
-			if ($(this).attr('skip')) {
-				$(this).attr('skip', '');
-				return; 
-			}
+			// resize parent <iFrame> height
 			var msg = {key:'resize', value:{h:$(this).height()}};
 			window.parent.postMessage(msg, '*');
 		})
@@ -464,13 +463,12 @@ console.error('removed .not-chrome selected action');
 		 * listen for messages from window.parent
 		 */
 		$(window).bind('message', function(e){
-			var MARGIN_H = 7,
-				json = e.originalEvent.data,
+			var json = e.originalEvent.data,
 				origin = e.originalEvent.origin;
 			// resize only
 			if (json.key == 'resize') {
-				$target = $('#uploader_container'); 
-				$target.attr('skip','1').height( json.value.h - MARGIN_H);
+				var iFrameH = json.value.h;
+				$('#uploader_container').height( iFrameH - MARGIN_H);
 			}
 		});
 		// listen for outside iframe resize
