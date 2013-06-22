@@ -1,4 +1,5 @@
-<?php 
+<?php
+	$uploadHost =  (Configure::read('isLocal')) ? 'thats-me' : 'thats-me.snaphappi.com';
 	$this->Layout->blockStart('HEAD');
 ?>
 <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.9/themes/base/jquery-ui.css" type="text/css" />
@@ -31,7 +32,7 @@
 		white-space: nowrap;
 	}
 	.plupload_logo {
-		background: url(http://thats-me.snaphappi.com/img/beachfront/icon-sm-05.png) no-repeat scroll center center;
+		background: url(http://<?php  echo $uploadHost; ?>/img/beachfront/icon-sm-05.png) no-repeat scroll center center;
 		background-size: 60px 60px;
 	}
 	.plupload_droptext {
@@ -147,7 +148,7 @@
 			<p>Only the Chrome browser allows you to drag folders into this box.</p>
 			<p>If you plan to upload 100s of photos, 
 				please open this page in Chrome 
-				<input type="text" size="48" value="<?php echo Router::url($this->here, true); ?>" onclick="this.select();" class="copy-paste">
+				<input type="text" size="48" value="<?php echo "http://{$uploadHost}/users/upload"; ?>" onclick="this.select();" class="copy-paste">
 			</p>
 		</div>
 	</div>

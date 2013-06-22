@@ -106,6 +106,8 @@ class AppController extends Controller {
 	
 	function __check_browserRedirect() {
 		if (empty($_SERVER['HTTP_USER_AGENT'])) return true;
+		if (isset($this->params['url']['min'])) return true;
+		if ($this->RequestHandler->ext=='json') return true;
 		$u_agent = $_SERVER['HTTP_USER_AGENT']; 
 	    $unsupported = false; 
 	    if(preg_match('/MSIE/i',$u_agent)) 
