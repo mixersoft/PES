@@ -395,6 +395,11 @@ console.info('prevent 	event=QueueChanged ');
 				}
 				var check;
 			},
+			FileUploaded: function(up, file) {
+				var msg = {key:'msg', value:'FileUploaded'};
+				window.parent.postMessage(msg, '*');
+				var check;
+			},
 			complete: function(up, files) {
 				console.log('event=complete');
 			},
