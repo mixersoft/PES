@@ -266,6 +266,9 @@ $(function() {
 				/*
 				 * override add files button
 				 */
+				$('.plupload_logo').on('click',function(event){
+					$("a.plupload_add").trigger('click');	
+				})
 				$("a.plupload_add").bind('click', function(event){
 					if (!Util.userOverrideOK) {
 						if (Util.isChrome)	Util.confirmPreferFilesInChrome();

@@ -18,27 +18,41 @@
 <script type="text/javascript" src="/js/plupload/snappi.js"></script> -->
 
 <style type="text/css">
+body {
+		background: transparent;
+	}
+	form#form {
+		margin:	0;
+	}
+	#uploader_container {
+	}
+	.nowrap {
+		white-space: nowrap;
+	}
+	.plupload_logo {
+		background: url(http://thats-me.snaphappi.com/img/beachfront/icon-sm-05.png) no-repeat scroll center center;
+		background-size: 60px 60px;
+	}
 	.plupload_droptext {
-		line-height: 120px;
 		position:relative;
+		font-size: 13px;
+	}
+	.plupload_droptext .header {
+		padding: 20px 4px;
 	}
 	.plupload_droptext .header > span {
-		color: #666;
-		font-size: 2em;
-		font-weight: normal;
-		line-height: 120px;
 	}
 	.plupload_droptext .header > span.strong {
-		color: darkred;
-		font-weight: bold;
 	}
 	.plupload_droptext div {
-		line-height: 1;
+		line-height: 1.2;
 	}
 	.copy-paste {
 		background-color: #EEEEEE;
 		border: 1px dotted black;
 		padding: 2px;
+		font-size: inherit !important;
+		margin: 0 !important;
     	text-align: center;
 	}
 	.dragover {
@@ -47,23 +61,30 @@
 		box-shadow: inset 0 0 5px 5px #888;
 	}
 	.plupload-help {
+		background-color: #FFF;
 		position: absolute;
 		top: 0;
 		left: 0;
 		width: 100%;
 		z-index: 1000;
-		background-color: white;
 		height: 100%;
 		padding-top: 1em;
-		background-color: #FFF;
 	}
 	.plupload-help * {
 		background-color: white;
 	}
-	.plupload-help .header > span {
-		line-height: 60px;
+	.plupload-help .header {
+		padding: 20px 4px;
 	}
-	
+	.plupload-help .header > span {
+		color: #666;
+		font-size: 2em;
+		font-weight: normal;
+	}
+	.plupload-help .header > span.strong {
+		color: darkred;
+		font-weight: bold;
+	}
 	.plupload-help .body {
 		text-align: left;
 	}
@@ -77,7 +98,6 @@
     .plupload-help.confirm-not-chrome .header img, .plupload-help.confirm-prefer-browse .header img {
 		height: 36px;
 	}
-    
 	.plupload-help ul {
 		margin: 0 auto;
 	}
@@ -85,12 +105,12 @@
 		list-style: disc inside none;
 	}
 	.plupload-help.confirm-not-chrome ul {
-		width: 340px;
+		width: 360px;
 	}
 	.plupload-help.confirm-prefer-browse ul {
 		width: 420px;
 	}
-	
+
 </style>
 
 <?php 		
@@ -135,9 +155,10 @@
 		</div>
 		<div class='subhead'>
 			<p>Only the Chrome browser allows you to drag folders into this box.</p>
-			<br />
-			<p>If you plan to upload 100s of photos, please open this page in Chrome
-				<input type="text" size="32" value="<?php echo Router::url($this->here, true); ?>" onclick="this.select();" class="copy-paste">
+			<p>If you plan to upload 100s of photos, 
+				<span class='nowrap'>please open this page in Chrome
+					<input type="text" size="32" value="<?php echo Router::url($this->here, true); ?>" onclick="this.select();" class="copy-paste">
+				</span>
 			</p>
 		</div>
 	</div>
