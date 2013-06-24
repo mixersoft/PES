@@ -4,6 +4,7 @@
 	<style type="text/css">
 		body {
 			background: transparent;
+			overflow: hidden;
 		}
 		form a {
 			color: #F16122;
