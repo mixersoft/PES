@@ -870,12 +870,25 @@ if (isset($this->params['url']['new-taskid']))	{
 	 */ 
 	function truncate($id=null){
 		Configure::write('debug', 2);
-		$this->autoRender=false;	
-		if ($id != MyController::$userid) {
-			debug('<span style="font-size:14pt;color:red;">WARNING: about to delete all Snaps for user=<b>'.$this->Auth->user('username').'</b>.</span> <br />Please append User.id');
-			debug($this->Auth->user());
-			return;
+		$this->autoRender=false;
+		// MANAGER can truncate guest accounts
+		if ($id && in_array(AppController::$role, array('ADMIN', 'MANAGER'))) {
+			$option = array('conditions'=>array(
+				'`User`.id'=>$id,
+				'`User`.primary_group_id'=>'role-----0123-4567-89ab--------guest',
+				'date_add( `User`.modified, interval 2 week) < now()',
+			));
+			$trunc_user = $this->User->find('first', $option);
+			if (!empty($trunc_user['User']['id'])){
+				$this->Session->setFlash('WARNING: you must be a MANAGER to take this action');
+				return;
+			}
+		} else if ($id != MyController::$userid) {
+				debug('<span style="font-size:14pt;color:red;">WARNING: about to delete all Snaps for user=<b>'.$this->Auth->user('username').'</b>.</span> <br />Please append User.id');
+				debug($this->Auth->user());
+				return;
 		};
+		
 		
 		set_time_limit(600);
 		$options = array('conditions'=>array('Asset.owner_id'=>$id), 
