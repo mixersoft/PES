@@ -871,6 +871,7 @@ if (isset($this->params['url']['new-taskid']))	{
 	function truncate($id=null){
 		Configure::write('debug', 2);
 		$this->autoRender=false;
+		
 		// MANAGER can truncate guest accounts
 		if ($id && in_array(AppController::$role, array('ADMIN', 'MANAGER'))) {
 			$option = array('conditions'=>array(
@@ -883,10 +884,30 @@ if (isset($this->params['url']['new-taskid']))	{
 				$this->Session->setFlash('WARNING: you must be a MANAGER to take this action');
 				return;
 			}
+		} else if (isset($this->params['url']['min'])) {
+			$forceXHR = setXHRDebug($this, 0, 0);
+			// iframe for thats-me: user can reset account, truncate own photos
+			if (empty($this->data)) {	// GET
+				$this->viewPath = 'my';
+				$id = AppController::$userid;
+				$this->render('truncate-thatsme', 'thatsme-iframe');
+				return;	
+			} else { // POST, .json response
+				$success = false; $message = $response = array();
+				$id = $this->data['User']['id'];
+				if ($id !== MyController::$userid) {
+					$message = 'Error: there was a problem with your session. Please sign in again.';
+					$response = $this->data; 
+					$this->viewVars['jsonData'] = compact('success','message', 'response');
+					$done = $this->renderXHRByRequest('json', null, null, $forceXHR);
+					return;
+				}
+				// else continue below
+			}
 		} else if ($id != MyController::$userid) {
-				debug('<span style="font-size:14pt;color:red;">WARNING: about to delete all Snaps for user=<b>'.$this->Auth->user('username').'</b>.</span> <br />Please append User.id');
-				debug($this->Auth->user());
-				return;
+			debug('<span style="font-size:14pt;color:red;">WARNING: about to delete all Snaps for user=<b>'.$this->Auth->user('username').'</b>.</span> <br />Please append User.id');
+			debug($this->Auth->user());
+			return;
 		};
 		
 		
@@ -928,6 +949,13 @@ if (isset($this->params['url']['new-taskid']))	{
 		$this->User->query($sql_deleteCascade);
 		$this->User->id = $id;
 		$this->User->saveField('asset_count',0);
+		
+		$success = true;
+		$message = "Your photos were successfully removed.";
+		$response['User']['id'] = $id;
+		$this->viewVars['jsonData'] = compact('success','message', 'response');
+		$done = $this->renderXHRByRequest('json', null, null, $forceXHR);
+		if ($done) return;
 		
 		debug("<br /><a href='".Router::url(array('action'=>'photos'))."'>/my/photos</a><br />");
 		
