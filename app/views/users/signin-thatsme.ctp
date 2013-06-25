@@ -154,7 +154,18 @@
 				var postcfg;
 				if (form.attr('data-action') =='guest') {
 					postcfg = guestpass ? step.two : step.one;
-				} else postcfg = step.two;
+				} else {
+					if (!form.find('#UserUsername').val()) {
+						Util.signinFailure(form, {success:false, 
+								message:'Please fix the errors marked below', 
+								response:{
+									errors:{'username':'You must enter a username'}
+								}
+							});
+						return false;	
+					} else 
+						postcfg = step.two;
+				}
 				$.ajax(
 					postcfg
 				).fail(function(json, status, o){
