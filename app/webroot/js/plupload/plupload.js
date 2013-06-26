@@ -22,7 +22,7 @@
 
 /*global mOxie:true */
 
-;(function(window, o, undef) {
+(function(window, o, undef) {
 
 var delay = window.setTimeout;
 
@@ -1144,6 +1144,15 @@ plupload.Uploader = function(settings) {
 
 						continue;
 					}
+					
+					// filter: JPEG file does not have EXIF tags
+					var plupfile = file.getSource();
+					if (plupfile=='image/jpeg') {
+						var hasExif = true;
+						if (!hasExif) {
+							continue;
+						}
+					} 
 
 					// Invalid file size
 					if (file.size !== undef && file.size > settings.max_file_size) {

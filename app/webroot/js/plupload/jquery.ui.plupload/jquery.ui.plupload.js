@@ -996,6 +996,15 @@ $.widget("ui.plupload", {
 					var img = new o.Image();
 
 					img.onload = function() {
+						// snappi: filter callback, bind to ???
+						// return ???.trigger('filter.jpg', img)
+						try {
+							var hasExif = img.meta.exif.DateTimeOriginal;
+							if (!hasExif) throw "Exif missing";
+							console.info('img has valid Exif: dateTaken = '+ hasExif);
+						} catch(ex) {
+							console.error('image does NOT have EXIf meta');
+						}
 						img.embed($('#' + file.id + ' .plupload_file_thumb', self.filelist)[0], { 
 							width: 100, 
 							height: 60, 
