@@ -84,7 +84,7 @@ $(function() {
 		 return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 	}
 	Util.resize = function(px){
-		px = px || 640;
+		px = px || 1080;
 		if (Util.isChrome) {
 			return  {
 				width : px, 
