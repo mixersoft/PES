@@ -996,17 +996,6 @@ $.widget("ui.plupload", {
 					var img = new o.Image();
 
 					img.onload = function() {
-						// snappi: filter callback, bind to ???
-						// return ???.trigger('filter.jpg', img)
-						try {
-console.info("img.onload for id="+file.id);							
-							var hasExif = img.meta && img.meta.exif && img.meta.exif.DateTimeOriginal;
-							if (!hasExif) throw "Exif missing";
-							console.info('img has valid Exif: dateTaken = '+ hasExif);
-						} catch(ex) {
-							console.error('image does NOT have EXIf meta');
-							self.uploader.trigger('MissingExif', self.uploader, file);
-						}
 						img.embed($('#' + file.id + ' .plupload_file_thumb', self.filelist)[0], { 
 							width: 100, 
 							height: 60, 
@@ -1015,11 +1004,25 @@ console.info("img.onload for id="+file.id);
 							xap_url: mOxie.resolveUrl(self.options.silverlight_xap_url)
 						});
 						setTimeout(cb, 1); // detach, otherwise ui might hang (in SilverLight for example)
+						if (!img.meta.exif) {
+							img.exifMissing();
+						}
+
 					};
 
 					img.onembedded = function() {
 						img.destroy();
 					};
+					
+					img.exifMissing = function() {
+console.log("exifMissing for file=#"+file.id);			
+						var row = $('#' + file.id); 			
+						row.addClass('exif-missing').addClass('ui-state-error');
+						row.find('.plupload_file_thumb,.plupload_file_name').addClass('ui-state-disabled');
+						row.find('.plupload_file_name').append(' <span title="The Uploader will skip JPG files that are missing the Date Taken timestamp">&nbsp;(JPG file missing Exif dateOriginalTaken tag)</span>');						
+						row.find('.plupload_file_action').html('<div class="ui-icon ui-icon-alert"></div>');
+						file._exifMissing = 1;
+					}
 
 					img.onerror = function() {
 						var ext = file.name.match(/\.([^\.]{1,7})$/);
@@ -1028,12 +1031,14 @@ console.info("img.onload for id="+file.id);
 						img.destroy();
 						cb();
 					};
+					
 					img.load(file.getSource());
 				});
 			}
 			
 			self._handleFileStatus(file);
 		});
+
 
 		if (queue.length) {
 			o.inSeries(queue);

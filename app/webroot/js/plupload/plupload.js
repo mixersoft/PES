@@ -1220,6 +1220,15 @@ plupload.Uploader = function(settings) {
 				var url = up.settings.url, features = up.features, chunkSize = settings.chunks.size,
 					retries = settings.max_retries,
 					blob, offset = 0;
+					
+				if (file._exifMissing) {
+					self.trigger('Error', {
+						code : plupload.IMAGE_FORMAT_ERROR,
+						message : plupload.translate('Skipped JPG files with missing Exif dateOriginalTaken tag.'),
+						file : file
+					});				
+					return;
+				}	
 
 				// make sure we start at a predictable offset
 				if (file.loaded) {
