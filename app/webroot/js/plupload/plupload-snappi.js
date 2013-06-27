@@ -307,6 +307,20 @@ console.info('prevent 	event=FilesAdded ');
 							return false;
 					}
 				});
+				up.bind('MissingExif', function(e, up, file) {
+					console.warn("mark JPG files with missing Exif");
+					up._missingExif = up._missingExif || [];
+					up._missingExif.push(file); 
+					setTimeout(function(){
+						// ???: MissingExif is only called 1 time before exception
+						// probably caused by adding/removing files concurrently
+						// timeout seems to fix the problem
+						$('#uploader').plupload('removeFile', file);
+						
+						$('#uploader').plupload('notify', 'error', 'JPG files missing the date taken value have not been added.');
+						// return false;
+					}, 5000);
+				});
 				up.bind('selected', function(up, files){
 					// file selected
 					console.log('event=selected: file selected OVERRIDE');

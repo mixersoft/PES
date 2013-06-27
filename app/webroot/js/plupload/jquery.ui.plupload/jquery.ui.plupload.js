@@ -999,11 +999,13 @@ $.widget("ui.plupload", {
 						// snappi: filter callback, bind to ???
 						// return ???.trigger('filter.jpg', img)
 						try {
-							var hasExif = img.meta.exif.DateTimeOriginal;
+console.info("img.onload for id="+file.id);							
+							var hasExif = img.meta && img.meta.exif && img.meta.exif.DateTimeOriginal;
 							if (!hasExif) throw "Exif missing";
 							console.info('img has valid Exif: dateTaken = '+ hasExif);
 						} catch(ex) {
 							console.error('image does NOT have EXIf meta');
+							self.uploader.trigger('MissingExif', self.uploader, file);
 						}
 						img.embed($('#' + file.id + ' .plupload_file_thumb', self.filelist)[0], { 
 							width: 100, 
@@ -1029,7 +1031,7 @@ $.widget("ui.plupload", {
 					img.load(file.getSource());
 				});
 			}
-
+			
 			self._handleFileStatus(file);
 		});
 
