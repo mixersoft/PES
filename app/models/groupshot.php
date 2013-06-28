@@ -103,7 +103,7 @@ class Groupshot extends AppModel {
 					'conditions'=>array('`AssetsGroup`.group_id'=>$group_id)),
 			),
 			'recursive' => 2,
-			'order'=>'`SharedEdit`.score DESC, `Asset`.dateTaken ASC',		
+			'order'=>array('`SharedEdit`.score DESC', '`Asset`.dateTaken ASC'),		
 			'extras'=>array(
 				'show_edits'=>true,
 				'join_shots'=>'Groupshot', 		
@@ -146,7 +146,7 @@ debug($checkdata);
 					'conditions'=>array('`AssetsGroup`.group_id'=>$group_id)),
 			),
 			'recursive' => 2,
-			'order'=>'`SharedEdit`.score DESC, `Asset`.dateTaken ASC',		
+			'order'=>array('`SharedEdit`.score DESC', '`Asset`.dateTaken ASC'),		
 			'extras'=>array(
 				'show_edits'=>true,
 				'join_shots'=>'Groupshot', 		
@@ -318,7 +318,7 @@ WHERE `Shot`.id = '{$shotId}'";
 		$options = array(
 			'fields'=>array('`Asset`.id','`BestShotSystem`.`asset_id`','`BestShotSystem`.`id`'),
 			'conditions'=>array('`Shot`.id'=>$shotIds),
-			'order'=>'`SharedEdit`.score DESC, `Asset`.dateTaken ASC',	
+			'order'=>array('`SharedEdit`.score DESC', '`Asset`.dateTaken ASC'),	
 			'extras'=>array(
 				'show_edits'=>true,
 				'join_shots'=>'Groupshot', 
@@ -412,7 +412,7 @@ WHERE `Shot`.id = '{$shotId}'";
 			$options = array(
 				'fields'=>array('`Asset`.id'),
 				'conditions'=>array('`Shot`.id'=>$shotIds),
-				'order'=>'`Shot`.id, rating DESC, `SharedEdit`.score DESC, `Asset`.dateTaken ASC',	
+				'order'=>array('`Shot`.id', 'rating DESC','`SharedEdit`.score DESC', '`Asset`.dateTaken ASC'),
 				'extras'=>array(
 					'show_edits'=>true,
 					'join_shots'=>'Groupshot', 

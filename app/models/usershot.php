@@ -85,7 +85,7 @@ class Usershot extends AppModel {
 		$options = array(
 			'fields'=>array('`Asset`.id','`Asset`.owner_id'), 
 			'conditions'=>array('`Asset`.id'=>$assetIds),
-			'order'=>'`SharedEdit`.score DESC, `Asset`.dateTaken ASC',		
+			'order'=>array('`SharedEdit`.score DESC', '`Asset`.dateTaken ASC'),			
 			'extras'=>array(
 				'show_edits' => true,
 				'join_shots'=>'Usershot', 
@@ -154,7 +154,7 @@ class Usershot extends AppModel {
 		$options = array(
 			'fields'=>array('DISTINCT `Asset`.id','`Asset`.owner_id'), 
 			'conditions'=>array('`Asset`.id'=>$assetIds),
-			'order'=>'`SharedEdit`.score DESC, `Asset`.dateTaken ASC',		
+			'order'=>array('`SharedEdit`.score DESC', '`Asset`.dateTaken ASC'),		
 			'extras'=>array(
 				'show_edits' => true,
 				'join_shots'=>'Usershot', 
@@ -171,7 +171,7 @@ class Usershot extends AppModel {
 // debug($permitted_AssetIds);
 		$no_permissions = array_diff($assetIds, $permitted_AssetIds);
 		// check permissions on submitted Assets, unless role=SCRIPT
-		if (count($no_permissions)) {
+		if (AppController::$role !=='SCRIPT' && count($no_permissions)) {
 			// throw new Exception('Error: No Permission on the following assetIds, aids='.print_r(array_diff($assetIds,$permitted_AssetIds),true)); 		
 			$message[] = 'Error: No Permission on the following assetIds';
 			$response['asset_ids'] = $no_permissions;
@@ -496,7 +496,7 @@ WHERE `Shot`.id = '{$shotId}'";
 			'permissionable'=>false,
 			'fields'=>array('`Asset`.id','`BestShotSystem`.`id`','`BestShotSystem`.`asset_id`','`BestShotSystem`.`id`'),
 			'conditions'=>array('`Shot`.id'=>$shotIds),
-			'order'=>'`SharedEdit`.score DESC, `Asset`.dateTaken ASC',	
+			'order'=>array('`SharedEdit`.score DESC', '`Asset`.dateTaken ASC'),
 			'extras'=>array(
 				'show_edits'=>true,
 				'join_shots'=>'Usershot', 
@@ -585,7 +585,7 @@ WHERE `Shot`.id = '{$shotId}'";
 			$options = array(
 				'fields'=>array('`Asset`.id'),
 				'conditions'=>array('`Shot`.id'=>$shotIds),
-				'order'=>'`Shot`.id, rating DESC, `SharedEdit`.score DESC, `Asset`.dateTaken ASC',	
+				'order'=>array('`Shot`.id', 'rating DESC','`SharedEdit`.score DESC', '`Asset`.dateTaken ASC'),	
 				'extras'=>array(
 					'show_edits'=>true,
 					'join_shots'=>'Usershot',
