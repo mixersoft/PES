@@ -109,6 +109,7 @@ _jQuery UI_ widget factory, there are some specifics. See examples below for mor
 		@param {Boolean} [settings.views.remember=true] Whether to remember the current view (requires jQuery Cookie plugin).
 	@param {Boolean} [settings.multiple_queues=true] Re-activate the widget after each upload procedure.
 	@param {Number} [settings.max_file_count=0] Limit the number of files user is able to upload in one go, autosets _multiple_queues_ to _false_ (default is 0 - no limit).
+	@param {Number} [settings.files_added_chunksize=9999] Limit the number of files added the UI adds in each iteration
 */
 (function(window, document, plupload, $) {
 
@@ -294,7 +295,8 @@ $.widget("ui.plupload", {
 		autostart: false,
 		sortable: false,
 		rename: false,
-		max_file_count: 0 // unlimited
+		max_file_count: 0, // unlimited
+		files_added_chunksize: 9999,
 	},
 	
 	FILE_COUNT_ERROR: -9001,
@@ -452,10 +454,6 @@ $.widget("ui.plupload", {
 			self.options.multiple_queues = false; // one go only
 
 			uploader.bind('FilesAdded', function(up, selectedFiles) {
-if (up.queued_files) {
-console.log("plupload UI.js: UI ignores max_file_count, FilesAdded, count="+selectedFiles.length);	
-	return;				
-}
 				var removed = [], selectedCount = selectedFiles.length;
 				var extraCount = up.files.length + selectedCount - self.options.max_file_count;
 				

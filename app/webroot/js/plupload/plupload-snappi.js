@@ -196,7 +196,8 @@ $(function() {
 		max_file_size : '12mb',
 
 		// User can upload no more then 20 files in one go (sets multiple_queues to false)
-		max_file_count: 50,
+		max_file_count: 9999,
+		files_added_chunksize: 200,
 		
 		// chunks : false,
 		chunks : {

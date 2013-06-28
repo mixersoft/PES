@@ -3122,6 +3122,7 @@ define('moxie/file/FileDrop', [
 					self.ruid = runtime.uid;
 
 					self.bind("Drop", function() {
+						// ???: this is where FileDrop gets files for uploader.addSelectedFiles()
 						var files = runtime.exec.call(self, 'FileDrop', 'getFiles');
 
 						self.files = [];
@@ -6352,13 +6353,15 @@ define("moxie/runtime/html5/file/FileDrop", [
 	
 	function FileDrop() {
 		var _files = [], _options;
+		var _instance, 
+			_chunk_index = 0;
 
 		Basic.extend(this, {
 			init: function(options) {
 				var comp = this, dropZone;
-
 				_options = options;
 				dropZone = _options.container;
+				_instance = this;				// add to outer scope to reference from within inSeries
 
 				Events.addEvent(dropZone, 'dragover', function(e) {
 					e.preventDefault();
@@ -6379,6 +6382,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 							entries.push(item.webkitGetAsEntry());
 						});
 						_readEntries(entries, function() {
+							// _readEntries callback. drop handler > FileDrop.getFiles() > up.addSelectedFiles
 							comp.trigger("drop");
 						});
 					} else {
@@ -6405,6 +6409,22 @@ define("moxie/runtime/html5/file/FileDrop", [
 			},
 
 			getFiles: function() {
+				// TODO: this code for HTML5 only!!!! support other runtimes?
+				// up.trigger("drop") > self.bind("Drop") > FileDrop.getFiles() > self.files > uploader.addSelectedFiles(files) 
+				if (_options.files_added_chunksize) {
+	console.log('FileDrop.getFiles(), total count='+_files.length+', index='+(_chunk_index)+', remaining='+(_files.length-_chunk_index));
+					var _chunk = _files.slice(_chunk_index,_chunk_index+_options.files_added_chunksize);
+					_chunk_index += _chunk.length;
+					
+if ((_files.length > _chunk_index) && $('a.plupload_add .icon-spinner').length==0) {
+	$('a.plupload_add').prepend('<i class="ui-icon icon-spinner icon-spin"></i>');
+	$('a.plupload_add').css('cursor','wait');
+} else if ((_files.length == _chunk_index) ) {
+	$('a.plupload_add .icon-spinner').remove();
+	$('a.plupload_add').css('cursor','pointer');
+}					
+					return _chunk;
+				}				
 				return _files;
 			},
 
@@ -6445,7 +6465,21 @@ define("moxie/runtime/html5/file/FileDrop", [
 					if (_isAcceptable(file)) {
 						file.relativePath = _fullPath || null;
 						_files.push(file);
-if ((_files.length % 50) == 0)console.log("moxie.js: _files.length="+_files.length);								
+						
+						/*
+						 * add files_added_chunking to FileDrop _readEntry()
+						 */
+						var chunksize = _options.files_added_chunksize;						
+						if ((_files.length % chunksize) == 0) {
+console.log("moxie.js: readEntry reached files_added_chunksize, _files.length="+_files.length);
+							// call drop handler, override getFiles() to limit to chunksize, continue _readEntry	
+							setTimeout(function(){
+								_instance.trigger("drop");	
+							}, 1)
+						}
+						/*
+						 * 
+						 */
 					}
 					cb();
 				}, function() {

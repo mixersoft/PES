@@ -823,32 +823,18 @@ plupload.Uploader = function(settings) {
 		for (i = 0; i < native_files.length; i++) {
 			files.push(new plupload.File(native_files[i]));
 		}
+		console.log("### plupload.js: addSelectedFiles, chunked??? files ="+files.length);				
 
 		// Trigger FilesAdded event if we added any
+		// moxie.js calls up.trigger("drop") with this._files
 		if (files.length) {
-			// 1: chunk files here and trigger FilesAdded in loop
-			var chunksize = this.settings.max_file_count;
-			if (this.queued_files || files.length >= chunksize) {
-console.log("plupload.js: addSelectedFiles to queued_files, adding="+files.length);				
-				this.queued_files = this.queued_files || [];
-				this.queued_files = this.queued_files.concat(files);
-				this.bind('Chunk_FilesAdded', function() {
-					var files = this.queued_files.splice(0,chunksize),
-						up = this;
-					setTimeout(function(){
-						up.trigger("FilesAdded", files);	
-					},100)
-					
-				});
-				this.trigger("Chunk_FilesAdded");
-			} else {
-	console.log("plupload.js: addSelectedFiles, count="+files.length);			
-				this.trigger("FilesAdded", files);
-			}
+console.log("plupload.js: addSelectedFiles, count="+files.length);			
+			this.trigger("FilesAdded", files);
 		}
 	}
 
 	function initControls() {
+console.log("000: plupload.js Uploader.initControls()")		
 		var self = this, initialized = 0;
 
 		// common settings
@@ -866,6 +852,10 @@ console.log("plupload.js: addSelectedFiles to queued_files, adding="+files.lengt
 				options[runtime] = settings[runtime];
 			}
 		});
+		
+		// add chunksize to options so html5 FileDrop can access
+		// TODO: is there a better way to expose this value? 
+		options.files_added_chunksize = settings.files_added_chunksize || 0;
 
 		o.inSeries([
 			function(cb) {
@@ -932,6 +922,7 @@ console.log("plupload.js: addSelectedFiles to queued_files, adding="+files.lengt
 
 			function(cb) {
 				// Initialize drag/drop interface if requested
+				//???: extend FileDrop here for chunksize?
 				if (settings.drop_element) {
 					fileDrop = new o.FileDrop(plupload.extend({}, options, {
 						drop_zone: settings.drop_element
@@ -1207,10 +1198,6 @@ console.log("plupload.js: FilesAdded, count="+selected_files.length);
 
 				// Only trigger QueueChanged event if any files where added
 				if (count) {
-					if (up.queued_files && up.queued_files.length) {
-console.log("plupload.js: trigger Chunk_FilesAdded, remaining="+up.queued_files.length);						
-						up.trigger("Chunk_FilesAdded");
-					}
 					delay(function() {
 						self.trigger("QueueChanged");
 						self.refresh();
