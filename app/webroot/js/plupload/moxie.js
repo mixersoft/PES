@@ -6445,6 +6445,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 					if (_isAcceptable(file)) {
 						file.relativePath = _fullPath || null;
 						_files.push(file);
+if ((_files.length % 50) == 0)console.log("moxie.js: _files.length="+_files.length);								
 					}
 					cb();
 				}, function() {
@@ -6459,6 +6460,7 @@ define("moxie/runtime/html5/file/FileDrop", [
 		}
 
 		function _readDirEntry(dirEntry, cb) {
+console.log("moxie.js: _readDirEntry")			
 			var entries = [], dirReader = dirEntry.createReader();
 			
 			// keep quering recursively till no more entries

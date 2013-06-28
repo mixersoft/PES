@@ -196,7 +196,7 @@ $(function() {
 		max_file_size : '12mb',
 
 		// User can upload no more then 20 files in one go (sets multiple_queues to false)
-		max_file_count: 9999,
+		max_file_count: 50,
 		
 		// chunks : false,
 		chunks : {
@@ -390,11 +390,13 @@ console.info('prevent 	event=QueueChanged ');
 				console.log('event=StateChanged');
 			},
 			BeforeUpload: function(up, file) {
+console.log("BeforeUpload for file=#"+file.id);				
 				var utc_now = Math.floor(new Date().getTime()/1000);
 				Util.get_BatchID(utc_now);	
 				CFG['session'].LastUpload = utc_now;
 			},
 			UploadFile: function(up, file) {
+console.log("UploadFile for file=#"+file.id);
 				// up.settings.url = '../dump.php?id=' + file.id;
 				up.settings.url = '/my/plupload?name=' + (file.fileName || file.name);
 				up.settings.multipart = true;

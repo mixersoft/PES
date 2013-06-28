@@ -826,7 +826,25 @@ plupload.Uploader = function(settings) {
 
 		// Trigger FilesAdded event if we added any
 		if (files.length) {
-			this.trigger("FilesAdded", files);
+			// 1: chunk files here and trigger FilesAdded in loop
+			var chunksize = this.settings.max_file_count;
+			if (this.queued_files || files.length >= chunksize) {
+console.log("plupload.js: addSelectedFiles to queued_files, adding="+files.length);				
+				this.queued_files = this.queued_files || [];
+				this.queued_files = this.queued_files.concat(files);
+				this.bind('Chunk_FilesAdded', function() {
+					var files = this.queued_files.splice(0,chunksize),
+						up = this;
+					setTimeout(function(){
+						up.trigger("FilesAdded", files);	
+					},100)
+					
+				});
+				this.trigger("Chunk_FilesAdded");
+			} else {
+	console.log("plupload.js: addSelectedFiles, count="+files.length);			
+				this.trigger("FilesAdded", files);
+			}
 		}
 	}
 
@@ -1108,6 +1126,7 @@ plupload.Uploader = function(settings) {
 
 			// Add files to queue
 			self.bind('FilesAdded', function(up, selected_files) {
+console.log("plupload.js: FilesAdded, count="+selected_files.length);				
 				var i, ii, file, count = 0, extensionsRegExp, filters = settings.filters;
 
 				// Convert extensions to regexp
@@ -1188,6 +1207,10 @@ plupload.Uploader = function(settings) {
 
 				// Only trigger QueueChanged event if any files where added
 				if (count) {
+					if (up.queued_files && up.queued_files.length) {
+console.log("plupload.js: trigger Chunk_FilesAdded, remaining="+up.queued_files.length);						
+						up.trigger("Chunk_FilesAdded");
+					}
 					delay(function() {
 						self.trigger("QueueChanged");
 						self.refresh();

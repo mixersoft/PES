@@ -452,6 +452,10 @@ $.widget("ui.plupload", {
 			self.options.multiple_queues = false; // one go only
 
 			uploader.bind('FilesAdded', function(up, selectedFiles) {
+if (up.queued_files) {
+console.log("plupload UI.js: UI ignores max_file_count, FilesAdded, count="+selectedFiles.length);	
+	return;				
+}
 				var removed = [], selectedCount = selectedFiles.length;
 				var extraCount = up.files.length + selectedCount - self.options.max_file_count;
 				
