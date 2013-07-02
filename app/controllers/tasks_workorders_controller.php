@@ -378,11 +378,9 @@ class TasksWorkordersController extends AppController {
 		// $this->Workorder->bindModel($habtm);
 		// $this->Workorder->{$paginateAlias}->Behaviors->attach('WorkorderPermissionable', array('type'=>$this->modelClass, 'uuid'=>$id));
 		
-		// this version uses paginate('Asset'), but manually places paging data under a different key, ['PageableAlias']
-		// TODO: fix ['PageableAlias'] and ['$paginateCacheKey'] overlap
+		// this version uses paginate('Asset'), but manually places paging data under a different key, $extras['paginateCacheKey']
 		$shot_paginateArray = $this->paginate[$SOURCE_MODEL.$paginateModel]; //array_merge($this->paginate[$SOURCE_MODEL.$paginateModel], $this->paginate[$paginateModel]['extras']); 
 		$shot_paginateArray =  $Model->getPaginatePhotosByShotId($shotIds, $shot_paginateArray, $shotType);
-		$shot_paginateArray['PageableAlias'] = $paginateAlias;					// Pageable?
 		$shot_paginateArray['extras']['paginateCacheKey'] = $paginateAlias;	// AppModel
 		$this->paginate[$paginateAlias] = $Model->getPageablePaginateArray($this, $shot_paginateArray, $paginateAlias);
 		Configure::write("paginate.Options.{$paginateAlias}.limit", 999);			// Pageable?

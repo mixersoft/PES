@@ -84,7 +84,7 @@ class PageableBehavior extends ModelBehavior {
 			: $controller->params['named'];		
 		
 		
-		$pageableAlias = isset($paginateArray['PageableAlias']) ? $paginateArray['PageableAlias'] : $Model->alias; 
+		$pageableAlias = isset($paginateArray['extras']['paginateCacheKey']) ? $paginateArray['extras']['paginateCacheKey'] : $Model->alias; 
 		Configure::write("paginate.Model", $pageableAlias);
 		
 		// move appendFilterConditions outside pageable behavior
