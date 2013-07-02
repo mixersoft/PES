@@ -128,7 +128,9 @@
 		    			if (!thumb) break; 
 		    			batch.add(SNAPPI.Auditions.find(thumb.Thumbnail.uuid));
 		    			var success = function(){
-		    				var check; // deactivate or unGroup
+		    				// remove from view 
+		    				var id = g.Shot.best.id+'_'+g.Shot.id;
+		    				_Y.one('article#'+id).remove();
 		    				return false;
 		    			};
 		    			options =  {
@@ -244,6 +246,8 @@
         		case 'NavFilmstrip': 
         			CSS_ID = 'contextmenu-photoroll-markup';
         			break;
+        		case 'ShotGalleryShot':
+        			e.stopImmediatePropagation();	// nested inside 'Photo'	
         		case 'DialogHiddenShot': 
         		case 'ShotGallery': 
         			CSS_ID = 'contextmenu-hiddenshot-markup';	

@@ -27,5 +27,11 @@
 		<li action='ungroupShot'  class='before-show'>
 			<a href="javascript:;">Ungroup Entire Shot</a>
 		</li>
+		<li action='groupAsShot' class='before-show' title='Combine the selected Snaps into a single Shot - only the Bestshot is visible.'>
+			Group as Shot
+		</li>
+		</div><div class="menu-item-group">
+			<li action='wms_workorder_toggle_flag' class='before-show' title='Flag this Snap for review'>Flag</li>	
+		</div>
 	</ul>
 </div>

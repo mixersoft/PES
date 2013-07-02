@@ -1010,6 +1010,16 @@ console.log("delegateHost="+delegateHost._yuid);
 			if (/Group/.test(SNAPPI.STATE.controller['class'])) {
 				options.group_id = SNAPPI.STATE.controller.xhrFrom.uuid;
 			}
+			try {
+				if (g._cfg.type == 'ShotGalleryShot' ) {
+					// TODO: check g.type here
+					options.isBestshot = PAGE.jsonData.shot_CastingCall.CastingCall.ShowHidden ? 0 : 1;
+				} else 
+					options.isBestshot = PAGE.jsonData.castingCall.CastingCall.ShowHidden ? 0 : 1; 
+				
+			} catch (ex){
+				options.isBestshot = 0;
+			}
 			g.groupAsShot(null, options);
 			return;
 		} catch (e) {}	

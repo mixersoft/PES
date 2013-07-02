@@ -310,12 +310,11 @@ class WorkordersController extends AppController {
 			if (!isset($this->passedArgs['reset']) || !empty($this->passedArgs['reset'])) {
 				// default is to delete old SCRIPT shots, use /reset:0 to preserve 
 				/*
-				 *  NOTE: snappi-dev use: 		delete snappi.usershots `s`, snappi.assets_usershots `au`
-				 * 		dev.snaphappi.com use: 	delete `s`, `au`
+				 *  NOTE: works for MySQL v5.5 
+				 * 	for MySQL v5.3.1 use: delete snappi.usershots `s`, snappi.assets_usershots `au`
 				 */
-				$multiDelete = (Configure::read('Config.os')=='win') ? 'delete snappi.usershots `s`, snappi.assets_usershots `au`' : 'delete `s`, `au`';  
 				$reset_SQL = "
-	{$multiDelete}
+	delete `s`, `au`
 	from snappi.usershots `s`
 	join snappi.users u on u.id = `s`.owner_id
 	join snappi.assets_usershots `au` on au.usershot_id = `s`.id
@@ -403,7 +402,7 @@ class WorkordersController extends AppController {
 				unset($image_groups['Groups'][$i]); 
 				continue;		// skip if only one uuid, group of 1
 			}
-			$result = $Usershot->groupAsShot($groupAsShot_aids, $force=true);
+			$result = $Usershot->groupAsShot($groupAsShot_aids);
 			if ($result['success']) {
 				$newShots[] = array(
 					'asset_ids'=>$groupAsShot_aids, 
@@ -806,11 +805,17 @@ if (!empty($this->passedArgs['all-shots'])) {
 $paging[$paginateModel] = $this->params['paging'][$paginateModel];		
 		$shotData = $this->paginate($paginateModel);		// must paginate using Model->name because of how fields and conditions are set up
 		$shotData = Set::extract($shotData, "{n}.{$paginateModel}");
-$paging[$paginateAlias] = $this->params['paging'][$paginateModel];
-$this->params['paging'] = $paging;
+	$paging[$paginateAlias] = $this->params['paging'][$paginateModel];
+	$this->params['paging'] = $paging;
+		$this->viewVars['jsonData']['shot_CastingCall'] = $this->CastingCall->getCastingCall($shotData);
+		/*
+		 * end Shot data
+		 */
+		 
+		 
 		Configure::write('paginate.Model', $paginateModel);		// original paging Counts for Asset, not Shot
 		
-		$this->viewVars['jsonData']['shot_CastingCall'] = $this->CastingCall->getCastingCall($shotData);
+		
 		// extract Shot data from Assets
 		foreach ($raw_shots as $i=>$row) {
 			$shot = array('id'=>$row['shot_id']);

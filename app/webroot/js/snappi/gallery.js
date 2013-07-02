@@ -1148,6 +1148,16 @@
 			}
 			return data;
         },
+        /*
+         * for groupAsShot processing, 
+         * 	find/add hiddenshots if we are adding a bestshot
+         */
+        addIsBestshot: function(data, options){
+        	if (options.isBestshot) {
+        		data['data[isBestshot]']=1;
+        	}
+        	return data;
+        },
 		/**
 		 * TODO: move to ShotController.groupAsShot(), or postGroupAsShot()
 		 * deprecate: check if lightbox.postGroupAsShot is used or lightbox.Gallery.groupAsShot
@@ -1171,6 +1181,7 @@
 			};
 			if (cfg.group_id) data['data[group_id]'] = cfg.group_id; 
 			data = this.addWorkorderData(data);
+			data = this.addIsBestshot(data, cfg);
 			
 			var uri = '/photos/shot/.json';
 			var args = {

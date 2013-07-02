@@ -596,6 +596,22 @@ function mergeAsArray ($target, $value){
 	return array_merge ($target, $value);
 }
 
+function debug_XHRPost($controller) {
+	$message[0] = "WARNING: debug_XHRPost() method set. just show POST data";
+	$message['controller'] = $controller->name;
+	$message['action'] = $controller->action;
+	$href = $controller->here;
+	$postData = (array)$controller->data;
+	if (empty($postData)) $postData = $controller->params['url']['data'];
+	$controller->viewVars['jsonData'] = compact('message', 'href', 'postData');
+	// XHR && json
+	Configure::write('debug',0);
+	// debug($controller->viewVars['jsonData']);
+	header('Content-Type: application/json');
+	echo json_encode($controller->viewVars['jsonData']);
+	exit(0);
+}
+
 /**
  * convert GET params to POST params to test XHR in browser
  * @param $forceXHR - debug level

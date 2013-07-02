@@ -241,7 +241,7 @@ $previewOrientation = 	isset($exif['preview']['Orientation']) ? $exif['preview']
 	 *     [shot_id] => 4ff90f01-bef8-49d1-969c-0725f67883f5
 	 *     [group_as_shot_permission] => Usershot
 	 */
-	function getCastingCall($assets, $cache = true, $options=array()) {
+	function getCastingCall($assets, $cache = false, $options=array()) {
 		$options = array_merge(array('ProviderName'=>'snappi'), $options);
 		$class='Asset';
 		if (isset($assets['Asset'])) $assets = & $assets['Asset'];
@@ -255,6 +255,7 @@ $previewOrientation = 	isset($exif['preview']['Orientation']) ? $exif['preview']
 		$Baseurl = Stagehand::$stage_baseurl;
 		//debug(compact('Audition','Total','Perpage','Pages','Page','Baseurl'));
 		// check permissions for groupAsShot 
+		// Configure::read('paginate.Model') == Configure::write("paginate.Model", $pageableAlias);
 		$extras = Configure::read("paginate.Options.".Configure::read('paginate.Model').".extras");
 		$ShotType = !empty($extras['join_shots']) ? $extras['join_shots'] : false;
 		$GroupAsShotPerm = !empty($extras['group_as_shot_permission']) ? $ShotType : false;

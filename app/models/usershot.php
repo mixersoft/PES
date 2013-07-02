@@ -138,14 +138,12 @@ class Usershot extends AppModel {
 	 * 	WARNING: if user manually sets existing bestshot to a low scoring photo, it may
 	 * 		not become a NEW bestshot, despite higher Useredit.rating
 	 * @param $assetIds array $assetIds 
-	 * @param $force boolean, default false. if true, then 
-	 * 			a) force creation of lower priority Usershot with Usershot.active=0
-	 * 			b) unGroupShot or deactivateShot equal or lower priority shots
-	 * 			c) do NOT unGroup higher priority (i.e. USER) shots
+	 * @param $isBestshot boolean, default false. if true, then 
+	 * 		we assume the user was adding a bestshot to new Shot, find/add hiddenshots	
 	 * 
 	 * @return standard JSON response format
 	 */
-	public function groupAsShot ($assetIds, $force=false) {
+	public function groupAsShot ($assetIds, $isBestshot=false) {
 		$success = false; $message=array(); $response=array();
 		$submitted = $assetIds;	// for AssetPermission check
 		$isActive = true;						// set to false if needed for $force=true
@@ -159,15 +157,17 @@ class Usershot extends AppModel {
 				'show_edits' => true,
 				'join_shots'=>'Usershot', 
 				'show_hidden_shots'=>true,		// Asset.id != Bestshot.asset_id
-				'show_inactive_shots'=>$force,	// show Usershot.active=0 if $force
+				'show_inactive_shots'=>true,	// process for ALL shots, including inactive
 				'join_bestshot'=>false,
 			),  //default
 		);
 		
 		$data = $Asset->find('all', $options);	
-// debug($data);		
 		$existing_shots = array_filter(Set::combine($data, '/Shot/shot_id', '/Shot/shot_priority'));
 		$permitted_AssetIds = array_unique(Set::extract('/Asset/id', $data)); // aids sorted by SharedEdit.score DESC in bestshot order
+// debug($options);		
+// debug($data);		
+// debug($existing_shots);		
 // debug($permitted_AssetIds);
 		$no_permissions = array_diff($assetIds, $permitted_AssetIds);
 		// check permissions on submitted Assets, unless role=SCRIPT
@@ -186,70 +186,103 @@ class Usershot extends AppModel {
 		}
 
 
-		/*
-		 * Confirm edit Shot priority, do we have permission to edit existing Shot?
-		 * 	higher priority can deactivate lower priority shots
-		 * 	equal priority will replace shots
-		 */ 
+		 /**
+		  * 3 tasks:
+		  * 	1) check new vs existing shot priority for EACH asset
+		  * 	2) check if we need to include hiddenshots in new shot
+		  * 	3) cleanup old shot(s) [updateShot, deactivateShot, unGroupShot]
+		  * 
+		  * Existing Shots - 3 scenarios (lower number == HIGHER priority)
+		  * 3) new shot priority HIGHER THAN old shot priority,
+		  * 	deactivate old shot,  $cleanup['deactivateShots'][] 
+		  * 1) new shot priority LOWER THAN old shot(s) 
+		  * 	do NOT change old shot, 
+		  * 	create new shot with $isActive=0
+		  * 		PEOPLE: return error message to user
+		  * 2) new shot priority SAME AS old shot priority, find correct cleanup strategy
+		  * 	a) SCRIPT shot
+		  * 		SCRIPT shots should NOT overlap??? 
+		  * 		just use $cleanup['removeFromShots'][], but respond with WARNING message
+		  * 	b) PEOPLE shot
+		  * 		if added from show_hidden_shots==0, find/add all hiddenShots to new Shot, unGroup old Shot
+		  * 			$cleanup['unGroupShots'][] = $shot_id;
+		  * 			Add to $merge_hiddenshots, include hiddenshots in group
+		  * 		if added from show_hidden_shots==1, remove from oldShot, reset bestshot on oldShot
+		  * 			$cleanup['removeFromShots'][] = $shot_id;
+		  *
+* 		 * 	1) show_hidden_shots=0 && ShotPriority==USER, from photoRollContextMenu: 
+		 * 		the asset is the Bestshot, get hiddenShots and add to the NEW Shot
+		 * 		TODO: we need to know if the asset is a Bestshot
+		 * 	2) show_hidden_shots=1, i.e. from hiddenShotContextMenu
+		 * 		remove selected assets from $existing_shots, do NOT add hiddenShots
+		  * 
+		  */ 
 		 $shot_priority = $this->_get_ShotPriority();
-		 $cleanup = array();
+		 $cleanup = $merge_hiddenshots = array();
 		 foreach ($existing_shots as $shot_id=>$old_priority) {
 		 	if (!$shot_id) continue;	// should be fixed by array_filter()
-		 	if ($old_priority < $shot_priority) {
-		 		if ($force) {
-		 			// force creation of Usershot at a lower priority, but set Usershot.active=0
-		 			$isActive = false;
-					continue;			// do NOT unGroup or deactivate existing shots that have higher priority
-		 		} else {
-			 		// current role has lower priority, no privilege to change existing Shot
-			 		// no privilege or save as "lower" privilege???
-			 		$message = "Error: Current role has lower priority, no privilege to change existing Shot, role=".AppController::$role;
-					$response['existing_shots'] =  $existing_shots;				
-			 		return compact('success', 'message', 'response');
-				} 
-		 	}
-		 	if ($old_priority == $shot_priority) {
-		 		if ( $shot_priority == $this->_get_ShotPriority('SCRIPT') ) {
-		 			// for SCRIPT shots, REMOVE asset from old Shot 
-		 			$cleanup['removeFromShots'] = Set::combine($data, '/Shot/shot_id', '/Asset/id');
-				} else $cleanup['unGroupShots'][] = $shot_id;
+		 	
+		 	$relative_priority = $old_priority - $shot_priority;  // lower number is higher priority
+		 	if ($relative_priority > 0) {  // new shot HIGHER priority
+				$cleanup['deactivateShots'][] = $shot_id;
+				if ($isBestshot) {
+					// find & add hiddenShots, active only
+					$merge_hiddenshots[] = $shot_id;
+				}
+				//???: also remove from deactivated shots? 
 			}
-			if ($old_priority > $shot_priority) $cleanup['deactivateShots'][] = $shot_id;
-		 } 
-		 
-		
-		if (count($existing_shots) && $shot_priority == $this->_get_ShotPriority('SCRIPT')) {
-			/*
-			 * NOTE: for priority=SCRIPT, we CANNOT assume the Asset is a Bestshot
-			 * 		REMOVE Asset from any existing shot with priority=SCRIPT
-			 * 		DELETE FROM AssetsShots WHERE Shot.priority=30
-			 */
+		 	if ($relative_priority < 0) { // new shot LOWER priority  
+				 	$isActive = false;  // NEW shot is active=0
+					// no cleanup applied to existing shot with HIGHER priority
+					if ($isBestshot) {
+						// find & add hiddenShots, active only
+						$merge_hiddenshots[] = $shot_id;
+					}
+					continue;		
+		 	}
+		 	if ($relative_priority == 0) {	// SAME priority, find the correct cleanup strategy
+		 		if ( $shot_priority == $this->_get_ShotPriority('SCRIPT') ) {
+		 			// SCRIPT shots should NOT overlap, right?
+		 			// for SCRIPT shots, REMOVE asset from old Shot 
+		 			$cleanup['removeFromShots'][$shot_id] = $permitted_AssetIds;
+					$message[] = "WARNING: new SCRIPT shot overlaps with existing SCRIPT shot. Removing assets from existing shot. shot_id={$shot_id}";
+				} else {
+					// TODO: how do we determine $show_hidden_shots for this request???
+// debug("isBestshot={$isBestshot}");					
+					if ($isBestshot) {
+						// find & add hiddenShots, active only
+						$merge_hiddenshots[] = $shot_id;
+						$cleanup['unGroupShots'][] = $shot_id;
+					} else {
+						$cleanup['removeFromShots'][] = $shot_id;
+						// removeFromShot() does a USER=owner_id check, but not MANAGER/OPERATOR
+					}
+				}
+			}
 			
-			/*
-			 * ???: SCRIPT SHOTS should have $force=true
-			 */ 
-			debug("WARNING: asset Id is in another shot");	
-$existing_shots = Set::combine($data, '/Shot/shot_id', '/Asset/id');
-debug($existing_shots);
-			$existing_shots = null;		// for now, skip ungroup
-		} else if (count($existing_shots))	{
-			/*
-			 * if an Asset is ALREADY in a Shot and the Shot was created from UI: 
-			 * 		*ASSUME* that Asset is the Bestshot, and add all hiddenShots to NEW Shot
-			 * 		
-			 */			
-			$hiddenShot_options = array(
-				'fields'=>array("`AssetsUsershot`.asset_id"),
-				'conditions'=>array(
-					'`AssetsUsershot`.usershot_id'=>array_keys($existing_shots),
-				),
-			); 
-			$Asset->AssetsUsershot = ClassRegistry::init('AssetsUsershot');
-			$hiddenShot_data = $Asset->AssetsUsershot->find('all', $hiddenShot_options);
-			$hiddenShot_assetIds = Set::extract($hiddenShot_data, '/AssetsUsershot/asset_id');
-debug($hiddenShot_assetIds); 		
-			$permitted_AssetIds = array_unique(array_merge($permitted_AssetIds, $hiddenShot_assetIds));
-		}
+		 } 
+		 /*
+		  * merge hiddenshots as necessary
+		  */
+		 if (count($merge_hiddenshots)) {
+				// find hiddenshots from ACTIVE shots, and add to the NEW shot using $permitted_AssetIds
+				// destroy existing shot
+				$hiddenShot_options = array(
+					'fields'=>array('`Usershot`.id', '`Usershot`.active'),
+					'conditions'=>array(
+						'`Usershot`.id'=>$merge_hiddenshots,
+						'`Usershot`.active'=>1,
+					),
+					'contain'=>array('AssetsUsershot.asset_id'),
+				);
+				$hiddenShot_data = $this->find('all', $hiddenShot_options);
+				$hiddenShot_assetIds = Set::extract($hiddenShot_data, '/AssetsUsershot/asset_id');
+// debug($merge_hiddenshots); 				
+// debug($hiddenShot_options); 
+// debug($hiddenShot_data);
+// debug($hiddenShot_assetIds); 		// NOTE: this array is NOT unique		
+				$permitted_AssetIds = array_unique(array_merge($permitted_AssetIds, $hiddenShot_assetIds));
+		} 
 
 		// create Usershot
 		// add assetIds to AssetsUsershot
@@ -280,11 +313,16 @@ debug($hiddenShot_assetIds);
 				$insert[$bestshotAlias]['asset_id'] = $this->_getTopRatedByRatingScore($data);
 				$insert[$bestshotAlias]['user_id'] = AppController::$userid;
 			}
+			
+// debug($cleanup);
+// debug($insert); 
+// exit;		// stop before actual insert
+			
+			
 			// save to AssetsUsershot, BestUsershot, etc.
 			$ret = $this->saveAll($insert, array('validate'=>'first'));
 		} 
-		
-// debug($insert); 
+
 		if (isset($ret)) {
 			$success = $ret != false;
 			$message[] = 'Usershot->groupAsShot: OK';
@@ -295,10 +333,16 @@ debug($hiddenShot_assetIds);
 			
 			// after saving NEW shot, cleanup old shots
 			// unGroupShot if same priority, deactivate shot if lower priority (higher number)
-// debug($cleanup);
+
 			if (!empty($cleanup['unGroupShots'])) {
 				// TODO: delete old/orphaned Shots using QUEUE
 				$resp1 = $this->unGroupShot($cleanup['unGroupShots']);
+				$success = $success && $resp1['success'];
+				$resp0 = Set::merge($resp0, $resp1);
+			}
+			if (!empty($cleanup['removeFromShots'])) {
+				// TODO: deactivate old Shots using QUEUE
+				$resp1 = $this->removeFromShot($permitted_AssetIds, $cleanup['removeFromShots']);
 				$success = $success && $resp1['success'];
 				$resp0 = Set::merge($resp0, $resp1);
 			}
@@ -411,7 +455,7 @@ debug($cleanup);
 	 * 		check Usershot.priority for privileges
 	 * 		if role=USER, only Usershot.owner_id can remove shots
 	 * @param array $assetIds, uuids should belong to shot 
-	 * @param uuid $shotId
+	 * @param mixed, uuid or array of uuids, $shotId
 	 * @return standard JSON response 
 	 */
 	public function removeFromShot ($assetIds, $shotId) {
@@ -436,7 +480,7 @@ debug($cleanup);
 		 		return compact('success', 'message', 'response'); 
 		 	}
 			
-			// only owner_id can remove from a USER created Usershot
+			// TODO: should this be true???? only USER==owner_id can remove from a USER created Usershot
 			if ($existing['Usershot']['priority'] == $this->_get_ShotPriority('USER')
 				&& AppController::$userid!=$existing['Usershot']['owner_id']) 
 			{
@@ -454,8 +498,13 @@ INNER JOIN `assets_usershots` AS `AssetsShots` ON (`AssetsShots`.usershot_id = `
 	AND `AssetsShots`.asset_id IN {$assetIds_IN} )
 LEFT JOIN `best_usershots` AS `Best` ON (`Best`.usershot_id = `Shot`.id
 	AND `Best`.asset_id = `AssetsShots`.asset_id  )
-WHERE `Shot`.id = '{$shotId}'";
-
+";
+			if (is_array($shotId)) {
+				$shotIds_IN = "('" . join("','", $shotId)  ."')";
+				$WHERE = "WHERE `Shot`.id IN ($shotIds_IN)";
+			} else $WHERE = "WHERE `Shot`.id = '{$shotId}'"; 
+			$sql_removeFromShot .= ' '.$WHERE;
+			
 			$ret = $this->query($sql_removeFromShot); // always true
 			$response['removeFromShot']['assetIds'] = $assetIds;
 			$message[] = 'Usershot->removeFromShot: OK';

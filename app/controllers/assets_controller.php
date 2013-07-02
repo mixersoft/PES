@@ -302,6 +302,10 @@ class AssetsController extends AppController {
 	}
 	
 	function all(){
+		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
+		if (preg_match('/(snaphappi.com|thats\-me)/i', $origin)) {
+			echo header("Access-Control-Allow-Origin: {$origin}");
+		}
 		$this->layout = 'snappi';
 		$this->helpers[] = 'Time';
 		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';	
@@ -1232,6 +1236,7 @@ debug("WARNING: This code path is not tested");
 	 */
 	function setprop(){
 		$forceXHR = setXHRDebug($this, 0, 1);
+		
 		$success = true; $message=array(); $response=array();
 		$resp0 = compact('success', 'message', 'response'); 
 		if ($this->RequestHandler->isAjax() || $forceXHR) {		
@@ -1481,6 +1486,7 @@ $this->log("WARNING: json_exif['preview']['imageWidth'] may need to be scaled, i
 
 	// from gallery.js: g.groupAsShot()
 	function shot(){
+// debug_XHRPost($this);		
 		$forceXHR = setXHRDebug($this, 0);
 		$success = true; $message=$response=array();
 		$resp0 = compact('success', 'message', 'response'); 
@@ -1621,7 +1627,8 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 			case 'Usershot':
 				$Usershot = ClassRegistry::init('Usershot');
 				$force = $this->Asset->Behaviors->attached('WorkorderPermissionable');
-				$resp = $Usershot->groupAsShot($assetIds, $force);				
+				$isBestshot = !empty($this->data['isBestshot']);
+				$resp = $Usershot->groupAsShot($assetIds, $isBestshot);				
 				break;
 			case 'Groupshot':
 				// ???: can we deprecate bestshot_owner_id for Groupshot?

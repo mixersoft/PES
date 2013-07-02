@@ -58,7 +58,7 @@ class TasksWorkordersController extends AppController {
 				'show_edits'=>true,
 				'join_shots'=>'Usershot', 
 				'show_hidden_shots'=>false,
-				'group_as_shot_permission'=>false,
+				'group_as_shot_permission'=>TRUE,		// allow editor to group shots
 			),
 			// 'extras'=>array(
 				// 'show_edits'=>true,
@@ -180,19 +180,18 @@ class TasksWorkordersController extends AppController {
 			if (!isset($this->passedArgs['reset']) || !empty($this->passedArgs['reset'])) {
 				// default is to delete old SCRIPT shots, use /reset:0 to preserve
 				/*
-				 *  NOTE: snappi-dev use: 		delete snappi.usershots `s`, snappi.assets_usershots `au`
-				 * 		dev.snaphappi.com use: 	delete `s`, `au`
+				 *  NOTE: works for MySQL v5.5 
+				 * 	for MySQL v5.3.1 use: delete snappi.usershots `s`, snappi.assets_usershots `au`
 				 */ 
-				$multiDelete = (Configure::read('Config.os')=='win') ? 'delete snappi.usershots `s`, snappi.assets_usershots `au`' : 'delete `s`, `au`';
 				$reset_SQL = "
-	{$multiDelete}
+	delete `s`, `au`
 	from snappi.usershots s
 	join snappi.users u on u.id = s.owner_id
 	join snappi.assets_usershots au on au.usershot_id = s.id
-	join snappi_wms.assets_workorders aw on aw.asset_id = au.asset_id
+	join snappi_wms.assets_tasks at on at.asset_id = au.asset_id
 	where s.priority = 30
 	  and u.username like 'image-group%'
-	  and aw.workorder_id ='{$id}';";
+	  and at.tasks_workorder_id ='{$id}';";
 	  			$this->TasksWorkorder->query($reset_SQL);
 			}
 			
@@ -276,7 +275,7 @@ class TasksWorkordersController extends AppController {
 				unset($image_groups['Groups'][$i]); 
 				continue;		// skip if only one uuid, group of 1
 			}
-			$result = $Usershot->groupAsShot($groupAsShot_aids, $force=true);
+			$result = $Usershot->groupAsShot($groupAsShot_aids);
 			if ($result['success']) {
 				$newShots[] = array(
 					'asset_ids'=>$groupAsShot_aids, 
@@ -372,7 +371,8 @@ class TasksWorkordersController extends AppController {
 		$shotType = $SOURCE_MODEL=='User' ? 'Usershot' : 'Groupshot';
 		$paginateAlias = 'Shot';		// store paginate data/results under this key
 		
-// TODO: cannot use habtm Alias because Fields uses Model->name=Asset for the From table	
+// TODO: cannot use habtm Alias because Fields uses Model->name=Asset for the From table
+// 		could try postFind()	
 // 			should we fix this to make a cleaner implementation?	
 		// $habtm['hasAndBelongsToMany'][$paginateAlias]=$this->Workorder->hasAndBelongsToMany['Asset'];
 		// $this->Workorder->bindModel($habtm);
@@ -383,18 +383,22 @@ class TasksWorkordersController extends AppController {
 		$shot_paginateArray = $this->paginate[$SOURCE_MODEL.$paginateModel]; //array_merge($this->paginate[$SOURCE_MODEL.$paginateModel], $this->paginate[$paginateModel]['extras']); 
 		$shot_paginateArray =  $Model->getPaginatePhotosByShotId($shotIds, $shot_paginateArray, $shotType);
 		$shot_paginateArray['PageableAlias'] = $paginateAlias;					// Pageable?
-		$shot_paginateArray['extras']['$paginateCacheKey'] = $paginateAlias;	// AppModel
+		$shot_paginateArray['extras']['paginateCacheKey'] = $paginateAlias;	// AppModel
 		$this->paginate[$paginateAlias] = $Model->getPageablePaginateArray($this, $shot_paginateArray, $paginateAlias);
 		Configure::write("paginate.Options.{$paginateAlias}.limit", 999);			// Pageable?
 // We need to preserve the paging counts under a different key, and restore the original paging Counts for Assets		
 $paging[$paginateModel] = $this->params['paging'][$paginateModel];		
 		$shotData = $this->paginate($paginateModel);		// must paginate using Model->name because of how fields and conditions are set up
 		$shotData = Set::extract($shotData, "{n}.{$paginateModel}");
-$paging[$paginateAlias] = $this->params['paging'][$paginateModel];
-$this->params['paging'] = $paging;
-		Configure::write('paginate.Model', $paginateModel);		// original paging Counts for Asset, not Shot
-		
+		$paging[$paginateAlias] = $this->params['paging'][$paginateModel];		// save paging count for Shots
 		$this->viewVars['jsonData']['shot_CastingCall'] = $this->CastingCall->getCastingCall($shotData);
+		$this->params['paging'] = $paging;
+		/*
+		 * end Shot data
+		 */
+
+		
+		Configure::write('paginate.Model', $paginateModel);		// set paging Counts to Asset, not Shot
 		// extract Shot data from Assets
 		foreach ($raw_shots as $i=>$row) {
 			$shot = array('id'=>$row['shot_id']);
@@ -692,6 +696,9 @@ if (!empty($this->passedArgs['all-shots'])) {
 		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 		$castingCall = $this->CastingCall->getCastingCall($pageData);
 		$this->viewVars['jsonData']['castingCall'] = $castingCall;
+
+// $extras = Configure::read("paginate.Options.".Configure::read('paginate.Model').".extras");
+// debug($extras);		
 
 		// ownername lookup
 		// if (Session::read('lookup.context.keyName')!='person')  {
