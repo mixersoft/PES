@@ -381,7 +381,6 @@ debug($data);
 			 foreach ($data as $row) {
 			 	$shot_id = $row['Usershot']['id'];
 			 	$old_priority = $row['Usershot']['priority'];
-debug("$old_priority < $shot_priority");				
 			 	if ($old_priority < $shot_priority) {
 			 		// current role has lower priority, no privilege to change existing Shot
 			 		// no privilege or save as "lower" privilege???
@@ -472,9 +471,9 @@ debug($cleanup);
 			 */ 
 			$shot_priority = $this->_get_ShotPriority();
 			$existing = $this->read(array('priority', 'owner_id'), $shotId);
-		 	if ($existing['Usershot']['priority'] < $shot_priority) {
-		 		// current role has lower priority, no privilege to change existing Shot
-		 		// no privilege or save as "lower" privilege???
+			$old_priority = $existing['Usershot']['priority'];
+			$relative_priority = $old_priority - $shot_priority;  // lower number is higher priority
+		 	if ($relative_priority < 0){ // new shot LOWER priority
 		 		$message = "Error: Current role has lower priority, no privilege to remove from existing Shot, role=".AppController::$role;
 				$response['existing_shot'] =  array($shotId=>$existing['Usershot']['priority']);				
 		 		return compact('success', 'message', 'response'); 
@@ -485,7 +484,7 @@ debug($cleanup);
 				&& AppController::$userid!=$existing['Usershot']['owner_id']) 
 			{
 				$message = "Error: no privilege to remove from this Shot, Shot.owner_id={$existing['Usershot']['owner_id']}";
-				$response['Shot.owner_id'] = $existing['Usershot']['owner_id'];
+				$response['existing_shot'] =  array($shotId=>$old_priority);
 				return compact('success', 'message', 'response');
 			}
 			

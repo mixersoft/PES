@@ -62,58 +62,25 @@ AND includes.asset_id='{$assetId}';
 		return $ret;
 	}
 	/**
-	 * DEPRECATE after checking Groupshot 
+	 * NOTE: This method should check for WRITE permisson
+	 * 
+	 * used by Groupshot only 
 	 * 		Usershot->groupAsShot checks AssetPermission or WorkorderPermissionable
 	 *  	Usershot->removeFromShot checks Shot.owner_id for role=USER
 	 * 		Usershot->unGroupShot  checks Shot.owner_id for role=USER
+	 * 		
+	 * 		Groupshot->groupAsShot checks AssetPermission or WorkorderPermissionable
+	 *  	Groupshot->removeFromShot checks GroupsUser.user_id for role=USER
+	 * 		Groupshot->unGroupShot  checks GroupsUser.user_id for role=USER
 	 * 
-	 * 		Groupshot:  does it check permissions???
 	 * has permission on target, for groupAsShot, removeFromShot unGroupShot
 	 * @param array $assetIds
-	 * @param $perm [ read | write | groupAsShot | ungroupShot | removeFromShot | setBestshot ] 
+	 * @param $perm [groupAsShot | ungroupShot | removeFromShot | setBestshot ] 
 	 * @param $shotType [Usershot | Groupshot]
 	 */
 	public function hasPerm ($assetIds, $perm = 'read', $shotType = 'Usershot', $extras = null) {
-		if (preg_match('/shot/i', $perm)) $perm .= "-{$shotType}";
-		$isWorkorder = in_array('WorkorderPermissionable', $this->Behaviors->attached());
-		$options = array(
-			'fields'=>array('Asset.id', 'Asset.owner_id'),
-			'conditions'=>array('Asset.id'=>$assetIds),
-		);
-		switch($perm) {
-			case 'read':
-			case 'setBestshot-Usershot':
-			case 'setBestshot-Groupshot':
-				$found = $this->find('all', $options);	
-				break;	
-			case 'removeFromShot-Usershot':
-			case 'groupAsShot-Usershot':
-			case 'ungroupShot-Usershot':	
-				// check Asset.owner_id or Workorder EDITOR
-				if (!$isWorkorder) {
-					$options['conditions'][]['Asset.owner_id'] = AppController::$userid; 
-				}
-				$found = $this->find('all', $options);
-				$ok = Set::extract('/Asset/id', $found);
-				break;
-			case 'ungroupShot-Usershot':
-				$options['joins'][] = array(
-					'table'=>'assets_usershots',
-					'alias'=>'Shot',
-					'type'=>'INNER',
-					'conditions'=>array('Shot.asset_id = Asset.id', 'Shot.usershot_id'=>$extras['shotIds'], ),
-				);	
-				$found = $this->find('all', $options);
-				$ok = Set::extract('/Asset/id', $found);
-				break;				
-			case 'write':	
-			case 'ungroupShot-Groupshot':	
-			case 'removeFromShot-Groupshot':
-			case 'groupAsShot-Groupshot':
-				// check Group Permissions, is User Group Admin?
-				break;
-		}
-		$hasPerm[true] = $ok;
+debug("Asset->hasPerm() deprecated. using Permissionable to check for read permissions");		
+		$hasPerm[true] = $assetIds;
 		$hasPerm[false] = array_diff($assetIds, $ok);
 		return $hasPerm;
 	}
@@ -313,7 +280,10 @@ AND includes.asset_id='{$assetId}';
 					'table'=>'groupshots',
 					'alias'=>'Shot',		// use Shot instead of Groupshot
 					'type'=> $only_shots ? 'INNER' : 'LEFT',
-					'conditions'=>array('`Shot`.id = `AssetsGroupshot`.groupshot_id'),
+					'conditions'=>array(
+						'`Shot`.id = `AssetsGroupshot`.groupshot_id',
+						// '`Shot`.active'=>1,
+					),
 				);	
 			if ($join_bestshot) {					
 				$joins[] =  array(
@@ -337,7 +307,7 @@ AND includes.asset_id='{$assetId}';
 						'conditions'=>array('`BestShotMember`.groupshot_id = `Shot`.id','`BestShotMember`.user_id'=>AppController::$userid),
 					);	
 			}
-			$fields = array('`Shot`.id AS `shot_id`', '`Shot`.owner_id AS `shot_owner_id`', '`Shot`.assets_groupshot_count AS `shot_count`');
+			$fields = array('`Shot`.id AS `shot_id`', '`Shot`.owner_id AS `shot_owner_id`', '`Shot`.priority AS `shot_priority`','`Shot`.active AS `shot_active`', '`Shot`.assets_groupshot_count AS `shot_count`');
 		} else if ($shotType == 'Usershot') {
 			// join with Usershots
 			$this->Shot = ClassRegistry::init('Usershot');

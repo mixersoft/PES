@@ -1539,8 +1539,7 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 					$shotType = $this->data['shotType'];
 					if ($shotType=='Groupshot') {
 						$group_id =  $this->data['group_id'];	
-						if ($bestshot_ownerId == null) $bestshot_ownerid = AppController::$userid;
-						$resp1 = $this->__groupAsShot($aids, $shotType, $group_id, $bestshot_ownerId);
+						$resp1 = $this->__groupAsShot($aids, $shotType, $group_id, null);
 					} else {
 						$resp1 = $this->__groupAsShot($aids, $shotType);
 					}
@@ -1623,25 +1622,15 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 	 */
 	function __groupAsShot( $assetIds, $shotType='Usershot', $gid=null, $bestshot_ownerId = null ){
 // debug('/photos/shot: groupAsShot');		
+		$isBestshot = !empty($this->data['isBestshot']);
 		switch ($shotType) {
 			case 'Usershot':
 				$Usershot = ClassRegistry::init('Usershot');
-				$force = $this->Asset->Behaviors->attached('WorkorderPermissionable');
-				$isBestshot = !empty($this->data['isBestshot']);
 				$resp = $Usershot->groupAsShot($assetIds, $isBestshot);				
 				break;
 			case 'Groupshot':
-				// ???: can we deprecate bestshot_owner_id for Groupshot?
-				$hasPerm = $this->Asset->hasPerm($assetIds, 'groupAsShot', 'Groupshot');
-				$assetIds = $hasPerm[true];
-				if ($hasPerm[false]) {
-					$resp['message']['groupAsShot'] = "Warning: no permissions on aid=".explode(','.$hasPerm[false]);	
-				}			
-					// TODO: check Group Permission Settings: Permissionable->READ, or 
-					// TODO: check WorkorderPermissionable->READ
-				if ($bestshot_ownerId == null) $bestshot_ownerid = AppController::$userid;
 				$Groupshot = $this->Asset->Groupshot;
-				$resp = $Groupshot->groupAsShot($assetIds, $gid, $bestshot_ownerId);				
+				$resp = $Groupshot->groupAsShot($assetIds, $gid, $isBestshot);				
 				break;
 		}
 		// mark ccid as stale
@@ -1657,13 +1646,6 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 				$resp = $Usershot->removeFromShot($assetIds, $shotId);				
 				break;
 			case 'Groupshot':
-				// deprecate		
-				$hasPerm = $this->Asset->hasPerm($assetIds, 'removeFromShot', 'Groupshot');
-				$assetIds = $hasPerm[true];
-				if ($hasPerm[false]) {
-					$resp['message']['removeFromShot'] = "Warning: no permissions on aid=".explode(','.$hasPerm[false]);	
-				}
-												
 				$Groupshot = $this->Asset->Groupshot;
 				$resp = $Groupshot->removeFromShot($assetIds, $shotId);				
 				break;
@@ -1684,7 +1666,6 @@ if (in_array(AppController::$role, array('EDITOR', 'MANAGER'))) {
 				$resp = $Usershot->unGroupShot($shotIds);				
 				break;
 			case 'Groupshot':
-debug("WARNING: hasPerm not checked for Groupshot");
 				$Groupshot = $this->Asset->Groupshot;
 				$resp = $Groupshot->unGroupShot($shotIds);				
 				break;
