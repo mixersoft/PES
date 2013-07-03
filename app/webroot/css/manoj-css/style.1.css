@@ -1213,7 +1213,9 @@ section.filmstrip .toolbar ul li.none{
 body.wide .gallery.photo.filmstrip.hiddenshots {
 	width: 640px;
 }
-
+body.wide .gallery.shot .gallery.photo.filmstrip.hiddenshots {
+	width: auto;
+}
 .gallery.photo.filmstrip .container li.btn.prev {
 	border-radius: 15px 0 0 15px;
 	float: left;

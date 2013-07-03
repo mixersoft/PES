@@ -247,7 +247,8 @@
         			CSS_ID = 'contextmenu-photoroll-markup';
         			break;
         		case 'ShotGalleryShot':
-        			e.stopImmediatePropagation();	// nested inside 'Photo'	
+        			e.stopImmediatePropagation();	// nested inside 'Photo'
+        			// move location of menu	
         		case 'DialogHiddenShot': 
         		case 'ShotGallery': 
         			CSS_ID = 'contextmenu-hiddenshot-markup';	

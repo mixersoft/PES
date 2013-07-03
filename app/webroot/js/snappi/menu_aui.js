@@ -187,8 +187,13 @@
 				contentBox: MARKUP.selector,
 				boundingBox: MARKUP.selector
 		};
-		_cfg = _Y.merge(DEFAULT_CFG_contextmenu, _cfg, cfg);
-		if (cfg.currentTarget) _cfg.trigger = cfg.currentTarget;	// 'startup/disabled' trigger
+		_cfg = _Y.merge(DEFAULT_CFG_contextmenu, cfg, _cfg);
+		if (cfg.currentTarget){
+			if (cfg.currentTarget.one('.filmstrip.shot')){
+				// for shotGallery parent, align to img
+				_cfg.trigger = cfg.currentTarget.one('figure img');				
+			} else _cfg.trigger = cfg.currentTarget;	// 'startup/disabled' trigger
+		}
 
 		var sticky, menu = new _Y.OverlayContext(_cfg);
 		menu.render();
@@ -246,6 +251,10 @@
 		if (e && menu.get('disabled')) {
 			menu.enable();
 			var trigger = e.currentTarget.hasClass('FigureBox') ? e.currentTarget : e.currentTarget.ancestor('.FigureBox');
+			if (trigger.one('.filmstrip.shot')){
+				// for shotGallery parent, align to img
+				trigger = trigger.one('figure img');				
+			} 
 			menu.set('trigger', trigger);			// 'startup/disabled' trigger
 			menu.show();
 			// TODO: add checkbox for sticky
