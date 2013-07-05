@@ -59,7 +59,6 @@
 		<?php  echo $this->element('/workorder/shot/display-options');  ?>  
 	</nav>	
     <nav class="settings cf window-options grid_2">
-    	<?php echo $this->element('/workorders/shot/display-options');  ?>
 		<ul class="thumb-size inline inline-break right">
 			<li class="label">Size</li>
 			<?php 
