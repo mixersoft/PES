@@ -206,9 +206,9 @@
 		menu.on('visibleChange',
 			function(e){
 				if (e.newVal == true && e.prevVal== false) {
-					_Y.fire('snappi:menu-visible', menu, true);
+					_Y.fire('snappi:menu-visible', menu, true, cfg);
 				} else if (e.newVal == false && e.prevVal== true) {
-					_Y.fire('snappi:menu-visible', menu, false);
+					_Y.fire('snappi:menu-visible', menu, false, cfg);
 					if (_cfg.currentTarget) {  // closure
 						// disable contextmenu for menu.onHide
 						if (sticky) return;		// TODO: set up sticky in contextmenu
@@ -993,6 +993,7 @@ console.log("delegateHost="+delegateHost._yuid);
 			var hasPerm = g.castingCall.CastingCall.GroupAsShotPerm,
 				shotType = g.castingCall.CastingCall.Auditions.ShotType;
 		} catch (e) {}
+		if (!thumbnail.hasClass('.Figurebox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		if (hasPerm && shotType && thumbnail.hasClass('selected')) {
 			if (g.getSelected().count()>1) {
 				menuItem.removeClass('disabled');
@@ -1079,6 +1080,7 @@ console.log("delegateHost="+delegateHost._yuid);
 				shotType = g.castingCall.CastingCall.Auditions.ShotType;
 		} catch (e) {}		
 		// var show = /^Users|^Groups/.test(SNAPPI.STATE.controller.name);
+		if (!thumbnail.hasClass('.Figurebox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		if (hasPerm && shotType && thumbnail.hasClass('selected')) {
 			var g = MenuItems.getGalleryFromTarget(thumbnail);
 			if (g.getSelected().count()>=1) {
@@ -1302,6 +1304,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	};
 	MenuItems.share_with_circle_click = function(menuItem, menu, e){
 		var batch, thumbnail = menu.get('currentNode');
+		if (!thumbnail.hasClass('.Figurebox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		if (thumbnail.hasClass('FigureBox')) {	// from PhotoContextMenu
 			batch = MenuItems.getGalleryFromTarget(thumbnail).getSelected();
 			if (batch.count()==0) {

@@ -223,11 +223,17 @@ class Usershot extends AppModel {
 		 	if (!$shot_id) continue;	// should be fixed by array_filter()
 		 	
 		 	$relative_priority = $old_priority - $shot_priority;  // lower number is higher priority
+debug("relative priority={$relative_priority}");		 	
 		 	if ($relative_priority > 0) {  // new shot HIGHER priority
-				$cleanup['deactivateShots'][] = $shot_id;
 				if ($isBestshot) {
 					// find & add hiddenShots, active only
 					$merge_hiddenshots[] = $shot_id;
+					$cleanup['deactivateShots'][] = $shot_id;
+				} else {
+					// show_hidden_shots: add remainder as new shot at SAME priority 
+					// TODO: should use same logic on removeFromShot
+					// or just remove from lower priority shot
+					$cleanup['duplicateShots'][$shot_priority] = $shot_id;		// at new priority
 				}
 				//???: also remove from deactivated shots? 
 			}
@@ -314,15 +320,14 @@ class Usershot extends AppModel {
 				$insert[$bestshotAlias]['user_id'] = AppController::$userid;
 			}
 			
-// debug($cleanup);
-// debug($insert); 
+debug($cleanup);
+debug($insert); 
 // exit;		// stop before actual insert
 			
 			
 			// save to AssetsUsershot, BestUsershot, etc.
 			$ret = $this->saveAll($insert, array('validate'=>'first'));
 		} 
-
 		if (isset($ret)) {
 			$success = $ret != false;
 			$message[] = 'Usershot->groupAsShot: OK';
@@ -339,6 +344,21 @@ class Usershot extends AppModel {
 				$resp1 = $this->unGroupShot($cleanup['unGroupShots']);
 				$success = $success && $resp1['success'];
 				$resp0 = Set::merge($resp0, $resp1);
+			}
+			if (!empty($cleanup['duplicateShots'])) {
+				// TODO: duplicate lower priority shot at new priority AND remove assets from duplicates
+				// original shot is deactivated
+				$resp1 = $this->_duplicateShot($cleanup['duplicateShots'], $isActive);
+debug($resp1);				
+				if ($resp1['success']) {
+					// queue remove assets from duplicateShots
+					$cleanup['removeFromShots'] = Set::merge($cleanup['removeFromShots'], $resp1['response']['duplicateShot']['duplicate_shotIds']);
+				}
+				$success = $success && $resp1['success'];
+				$resp0 = Set::merge($resp0, $resp1);
+				
+debug($cleanup);	
+			
 			}
 			if (!empty($cleanup['removeFromShots'])) {
 				// TODO: deactivate old Shots using QUEUE
@@ -415,14 +435,15 @@ debug($cleanup);
 				$message[] = "Usershot->unGroupShot: OK";
 				$response['unGroupShot']['shotIds'] = $deleteShotIds;
 			}
+			$success = true;
+			$resp0 = compact('success', 'message', 'response');
 			if (!empty($cleanup['deactivateShots'])) {
 				// TODO: deactivate old Shots using QUEUE
 				$resp1 = $this->_deactivateShot($cleanup['deactivateShots']);
-				$message = Set::merge($message, $resp1['message']);
-				$response = Set::merge($message, $resp1['response']);
+				$success = $success && $resp1['success'];
+				$resp0 = Set::merge($resp0, $resp1);
 			}	
 		} 
-		$success = true;
 		return compact('success', 'message', 'response');
 	}
 
@@ -448,6 +469,91 @@ debug($cleanup);
 		$response['deactivateShot']['shotIds'] = $deactivateShotIds;
 		return compact('success', 'message', 'response');
 	}
+	/**
+	 * Duplicate Shots, 
+	 * 	duplicate shot with new owner/priority 
+	 *  set usershots.active=0 on old shot,
+	 * @param array $duplicateShotIds array of $priority=>UUIDs
+	 * @return standard JSON response 
+	 */
+	private function _duplicateShot ($duplicateShotIds, $isActive = false) {
+		if (!is_array($duplicateShotIds)) throw new Exception('Error: $deactivateShotIds should be an Array()');
+		$success = true; $message=array(); $response=array();
+		if (!empty($duplicateShotIds)) {
+debug($duplicateShotIds);			
+			$Asset = $this->AssetsUsershot->Asset;
+			foreach($duplicateShotIds as $shot_priority=>$old_shotId) {
+				$options = array(
+					'permisssionable'=>false,
+					'fields'=>array('DISTINCT `Asset`.id','`Asset`.owner_id'), 
+					'conditions'=>array('`AssetsUsershot`.usershot_id'=>$old_shotId),
+					'order'=>array('`SharedEdit`.score DESC', '`Asset`.dateTaken ASC'),		
+					'extras'=>array(
+						'show_edits' => true,
+						'join_shots'=>'Usershot', 
+						'show_hidden_shots'=>true,		// Asset.id != Bestshot.asset_id
+						'show_inactive_shots'=>true,	// process for ALL shots, including inactive
+						'join_bestshot'=>false,
+					),  //default
+				);
+				
+				$data = $Asset->find('all', $options);	
+				// $existing_shots = array_filter(Set::combine($data, '/Shot/shot_id', '/Shot/shot_priority'));
+				$permitted_AssetIds = array_unique(Set::extract('/Asset/id', $data)); // aids sorted by SharedEdit.score DESC in bestshot order
+	
+				// add assetIds to AssetsUsershot
+				$insert = $this->create();
+				$insert['Usershot']['owner_id'] = AppController::$userid; 
+				$insert['Usershot']['priority'] = $shot_priority; 
+				$insert['Usershot']['active'] = $isActive; 
+				foreach ($permitted_AssetIds as $assetId) {
+					$insert['AssetsUsershot'][]['asset_id'] = $assetId;
+				}		
+		// debug($permitted_AssetIds);
+				if (count($permitted_AssetIds)) {
+					// set Bestshot for NEW group
+					// set BestShotSystem by sort order, sort=='`SharedEdit`.score DESC, `Asset`.dateTaken ASC', 
+					// for *visible* assets only, ignores hiddenShot assets 
+					// EDITORS will set only BestShotSystem by default
+					$insert['BestUsershotSystem']['asset_id'] = $permitted_AssetIds[0];
+					if (false == $Asset->Behaviors->attached('WorkorderPermissionable')) {
+						// now sort by UserEdit.rating, then SharedEdit.score DESC
+						if (in_array(AppController::$userid, $owner_ids))
+						{
+							// set BestUsershotOwner by UserEdit.rating	
+							$bestshotAlias='BestUsershotOwner';
+						} else {
+							// set BestUsershotMember by UserEdit rating
+							$bestshotAlias='BestUsershotMember';
+						}
+						$insert[$bestshotAlias]['asset_id'] = $this->_getTopRatedByRatingScore($data);
+						$insert[$bestshotAlias]['user_id'] = AppController::$userid;
+					}
+					
+					// save to AssetsUsershot, BestUsershot, etc.
+					$success = $success && $this->saveAll($insert, array('validate'=>'first'));
+					if ($success) {
+						$newShotIds[] = $this->getLastInsertId();
+					} else {
+						// insert failed
+						throw new Exception("Error saving _duplicate Shot", 1);
+					}
+					
+				} 
+			}
+		} 
+		$message[] = "Usershot->duplicateShot: OK";
+		$response['duplicateShot']['duplicate_shotIds'] = $newShotIds;
+		$resp0 = compact('success', 'message', 'response');
+		if ($isActive) {
+			// deactivate original shots
+			$resp1 = $this->_deactivateShot($duplicateShotIds);
+			$success = $success && $resp1['success'];
+			$resp0 = Set::merge($resp0, $resp1);
+		}
+		// NOTE: remove from NEW shots, not original in calling method
+		return $resp0;
+	}	
 		
 	/**
 	 * remove Asset from Shot, but keep shot
@@ -500,11 +606,12 @@ LEFT JOIN `best_usershots` AS `Best` ON (`Best`.usershot_id = `Shot`.id
 ";
 			if (is_array($shotId)) {
 				$shotIds_IN = "('" . join("','", $shotId)  ."')";
-				$WHERE = "WHERE `Shot`.id IN ($shotIds_IN)";
+				$WHERE = "WHERE `Shot`.id IN {$shotIds_IN}";
 			} else $WHERE = "WHERE `Shot`.id = '{$shotId}'"; 
 			$sql_removeFromShot .= ' '.$WHERE;
 			
 			$ret = $this->query($sql_removeFromShot); // always true
+			$response['removeFromShot']['shotIds'] = $shotId;
 			$response['removeFromShot']['assetIds'] = $assetIds;
 			$message[] = 'Usershot->removeFromShot: OK';
 			$success = true;
@@ -554,7 +661,13 @@ LEFT JOIN `best_usershots` AS `Best` ON (`Best`.usershot_id = `Shot`.id
 		);
 		$Asset = $this->AssetsUsershot->Asset;
 		$data = $Asset->find('all',$options);
-		
+		if (empty($data)) {
+			// Usershot contains no assets, probably everything was removed
+			$message[] = 'Usershot->updateBestShotSystem: Shot was empty';
+			$success = true;
+			$response['Usershot.id'] = $shotIds;
+			return compact('success', 'message', 'response');
+		}
 		$topScoreAsset = $data[0];
 		$model = 'BestUsershotSystem';
 		if (empty($topScoreAsset['BestShotSystem']['asset_id'])) {
@@ -698,7 +811,7 @@ UPDATE `usershots` AS `Shot`
 INNER JOIN (
 	SELECT `InnerShot`.id AS shot_id, COUNT(`AssetsShots`.id ) as assets_usershot_count
 	FROM `usershots` AS `InnerShot`
-	INNER JOIN `assets_usershots` AS `AssetsShots` ON (`AssetsShots`.usershot_id = `InnerShot`.id)
+	LEFT JOIN `assets_usershots` AS `AssetsShots` ON (`AssetsShots`.usershot_id = `InnerShot`.id)
 	{$WHERE}
 	GROUP BY shot_id
 ) AS `Count` ON (`Count`.shot_id = `Shot`.id)

@@ -274,6 +274,7 @@
         			init_hidden: false,
         			host: g,			// add Gallery.ContextMenu backreference
 				}; 
+				if (g._cfg.contextmenu) contextMenuCfg = _Y.merge(contextMenuCfg, g._cfg.contextmenu);
         		var menu = SNAPPI.MenuAUI.CFG[CSS_ID].load(contextMenuCfg);
         		g.node.listen['disable_ThumbnailClick'] = true;
         	} else {
@@ -1197,7 +1198,7 @@ var _showZoom = function(e, g) {
 		handleKeydown : GalleryFactory['ShotGallery'].handleKeydown,
 	}
 	
-	
+	// ShotGallery embedded inside a Photo Thumbnail
 	GalleryFactory.ShotGalleryShot= {
 		defaultCfg: {
 			type: 'ShotGalleryShot',

@@ -77,7 +77,7 @@ $this->viewVars['jsonData']['STATE'] = $state;
 							type: 'ShotGalleryShot',
 							node: thumb_node,
 							render: false,
-							// castingCall: PAGE.jsonData.shot_CastingCall,
+							castingCall: PAGE.jsonData.shot_CastingCall,
 							sh: SNAPPI.Auditions._shotsSH,
 							shots: PAGE.jsonData.shot_CastingCall.shots,
 						});
