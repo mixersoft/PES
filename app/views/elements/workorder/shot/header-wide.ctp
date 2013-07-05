@@ -55,14 +55,10 @@
 	</ul>	
 
 		
-	<nav class="settings cf grid_4">
-		<ul class="wide-display-options inline">
-			<li class="btn white option">Delete</li>
-			<li class="btn white option">Group as Shot</li>
-			<li class="btn white option">Add to Lightbox</li>
-		</ul>
+	<nav class="settings cf grid_11">
+		<?php  echo $this->element('/workorder/shot/display-options');  ?>  
 	</nav>	
-    <nav class="settings cf window-options grid_9">
+    <nav class="settings cf window-options grid_2">
     	<?php echo $this->element('/workorders/shot/display-options');  ?>
 		<ul class="thumb-size inline inline-break right">
 			<li class="label">Size</li>
