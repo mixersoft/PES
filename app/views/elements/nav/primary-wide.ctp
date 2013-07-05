@@ -32,6 +32,7 @@
 	$focus = Session::read("nav.primary");
 	// $sections[$focus]['href'] = "javascript:;"; // unset href for section with focus
 	if ($focus) $sections[$focus]['class'] = 'class="focus"';
+	$help_status =  ($controllerAttr['name'] == 'Help') ? 'green' : 'blue-gloss'; 
 ?>
 <!--top header start-->
 <header class="head container_16">
