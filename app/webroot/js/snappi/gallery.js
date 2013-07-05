@@ -1810,9 +1810,10 @@
         // called by SNAPPI.Factory.Thumbnail.PhotoPreview.handle_HiddenShotClick(), and 
         // DialogHelper.bindSelected2DialogHiddenShot() 
         showShotGallery : function(selected, cfg) {
+        	cfg = cfg || {};
         	selected = selected || this.auditionSH.getFocus();
         	var container, parent, shots;
-        	var shot = selected.Audition.Substitutions;
+        	var shot = cfg.shot || selected.Audition.Substitutions;
         	if (!shot) return;
         	
         	// unhide ShotGallery if there is a Shot

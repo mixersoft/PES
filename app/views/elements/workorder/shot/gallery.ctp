@@ -58,26 +58,35 @@ $this->viewVars['jsonData']['STATE'] = $state;
 				// parse shot_CastingCall
 				var onDuplicate = SNAPPI.Auditions.onDuplicate_CHECK_SHOT;
 				var shot_auditionSH = new SNAPPI.SortedHash();
-				// SNAPPI.Auditions.parseCastingCall(PAGE.jsonData.shot_CastingCall, g.providerName, null, onDuplicate );
-	        	// g.ShotGalleryShots = {castingCall:PAGE.jsonData.shot_CastingCall}
 				
 				if (g._cfg.type == SNAPPI.STATE.galleryType ) {
 					// Bestshots rendered, now load ShotGallery by XHR
 					// reset shotsSH before parsing soht_CastingCall
 					SNAPPI.Auditions._shotsSH.clear();
+	        		SNAPPI.Auditions._shotsSH = SNAPPI.Auditions.parseCastingCall(
+	        				PAGE.jsonData.shot_CastingCall, 
+	        				null, 
+	        				SNAPPI.Auditions._shotsSH, 
+	        				onDuplicate
+	        		);
+
 					g.auditionSH.each(function(selected){
+						// selected.id = [assetId]_[shotId], set using SNAPPI.Auditions.onDuplicate_CHECK_SHOT
 						var thumb_node = this.container.one('#'+selected.id);
 						thumb_node.ShotGallery = new SNAPPI.Gallery({
 							type: 'ShotGalleryShot',
 							node: thumb_node,
 							render: false,
-							castingCall: PAGE.jsonData.shot_CastingCall,
+							// castingCall: PAGE.jsonData.shot_CastingCall,
+							sh: SNAPPI.Auditions._shotsSH,
+							shots: PAGE.jsonData.shot_CastingCall.shots,
 						});
-						// find selected in ShotGallery.auditionSH, use asset_id, not UUID/DomID
-						var shotGallery_selected = SNAPPI.Auditions.find(selected.Audition.id);
+						selected.Audition.Substitutions.stale = false;
 						
-						shotGallery_selected.Audition.Substitutions.stale = false;
-						thumb_node.ShotGallery.showShotGallery(shotGallery_selected);
+						// lookup correct shot is PAGE.jsonData.shot_castingCall.shot[shot.id]
+						var shotId = selected.id.split('_')[1],
+							shot = PAGE.jsonData.shot_CastingCall.shots[shotId];
+						thumb_node.ShotGallery.showShotGallery(selected, {shot:shot});
 					}, g);
 				}
 			});
@@ -112,8 +121,9 @@ $this->viewVars['jsonData']['STATE'] = $state;
 				var node = SNAPPI.Y.one('nav.section-header'); 
 				node.one('li.gallery').addClass('focus'); 
 			    var snapGallery = new SNAPPI.Gallery({
-			    	type: SNAPPI.STATE.galleryType,
+			    	type: SNAPPI.STATE.galleryType,		// TODO: change type=ShotGallery???
 			    	node: 'div.gallery-container > section.gallery.shot',
+			    	// SNAPPI.Auditions.onDuplicate_CHECK_SHOT calls Auditions.add_SHOT_to_key_by_hashcode() to append Shot.Id
 			    	replace: SNAPPI.Auditions.onDuplicate_CHECK_SHOT,
 			    });
 			} catch(e){}
