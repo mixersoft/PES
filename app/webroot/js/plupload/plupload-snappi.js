@@ -84,6 +84,9 @@ $(function() {
 		 return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 	}
 	Util.resize = function(px){
+		if (/resize=0/.test(window.location.search)){
+			return false;
+		}
 		px = px || 1080;
 		if (Util.isChrome) {
 			return  {
@@ -196,8 +199,8 @@ $(function() {
 		max_file_size : '12mb',
 
 		// User can upload no more then 20 files in one go (sets multiple_queues to false)
-		max_file_count: 9999,
-		files_added_chunksize: 200,
+		max_file_count: 50000,
+		files_added_chunksize: 1000,
 		
 		// chunks : false,
 		chunks : {
@@ -294,7 +297,7 @@ $(function() {
 					console.log('event=StateChanged OVERRIDE');
 				});
 				up.bind('FilesAdded', function(up, files) {
-					console.log('event=FilesAdded OVERRIDE');
+					console.log('event=FilesAdded OVERRIDE called AFTER FilesAdded by moxie.js');
 					// note: not sure we need this if we override QueueChanged
 					if (!Util.isChrome && !Util.userOverrideOK) { 
 							Util.confirmNoChrome();
@@ -379,6 +382,12 @@ console.info('prevent 	event=QueueChanged ');
 						else files[i].root = '';
 					}
 				}
+				if ($('a.plupload_add').css('cursor')=='wait') {
+					// chunking settings.files_added_chunksize
+					var value = { type: 'FilesAdded', o: {files_added_chunksize: up.settings.files_added_chunksize} };
+					var msg = {key:'msg', value:value};
+					if (window.parent!==window) window.parent.postMessage(msg, '*');
+				}
 				// remove duplicate files using settings.prevent_duplicates = true
 			},
 			QueueChanged: function(up){
@@ -413,9 +422,16 @@ console.log("UploadFile for file=#"+file.id);
 				var check;
 			},
 			FileUploaded: function(up, file) {
-				var msg = {key:'msg', value:'FileUploaded'};
-				window.parent.postMessage(msg, '*');
-				var check;
+				// check up.total.uploaded, up.total.queued
+				var queue = {},
+					value = { type: 'FileUploaded', o: {} };
+				for (var i in up.total) {
+					if ($.isNumeric(up.total[i])) queue[i] = up.total[i]; 
+					if (typeof(up.total[i])=='string') queue[i] = up.total[i];
+				}	
+				value.o = queue;
+				var msg = {key:'msg', value:value};
+				if (window.parent!==window) window.parent.postMessage(msg, '*');
 			},
 			complete: function(up, files) {
 				console.log('event=complete');
@@ -473,7 +489,7 @@ console.error('removed .not-chrome selected action');
 	});
 	var uploader = $('#uploader').plupload('getUploader');
 	
-	var isIFrame = !(window.parent==window); 
+	var isIFrame = (window.parent!==window); 
 	if (isIFrame) {
 		// resize to fit iframe height
 		var MARGIN_H = 7,
