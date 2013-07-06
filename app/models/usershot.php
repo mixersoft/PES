@@ -563,8 +563,9 @@ debug($duplicateShotIds);
 	 * @param mixed, uuid or array of uuids, $shotId
 	 * @return standard JSON response 
 	 */
-	public function removeFromShot ($assetIds, $shotId) {
+	public function removeFromShot ($assetIds, $shotIds) {
 		if (!is_array($assetIds)) throw new Exception('Error: $assetIds should be an Array()');
+		if (!is_array($shotIds)) $shotIds = array($shotIds);
 		$success = false; $message=array(); $response=array();
 		if (!empty($assetIds)) {
 			
@@ -576,21 +577,37 @@ debug($duplicateShotIds);
 			 * 	equal priority will replace shots
 			 */ 
 			$shot_priority = $this->_get_ShotPriority();
-			$existing = $this->read(array('priority', 'owner_id'), $shotId);
-			$old_priority = $existing['Usershot']['priority'];
-			$relative_priority = $old_priority - $shot_priority;  // lower number is higher priority
-		 	if ($relative_priority < 0){ // new shot LOWER priority
-		 		$message = "Error: Current role has lower priority, no privilege to remove from existing Shot, role=".AppController::$role;
-				$response['existing_shot'] =  array($shotId=>$existing['Usershot']['priority']);				
-		 		return compact('success', 'message', 'response'); 
-		 	}
-			
-			// TODO: should this be true???? only USER==owner_id can remove from a USER created Usershot
-			if ($existing['Usershot']['priority'] == $this->_get_ShotPriority('USER')
-				&& AppController::$userid!=$existing['Usershot']['owner_id']) 
-			{
-				$message = "Error: no privilege to remove from this Shot, Shot.owner_id={$existing['Usershot']['owner_id']}";
-				$response['existing_shot'] =  array($shotId=>$old_priority);
+			$cleanup['removeFromShots'] = array();
+			foreach ($shotIds as $shot_id) {
+				$existing = $this->read(array('priority', 'owner_id'), $shot_id);
+				$old_priority = $existing['Usershot']['priority'];
+				$relative_priority = $old_priority - $shot_priority;  // lower number is higher priority
+			 	if ($relative_priority > 0) {  // new shot HIGHER priority
+			 		// duplicate lower priority shot at new priority THEN remove assets from duplicates
+					// original, lower priority shot is deactivated
+					$cleanup['duplicateShots'][$shot_priority] = $shot_id;		// at new priority
+				} else if ($relative_priority = 0){
+					$cleanup['removeFromShots'][] = $shot_id;
+				} else {
+					// no privilege to remove from higher priority shot
+					$response['removeFromShots']['noPrivilege'][] = $shot_id;
+					continue;
+				}
+			}
+			$success = true;
+			$resp0 = compact('success','message', 'response');
+			if (!empty($cleanup['duplicateShots'])) {
+				$resp1 = $this->_duplicateShot($cleanup['duplicateShots'], $isActive=true);
+				if ($resp1['success']) {
+					// queue remove assets from duplicateShots
+					$cleanup['removeFromShots'] = Set::merge($cleanup['removeFromShots'], $resp1['response']['duplicateShot']['duplicate_shotIds']);
+				}
+				$success = $success && $resp1['success'];
+				$resp0 = Set::merge($resp0, $resp1);
+			}
+			if (empty($cleanup['removeFromShots'])) {
+				$success = false;
+				$message[] = "No privilege to removeFromShot";
 				return compact('success', 'message', 'response');
 			}
 			
@@ -604,32 +621,31 @@ INNER JOIN `assets_usershots` AS `AssetsShots` ON (`AssetsShots`.usershot_id = `
 LEFT JOIN `best_usershots` AS `Best` ON (`Best`.usershot_id = `Shot`.id
 	AND `Best`.asset_id = `AssetsShots`.asset_id  )
 ";
-			if (is_array($shotId)) {
-				$shotIds_IN = "('" . join("','", $shotId)  ."')";
-				$WHERE = "WHERE `Shot`.id IN {$shotIds_IN}";
-			} else $WHERE = "WHERE `Shot`.id = '{$shotId}'"; 
+			$shotIds_IN = "('" . join("','", $cleanup['removeFromShots'])  ."')";
+			$WHERE = "WHERE `Shot`.id IN {$shotIds_IN}";
 			$sql_removeFromShot .= ' '.$WHERE;
 			
 			$ret = $this->query($sql_removeFromShot); // always true
-			$response['removeFromShot']['shotIds'] = $shotId;
+			$response['removeFromShot']['shotIds'] = $cleanup['removeFromShots'];
 			$response['removeFromShot']['assetIds'] = $assetIds;
 			$message[] = 'Usershot->removeFromShot: OK';
 			$success = true;
-			$resp0 = compact('success', 'message', 'response');
+			$resp1 = compact('success', 'message', 'response');
+			$resp0 = Set::merge($resp0, $resp1);
 						
 			/*
 			 *  update Shot.assets_usershot_count
 			 */
-			$resp1 = $this->updateShotCounterCache($shotId);
+			$resp1 = $this->updateShotCounterCache($cleanup['removeFromShots']);
 			$success = $success && $resp1['success'];
 			
 			/*
 			 *  update Best, if best was removed
 			 */
-			$resp2 = $this->updateBestShotSystem($shotId);
+			$resp2 = $this->updateBestShotSystem($cleanup['removeFromShots']);
 			$success = $success && $resp2['success'];
 			
-			$resp0 = Set::merge(compact('success', 'message', 'response'), $resp1, $resp2);
+			$resp0 = Set::merge($resp0, $resp1, $resp2);
 			$resp0['success'] = $success;
 		} else {
 			$message[] = 'Usershot->removeFromShot: no asset_ids provided';

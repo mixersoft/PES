@@ -539,7 +539,7 @@ LEFT JOIN `best_groupshots` AS `Best` ON (`Best`.groupshot_id = `Shot`.id
 
 			if (is_array($shotId)) {
 				$shotIds_IN = "('" . join("','", $shotId)  ."')";
-				$WHERE = "WHERE `Shot`.id IN ($shotIds_IN)";
+				$WHERE = "WHERE `Shot`.id IN {$shotIds_IN}";
 			} else $WHERE = "WHERE `Shot`.id = '{$shotId}'"; 
 			$sql_removeFromShot .= ' '.$WHERE;
 			
@@ -756,7 +756,7 @@ UPDATE `groupshots` AS `Shot`
 INNER JOIN (
 	SELECT `InnerShot`.id AS shot_id, COUNT(`AssetsShots`.id ) as assets_groupshot_count
 	FROM `groupshots` AS `InnerShot`
-	INNER JOIN `assets_groupshots` AS `AssetsShots` ON (`AssetsShots`.groupshot_id = `InnerShot`.id)
+	LEFT JOIN `assets_groupshots` AS `AssetsShots` ON (`AssetsShots`.groupshot_id = `InnerShot`.id)
 	{$WHERE}
 	GROUP BY shot_id
 ) AS `Count` ON (`Count`.shot_id = `Shot`.id)
