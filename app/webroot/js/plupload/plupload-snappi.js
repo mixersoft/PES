@@ -183,6 +183,12 @@ $(function() {
 		status = status || 'info';
 		$('#uploader').plupload('notify', status, msg);
 	}
+	Util.getParameterByName = function(name) {
+	    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+	    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+	        results = regex.exec(location.search);
+	    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+	}
 	// make global,
 	CFG['plupload'] = $.extend(CFG['plupload'] || {}, Util);		
 	
@@ -200,7 +206,7 @@ $(function() {
 
 		// User can upload no more then 20 files in one go (sets multiple_queues to false)
 		max_file_count: 50000,
-		files_added_chunksize: 1000,
+		files_added_chunksize: Util.getParameterByName('chunkSize') || 1000,
 		
 		// chunks : false,
 		chunks : {
@@ -432,6 +438,8 @@ console.log("UploadFile for file=#"+file.id);
 				value.o = queue;
 				var msg = {key:'msg', value:value};
 				if (window.parent!==window) window.parent.postMessage(msg, '*');
+				// scroll list/thumb to file
+				$('.plupload_filelist_content #'+file.id)[0].scrollIntoView();
 			},
 			complete: function(up, files) {
 				console.log('event=complete');
