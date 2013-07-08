@@ -189,6 +189,24 @@ $(function() {
 	        results = regex.exec(location.search);
 	    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 	}
+	Util.isScrolledIntoView = function (elem, container){
+		if (elem.jquery) elem = elem.get(0);
+		if (!container && elem.nodeName == 'LI' ) container = elem.parentNode;
+		var containerTop, containerBottom, elemTop, elemBottom;
+		if (container) {
+			if (container.jquery) container = container.get(0);
+			containerTop = $(container).offset().top;
+      		containerBottom = containerTop + $(container).height();
+		} else {
+			containerTop = $(window).scrollTop();
+			containerBottom = containerTop + $(window).height();
+		}
+	
+		elemTop = $(elem).offset().top;
+	    elemBottom = elemTop + $(elem).height();
+	
+	    return ((elemBottom <= containerBottom) && (elemTop >= containerTop));
+	}
 	// make global,
 	CFG['plupload'] = $.extend(CFG['plupload'] || {}, Util);		
 	
@@ -242,7 +260,7 @@ $(function() {
 		// Views to activate
 		views: {
 			list: true,
-			thumbs: true, // Show thumbs
+			thumbs: true, // defer img.onload() // Show thumbs
 			active: 'list',
 			remember: false,
 		},
@@ -439,7 +457,10 @@ console.log("UploadFile for file=#"+file.id);
 				var msg = {key:'msg', value:value};
 				if (window.parent!==window) window.parent.postMessage(msg, '*');
 				// scroll list/thumb to file
-				$('.plupload_filelist_content #'+file.id)[0].scrollIntoView();
+				var elem = $('.plupload_filelist_content #'+file.id).get(0),
+					container = $('.plupload_content');
+				if (!Util.isScrolledIntoView(elem, container)) 
+					elem.scrollIntoView();
 			},
 			complete: function(up, files) {
 				console.log('event=complete');
