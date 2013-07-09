@@ -10,14 +10,17 @@
 
 <!-- production -->
 
-<script type="text/javascript" src="/min/b=js/plupload&amp;f=jquery.cookie.js,moxie.js,plupload.js,jquery.ui.plupload/jquery.ui.plupload.js,plupload-snappi.js"></script>
+<!-- 
+<script type="text/javascript" src="/min/b=js/plupload&amp;f=jquery.cookie.js,moxie.js,plupload.js,jquery.ui.plupload/lazy_preload.js,jquery.ui.plupload/jquery.ui.plupload.js,plupload-snappi.js&123"></script>
+-->
 <!--  debug -->
  
-<!-- <script type="text/javascript" src="/js/plupload/jquery.cookie.js"></script>
+<script type="text/javascript" src="/js/plupload/jquery.cookie.js"></script>
 <script type="text/javascript" src="/js/plupload/moxie.js"></script>
 <script type="text/javascript" src="/js/plupload/plupload.js"></script>
+<script type="text/javascript" src="/js/plupload/jquery.ui.plupload/lazy_preload.js"></script>
 <script type="text/javascript" src="/js/plupload/jquery.ui.plupload/jquery.ui.plupload.js"></script>
-<script type="text/javascript" src="/js/plupload/plupload-snappi.js"></script> -->
+<script type="text/javascript" src="/js/plupload/plupload-snappi.js"></script>
 
 <style type="text/css">
 	body {

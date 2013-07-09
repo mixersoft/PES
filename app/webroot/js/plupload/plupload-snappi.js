@@ -183,6 +183,30 @@ $(function() {
 		status = status || 'info';
 		$('#uploader').plupload('notify', status, msg);
 	}
+	Util.getParameterByName = function(name) {
+	    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+	    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+	        results = regex.exec(location.search);
+	    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+	}
+	Util.isScrolledIntoView = function (elem, container){
+		if (elem.jquery) elem = elem.get(0);
+		if (!container && elem.nodeName == 'LI' ) container = elem.parentNode;
+		var containerTop, containerBottom, elemTop, elemBottom;
+		if (container) {
+			if (container.jquery) container = container.get(0);
+			containerTop = $(container).offset().top;
+      		containerBottom = containerTop + $(container).height();
+		} else {
+			containerTop = $(window).scrollTop();
+			containerBottom = containerTop + $(window).height();
+		}
+	
+		elemTop = $(elem).offset().top;
+	    elemBottom = elemTop + $(elem).height();
+	
+	    return ((elemBottom <= containerBottom) && (elemTop >= containerTop));
+	}
 	// make global,
 	CFG['plupload'] = $.extend(CFG['plupload'] || {}, Util);		
 	
@@ -200,7 +224,7 @@ $(function() {
 
 		// User can upload no more then 20 files in one go (sets multiple_queues to false)
 		max_file_count: 50000,
-		files_added_chunksize: 1000,
+		files_added_chunksize: Util.getParameterByName('chunkSize') || 1000,
 		
 		// chunks : false,
 		chunks : {
@@ -236,7 +260,7 @@ $(function() {
 		// Views to activate
 		views: {
 			list: true,
-			thumbs: true, // Show thumbs
+			thumbs: true, // defer img.onload() // Show thumbs
 			active: 'list',
 			remember: false,
 		},
@@ -284,7 +308,7 @@ $(function() {
 				});
 				/*
 				 * I'm Sure button listener
-				 */
+				 */	
 				$('.plupload_droptext').one('click', 'label.plupload_button', function(e){
 					Util.allowUserOverride();
 				});
@@ -398,12 +422,12 @@ console.info('prevent 	event=QueueChanged ');
 			StateChanged: function(up){
 				// Start/Stop
 				console.log('event=StateChanged');
+				var utc_now = Math.floor(new Date().getTime()/1000);
+				Util.get_BatchID(utc_now);	
+				CFG['session'].LastUpload = utc_now;				
 			},
 			BeforeUpload: function(up, file) {
 console.log("BeforeUpload for file=#"+file.id);				
-				var utc_now = Math.floor(new Date().getTime()/1000);
-				Util.get_BatchID(utc_now);	
-				CFG['session'].LastUpload = utc_now;
 			},
 			UploadFile: function(up, file) {
 console.log("UploadFile for file=#"+file.id);
@@ -432,13 +456,12 @@ console.log("UploadFile for file=#"+file.id);
 				value.o = queue;
 				var msg = {key:'msg', value:value};
 				if (window.parent!==window) window.parent.postMessage(msg, '*');
+				// scroll list/thumb to file
+				var elem = $('.plupload_filelist_content #'+file.id).get(0),
+					container = $('.plupload_content');
+				if (!Util.isScrolledIntoView(elem, container)) 
+					elem.scrollIntoView();
 			},
-			complete: function(up, files) {
-				console.log('event=complete');
-			},
-			viewchanged: function(event, args){
-				console.log('event=viewchanged');
-			}
 		},
 		// ui events
 		selected: function(e, args ) {
@@ -479,13 +502,16 @@ console.error('removed .not-chrome selected action');
 	       		event.preventDefault();
 			} 
 		},  
-		complete: function(e, up) {
+		complete: function(event, args){
 			// upload queue processing complete
 			console.log('event=complete, upload queue processing complete');
 		},
-		viewchanged: function(e, up) {
-			console.log('event= view changed');
-		},
+		viewchanged: function(event, args){
+			if (args.view == 'thumbs'){ 
+				// force a lazy_preload update()
+				$('.plupload_content').triggerHandler('scroll');
+			}
+		}
 	});
 	var uploader = $('#uploader').plupload('getUploader');
 	

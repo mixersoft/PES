@@ -145,6 +145,15 @@ var plupload = {
 	 * @final
 	 */
 	DONE : 5,
+	
+	/**
+	 * File upload was SKIPPED, added for missing EXIF
+	 *
+	 * @property SKIPPED
+	 * @static
+	 * @final
+	 */
+	SKIPPED: 6,
 
 	// Error constants used by the Error event
 
@@ -246,6 +255,15 @@ var plupload = {
 	 * @final
 	 */
 	IMAGE_DIMENSIONS_ERROR : -702,
+	
+	/**
+	 * JPEG Image files may require a valid Exif tag. If missing, will throw this error.
+	 *
+	 * @property IMAGE_EXIF_MISSING_ERROR
+	 * @static
+	 * @final
+	 */
+	IMAGE_EXIF_MISSING_ERROR : -703,
 
 	/**
 	 * Mime type lookup table.
@@ -761,7 +779,7 @@ plupload.Uploader = function(settings) {
 				}
 			}
 
-			// All files are DONE or FAILED
+			// All files are DONE, FAILED, or SKIPPED
 			if (count == files.length) {
 				if (this.state !== plupload.STOPPED) {
 					this.state = plupload.STOPPED;
@@ -800,7 +818,7 @@ plupload.Uploader = function(settings) {
 
 			if (file.status == plupload.DONE) {
 				total.uploaded++;
-			} else if (file.status == plupload.FAILED) {
+			} else if (file.status == plupload.FAILED || file.status == plupload.SKIPPED) {
 				total.failed++;
 			} else {
 				total.queued++;
@@ -982,15 +1000,25 @@ console.log("000: plupload.js Uploader.initControls()")
 	}
 
 	function resizeImage(blob, params, cb) {
-		var img = new o.Image();
-
+		/*
+		 * called before uploadFile if settings.resize != false,
+		 */
+		// force resize={} to preload IMG and check hasExif
+		var img = new o.Image(),
+			hasExif = null;
 		try {
 			img.onload = function() {
-				img.downsize(params.width, params.height, params.crop, params.preserve_headers);
+				if (this.height > params.height || this.width > params.width) {
+					// but check size before actually calling downsize()
+					img.downsize(params.width, params.height, params.crop, params.preserve_headers);
+				} else {
+					img.onresize();
+				}
 			};
 
 			img.onresize = function() {
-				cb(this.getAsBlob(blob.type, params.quality));
+				if (this.type == "image/jpeg") hasExif = !!this.meta.exif; 
+				cb(this.getAsBlob(blob.type, params.quality), hasExif);
 				this.destroy();
 			};
 
@@ -1231,18 +1259,11 @@ console.log("plupload.js: FilesAdded, count="+selected_files.length);
 					retries = settings.max_retries,
 					blob, offset = 0;
 					
-				if (file._exifMissing) {
-					self.trigger('Error', {
-						code : plupload.IMAGE_FORMAT_ERROR,
-						message : plupload.translate('Skipped JPG files with missing Exif dateOriginalTaken tag.'),
-						file : file
-					});				
-					return;
-				}	
-
 				// make sure we start at a predictable offset
 				if (file.loaded) {
 					offset = file.loaded = chunkSize * Math.floor(file.loaded / chunkSize);
+				} else {
+console.log("file.loaded==false, does that mean preload skipped?, views.thumb="+up.settings.views.thumb);					
 				}
 
 				function handleError() {
@@ -1261,10 +1282,25 @@ console.log("plupload.js: FilesAdded, count="+selected_files.length);
 				}
 
 				function uploadNextChunk() {
+					
+if (file.hasExif === false) {
+	// file.hasExif set from settings.views.thumb=1 preload or resizeImage() 
+	// however, we want to DEFER preload until isScrollIntoView()
+	// sets plupload.Uploader error in notify section 
+	// self == plupload.Uploader
+	file.status = plupload.SKIPPED;	
+	self.trigger('Error', {
+		code : plupload.IMAGE_EXIF_MISSING_ERROR,
+		message : plupload.translate('The Uploader skipped JPG files with missing Exif tags.'),
+		file : file
+	});		
+}					
+					
+					
 					var chunkBlob, formData, args, curChunkSize;
 
 					// File upload finished
-					if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED) {
+					if (file.status == plupload.DONE || file.status == plupload.FAILED || file.status == plupload.SKIPPED || up.state == plupload.STOPPED) {
 						return;
 					}
 
@@ -1407,13 +1443,22 @@ console.log("plupload.js: FilesAdded, count="+selected_files.length);
 				}
 
 				blob = file.getSource();
+				
+								
+				if (o.isEmptyObj(up.settings.resize)) {
+					// force resize to preload img and check hasExif, 
+					// but don't call downsize() unless we are *really* resizing
+					up.settings.resize = {width:99999, height:99999, preserve_headers: true};
+				}
 
 				// Start uploading chunks
 				if (!o.isEmptyObj(up.settings.resize) && runtimeCan(blob, 'send_binary_string') && !!~o.inArray(blob.type, ['image/jpeg', 'image/png'])) {
-					// Resize if required
-					resizeImage.call(this, blob, up.settings.resize, function(resizedBlob) {
+					// force resize to preload img and check hasExif, 
+					// but skip downsize() if not necessary
+					resizeImage.call(this, blob, up.settings.resize, function(resizedBlob, hasExif) {
 						blob = resizedBlob;
 						file.size = resizedBlob.size;
+						file.hasExif = hasExif; 
 						uploadNextChunk();
 					});
 				} else {
@@ -1443,9 +1488,15 @@ console.log("plupload.js: FilesAdded, count="+selected_files.length);
 			self.bind('QueueChanged', calc);
 
 			self.bind("Error", function(up, err) {
-				// Set failed status if an error occured on a file
+				// Set failed status if an error occured on a file or file upload was skipped
 				if (err.file) {
-					err.file.status = plupload.FAILED;
+					if (err.file.status == plupload.SKIPPED) {
+						/*
+						 * handle plupload.SKIPPED Here
+						 */
+						
+					} else 
+						err.file.status = plupload.FAILED;
 
 					calcFile(err.file);
 
@@ -1845,7 +1896,7 @@ plupload.File = (function() {
 			percent: 0,
 
 			/**
-			 * Status constant matching the plupload states QUEUED, UPLOADING, FAILED, DONE.
+			 * Status constant matching the plupload states QUEUED, UPLOADING, FAILED, SKIPPED, DONE.
 			 *
 			 * @property status
 			 * @type Number

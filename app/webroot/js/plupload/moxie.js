@@ -5707,6 +5707,11 @@ define("moxie/image/Image", [
 					this.meta = info.meta;
 				}
 			}
+			
+			if (!this.meta.exif) {
+console.log("moxie.js: Image._updateInfo() Ideally, we want to set file.hasExif from here, but how do we access File?");				
+			}
+			
 
 			Basic.extend(this, { // info object might be non-enumerable (as returned from SilverLight for example)
 				size: parseInt(info.size, 10),
@@ -5734,10 +5739,12 @@ define("moxie/image/Image", [
 				}
 				// if source is o.Blob/o.File
 				else if (src instanceof Blob) {
+console.log("loadAsBlob called before upload/resize, src="+src.relativePath);					
 					if (!~Basic.inArray(src.type, ['image/jpeg', 'image/png'])) {
 						throw new x.ImageError(x.ImageError.WRONG_FORMAT);
 					}
 					_loadFromBlob.apply(this, arguments);
+					// this instanceOf Image
 				}
 				// if native blob/file
 				else if (Basic.inArray(srcType, ['blob', 'file']) !== -1) {
@@ -6416,13 +6423,11 @@ define("moxie/runtime/html5/file/FileDrop", [
 					var _chunk = _files.slice(_chunk_index,_chunk_index+_options.files_added_chunksize);
 					_chunk_index += _chunk.length;
 					
-if ((_files.length > _chunk_index) && $('a.plupload_add .icon-spinner').length==0) {
-	$('a.plupload_add').prepend('<i class="ui-icon icon-spinner icon-spin"></i>');
-	$('a.plupload_add').css('cursor','wait');
-} else if ((_files.length == _chunk_index) ) {
-	$('a.plupload_add .icon-spinner').remove();
-	$('a.plupload_add').css('cursor','pointer');
-}					
+// TODO: how can we trigger a handler in the UI from here? through plupload?
+var up = $('#uploader').plupload('getUploader'),
+	isScanning = _files.length > _chunk_index;
+up.trigger('ScanningFiles', isScanning);
+
 					return _chunk;
 				}				
 				return _files;
@@ -7661,6 +7666,9 @@ define("moxie/runtime/html5/image/JPEG", [
 				exif: _ep.EXIF(),
 				gps: _ep.GPS()
 			};
+		} else {
+			// call/trigger PluploadFile.exifMissing(), but no reference
+console.log("moxie.js: JPEG constructor. Ideally we could set PluploadFile.hasExif from here");			
 		}
 
 		function _purge() {
@@ -8090,6 +8098,7 @@ define("moxie/runtime/html5/image/Image", [
 
 		Basic.extend(this, {
 			loadFromBlob: function(blob) {
+				// UploadFile calls loadFromBlob, regardless of thumb preload 
 				var comp = this, I = comp.getRuntime()
 				, asBinary = arguments.length > 1 ? arguments[1] : true
 				;
