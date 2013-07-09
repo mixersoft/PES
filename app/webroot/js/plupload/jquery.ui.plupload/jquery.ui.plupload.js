@@ -898,7 +898,7 @@ $.widget("ui.plupload", {
 			
 			case plupload.SKIPPED:
 				// TODO: add CSS for .plupload_skipped
-				actionClass = 'ui-state-highlight plupload_skipped';
+				actionClass = 'ui-state-error plupload_skipped';
 				iconClass = 'ui-icon ui-icon-info';
 				$('#' + file.id).find('.plupload_file_percent').html('skipped');
 				$('#' + file.id).find('.plupload_file_namespan').append('&nbsp;&nbsp;&nbsp;<span class="ui-state-error"> missing JPG Exif tags </span>');
@@ -992,7 +992,7 @@ $.widget("ui.plupload", {
 		var self = this, file_html, queue = [];
 
 		file_html = '<li class="plupload_file ui-state-default" id="%id%">' +
-						'<div class="plupload_file_thumb"> </div>' +
+						'<div class="plupload_file_thumb" title="%name%"> </div>' +
 						'<div class="plupload_file_name" title="%name%"><span class="plupload_file_namespan">%name%</span></div>' +						
 						'<div class="plupload_file_action"><div class="ui-icon"> </div></div>' +
 						'<div class="plupload_file_size">%size% </div>' +

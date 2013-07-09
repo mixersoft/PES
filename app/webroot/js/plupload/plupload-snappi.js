@@ -308,7 +308,7 @@ $(function() {
 				});
 				/*
 				 * I'm Sure button listener
-				 */
+				 */	
 				$('.plupload_droptext').one('click', 'label.plupload_button', function(e){
 					Util.allowUserOverride();
 				});
@@ -422,12 +422,12 @@ console.info('prevent 	event=QueueChanged ');
 			StateChanged: function(up){
 				// Start/Stop
 				console.log('event=StateChanged');
+				var utc_now = Math.floor(new Date().getTime()/1000);
+				Util.get_BatchID(utc_now);	
+				CFG['session'].LastUpload = utc_now;				
 			},
 			BeforeUpload: function(up, file) {
 console.log("BeforeUpload for file=#"+file.id);				
-				var utc_now = Math.floor(new Date().getTime()/1000);
-				Util.get_BatchID(utc_now);	
-				CFG['session'].LastUpload = utc_now;
 			},
 			UploadFile: function(up, file) {
 console.log("UploadFile for file=#"+file.id);
@@ -462,12 +462,6 @@ console.log("UploadFile for file=#"+file.id);
 				if (!Util.isScrolledIntoView(elem, container)) 
 					elem.scrollIntoView();
 			},
-			complete: function(up, files) {
-				console.log('event=complete');
-			},
-			viewchanged: function(event, args){
-				console.log('event=viewchanged');
-			}
 		},
 		// ui events
 		selected: function(e, args ) {
@@ -508,13 +502,16 @@ console.error('removed .not-chrome selected action');
 	       		event.preventDefault();
 			} 
 		},  
-		complete: function(e, up) {
+		complete: function(event, args){
 			// upload queue processing complete
 			console.log('event=complete, upload queue processing complete');
 		},
-		viewchanged: function(e, up) {
-			console.log('event= view changed');
-		},
+		viewchanged: function(event, args){
+			if (args.view == 'thumbs'){ 
+				// force a lazy_preload update()
+				$('.plupload_content').triggerHandler('scroll');
+			}
+		}
 	});
 	var uploader = $('#uploader').plupload('getUploader');
 	
