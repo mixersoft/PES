@@ -1443,11 +1443,18 @@ if (file.hasExif === false) {
 				}
 
 				blob = file.getSource();
+				
+								
+				if (o.isEmptyObj(up.settings.resize)) {
+					// force resize to preload img and check hasExif, 
+					// but don't call downsize() unless we are *really* resizing
+					up.settings.resize = {width:99999, height:99999, preserve_headers: true};
+				}
 
 				// Start uploading chunks
 				if (!o.isEmptyObj(up.settings.resize) && runtimeCan(blob, 'send_binary_string') && !!~o.inArray(blob.type, ['image/jpeg', 'image/png'])) {
-					// Resize if required
-					// ???: force resize to preload img and check hasExif?
+					// force resize to preload img and check hasExif, 
+					// but skip downsize() if not necessary
 					resizeImage.call(this, blob, up.settings.resize, function(resizedBlob, hasExif) {
 						blob = resizedBlob;
 						file.size = resizedBlob.size;
