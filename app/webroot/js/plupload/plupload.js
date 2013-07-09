@@ -246,6 +246,15 @@ var plupload = {
 	 * @final
 	 */
 	IMAGE_DIMENSIONS_ERROR : -702,
+	
+	/**
+	 * JPEG Image files may require a valid Exif tag. If missing, will throw this error.
+	 *
+	 * @property IMAGE_EXIF_MISSING_ERROR
+	 * @static
+	 * @final
+	 */
+	IMAGE_EXIF_MISSING_ERROR : -703,
 
 	/**
 	 * Mime type lookup table.
@@ -982,15 +991,25 @@ console.log("000: plupload.js Uploader.initControls()")
 	}
 
 	function resizeImage(blob, params, cb) {
-		var img = new o.Image();
-
+		/*
+		 * called before uploadFile if settings.resize != false,
+		 */
+		// force resize={} to preload IMG and check hasExif
+		var img = new o.Image(),
+			hasExif = null;
 		try {
 			img.onload = function() {
-				img.downsize(params.width, params.height, params.crop, params.preserve_headers);
+				if (this.height > params.height || this.width > params.width) {
+					// but check size before actually calling downsize()
+					img.downsize(params.width, params.height, params.crop, params.preserve_headers);
+				} else {
+					img.onresize();
+				}
 			};
 
 			img.onresize = function() {
-				cb(this.getAsBlob(blob.type, params.quality));
+				if (this.type == "image/jpeg") hasExif = !!this.meta.exif; 
+				cb(this.getAsBlob(blob.type, params.quality), hasExif);
 				this.destroy();
 			};
 
@@ -1231,18 +1250,11 @@ console.log("plupload.js: FilesAdded, count="+selected_files.length);
 					retries = settings.max_retries,
 					blob, offset = 0;
 					
-				if (file._exifMissing) {
-					self.trigger('Error', {
-						code : plupload.IMAGE_FORMAT_ERROR,
-						message : plupload.translate('Skipped JPG files with missing Exif dateOriginalTaken tag.'),
-						file : file
-					});				
-					return;
-				}	
-
 				// make sure we start at a predictable offset
 				if (file.loaded) {
 					offset = file.loaded = chunkSize * Math.floor(file.loaded / chunkSize);
+				} else {
+console.log("file.loaded==false, does that mean preload skipped?, views.thumb="+up.settings.views.thumb);					
 				}
 
 				function handleError() {
@@ -1261,6 +1273,21 @@ console.log("plupload.js: FilesAdded, count="+selected_files.length);
 				}
 
 				function uploadNextChunk() {
+					
+if (file.hasExif === false) {
+	// file.hasExif set from settings.views.thumb=1 preload or resizeImage() 
+	// however, we want to DEFER preload until isScrollIntoView()
+	// sets plupload.Uploader error in notify section 
+	// self == plupload.Uploader
+	file.status = plupload.FAILED;	
+	self.trigger('Error', {
+		code : plupload.IMAGE_EXIF_MISSING_ERROR,
+		message : plupload.translate('Skipped JPG files with missing Exif dateOriginalTaken tag.'),
+		file : file
+	});		
+}					
+					
+					
 					var chunkBlob, formData, args, curChunkSize;
 
 					// File upload finished
@@ -1411,9 +1438,11 @@ console.log("plupload.js: FilesAdded, count="+selected_files.length);
 				// Start uploading chunks
 				if (!o.isEmptyObj(up.settings.resize) && runtimeCan(blob, 'send_binary_string') && !!~o.inArray(blob.type, ['image/jpeg', 'image/png'])) {
 					// Resize if required
-					resizeImage.call(this, blob, up.settings.resize, function(resizedBlob) {
+					// ???: force resize to preload img and check hasExif?
+					resizeImage.call(this, blob, up.settings.resize, function(resizedBlob, hasExif) {
 						blob = resizedBlob;
 						file.size = resizedBlob.size;
+						file.hasExif = hasExif; 
 						uploadNextChunk();
 					});
 				} else {

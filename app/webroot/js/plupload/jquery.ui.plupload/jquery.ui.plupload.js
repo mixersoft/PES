@@ -559,6 +559,10 @@ $.widget("ui.plupload", {
 							details = _("Runtime ran out of available memory.");
 							break;
 						
+						case plupload.IMAGE_EXIF_MISSING_ERROR :
+							details = _("Skipped JPG Image with missing Exif tag - dateOriginalTaken is required.");
+							break;	
+							
 						/* // This needs a review
 						case plupload.IMAGE_DIMENSIONS_ERROR :
 							details = _('Resoultion out of boundaries! <b>%s</b> runtime supports images only up to %wx%hpx.').replace(/%([swh])/g, function($0, $1) {
@@ -983,6 +987,7 @@ $.widget("ui.plupload", {
 		}
 
 		// loop over files to add
+		self._lazy_preload = false;
 		$.each(files, function(i, file) {
 
 			self.filelist.append(file_html.replace(/%(\w+)%/g, function($0, $1) {
@@ -994,7 +999,7 @@ $.widget("ui.plupload", {
 			}));
 
 			if (self.options.views.thumbs) {
-				queue.push(function(cb) {
+				var preload = function(cb) {
 					var img = new o.Image();
 
 					img.onload = function() {
@@ -1007,7 +1012,7 @@ $.widget("ui.plupload", {
 						});
 						setTimeout(cb, 1); // detach, otherwise ui might hang (in SilverLight for example)
 						if (!img.meta.exif) {
-							img.exifMissing();
+							img.notify_ExifMissing();
 						}
 
 					};
@@ -1016,14 +1021,22 @@ $.widget("ui.plupload", {
 						img.destroy();
 					};
 					
-					img.exifMissing = function() {
-console.log("exifMissing for file=#"+file.id);			
+					img.notify_ExifMissing = function() {
+console.log("exifMissing for file=#"+file.id);		
+	// move row status update code OUTSIDE img.load(), also called by UploadFile handler -> resize()	
+	// self == plupload.Uploader
+						file.status = plupload.FAILED;	
+						self.trigger('Error', {
+							code : plupload.IMAGE_EXIF_MISSING_ERROR,
+							message : plupload.translate('The Uploader will skip JPG files with missing Exif tags - dateOriginalTaken is required.'),
+							file : file
+						});		
 						var row = $('#' + file.id); 			
 						row.addClass('exif-missing').addClass('ui-state-error');
 						row.find('.plupload_file_thumb,.plupload_file_name').addClass('ui-state-disabled');
 						row.find('.plupload_file_name').append(' <span title="The Uploader will skip JPG files that are missing the Date Taken timestamp">&nbsp;(JPG file missing Exif dateOriginalTaken tag)</span>');						
 						row.find('.plupload_file_action').html('<div class="ui-icon ui-icon-alert"></div>');
-						file._exifMissing = 1;
+						file.hasExif = false;
 					}
 
 					img.onerror = function() {
@@ -1035,7 +1048,9 @@ console.log("exifMissing for file=#"+file.id);
 					};
 					
 					img.load(file.getSource());
-				});
+				};
+				queue.push(preload);
+				// self._lazy_preload['#'+file.id] = preload;
 			}
 			
 			self._handleFileStatus(file);
@@ -1043,7 +1058,31 @@ console.log("exifMissing for file=#"+file.id);
 
 
 		if (queue.length) {
-			o.inSeries(queue);
+/*
+ * FilesAdded queue preloads IMG.src for thumbnails, checks for hasExif
+ * 	- instead of inSeries, process queue when
+ * 		- thumbnail isScrolledIntoView(), or
+ * 		- before upload
+ * 
+ * Q: can you check exifMissing() before upload WITHOUT preload? A: yes, in resize()
+ * 
+ */			
+			if (!self._lazy_preload || $.isEmptyObject(self._lazy_preload)) {
+				o.inSeries(queue);	
+			} else {
+				// preload when isScrolledIntoView()
+				// debounce UL.on('scroll',)
+				var container = $('.plupload_content');
+				$(container).scroll(function() {
+				    clearTimeout($.data(this, "scrollTimer"));
+				    $.data(this, "scrollTimer", setTimeout(function() {
+				        // do something
+				        console.log("container hasn't scrolled in 250ms!");
+				    }, 250));
+				});
+				$(container).triggerHandler('scroll');
+			}
+			
 		}
 
 		// re-enable sortable
