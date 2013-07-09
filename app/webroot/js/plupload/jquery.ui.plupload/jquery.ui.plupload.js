@@ -1013,7 +1013,7 @@ $.widget("ui.plupload", {
 		}
 
 		// loop over files to add
-		self._lazy_preload = false;
+		self._lazy_preload = {};
 		$.each(files, function(i, file) {
 
 			self.filelist.append(file_html.replace(/%(\w+)%/g, function($0, $1) {
@@ -1041,7 +1041,7 @@ $.widget("ui.plupload", {
 console.log("exifMissing for file=#"+file.id);							
 							file.hasExif = false;
 							file.status = plupload.SKIPPED;	
-							self.trigger('Error', {
+							$('#uploader').plupload('getUploader').trigger('Error', {
 								code : plupload.IMAGE_EXIF_MISSING_ERROR,
 								message : plupload.translate('The Uploader will skip JPG files with missing Exif tags.'),
 								file : file
@@ -1064,40 +1064,33 @@ console.log("exifMissing for file=#"+file.id);
 					
 					img.load(file.getSource());
 				};
-				queue.push(preload);
-				// self._lazy_preload['#'+file.id] = preload;
+				// queue.push(preload);
+				self._lazy_preload[file.id] = preload;
 			}
 			
 			self._handleFileStatus(file);
 		});
 
 
-		if (queue.length) {
+		if (queue.length || !$.isEmptyObject(self._lazy_preload)) {
 /*
  * FilesAdded queue preloads IMG.src for thumbnails, checks for hasExif
- * 	- instead of inSeries, process queue when
- * 		- thumbnail isScrolledIntoView(), or
- * 		- before upload
+ * 	- instead of inSeries, use lazy_preload.js 
  * 
  * Q: can you check exifMissing() before upload WITHOUT preload? A: yes, in resize()
  * 
  */			
-			if (!self._lazy_preload || $.isEmptyObject(self._lazy_preload)) {
+			if (queue.length) {
 				o.inSeries(queue);	
 			} else {
-				// preload when isScrolledIntoView()
-				// debounce UL.on('scroll',)
-				var container = $('.plupload_content');
-				$(container).scroll(function() {
-				    clearTimeout($.data(this, "scrollTimer"));
-				    $.data(this, "scrollTimer", setTimeout(function() {
-				        // do something
-				        console.log("container hasn't scrolled in 250ms!");
-				    }, 250));
-				});
-				$(container).triggerHandler('scroll');
+				var $container = $('.plupload_content');
+		        $('.plupload_file_thumb').lazy_preload({
+		        	container: $container,
+		        	queue: self._lazy_preload,
+		        	threshold: 200,
+		        });
+		        $container.triggerHandler('scroll');
 			}
-			
 		}
 
 		// re-enable sortable

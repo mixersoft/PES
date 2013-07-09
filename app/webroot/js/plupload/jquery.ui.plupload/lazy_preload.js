@@ -7,15 +7,18 @@
  *   http://www.opensource.org/licenses/mit-license.php
  *
  * Project home:
- *   http://www.appelsiini.net/projects/lazyload
+ *   http://www.appelsiini.net/projects/lazy_preload
  *
  * Version:  1.8.4
  *
  */
+/*
+ * modified by michael@snaphappi.com for use with pluploader jquery UI widget
+ */
 (function($, window, document, undefined) {
     var $window = $(window);
 
-    $.fn.lazyload = function(options) {
+    $.fn.lazy_preload = function(options) {
         var elements = this;
         var $container;
         var settings = {
@@ -24,10 +27,11 @@
             event           : "scroll",
             effect          : "show",
             container       : window,
-            data_attribute  : "original",
+            data_attribute  : "original",	// unused
             skip_invisible  : true,
             appear          : null,
-            load            : null
+            load            : null,
+            queue			: {},		// queue of plupload.Uploader file objects by file.id
         };
 
         function update() {
@@ -75,10 +79,22 @@
 
         /* Fire one scroll event per scroll. Not one scroll event per image. */
         if (0 === settings.event.indexOf("scroll")) {
+            // $container.bind(settings.event, function(event) {
+                // return update();
+            // });
+            // debounce scroll
             $container.bind(settings.event, function(event) {
-                return update();
-            });
+			    clearTimeout($.data(this, "scrollTimer"));
+			    $.data(this, "scrollTimer", setTimeout(function() {
+			        console.log("container debounce delay=250ms");
+			        return update();
+			    }, 250));
+			});
         }
+        
+        // $container.bind('lazyload_update', function(){
+        	// update();
+        // });
 
         this.each(function() {
             var self = this;
@@ -86,33 +102,28 @@
 
             self.loaded = false;
 
-            /* When appear is triggered load original image. */
+            /* 
+             * appear => preload
+             * When 'preload' is triggered preload the object in settings.queue 
+             */
             $self.one("appear", function() {
                 if (!this.loaded) {
                     if (settings.appear) {
                         var elements_left = elements.length;
                         settings.appear.call(self, elements_left, settings);
                     }
-                    $("<img />")
-                        .bind("load", function() {
-                            $self
-                                .hide()
-                                .attr("src", $self.data(settings.data_attribute))
-                                [settings.effect](settings.effect_speed);
-                            self.loaded = true;
-
-                            /* Remove image from array so it is not looped next time. */
-                            var temp = $.grep(elements, function(element) {
-                                return !element.loaded;
-                            });
-                            elements = $(temp);
-
-                            if (settings.load) {
-                                var elements_left = elements.length;
-                                settings.load.call(self, elements_left, settings);
-                            }
-                        })
-                        .attr("src", $self.data(settings.data_attribute));
+                    // instead of manipulating IMG.src to load, we are using the moxie img.onload() callbacks  
+                    // instead of calling o.inSeries(queue), 
+                    // get the queued cb using file.id lookup from settings.queue and run the callback
+                    var id = $self.closest('.plupload_file').attr('id'),
+                    	queued_cb = settings.queue[id];
+                    if ($.isFunction(queued_cb)) {
+                    	this.loaded = true;
+                    	queued_cb();
+                    } else {
+                    	// throw new Exception("lazyload callback error, id=#"+id);
+                    	console.error("lazyload callback error, id=#"+id);
+                    }
                 }
             });
 
