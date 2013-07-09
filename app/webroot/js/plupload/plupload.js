@@ -145,6 +145,15 @@ var plupload = {
 	 * @final
 	 */
 	DONE : 5,
+	
+	/**
+	 * File upload was SKIPPED, added for missing EXIF
+	 *
+	 * @property SKIPPED
+	 * @static
+	 * @final
+	 */
+	SKIPPED: 6,
 
 	// Error constants used by the Error event
 
@@ -770,7 +779,7 @@ plupload.Uploader = function(settings) {
 				}
 			}
 
-			// All files are DONE or FAILED
+			// All files are DONE, FAILED, or SKIPPED
 			if (count == files.length) {
 				if (this.state !== plupload.STOPPED) {
 					this.state = plupload.STOPPED;
@@ -809,7 +818,7 @@ plupload.Uploader = function(settings) {
 
 			if (file.status == plupload.DONE) {
 				total.uploaded++;
-			} else if (file.status == plupload.FAILED) {
+			} else if (file.status == plupload.FAILED || file.status == plupload.SKIPPED) {
 				total.failed++;
 			} else {
 				total.queued++;
@@ -1279,10 +1288,10 @@ if (file.hasExif === false) {
 	// however, we want to DEFER preload until isScrollIntoView()
 	// sets plupload.Uploader error in notify section 
 	// self == plupload.Uploader
-	file.status = plupload.FAILED;	
+	file.status = plupload.SKIPPED;	
 	self.trigger('Error', {
 		code : plupload.IMAGE_EXIF_MISSING_ERROR,
-		message : plupload.translate('Skipped JPG files with missing Exif dateOriginalTaken tag.'),
+		message : plupload.translate('The Uploader skipped JPG files with missing Exif tags.'),
 		file : file
 	});		
 }					
@@ -1291,7 +1300,7 @@ if (file.hasExif === false) {
 					var chunkBlob, formData, args, curChunkSize;
 
 					// File upload finished
-					if (file.status == plupload.DONE || file.status == plupload.FAILED || up.state == plupload.STOPPED) {
+					if (file.status == plupload.DONE || file.status == plupload.FAILED || file.status == plupload.SKIPPED || up.state == plupload.STOPPED) {
 						return;
 					}
 
@@ -1472,9 +1481,15 @@ if (file.hasExif === false) {
 			self.bind('QueueChanged', calc);
 
 			self.bind("Error", function(up, err) {
-				// Set failed status if an error occured on a file
+				// Set failed status if an error occured on a file or file upload was skipped
 				if (err.file) {
-					err.file.status = plupload.FAILED;
+					if (err.file.status == plupload.SKIPPED) {
+						/*
+						 * handle plupload.SKIPPED Here
+						 */
+						
+					} else 
+						err.file.status = plupload.FAILED;
 
 					calcFile(err.file);
 
@@ -1874,7 +1889,7 @@ plupload.File = (function() {
 			percent: 0,
 
 			/**
-			 * Status constant matching the plupload states QUEUED, UPLOADING, FAILED, DONE.
+			 * Status constant matching the plupload states QUEUED, UPLOADING, FAILED, SKIPPED, DONE.
 			 *
 			 * @property status
 			 * @type Number

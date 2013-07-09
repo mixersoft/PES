@@ -6423,13 +6423,11 @@ define("moxie/runtime/html5/file/FileDrop", [
 					var _chunk = _files.slice(_chunk_index,_chunk_index+_options.files_added_chunksize);
 					_chunk_index += _chunk.length;
 					
-if ((_files.length > _chunk_index) && $('a.plupload_add .icon-spinner').length==0) {
-	$('a.plupload_add').prepend('<i class="ui-icon icon-spinner icon-spin"></i>');
-	$('a.plupload_add').css('cursor','wait');
-} else if ((_files.length == _chunk_index) ) {
-	$('a.plupload_add .icon-spinner').remove();
-	$('a.plupload_add').css('cursor','pointer');
-}					
+// TODO: how can we trigger a handler in the UI from here? through plupload?
+var up = $('#uploader').plupload('getUploader'),
+	isScanning = _files.length > _chunk_index;
+up.trigger('ScanningFiles', isScanning);
+
 					return _chunk;
 				}				
 				return _files;

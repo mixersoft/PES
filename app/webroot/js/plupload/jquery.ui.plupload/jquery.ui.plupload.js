@@ -167,7 +167,7 @@ Dispatched when file is uploaded.
 @event uploaded
 @param {plupload.Uploader} uploader Uploader instance sending the event.
 @param {plupload.File} file File that was uploaded.
-	@param {Enum} status Status constant matching the plupload states QUEUED, UPLOADING, FAILED, DONE.
+	@param {Enum} status Status constant matching the plupload states QUEUED, UPLOADING, FAILED, SKIPPED, DONE.
 */
 
 /**
@@ -193,7 +193,7 @@ Dispatched when error of some kind is detected.
 @param {plupload.Uploader} uploader Uploader instance sending the event.
 @param {String} error Error message.
 @param {plupload.File} file File that was uploaded.
-	@param {Enum} status Status constant matching the plupload states QUEUED, UPLOADING, FAILED, DONE.
+	@param {Enum} status Status constant matching the plupload states QUEUED, UPLOADING, FAILED, SKIPPED DONE.
 */
 
 var uploaders = {};	
@@ -489,6 +489,17 @@ $.widget("ui.plupload", {
 			self._trigger('removed', null, { up: up, files: files } );
 		});
 		
+		
+		uploader.bind('ScanningFiles', function(up, isScanning) {
+			if (isScanning) {
+				$('a.plupload_add ui-icon').removeClass('ui-icon-circle-plus').addClass('ui-icon-clock');
+				$('a.plupload_add').css('cursor','wait');
+			} else {
+				$('a.plupload_add ui-icon').removeClass('ui-icon-clock').addClass('ui-icon-circle-plus');
+				$('a.plupload_add').css('cursor','pointer');
+			}
+		});
+		
 		uploader.bind('QueueChanged', function() {
 			self._updateTotalProgress();
 		});
@@ -560,7 +571,7 @@ $.widget("ui.plupload", {
 							break;
 						
 						case plupload.IMAGE_EXIF_MISSING_ERROR :
-							details = _("Skipped JPG Image with missing Exif tag - dateOriginalTaken is required.");
+							details = _("JPG files taken from digital cameras and smartphones will have Exif tags which record when the photo was taken. This data is required by our Timeline.");
 							break;	
 							
 						/* // This needs a review
@@ -582,6 +593,7 @@ $.widget("ui.plupload", {
 				}
 				
 				self.notify('error', message);
+				if (file.status === plupload.SKIPPED) self._handleFileStatus(file);
 				self._trigger('error', null, { up: up, error: message, file: file } );
 			}
 		});
@@ -854,13 +866,18 @@ $.widget("ui.plupload", {
 			var fields = ''
 			, count = parseInt(self.counter.val() || 0, 10)
 			, id = self.id + '_' + count
-			;
-
+			, status_value;
+			switch(file.status) {
+				case plupload.DONE: status_value = 'done'; break;
+				case plupload.SKIPPED: status_value = 'skipped'; break;
+				case plupload.FAILED: 
+				default: status_value = 'failed'; break;
+			}
 			if (file.target_name) {
 				fields += '<input type="hidden" name="' + id + '_tmpname" value="'+plupload.xmlEncode(file.target_name)+'" />';
 			}
 			fields += '<input type="hidden" name="' + id + '_name" value="'+plupload.xmlEncode(file.name)+'" />';
-			fields += '<input type="hidden" name="' + id + '_status" value="' + (file.status === plupload.DONE ? 'done' : 'failed') + '" />';
+			fields += '<input type="hidden" name="' + id + '_status" value="' + status_value + '" />';
 
 			$('#' + file.id).find('.plupload_file_fields').html(fields);
 			self.counter.val(++count);
@@ -878,7 +895,16 @@ $.widget("ui.plupload", {
 				iconClass = 'ui-icon ui-icon-alert';
 				addFields();
 				break;
-
+			
+			case plupload.SKIPPED:
+				// TODO: add CSS for .plupload_skipped
+				actionClass = 'ui-state-highlight plupload_skipped';
+				iconClass = 'ui-icon ui-icon-info';
+				$('#' + file.id).find('.plupload_file_percent').html('skipped');
+				$('#' + file.id).find('.plupload_file_namespan').append('&nbsp;&nbsp;&nbsp;<span class="ui-state-error"> missing JPG Exif tags </span>');
+				addFields();
+				break;
+				
 			case plupload.QUEUED:
 				actionClass = 'plupload_delete';
 				iconClass = 'ui-icon ui-icon-circle-minus';
@@ -1012,7 +1038,15 @@ $.widget("ui.plupload", {
 						});
 						setTimeout(cb, 1); // detach, otherwise ui might hang (in SilverLight for example)
 						if (!img.meta.exif) {
+console.log("exifMissing for file=#"+file.id);							
 							img.notify_ExifMissing();
+							file.hasExif = false;
+							file.status = plupload.SKIPPED;	
+							self.trigger('Error', {
+								code : plupload.IMAGE_EXIF_MISSING_ERROR,
+								message : plupload.translate('The Uploader will skip JPG files with missing Exif tags.'),
+								file : file
+							});	
 						}
 
 					};
@@ -1022,21 +1056,12 @@ $.widget("ui.plupload", {
 					};
 					
 					img.notify_ExifMissing = function() {
-console.log("exifMissing for file=#"+file.id);		
-	// move row status update code OUTSIDE img.load(), also called by UploadFile handler -> resize()	
-	// self == plupload.Uploader
-						file.status = plupload.FAILED;	
-						self.trigger('Error', {
-							code : plupload.IMAGE_EXIF_MISSING_ERROR,
-							message : plupload.translate('The Uploader will skip JPG files with missing Exif tags - dateOriginalTaken is required.'),
-							file : file
-						});		
+						// TODO: deprecate
 						var row = $('#' + file.id); 			
 						row.addClass('exif-missing').addClass('ui-state-error');
 						row.find('.plupload_file_thumb,.plupload_file_name').addClass('ui-state-disabled');
 						row.find('.plupload_file_name').append(' <span title="The Uploader will skip JPG files that are missing the Date Taken timestamp">&nbsp;(JPG file missing Exif dateOriginalTaken tag)</span>');						
 						row.find('.plupload_file_action').html('<div class="ui-icon ui-icon-alert"></div>');
-						file.hasExif = false;
 					}
 
 					img.onerror = function() {
