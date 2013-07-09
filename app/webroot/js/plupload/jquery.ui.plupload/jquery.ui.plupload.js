@@ -492,10 +492,10 @@ $.widget("ui.plupload", {
 		
 		uploader.bind('ScanningFiles', function(up, isScanning) {
 			if (isScanning) {
-				$('a.plupload_add ui-icon').removeClass('ui-icon-circle-plus').addClass('ui-icon-clock');
+				$('a.plupload_add .ui-icon').removeClass('ui-icon-circle-plus').addClass('ui-icon-clock');
 				$('a.plupload_add').css('cursor','wait');
 			} else {
-				$('a.plupload_add ui-icon').removeClass('ui-icon-clock').addClass('ui-icon-circle-plus');
+				$('a.plupload_add .ui-icon').removeClass('ui-icon-clock').addClass('ui-icon-circle-plus');
 				$('a.plupload_add').css('cursor','pointer');
 			}
 		});
@@ -1039,7 +1039,6 @@ $.widget("ui.plupload", {
 						setTimeout(cb, 1); // detach, otherwise ui might hang (in SilverLight for example)
 						if (!img.meta.exif) {
 console.log("exifMissing for file=#"+file.id);							
-							img.notify_ExifMissing();
 							file.hasExif = false;
 							file.status = plupload.SKIPPED;	
 							self.trigger('Error', {
@@ -1055,15 +1054,6 @@ console.log("exifMissing for file=#"+file.id);
 						img.destroy();
 					};
 					
-					img.notify_ExifMissing = function() {
-						// TODO: deprecate
-						var row = $('#' + file.id); 			
-						row.addClass('exif-missing').addClass('ui-state-error');
-						row.find('.plupload_file_thumb,.plupload_file_name').addClass('ui-state-disabled');
-						row.find('.plupload_file_name').append(' <span title="The Uploader will skip JPG files that are missing the Date Taken timestamp">&nbsp;(JPG file missing Exif dateOriginalTaken tag)</span>');						
-						row.find('.plupload_file_action').html('<div class="ui-icon ui-icon-alert"></div>');
-					}
-
 					img.onerror = function() {
 						var ext = file.name.match(/\.([^\.]{1,7})$/);
 						$('#' + file.id + ' .plupload_file_thumb', self.filelist)
