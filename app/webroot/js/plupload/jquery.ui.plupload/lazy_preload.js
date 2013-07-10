@@ -17,6 +17,47 @@
  */
 (function($, window, document, undefined) {
     var $window = $(window);
+    
+    function Throttle(delay){
+		this.delay = delay || 250;
+		/*
+		 * add callback to queue and start queue if necessary
+		 */
+		this.queue = function(fn){
+			this._queue.push(fn);
+			if (!this._isRunning) {
+				this._isRunning = true;
+				this._next();
+			}
+		}
+		this.clear_queue = function(){
+			this._queue = [];
+		}
+		// private
+		this._queue = [];
+		this._isRunning = false;
+		this._next = function(){
+			var self = this;
+			if (!this.queue.length) {
+				this._isRunning = false;
+				return;
+			}
+			if (!this._isRunning) {
+				try { // start and run now;
+					this._isRunning = true;
+					( this._queue.shift() )();
+				} catch (ex){}
+				self._next();
+			} else {
+				setTimeout(function(){
+					try {
+						( self._queue.shift() )();
+					} catch (ex){}
+					self._next();
+				}, this.delay);				
+			}
+		}
+    }
 
     $.fn.lazy_preload = function(options) {
         var elements = this;
@@ -33,10 +74,12 @@
             load            : null,
             queue			: {},		// queue of plupload.Uploader file objects by file.id
         };
-
+        
+		var throttle = new Throttle(500);
+		 
         function update() {
             var counter = 0;
-      
+      		
             elements.each(function() {
                 var $this = $(this);
                 if (settings.skip_invisible && !$this.is(":visible")) {
@@ -79,23 +122,12 @@
 
         /* Fire one scroll event per scroll. Not one scroll event per image. */
         if (0 === settings.event.indexOf("scroll")) {
-            // $container.bind(settings.event, function(event) {
-                // return update();
-            // });
-            // debounce scroll
-            $container.bind(settings.event, function(event) {
-			    clearTimeout($.data(this, "scrollTimer"));
-			    $.data(this, "scrollTimer", setTimeout(function() {
-			        console.log("container debounce delay=250ms");
-			        return update();
-			    }, 250));
-			});
+            $container.bind(settings.event, $.debounce(250, function(event) {
+            	throttle.clear_queue();
+		        return update();
+            }));
         }
         
-        // $container.bind('lazyload_update', function(){
-        	// update();
-        // });
-
         this.each(function() {
             var self = this;
             var $self = $(self);
@@ -105,8 +137,9 @@
             /* 
              * appear => preload
              * When 'preload' is triggered preload the object in settings.queue 
+             * TODO: move to settings.appear
              */
-            $self.one("appear", function() {
+            $self.on("appear", function() {
                 if (!this.loaded) {
                     if (settings.appear) {
                         var elements_left = elements.length;
@@ -116,10 +149,13 @@
                     // instead of calling o.inSeries(queue), 
                     // get the queued cb using file.id lookup from settings.queue and run the callback
                     var id = $self.closest('.plupload_file').attr('id'),
-                    	queued_cb = settings.queue[id];
-                    if ($.isFunction(queued_cb)) {
-                    	this.loaded = true;
-                    	queued_cb();
+                    	cb = settings.queue[id];
+                    if ($.isFunction(cb)) {
+                    	throttle.queue(function(){
+                    		cb();
+                    		$self.get(0).loaded = true;
+                    		$self.unbind("appear");
+                    	});
                     } else {
                     	// throw new Exception("lazyload callback error, id=#"+id);
                     	console.error("lazyload callback error, id=#"+id);

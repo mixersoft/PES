@@ -1087,7 +1087,7 @@ console.log("exifMissing for file=#"+file.id);
 		        $('.plupload_file_thumb').lazy_preload({
 		        	container: $container,
 		        	queue: self._lazy_preload,
-		        	threshold: 200,
+		        	// threshold: 200,
 		        });
 		        $container.triggerHandler('scroll');
 			}
