@@ -22,7 +22,7 @@
 
 /*global mOxie:true */
 
-(function(window, o, undef) {
+;(function(window, o, undef) {
 
 var delay = window.setTimeout;
 
@@ -39,9 +39,12 @@ function normalizeCaps(settings) {
 			pngresize: 'send_binary_string',
 			progress: 'report_upload_progress',
 			multi_selection: 'select_multiple',
-			canSendBinary: 'send_binary'
-			//dragdrop: 'drag_and_drop',
-			//triggerDialog: 'summon_file_dialog'
+			max_file_size: 'access_binary',
+			dragdrop: 'drag_and_drop',
+			drop_element: 'drag_and_drop',
+			headers: 'send_custom_headers',
+			canSendBinary: 'send_binary',
+			triggerDialog: 'summon_file_dialog'
 		};
 
 		if (map[feature]) {
@@ -59,20 +62,20 @@ function normalizeCaps(settings) {
 		plupload.each(features, function(value, feature) {
 			resolve(feature, value);
 		});
-	}
+	} else if (features === true) {
+		// check settings for required features
+		if (!settings.multipart) { // special care for multipart: false
+			caps.send_binary_string = true;
+		}
 
-	// check settings for required features
-	if (!settings.multipart) { // special care for multipart: false
-		caps.send_binary_string = true;
+		if (settings.chunk_size > 0) {
+			caps.slice_blob = true;
+		}
+		
+		plupload.each(settings, function(value, feature) {
+			resolve(feature, !!value, true); // strict check
+		});
 	}
-
-	if (!settings.chunks.size) {
-		delete settings.chunks;
-	}
-	
-	plupload.each(settings, function(value, feature) {
-		resolve(feature, !!value, true); // strict check
-	});
 	
 	return caps;
 }
@@ -596,15 +599,23 @@ var plupload = {
 
 	/**
 	 * A way to predict what runtime will be choosen in the current environment with the
-	 * specified settings or a list of features/caps.
+	 * specified settings.
 	 *
 	 * @method predictRuntime
 	 * @static
-	 * @param {Object|String} features List of settings/features/caps
+	 * @param {Object|String} config Plupload settings to check
+	 * @param {String} [runtimes] Comma-separated list of runtimes to check against
 	 * @return {String} Type of compatible runtime
 	 */
-	predictRuntime : function(features) {
-		return o.Runtime.thatCan(normalizeCaps(plupload.extend({}, features)));
+	predictRuntime : function(config, runtimes) {
+		var up, runtime; 
+		if (runtimes) {
+			config.runtimes = runtimes;
+		}
+		up = new plupload.Uploader(config);
+		runtime = up.runtime;
+		up.destroy();
+		return runtime;
 	}
 };
 
@@ -638,6 +649,8 @@ var plupload = {
 	@param {String} [settings.runtimes="html5,flash,silverlight,html4"] Comma separated list of runtimes, that Plupload will try in turn, moving to the next if previous fails.
 	@param {String} [settings.silverlight_xap_url] URL of the Silverlight xap.
 	@param {Boolean} [settings.unique_names=false] If true will generate unique filenames for uploaded files.
+	@param {Number} [settings.files_added_chunksize=false] Limit the number of files added the UI adds in each iteration
+
 */
 plupload.Uploader = function(settings) {
 	/**
@@ -834,25 +847,7 @@ plupload.Uploader = function(settings) {
 		}
 	}
 
-	function addSelectedFiles(native_files) {
-		var i, files = [];
-
-		// Add the selected files to the file queue
-		for (i = 0; i < native_files.length; i++) {
-			files.push(new plupload.File(native_files[i]));
-		}
-		console.log("### plupload.js: addSelectedFiles, chunked??? files ="+files.length);				
-
-		// Trigger FilesAdded event if we added any
-		// moxie.js calls up.trigger("drop") with this._files
-		if (files.length) {
-console.log("plupload.js: addSelectedFiles, count="+files.length);			
-			this.trigger("FilesAdded", files);
-		}
-	}
-
 	function initControls() {
-console.log("000: plupload.js Uploader.initControls()")		
 		var self = this, initialized = 0;
 
 		// common settings
@@ -872,8 +867,7 @@ console.log("000: plupload.js Uploader.initControls()")
 		});
 		
 		// add chunksize to options so html5 FileDrop can access
-		// TODO: is there a better way to expose this value? 
-		options.files_added_chunksize = settings.files_added_chunksize || 0;
+		options.files_added_chunksize = settings.files_added_chunksize || false;
 
 		o.inSeries([
 			function(cb) {
@@ -901,7 +895,7 @@ console.log("000: plupload.js Uploader.initControls()")
 					};
 
 					fileInput.onchange = function() {
-						addSelectedFiles.call(self, this.files);
+						self.addFile(this.files);
 					};
 
 					fileInput.bind('mouseenter mouseleave mousedown mouseup', function(e) {
@@ -929,6 +923,7 @@ console.log("000: plupload.js Uploader.initControls()")
 					});
 
 					fileInput.bind('error runtimeerror', function() {
+						fileInput = null;
 						cb();
 					});
 
@@ -940,7 +935,6 @@ console.log("000: plupload.js Uploader.initControls()")
 
 			function(cb) {
 				// Initialize drag/drop interface if requested
-				//???: extend FileDrop here for chunksize?
 				if (settings.drop_element) {
 					fileDrop = new o.FileDrop(plupload.extend({}, options, {
 						drop_zone: settings.drop_element
@@ -956,10 +950,11 @@ console.log("000: plupload.js Uploader.initControls()")
 					};
 
 					fileDrop.ondrop = function() {
-						addSelectedFiles.call(self, this.files);
+						self.addFile(this.files);
 					};
 
 					fileDrop.bind('error runtimeerror', function() {
+						fileDrop = null;
 						cb();
 					});
 
@@ -970,16 +965,16 @@ console.log("000: plupload.js Uploader.initControls()")
 			}
 		],
 		function() {
+			if (typeof(settings.init) == "function") {
+				settings.init(self);
+			} else {
+				plupload.each(settings.init, function(func, name) {
+					self.bind(name, func);
+				});
+			}
+
 			if (initialized) {
 				self.trigger('PostInit');
-
-				if (typeof(settings.init) == "function") {
-					settings.init(self);
-				} else {
-					plupload.each(settings.init, function(func, name) {
-						self.bind(name, func);
-					});
-				}
 			} else {
 				self.trigger('Error', {
 					code : plupload.INIT_ERROR,
@@ -1000,12 +995,9 @@ console.log("000: plupload.js Uploader.initControls()")
 	}
 
 	function resizeImage(blob, params, cb) {
-		/*
-		 * called before uploadFile if settings.resize != false,
-		 */
-		// force resize={} to preload IMG and check hasExif
 		var img = new o.Image(),
 			hasExif = null;
+
 		try {
 			img.onload = function() {
 				if (this.height > params.height || this.width > params.width) {
@@ -1018,6 +1010,7 @@ console.log("000: plupload.js Uploader.initControls()")
 
 			img.onresize = function() {
 				if (this.type == "image/jpeg") hasExif = !!this.meta.exif; 
+				// should we pass Boolean or the exif object?
 				cb(this.getAsBlob(blob.type, params.quality), hasExif);
 				this.destroy();
 			};
@@ -1038,12 +1031,16 @@ console.log("000: plupload.js Uploader.initControls()")
 
 	// Default settings
 	settings = plupload.extend({
+		runtimes: o.Runtime.order,
 		max_retries: 0,
 		multipart : true,
 		multi_selection : true,
 		file_data_name : 'file',
+		flash_swf_url : 'js/Moxie.swf',
+		silverlight_xap_url : 'js/Moxie.xap',
 		filters : [],
-		prevent_duplicates: false
+		prevent_duplicates: false,
+		send_chunk_number: true // whether to send chunks and chunk numbers, or total and offset bytes
 	}, settings);
 
 	// Resize defaults
@@ -1054,13 +1051,11 @@ console.log("000: plupload.js Uploader.initControls()")
 		}, settings.resize);
 	}
 
-	// Alternative format for chunks
-	settings.chunks = plupload.extend({
-		size: settings.chunk_size || 0, 
-		send_chunk_number: false // send current chunk and total number of chunks, instead of offset and total bytes
-	}, settings.chunks);
+	// Convert settings
+	settings.chunk_size = plupload.parseSize(settings.chunk_size) || 0;
+	settings.max_file_size = plupload.parseSize(settings.max_file_size) || 0;
 	
-	required_caps = normalizeCaps(plupload.extend({}, settings));
+	settings.required_features = required_caps = normalizeCaps(plupload.extend({}, settings));
 
 
 	// Add public methods
@@ -1092,6 +1087,14 @@ console.log("000: plupload.js Uploader.initControls()")
 		 * @type Object
 		 */
 		features : {},
+
+		/**
+		 * Current runtime name.
+		 *
+		 * @property runtime
+		 * @type String
+		 */
+		runtime : o.Runtime.thatCan(required_caps, settings.runtimes), // predict runtime
 
 		/**
 		 * Current upload queue, an array of File instances.
@@ -1127,10 +1130,8 @@ console.log("000: plupload.js Uploader.initControls()")
 		init : function() {
 			var self = this;
 
-			// Convert settings
-			settings.chunks.size = plupload.parseSize(settings.chunks.size);
-			settings.max_file_size = plupload.parseSize(settings.max_file_size);
-
+			settings.browse_button = o.get(settings.browse_button);
+			
 			// Check if drop zone requested
 			settings.drop_element = o.get(settings.drop_element);
 
@@ -1141,6 +1142,16 @@ console.log("000: plupload.js Uploader.initControls()")
 				plupload.each(settings.preinit, function(func, name) {
 					self.bind(name, func);
 				});
+			}
+
+
+			// Check for required options
+			if (!settings.browse_button || !settings.url) {
+				this.trigger('Error', {
+					code : plupload.INIT_ERROR,
+					message : plupload.translate('Init error.')
+				});
+				return;
 			}
 
 			// Add files to queue
@@ -1183,23 +1194,13 @@ console.log("plupload.js: FilesAdded, count="+selected_files.length);
 						continue;
 					}
 					
-					// filter: JPEG file does not have EXIF tags
-					var plupfile = file.getSource();
-					if (plupfile=='image/jpeg') {
-						var hasExif = true;
-						if (!hasExif) {
-							continue;
-						}
-					} 
-
 					// Invalid file size
-					if (file.size !== undef && file.size > settings.max_file_size) {
+					if (file.size !== undef && settings.max_file_size && file.size > settings.max_file_size) {
 						up.trigger('Error', {
 							code : plupload.FILE_SIZE_ERROR,
 							message : plupload.translate('File size error.'),
 							file : file
 						});
-
 						continue;
 					}
 
@@ -1243,27 +1244,23 @@ console.log("plupload.js: FilesAdded, count="+selected_files.length);
 
 			// Generate unique target filenames
 			if (settings.unique_names) {
-				self.bind("UploadFile", function(up, file) {
+				self.bind("BeforeUpload", function(up, file) {
 					var matches = file.name.match(/\.([^.]+)$/), ext = "part";
-
 					if (matches) {
 						ext = matches[1];
 					}
-
 					file.target_name = file.id + '.' + ext;
 				});
 			}
 
 			self.bind("UploadFile", function(up, file) {
-				var url = up.settings.url, features = up.features, chunkSize = settings.chunks.size,
+				var url = up.settings.url, features = up.features, chunkSize = settings.chunk_size,
 					retries = settings.max_retries,
 					blob, offset = 0;
-					
+
 				// make sure we start at a predictable offset
 				if (file.loaded) {
 					offset = file.loaded = chunkSize * Math.floor(file.loaded / chunkSize);
-				} else {
-console.log("file.loaded==false, does that mean preload skipped?, views.thumb="+up.settings.views.thumb);					
 				}
 
 				function handleError() {
@@ -1276,31 +1273,32 @@ console.log("file.loaded==false, does that mean preload skipped?, views.thumb="+
 							code : plupload.HTTP_ERROR,
 							message : plupload.translate('HTTP Error.'),
 							file : file,
-							status : xhr.status
+							response : xhr.responseText,
+							status : xhr.status,
+							responseHeaders: xhr.getAllResponseHeaders()
 						});
 					}
 				}
 
 				function uploadNextChunk() {
 					
-if (file.hasExif === false) {
-	// file.hasExif set from settings.views.thumb=1 preload or resizeImage() 
-	// however, we want to DEFER preload until isScrollIntoView()
-	// sets plupload.Uploader error in notify section 
-	// self == plupload.Uploader
-	file.status = plupload.SKIPPED;	
-	self.trigger('Error', {
-		code : plupload.IMAGE_EXIF_MISSING_ERROR,
-		message : plupload.translate('The Uploader skipped JPG files with missing Exif tags.'),
-		file : file
-	});		
-}					
-					
+					if (file.hasExif === false) {
+						// file.hasExif set from settings.views.thumb=1 preload (lazy) or resizeImage() 
+						// sets plupload.Uploader error in notify section 
+						// self == plupload.Uploader
+						file.status = plupload.SKIPPED;	
+						self.trigger('Error', {
+							code : plupload.IMAGE_EXIF_MISSING_ERROR,
+							message : plupload.translate('The Uploader skipped JPG files with missing Exif tags.'),
+							file : file
+						});		
+					}					
+						
 					
 					var chunkBlob, formData, args, curChunkSize;
 
 					// File upload finished
-					if (file.status == plupload.DONE || file.status == plupload.FAILED || file.status == plupload.SKIPPED || up.state == plupload.STOPPED) {
+					if (file.status == plupload.DONE || file.status == plupload.FAILED || file.status == plupload.SKIPPED || up.state == plupload.STOPPED) {	
 						return;
 					}
 
@@ -1314,10 +1312,10 @@ if (file.hasExif === false) {
 						chunkBlob = blob.slice(offset, offset + curChunkSize);
 
 						// Setup query string arguments
-						if (settings.chunks.send_chunk_number) {
+						if (settings.send_chunk_number) {
 							args.chunk = Math.ceil(offset / chunkSize);
 							args.chunks = Math.ceil(blob.size / chunkSize);
-						} else {
+						} else { // keep support for experimental chunk format, just in case
 							args.offset = offset;
 							args.total = blob.size;
 						}
@@ -1354,13 +1352,12 @@ if (file.hasExif === false) {
 								offset : file.loaded,
 								total : blob.size,
 								response : xhr.responseText,
-								status : xhr.status
+								status : xhr.status,
+								responseHeaders: xhr.getAllResponseHeaders()
 							});
 						} else {
 							file.loaded = file.size;
 						}
-
-						up.trigger('UploadProgress', file);
 
 						chunkBlob = formData = null; // Free memory
 
@@ -1372,11 +1369,14 @@ if (file.hasExif === false) {
 								blob = null;
 							}
 
+							up.trigger('UploadProgress', file);
+
 							file.status = plupload.DONE;
 
 							up.trigger('FileUploaded', file, {
 								response : xhr.responseText,
-								status : xhr.status
+								status : xhr.status,
+								responseHeaders: xhr.getAllResponseHeaders()
 							});
 						} else {
 							// Still chunks left
@@ -1444,7 +1444,6 @@ if (file.hasExif === false) {
 
 				blob = file.getSource();
 				
-								
 				if (o.isEmptyObj(up.settings.resize)) {
 					// force resize to preload img and check hasExif, 
 					// but don't call downsize() unless we are *really* resizing
@@ -1453,8 +1452,7 @@ if (file.hasExif === false) {
 
 				// Start uploading chunks
 				if (!o.isEmptyObj(up.settings.resize) && runtimeCan(blob, 'send_binary_string') && !!~o.inArray(blob.type, ['image/jpeg', 'image/png'])) {
-					// force resize to preload img and check hasExif, 
-					// but skip downsize() if not necessary
+					// Resize if required
 					resizeImage.call(this, blob, up.settings.resize, function(resizedBlob, hasExif) {
 						blob = resizedBlob;
 						file.size = resizedBlob.size;
@@ -1462,7 +1460,7 @@ if (file.hasExif === false) {
 						uploadNextChunk();
 					});
 				} else {
-					uploadNextChunk();
+					uploadNextChunk();	// this branch will be skipped, because we are forcing a resizeImage()
 				}
 			});
 
@@ -1510,11 +1508,8 @@ if (file.hasExif === false) {
 				}
 			});
 
-			self.bind("FileUploaded", function(up, file) {
-				file.status = plupload.DONE;
-				file.loaded = file.size;
-
-				calcFile(file);
+			self.bind("FileUploaded", function() {
+				calc();
 
 				// Upload next file but detach it from the error event
 				// since other custom listeners might want to stop the queue
@@ -1525,9 +1520,7 @@ if (file.hasExif === false) {
 
 			// some dependent scripts hook onto Init to alter configuration options, raw UI, etc (like Queue Widget),
 			// therefore we got to fire this one, before we dive into the actual initializaion
-			self.trigger('Init', {
-				runtime: "Generic" // we need to pass something for backward compatibility
-			});
+			self.trigger('Init', { runtime: this.runtime });
 
 			initControls.call(this);
 		},
@@ -1539,7 +1532,9 @@ if (file.hasExif === false) {
 		 * @method refresh
 		 */
 		refresh : function() {
-			fileInput.trigger("Refresh");
+			if (fileInput) {
+				fileInput.trigger("Refresh");
+			}
 			this.trigger("Refresh");
 		},
 
@@ -1596,7 +1591,6 @@ if (file.hasExif === false) {
 		 */
 		getFile : function(id) {
 			var i;
-
 			for (i = files.length - 1; i >= 0; i--) {
 				if (files[i].id === id) {
 					return files[i];
@@ -1610,65 +1604,74 @@ if (file.hasExif === false) {
 		 * if any files were added to the queue. Otherwise nothing happens.
 		 *
 		 * @method addFile
-		 * @param {Plupload.File|mOxie.File|File|Node|Array} file File or files to add to the queue.
+		 * @param {plupload.File|mOxie.File|File|Node|Array} file File or files to add to the queue.
+		 * @param {String} [fileName] If specified, will be used as a name for the file
 		 */
-		addFile : function(file) {
-			var self = this, files = [], queue = [];
+		addFile : function(file, fileName) {
+			var files = []
+			, ruid
+			;
+
+			function getRUID() {
+				var ctrl = fileDrop || fileInput;
+				if (ctrl) {
+					return ctrl.getRuntime().uid;
+				}
+				return false;
+			}
 
 			function resolveFile(file) {
 				var type = o.typeOf(file);
 
-				if (file instanceof o.Blob) {
-					files.push(file); // final step for other condition branches
-				} else if (file instanceof plupload.File) {
-					files.push(file.getSource());
-				} else if (type === 'file') {
-					// this process is asyncronous, so we queue it to be handled in series
-					queue.push(function(cb) {
-						// we are attaching the file to the runtime here
-						var target = new o.RuntimeTarget();
-						target.bind('RuntimeInit', function(e, runtime) {
-							resolveFile(new o.File(runtime.uid, file));
-							cb();
-						});
-						try {
-							target.connectRuntime({ runtime_order: "html5" });
-						} catch (ex) {
-							// runtime failed to initialize
-							self.trigger('Error', {
-								code : plupload.FILE_EXTENSION_ERROR,
-								message : plupload.translate('File extension error.'),
-								file : file
-							});
-							cb();
+				if (file instanceof o.File) { 
+					if (!file.ruid) {
+						if (!ruid) { // weird case
+							return false;
 						}
-					});
-					return;
+						file.ruid = ruid;
+						file.connectRuntime(ruid);
+					}
+					resolveFile(new plupload.File(file));
+				} else if (file instanceof o.Blob) {
+					resolveFile(file.getSource());
+					file.destroy();
+				} else if (file instanceof plupload.File) { // final step for other branches
+					if (fileName) {
+						file.name = fileName;
+					}
+					files.push(file);
+				} else if (o.inArray(type, ['file', 'blob']) !== -1) {
+					resolveFile(new o.File(null, file));
 				} else if (type === 'node' && o.typeOf(file.files) === 'filelist') {
 					// if we are dealing with input[type="file"]
 					o.each(file.files, resolveFile);
 				} else if (type === 'array') {
 					// mixed array
+					fileName = null; // should never happen, but unset anyway to avoid funny situations
 					o.each(file, resolveFile);
 				}
 			}
 
-			resolveFile(file);
+			ruid = getRUID();
 
-			o.inSeries(queue, function() { // if queue is empty, callback will be invoked instantly
-				addSelectedFiles.call(self, files);
-			});
+			resolveFile(file);
+			// Trigger FilesAdded event if we added any
+			if (files.length) {
+				this.trigger("FilesAdded", files);
+			}
 		},
 
 		/**
 		 * Removes a specific file.
 		 *
 		 * @method removeFile
-		 * @param {plupload.File} file File to remove from queue.
+		 * @param {plupload.File|String} file File to remove from queue.
 		 */
 		removeFile : function(file) {
+			var id = typeof(file) === 'string' ? file : file.id;
+
 			for (var i = files.length - 1; i >= 0; i--) {
-				if (files[i].id === file.id) {
+				if (files[i].id === id) {
 					return this.splice(i, 1)[0];
 				}
 			}
@@ -1806,18 +1809,30 @@ if (file.hasExif === false) {
 		destroy : function() {
 			this.stop();
 
+			// Purge the queue
+			plupload.each(files, function(file) {
+				file.destroy();
+			});
+			files = [];
+
 			if (fileInput) {
 				fileInput.destroy();
+				fileInput = null;
 			}
 
 			if (fileDrop) {
 				fileDrop.destroy();
+				fileDrop = null;
 			}
+
+			required_caps = {};
+			startTime = total = disabled = xhr = null;
 
 			this.trigger('Destroy');
 
 			// Clean-up after uploader itself
 			this.unbindAll();
+			events = {};
 		}
 	});
 };
@@ -1951,7 +1966,6 @@ plupload.File = (function() {
 			 * @see moxie.js, _readEntry()
 			 */
 			relativePath: file.getSource().relativePath || null,
-			
 		});
 
 		filepool[this.id] = file;

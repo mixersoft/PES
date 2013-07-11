@@ -14,6 +14,7 @@
  */
 /*
  * modified by michael@snaphappi.com for use with pluploader jquery UI widget
+ * 	requires: https://github.com/cowboy/jquery-throttle-debounce
  */
 (function($, window, document, undefined) {
     var $window = $(window);
@@ -122,6 +123,7 @@
 
         /* Fire one scroll event per scroll. Not one scroll event per image. */
         if (0 === settings.event.indexOf("scroll")) {
+        	// fire one scroll event at the end of the scroll
             $container.bind(settings.event, $.debounce(250, function(event) {
             	throttle.clear_queue();
 		        return update();
