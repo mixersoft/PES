@@ -214,7 +214,7 @@ $(function() {
 	$("#uploader").plupload({
 		// General settings
 		runtimes : 'html5,flash,silverlight',
-		url : null,
+		url : '/my/plupload',
 
 		// Select multiple files at once
 		multi_selection: true, // if set to true, html4 will always fail, since it can't select multiple files

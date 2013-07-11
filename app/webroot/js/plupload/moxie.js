@@ -6377,8 +6377,8 @@ define("moxie/runtime/html5/file/FileDrop", [
 			if (entry.isFile) {
 				entry.file(function(file) {
 					if (_isAcceptable(file)) {
+						file.relativePath = _fullPath || null;  // expose relativePath to file
 						_files.push(file);
-												
 						/*
 						 * add chunking to FileDrop _readEntry()
 						 */
