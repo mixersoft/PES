@@ -243,23 +243,28 @@ abstract class UserPlugin extends AppModel {
 	public function checkPasswordToken($token = null) {
 		$options = array(
 			'fields'=>'User.id, User.email',
-			'contain'=>array(
-				'Profile'=>array(
-					'conditions' => array('Profile.password_token' => $token, 'Profile.email_token_expires >=' => date('Y-m-d H:i:s')),
-					'fields'=>array('Profile.id', 'Profile.password_token','Profile.email_token_expires'),
-				),
-			),
 			'conditions' => array(
 				$this->alias . '.active' => 1,
-			)
+			),
 		);		
+		$options['joins'][] = array(
+			'table'=>'profiles',
+			'alias'=>'Profile',
+			'type'=>'INNER',
+			'fields'=>array('Profile.id', 'Profile.password_token','Profile.email_token_expires'),
+			'conditions'=>array(
+				'Profile.user_id = User.id',
+				'Profile.password_token' => $token, 
+				'Profile.email_token_expires >=' => date('Y-m-d H:i:s')
+			)	
+		);
 		$user = $this->find('first', $options);
-//		$user = $this->find('first', array(
-//			'contain' => array(),
-//			'conditions' => array(
-//				$this->alias . '.active' => 1,
-//				$this->alias . '.password_token' => $token,
-//				$this->alias . '.email_token_expires >=' => date('Y-m-d H:i:s'))));
+		// $user = $this->find('first', array(
+			// 'contain' => array(),
+			// 'conditions' => array(
+				// $this->alias . '.active' => 1,
+				// $this->alias . '.password_token' => $token,
+				// $this->alias . '.email_token_expires >=' => date('Y-m-d H:i:s'))));
 		if (empty($user)) {
 			return false;
 		}
@@ -283,11 +288,15 @@ abstract class UserPlugin extends AppModel {
 					'message' => __d('users', 'The passwords are not equal.', true))));
 
 		$this->set($postData);
+debug($postData);
+debug($this->validates());		
 		if ($this->validates()) {
 			App::import('Core', 'Security');
 			$this->data[$this->alias]['password'] = Security::hash($this->data[$this->alias]['new_password'], null, true);
 			$this->data[$this->alias]['password_token'] = null;
 			$result = $this->save($this->data, false);
+debug($this->data);
+debug($result);			
 		}
 		$this->validate = $tmp;
 		return $result;
