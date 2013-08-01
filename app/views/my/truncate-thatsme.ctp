@@ -13,6 +13,10 @@
 			color: #F16122;
 			text-decoration: underline;
 		}
+		h2 {
+			font-size:30px;
+			line-height: 1.8em;
+		}
 	</style>
 	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
 	<script type="text/javascript" src="http://snappi.snaphappi.com/min/b=static/js&f=bootstrap/modernizr-2.6.2-respond-1.1.0.min.js,bootstrap/bootstrap.js&123"></script>
@@ -167,6 +171,7 @@
 				<span class="help-inline"></span>
 			</label>
 			<button type="submit" class="btn btn-awesome" 
+				<?php  if (isset($disabled)) echo 'disabled="1" title="The reset action has been disabled for this demo account"'; ?>
 				data-action="reset"
 				data-loading-text='<i class="icon-spinner icon-spin"></i> Reset Account' >
 				Reset Account
