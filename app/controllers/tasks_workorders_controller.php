@@ -383,10 +383,13 @@ class TasksWorkordersController extends AppController {
 		$shot_paginateArray =  $Model->getPaginatePhotosByShotId($shotIds, $shot_paginateArray, $shotType);
 		$shot_paginateArray['extras']['paginateCacheKey'] = $paginateAlias;	// AppModel
 		$this->paginate[$paginateAlias] = $Model->getPageablePaginateArray($this, $shot_paginateArray, $paginateAlias);
-		Configure::write("paginate.Options.{$paginateAlias}.limit", 999);			// Pageable?
+		Configure::write("paginate.Options.{$paginateAlias}.limit", 9999);		// override perpage, get ALL hidden shots
+		Configure::write("paginate.Options.{$paginateAlias}.page", 1);			// do not page shot_castingCall
 // We need to preserve the paging counts under a different key, and restore the original paging Counts for Assets		
 $paging[$paginateModel] = $this->params['paging'][$paginateModel];		
 		$shotData = $this->paginate($paginateModel);		// must paginate using Model->name because of how fields and conditions are set up
+// debug("paginateCacheKey = {$paginateAlias}");
+// debug(Configure::read('paginate.Options'));
 		$shotData = Set::extract($shotData, "{n}.{$paginateModel}");
 		$paging[$paginateAlias] = $this->params['paging'][$paginateModel];		// save paging count for Shots
 		$this->viewVars['jsonData']['shot_CastingCall'] = $this->CastingCall->getCastingCall($shotData);
