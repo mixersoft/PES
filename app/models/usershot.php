@@ -586,7 +586,7 @@ debug($duplicateShotIds);
 			 		// duplicate lower priority shot at new priority THEN remove assets from duplicates
 					// original, lower priority shot is deactivated
 					$cleanup['duplicateShots'][$shot_priority] = $shot_id;		// at new priority
-				} else if ($relative_priority = 0){
+				} else if ($relative_priority == 0){
 					$cleanup['removeFromShots'][] = $shot_id;
 				} else {
 					// no privilege to remove from higher priority shot
