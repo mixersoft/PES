@@ -425,7 +425,7 @@
 	        prevPatt: /(^112$)|(^37$)|(^8$)|(^52$)/, // p,left,backspace,
 	        // keypad left
 	        closePatt: /(^27$)/,
-	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)/, // keybd 0-5
+	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)(^49$)|(^50$)|(^51$)|(^52$)|(^53$)|(^48$)/, // keybd 0-5
 	    },
 		markup: '<article class="FigureBox PhotoPreview">'+
                 '<figure>'+
@@ -790,7 +790,8 @@
             	e.preventDefault();
             	try {
             		var r = this.node.Rating;
-            		var v = parseInt(charStr) - 96; // 0 - 5
+            		var v = parseInt(charStr) - 48; // 0 - 5
+            		if (v > 5) v = parseInt(charStr) - 96; // keybd 0 - 5
             		SNAPPI.Rating.setRating(r,v); 
             	} catch(e){}
             }
@@ -820,7 +821,7 @@
 	        prevPatt: /(^112$)|(^37$)|(^8$)|(^52$)/, // p,left,backspace,
 	        // keypad left
 	        closePatt: /(^27$)/,
-	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)/, // keybd 0-5
+	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)(^49$)|(^50$)|(^51$)|(^52$)|(^53$)|(^48$)/, // keybd 0-5
 	    },
 		markup: '<article class="FigureBox PhotoZoom">'+
                 '<figure>'+

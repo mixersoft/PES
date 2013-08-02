@@ -223,7 +223,8 @@
             }
             if (charStr.search(charCode.ratingPatt) == 0) {
             	try {
-            		var v = parseInt(charStr) - 96; // 0 - 5
+            		var v = parseInt(charStr) - 48; // 0 - 5
+            		if (v > 5) v = parseInt(charStr) - 96; // keybd 0 - 5
             		SNAPPI.Rating.setRating(focus.Rating,v); 
             	} catch(e){}
             	 done = 1;
@@ -656,7 +657,7 @@ var _showZoom = function(e, g) {
 	        // keypad down
 	        upPatt : /(^38)/,
 	        // kepad up
-	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)/, // keybd 0-5
+	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)(^49$)|(^50$)|(^51$)|(^52$)|(^53$)|(^48$)/, // keybd 0-5
 	    },
         /*
          * build 
@@ -1045,7 +1046,8 @@ var _showZoom = function(e, g) {
             }
             if (charStr.search(charCode.ratingPatt) == 0) {
             	try {
-            		var v = parseInt(charStr) - 96; // 0 - 5
+            		var v = parseInt(charStr) - 48; // 0 - 5
+            		if (v > 5) v = parseInt(charStr) - 96; // keybd 0 - 5
             		SNAPPI.Rating.setRating(focus.Rating,v); 
             	} catch(e){}
             	 done = 1;
@@ -1115,7 +1117,7 @@ var _showZoom = function(e, g) {
 	        prevPatt: /(^112$)|(^37$)|(^8$)|(^52$)/, // p,left,backspace,
 	        // keypad left
 	        closePatt: /(^27$)/,
-	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)/, // keybd 0-5
+	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)(^49$)|(^50$)|(^51$)|(^52$)|(^53$)|(^48$)/, // keybd 0-5
 	    },
 		/*
          * build 
@@ -1256,7 +1258,7 @@ var _showZoom = function(e, g) {
 	        prevPatt: /(^112$)|(^37$)|(^8$)|(^52$)/, // p,left,backspace,
 	        // keypad left
 	        closePatt: /(^27$)/,
-	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)/, // keybd 0-5
+	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)(^49$)|(^50$)|(^51$)|(^52$)|(^53$)|(^48$)/, // keybd 0-5
 	    },
 		/*
          * build 
