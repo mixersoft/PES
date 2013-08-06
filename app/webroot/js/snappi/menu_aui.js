@@ -188,12 +188,7 @@
 				boundingBox: MARKUP.selector
 		};
 		_cfg = _Y.merge(DEFAULT_CFG_contextmenu, cfg, _cfg);
-		if (cfg.currentTarget){
-			if (cfg.currentTarget.one('.filmstrip.shot')){
-				// for shotGallery parent, align to img
-				_cfg.trigger = cfg.currentTarget.one('figure img');				
-			} else _cfg.trigger = cfg.currentTarget;	// 'startup/disabled' trigger
-		}
+		if (cfg.currentTarget)	_cfg.trigger = cfg.currentTarget;	// 'startup/disabled' trigger
 
 		var sticky, menu = new _Y.OverlayContext(_cfg);
 		menu.render();
@@ -230,6 +225,7 @@
 	/*
 	 * add offset to menu alignment positioning
 	 * 	NOTES: must use cfg.constrain = false for A.OverlayContext
+	 * 		for PhotoRoll, change alignment to .FigureBox > Figure > Img BEFORE calling
 	 * @params overlay, A.OverlayContext
 	 * @params newXY, array [x,y] (optional), target XY location BEFORE constrain
 	 * @params offset, {x:, y:}
@@ -251,11 +247,8 @@
 		if (e && menu.get('disabled')) {
 			menu.enable();
 			var trigger = e.currentTarget.hasClass('FigureBox') ? e.currentTarget : e.currentTarget.ancestor('.FigureBox');
-			if (trigger.one('.filmstrip.shot')){
-				// for shotGallery parent, align to img
-				trigger = trigger.one('figure img');				
-			} 
-			menu.set('trigger', trigger);			// 'startup/disabled' trigger
+			// align to FigureBox > Figure > Img
+			menu.set('trigger', trigger.one('> Figure > Img'));			// 'startup/disabled' trigger
 			menu.show();
 			// TODO: add checkbox for sticky
 			if (typeof sticky !== 'undefined') {
@@ -993,7 +986,7 @@ console.log("delegateHost="+delegateHost._yuid);
 			var hasPerm = g.castingCall.CastingCall.GroupAsShotPerm,
 				shotType = g.castingCall.CastingCall.Auditions.ShotType;
 		} catch (e) {}
-		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');  // ShotGallery uses different TRIGGER
 		if (hasPerm && shotType && thumbnail.hasClass('selected')) {
 			if (g.getSelected().count()>1) {
 				menuItem.removeClass('disabled');
@@ -1022,13 +1015,11 @@ console.log("delegateHost="+delegateHost._yuid);
 			}
 			try {
 				if (g._cfg.type == 'ShotGalleryShot' ) {
-					// TODO: check g.type here
-					options.isBestshot = PAGE.jsonData.shot_CastingCall.CastingCall.ShowHidden ? 0 : 1;
+					options.ShowHidden = PAGE.jsonData.shot_CastingCall.CastingCall.ShowHidden ? 1: 0;
 				} else 
-					options.isBestshot = PAGE.jsonData.castingCall.CastingCall.ShowHidden ? 0 : 1; 
-				
+					options.ShowHidden = PAGE.jsonData.castingCall.CastingCall.ShowHidden ? 1 : 0; 
 			} catch (ex){
-				options.isBestshot = 0;
+				options.ShowHidden = 1;
 			}
 			g.groupAsShot(null, options);
 			return;
@@ -1114,6 +1105,13 @@ console.log("delegateHost="+delegateHost._yuid);
 		if (/Group/.test(SNAPPI.STATE.controller['class'])) {
 			options.group_id = SNAPPI.STATE.controller.xhrFrom.uuid;
 		}		
+		if (g._cfg.type == 'ShotGalleryShot' ) {
+			options.success = function(e, id, o, args) {
+				// mark shot as stale or update shot_id
+				var check;
+				return false;
+			}
+		}
 		if (remaining > 1) {
 			g.removeFromShot(batch, options);
 		} else {
@@ -1163,6 +1161,13 @@ console.log("delegateHost="+delegateHost._yuid);
 		};
 		if (/Group/.test(SNAPPI.STATE.controller['class'])) {
 			options.group_id = SNAPPI.STATE.controller.xhrFrom.uuid;
+		}
+		if (g._cfg.type == 'ShotGalleryShot' ) {
+			options.success = function(e, id, o, args) {
+				// mark shot as stale or update shot_id
+				var check;
+				return false;
+			}
 		}
 		g.unGroupShot(batch, options);
 	};
@@ -1895,7 +1900,13 @@ console.log("delegateHost="+delegateHost._yuid);
 		
 		
 		var callback = function(){
+			// menu.xy is positioned relative to overlay.get('trigger') 
 			var menu = Menu.initContextMenu(MARKUP, TRIGGER, cfg);
+			var trigger = menu.get('align').node;
+			if (trigger.hasClass('FigureBox')) {
+				trigger = trigger.one('> FIGURE > IMG');
+				menu.set('align.node', trigger);
+			}
 			var offset = cfg.offset || {x:-20, y:20};
 			menu.set('xy', Menu.moveIfUnconstrained(menu, null, offset));
 			menu.on('xyChange', function(e){
