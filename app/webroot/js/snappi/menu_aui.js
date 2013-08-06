@@ -650,6 +650,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.delete_click = function(menuItem, menu, e){
 		var g, response, selected, isSelected, isContextMenu, isSelectAll, isLightbox,
 			thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		// contextmenu or selectall menu
 		isContextMenu = menuItem.ancestor('#contextmenu-photoroll-markup')
 		isSelectAll = menuItem.ancestor('#menu-select-all-markup');
@@ -757,6 +758,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	};	
 	MenuItems.rating_beforeShow = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		if (!menuItem.Rating) {
 			// add new rating group as LI > DIV
@@ -811,6 +813,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	};	
 	MenuItems.openJpg_beforeShow = function(menuItem, menu, e){
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		if (e.ctrlKey) var src = audition.Audition.Photo.Img.Src.rootSrc;
 		else var src = audition.Audition.Photo.Img.Src.rootSrc;
@@ -818,6 +821,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	};
 	MenuItems.autorotate_beforeShow = function(menuItem, menu, e){
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		if (e.ctrlKey) var src = audition.Audition.Photo.Img.Src.rootSrc;
 		else var src = audition.Audition.Photo.Img.Src.rootSrc;
@@ -826,6 +830,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.zoom_click = function(menuItem, menu, e){
 		// menu.hide();
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		// for testing: ctrl-click to open JPG in new tab
 		if (e.ctrlKey || e.metaKey) {
@@ -860,6 +865,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.linkTo_click = function(menuItem, menu, e){
 		// menu.hide();
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var g = MenuItems.getGalleryFromTarget(thumbnail);
 		var linkTo = thumbnail.one('img').getAttribute('linkTo');
 		if (g.castingCall.CastingCall) {
@@ -876,6 +882,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.workorder_linkTo_click = function(menuItem, menu, e){
 		// menu.hide();
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var g = MenuItems.getGalleryFromTarget(thumbnail);
 		var linkTo = thumbnail.one('img').getAttribute('linkTo');
 		linkTo = linkTo.replace('/photos/home', _Y.Lang.sub('/{alias}/snap', SNAPPI.STATE.controller));
@@ -892,6 +899,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	}
 	MenuItems.refresh_click = function(menuItem, menu, e){
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var img = thumbnail.one('figure > img');
 		img.once('load', function(){
 			SNAPPI.setPageLoading(false);
@@ -903,6 +911,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.rotate_click = function(menuItem, menu, e){
 		var rotate = menuItem.getAttribute('rotate');
 		var thumbnail = menu.get('currentNode');
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var selected = thumbnail.uuid;
 		if (e.shiftKey) {
 			selected = MenuItems.getGalleryFromTarget(thumbnail).getSelected();			
@@ -952,6 +961,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.showHiddenShot_beforeShow = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
     	try {
     		var shotId = audition.Audition.Substitutions.id;
     		if (!shotId) menuItem.hide();
@@ -964,6 +974,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	
 	MenuItems.showHiddenShot_click = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		try {
 			var g = MenuItems.getGalleryFromTarget(menu);
@@ -980,13 +991,13 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.groupAsShot_beforeShow = function(menuItem, menu){
 		if (!MenuItems.confirmAuth(menuItem)) return;
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var g = MenuItems.getGalleryFromTarget(thumbnail);
 		try {
 			// check if the user has permission to groupAsShot
 			var hasPerm = g.castingCall.CastingCall.GroupAsShotPerm,
 				shotType = g.castingCall.CastingCall.Auditions.ShotType;
 		} catch (e) {}
-		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');  // ShotGallery uses different TRIGGER
 		if (hasPerm && shotType && thumbnail.hasClass('selected')) {
 			if (g.getSelected().count()>1) {
 				menuItem.removeClass('disabled');
@@ -998,6 +1009,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	
 	MenuItems.groupAsShot_click = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		try {
 			// from thumbnail context-menu
@@ -1065,13 +1077,13 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.removeFromShot_beforeShow = function(menuItem, menu){
 		if (!MenuItems.confirmAuth(menuItem)) return;
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		try {
 			// check if the user has permission to groupAsShot
 			var hasPerm = g.castingCall.CastingCall.GroupAsShotPerm,
 				shotType = g.castingCall.CastingCall.Auditions.ShotType;
 		} catch (e) {}		
 		// var show = /^Users|^Groups/.test(SNAPPI.STATE.controller.name);
-		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		if (hasPerm && shotType && thumbnail.hasClass('selected')) {
 			var g = MenuItems.getGalleryFromTarget(thumbnail);
 			if (g.getSelected().count()>=1) {
@@ -1084,6 +1096,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	
 	MenuItems.removeFromShot_click = function(menuItem, menu){
 		var batch, options, thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		var g = MenuItems.getGalleryFromTarget(menu);
 		if (!g.castingCall.CastingCall.GroupAsShotPerm) return;
@@ -1122,6 +1135,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.ungroupShot_beforeShow = function(menuItem, menu){
 		if (!MenuItems.confirmAuth(menuItem)) return;
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		try {
 			// check if the user has permission to groupAsShot
@@ -1143,6 +1157,7 @@ console.log("delegateHost="+delegateHost._yuid);
 		
 	MenuItems.ungroupShot_click = function(menuItem, menu){
 		var batch, options, thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		var g = MenuItems.getGalleryFromTarget(menu);
 		if (!g.castingCall.CastingCall.GroupAsShotPerm) return;
@@ -1579,6 +1594,7 @@ console.log("delegateHost="+delegateHost._yuid);
 		var role = SNAPPI.STATE.controller.ROLE;
 		if (/(EDITOR|MANAGER)/.test(role)) {
 			var thumbnail = menu.get('currentNode');	// target
+			if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 			var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 			var isFlagged = audition.Audition.Photo.Flagged;
 			if (isFlagged && parseInt(isFlagged)) menuItem.setContent('clear Flag');
@@ -1595,6 +1611,7 @@ console.log("delegateHost="+delegateHost._yuid);
 			return;
 		}
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var g = MenuItems.getGalleryFromTarget(thumbnail);
 		SNAPPI.Factory.Gallery.nav.toggle_ContextMenu(g, e);
 		
