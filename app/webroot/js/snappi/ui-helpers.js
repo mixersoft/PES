@@ -391,12 +391,12 @@ console.error("Error: expecting cfg.gallery and castingCall parsedResults");
 		shots: {
 			'all-shots': function(e){
 				var toggle = e.target.hasClass('selected') ? null : 1;
-				var next = SNAPPI.IO.setNamedParams(window.location.href, {'all-shots':toggle});
+				var next = SNAPPI.IO.setNamedParams(window.location.href, {'all-shots':toggle, 'only-script-shots':null});
 				window.location.href = next;
 			},
 			'only-script-shots': function(e){
 				var toggle = e.target.hasClass('selected') ? null : 1;
-				var next = SNAPPI.IO.setNamedParams(window.location.href, {'only-script-shots':toggle});
+				var next = SNAPPI.IO.setNamedParams(window.location.href, {'only-script-shots':toggle, 'all-shots':null});
 				window.location.href = next;
 			},
 		},
