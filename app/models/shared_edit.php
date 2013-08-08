@@ -25,14 +25,16 @@ class SharedEdit extends AppModel {
 	 * UPDATE shared_edit score, votes, points values from user_edits table 
 	 * @params asset_id array of key values to limit update
 	 * 
-delete from shared_edits where asset_id='';
-delete from user_edits where asset_id='';	
+set @aid:='';
+delete from shared_edits where asset_id=@aid;
+-- delete from user_edits where asset_id=@aid;	
 UPDATE shared_edits se
 JOIN (
 select asset_id, sum(rating) as points,  count(rating) as votes, round(sum(rating)/count(rating),2) as score
-from user_edits
+from user_edits ue
+where ue.asset_id=@aid
 group by asset_id
-having votes>1
+-- having votes>1
 ) AS ue ON se.asset_id = ue.asset_id
 SET se.points = ue.points, se.votes=ue.votes, se.score=ue.score;
 	 * 
