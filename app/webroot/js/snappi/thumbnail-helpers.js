@@ -426,9 +426,9 @@
     		listeners: ['PreviewExtrasClick', 'RatingClick', 'AutoScrollRatingClick', 'PreviewImgLoad', 'Keydown'],
     	},
     	charCode : {
-	        nextPatt: /(^110$)|(^39$)|(^32$)|(^54$)/, // n,right,space,
+	        nextPatt: /(^110$)|(^39$)|(^32$)/, // n,right,space,
 	        // keypad right
-	        prevPatt: /(^112$)|(^37$)|(^8$)|(^52$)/, // p,left,backspace,
+	        prevPatt: /(^112$)|(^37$)|(^8$)/, // p,left,backspace,
 	        // keypad left
 	        closePatt: /(^27$)/,
 	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)(^49$)|(^50$)|(^51$)|(^52$)|(^53$)|(^48$)/, // keybd 0-5
@@ -822,9 +822,9 @@
     		listeners: ['PreviewExtrasClick', 'RatingClick',  'AutoScrollRatingClick', 'PreviewImgLoad', 'Keydown'],
     	}, 
     	charCode : {
-	        nextPatt: /(^110$)|(^39$)|(^32$)|(^54$)/, // n,right,space,
+	        nextPatt: /(^110$)|(^39$)|(^32$)/, // n,right,space,
 	        // keypad right
-	        prevPatt: /(^112$)|(^37$)|(^8$)|(^52$)/, // p,left,backspace,
+	        prevPatt: /(^112$)|(^37$)|(^8$)/, // p,left,backspace,
 	        // keypad left
 	        closePatt: /(^27$)/,
 	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)(^49$)|(^50$)|(^51$)|(^52$)|(^53$)|(^48$)/, // keybd 0-5
