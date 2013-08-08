@@ -1277,13 +1277,11 @@ var _showZoom = function(e, g) {
 			gallery.providerName = cfg.PROVIDER_NAME;	// deprecate: use this.cfg.providerName
 			GalleryFactory._attachNodes(gallery, cfg);
 			
-			/*
-			 *  for DialogHiddenShot, get initial size differently
-			 */
 			try {
-    			var thumbSize = SNAPPI.STATE.thumbSize.DialogHiddenShot;
-    		} catch(e){}
-    		if (!thumbSize) thumbSize='sq';
+    			var thumbSize = SNAPPI.STATE.thumbSize.ShotGalleryShot;
+    		} catch(e){
+    			thumbSize = cfg.size || 'sq';
+    		}
 			gallery.header.all('ul.thumb-size li.btn.white').some(function(n){
 				// initialize header icon
 				var action = n.getAttribute('action');
