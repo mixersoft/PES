@@ -1006,7 +1006,12 @@ console.log("delegateHost="+delegateHost._yuid);
 		}
 		menuItem.addClass('disabled');
 	};	
-	
+	MenuItems._isShowHidden = function(g){
+		g = g || this;
+		var cc = (/ShotGalleryShot|DialogHiddenShot/.test(g._cfg.type)) ?  
+			PAGE.jsonData.shot_CastingCall.CastingCall 	: PAGE.jsonData.castingCall.CastingCall;
+		return cc.ShowHidden ? 1 : 0;
+	}
 	MenuItems.groupAsShot_click = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
 		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
@@ -1019,19 +1024,12 @@ console.log("delegateHost="+delegateHost._yuid);
 			var options = {
 				menu: menu,
 				loadingNode: menuItem,
+				ShowHidden: MenuItems._isShowHidden(g),
 				shotType: shotType,
 			};
 			// get userid or group_id for shot
 			if (/Group/.test(SNAPPI.STATE.controller['class'])) {
 				options.group_id = SNAPPI.STATE.controller.xhrFrom.uuid;
-			}
-			try {
-				if (/ShotGalleryShot|DialogHiddenShot/.test(this._cfg.type)) {
-					options.ShowHidden = PAGE.jsonData.shot_CastingCall.CastingCall.ShowHidden ? 1: 0;
-				} else 
-					options.ShowHidden = PAGE.jsonData.castingCall.CastingCall.ShowHidden ? 1 : 0; 
-			} catch (ex){
-				options.ShowHidden = 1;
 			}
 			g.groupAsShot(null, options);
 			return;
@@ -1068,6 +1066,7 @@ console.log("delegateHost="+delegateHost._yuid);
 				loadingNode: menuItem,
 				shotType: shotType,
 				lightbox: lightbox,				// remove hiddenshot-hide from lightbox
+				ShowHidden: MenuItems._isShowHidden(lightbox.Gallery),  // TODO: TEST
 				uuid: SNAPPI.STATE.controller.xhrFrom.uuid
 			});	
 			return;		
@@ -1114,6 +1113,7 @@ console.log("delegateHost="+delegateHost._yuid);
 			menu: menu,
 			loadingNode: menuItem,
 			shotType: shotType,
+			ShowHidden: MenuItems._isShowHidden(g),
 		};
 		if (/Group/.test(SNAPPI.STATE.controller['class'])) {
 			options.group_id = SNAPPI.STATE.controller.xhrFrom.uuid;
@@ -1173,6 +1173,7 @@ console.log("delegateHost="+delegateHost._yuid);
 			menu: menu,
 			loadingNode: menuItem,
 			shotType: shotType,
+			ShowHidden: MenuItems._isShowHidden(g),
 		};
 		if (/Group/.test(SNAPPI.STATE.controller['class'])) {
 			options.group_id = SNAPPI.STATE.controller.xhrFrom.uuid;
