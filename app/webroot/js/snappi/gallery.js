@@ -1212,7 +1212,7 @@
 					arguments: args, 
 					on: {
 						successJson:  function(e, id, o, args) {
-							args.menu.hide();
+							if (args.menu) args.menu.hide();
 							return this._groupAsShot_success.apply(this, arguments);
 							// return args.success.apply(this, arguments);
 						}
@@ -1472,7 +1472,7 @@
 					arguments: args,
 					on: {
 						successJson:  function(e, id, o, args) {
-							args.menu.hide();
+							if (args.menu) args.menu.hide();
 							return this._removeFromShot_success.apply(this, arguments);
 							// return args.success.apply(this, arguments);
 						}
@@ -1633,7 +1633,7 @@
 				thumbnail: selected, 
 				audition: audition,
 				success: cfg.success,
-				// success: this._setBestshot_success
+				menu: cfg.menu,	
 			};
 			var loadingNode = cfg.loadingNode;
 			if (loadingNode.io == undefined) {
@@ -1647,8 +1647,8 @@
 					arguments: args,
 					on: {
 						success:  function(e, id, o, args) {
-							return this._removeFromShot_success.apply(this, arguments);
-							// return args.success.apply(this, arguments);
+							if (args.menu) args.menu.hide();
+							return this._setBestshot_success.apply(this, arguments);
 						}
 					}
 				});
@@ -1671,7 +1671,7 @@
 				// confirm showHidden bestShot is in main photoroll
 				if (1 || bestShot !== selected) {
 					// var photoroll = _Y.one('section.gallery.photo').Gallery;
-					g = SNAPPI.Gallery.find['uuid-'] || SNAPPI.Gallery.find['nav-'];
+					var g = SNAPPI.Gallery.find['uuid-'] || SNAPPI.Gallery.find['nav-'];
 					// splice into original location, nav- or uuid-
 					var result = g.auditionSH.replace(bestShot, selected);
 					if (result) {

@@ -1008,9 +1008,15 @@ console.log("delegateHost="+delegateHost._yuid);
 	};	
 	MenuItems._isShowHidden = function(g){
 		g = g || this;
-		var cc = (/ShotGalleryShot|DialogHiddenShot/.test(g._cfg.type)) ?  
-			PAGE.jsonData.shot_CastingCall.CastingCall 	: PAGE.jsonData.castingCall.CastingCall;
-		return cc.ShowHidden ? 1 : 0;
+		var ShowHidden;
+		if (/ShotGalleryShot/.test(g._cfg.type)) {
+			ShowHidden = PAGE.jsonData.shot_CastingCall.CastingCall.ShowHidden ? 1 : 0;
+		} else if (/DialogHiddenShot/.test(g._cfg.type)) {
+			ShowHidden = 1;  // cc comes from /photos/hiddenshots, cc not cached in PAGE.jsonData
+		} else { // raw=[0|1]
+			ShowHidden = PAGE.jsonData.castingCall.CastingCall.ShowHidden ? 1 : 0;
+		}
+		return ShowHidden;
 	}
 	MenuItems.groupAsShot_click = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
@@ -1190,6 +1196,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	
 	MenuItems.setBestshot_click = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		var g = MenuItems.getGalleryFromTarget(menu);
 		var shotType = audition.Audition.Substitutions.shotType;
