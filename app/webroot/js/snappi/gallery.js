@@ -1266,7 +1266,7 @@
 						}
 					}
 				});	
-				this.render();
+				this.render(null, this.Shot);
 			}
 			else {
 				this.applyShotCSS(this.shots[shotCfg.shotId]);

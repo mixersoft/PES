@@ -1026,7 +1026,7 @@ console.log("delegateHost="+delegateHost._yuid);
 				options.group_id = SNAPPI.STATE.controller.xhrFrom.uuid;
 			}
 			try {
-				if (g._cfg.type == 'ShotGalleryShot' ) {
+				if (/ShotGalleryShot|DialogHiddenShot/.test(this._cfg.type)) {
 					options.ShowHidden = PAGE.jsonData.shot_CastingCall.CastingCall.ShowHidden ? 1: 0;
 				} else 
 					options.ShowHidden = PAGE.jsonData.castingCall.CastingCall.ShowHidden ? 1 : 0; 
