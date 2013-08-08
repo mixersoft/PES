@@ -174,7 +174,7 @@
 	        			// TODO: need to match up ShotType somehow. 
 	        			// 		lightbox messes things up because shotType is not determinate
 	        			// case of aud_A...SubstitutionREF == null, but aud_B...SubstitutionREF == shotId 
-	        			var s = Auditions.addAuditionToShot(o, shotId, shotType, stale);
+	        			var s = Auditions.addAuditionToShot(o, shotId, shotType, stale, 'init');
 	        			// add shot_extras for /workorders/shots views
 	        			if (castingCall.shot_extras) {
 	        				var extras = castingCall.shot_extras[s.id];
@@ -197,7 +197,8 @@
 	            }
 	            
 	            if (SNAPPI.STATE.displayPage) {
-	            	SNAPPI.STATE.displayPage.total = castingCall.CastingCall.Auditions.Total;
+	            	// Total should be set by SNAPPI.mergeSessionData();
+	            	// SNAPPI.STATE.displayPage.total = castingCall.CastingCall.Auditions.Total;
 	            }
 	            break;
 	        case 'flickr':
@@ -270,14 +271,17 @@ console.error('ERROR: problem getting DateTaken value. using 1970-01-01 00:00:00
     /**
      * add audition or audition.Audition.Substitutions to existing or new Shot as SNAPPI.SubstitutionGroupData 
      * - track all SNAPPI.SubstitutionGroupData in private _shotsSH
-     * @params audition
-     * @params shotId - uuid
-     * @params shotType
-     * @params stale boolean - if true, then shot._sh is incomplete. POST to get all shot auditions
+     * @param audition
+     * @param shotId - uuid
+     * @param shotType string Usershot or Groupshot
+     * @param stale boolean - if true, then shot._sh is incomplete. POST to get all shot auditions
+     * @param move boolean, default false, move existing audition shot into new shot, do NOT merge
+     * 		for ShowHidden=true or ShotGalleryShot, DialogHiddenShot operations
      * @return SNAPPI.SubstitutionGroupData, reference to a shot
      */
-    Auditions.addAuditionToShot = function(audition, shotId, shotType, stale) {
+    Auditions.addAuditionToShot = function(audition, shotId, shotType, stale, move) {
     	var stale = stale || false;
+    	move = !!move;	// default false
     	var shotId = shotId || audition.Audition.SubstitutionREF;
     	if (!shotId) return;
     	
@@ -296,10 +300,10 @@ console.error('ERROR: problem getting DateTaken value. using 1970-01-01 00:00:00
         	_shotsSH.add(s);		// add shot to master list
         	// add shotType
         }
-    	if (oldShot && oldShot.id !== shotId) {				
-    		// if the audition belonged to another Shot, move all Shot auditions to new shot
+    	if (!move && oldShot && oldShot.id !== shotId) {				
+    		// if the audition belonged to another Shot, merge when ShowHidden==0
     		s.stale = s.stale || oldShot.stale;
-    		s.importGroup(oldShot);			// TODO: this should include current audition, but check
+    		s.importGroup(oldShot);			
     	} else s.add(audition);			// just add audition to Shot
     	s.stale = s.stale || (s._sh.count() != hiddenShot_count);
         audition.Audition.Substitutions = s;	// back reference, add shot to audition
@@ -341,15 +345,16 @@ console.error('ERROR: problem getting DateTaken value. using 1970-01-01 00:00:00
 	 * for groupType == 'Substitution': 
 	 * 		make a new shot group from group.AuditionREF 
 	 * 
-     * @params groupType string = [Tag | Cluster | Substitution]
-     * @params group object - {
+     * @param groupType string = [Tag | Cluster | Substitution]
+     * @param group object - {
 				id : uuid,
 				Label : shotId,
 				AuditionREF : [{idref: auditionId}, ...],
 				shotType: [Usershot|Groupshot],
 				remove: // if true, remove from existing group, do NOT add
+				move: // if true, then just move to new Shot, do not MERGE
 			};
-     * @params auditionSH source for auditions 
+     * @param auditionSH source for auditions 
 	 */
 	Auditions.mergeGroup = function(groupType, group, auditionSH){
 		auditionSH = auditionSH || this.auditionSH;
@@ -366,8 +371,7 @@ console.error('ERROR: problem getting DateTaken value. using 1970-01-01 00:00:00
             audition = auditionSH.get(key);		
             if (!audition) {
             	// TODO: for /workorders/shots we need id_Shot.id, but we need the OLD Shot and we have the NEW shot
-            	audition = _auditionSH.get(key);
-            	if (audition) alert ('WARNING: existing audition not found in param auditionSH, append Shot.id???');
+            	console.error('WARNING: existing audition not found g.auditionSH, if ShotGalleryShot, append shot.id to audition key');
             }
             
             // "merge" by groupType
@@ -406,7 +410,7 @@ console.error('ERROR: problem getting DateTaken value. using 1970-01-01 00:00:00
                         } else {
 	                        if (audition.Audition.SubstitutionREF != group.id) {
 	//                        	audition.Audition.SubstitutionREF = group.id;
-	                        	retval = Auditions.addAuditionToShot(audition, group.id, shotType, false);
+	                        	retval = Auditions.addAuditionToShot(audition, group.id, shotType, false, group.move);
 	                        } else {
 	                        	retval = audition.Audition.Substitutions;
 	                        }

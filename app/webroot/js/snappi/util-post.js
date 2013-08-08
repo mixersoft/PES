@@ -207,34 +207,44 @@
 		return CCid;
 	};
 	/**
-	 * Add auditions to Shot 
+	 * Add/Update audition.Shot object
 	 * 	* keep Shot.count accurate
-	 * @param photoRoll instance of SNAPPI.Gallery,  the photoRoll to update, 
+	 * @param g instance of SNAPPI.Gallery,  the g to update, 
 	 * 		- not sure if this is required. it might update master List  
 	 * @param shotCfg { shotId, bestshotId}  uuids
 	 * @param options.aids = auditionREFs array - [auditionId,...] or [{idref: auditionId}, ...] 
 	 * 			options.shotType
 	 * @return shotId
 	 */	
-	ShotController.markSubstitutes_afterPostSuccess = function(photoRoll, shotCfg, options) {
+	ShotController.markSubstitutes_afterPostSuccess = function(g, shotCfg, options) {
 		/*
 		 * local processing after successful POST add Substitution to CastingCall
 		 */
 		var shotType, auditionREFs = options.aids;
+		if (/ShotGalleryShot/.test(g._cfg.type)) {
+			//need to append OLD shot_id to audition key to update audition
+			auditionREFs = [];
+			for (var i in options.aids) {
+				auditionREFs.push(options.aids[i]+'_'+g.Shot.id);
+			}
+		}
 		try {
-			shotType = options.shotType || photoRoll.castingCall.CastingCall.Auditions.ShotType;
+			shotType = options.shotType || g.castingCall.CastingCall.Auditions.ShotType;
 		} catch (e) {
 			throw new Exception("ERROR: not sure what shot type to use here");
 		}
-		var groupCfg = {
+		var newShotCfg = {
 			id : shotCfg.shotId,
 //			bestshotId: shotCfg.bestshotId		// not used here
 			ShotType: shotType,
 			Label : shotCfg.shotId,
-			AuditionREF : auditionREFs
+			AuditionREF : auditionREFs,
+			move : !options.isBestShot,		// just move, don't MERGE, audition
 		};
-		// update auditions & shots,
-		var shot = SNAPPI.Auditions.mergeGroup.call(photoRoll, 'Shot', groupCfg, photoRoll.auditionSH);
+		
+		// update auditions & shots,  ???: g.auditionSH or options.auditions?
+		// TODO: need to check args.isBestShot to know if we should move or merge Shot
+		var shot = SNAPPI.Auditions.mergeGroup.call(g, 'Shot', newShotCfg, g.auditionSH);
 		return shot;
 	};
 	/**

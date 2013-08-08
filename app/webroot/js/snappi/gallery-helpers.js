@@ -127,18 +127,10 @@
 		    			var thumb = g.node.ancestor('.gallery.shot > .container > .FigureBox.Photo');
 		    			if (!thumb) break; 
 		    			batch.add(SNAPPI.Auditions.find(thumb.Thumbnail.uuid));
-		    			var success = function(){
-		    				// remove from view 
-		    				var id = g.Shot.best.id+'_'+g.Shot.id;
-		    				_Y.one('article#'+id).remove();
-		    				return false;
-		    			};
 		    			options =  {
 							loadingNode: e.currentTarget,
 							shotType: g.castingCall.CastingCall.Auditions.ShotType,
-							success: success,
 						};
-						// TODO: make this work for workorders
 						if (/Group/.test(SNAPPI.STATE.controller['class'])) {
 							options.group_id = SNAPPI.STATE.controller.xhrFrom.uuid;
 						}

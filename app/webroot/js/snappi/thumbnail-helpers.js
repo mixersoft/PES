@@ -230,7 +230,13 @@
 			try {
 				var exists = thumbnail.node.one('figure .hidden-shot');
 				if (thumbnail._cfg.showHiddenShot) {
+					/*
+					 * TODO: on first render, Substitutions.count() == 1 but Shot.count = DB value
+					 * but after XHR POST, i.e. groupAsShot, Substitutions.count is correct, but Shot.count is stale
+					 */
 					shotCount = parseInt(audition.Audition.Shot.count);
+					// shotCount = parseInt(audition.Audition.Substitutions.count());
+					
 					tooltip = shotCount + " Snaps in this Shot.";
 					if (exists) {
 						// reuse

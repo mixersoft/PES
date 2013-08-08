@@ -394,6 +394,7 @@ $paging[$paginateModel] = $this->params['paging'][$paginateModel];
 		$paging[$paginateAlias] = $this->params['paging'][$paginateModel];		// save paging count for Shots
 		$this->viewVars['jsonData']['shot_CastingCall'] = $this->CastingCall->getCastingCall($shotData);
 		$this->params['paging'] = $paging;
+// debug($paging);
 		/*
 		 * end Shot data
 		 */
