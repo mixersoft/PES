@@ -306,7 +306,8 @@ debug("Asset->hasPerm() deprecated. using Permissionable to check for read permi
 			// make usershots an INNER JOIN of the AssetsUsershot LEFT JOIN
 			$joins[] =  array(
 					// 'table'=>'assets_usershots',
-					'table'=>'( `assets_usershots` AS `AssetsUsershot` INNER JOIN `usershots` AS `Shot` ON (   `Shot`.`id` = `AssetsUsershot`.`usershot_id`  AND `Shot`.active=1 ))',
+					'table'=>'( `assets_usershots` AS `AssetsUsershot` INNER JOIN `usershots` AS `Shot` ON (   `Shot`.`id` = `AssetsUsershot`.`usershot_id`  
+						'.($show_inactive_shots ? '' : 'AND `Shot`.active=1').'))',
 					// 'alias'=>'AssetsUsershot',	// alias included in 'table' field
 					'type'=>$only_shots ? 'INNER' : 'LEFT',
 					'conditions'=>array('`AssetsUsershot`.asset_id = `Asset`.id'),
