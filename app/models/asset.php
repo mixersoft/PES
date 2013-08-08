@@ -271,19 +271,11 @@ debug("Asset->hasPerm() deprecated. using Permissionable to check for read permi
 			};			
 			// join with Groupshots
 			$joins[] =  array(
-					'table'=>'assets_groupshots',
-					'alias'=>'AssetsGroupshot',
-					'type'=>'LEFT',
-					'conditions'=>array('`AssetsGroupshot`.asset_id = `Asset`.id'),
-				);			
-			$joins[] =  array(
-					'table'=>'groupshots',
-					'alias'=>'Shot',		// use Shot instead of Groupshot
-					'type'=> $only_shots ? 'INNER' : 'LEFT',
-					'conditions'=>array(
-						'`Shot`.id = `AssetsGroupshot`.groupshot_id',
-						// '`Shot`.active'=>1,
-					),
+					// 'table'=>'assets_usershots',
+					'table'=>'( `assets_groupshots` AS `AssetsGroupshot` INNER JOIN `groupshots` AS `Shot` ON (   `Shot`.`id` = `AssetsGroupshot`.`groupshot_id`  AND `Shot`.active=1 ))',
+					// 'alias'=>'AssetsGroupshot',	// alias included in 'table' field
+					'type'=>$only_shots ? 'INNER' : 'LEFT',
+					'conditions'=>array('`AssetsUsershot`.asset_id = `Asset`.id'),
 				);	
 			if ($join_bestshot) {					
 				$joins[] =  array(
@@ -311,21 +303,14 @@ debug("Asset->hasPerm() deprecated. using Permissionable to check for read permi
 		} else if ($shotType == 'Usershot') {
 			// join with Usershots
 			$this->Shot = ClassRegistry::init('Usershot');
+			// make usershots an INNER JOIN of the AssetsUsershot LEFT JOIN
 			$joins[] =  array(
-					'table'=>'assets_usershots',
-					'alias'=>'AssetsUsershot',
-					'type'=>'LEFT',
+					// 'table'=>'assets_usershots',
+					'table'=>'( `assets_usershots` AS `AssetsUsershot` INNER JOIN `usershots` AS `Shot` ON (   `Shot`.`id` = `AssetsUsershot`.`usershot_id`  AND `Shot`.active=1 ))',
+					// 'alias'=>'AssetsUsershot',	// alias included in 'table' field
+					'type'=>$only_shots ? 'INNER' : 'LEFT',
 					'conditions'=>array('`AssetsUsershot`.asset_id = `Asset`.id'),
 				);			
-			$joins[] =  array(
-					'table'=>'usershots',
-					'alias'=>'Shot',		// use Shot instead of Usershot
-					'type'=> $only_shots ? 'INNER' : 'LEFT',
-					'conditions'=>array(
-						'`Shot`.id = `AssetsUsershot`.usershot_id',
-						// '`Shot`.active'=>1,
-					),
-				);	
 			// if (!empty($queryData['extras']['show_inactive_shots'])) unset($joins[1]['conditions']['`Shot`.active']);		
 			if ($join_bestshot) {				
 				$joins[] =  array(
