@@ -107,7 +107,7 @@ class PersonController extends UsersController {
 		 * TODO: I use jsonp somewhere else, WMS app(?) replace with this pattern
 		 */ 
 		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
-		if (preg_match('/(snaphappi.com|thats\-me)/i', $origin)) {
+		if (preg_match('/(snaphappi.com|thats\-me|github)/i', $origin)) {
 			echo header("Access-Control-Allow-Origin: {$origin}");
 		}
 		$ALLOWED_BY_USERNAME = array('newyork', 'paris', 'venice', 'bali', 'summer-2009');
@@ -117,6 +117,10 @@ class PersonController extends UsersController {
 		} else if (in_array($id, $ALLOWED_BY_USERNAME )) {
 			$data = $this->User->find('first', array('conditions'=>array('User.username'=>$id)) );	
 			$id = $data['User']['id'];
+			/*
+			 * make public
+			 */ 
+			echo header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
 		} else if (strlen($id)==36 && preg_match('/[snaphappi\.com|thats\-me|snappi\-dev]/i', $origin)) {	// passed as UUID 
 			/**
 			 * WARNING. this is a public, unauthenticated action. 
