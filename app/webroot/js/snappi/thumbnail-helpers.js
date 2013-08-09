@@ -230,7 +230,13 @@
 			try {
 				var exists = thumbnail.node.one('figure .hidden-shot');
 				if (thumbnail._cfg.showHiddenShot) {
+					/*
+					 * TODO: on first render, Substitutions.count() == 1 but Shot.count = DB value
+					 * but after XHR POST, i.e. groupAsShot, Substitutions.count is correct, but Shot.count is stale
+					 */
 					shotCount = parseInt(audition.Audition.Shot.count);
+					// shotCount = parseInt(audition.Audition.Substitutions.count());
+					
 					tooltip = shotCount + " Snaps in this Shot.";
 					if (exists) {
 						// reuse
@@ -420,12 +426,12 @@
     		listeners: ['PreviewExtrasClick', 'RatingClick', 'AutoScrollRatingClick', 'PreviewImgLoad', 'Keydown'],
     	},
     	charCode : {
-	        nextPatt: /(^110$)|(^39$)|(^32$)|(^54$)/, // n,right,space,
+	        nextPatt: /(^110$)|(^39$)|(^32$)/, // n,right,space,
 	        // keypad right
-	        prevPatt: /(^112$)|(^37$)|(^8$)|(^52$)/, // p,left,backspace,
+	        prevPatt: /(^112$)|(^37$)|(^8$)/, // p,left,backspace,
 	        // keypad left
 	        closePatt: /(^27$)/,
-	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)/, // keybd 0-5
+	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)(^49$)|(^50$)|(^51$)|(^52$)|(^53$)|(^48$)/, // keybd 0-5
 	    },
 		markup: '<article class="FigureBox PhotoPreview">'+
                 '<figure>'+
@@ -790,7 +796,8 @@
             	e.preventDefault();
             	try {
             		var r = this.node.Rating;
-            		var v = parseInt(charStr) - 96; // 0 - 5
+            		var v = parseInt(charStr) - 48; // 0 - 5
+            		if (v > 5) v = parseInt(charStr) - 96; // keybd 0 - 5
             		SNAPPI.Rating.setRating(r,v); 
             	} catch(e){}
             }
@@ -815,12 +822,12 @@
     		listeners: ['PreviewExtrasClick', 'RatingClick',  'AutoScrollRatingClick', 'PreviewImgLoad', 'Keydown'],
     	}, 
     	charCode : {
-	        nextPatt: /(^110$)|(^39$)|(^32$)|(^54$)/, // n,right,space,
+	        nextPatt: /(^110$)|(^39$)|(^32$)/, // n,right,space,
 	        // keypad right
-	        prevPatt: /(^112$)|(^37$)|(^8$)|(^52$)/, // p,left,backspace,
+	        prevPatt: /(^112$)|(^37$)|(^8$)/, // p,left,backspace,
 	        // keypad left
 	        closePatt: /(^27$)/,
-	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)/, // keybd 0-5
+	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)(^49$)|(^50$)|(^51$)|(^52$)|(^53$)|(^48$)/, // keybd 0-5
 	    },
 		markup: '<article class="FigureBox PhotoZoom">'+
                 '<figure>'+

@@ -188,12 +188,7 @@
 				boundingBox: MARKUP.selector
 		};
 		_cfg = _Y.merge(DEFAULT_CFG_contextmenu, cfg, _cfg);
-		if (cfg.currentTarget){
-			if (cfg.currentTarget.one('.filmstrip.shot')){
-				// for shotGallery parent, align to img
-				_cfg.trigger = cfg.currentTarget.one('figure img');				
-			} else _cfg.trigger = cfg.currentTarget;	// 'startup/disabled' trigger
-		}
+		if (cfg.currentTarget)	_cfg.trigger = cfg.currentTarget;	// 'startup/disabled' trigger
 
 		var sticky, menu = new _Y.OverlayContext(_cfg);
 		menu.render();
@@ -230,6 +225,7 @@
 	/*
 	 * add offset to menu alignment positioning
 	 * 	NOTES: must use cfg.constrain = false for A.OverlayContext
+	 * 		for PhotoRoll, change alignment to .FigureBox > Figure > Img BEFORE calling
 	 * @params overlay, A.OverlayContext
 	 * @params newXY, array [x,y] (optional), target XY location BEFORE constrain
 	 * @params offset, {x:, y:}
@@ -251,11 +247,8 @@
 		if (e && menu.get('disabled')) {
 			menu.enable();
 			var trigger = e.currentTarget.hasClass('FigureBox') ? e.currentTarget : e.currentTarget.ancestor('.FigureBox');
-			if (trigger.one('.filmstrip.shot')){
-				// for shotGallery parent, align to img
-				trigger = trigger.one('figure img');				
-			} 
-			menu.set('trigger', trigger);			// 'startup/disabled' trigger
+			// align to FigureBox > Figure > Img
+			menu.set('trigger', trigger.one('> Figure > Img'));			// 'startup/disabled' trigger
 			menu.show();
 			// TODO: add checkbox for sticky
 			if (typeof sticky !== 'undefined') {
@@ -657,6 +650,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.delete_click = function(menuItem, menu, e){
 		var g, response, selected, isSelected, isContextMenu, isSelectAll, isLightbox,
 			thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		// contextmenu or selectall menu
 		isContextMenu = menuItem.ancestor('#contextmenu-photoroll-markup')
 		isSelectAll = menuItem.ancestor('#menu-select-all-markup');
@@ -764,6 +758,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	};	
 	MenuItems.rating_beforeShow = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		if (!menuItem.Rating) {
 			// add new rating group as LI > DIV
@@ -818,6 +813,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	};	
 	MenuItems.openJpg_beforeShow = function(menuItem, menu, e){
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		if (e.ctrlKey) var src = audition.Audition.Photo.Img.Src.rootSrc;
 		else var src = audition.Audition.Photo.Img.Src.rootSrc;
@@ -825,6 +821,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	};
 	MenuItems.autorotate_beforeShow = function(menuItem, menu, e){
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		if (e.ctrlKey) var src = audition.Audition.Photo.Img.Src.rootSrc;
 		else var src = audition.Audition.Photo.Img.Src.rootSrc;
@@ -833,6 +830,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.zoom_click = function(menuItem, menu, e){
 		// menu.hide();
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		// for testing: ctrl-click to open JPG in new tab
 		if (e.ctrlKey || e.metaKey) {
@@ -867,6 +865,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.linkTo_click = function(menuItem, menu, e){
 		// menu.hide();
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var g = MenuItems.getGalleryFromTarget(thumbnail);
 		var linkTo = thumbnail.one('img').getAttribute('linkTo');
 		if (g.castingCall.CastingCall) {
@@ -883,6 +882,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.workorder_linkTo_click = function(menuItem, menu, e){
 		// menu.hide();
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var g = MenuItems.getGalleryFromTarget(thumbnail);
 		var linkTo = thumbnail.one('img').getAttribute('linkTo');
 		linkTo = linkTo.replace('/photos/home', _Y.Lang.sub('/{alias}/snap', SNAPPI.STATE.controller));
@@ -899,6 +899,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	}
 	MenuItems.refresh_click = function(menuItem, menu, e){
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var img = thumbnail.one('figure > img');
 		img.once('load', function(){
 			SNAPPI.setPageLoading(false);
@@ -910,6 +911,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.rotate_click = function(menuItem, menu, e){
 		var rotate = menuItem.getAttribute('rotate');
 		var thumbnail = menu.get('currentNode');
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var selected = thumbnail.uuid;
 		if (e.shiftKey) {
 			selected = MenuItems.getGalleryFromTarget(thumbnail).getSelected();			
@@ -959,6 +961,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.showHiddenShot_beforeShow = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
     	try {
     		var shotId = audition.Audition.Substitutions.id;
     		if (!shotId) menuItem.hide();
@@ -971,6 +974,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	
 	MenuItems.showHiddenShot_click = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		try {
 			var g = MenuItems.getGalleryFromTarget(menu);
@@ -987,13 +991,13 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.groupAsShot_beforeShow = function(menuItem, menu){
 		if (!MenuItems.confirmAuth(menuItem)) return;
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var g = MenuItems.getGalleryFromTarget(thumbnail);
 		try {
 			// check if the user has permission to groupAsShot
 			var hasPerm = g.castingCall.CastingCall.GroupAsShotPerm,
 				shotType = g.castingCall.CastingCall.Auditions.ShotType;
 		} catch (e) {}
-		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		if (hasPerm && shotType && thumbnail.hasClass('selected')) {
 			if (g.getSelected().count()>1) {
 				menuItem.removeClass('disabled');
@@ -1002,9 +1006,21 @@ console.log("delegateHost="+delegateHost._yuid);
 		}
 		menuItem.addClass('disabled');
 	};	
-	
+	MenuItems._isShowHidden = function(g){
+		g = g || this;
+		var ShowHidden;
+		if (/ShotGalleryShot/.test(g._cfg.type)) {
+			ShowHidden = PAGE.jsonData.shot_CastingCall.CastingCall.ShowHidden ? 1 : 0;
+		} else if (/DialogHiddenShot/.test(g._cfg.type)) {
+			ShowHidden = 1;  // cc comes from /photos/hiddenshots, cc not cached in PAGE.jsonData
+		} else { // raw=[0|1]
+			ShowHidden = PAGE.jsonData.castingCall.CastingCall.ShowHidden ? 1 : 0;
+		}
+		return ShowHidden;
+	}
 	MenuItems.groupAsShot_click = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		try {
 			// from thumbnail context-menu
@@ -1014,21 +1030,12 @@ console.log("delegateHost="+delegateHost._yuid);
 			var options = {
 				menu: menu,
 				loadingNode: menuItem,
+				ShowHidden: MenuItems._isShowHidden(g),
 				shotType: shotType,
 			};
 			// get userid or group_id for shot
 			if (/Group/.test(SNAPPI.STATE.controller['class'])) {
 				options.group_id = SNAPPI.STATE.controller.xhrFrom.uuid;
-			}
-			try {
-				if (g._cfg.type == 'ShotGalleryShot' ) {
-					// TODO: check g.type here
-					options.isBestshot = PAGE.jsonData.shot_CastingCall.CastingCall.ShowHidden ? 0 : 1;
-				} else 
-					options.isBestshot = PAGE.jsonData.castingCall.CastingCall.ShowHidden ? 0 : 1; 
-				
-			} catch (ex){
-				options.isBestshot = 0;
 			}
 			g.groupAsShot(null, options);
 			return;
@@ -1065,6 +1072,7 @@ console.log("delegateHost="+delegateHost._yuid);
 				loadingNode: menuItem,
 				shotType: shotType,
 				lightbox: lightbox,				// remove hiddenshot-hide from lightbox
+				ShowHidden: MenuItems._isShowHidden(lightbox.Gallery),  // TODO: TEST
 				uuid: SNAPPI.STATE.controller.xhrFrom.uuid
 			});	
 			return;		
@@ -1074,13 +1082,13 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.removeFromShot_beforeShow = function(menuItem, menu){
 		if (!MenuItems.confirmAuth(menuItem)) return;
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		try {
 			// check if the user has permission to groupAsShot
 			var hasPerm = g.castingCall.CastingCall.GroupAsShotPerm,
 				shotType = g.castingCall.CastingCall.Auditions.ShotType;
 		} catch (e) {}		
 		// var show = /^Users|^Groups/.test(SNAPPI.STATE.controller.name);
-		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		if (hasPerm && shotType && thumbnail.hasClass('selected')) {
 			var g = MenuItems.getGalleryFromTarget(thumbnail);
 			if (g.getSelected().count()>=1) {
@@ -1093,6 +1101,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	
 	MenuItems.removeFromShot_click = function(menuItem, menu){
 		var batch, options, thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		var g = MenuItems.getGalleryFromTarget(menu);
 		if (!g.castingCall.CastingCall.GroupAsShotPerm) return;
@@ -1110,10 +1119,18 @@ console.log("delegateHost="+delegateHost._yuid);
 			menu: menu,
 			loadingNode: menuItem,
 			shotType: shotType,
+			ShowHidden: MenuItems._isShowHidden(g),
 		};
 		if (/Group/.test(SNAPPI.STATE.controller['class'])) {
 			options.group_id = SNAPPI.STATE.controller.xhrFrom.uuid;
 		}		
+		if (g._cfg.type == 'ShotGalleryShot' ) {
+			options.success = function(e, id, o, args) {
+				// mark shot as stale or update shot_id
+				var check;
+				return false;
+			}
+		}
 		if (remaining > 1) {
 			g.removeFromShot(batch, options);
 		} else {
@@ -1124,6 +1141,7 @@ console.log("delegateHost="+delegateHost._yuid);
 	MenuItems.ungroupShot_beforeShow = function(menuItem, menu){
 		if (!MenuItems.confirmAuth(menuItem)) return;
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		try {
 			// check if the user has permission to groupAsShot
@@ -1145,6 +1163,7 @@ console.log("delegateHost="+delegateHost._yuid);
 		
 	MenuItems.ungroupShot_click = function(menuItem, menu){
 		var batch, options, thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		var g = MenuItems.getGalleryFromTarget(menu);
 		if (!g.castingCall.CastingCall.GroupAsShotPerm) return;
@@ -1160,15 +1179,24 @@ console.log("delegateHost="+delegateHost._yuid);
 			menu: menu,
 			loadingNode: menuItem,
 			shotType: shotType,
+			ShowHidden: MenuItems._isShowHidden(g),
 		};
 		if (/Group/.test(SNAPPI.STATE.controller['class'])) {
 			options.group_id = SNAPPI.STATE.controller.xhrFrom.uuid;
+		}
+		if (g._cfg.type == 'ShotGalleryShot' ) {
+			options.success = function(e, id, o, args) {
+				// mark shot as stale or update shot_id
+				var check;
+				return false;
+			}
 		}
 		g.unGroupShot(batch, options);
 	};
 	
 	MenuItems.setBestshot_click = function(menuItem, menu){
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 		var g = MenuItems.getGalleryFromTarget(menu);
 		var shotType = audition.Audition.Substitutions.shotType;
@@ -1574,6 +1602,7 @@ console.log("delegateHost="+delegateHost._yuid);
 		var role = SNAPPI.STATE.controller.ROLE;
 		if (/(EDITOR|MANAGER)/.test(role)) {
 			var thumbnail = menu.get('currentNode');	// target
+			if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 			var audition = SNAPPI.Auditions.find(thumbnail.uuid);
 			var isFlagged = audition.Audition.Photo.Flagged;
 			if (isFlagged && parseInt(isFlagged)) menuItem.setContent('clear Flag');
@@ -1590,6 +1619,7 @@ console.log("delegateHost="+delegateHost._yuid);
 			return;
 		}
 		var thumbnail = menu.get('currentNode');	// target
+		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
 		var g = MenuItems.getGalleryFromTarget(thumbnail);
 		SNAPPI.Factory.Gallery.nav.toggle_ContextMenu(g, e);
 		
@@ -1895,7 +1925,13 @@ console.log("delegateHost="+delegateHost._yuid);
 		
 		
 		var callback = function(){
+			// menu.xy is positioned relative to overlay.get('trigger') 
 			var menu = Menu.initContextMenu(MARKUP, TRIGGER, cfg);
+			var trigger = menu.get('align').node;
+			if (trigger.hasClass('FigureBox')) {
+				trigger = trigger.one('> FIGURE > IMG');
+				menu.set('align.node', trigger);
+			}
 			var offset = cfg.offset || {x:-20, y:20};
 			menu.set('xy', Menu.moveIfUnconstrained(menu, null, offset));
 			menu.on('xyChange', function(e){

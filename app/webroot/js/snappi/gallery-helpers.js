@@ -127,18 +127,10 @@
 		    			var thumb = g.node.ancestor('.gallery.shot > .container > .FigureBox.Photo');
 		    			if (!thumb) break; 
 		    			batch.add(SNAPPI.Auditions.find(thumb.Thumbnail.uuid));
-		    			var success = function(){
-		    				// remove from view 
-		    				var id = g.Shot.best.id+'_'+g.Shot.id;
-		    				_Y.one('article#'+id).remove();
-		    				return false;
-		    			};
 		    			options =  {
 							loadingNode: e.currentTarget,
 							shotType: g.castingCall.CastingCall.Auditions.ShotType,
-							success: success,
 						};
-						// TODO: make this work for workorders
 						if (/Group/.test(SNAPPI.STATE.controller['class'])) {
 							options.group_id = SNAPPI.STATE.controller.xhrFrom.uuid;
 						}
@@ -223,7 +215,8 @@
             }
             if (charStr.search(charCode.ratingPatt) == 0) {
             	try {
-            		var v = parseInt(charStr) - 96; // 0 - 5
+            		var v = parseInt(charStr) - 48; // 0 - 5
+            		if (v > 5) v = parseInt(charStr) - 96; // keybd 0 - 5
             		SNAPPI.Rating.setRating(focus.Rating,v); 
             	} catch(e){}
             	 done = 1;
@@ -641,9 +634,9 @@ var _showZoom = function(e, g) {
 			end: null
 	    },
 	    charCode : {
-	        nextPatt: /(^110$)|(^39$)|(^32$)|(^54$)/, // n,right,space,
+	        nextPatt: /(^110$)|(^39$)|(^32$)/, // n,right,space,
 	        // keypad right
-	        prevPatt: /(^112$)|(^37$)|(^8$)|(^52$)/, // p,left,backspace,
+	        prevPatt: /(^112$)|(^37$)|(^8$)/, // p,left,backspace,
 	        // keypad left
 	        closePatt: /(^27$)/,
 	        // escape
@@ -656,7 +649,7 @@ var _showZoom = function(e, g) {
 	        // keypad down
 	        upPatt : /(^38)/,
 	        // kepad up
-	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)/, // keybd 0-5
+	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)(^49$)|(^50$)|(^51$)|(^52$)|(^53$)|(^48$)/, // keybd 0-5
 	    },
         /*
          * build 
@@ -1045,7 +1038,8 @@ var _showZoom = function(e, g) {
             }
             if (charStr.search(charCode.ratingPatt) == 0) {
             	try {
-            		var v = parseInt(charStr) - 96; // 0 - 5
+            		var v = parseInt(charStr) - 48; // 0 - 5
+            		if (v > 5) v = parseInt(charStr) - 96; // keybd 0 - 5
             		SNAPPI.Rating.setRating(focus.Rating,v); 
             	} catch(e){}
             	 done = 1;
@@ -1110,12 +1104,12 @@ var _showZoom = function(e, g) {
 			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick', 'WindowOptionClick'],			
 		},
 		charCode : {
-	        nextPatt: /(^110$)|(^39$)|(^32$)|(^54$)/, // n,right,space,
+	        nextPatt: /(^110$)|(^39$)|(^32$)/, // n,right,space,
 	        // keypad right
-	        prevPatt: /(^112$)|(^37$)|(^8$)|(^52$)/, // p,left,backspace,
+	        prevPatt: /(^112$)|(^37$)|(^8$)/, // p,left,backspace,
 	        // keypad left
 	        closePatt: /(^27$)/,
-	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)/, // keybd 0-5
+	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)(^49$)|(^50$)|(^51$)|(^52$)|(^53$)|(^48$)/, // keybd 0-5
 	    },
 		/*
          * build 
@@ -1251,12 +1245,12 @@ var _showZoom = function(e, g) {
 			listeners: ['MultiSelect', 'Contextmenu', 'FocusClick', 'WindowOptionClick', 'ShotGalleryToolbarOptionClick'],			
 		},
 		charCode : {
-	        nextPatt: /(^110$)|(^39$)|(^32$)|(^54$)/, // n,right,space,
+	        nextPatt: /(^110$)|(^39$)|(^32$)/, // n,right,space,
 	        // keypad right
-	        prevPatt: /(^112$)|(^37$)|(^8$)|(^52$)/, // p,left,backspace,
+	        prevPatt: /(^112$)|(^37$)|(^8$)/, // p,left,backspace,
 	        // keypad left
 	        closePatt: /(^27$)/,
-	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)/, // keybd 0-5
+	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)(^49$)|(^50$)|(^51$)|(^52$)|(^53$)|(^48$)/, // keybd 0-5
 	    },
 		/*
          * build 
@@ -1283,13 +1277,11 @@ var _showZoom = function(e, g) {
 			gallery.providerName = cfg.PROVIDER_NAME;	// deprecate: use this.cfg.providerName
 			GalleryFactory._attachNodes(gallery, cfg);
 			
-			/*
-			 *  for DialogHiddenShot, get initial size differently
-			 */
 			try {
-    			var thumbSize = SNAPPI.STATE.thumbSize.DialogHiddenShot;
-    		} catch(e){}
-    		if (!thumbSize) thumbSize='sq';
+    			var thumbSize = SNAPPI.STATE.thumbSize.ShotGalleryShot;
+    		} catch(e){
+    			thumbSize = cfg.size || 'sq';
+    		}
 			gallery.header.all('ul.thumb-size li.btn.white').some(function(n){
 				// initialize header icon
 				var action = n.getAttribute('action');

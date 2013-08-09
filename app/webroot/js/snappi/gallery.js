@@ -89,7 +89,7 @@
     		// remove all references to contained nodes
     		this.node.get('parentNode').remove();	// remove from dom tree
     		for (var i in this.node.listen) {
-    			this.node.listen[i].detach();
+    			if (_Y.Lang.isFunction(this.node.listen[i].detach)) this.node.listen[i].detach();
     			delete(this.node.listen[i]);
     		}
     		for (var i in this.container.listen) {
@@ -308,12 +308,12 @@
 	            		Perpage: this.auditionSH.count(),
 	            		Total: this.auditionSH.count(),
 	            	}	            
-	            	if (!shot) {
+	            	if (!shot && this.auditionSH.count()) {
 	            		var audition = this.auditionSH.first();
-	            		shot = audition.Audition.Substitutions;
+	            		shot = audition && audition.Audition.Substitutions;
 	            		shot.stale = shot._sh.count() != audition.Audition.Shot.count;
 	            	}
-	            	this.Shot = shot;
+	            	this.Shot = shot || {};
 	            	// continue below	
 	            case 'nav-': 	// type=NavFilmstrip
 	            	this.node.get('parentNode').removeClass('hide');
@@ -341,6 +341,12 @@
 	                this._cfg.start = 0;
 	                this._cfg.end = perpage;
 	                if (this.auditionSH.size() == 0) {
+	                	if (nlist.size()) {
+	                		nlist.each(function(n, i, l){
+	                			n.Thumbnail.remove();
+	                		});
+	                		nlist = this.container.all('> .FigureBox');
+	                	}
 	                	var emptyMsg = _Y.one('#markup .empty-photo-gallery-message');
 	                	if (emptyMsg) this.container.append(emptyMsg.removeClass('hide'));
 	                }	                
@@ -1151,9 +1157,10 @@
         /*
          * for groupAsShot processing, 
          * 	find/add hiddenshots if we are adding a bestshot
+         *  default true
          */
         addIsBestshot: function(data, options){
-        	if (options.isBestshot) {
+        	if (!options.ShowHidden) {
         		data['data[isBestshot]']=1;
         	}
         	return data;
@@ -1189,8 +1196,9 @@
 					auditions: batch,
 					shotType: cfg.shotType,
 					lightbox: cfg.lightbox,
-					success: cfg.success || this._groupAsShot_success,
+					success: cfg.success,
 					menu: cfg.menu,	
+					isBestshot: !cfg.ShowHidden,		// TODO: this should be together with g.addIsBestshot()
 			};
 			var loadingNode = cfg.loadingNode;
 			if (loadingNode.io == undefined) {
@@ -1204,8 +1212,9 @@
 					arguments: args, 
 					on: {
 						successJson:  function(e, id, o, args) {
-							args.menu.hide();
-							return args.success.apply(this, arguments);
+							if (args.menu) args.menu.hide();
+							return this._groupAsShot_success.apply(this, arguments);
+							// return args.success.apply(this, arguments);
 						}
 					}
 				});
@@ -1225,42 +1234,68 @@
 			// remember hiddenShot count
 			var newHiddenShot = { id:null, count:0},
 				alreadyCounted={};
-			args.auditions.each(function(audition){
-				if (!audition.Audition.Shot.id) newHiddenShot.count++;
-				else if (!alreadyCounted[audition.Audition.Shot.id]) {
-					newHiddenShot.count += parseInt(audition.Audition.Shot.count);
-					alreadyCounted[audition.Audition.Shot.id] = true;
-				}
-			});
-			var shot = SNAPPI.ShotController.markSubstitutes_afterPostSuccess(this, shotCfg, args);
-			if (shot){
-				this.applyShotCSS(shot);
-			}
-			// update hiddenShot count
-			newHiddenShot.id = shot.id;
-			args.auditions.each(function(audition){
-				audition.Audition.Shot = newHiddenShot;
-				// update .FigureBox to show hiddenshot-icon
-				for (var i in audition.bindTo) {
-					var o = audition.bindTo[i];
-					if (o.hasClass('FigureBox') && o.hasClass('hiddenshot-show')) {
-						o.Thumbnail.reuse(audition, o);
+			// note: args.audition == groupAsShot batch
+			if (args.isBestshot) {
+				// include hiddenshots in new Shot.count
+				args.auditions.each(function(audition){
+					if (!audition.Audition.Shot.id) newHiddenShot.count++;  
+					else if (!alreadyCounted[audition.Audition.Shot.id]) {
+						newHiddenShot.count += parseInt(audition.Audition.Shot.count);
+						alreadyCounted[audition.Audition.Shot.id] = true;
 					}
-				}
-			});			
-			
-			// if lightbox, remove hiddenshot-hide
-			if (args.lightbox) {
-				var lightbox = args.lightbox;
-				lightbox.Gallery.container.all('.FigureBox.hiddenshot-hide').each(function(n,i,l){
-					lightbox.remove(n);	
-				})
+				});
+			} else {
+				newHiddenShot.count = args.auditions.count();
 			}
 			
+			newHiddenShot.id = response['groupAsShot']['shotId'];
+			// update audition.Audition.Substitutions, 
+			// 		note: audition.Audition.Shot.count is valid from XHR GET, from DB
+			// 			audition.Audition.Substitutions._count is valid after groupAsShot
+			this.shots[shotCfg.shotId] = SNAPPI.ShotController.markSubstitutes_afterPostSuccess(this, shotCfg, args);
 			
-			// cancel multiSelect
-			SNAPPI.multiSelect.clearAll(this.container);
-			return false;
+			if (/ShotGalleryShot|DialogHiddenShot/.test(this._cfg.type)) {
+				// re-render Gallery Thumnbnails to update hiddenshot icon
+				this.auditionSH.each(function(audition){
+					// HACK: manually update this.auditionSH[i].Shot.count 
+					audition.Audition.Shot.count = audition.Audition.Substitutions.count();
+					for (var i in audition.bindTo) {
+						var o = audition.bindTo[i];
+						if (o.hasClass('FigureBox') && o.hasClass('hiddenshot-show')) {
+							o.Thumbnail.reuse(audition);
+						}
+					}
+				});	
+				this.render(null, this.Shot);
+			}
+			else {
+				this.applyShotCSS(this.shots[shotCfg.shotId]);
+				
+				// re-render bestshot to show hiddenshot-icon
+				args.auditions.each(function(audition){
+					audition.Audition.Shot = newHiddenShot;
+					// update .FigureBox to show hiddenshot-icon
+					for (var i in audition.bindTo) {
+						var o = audition.bindTo[i];
+						if (o.hasClass('FigureBox') && o.hasClass('hiddenshot-show')) {
+							o.Thumbnail.reuse(audition, o);
+						}
+					}
+				});			
+				
+				// if lightbox, remove hiddenshot-hide from lightbox
+				if (args.lightbox) {
+					var lightbox = args.lightbox;
+					lightbox.Gallery.container.all('.FigureBox.hiddenshot-hide').each(function(n,i,l){
+						lightbox.remove(n);	
+					})
+				}
+				// cancel multiSelect
+				SNAPPI.multiSelect.clearAll(this.container);
+			}
+			
+			if (args.success) return args.success.apply(this, arguments);
+			else return false;
 		},
 		/**
 		 * delete Shot groups for all selected items. 
@@ -1299,7 +1334,7 @@
 			var args = {
 				sort: sort,
 				aids: post_aids,
-				success: cfg.success || this._ungroupShot_success,
+				success: cfg.success,
 				menu: cfg.menu,					
 			};
 			var loadingNode = cfg.loadingNode;
@@ -1315,7 +1350,7 @@
 					on: {
 						successJson:  function(e, id, o, args) {
 							if (args.menu) args.menu.hide();
-							return args.success.apply(this, arguments);
+							return this._ungroupShot_success.apply(this, arguments);
 						}
 					}
 				});
@@ -1337,7 +1372,7 @@
 			/*
 			 * for hiddenShots
 			 */
-			if (photoGallery._cfg.type=="DialogHiddenShot" || photoGallery._cfg.type=="ShotGallery") {
+			if (/ShotGalleryShot|DialogHiddenShot/.test(this._cfg.type)) {
 				shotGallery = photoGallery;
 				photoGallery = null;
 				// search hiddenShots for the node which is ALSO visible in photoGallery
@@ -1363,6 +1398,8 @@
 						node.addClass('hide');
 					}									
 				});
+				shotGallery.auditionSH.clear();
+				shotGallery.render();
 				// close hiddenShot afterwards
 				try {
 					SNAPPI.MenuAUI.find['contextmenu-hiddenshot-markup'].hide();
@@ -1375,12 +1412,15 @@
 			/*
 			 *  add hiddenShots back to Photoroll 
 			 */
-			photoGallery.addFromCastingCall(hiddenShots, true, args.sort);
-			photoGallery.render();
+			if (photoGallery) { // type == 'Photo'
+				photoGallery.addFromCastingCall(hiddenShots, true, args.sort);
+				photoGallery.render();
+			}
 
 			// ALSO, search lightbox or bindTo[] for node in lightbox
 			var aids = args.aids;			
-			return false;
+			if (args.success) return args.success();
+			else return false;
 		},
 		/**
 		 * removes photo(s) from Shot. 
@@ -1417,7 +1457,7 @@
 			}
 			var args = {
 				sort: sort,
-				success: this._removeFromShot_success,
+				success: cfg.success,
 				menu: cfg.menu,	
 			};
 			var loadingNode = cfg.loadingNode;
@@ -1432,8 +1472,9 @@
 					arguments: args,
 					on: {
 						successJson:  function(e, id, o, args) {
-							args.menu.hide();
-							return args.success.apply(this, arguments);
+							if (args.menu) args.menu.hide();
+							return this._removeFromShot_success.apply(this, arguments);
+							// return args.success.apply(this, arguments);
 						}
 					}
 				});
@@ -1453,7 +1494,7 @@
 			/*
 			 * for hiddenShots, usually we remove from hiddenShots
 			 */
-			if (shotGallery._cfg.type=="DialogHiddenShot" || shotGallery._cfg.type=="ShotGallery") {
+			if (/ShotGalleryShot|DialogHiddenShot/.test(this._cfg.type)) {
 				var audition, 
 					removed = response['removeFromShot']['assetIds'];
 //				var bestShotSystem_changed = response['updateBestShotSystem']['changed'],
@@ -1461,7 +1502,9 @@
 				var oldFocus = shotGallery.getFocus();
 				var moveToParent = [];
 				for (var i in removed) {
-					audition = SNAPPI.Auditions.get(removed[i]);
+					if (/ShotGalleryShot/.test(this._cfg.type)) 
+						audition = SNAPPI.Auditions.get(removed[i]+'_'+this.Shot.id);
+					else audition = SNAPPI.Auditions.get(removed[i]);
 					/*
 					 *  unbind and hide removed node from hiddenShots dialog
 					 */
@@ -1487,6 +1530,13 @@
 					shotGallery.auditionSH.remove(audition);
 					moveToParent.push(audition);
 				}
+				
+				// re-render ShotGallery Gallery Thumnbnails to update hiddenshot icon
+				shotGallery.auditionSH.each(function(audition){
+					// HACK: manually update this.auditionSH[i].Shot.count 
+					audition.Audition.Shot.count = audition.Audition.Substitutions.count();
+				});
+				shotGallery.render();
 				if (!photoGallery) {
 					// none of the removed photos were visible, search all remaining hiddenShots
 					shotGallery.auditionSH.some(function(audition){
@@ -1556,7 +1606,8 @@
 				// cancel multiSelect
 				SNAPPI.multiSelect.clearAll(this.container);
 			}
-			return false;
+			if (args.success) return args.success();
+			else return false;
 		},
 		/**
 		 * 
@@ -1581,7 +1632,8 @@
 			var args = {
 				thumbnail: selected, 
 				audition: audition,
-				success: this._setBestshot_success
+				success: cfg.success,
+				menu: cfg.menu,	
 			};
 			var loadingNode = cfg.loadingNode;
 			if (loadingNode.io == undefined) {
@@ -1595,7 +1647,8 @@
 					arguments: args,
 					on: {
 						success:  function(e, id, o, args) {
-							return args.success.apply(this, arguments);
+							if (args.menu) args.menu.hide();
+							return this._setBestshot_success.apply(this, arguments);
 						}
 					}
 				});
@@ -1618,7 +1671,7 @@
 				// confirm showHidden bestShot is in main photoroll
 				if (1 || bestShot !== selected) {
 					// var photoroll = _Y.one('section.gallery.photo').Gallery;
-					g = SNAPPI.Gallery.find['uuid-'] || SNAPPI.Gallery.find['nav-'];
+					var g = SNAPPI.Gallery.find['uuid-'] || SNAPPI.Gallery.find['nav-'];
 					// splice into original location, nav- or uuid-
 					var result = g.auditionSH.replace(bestShot, selected);
 					if (result) {
@@ -1635,7 +1688,8 @@
 					}
 				}
 			} catch (e) {}		
-			return false;	// reset loadingNode
+			if (args.success) return args.success();
+			else return false;	// reset loadingNode
 		},
 		/**
 		 * delete Thumbnail, .FigureBox, and refresh gallery page

@@ -760,6 +760,11 @@ if (isset($this->params['url']['new-taskid']))	{
 			$js_basepath = "/js/plupload";
 			$this->set(compact('data','js_basepath'));
 			if ( isset($this->params['url']['min'])) {
+				$DISALLOWED_BY_USERNAME = array('newyork', 'paris', 'sardinia', 'venice', 'bali', 'summer-2009');
+				if (in_array($this->Auth->user('username'), $DISALLOWED_BY_USERNAME)) {
+					$this->set('disabled', true);
+					// TODO: disabled not implemented in view/javascript
+				}
 				$this->render('plupload-thatsme', 'thatsme-iframe');
 			} else {
 				$this->render('plupload', 'snappi-guest');
@@ -871,7 +876,6 @@ if (isset($this->params['url']['new-taskid']))	{
 	function truncate($id=null){
 		Configure::write('debug', 2);
 		$this->autoRender=false;
-		
 		// MANAGER can truncate guest accounts
 		if ($id && in_array(AppController::$role, array('ADMIN', 'MANAGER'))) {
 			$option = array('conditions'=>array(
@@ -887,9 +891,14 @@ if (isset($this->params['url']['new-taskid']))	{
 		} else if (isset($this->params['url']['min'])) {
 			$forceXHR = setXHRDebug($this, 0, 0);
 			// iframe for thats-me: user can reset account, truncate own photos
+
 			if (empty($this->data)) {	// GET
 				$this->viewPath = 'my';
 				$id = AppController::$userid;
+				$DISALLOWED_BY_USERNAME = array('newyork', 'paris', 'sardinia', 'venice', 'bali', 'summer-2009');
+				if (in_array($this->Auth->user('username'), $DISALLOWED_BY_USERNAME)) {
+					$this->set('disabled', true);
+				}
 				$this->render('truncate-thatsme', 'thatsme-iframe');
 				return;	
 			} else { // POST, .json response

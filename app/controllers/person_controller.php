@@ -110,7 +110,7 @@ class PersonController extends UsersController {
 		if (preg_match('/(snaphappi.com|thats\-me|github)/i', $origin)) {
 			echo header("Access-Control-Allow-Origin: {$origin}");
 		}
-		$ALLOWED_BY_USERNAME = array('newyork', 'paris', 'venice', 'bali', 'summer-2009');
+		$ALLOWED_BY_USERNAME = array('newyork', 'paris', 'sardinia', 'venice', 'bali', 'summer-2009');
 		$id = $this->passedArgs[0];
 		if (strpos($id, '12345678') === 0) {
 			$data = $this->User->read(null, $id );
@@ -120,7 +120,7 @@ class PersonController extends UsersController {
 			/*
 			 * make public
 			 */ 
-			echo header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
+			echo header("Access-Control-Allow-Origin: {$origin}");
 		} else if (strlen($id)==36 && preg_match('/[snaphappi\.com|thats\-me|snappi\-dev]/i', $origin)) {	// passed as UUID 
 			/**
 			 * WARNING. this is a public, unauthenticated action. 

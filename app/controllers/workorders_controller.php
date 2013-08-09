@@ -797,8 +797,8 @@ if (!empty($this->passedArgs['all-shots'])) {
 		$this->paginate[$paginateAlias] = $Model->getPageablePaginateArray($this, $shot_paginateArray, $paginateAlias);
 		// force page:1 of shot auditions for shot_CastingCall, even if we are on later page of CastingCall 
 		$this->paginate[$paginateAlias]['page']=1; 
-		Configure::write("paginate.Options.{$paginateAlias}.page", 1);			// Pageable?	
-		Configure::write("paginate.Options.{$paginateAlias}.limit", 999);			// Pageable?
+		Configure::write("paginate.Options.{$paginateAlias}.limit", 9999);		// override perpage, get ALL hidden shots
+		Configure::write("paginate.Options.{$paginateAlias}.page", 1);			// do not page shot_castingCall
 // We need to preserve the paging counts under a different key, and restore the original paging Counts for Assets		
 $paging[$paginateModel] = $this->params['paging'][$paginateModel];		
 		$shotData = $this->paginate($paginateModel);		// must paginate using Model->name because of how fields and conditions are set up

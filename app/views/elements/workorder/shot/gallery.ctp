@@ -76,6 +76,7 @@ $this->viewVars['jsonData']['STATE'] = $state;
 						thumb_node.ShotGallery = new SNAPPI.Gallery({
 							type: 'ShotGalleryShot',
 							node: thumb_node,
+							size: 'tn',
 							render: false,
 							castingCall: PAGE.jsonData.shot_CastingCall,
 							sh: SNAPPI.Auditions._shotsSH,

@@ -157,7 +157,7 @@ class Usershot extends AppModel {
 				'show_edits' => true,
 				'join_shots'=>'Usershot', 
 				'show_hidden_shots'=>true,		// Asset.id != Bestshot.asset_id
-				'show_inactive_shots'=>true,	// process for ALL shots, including inactive
+				'show_inactive_shots'=>false,	//do NOT change inactive shots, i.e. dupe, removeFrom, etc.
 				'join_bestshot'=>false,
 			),  //default
 		);
@@ -167,7 +167,7 @@ class Usershot extends AppModel {
 		$permitted_AssetIds = array_unique(Set::extract('/Asset/id', $data)); // aids sorted by SharedEdit.score DESC in bestshot order
 // debug($options);		
 // debug($data);		
-// debug($existing_shots);		
+// debug("FOUND EXISTING SHOTS:  ".print_r($existing_shots,true));		
 // debug($permitted_AssetIds);
 		$no_permissions = array_diff($assetIds, $permitted_AssetIds);
 		// check permissions on submitted Assets, unless role=SCRIPT
@@ -232,10 +232,9 @@ debug("relative priority={$relative_priority}");
 				} else {
 					// show_hidden_shots: add remainder as new shot at SAME priority 
 					// TODO: should use same logic on removeFromShot
-					// or just remove from lower priority shot
-					$cleanup['duplicateShots'][$shot_priority] = $shot_id;		// at new priority
+					// 		or just remove from lower priority shot
+					$cleanup['duplicateShots'][$shot_priority] = $shot_id;		// at $shot_priority == new priority
 				}
-				//???: also remove from deactivated shots? 
 			}
 		 	if ($relative_priority < 0) { // new shot LOWER priority  
 				 	$isActive = false;  // NEW shot is active=0
@@ -332,6 +331,7 @@ debug($insert);
 			$success = $ret != false;
 			$message[] = 'Usershot->groupAsShot: OK';
 			$response['groupAsShot']['shotId'] = $this->id;
+			$response['groupAsShot']['check_existing_shotIds'] = $existing_shots;
 			if (isset($bestshotAlias)) $response['groupAsShot']['bestshotId'] = $insert[$bestshotAlias]['asset_id'];
 			else $response['groupAsShot']['bestshotId'] = $permitted_AssetIds[0];
 			$resp0 = compact('success', 'message', 'response');
@@ -351,8 +351,8 @@ debug($insert);
 				$resp1 = $this->_duplicateShot($cleanup['duplicateShots'], $isActive);
 debug($resp1);				
 				if ($resp1['success']) {
-					// queue remove assets from duplicateShots
-					$cleanup['removeFromShots'] = Set::merge($cleanup['removeFromShots'], $resp1['response']['duplicateShot']['duplicate_shotIds']);
+					// queue remove groupAsShot assets from duplicateShots
+					$cleanup['removeFromShots'] = Set::merge($cleanup['removeFromShots'], $resp1['response']['duplicateShot']['newShotIds']);
 				}
 				$success = $success && $resp1['success'];
 				$resp0 = Set::merge($resp0, $resp1);
@@ -543,7 +543,7 @@ debug($duplicateShotIds);
 			}
 		} 
 		$message[] = "Usershot->duplicateShot: OK";
-		$response['duplicateShot']['duplicate_shotIds'] = $newShotIds;
+		$response['duplicateShot']['newShotIds'] = $newShotIds;
 		$resp0 = compact('success', 'message', 'response');
 		if ($isActive) {
 			// deactivate original shots
@@ -559,6 +559,9 @@ debug($duplicateShotIds);
 	 * remove Asset from Shot, but keep shot
 	 * 		check Usershot.priority for privileges
 	 * 		if role=USER, only Usershot.owner_id can remove shots
+	 * 	WARNING: if you call from $cleanup['removeFromShots'], 
+	 * 		then you may be left with a Shot with just 1 item
+	 * 		this case is usually detected in JS and ungroupShot called instead
 	 * @param array $assetIds, uuids should belong to shot 
 	 * @param mixed, uuid or array of uuids, $shotId
 	 * @return standard JSON response 
@@ -586,7 +589,7 @@ debug($duplicateShotIds);
 			 		// duplicate lower priority shot at new priority THEN remove assets from duplicates
 					// original, lower priority shot is deactivated
 					$cleanup['duplicateShots'][$shot_priority] = $shot_id;		// at new priority
-				} else if ($relative_priority = 0){
+				} else if ($relative_priority == 0){
 					$cleanup['removeFromShots'][] = $shot_id;
 				} else {
 					// no privilege to remove from higher priority shot
@@ -600,7 +603,7 @@ debug($duplicateShotIds);
 				$resp1 = $this->_duplicateShot($cleanup['duplicateShots'], $isActive=true);
 				if ($resp1['success']) {
 					// queue remove assets from duplicateShots
-					$cleanup['removeFromShots'] = Set::merge($cleanup['removeFromShots'], $resp1['response']['duplicateShot']['duplicate_shotIds']);
+					$cleanup['removeFromShots'] = Set::merge($cleanup['removeFromShots'], $resp1['response']['duplicateShot']['newShotIds']);
 				}
 				$success = $success && $resp1['success'];
 				$resp0 = Set::merge($resp0, $resp1);
