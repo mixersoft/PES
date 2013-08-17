@@ -265,7 +265,7 @@
         		focusUuid = cfg.uuid || cfg.selected;
         		this.auditionSH.setFocus(focusUuid);
 //        		delete cfg.uuid;	// TODO: filmstrip doesn't work unless we update this._cfg.uuid
-        	} else focusUuid = this.auditionSH.getFocus();
+			}  // else no focus (yet)
         	if (cfg) this._cfg = _Y.merge(this._cfg, cfg);
             
             var offset = 0;
@@ -313,6 +313,8 @@
 	            		shot = audition && audition.Audition.Substitutions;
 	            		shot.stale = shot._sh.count() != audition.Audition.Shot.count;
 	            	}
+	            	focusUuid = shot && shot.best.id || null;
+	            	this.auditionSH.setFocus(focusUuid);
 	            	this.Shot = shot || {};
 	            	// continue below	
 	            case 'nav-': 	// type=NavFilmstrip
@@ -369,7 +371,7 @@
 						var audition = this.auditionSH.get(offset+i);
 						if (audition && offset+i < this._cfg.end) { 
 						    lastLI = this.reuseThumbnail(audition, n, thumbCfg);
-						    if (audition.id == focusUuid) n.addClass('focus');
+						    // if (audition.id == focusUuid) n.addClass('focus');
 						} else {
 							// n.addClass('hide');
 							n.Thumbnail.remove();
@@ -385,7 +387,7 @@
                 if (audition == null) 
                     break;
                 lastLI = this.createThumbnail(audition, thumbCfg);
-                if (audition.id == focusUuid) lastLI.addClass('focus');
+                // if (audition.id == focusUuid) lastLI.addClass('focus'); // use g.scrollFocus()
             }
             
             if (this._cfg.hideHiddenShotByCSS) {
