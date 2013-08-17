@@ -363,38 +363,43 @@ class TasksWorkordersController extends AppController {
 		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 		$castingCall = $this->CastingCall->getCastingCall($pageData);
 		$this->viewVars['jsonData']['castingCall'] = $castingCall;
-		
+// debug($paginateArray);
+// debug("shots, count=".count($raw_shots));
 		/*
 		 * add Shot data inline
 		 */ 
 		$shotIds = Set::extract("/shot_id",$pageData);
-		$shotType = $SOURCE_MODEL=='User' ? 'Usershot' : 'Groupshot';
-		$paginateAlias = 'Shot';		// store paginate data/results under this key
-		
-// TODO: cannot use habtm Alias because Fields uses Model->name=Asset for the From table
-// 		could try postFind()	
-// 			should we fix this to make a cleaner implementation?	
-		// $habtm['hasAndBelongsToMany'][$paginateAlias]=$this->Workorder->hasAndBelongsToMany['Asset'];
-		// $this->Workorder->bindModel($habtm);
-		// $this->Workorder->{$paginateAlias}->Behaviors->attach('WorkorderPermissionable', array('type'=>$this->modelClass, 'uuid'=>$id));
-		
-		// this version uses paginate('Asset'), but manually places paging data under a different key, $extras['paginateCacheKey']
-		$shot_paginateArray = $this->paginate[$SOURCE_MODEL.$paginateModel]; //array_merge($this->paginate[$SOURCE_MODEL.$paginateModel], $this->paginate[$paginateModel]['extras']); 
-		$shot_paginateArray =  $Model->getPaginatePhotosByShotId($shotIds, $shot_paginateArray, $shotType);
-		$shot_paginateArray['extras']['paginateCacheKey'] = $paginateAlias;	// AppModel
-		$this->paginate[$paginateAlias] = $Model->getPageablePaginateArray($this, $shot_paginateArray, $paginateAlias);
-		Configure::write("paginate.Options.{$paginateAlias}.limit", 9999);		// override perpage, get ALL hidden shots
-		Configure::write("paginate.Options.{$paginateAlias}.page", 1);			// do not page shot_castingCall
-// We need to preserve the paging counts under a different key, and restore the original paging Counts for Assets		
-$paging[$paginateModel] = $this->params['paging'][$paginateModel];		
-		$shotData = $this->paginate($paginateModel);		// must paginate using Model->name because of how fields and conditions are set up
-// debug("paginateCacheKey = {$paginateAlias}");
-// debug(Configure::read('paginate.Options'));
-		$shotData = Set::extract($shotData, "{n}.{$paginateModel}");
-		$paging[$paginateAlias] = $this->params['paging'][$paginateModel];		// save paging count for Shots
-		$this->viewVars['jsonData']['shot_CastingCall'] = $this->CastingCall->getCastingCall($shotData);
-		$this->params['paging'] = $paging;
-// debug($paging);
+		if (count($shotIds)) {
+			$shotType = $SOURCE_MODEL=='User' ? 'Usershot' : 'Groupshot';
+			$paginateAlias = 'Shot';		// store paginate data/results under this key
+			
+	// TODO: cannot use habtm Alias because Fields uses Model->name=Asset for the From table
+	// 		could try postFind()	
+	// 			should we fix this to make a cleaner implementation?	
+			// $habtm['hasAndBelongsToMany'][$paginateAlias]=$this->Workorder->hasAndBelongsToMany['Asset'];
+			// $this->Workorder->bindModel($habtm);
+			// $this->Workorder->{$paginateAlias}->Behaviors->attach('WorkorderPermissionable', array('type'=>$this->modelClass, 'uuid'=>$id));
+			
+			// this version uses paginate('Asset'), but manually places paging data under a different key, $extras['paginateCacheKey']
+			$shot_paginateArray = $this->paginate[$SOURCE_MODEL.$paginateModel]; //array_merge($this->paginate[$SOURCE_MODEL.$paginateModel], $this->paginate[$paginateModel]['extras']); 
+			$shot_paginateArray =  $Model->getPaginatePhotosByShotId($shotIds, $shot_paginateArray, $shotType);
+			$shot_paginateArray['extras']['paginateCacheKey'] = $paginateAlias;	// AppModel
+			$this->paginate[$paginateAlias] = $Model->getPageablePaginateArray($this, $shot_paginateArray, $paginateAlias);
+			Configure::write("paginate.Options.{$paginateAlias}.limit", 9999);		// override perpage, get ALL hidden shots
+			Configure::write("paginate.Options.{$paginateAlias}.page", 1);			// do not page shot_castingCall
+	// We need to preserve the paging counts under a different key, and restore the original paging Counts for Assets		
+	$paging[$paginateModel] = $this->params['paging'][$paginateModel];		
+			$shotData = $this->paginate($paginateModel);		// must paginate using Model->name because of how fields and conditions are set up
+	// debug("paginateCacheKey = {$paginateAlias}");
+	// debug(Configure::read('paginate.Options'));
+			$shotData = Set::extract($shotData, "{n}.{$paginateModel}");
+			$paging[$paginateAlias] = $this->params['paging'][$paginateModel];		// save paging count for Shots
+			$this->viewVars['jsonData']['shot_CastingCall'] = $this->CastingCall->getCastingCall($shotData);
+			$this->params['paging'] = $paging;
+	// debug($paging);
+		} else {
+			$this->viewVars['jsonData']['shot_CastingCall'] = array();
+		}
 		/*
 		 * end Shot data
 		 */
@@ -402,6 +407,7 @@ $paging[$paginateModel] = $this->params['paging'][$paginateModel];
 		
 		Configure::write('paginate.Model', $paginateModel);		// set paging Counts to Asset, not Shot
 		// extract Shot data from Assets
+		$shots = array();
 		foreach ($raw_shots as $i=>$row) {
 			$shot = array('id'=>$row['shot_id']);
 			$shot['owner_id'] = $row['shot_owner_id'];
