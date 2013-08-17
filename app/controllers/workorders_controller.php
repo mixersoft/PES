@@ -296,36 +296,7 @@ class WorkordersController extends AppController {
 	 */
 	function image_group($id) {
 		$forceXHR = setXHRDebug($this, 0);
-		$perpage = !empty($this->passedArgs['perpage']) ? $this->passedArgs['perpage'] : 999;
-		$required_options['extras']['join_shots'] = false;			
-		$required_options['extras']['show_hidden_shots']=1;
-		$required_options['extras']['hide_SharedEdits']=0;
-		// $default_options['extras']['only_bestshot_system']=0;
-		
-		
-		/*
-		 * test and debug code. $config['isDev']
-		 */ 
-		if (Configure::read('isDev')) {
-			if (!isset($this->passedArgs['reset']) || !empty($this->passedArgs['reset'])) {
-				// default is to delete old SCRIPT shots, use /reset:0 to preserve 
-				/*
-				 *  NOTE: works for MySQL v5.5 
-				 * 	for MySQL v5.3.1 use: delete snappi.usershots `s`, snappi.assets_usershots `au`
-				 */
-				$reset_SQL = "
-	delete `s`, `au`
-	from snappi.usershots `s`
-	join snappi.users u on u.id = `s`.owner_id
-	join snappi.assets_usershots `au` on au.usershot_id = `s`.id
-	join snappi_wms.assets_workorders aw on aw.asset_id = au.asset_id
-	where `s`.priority = 30
-	  and u.username like 'image-group%'
-	  and aw.workorder_id ='{$id}';";
-	  			$this->Workorder->query($reset_SQL);
-			}
-			
-			if ($this->RequestHandler->ext !== 'json') Configure::write('debug',0);	// DEBUG
+		if (Configure::read('isDev') && $_isChunk===false) {
 			// debug: see test results
 			$markup = "<A href=':url' target='_blank'>click here</A>";
 			$show_shots['see-all-shots'] = str_replace(':url',Router::url(array('action'=>'shots', 0=>$id, 'perpage'=>10,  'all-shots'=>1), true), $markup);
@@ -334,10 +305,31 @@ class WorkordersController extends AppController {
 		}
 		/*
 		 * end test and debug code
-		 */ 
+		 */
+		if (!isset($this->passedArgs['reset']) || !empty($this->passedArgs['reset'])) {
+				// default is to delete old SCRIPT shots, use /reset:0 to preserve
+				/*
+				 *  NOTE: works for MySQL v5.5 
+				 * 	for MySQL v5.3.1 use: delete snappi.usershots `s`, snappi.assets_usershots `au`
+				 */ 
+				$reset_SQL = "
+	delete `s`, `au`
+	from snappi.usershots s
+	join snappi.users u on u.id = s.owner_id
+	join snappi.assets_usershots au on au.usershot_id = s.id
+	join snappi_wms.assets_tasks at on at.asset_id = au.asset_id
+	where s.priority = 30
+	  and u.username like 'image-group%'
+	  and at.tasks_workorder_id ='{$id}';";
+	  			$this->TasksWorkorder->query($reset_SQL);
+				debug("RESET shots");				
+		} 
 		
-		$this->layout = 'snappi';
-		$this->helpers[] = 'Time';
+		$perpage = !empty($this->passedArgs['perpage']) ? $this->passedArgs['perpage'] : 500;
+		$required_options['extras']['join_shots'] = false;
+		$required_options['extras']['show_hidden_shots']=1;
+		$required_options['extras']['hide_SharedEdits']=0;
+		// $default_options['extras']['only_bestshot_system']=0;
 
 		// paginate 
 		$SOURCE_MODEL = Session::read("WMS.{$id}.Workorder.source_model"); // WorkordersController::$source_model;
@@ -356,87 +348,107 @@ class WorkordersController extends AppController {
 		 *  force sort=dateTaken for image-group
 		 */ 
 		$paginateArray['order'] = array('`Asset`.dateTaken');
+		if ($_isChunk) 	{
+			$paginateArray['page'] = $this->passedArgs['page'];
+			Configure::read('passedArgs.complete.page', $paginateArray['page'] );
+		}
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 		$pageData = $this->paginate($paginateModel);
 		$pageData = Set::extract($pageData, "{n}.{$paginateModel}");
 		// end paginate
 		/*
-		 * get image_group output for castingCall as JSON string
+		 * check if we need to Chunk recursively
 		 */ 
-		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
-		if (!isset($this->Gist)) $this->Gist = loadComponent('Gist', $this); 
-		$castingCall = $this->CastingCall->getCastingCall($pageData, $cache=false);
+		$paging = $this->params['paging'][$paginateModel];
+		if (!$_isChunk && $paging['pageCount'] > 1){
+			// entrypoint for chunking
+			$image_groups = $newShots = array();
+			for ($i = 1; $i <= $paging['pageCount']; $i++) {
+				$this->paginate[$paginateModel]['page'] = $this->passedArgs['page'] = $i;
+				$this->passedArgs['reset'] = 0;
+				$this->autoRender = false;
+				debug('CHUNK FOR PAGE='.$i);
+				$response = $this->image_group($id, $_isChunk=$i );
+				$image_groups = array_merge($image_groups, $response['image_groups']); 
+				$newShots = array_merge($newShots, $response['newShots']);
+			}
+			$paging['current'] = $paging['perpage'] = $paging['count'];
+			$paging['nextPage'] = $paging['pageCount'] = 1;
+			$this->params['paging'][$paginateModel] = $paging;
+			// debug('Chunking complete');
+			$_isChunk = 'complete';
+		} else if ($_isChunk === false || $_isChunk !== 'complete') {
+			/*
+			 * get image_group output for castingCall as JSON string
+			 */ 
+			if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
+			if (!isset($this->Gist)) $this->Gist = loadComponent('Gist', $this); 
+			$castingCall = $this->CastingCall->getCastingCall($pageData, $cache=false);
+			
+			// bind $script_owner to image-group runtime settings 
+			$script_owner = empty($this->passedArgs['circle']) ? 'image-group' : 'image-group-circles';
+			$preserveOrder = $script_owner == 'image-group';
 		
-		// bind $script_owner to image-group runtime settings 
-		$script_owner = empty($this->passedArgs['circle']) ? 'image-group' : 'image-group-circles';
-		$preserveOrder = $script_owner == 'image-group';
-	
-		$image_groups = $this->Gist->getImageGroupFromCC($castingCall, $preserveOrder);
-		/*
-		 * import image_group output as Usershots with correct ROLE/priority
-		 * use Usershot.priority=30
-		 */ 
-		// use ROLE=SCRIPT, Usershot.priority=30
-		$ScriptUser_options = array(
-			'conditions'=>array(
-				'primary_group_id'=>Configure::read('lookup.roles.SCRIPT'),
-				'username'=>$script_owner,
-			)
-		);
-		$data = ClassRegistry::init('User')->find('first', $ScriptUser_options);
-		// change user to role=SCRIPT
-		AppController::$userid = $data['User']['id'];
-		AppController::$role = 'SCRIPT'; 		// from conditions, disables assignment check in WorkordersPermissionable
-		// create Script Usershots
-		$newShots = array();
-		$Usershot = ClassRegistry::init('Usershot');
-		/**
-		 * Q: should we delete all Shots owned by image-group first?
-		 */
-		foreach($image_groups['Groups'] as $i => $groupAsShot_aids) {
-			
-			// debug
-			// if ($i > 5) break;
-			
-			if (count($groupAsShot_aids)==1) {
-				unset($image_groups['Groups'][$i]); 
-				continue;		// skip if only one uuid, group of 1
+			$image_groups = $this->Gist->getImageGroupFromCC($castingCall, $preserveOrder);
+			/*
+			 * import image_group output as Usershots with correct ROLE/priority
+			 * use Usershot.priority=30
+			 */ 
+			// use ROLE=SCRIPT, Usershot.priority=30
+			$ScriptUser_options = array(
+				'conditions'=>array(
+					'primary_group_id'=>Configure::read('lookup.roles.SCRIPT'),
+					'username'=>$script_owner,
+				)
+			);
+			$data = ClassRegistry::init('User')->find('first', $ScriptUser_options);
+			// change user to role=SCRIPT
+			AppController::$userid = $data['User']['id'];
+			AppController::$role = 'SCRIPT'; 		// from conditions, disables assignment check in WorkordersPermissionable
+			// create Script Usershots
+			$newShots = array();
+			$Usershot = ClassRegistry::init('Usershot');
+			/**
+			 * Q: should we delete all Shots owned by image-group first?
+			 */
+			foreach($image_groups['Groups'] as $i => $groupAsShot_aids) {
+				
+				// debug
+				// if ($i > 5) break;
+				
+				if (count($groupAsShot_aids)==1) {
+					unset($image_groups['Groups'][$i]); 
+					continue;		// skip if only one uuid, group of 1
+				}
+				$result = $Usershot->groupAsShot($groupAsShot_aids);
+				if ($result['success']) {
+					$newShots[] = array(
+						'asset_ids'=>$groupAsShot_aids, 
+						'shot'=>$result['response']['groupAsShot'],
+					);
+				} else {
+					$newShots[] = array(
+						'asset_ids'=>$groupAsShot_aids, 
+						'shot'=>$result['message'],
+					);
+				}
+				
 			}
-			$result = $Usershot->groupAsShot($groupAsShot_aids);
-			if ($result['success']) {
-				$newShots[] = array(
-					'asset_ids'=>$groupAsShot_aids, 
-					'shot'=>$result['response']['groupAsShot'],
-				);
-			} else {
-				$newShots[] = array(
-					'asset_ids'=>$groupAsShot_aids, 
-					'shot'=>$result['message'],
-				);
-			}
-			
+			if ($_isChunk) return compact('image_groups', 'newShots');	
 		}
-		
+		// else $_isChunk == false or 'complete', process return for debug
 		
 		if ($this->RequestHandler->ext == 'json') {
 			// debug GistComponent output		
-			$image_groups = json_encode($image_groups);
-			$this->log(	"GistComponent->getImageGroupFromCC(): filtered output", LOG_DEBUG);
-			$this->log(	$image_groups, LOG_DEBUG);
-			debug($image_groups);
-			debug($newShots);
-			
+			// $image_groups = json_encode($image_groups);
+			// $this->log(	"GistComponent->getImageGroupFromCC(): filtered output", LOG_DEBUG);
+			// $this->log(	$image_groups, LOG_DEBUG);
 			$this->viewVars['jsonData']['imageGroups'] = $newShots;
-			// $this->viewVars['jsonData']['castingCall'] = $castingCall;
 			$done = $this->renderXHRByRequest('json');
 			if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
 		} else {
 			// $this->render('/elements/dumpSQL');
-			$this->Session->setFlash(count($newShots)." duplicate Shots found");
-			$next = $_SERVER['HTTP_REFERER'];
-			$this->redirect($next, null, true);		
 		}
-					
 	}
 	/*
 	 * auditions in the SAME event_group will be place in a Shot group
