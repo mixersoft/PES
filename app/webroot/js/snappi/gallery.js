@@ -1551,7 +1551,7 @@
 						}
 					});
 				}
-				if (!photoGallery) {
+				if (!photoGallery && /Photo/.test(this._cfg.type)) {
 					// still not found, try to find by CSS
 					photoGallery = _Y.one('section#nav-filmstrip .gallery.photo');
 					if (!photoGallery) photoGallery = _Y.one('.gallery-container .gallery.photo');				
