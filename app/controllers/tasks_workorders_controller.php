@@ -53,7 +53,7 @@ class TasksWorkordersController extends AppController {
 			'preview_limit'=>6,
 			'paging_limit' =>48,
 			'photostream_limit' => 4,	// deprecate?
-			'order' => array('batchId'=>'DESC', 'created'=>'ASC'),
+			'order' => array('dateTaken'=>'DESC'),
 			'extras'=>array(
 				'show_edits'=>true,
 				'join_shots'=>'Usershot', 
