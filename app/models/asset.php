@@ -965,6 +965,10 @@ $this->log("insert newAsset=".print_r($newAsset['native_path'], true), LOG_DEBUG
 		/*
 		 * add from: unixtimestamp, to: unixtimestamp
 		 */
+		if (empty($options['noDateTaken'])) {
+			// DEFAULT: skip a.dateTaken===null, /noDateTaken:1 to include
+			$filterConditions[] = "Asset.dateTaken IS NOT NULL";
+		} 
 		if (!empty($options['from']) && !empty($options['to'])) {
 			// convert Asset.dateTaken from UTC to local timezone, UNIX_TIMESTAMP implicitly converts date from local timezone to UTC
 			$filterConditions[] = "UNIX_TIMESTAMP(CONVERT_TZ(`$this->alias`.dateTaken,'+00:00', 'SYSTEM')) BETWEEN {$options['from']} AND {$options['to']}";
