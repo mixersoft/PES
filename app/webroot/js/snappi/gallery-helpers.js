@@ -1223,9 +1223,9 @@ var _showZoom = function(e, g) {
 	'								<nav class="window-options"> ' +
 	'									<ul class="thumb-size inline"> ' +
 	'										<li class="label">Size</li> ' +
-	'										<li class="btn white " action="set-display-size:sq"><img alt="" src="/static/img/css-gui/img_1.gif"></li>' +
-	'										<li class="btn white "  action="set-display-size:tn"><img alt="" src="/static/img/css-gui/img_2.gif"></li>' +
-	'										<li class="btn white " action="set-display-size:lm"><img alt="" src="/static/img/css-gui/img_3.gif"></li>' +
+	'										<li class="btn white " action="set-display-size:tn"><img alt="" src="/static/img/css-gui/img_1.gif"></li>' +
+	'										<li class="btn white "  action="set-display-size:bs"><img alt="" src="/static/img/css-gui/img_2.gif"></li>' +
+	'										<li class="btn white " action="set-display-size:bm"><img alt="" src="/static/img/css-gui/img_3.gif"></li>' +
 	'									</ul> ' +
 	'								</nav> ' +
 	'							</li> ' +
