@@ -30,7 +30,14 @@ class JsonView extends View {
 		$output = json_encode($response);
 		$output .= $this->element('dumpSQL');
 		JsonView::$once = true;
-		if (isset($this->params['url']['callback']) && strpos($this->params['url']['callback'],'YUI.Env.JSONP')===0){
+		/*
+		 * for jsonp response, set $this->viewVars['allow_jsonp']=1
+		 */
+		if (isset($this->params['url']['callback'])  
+			&& (!empty($this->viewVars['allow_jsonp']) 
+					|| strpos($this->params['url']['callback'],'YUI.Env.JSONP')===0		// legacy 
+			)
+		){
 			return "{$this->params['url']['callback']}({$output})";
 		} else 	return $output; 
 	}
