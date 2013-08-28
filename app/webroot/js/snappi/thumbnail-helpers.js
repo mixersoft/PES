@@ -767,6 +767,22 @@
 					};
 				} else g.setFocus(selected);
 				parent = this.ancestor('.preview-body');
+				
+				
+				_Y.once('snappi:preview-change', function(){
+					// cache ahead next bp
+					if (typeof g.preloadIMG == 'undefined') {
+						g.preloadIMG = _Y.Node.create('<img class="hidden">');
+						g.preloadIMG.on('load', function(e){
+							g.preloadIMG.attr('src','');
+						}); 
+					}
+					var a = g.auditionSH.peekAhead(),
+						src = a.getImgSrcBySize(a.urlbase + a.rootSrc, 'bp');
+					g.preloadIMG.attr('src',src);
+					console.log('preload, id='+a.id);	
+				});
+				
 				ThumbnailFactory[type].bindSelected(selected, parent, {gallery: g});
 			}
 		},
@@ -874,8 +890,7 @@
 
 			// set src to the correct size
 			var img = node.one('figure > img');
-			var detach = img.on('load', function(e){
-				detach.detach();
+			img.once('load', function(e){
 				_Y.fire('snappi:preview-zoom-loaded', img);
 			});
 			src = audition.getImgSrcBySize(audition.urlbase + audition.rootSrc, sizeCfg.size);
