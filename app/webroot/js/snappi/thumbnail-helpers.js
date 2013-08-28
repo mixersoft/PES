@@ -775,12 +775,12 @@
 						g.preloadIMG = _Y.Node.create('<img class="hidden">');
 						g.preloadIMG.on('load', function(e){
 							g.preloadIMG.attr('src','');
+							// console.log('preload, id='+a.id);
 						}); 
 					}
 					var a = g.auditionSH.peekAhead(),
 						src = a.getImgSrcBySize(a.urlbase + a.rootSrc, 'bp');
 					g.preloadIMG.attr('src',src);
-					console.log('preload, id='+a.id);	
 				});
 				
 				ThumbnailFactory[type].bindSelected(selected, parent, {gallery: g});
