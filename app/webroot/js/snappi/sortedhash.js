@@ -421,11 +421,12 @@
             }
             else 
                 i = this._focus;
+            i++;
             if (fn === undefined) {
-                return this.get(i++);
+                return this.get(i);
             }
             else {
-            	for (var i in this._keys) {
+            	for (i; i<this._keys.length;i++) {
                     if (fn(this._keys[i])) {
                         return this._keys[i];
                     }
@@ -445,11 +446,12 @@
             }
             else 
                 i = this._focus;
+            i--;    
             if (fn === undefined) {
-                return this.get(i--);
+                return this.get(i-1);
             }
             else {
-            	for (var i in this._keys) {
+            	for (i;i>=0;i--) {
                     if (fn(this._keys[i])) {
                         return this._keys[i];
                     }
