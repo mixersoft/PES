@@ -680,6 +680,23 @@ debug("$first : $count i={$i}, single={$Auditions[$i]['id']} ");
 		$forceXHR = setXHRDebug($this, 0);
 		$this->layout = 'snappi';
 		$this->helpers[] = 'Time';
+		
+		// AuthComponent shoudl catch this
+		if (!in_array(AppController::$role, array('EDITOR', 'MANAGER'))) 
+			throw new Exception("ERROR: You must be an editor to perform this action");
+		
+		/*
+		 * allow cross-domain XHR, instead of jsonp
+		 * 	from thats-me.snaphappi.com for timeline app
+		 *  from anything from snaphappi.com 
+		 */ 
+		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
+		if (preg_match('/(snaphappi.com|thats\-me|github|)/i', $origin)) {
+			$this->viewVars['allow_jsonp'] = 1;
+		}
+		
+		
+		
 		if (!empty($this->params['named']['wide'])) $this->layout .= '-wide';				
 		if (!$id) {
 			$this->Session->setFlash("ERROR: invalid Photo id.");
