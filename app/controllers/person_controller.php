@@ -308,10 +308,12 @@ class PersonController extends UsersController {
 		$paginateArray = $Model->getPaginatePhotosByUserId($id, $this->paginate[$paginateModel]);
 
 if (!empty($this->passedArgs['raw']) ) {
-	$paginateArray['extras']['join_shots']=false;
+	$paginateArray['extras']['show_hidden_shots']=1;
+	$paginateArray['extras']['hide_SharedEdits']=1;
 }
 if (!empty($this->passedArgs['hidden'])) {
 	$paginateArray['extras']['show_hidden_shots']=1;
+	$paginateArray['extras']['hide_SharedEdits']=0;	// TODO: why does show_hidden fail unless we hide edits?
 }
 if (!empty($this->passedArgs['only-shots'])) {
 		$paginateArray['extras']['only_shots']=1;
@@ -321,6 +323,7 @@ if (!empty($this->passedArgs['all-shots'])) {
 	$paginateArray['extras']['all_shots']=1;		// includes Shot.inactive=0	
 	$paginateArray['extras']['only_shots']=1;
 }
+// debug($paginateArray['extras']);
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 // debug(Configure::read("paginate.Options.{$paginateModel}")); exit;	
