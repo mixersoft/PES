@@ -741,6 +741,19 @@ if (!empty($this->passedArgs['all-shots'])) {
 			// // add owner_names to lookup.
 			// $this->getLookups(array('Users'=> array_keys(Set::combine($pageData, '/owner_id', ''))));
 		// }
+		
+		
+		/*
+		 * for access to json from thats-me
+		 * 	- enforces same domain policy for iframe access
+		 */
+		 if (isset($this->params['url']['min'])) {
+		 	$this->set('json',$this->viewVars['jsonData']);
+			// uses same viewfile as checkauth
+			$this->viewPath = 'elements';
+		 	$this->render('iframe-json', 'plain');
+			return;
+		 }
 					
 		$done = $this->renderXHRByRequest('json', '/elements/photo/roll');
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
