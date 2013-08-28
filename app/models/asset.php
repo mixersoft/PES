@@ -974,8 +974,9 @@ $this->log("insert newAsset=".print_r($newAsset['native_path'], true), LOG_DEBUG
 			$filterConditions[] = "UNIX_TIMESTAMP(CONVERT_TZ(`$this->alias`.dateTaken,'+00:00', 'SYSTEM')) BETWEEN {$options['from']} AND {$options['to']}";
 		} 	
 		if (isset($options['rating'])) {
-			if ($options['rating']==='0'){ 
-				$filterConditions[] = "SharedEdit.score IS NULL";
+			if ($options['rating']==='0'){
+				if ($options['raw']) 
+				$filterConditions[] = !empty($options['raw']) ? "UserEdit.rating IS NULL" : "SharedEdit.score IS NULL";
 			} else if (!empty($options['raw'])) {
 				// skip join to SharedEdit table
 				// TODO: should really check $paginate['extras']['hide_SharedEdits]=1
