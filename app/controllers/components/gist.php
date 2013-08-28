@@ -52,6 +52,7 @@ class GistComponent extends Object
 		$stageRoot = Stagehand::$stage_basepath.DS;
 		$imageGroupRoot = APP."vendors/shells/gist/import";
 		$preserveOrder = $preserveOrder ? "--preserve_order" : "";
+		$pretty = false ? "--pretty_print" : "";
 		$threshold = empty($this->controller->passedArgs['threshold']) ? "0.5" : $this->controller->passedArgs['threshold'];
 		
 
@@ -66,7 +67,7 @@ class GistComponent extends Object
 		$output = true;		
 		
 		if (GistComponent::$OS=='win32') {
-			$cmd = "{$gist_bin}/image-group --base_path {$stageRoot} --threshold {$threshold} {$preserveOrder} --pretty_print";
+			$cmd = "{$gist_bin}/image-group --base_path {$stageRoot} --threshold {$threshold} {$preserveOrder} {$pretty}";
 			$woid = Session::read("WMS.{$this->controller->passedArgs[0]}.Workorder.id");
 			
 			// sample output for Win testing
@@ -95,7 +96,7 @@ class GistComponent extends Object
 		} else {
 			// unix, image-group only works on linux
 			$threshold = 
-			$cmd = "{$gist_bin}/image-group --base_path {$stageRoot} {$preserveOrder} --pretty_print";
+			$cmd = "{$gist_bin}/image-group --base_path {$stageRoot} {$preserveOrder} {$pretty}";
 			$start = microtime(true);
 			$errors = GistComponent::$Exec->exec($cmd, $options, $stdin, $output);
 			$end = microtime(true);
@@ -124,7 +125,8 @@ class GistComponent extends Object
 		$input_json = "";
 		$stageRoot = Stagehand::$stage_basepath.DS;
 		$imageGroupRoot = APP."vendors/shells/gist/import";
-		$cmd = "cat $input_json | {$gist_bin}/image-group --base_path {$stageRoot} --preserve_order --pretty_print > {$imageGroupRoot}/output-ordered.json";
+		$pretty = false ? "--pretty_print" : "";
+		$cmd = "cat $input_json | {$gist_bin}/image-group --base_path {$stageRoot} --preserve_order {$pretty} > {$imageGroupRoot}/output-ordered.json";
 		
 		if (GistComponent::$OS=='win32') {
 			// just debug the cmd

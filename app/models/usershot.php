@@ -319,8 +319,8 @@ debug("relative priority={$relative_priority}");
 				$insert[$bestshotAlias]['user_id'] = AppController::$userid;
 			}
 			
-debug($cleanup);
-debug($insert); 
+// debug($cleanup);
+// debug($insert); 
 // exit;		// stop before actual insert
 			
 			

@@ -649,7 +649,7 @@ var _showZoom = function(e, g) {
 	        // keypad down
 	        upPatt : /(^38)/,
 	        // kepad up
-	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)(^49$)|(^50$)|(^51$)|(^52$)|(^53$)|(^48$)/, // keybd 0-5
+	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)|(^49$)|(^50$)|(^51$)|(^52$)|(^53$)|(^48$)/, // keybd 0-5
 	    },
         /*
          * build 
@@ -1109,7 +1109,7 @@ var _showZoom = function(e, g) {
 	        prevPatt: /(^112$)|(^37$)|(^8$)/, // p,left,backspace,
 	        // keypad left
 	        closePatt: /(^27$)/,
-	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)(^49$)|(^50$)|(^51$)|(^52$)|(^53$)|(^48$)/, // keybd 0-5
+	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)|(^49$)|(^50$)|(^51$)|(^52$)|(^53$)|(^48$)/, // keybd 0-5
 	    },
 		/*
          * build 
@@ -1223,9 +1223,9 @@ var _showZoom = function(e, g) {
 	'								<nav class="window-options"> ' +
 	'									<ul class="thumb-size inline"> ' +
 	'										<li class="label">Size</li> ' +
-	'										<li class="btn white " action="set-display-size:sq"><img alt="" src="/static/img/css-gui/img_1.gif"></li>' +
-	'										<li class="btn white "  action="set-display-size:tn"><img alt="" src="/static/img/css-gui/img_2.gif"></li>' +
-	'										<li class="btn white " action="set-display-size:lm"><img alt="" src="/static/img/css-gui/img_3.gif"></li>' +
+	'										<li class="btn white " action="set-display-size:tn"><img alt="" src="/static/img/css-gui/img_1.gif"></li>' +
+	'										<li class="btn white "  action="set-display-size:bs"><img alt="" src="/static/img/css-gui/img_2.gif"></li>' +
+	'										<li class="btn white " action="set-display-size:bm"><img alt="" src="/static/img/css-gui/img_3.gif"></li>' +
 	'									</ul> ' +
 	'								</nav> ' +
 	'							</li> ' +
@@ -1250,7 +1250,7 @@ var _showZoom = function(e, g) {
 	        prevPatt: /(^112$)|(^37$)|(^8$)/, // p,left,backspace,
 	        // keypad left
 	        closePatt: /(^27$)/,
-	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)(^49$)|(^50$)|(^51$)|(^52$)|(^53$)|(^48$)/, // keybd 0-5
+	        ratingPatt: /(^96$)|(^97$)|(^98$)|(^99$)|(^100$)|(^101$)|(^49$)|(^50$)|(^51$)|(^52$)|(^53$)|(^48$)/, // keybd 0-5
 	    },
 		/*
          * build 

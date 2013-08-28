@@ -104,7 +104,6 @@ class PersonController extends UsersController {
 		 * allow cross-domain XHR, instead of jsonp
 		 * 	from thats-me.snaphappi.com for timeline app
 		 *  from anything from snaphappi.com 
-		 * TODO: I use jsonp somewhere else, WMS app(?) replace with this pattern
 		 */ 
 		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
 		if (preg_match('/(snaphappi.com|thats\-me|github)/i', $origin)) {
@@ -137,8 +136,13 @@ class PersonController extends UsersController {
 		$this->__cacheAuth();
 		$this->Permissionable->initialize($this);
 		
-		$this->action='photos';
-		$this->photos($id);
+		// $this->action='photos';
+		$return = $this->photos($id);
+		
+		if ($return==='jsonp') {
+			$this->viewVars['allow_jsonp'] = true; 
+			$done = $this->renderXHRByRequest('json', null, null, 0);
+		}
 	}	
 
 	function beforeRender() {
@@ -364,8 +368,11 @@ if (!empty($this->passedArgs['all-shots'])) {
 			return;
 		 }
 		 /*
-		  * 
-		  */ 
+		  * jsonp response for /odesk_photos ONLY
+		  */
+		if ($this->action=='odesk_photos' && !empty($_GET['callback']) ) {
+			return 'jsonp';
+		} 
 		$done = $this->renderXHRByRequest('json', '/elements/photo/roll', null, 0);
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false	
 		$options = array(

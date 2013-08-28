@@ -79,15 +79,13 @@ class PageableBehavior extends ModelBehavior {
 		if ($controller !== null) $this->controller = $controller;
 		if ($paginateArray === null) $paginateArray = $this->controller->paginate[$Model->name];
 		
-		$this->named = (!empty($this->settings['use_configure_passedArgs'])) 
-			? Configure::read('passedArgs.complete') 
-			: $controller->params['named'];		
-		
-		
 		$pageableAlias = isset($paginateArray['extras']['paginateCacheKey']) ? $paginateArray['extras']['paginateCacheKey'] : $Model->alias; 
 		Configure::write("paginate.Model", $pageableAlias);
 		
 		// move appendFilterConditions outside pageable behavior
+		// $this->named = (!empty($this->settings['use_configure_passedArgs'])) 
+			// ? Configure::read('passedArgs.complete') 
+			// : $controller->params['named'];				
 //		$paginateArray['conditions'] = @$Model->appendFilterConditions($this->named, $paginateArray['conditions']);
 		/*
 		 * get paginate sort options, /sort:/direction:
