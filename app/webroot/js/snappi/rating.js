@@ -475,12 +475,7 @@ if (!_Y) {
 	 * @params cfg.callbacks
 	 */
 	AssetRatingController.setProp = function(container, cfg){
-		var uri;
-		if (SNAPPI.STATE.controller['class'] == 'workorder') {
-			uri = "/workorders/setprop/.json";
-		} else {
-			uri = "/photos/setprop/.json";
-		}
+		var uri = "/photos/setprop/.json";
 		var postData = {
 			'data[Asset][id]' : cfg.ids,
 		};	

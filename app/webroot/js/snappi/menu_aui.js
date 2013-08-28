@@ -912,10 +912,14 @@ console.log("delegateHost="+delegateHost._yuid);
 		var rotate = menuItem.getAttribute('rotate');
 		var thumbnail = menu.get('currentNode');
 		if (!thumbnail.hasClass('FigureBox')) thumbnail = thumbnail.ancestor('.FigureBox');
-		var selected = thumbnail.uuid;
-		if (e.shiftKey) {
-			selected = MenuItems.getGalleryFromTarget(thumbnail).getSelected();			
-		} 
+		if (thumbnail.hasClass('selected')) {
+			selected = MenuItems.getGalleryFromTarget(thumbnail).getSelected();
+			var delim = [];
+			selected.each(function(a){
+				delim.push(a.id);
+			});
+			selected = delim.join(',');
+		} else selected = thumbnail.uuid;
 		var options = {
 			ids: selected,	// id or array of ids
 			properties: {'rotate': rotate},
