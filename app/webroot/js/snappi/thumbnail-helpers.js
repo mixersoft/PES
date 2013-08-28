@@ -770,20 +770,27 @@
 				
 				
 				_Y.once('snappi:preview-change', function(){
-					// cache ahead next bp
-					if (typeof g.preloadIMG == 'undefined') {
-						g.preloadIMG = _Y.Node.create('<img class="hidden">');
-						g.preloadIMG.on('load', function(e){
-							g.preloadIMG.attr('src','');
-							// console.log('preload, id='+a.id);
-						}); 
-					}
-					var a = g.auditionSH.peekAhead(),
-						src = a.getImgSrcBySize(a.urlbase + a.rootSrc, 'bp');
-					g.preloadIMG.attr('src',src);
+					setTimeout( function(){  // put preload on a different thread
+						// cache ahead next bp
+						if (typeof g.preloadIMG == 'undefined') {
+							g.preloadIMG = _Y.Node.create('<img class="hidden">');
+							g.preloadIMG.on('load', function(e){
+								g.preloadIMG.attr('src','');
+								// console.log('preload, id='+a.id);
+							}); 
+						}
+						try {
+							var a = g.auditionSH.peekAhead(),
+								src = g.container.one('article.FigureBox.focus').next().one('figure >img').attr('src')
+							src = a.getImgSrcBySize(src, 'bp');	
+							g.preloadIMG.attr('src',src);
+						} catch(ex) {}
+						g.preloadIMG.attr('src',src);
+					}, 10);
 				});
 				
 				ThumbnailFactory[type].bindSelected(selected, parent, {gallery: g});
+				
 			}
 		},
 		/*
