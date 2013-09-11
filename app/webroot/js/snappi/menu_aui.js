@@ -943,6 +943,7 @@ console.log("delegateHost="+delegateHost._yuid);
 						} catch (e) {}
 					}
 					args.loadingmask.hide();
+					menu.hide();
 					return false;
 				}, 
 				complete: function(e, i, o, args) {
