@@ -927,7 +927,7 @@ if (isset($this->params['url']['new-taskid']))	{
 		);
 		$data = $this->User->Asset->find('all', $options);
 		$jsonSrc = Set::extract($data, '/Asset/json_src');
-		$basepath = Configure::read('path.stageroot.basepath');
+		$basepath = Stagehand::$stage_basepath;
 		foreach ($jsonSrc as $json) {
 			$src = json_decode($json, true);
 			$root = $basepath.DS.cleanpath($src['root']);
@@ -989,7 +989,7 @@ if (isset($this->params['url']['new-taskid']))	{
 		
 		set_time_limit(600);
 		
-		$basepath = Configure::read('path.stageroot.basepath');
+		$basepath = Stagehand::$stage_basepath;
 		$jsonSrc = $basepath.DS."staged_aids.json";
 // debug($valid);	
 // debug($jsonSrc);	
@@ -1043,7 +1043,7 @@ debug("PURGE: purging the following orphans: ".print_r($log_output, true));
 		);
 		$data = $this->User->Asset->find('all', $options);
 		$jsonSrc = Set::extract($data, '/Asset/json_src');
-		$basepath = Configure::read('path.stageroot.basepath');
+		$basepath = Stagehand::$stage_basepath;
 		foreach ($jsonSrc as $json) {
 			$src = json_decode($json, true);
 			$root = $basepath.DS.cleanpath($src['root']);

@@ -979,7 +979,7 @@ class StoriesController extends CollectionsController {
 						$data = $this->Collection->find('first', $options);
 						$rotate = $this->data['Collection']['rotate'];
 						if (in_array($rotate, array(3,6,8))) {
-							$basepath = Configure::read('path.stageroot.basepath');
+							$basepath = Stagehand::$stage_basepath;
 							// goal: set Audition.Photo.Fix.Rotate
 							if (!empty($data['Collection'])) {
 								$json_exif = json_decode($data['Collection']['json_exif'], true);
@@ -997,7 +997,7 @@ class StoriesController extends CollectionsController {
 								$repsonse['uuid'] = $data['Collection']['id'];
 								// get src for preview derived asset
 								$json_src = json_decode($data['Collection']['json_src'], true);
-								$previewSrc = $basepath.'/'.preg_replace('/\/tn~/', '/.thumbs/bp~', $json_src['thumb'], 1);
+								$previewSrc = $basepath.'/'.str_replace('/bp~', '/.thumbs/bp~', Stagehand::getImageSrcBySize($json_src['root'], 'bp'));
 								/*
 								 * patch json_exif for early assets
 								 */

@@ -532,7 +532,11 @@ if (!empty($this->passedArgs['raw'])) {
 		$shot['active'] = $pageData[0]['shot_active'];
 		$this->viewVars['jsonData']['castingCall']['shot_extras'][$id] = $shot;
 		
-		
+		$origin = !empty($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : $_SERVER['HTTP_HOST'];
+		if (preg_match('/(snaphappi.com|thats\-me|github|)/i', $origin)) {
+			$this->viewVars['allow_jsonp'] = 1;
+		}
+			
 		$done = $this->renderXHRByRequest('json', '/elements/assets/hidden_shots', null , 0);
 		if ($done) return; // stop for JSON/XHR requests, $this->autoRender==false
 		
@@ -1349,7 +1353,7 @@ debug("WARNING: This code path is not tested");
 						$data = $this->Asset->find('first', $options);
 						$rotate = $this->data['Asset']['rotate'];
 						if (in_array($rotate, array(3,6,8))) {
-							$basepath = Configure::read('path.stageroot.basepath');
+							$basepath = Stagehand::$stage_basepath;
 							// goal: set Audition.Photo.Fix.Rotate
 							if (!empty($data['Asset'])) {
 								$json_exif = json_decode($data['Asset']['json_exif'], true);
@@ -1367,7 +1371,8 @@ debug("WARNING: This code path is not tested");
 								$repsonse['uuid'] = $data['Asset']['id'];
 								// get src for preview derived asset
 								$json_src = json_decode($data['Asset']['json_src'], true);
-								$previewSrc = $basepath.'/'.preg_replace('/\/tn~/', '/.thumbs/bp~', $json_src['thumb'], 1);
+								$previewSrc = $basepath.'/'.str_replace('/bp~', '/.thumbs/bp~', Stagehand::getImageSrcBySize($json_src['root'], 'bp'));
+// debug($previewSrc);								
 								/*
 								 * patch json_exif for early assets
 								 */
@@ -1398,14 +1403,12 @@ $this->log("WARNING: json_exif['preview']['imageWidth'] may need to be scaled, i
 // debug($json_exif);							
 								$data['Asset']['json_exif']=json_encode($json_exif);
 								$this->Asset->id = $data['Asset']['id'];
-								$this->Asset->disablePermissionable(true);
+								
 								$return = $this->Asset->saveField('json_exif', $data['Asset']['json_exif'], false);
-								$this->Asset->disablePermissionable(false);
 								// update rotate preview
 								// $previewSrc = Stagehand::getImageSrcBySize($thumb_src, 'bp');
 								if (!isset($this->Jhead)) $this->Jhead = loadComponent('Jhead', $this);
 								$errors =  $this->Jhead->exifRotate($new_rotate, $previewSrc);
-								
 								$response['rotate'] = $new_rotate;
 								$response['uuid'][] = $data['Asset']['id'];
 								$return = $return && empty($errors);

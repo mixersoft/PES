@@ -890,7 +890,7 @@ $this->log("insert newAsset=".print_r($newAsset['native_path'], true), LOG_DEBUG
 			foreach ($data as $row) {
 				$Import = loadComponent('Import', $this);
 				$src = json_decode($row['Asset']['json_src'], true);
-				$basepath = Configure::read('path.stageroot.basepath');
+				$basepath = Stagehand::$stage_basepath;
 				$rootpath = cleanpath($basepath.DS.$src['root'], $os);
 		debug("{$rootpath} from {$src['orig']}"); // continue;
 				
