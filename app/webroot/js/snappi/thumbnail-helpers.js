@@ -1056,6 +1056,8 @@
 					break;				
 				case 'll':
 					sizeCfg.showLabel = true;
+				case 'bs':
+				case 'bm':
 					sizeCfg.showExtras = true;
 					sizeCfg.showHiddenShot = true;
 					sizeCfg.showRatings = true;

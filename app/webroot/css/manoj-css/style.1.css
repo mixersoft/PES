@@ -614,6 +614,15 @@ section.gallery-display-options nav.settings > ul.thumb-size > li.btn.white {
 }
 
 /*
+ * full-frame thumbnails
+ */
+.FigureBox.bs {
+	height: 264px;
+}
+.FigureBox.bm {
+	height: 344px;
+}
+/*
  * .tiny (lightbox square) 
  * TODO: update lbx-tiny
  */

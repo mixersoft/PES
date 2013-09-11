@@ -683,6 +683,9 @@ var _showZoom = function(e, g) {
 			GalleryFactory._attachNodes(gallery, cfg);
 			var thumbSize = gallery.header && gallery.header.one('ul.thumb-size > li.focus');
 			if (thumbSize) cfg.size = thumbSize.getAttribute('action').split(':').pop();
+			if (!thumbSize && SNAPPI.util.getFromNamed('thumbSize')) {
+				cfg.size = SNAPPI.util.getFromNamed('thumbSize');
+			}
 	        gallery.init(cfg);
 	        
 	        // apply SNAPPI.STATE.filters to section.gallery-display-options
@@ -1280,7 +1283,10 @@ var _showZoom = function(e, g) {
 			try {
     			var thumbSize = SNAPPI.STATE.thumbSize.ShotGalleryShot;
     		} catch(e){
-    			thumbSize = cfg.size || 'sq';
+    			if (!thumbSize && SNAPPI.util.getFromNamed('thumbSize')) {
+					thumbSize = SNAPPI.util.getFromNamed('thumbSize');
+				} else 
+    				thumbSize = cfg.size || 'sq';
     		}
 			gallery.header.all('ul.thumb-size li.btn.white').some(function(n){
 				// initialize header icon
