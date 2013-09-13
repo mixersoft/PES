@@ -608,6 +608,29 @@ debug("Asset->hasPerm() deprecated. using Permissionable to check for read permi
 	}
 
 	/**
+	 * adjust query to get dateTaken value from paginated results
+	 */
+	function paginateTimeline($queryData) {
+		$queryData = $this->beforeFind($queryData);
+		$perpage = $queryData['limit'];
+		$this->query("SET @row:=-1, @perpage:={$perpage}");
+		$db = $this->getDataSource();
+		$queryData['fields'] = array('@row := @row+1 as rownum, `Asset`.dateTaken');
+		$queryData['table'] = $db->fullTableName($this);
+		$queryData['alias'] = $this->alias;
+		$queryData['group'] =$queryData['limit']= null;
+		$subQuery = $db->buildStatement(
+			$queryData, $this
+		);
+		$timelineSubQuery = $db->expression($subQuery)->value;
+		$timelineSql = "SELECT rownum, (rownum DIV @perpage +1) as Page, CONCAT(rows.dateTaken,'') as DateTaken, UNIX_TIMESTAMP(CONVERT_TZ(`rows`.dateTaken,'+00:00', 'SYSTEM')) as TS
+FROM ( {$timelineSubQuery} ) as rows
+WHERE MOD(rownum,@perpage)=0";
+		// debug($timelineSql);
+		return $this->query($timelineSql);
+	}
+
+	/**
 	 * check DB if the same photo has already been uploaded to the user's account
 	 * NOTES: 
 	 * - normally, we would check by either 

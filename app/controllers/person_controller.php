@@ -327,12 +327,23 @@ if (!empty($this->passedArgs['all-shots'])) {
 	$paginateArray['extras']['all_shots']=1;		// includes Shot.inactive=0	
 	$paginateArray['extras']['only_shots']=1;
 }
+
 // debug($paginateArray['extras']);
 		$paginateArray['conditions'] = @$Model->appendFilterConditions(Configure::read('passedArgs.complete'), $paginateArray['conditions']);
 		$this->paginate[$paginateModel] = $Model->getPageablePaginateArray($this, $paginateArray);
 // debug(Configure::read("paginate.Options.{$paginateModel}")); exit;	
 // $this->log(Configure::read("paginate.Options.{$paginateModel}"), LOG_DEBUG);	
+
+if (!empty($this->passedArgs['paginate-timeline']) && $this->RequestHandler->ext=='json') {
+	$queryData = Configure::read("paginate.Options.{$paginateModel}");
+	$queryData['order'] = array('0'=>$queryData['order']);
+	$result = ClassRegistry::init('Asset')->paginateTimeline($queryData);
+	$this->viewVars['jsonData']['timeline']['pages']=Set::extract('{n}.0',$result);
+	$done = $this->renderXHRByRequest('json', '/elements/photo/roll', null, 0);
+	return;
+} else {
 		$pageData = Set::extract($this->paginate($paginateModel), "{n}.{$paginateModel}");
+}
 		// end paginate
 		if (!isset($this->CastingCall)) $this->CastingCall = loadComponent('CastingCall', $this);
 		$castingCall = $this->CastingCall->getCastingCall($pageData);
