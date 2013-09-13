@@ -27,7 +27,7 @@ class AppController extends Controller {
 			!strpos(env('SERVER_NAME'),'snaphappi.com') 
 			&& $this->name != 'Thrift'
 		) {
-			$this->components[] = 'DebugKit.Toolbar';
+			// $this->components[] = 'DebugKit.Toolbar';
 		}
 		// $this->components = array_diff($this->components, $remove_components);
 		parent::__construct();
@@ -248,7 +248,9 @@ class AppController extends Controller {
 				);
 				if ($this->passedArgs['rating']==0) $filter['label'] = 'unrated Snaps'; 
 			}
-			$this->viewVars['jsonData']['filter'] = @mergeAsArray($this->viewVars['jsonData']['filter'],$filter);
+			if (count($filter)) {
+				$this->viewVars['jsonData']['filter'] = @mergeAsArray($this->viewVars['jsonData']['filter'],$filter);
+			}
 			/*
 			 * end filter JSON
 			 */
