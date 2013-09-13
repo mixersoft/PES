@@ -57,6 +57,7 @@ class MyController extends PersonController {
 		if (!MyController::$userid) {
 			
 		}
+		$this->viewVars['allow_jsonp'] = true; 
 		parent::photos(MyController::$userid );
 	}
 	function snaps() {
